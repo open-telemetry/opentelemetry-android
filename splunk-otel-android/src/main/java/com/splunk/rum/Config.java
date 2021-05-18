@@ -10,10 +10,12 @@ public class Config {
 
     private final String beaconUrl;
     private final String rumAuthToken;
+    private final boolean debugEnabled;
 
     private Config(Builder builder) {
         this.beaconUrl = builder.beaconUrl;
         this.rumAuthToken = builder.rumAuthToken;
+        this.debugEnabled = builder.debugEnabled;
     }
 
     /**
@@ -31,11 +33,19 @@ public class Config {
     }
 
     /**
+     * Is debug mode enabled.
+     */
+    public boolean isDebugEnabled() {
+        return debugEnabled;
+    }
+
+    /**
      * Create a new instance of the {@link Builder} class. All default configuration options will be pre-populated.
      */
     public static Builder builder() {
         return new Builder();
     }
+
 
     /**
      * Builder class for the Splunk RUM {@link Config} class.
@@ -43,6 +53,7 @@ public class Config {
     public static class Builder {
         private String beaconUrl;
         private String rumAuthToken;
+        private boolean debugEnabled = false;
 
         /**
          * Create a new instance of {@link Config} from the options provided.
@@ -69,6 +80,16 @@ public class Config {
          */
         public Builder rumAuthToken(String rumAuthToken) {
             this.rumAuthToken = rumAuthToken;
+            return this;
+        }
+
+        /**
+         * Enable/disable debugging information to be emitted from the RUM library. This is set to
+         * {@code false} by default.
+         * @return this
+         */
+        public Builder enableDebug(boolean enable) {
+            this.debugEnabled = enable;
             return this;
         }
     }

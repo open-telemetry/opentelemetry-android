@@ -12,9 +12,11 @@ public class SplunkRum {
     private static SplunkRum INSTANCE;
 
     private final Config config;
+    private final SessionId sessionId;
 
     private SplunkRum(Config config) {
         this.config = config;
+        this.sessionId = new SessionId();
     }
 
     /**
@@ -38,6 +40,9 @@ public class SplunkRum {
             return INSTANCE;
         }
         INSTANCE = new SplunkRum(config);
+        if (config.isDebugEnabled()) {
+            Log.i(LOG_TAG, "Splunk RUM monitoring initialized with session ID: " + INSTANCE.sessionId);
+        }
         return INSTANCE;
     }
 

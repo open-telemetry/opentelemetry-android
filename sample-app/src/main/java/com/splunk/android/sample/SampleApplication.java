@@ -13,6 +13,7 @@ public class SampleApplication extends Application {
         Config config = SplunkRum.newConfigBuilder()
                 .beaconUrl("http://fill.me.in")
                 .rumAuthToken("authTokenGoesHere")
+                .enableDebug(true)
                 .build();
         SplunkRum.initialize(config);
     }
