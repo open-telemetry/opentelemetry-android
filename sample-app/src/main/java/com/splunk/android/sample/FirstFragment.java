@@ -29,12 +29,12 @@ public class FirstFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        binding.buttonFirst.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        binding.buttonFirst.setOnClickListener(v ->
                 NavHostFragment.findNavController(FirstFragment.this)
-                        .navigate(R.id.action_FirstFragment_to_SecondFragment);
-            }
+                        .navigate(R.id.action_FirstFragment_to_SecondFragment));
+
+        binding.crash.setOnClickListener(v -> {
+            throw new IllegalStateException("Crashing due to a bug!");
         });
     }
 
