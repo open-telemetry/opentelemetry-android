@@ -15,4 +15,4 @@ jobs:
           java-version: 11
 
       - name: Build and test
-        run: ./gradlew build --no-daemon
+        run: echo rum.beacon.url=http://backend > ./local.properties; echo rum.auth.token=abc123 >> ./local.properties; ./gradlew build --no-daemon

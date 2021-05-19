@@ -11,10 +11,13 @@ public class SampleApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Config config = SplunkRum.newConfigBuilder()
-                .beaconUrl("http://fill.me.in")
-                .rumAuthToken("authTokenGoesHere")
+                // note: for these values to be resolved, put them in your local.properties file as
+                // rum.beacon.url and rum.auth.token
+                .beaconUrl(getResources().getString(R.string.rum_beacon_url))
+                .rumAuthToken(getResources().getString(R.string.rum_auth_token))
+                .applicationName("Android Demo App")
                 .enableDebug(true)
                 .build();
-        SplunkRum.initialize(config);
+        SplunkRum.initialize(config, this);
     }
 }

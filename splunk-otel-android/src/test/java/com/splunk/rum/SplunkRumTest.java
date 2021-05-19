@@ -1,11 +1,15 @@
 package com.splunk.rum;
 
+import android.app.Application;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class SplunkRumTest {
 
@@ -16,8 +20,10 @@ public class SplunkRumTest {
 
     @Test
     public void initialization_onlyOnce() {
-        SplunkRum singleton = SplunkRum.initialize(Config.builder().beaconUrl("http://backend").rumAuthToken("abc123").build());
-        SplunkRum sameInstance = SplunkRum.initialize(Config.builder().beaconUrl("http://otherbackend").rumAuthToken("123abc").build());
+        Config config = mock(Config.class);
+        when(config.getBeaconUrl()).thenReturn("http://backend");
+        SplunkRum singleton = SplunkRum.initialize(config, mock(Application.class));
+        SplunkRum sameInstance = SplunkRum.initialize(config, mock(Application.class));
 
         assertSame(singleton, sameInstance);
     }
@@ -29,7 +35,9 @@ public class SplunkRumTest {
 
     @Test
     public void getInstance() {
-        SplunkRum singleton = SplunkRum.initialize(Config.builder().beaconUrl("http://backend").rumAuthToken("abc123").build());
+        Config config = mock(Config.class);
+        when(config.getBeaconUrl()).thenReturn("http://backend");
+        SplunkRum singleton = SplunkRum.initialize(config, mock(Application.class));
         assertSame(singleton, SplunkRum.getInstance());
     }
 

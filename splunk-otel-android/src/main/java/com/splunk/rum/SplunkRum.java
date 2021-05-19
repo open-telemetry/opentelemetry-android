@@ -1,6 +1,14 @@
 package com.splunk.rum;
 
+import android.app.Application;
 import android.util.Log;
+
+import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**
  * Entrypoint for Splunk's Android RUM (Real User Monitoring) support.
@@ -13,10 +21,12 @@ public class SplunkRum {
 
     private final Config config;
     private final SessionId sessionId;
+    private final OpenTelemetrySdk openTelemetrySdk;
 
-    private SplunkRum(Config config) {
+    private SplunkRum(Config config, OpenTelemetrySdk openTelemetrySdk, SessionId sessionId) {
         this.config = config;
-        this.sessionId = new SessionId();
+        this.openTelemetrySdk = openTelemetrySdk;
+        this.sessionId = sessionId;
     }
 
     /**
@@ -31,15 +41,32 @@ public class SplunkRum {
      * Note: if you call this method more than once, only the first one will do anything. Repeated
      * calls will just immediately return the previously configured instance.
      *
-     * @param config The {@link Config} options to use for initialization.
+     * @param config      The {@link Config} options to use for initialization.
+     * @param application The {@link Application} to be monitored.
      * @return A fully initialized {@link SplunkRum} instance, ready for use.
      */
-    public static SplunkRum initialize(Config config) {
+    public static SplunkRum initialize(Config config, Application application) {
         if (INSTANCE != null) {
             Log.w(LOG_TAG, "Singleton SplunkRum instance has already been initialized.");
             return INSTANCE;
         }
-        INSTANCE = new SplunkRum(config);
+        String endpoint = config.getBeaconUrl() + "?auth=" + config.getRumAuthToken();
+        SpanExporter zipkinExporter = ZipkinSpanExporter.builder()
+                .setEndpoint(endpoint)
+                .build();
+        SessionId sessionId = new SessionId();
+        SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
+                .addSpanProcessor(BatchSpanProcessor.builder(zipkinExporter).build())
+                .addSpanProcessor(new RumAttributeAppender(config, sessionId))
+                .setResource(Resource.getDefault().toBuilder().put("service.name", config.getApplicationName()).build())
+                .build();
+        OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder()
+                .setTracerProvider(sdkTracerProvider)
+                .build();
+
+        application.registerActivityLifecycleCallbacks(new RumLifecycleCallbacks(openTelemetrySdk.getTracer("SplunkRum")));
+
+        INSTANCE = new SplunkRum(config, openTelemetrySdk, sessionId);
         if (config.isDebugEnabled()) {
             Log.i(LOG_TAG, "Splunk RUM monitoring initialized with session ID: " + INSTANCE.sessionId);
         }
