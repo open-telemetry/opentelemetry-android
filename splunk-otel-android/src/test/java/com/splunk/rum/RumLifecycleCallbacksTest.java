@@ -60,6 +60,202 @@ public class RumLifecycleCallbacksTest {
         checkEventExists(events, "activityPostResumed");
     }
 
+    @Test
+    public void activityCreation() {
+        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer);
+        CallbackTestHarness testHarness = new CallbackTestHarness(rumLifecycleCallbacks);
+        startupAppAndClearSpans(testHarness);
+
+        Activity activity = mock(Activity.class);
+        testHarness.runActivityCreationLifecycle(activity);
+        List<SpanData> spans = otelTesting.getSpans();
+        assertEquals(1, spans.size());
+
+        SpanData spanData = spans.get(0);
+
+        assertEquals(activity.getClass().getSimpleName() + " Created", spanData.getName());
+        assertNotNull(spanData.getAttributes().get(ActivityTracer.ACTIVITY_NAME_KEY));
+
+        List<EventData> events = spanData.getEvents();
+        assertEquals(9, events.size());
+
+        checkEventExists(events, "activityPreCreated");
+        checkEventExists(events, "activityCreated");
+        checkEventExists(events, "activityPostCreated");
+
+        checkEventExists(events, "activityPreStarted");
+        checkEventExists(events, "activityStarted");
+        checkEventExists(events, "activityPostStarted");
+
+        checkEventExists(events, "activityPreResumed");
+        checkEventExists(events, "activityResumed");
+        checkEventExists(events, "activityPostResumed");
+    }
+
+    private void startupAppAndClearSpans(CallbackTestHarness testHarness) {
+        //make sure that the initial state has been set up & the application is started.
+        testHarness.runAppStartupLifecycle(mock(Activity.class));
+        otelTesting.clearSpans();
+    }
+
+    @Test
+    public void activityRestart() {
+        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer);
+        CallbackTestHarness testHarness = new CallbackTestHarness(rumLifecycleCallbacks);
+
+        startupAppAndClearSpans(testHarness);
+
+        Activity activity = mock(Activity.class);
+        testHarness.runActivityRestartedLifecycle(activity);
+
+        List<SpanData> spans = otelTesting.getSpans();
+        assertEquals(1, spans.size());
+
+        SpanData spanData = spans.get(0);
+
+        assertEquals(activity.getClass().getSimpleName() + " Restarted", spanData.getName());
+        assertNotNull(spanData.getAttributes().get(ActivityTracer.ACTIVITY_NAME_KEY));
+
+        List<EventData> events = spanData.getEvents();
+        assertEquals(6, events.size());
+
+        checkEventExists(events, "activityPreStarted");
+        checkEventExists(events, "activityStarted");
+        checkEventExists(events, "activityPostStarted");
+
+        checkEventExists(events, "activityPreResumed");
+        checkEventExists(events, "activityResumed");
+        checkEventExists(events, "activityPostResumed");
+    }
+
+    @Test
+    public void activityResumed() {
+        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer);
+        CallbackTestHarness testHarness = new CallbackTestHarness(rumLifecycleCallbacks);
+
+        startupAppAndClearSpans(testHarness);
+
+        Activity activity = mock(Activity.class);
+        testHarness.runActivityResumedLifecycle(activity);
+
+        List<SpanData> spans = otelTesting.getSpans();
+        assertEquals(1, spans.size());
+
+        SpanData spanData = spans.get(0);
+
+        assertEquals(activity.getClass().getSimpleName() + " Resumed", spanData.getName());
+        assertNotNull(spanData.getAttributes().get(ActivityTracer.ACTIVITY_NAME_KEY));
+
+        List<EventData> events = spanData.getEvents();
+        assertEquals(3, events.size());
+
+        checkEventExists(events, "activityPreResumed");
+        checkEventExists(events, "activityResumed");
+        checkEventExists(events, "activityPostResumed");
+    }
+
+    @Test
+    public void activityDestroyedFromStopped() {
+        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer);
+        CallbackTestHarness testHarness = new CallbackTestHarness(rumLifecycleCallbacks);
+
+        startupAppAndClearSpans(testHarness);
+
+        Activity activity = mock(Activity.class);
+        testHarness.runActivityDestroyedFromStoppedLifecycle(activity);
+
+        List<SpanData> spans = otelTesting.getSpans();
+        assertEquals(1, spans.size());
+
+        SpanData spanData = spans.get(0);
+
+        assertEquals(activity.getClass().getSimpleName() + " Destroyed", spanData.getName());
+        assertNotNull(spanData.getAttributes().get(ActivityTracer.ACTIVITY_NAME_KEY));
+
+        List<EventData> events = spanData.getEvents();
+        assertEquals(3, events.size());
+
+        checkEventExists(events, "activityPreDestroyed");
+        checkEventExists(events, "activityDestroyed");
+        checkEventExists(events, "activityPostDestroyed");
+    }
+
+    @Test
+    public void activityDestroyedFromPaused() {
+        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer);
+        CallbackTestHarness testHarness = new CallbackTestHarness(rumLifecycleCallbacks);
+
+        startupAppAndClearSpans(testHarness);
+
+        Activity activity = mock(Activity.class);
+        testHarness.runActivityDestroyedFromPausedLifecycle(activity);
+
+        List<SpanData> spans = otelTesting.getSpans();
+        assertEquals(2, spans.size());
+
+        SpanData stoppedSpan = spans.get(0);
+
+        assertEquals(activity.getClass().getSimpleName() + " Stopped", stoppedSpan.getName());
+        assertNotNull(stoppedSpan.getAttributes().get(ActivityTracer.ACTIVITY_NAME_KEY));
+
+        List<EventData> events = stoppedSpan.getEvents();
+        assertEquals(3, events.size());
+
+        checkEventExists(events, "activityPreStopped");
+        checkEventExists(events, "activityStopped");
+        checkEventExists(events, "activityPostStopped");
+
+        SpanData destroyedSpan = spans.get(1);
+
+        assertEquals(activity.getClass().getSimpleName() + " Destroyed", destroyedSpan.getName());
+        assertNotNull(destroyedSpan.getAttributes().get(ActivityTracer.ACTIVITY_NAME_KEY));
+
+        events = destroyedSpan.getEvents();
+        assertEquals(3, events.size());
+
+        checkEventExists(events, "activityPreDestroyed");
+        checkEventExists(events, "activityDestroyed");
+        checkEventExists(events, "activityPostDestroyed");
+    }
+
+    @Test
+    public void activityStoppedFromRunning() {
+        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer);
+        CallbackTestHarness testHarness = new CallbackTestHarness(rumLifecycleCallbacks);
+
+        startupAppAndClearSpans(testHarness);
+
+        Activity activity = mock(Activity.class);
+        testHarness.runActivityStoppedFromRunningLifecycle(activity);
+
+        List<SpanData> spans = otelTesting.getSpans();
+        assertEquals(2, spans.size());
+
+        SpanData stoppedSpan = spans.get(0);
+
+        assertEquals(activity.getClass().getSimpleName() + " Paused", stoppedSpan.getName());
+        assertNotNull(stoppedSpan.getAttributes().get(ActivityTracer.ACTIVITY_NAME_KEY));
+
+        List<EventData> events = stoppedSpan.getEvents();
+        assertEquals(3, events.size());
+
+        checkEventExists(events, "activityPrePaused");
+        checkEventExists(events, "activityPaused");
+        checkEventExists(events, "activityPostPaused");
+
+        SpanData destroyedSpan = spans.get(1);
+
+        assertEquals(activity.getClass().getSimpleName() + " Stopped", destroyedSpan.getName());
+        assertNotNull(destroyedSpan.getAttributes().get(ActivityTracer.ACTIVITY_NAME_KEY));
+
+        events = destroyedSpan.getEvents();
+        assertEquals(3, events.size());
+
+        checkEventExists(events, "activityPreStopped");
+        checkEventExists(events, "activityStopped");
+        checkEventExists(events, "activityPostStopped");
+    }
+
     private void checkEventExists(List<EventData> events, String eventName) {
         Optional<EventData> event = events.stream().filter(e -> e.getName().equals(eventName)).findAny();
         assertTrue("Event with name " + eventName + " not found", event.isPresent());
