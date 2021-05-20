@@ -22,6 +22,7 @@ public class SplunkRumTest {
     public void initialization_onlyOnce() {
         Config config = mock(Config.class);
         when(config.getBeaconUrl()).thenReturn("http://backend");
+        when(config.isDebugEnabled()).thenReturn(true);
         SplunkRum singleton = SplunkRum.initialize(config, mock(Application.class));
         SplunkRum sameInstance = SplunkRum.initialize(config, mock(Application.class));
 
