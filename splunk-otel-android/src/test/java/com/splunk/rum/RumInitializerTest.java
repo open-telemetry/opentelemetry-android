@@ -21,6 +21,7 @@ public class RumInitializerTest {
     public void initializationSpan() {
         Config config = mock(Config.class);
         when(config.getBeaconUrl()).thenReturn("http://backend");
+        when(config.isCrashReportingEnabled()).thenReturn(true);
         Application application = mock(Application.class);
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
         RumInitializer testInitializer = new RumInitializer(config, application) {
@@ -39,12 +40,13 @@ public class RumInitializerTest {
         assertEquals("app", initSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
         List<EventData> events = initSpan.getEvents();
-        assertEquals(5, events.size());
+        assertEquals(6, events.size());
         checkEventExists(events, "exporterInitialized");
         checkEventExists(events, "sessionIdInitialized");
         checkEventExists(events, "tracerProviderInitialized");
         checkEventExists(events, "openTelemetrySdkInitialized");
         checkEventExists(events, "activityLifecycleCallbacksInitialized");
+        checkEventExists(events, "crashReportingInitialized");
     }
 
     private void checkEventExists(List<EventData> events, String eventName) {

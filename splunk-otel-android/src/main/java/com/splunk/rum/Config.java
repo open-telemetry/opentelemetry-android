@@ -12,12 +12,14 @@ public class Config {
     private final String rumAuthToken;
     private final boolean debugEnabled;
     private final String applicationName;
+    private final boolean crashReportingEnabled;
 
     private Config(Builder builder) {
         this.beaconUrl = builder.beaconUrl;
         this.rumAuthToken = builder.rumAuthToken;
         this.debugEnabled = builder.debugEnabled;
         this.applicationName = builder.applicationName;
+        this.crashReportingEnabled = builder.crashReportingEnabled;
     }
 
     /**
@@ -49,6 +51,13 @@ public class Config {
     }
 
     /**
+     * Is the crash-reporting feature enabled or not.
+     */
+    public boolean isCrashReportingEnabled() {
+        return crashReportingEnabled;
+    }
+
+    /**
      * Create a new instance of the {@link Builder} class. All default configuration options will be pre-populated.
      */
     public static Builder builder() {
@@ -64,6 +73,7 @@ public class Config {
         private String rumAuthToken;
         private boolean debugEnabled = false;
         private String applicationName;
+        private boolean crashReportingEnabled = true;
 
         /**
          * Create a new instance of {@link Config} from the options provided.
@@ -101,6 +111,16 @@ public class Config {
          */
         public Builder enableDebug(boolean enable) {
             this.debugEnabled = enable;
+            return this;
+        }
+
+        /**
+         * Enable/disable the crash reporting feature. Enabled by default.
+         *
+         * @return this
+         */
+        public Builder enableCrashReporting(boolean enable) {
+            this.crashReportingEnabled = enable;
             return this;
         }
 

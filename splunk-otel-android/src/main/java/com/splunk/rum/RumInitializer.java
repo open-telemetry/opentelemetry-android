@@ -54,6 +54,12 @@ class RumInitializer {
         Tracer tracer = openTelemetrySdk.getTracer("SplunkRum");
         application.registerActivityLifecycleCallbacks(new RumLifecycleCallbacks(tracer));
         initializationEvents.add(new RumInitializer.InitializationEvent("activityLifecycleCallbacksInitialized", clock.now()));
+
+        if (config.isCrashReportingEnabled()) {
+            CrashReporter.initializeCrashReporting(tracer, openTelemetrySdk);
+            initializationEvents.add(new RumInitializer.InitializationEvent("crashReportingInitialized", clock.now()));
+        }
+
         recordInitializationSpan(startTimeNanos, initializationEvents, tracer);
 
         return new SplunkRum(config, openTelemetrySdk, sessionId);
