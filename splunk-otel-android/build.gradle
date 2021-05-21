@@ -45,6 +45,7 @@ dependencies {
     implementation platform("io.opentelemetry:opentelemetry-bom:1.2.0")
     implementation 'io.opentelemetry:opentelemetry-sdk'
     implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
+    implementation 'io.opentelemetry:opentelemetry-exporter-logging'
 
     implementation platform("io.opentelemetry:opentelemetry-bom-alpha:1.2.0-alpha")
     implementation 'io.opentelemetry:opentelemetry-semconv'

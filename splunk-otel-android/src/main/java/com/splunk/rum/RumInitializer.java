@@ -10,13 +10,16 @@ import java.util.concurrent.TimeUnit;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 class RumInitializer {
@@ -78,11 +81,15 @@ class RumInitializer {
     }
 
     private SdkTracerProvider buildTracerProvider(Clock clock, SpanExporter zipkinExporter, SessionId sessionId, String rumVersion) {
-        return SdkTracerProvider.builder()
+        SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder()
+                .setClock(clock)
                 .addSpanProcessor(BatchSpanProcessor.builder(zipkinExporter).build())
                 .addSpanProcessor(new RumAttributeAppender(config, sessionId, rumVersion))
-                .setClock(clock)
-                .setResource(Resource.getDefault().toBuilder().put("service.name", config.getApplicationName()).build())
+                .setResource(Resource.getDefault().toBuilder().put("service.name", config.getApplicationName()).build());
+        if (config.isDebugEnabled()) {
+            tracerProviderBuilder.addSpanProcessor(SimpleSpanProcessor.create(new LoggingSpanExporter()));
+        }
+        return tracerProviderBuilder
                 .build();
     }
 
