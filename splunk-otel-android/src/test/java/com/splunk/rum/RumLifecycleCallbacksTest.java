@@ -15,7 +15,6 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
@@ -34,17 +33,19 @@ public class RumLifecycleCallbacksTest {
         RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer);
         ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
-        testHarness.runAppStartupLifecycle(mock(Activity.class));
+        Activity activity = mock(Activity.class);
+        testHarness.runAppStartupLifecycle(activity);
 
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
 
-        SpanData spanData = spans.get(0);
+        SpanData span = spans.get(0);
 
-        assertEquals("App Startup", spanData.getName());
-        assertNotNull(spanData.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals("App Startup", span.getName());
+        assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals("ui", span.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
-        List<EventData> events = spanData.getEvents();
+        List<EventData> events = span.getEvents();
         assertEquals(9, events.size());
 
         checkEventExists(events, "activityPreCreated");
@@ -71,12 +72,13 @@ public class RumLifecycleCallbacksTest {
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
 
-        SpanData spanData = spans.get(0);
+        SpanData span = spans.get(0);
 
-        assertEquals(activity.getClass().getSimpleName() + " Created", spanData.getName());
-        assertNotNull(spanData.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals(activity.getClass().getSimpleName() + " Created", span.getName());
+        assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals("ui", span.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
-        List<EventData> events = spanData.getEvents();
+        List<EventData> events = span.getEvents();
         assertEquals(9, events.size());
 
         checkEventExists(events, "activityPreCreated");
@@ -111,12 +113,13 @@ public class RumLifecycleCallbacksTest {
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
 
-        SpanData spanData = spans.get(0);
+        SpanData span = spans.get(0);
 
-        assertEquals(activity.getClass().getSimpleName() + " Restarted", spanData.getName());
-        assertNotNull(spanData.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals(activity.getClass().getSimpleName() + " Restarted", span.getName());
+        assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals("ui", span.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
-        List<EventData> events = spanData.getEvents();
+        List<EventData> events = span.getEvents();
         assertEquals(6, events.size());
 
         checkEventExists(events, "activityPreStarted");
@@ -141,12 +144,13 @@ public class RumLifecycleCallbacksTest {
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
 
-        SpanData spanData = spans.get(0);
+        SpanData span = spans.get(0);
 
-        assertEquals(activity.getClass().getSimpleName() + " Resumed", spanData.getName());
-        assertNotNull(spanData.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals(activity.getClass().getSimpleName() + " Resumed", span.getName());
+        assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals("ui", span.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
-        List<EventData> events = spanData.getEvents();
+        List<EventData> events = span.getEvents();
         assertEquals(3, events.size());
 
         checkEventExists(events, "activityPreResumed");
@@ -167,12 +171,13 @@ public class RumLifecycleCallbacksTest {
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
 
-        SpanData spanData = spans.get(0);
+        SpanData span = spans.get(0);
 
-        assertEquals(activity.getClass().getSimpleName() + " Destroyed", spanData.getName());
-        assertNotNull(spanData.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals(activity.getClass().getSimpleName() + " Destroyed", span.getName());
+        assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals("ui", span.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
-        List<EventData> events = spanData.getEvents();
+        List<EventData> events = span.getEvents();
         assertEquals(3, events.size());
 
         checkEventExists(events, "activityPreDestroyed");
@@ -196,7 +201,8 @@ public class RumLifecycleCallbacksTest {
         SpanData stoppedSpan = spans.get(0);
 
         assertEquals(activity.getClass().getSimpleName() + " Stopped", stoppedSpan.getName());
-        assertNotNull(stoppedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals(activity.getClass().getSimpleName(), stoppedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals("ui", stoppedSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
         List<EventData> events = stoppedSpan.getEvents();
         assertEquals(3, events.size());
@@ -208,7 +214,8 @@ public class RumLifecycleCallbacksTest {
         SpanData destroyedSpan = spans.get(1);
 
         assertEquals(activity.getClass().getSimpleName() + " Destroyed", destroyedSpan.getName());
-        assertNotNull(destroyedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals(activity.getClass().getSimpleName(), destroyedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals("ui", destroyedSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
         events = destroyedSpan.getEvents();
         assertEquals(3, events.size());
@@ -234,7 +241,8 @@ public class RumLifecycleCallbacksTest {
         SpanData stoppedSpan = spans.get(0);
 
         assertEquals(activity.getClass().getSimpleName() + " Paused", stoppedSpan.getName());
-        assertNotNull(stoppedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals(activity.getClass().getSimpleName(), stoppedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals("ui", stoppedSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
         List<EventData> events = stoppedSpan.getEvents();
         assertEquals(3, events.size());
@@ -246,7 +254,8 @@ public class RumLifecycleCallbacksTest {
         SpanData destroyedSpan = spans.get(1);
 
         assertEquals(activity.getClass().getSimpleName() + " Stopped", destroyedSpan.getName());
-        assertNotNull(destroyedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals(activity.getClass().getSimpleName(), destroyedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals("ui", destroyedSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
         events = destroyedSpan.getEvents();
         assertEquals(3, events.size());

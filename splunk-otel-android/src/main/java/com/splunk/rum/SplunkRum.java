@@ -5,12 +5,14 @@ import android.util.Log;
 
 import java.util.concurrent.TimeUnit;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 
 /**
  * Entrypoint for Splunk's Android RUM (Real User Monitoring) support.
  */
 public class SplunkRum {
+    static final AttributeKey<String> COMPONENT_KEY = AttributeKey.stringKey("component");
 
     private static final String LOG_TAG = "SplunkRum";
 

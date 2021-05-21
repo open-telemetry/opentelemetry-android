@@ -36,6 +36,8 @@ public class RumInitializerTest {
         assertEquals(1, spans.size());
         SpanData initSpan = spans.get(0);
         assertEquals("RUM initialization", initSpan.getName());
+        assertEquals("app", initSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
+
         List<EventData> events = initSpan.getEvents();
         assertEquals(5, events.size());
         checkEventExists(events, "exporterInitialized");

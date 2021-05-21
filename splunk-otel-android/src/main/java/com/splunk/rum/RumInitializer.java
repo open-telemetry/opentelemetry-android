@@ -2,6 +2,8 @@ package com.splunk.rum;
 
 import android.app.Application;
 
+import com.splunk.android.rum.R;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +30,8 @@ class RumInitializer {
     }
 
     SplunkRum initialize() {
+        String rumVersion = detectRumVersion();
+
         Clock clock = SystemClock.getInstance();
         long startTimeNanos = clock.now();
         List<RumInitializer.InitializationEvent> initializationEvents = new ArrayList<>();
@@ -38,7 +42,7 @@ class RumInitializer {
         SessionId sessionId = new SessionId();
         initializationEvents.add(new RumInitializer.InitializationEvent("sessionIdInitialized", clock.now()));
 
-        SdkTracerProvider sdkTracerProvider = buildTracerProvider(clock, zipkinExporter, sessionId);
+        SdkTracerProvider sdkTracerProvider = buildTracerProvider(clock, zipkinExporter, sessionId, rumVersion);
         initializationEvents.add(new RumInitializer.InitializationEvent("tracerProviderInitialized", clock.now()));
 
         OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider).build();
@@ -52,9 +56,20 @@ class RumInitializer {
         return new SplunkRum(config, openTelemetrySdk, sessionId);
     }
 
+    private String detectRumVersion() {
+        try {
+            //todo: figure out if there's a way to get access to resources from pure non-UI library code.
+            return application.getApplicationContext().getResources().getString(R.string.rum_version);
+        } catch (Exception e) {
+            //ignore for now
+        }
+        return "unknown";
+    }
+
     private static void recordInitializationSpan(long startTimeNanos, List<InitializationEvent> initializationEvents, Tracer tracer) {
         Span span = tracer.spanBuilder("RUM initialization")
                 .setStartTimestamp(startTimeNanos, TimeUnit.NANOSECONDS)
+                .setAttribute(SplunkRum.COMPONENT_KEY, "app")
                 .startSpan();
         for (RumInitializer.InitializationEvent initializationEvent : initializationEvents) {
             span.addEvent(initializationEvent.name, initializationEvent.time, TimeUnit.NANOSECONDS);
@@ -62,10 +77,10 @@ class RumInitializer {
         span.end();
     }
 
-    private SdkTracerProvider buildTracerProvider(Clock clock, SpanExporter zipkinExporter, SessionId sessionId) {
+    private SdkTracerProvider buildTracerProvider(Clock clock, SpanExporter zipkinExporter, SessionId sessionId, String rumVersion) {
         return SdkTracerProvider.builder()
                 .addSpanProcessor(BatchSpanProcessor.builder(zipkinExporter).build())
-                .addSpanProcessor(new RumAttributeAppender(config, sessionId))
+                .addSpanProcessor(new RumAttributeAppender(config, sessionId, rumVersion))
                 .setClock(clock)
                 .setResource(Resource.getDefault().toBuilder().put("service.name", config.getApplicationName()).build())
                 .build();

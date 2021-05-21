@@ -12,13 +12,17 @@ android {
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
-        versionName "1.0"
+        versionName project.version
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
 
     buildTypes {
+        all {
+            //provide the version of the library as a resource so it can be used as a span attribute.
+            resValue "string", "rum.version", "${project.version}"
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -41,6 +45,9 @@ dependencies {
     implementation platform("io.opentelemetry:opentelemetry-bom:1.2.0")
     implementation 'io.opentelemetry:opentelemetry-sdk'
     implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
+
+    implementation platform("io.opentelemetry:opentelemetry-bom-alpha:1.2.0-alpha")
+    implementation 'io.opentelemetry:opentelemetry-semconv'
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:3.10.0'

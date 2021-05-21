@@ -63,6 +63,7 @@ class NamedTrackableTracer implements TrackableTracer {
     private void startSpan(String spanName) {
         span = tracer.spanBuilder(spanName)
                 .setAttribute(nameKey, trackableName)
+                .setAttribute(SplunkRum.COMPONENT_KEY, "ui")
                 .startSpan();
         scope = span.makeCurrent();
     }
