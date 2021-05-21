@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,9 +15,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.opentelemetry.api.trace.Tracer;
 
 class RumLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
-    private static final NoOpTracer NO_OP_TRACER = new NoOpTracer();
 
-    private final Map<String, ActivityTracer> tracersByActivityClassName = new HashMap<>();
+    private final Map<String, NamedTrackableTracer> tracersByActivityClassName = new HashMap<>();
     private final AtomicBoolean appStartupComplete = new AtomicBoolean();
     private final Tracer tracer;
 
@@ -27,8 +27,13 @@ class RumLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
     @Override
     public void onActivityPreCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
         getOrCreateTracer(activity)
-                .startActivityCreation()
+                .startTrackableCreation()
                 .addEvent("activityPreCreated");
+
+        if (activity instanceof FragmentActivity) {
+            ((FragmentActivity) activity).getSupportFragmentManager()
+                    .registerFragmentLifecycleCallbacks(new RumFragmentLifecycleCallbacks(tracer), true);
+        }
     }
 
     @Override
@@ -113,17 +118,14 @@ class RumLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityPreSaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
-
     }
 
     @Override
     public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
-
     }
 
     @Override
     public void onActivityPostSaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
-
     }
 
     @Override
@@ -148,45 +150,20 @@ class RumLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
     }
 
     private TrackableTracer getOrCreateTracer(Activity activity) {
-        ActivityTracer activityTracer = tracersByActivityClassName.get(activity.getClass().getName());
+        NamedTrackableTracer activityTracer = tracersByActivityClassName.get(activity.getClass().getName());
         if (activityTracer == null) {
-            activityTracer = new ActivityTracer(activity, appStartupComplete, tracer);
+            activityTracer = new NamedTrackableTracer(activity, appStartupComplete, tracer);
             tracersByActivityClassName.put(activity.getClass().getName(), activityTracer);
         }
         return activityTracer;
     }
 
     private TrackableTracer getActivityTracer(@NonNull Activity activity) {
-        ActivityTracer activityTracer = tracersByActivityClassName.get(activity.getClass().getName());
+        NamedTrackableTracer activityTracer = tracersByActivityClassName.get(activity.getClass().getName());
         if (activityTracer == null) {
-            return NO_OP_TRACER;
+            return TrackableTracer.NO_OP_TRACER;
         }
         return activityTracer;
     }
 
-    private static class NoOpTracer implements TrackableTracer {
-
-        @Override
-        public TrackableTracer startSpanIfNoneInProgress(String action) {
-            return this;
-        }
-
-        @Override
-        public TrackableTracer startActivityCreation() {
-            return this;
-        }
-
-        @Override
-        public void endSpanForActivityResumed() {
-        }
-
-        @Override
-        public void endActiveSpan() {
-        }
-
-        @Override
-        public TrackableTracer addEvent(String eventName) {
-            return this;
-        }
-    }
 }

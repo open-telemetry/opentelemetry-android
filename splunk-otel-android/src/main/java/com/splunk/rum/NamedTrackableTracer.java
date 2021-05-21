@@ -2,6 +2,8 @@ package com.splunk.rum;
 
 import android.app.Activity;
 
+import androidx.fragment.app.Fragment;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -9,40 +11,50 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 
-class ActivityTracer implements TrackableTracer {
+class NamedTrackableTracer implements TrackableTracer {
     static final AttributeKey<String> ACTIVITY_NAME_KEY = AttributeKey.stringKey("activityName");
+    static final AttributeKey<String> FRAGMENT_NAME_KEY = AttributeKey.stringKey("activityName");
 
-    private final Activity activity;
     private final AtomicBoolean appStartupComplete;
     private final Tracer tracer;
+    private final String trackableName;
+    private final AttributeKey<String> nameKey;
 
     private Span span;
     private Scope scope;
 
-    ActivityTracer(Activity activity, AtomicBoolean appStartupComplete, Tracer tracer) {
-        this.activity = activity;
+    NamedTrackableTracer(Activity activity, AtomicBoolean appStartupComplete, Tracer tracer) {
         this.appStartupComplete = appStartupComplete;
         this.tracer = tracer;
+        this.trackableName = activity.getClass().getSimpleName();
+        this.nameKey = ACTIVITY_NAME_KEY;
+    }
+
+    NamedTrackableTracer(Fragment activity, Tracer tracer) {
+        this.appStartupComplete = new AtomicBoolean(true);
+        this.tracer = tracer;
+        this.trackableName = activity.getClass().getSimpleName();
+        this.nameKey = FRAGMENT_NAME_KEY;
     }
 
     @Override
-    public ActivityTracer startSpanIfNoneInProgress(String action) {
+    public TrackableTracer startSpanIfNoneInProgress(String action) {
         if (span != null) {
             return this;
         }
-        startSpan(activity.getClass().getSimpleName() + " " + action);
+        startSpan(trackableName + " " + action);
         return this;
     }
 
     @Override
-    public ActivityTracer startActivityCreation() {
+    public TrackableTracer startTrackableCreation() {
         String spanName;
         //If the application has never loaded an activity, we name this span specially to show that
         //it's the application starting up. Otherwise, use the activity class name as the base of the span name.
         if (!appStartupComplete.get()) {
             spanName = "App Startup";
         } else {
-            spanName = activity.getClass().getSimpleName() + " Created";
+            spanName = trackableName + " Created";
         }
         startSpan(spanName);
         return this;
@@ -50,7 +62,7 @@ class ActivityTracer implements TrackableTracer {
 
     private void startSpan(String spanName) {
         span = tracer.spanBuilder(spanName)
-                .setAttribute(ACTIVITY_NAME_KEY, activity.getClass().getSimpleName())
+                .setAttribute(nameKey, trackableName)
                 .startSpan();
         scope = span.makeCurrent();
     }
@@ -74,7 +86,7 @@ class ActivityTracer implements TrackableTracer {
     }
 
     @Override
-    public ActivityTracer addEvent(String eventName) {
+    public TrackableTracer addEvent(String eventName) {
         if (span != null) {
             span.addEvent(eventName);
         }

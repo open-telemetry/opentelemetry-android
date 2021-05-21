@@ -5,11 +5,11 @@ import android.os.Bundle;
 
 import static org.mockito.Mockito.mock;
 
-class CallbackTestHarness {
+class ActivityCallbackTestHarness {
 
     private final RumLifecycleCallbacks callbacks;
 
-    CallbackTestHarness(RumLifecycleCallbacks callbacks) {
+    ActivityCallbackTestHarness(RumLifecycleCallbacks callbacks) {
         this.callbacks = callbacks;
     }
 

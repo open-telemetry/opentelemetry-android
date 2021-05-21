@@ -32,7 +32,7 @@ public class RumLifecycleCallbacksTest {
     @Test
     public void appStartup() {
         RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer);
-        CallbackTestHarness testHarness = new CallbackTestHarness(rumLifecycleCallbacks);
+        ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         testHarness.runAppStartupLifecycle(mock(Activity.class));
 
@@ -42,7 +42,7 @@ public class RumLifecycleCallbacksTest {
         SpanData spanData = spans.get(0);
 
         assertEquals("App Startup", spanData.getName());
-        assertNotNull(spanData.getAttributes().get(ActivityTracer.ACTIVITY_NAME_KEY));
+        assertNotNull(spanData.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
 
         List<EventData> events = spanData.getEvents();
         assertEquals(9, events.size());
@@ -63,7 +63,7 @@ public class RumLifecycleCallbacksTest {
     @Test
     public void activityCreation() {
         RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer);
-        CallbackTestHarness testHarness = new CallbackTestHarness(rumLifecycleCallbacks);
+        ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(rumLifecycleCallbacks);
         startupAppAndClearSpans(testHarness);
 
         Activity activity = mock(Activity.class);
@@ -74,7 +74,7 @@ public class RumLifecycleCallbacksTest {
         SpanData spanData = spans.get(0);
 
         assertEquals(activity.getClass().getSimpleName() + " Created", spanData.getName());
-        assertNotNull(spanData.getAttributes().get(ActivityTracer.ACTIVITY_NAME_KEY));
+        assertNotNull(spanData.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
 
         List<EventData> events = spanData.getEvents();
         assertEquals(9, events.size());
@@ -92,7 +92,7 @@ public class RumLifecycleCallbacksTest {
         checkEventExists(events, "activityPostResumed");
     }
 
-    private void startupAppAndClearSpans(CallbackTestHarness testHarness) {
+    private void startupAppAndClearSpans(ActivityCallbackTestHarness testHarness) {
         //make sure that the initial state has been set up & the application is started.
         testHarness.runAppStartupLifecycle(mock(Activity.class));
         otelTesting.clearSpans();
@@ -101,7 +101,7 @@ public class RumLifecycleCallbacksTest {
     @Test
     public void activityRestart() {
         RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer);
-        CallbackTestHarness testHarness = new CallbackTestHarness(rumLifecycleCallbacks);
+        ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
 
@@ -114,7 +114,7 @@ public class RumLifecycleCallbacksTest {
         SpanData spanData = spans.get(0);
 
         assertEquals(activity.getClass().getSimpleName() + " Restarted", spanData.getName());
-        assertNotNull(spanData.getAttributes().get(ActivityTracer.ACTIVITY_NAME_KEY));
+        assertNotNull(spanData.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
 
         List<EventData> events = spanData.getEvents();
         assertEquals(6, events.size());
@@ -131,7 +131,7 @@ public class RumLifecycleCallbacksTest {
     @Test
     public void activityResumed() {
         RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer);
-        CallbackTestHarness testHarness = new CallbackTestHarness(rumLifecycleCallbacks);
+        ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
 
@@ -144,7 +144,7 @@ public class RumLifecycleCallbacksTest {
         SpanData spanData = spans.get(0);
 
         assertEquals(activity.getClass().getSimpleName() + " Resumed", spanData.getName());
-        assertNotNull(spanData.getAttributes().get(ActivityTracer.ACTIVITY_NAME_KEY));
+        assertNotNull(spanData.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
 
         List<EventData> events = spanData.getEvents();
         assertEquals(3, events.size());
@@ -157,7 +157,7 @@ public class RumLifecycleCallbacksTest {
     @Test
     public void activityDestroyedFromStopped() {
         RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer);
-        CallbackTestHarness testHarness = new CallbackTestHarness(rumLifecycleCallbacks);
+        ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
 
@@ -170,7 +170,7 @@ public class RumLifecycleCallbacksTest {
         SpanData spanData = spans.get(0);
 
         assertEquals(activity.getClass().getSimpleName() + " Destroyed", spanData.getName());
-        assertNotNull(spanData.getAttributes().get(ActivityTracer.ACTIVITY_NAME_KEY));
+        assertNotNull(spanData.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
 
         List<EventData> events = spanData.getEvents();
         assertEquals(3, events.size());
@@ -183,7 +183,7 @@ public class RumLifecycleCallbacksTest {
     @Test
     public void activityDestroyedFromPaused() {
         RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer);
-        CallbackTestHarness testHarness = new CallbackTestHarness(rumLifecycleCallbacks);
+        ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
 
@@ -196,7 +196,7 @@ public class RumLifecycleCallbacksTest {
         SpanData stoppedSpan = spans.get(0);
 
         assertEquals(activity.getClass().getSimpleName() + " Stopped", stoppedSpan.getName());
-        assertNotNull(stoppedSpan.getAttributes().get(ActivityTracer.ACTIVITY_NAME_KEY));
+        assertNotNull(stoppedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
 
         List<EventData> events = stoppedSpan.getEvents();
         assertEquals(3, events.size());
@@ -208,7 +208,7 @@ public class RumLifecycleCallbacksTest {
         SpanData destroyedSpan = spans.get(1);
 
         assertEquals(activity.getClass().getSimpleName() + " Destroyed", destroyedSpan.getName());
-        assertNotNull(destroyedSpan.getAttributes().get(ActivityTracer.ACTIVITY_NAME_KEY));
+        assertNotNull(destroyedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
 
         events = destroyedSpan.getEvents();
         assertEquals(3, events.size());
@@ -221,7 +221,7 @@ public class RumLifecycleCallbacksTest {
     @Test
     public void activityStoppedFromRunning() {
         RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer);
-        CallbackTestHarness testHarness = new CallbackTestHarness(rumLifecycleCallbacks);
+        ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
 
@@ -234,7 +234,7 @@ public class RumLifecycleCallbacksTest {
         SpanData stoppedSpan = spans.get(0);
 
         assertEquals(activity.getClass().getSimpleName() + " Paused", stoppedSpan.getName());
-        assertNotNull(stoppedSpan.getAttributes().get(ActivityTracer.ACTIVITY_NAME_KEY));
+        assertNotNull(stoppedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
 
         List<EventData> events = stoppedSpan.getEvents();
         assertEquals(3, events.size());
@@ -246,7 +246,7 @@ public class RumLifecycleCallbacksTest {
         SpanData destroyedSpan = spans.get(1);
 
         assertEquals(activity.getClass().getSimpleName() + " Stopped", destroyedSpan.getName());
-        assertNotNull(destroyedSpan.getAttributes().get(ActivityTracer.ACTIVITY_NAME_KEY));
+        assertNotNull(destroyedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
 
         events = destroyedSpan.getEvents();
         assertEquals(3, events.size());
