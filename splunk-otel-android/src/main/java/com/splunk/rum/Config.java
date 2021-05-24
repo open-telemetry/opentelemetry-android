@@ -109,7 +109,7 @@ public class Config {
          *
          * @return this
          */
-        public Builder enableDebug(boolean enable) {
+        public Builder debugEnabled(boolean enable) {
             this.debugEnabled = enable;
             return this;
         }
@@ -119,7 +119,7 @@ public class Config {
          *
          * @return this
          */
-        public Builder enableCrashReporting(boolean enable) {
+        public Builder crashReportingEnabled(boolean enable) {
             this.crashReportingEnabled = enable;
             return this;
         }

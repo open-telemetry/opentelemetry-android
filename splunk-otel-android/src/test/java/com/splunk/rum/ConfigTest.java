@@ -23,8 +23,8 @@ public class ConfigTest {
         Config config = Config.builder().applicationName("appName")
                 .rumAuthToken("authToken")
                 .beaconUrl("http://beacon")
-                .enableDebug(true)
-                .enableCrashReporting(false)
+                .debugEnabled(true)
+                .crashReportingEnabled(false)
                 .build();
         assertNotNull(config);
         assertEquals("appName", config.getApplicationName());

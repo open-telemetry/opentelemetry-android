@@ -16,7 +16,7 @@ public class SampleApplication extends Application {
                 .beaconUrl(getResources().getString(R.string.rum_beacon_url))
                 .rumAuthToken(getResources().getString(R.string.rum_auth_token))
                 .applicationName("Android Demo App")
-                .enableDebug(true)
+                .debugEnabled(true)
                 .build();
         SplunkRum.initialize(config, this);
     }
