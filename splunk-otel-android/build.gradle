@@ -50,6 +50,9 @@ dependencies {
     implementation platform("io.opentelemetry:opentelemetry-bom-alpha:1.2.0-alpha")
     implementation 'io.opentelemetry:opentelemetry-semconv'
 
+    api 'io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0:1.2.0-alpha'
+    api 'com.squareup.okhttp3:okhttp:4.9.1'
+
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:3.10.0'
     testImplementation 'io.opentelemetry:opentelemetry-sdk-testing'

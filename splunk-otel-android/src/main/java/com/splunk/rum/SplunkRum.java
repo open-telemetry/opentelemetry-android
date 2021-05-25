@@ -6,7 +6,9 @@ import android.util.Log;
 import java.util.concurrent.TimeUnit;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTracing;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import okhttp3.Interceptor;
 
 /**
  * Entrypoint for Splunk's Android RUM (Real User Monitoring) support.
@@ -76,6 +78,10 @@ public class SplunkRum {
     //for testing only
     static void resetSingletonForTest() {
         INSTANCE = null;
+    }
+
+    public Interceptor createOkHttpRumInterceptor() {
+        return new OkHttpRumInterceptor(OkHttpTracing.create(openTelemetrySdk).newInterceptor(), new ServerTimingHeaderParser());
     }
 
     //(currently) for testing only

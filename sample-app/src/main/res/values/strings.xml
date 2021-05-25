@@ -13,4 +13,5 @@
     <string name="email_question">It looks like you\'re trying to send an email. Can I help with that?</string>
     <string name="cancel">NO!</string>
     <string name="clippy">clippy</string>
+    <string name="http_me_up">HTTP me up!</string>
 </resources>
