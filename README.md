@@ -38,6 +38,20 @@
 
 TODO
 
+## Getting Started 
+
+TODO
+
+## Sample Application
+
+In order to build and run the sample application, you will need to configure a `local.properties` file
+in the root of the project. It will need to have two properties configured:
+
+```properties
+rum.auth.token=<a valid Splunk RUM auth token>
+rum.beacon.url=https://rum-ingest.<realm>.signalfx.com/v1/rum
+```
+
 # License and versioning
 
 The Splunk Android RUM Instrumentation is released under the terms of the Apache Software License version 2.0. See
