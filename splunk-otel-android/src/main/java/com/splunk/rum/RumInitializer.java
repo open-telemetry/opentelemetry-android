@@ -76,9 +76,9 @@ class RumInitializer {
     }
 
     private static void recordInitializationSpan(long startTimeNanos, List<InitializationEvent> initializationEvents, Tracer tracer) {
-        Span span = tracer.spanBuilder("RUM initialization")
+        Span span = tracer.spanBuilder("SplunkRum.initialize")
                 .setStartTimestamp(startTimeNanos, TimeUnit.NANOSECONDS)
-                .setAttribute(SplunkRum.COMPONENT_KEY, "app")
+                .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_APPSTART)
                 .startSpan();
         for (RumInitializer.InitializationEvent initializationEvent : initializationEvents) {
             span.addEvent(initializationEvent.name, initializationEvent.time, TimeUnit.NANOSECONDS);

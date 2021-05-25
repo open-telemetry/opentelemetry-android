@@ -13,6 +13,10 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
  */
 public class SplunkRum {
     static final AttributeKey<String> COMPONENT_KEY = AttributeKey.stringKey("component");
+    static final AttributeKey<String> SCREEN_NAME_KEY = AttributeKey.stringKey("screen.name");
+    static final String COMPONENT_APPSTART = "appstart";
+    static final String COMPONENT_ERROR = "error";
+    static final String COMPONENT_UI = "ui";
 
     private static final String LOG_TAG = "SplunkRum";
 

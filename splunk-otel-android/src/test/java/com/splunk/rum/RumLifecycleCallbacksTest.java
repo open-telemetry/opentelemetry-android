@@ -41,9 +41,10 @@ public class RumLifecycleCallbacksTest {
 
         SpanData span = spans.get(0);
 
-        assertEquals("App Startup", span.getName());
+        assertEquals("AppStart", span.getName());
         assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
-        assertEquals("ui", span.getAttributes().get(SplunkRum.COMPONENT_KEY));
+        assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
+        assertEquals(SplunkRum.COMPONENT_UI, span.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
         List<EventData> events = span.getEvents();
         assertEquals(9, events.size());
@@ -76,7 +77,8 @@ public class RumLifecycleCallbacksTest {
 
         assertEquals(activity.getClass().getSimpleName() + " Created", span.getName());
         assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
-        assertEquals("ui", span.getAttributes().get(SplunkRum.COMPONENT_KEY));
+        assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
+        assertEquals(SplunkRum.COMPONENT_UI, span.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
         List<EventData> events = span.getEvents();
         assertEquals(9, events.size());
@@ -117,7 +119,8 @@ public class RumLifecycleCallbacksTest {
 
         assertEquals(activity.getClass().getSimpleName() + " Restarted", span.getName());
         assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
-        assertEquals("ui", span.getAttributes().get(SplunkRum.COMPONENT_KEY));
+        assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
+        assertEquals(SplunkRum.COMPONENT_UI, span.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
         List<EventData> events = span.getEvents();
         assertEquals(6, events.size());
@@ -148,7 +151,8 @@ public class RumLifecycleCallbacksTest {
 
         assertEquals(activity.getClass().getSimpleName() + " Resumed", span.getName());
         assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
-        assertEquals("ui", span.getAttributes().get(SplunkRum.COMPONENT_KEY));
+        assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
+        assertEquals(SplunkRum.COMPONENT_UI, span.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
         List<EventData> events = span.getEvents();
         assertEquals(3, events.size());
@@ -175,7 +179,8 @@ public class RumLifecycleCallbacksTest {
 
         assertEquals(activity.getClass().getSimpleName() + " Destroyed", span.getName());
         assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
-        assertEquals("ui", span.getAttributes().get(SplunkRum.COMPONENT_KEY));
+        assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
+        assertEquals(SplunkRum.COMPONENT_UI, span.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
         List<EventData> events = span.getEvents();
         assertEquals(3, events.size());
@@ -202,7 +207,8 @@ public class RumLifecycleCallbacksTest {
 
         assertEquals(activity.getClass().getSimpleName() + " Stopped", stoppedSpan.getName());
         assertEquals(activity.getClass().getSimpleName(), stoppedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
-        assertEquals("ui", stoppedSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
+        assertEquals(activity.getClass().getSimpleName(), stoppedSpan.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
+        assertEquals(SplunkRum.COMPONENT_UI, stoppedSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
         List<EventData> events = stoppedSpan.getEvents();
         assertEquals(3, events.size());
@@ -215,6 +221,7 @@ public class RumLifecycleCallbacksTest {
 
         assertEquals(activity.getClass().getSimpleName() + " Destroyed", destroyedSpan.getName());
         assertEquals(activity.getClass().getSimpleName(), destroyedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals(activity.getClass().getSimpleName(), destroyedSpan.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
         assertEquals("ui", destroyedSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
         events = destroyedSpan.getEvents();
@@ -242,7 +249,8 @@ public class RumLifecycleCallbacksTest {
 
         assertEquals(activity.getClass().getSimpleName() + " Paused", stoppedSpan.getName());
         assertEquals(activity.getClass().getSimpleName(), stoppedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
-        assertEquals("ui", stoppedSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
+        assertEquals(activity.getClass().getSimpleName(), stoppedSpan.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
+        assertEquals(SplunkRum.COMPONENT_UI, stoppedSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
         List<EventData> events = stoppedSpan.getEvents();
         assertEquals(3, events.size());
@@ -255,6 +263,7 @@ public class RumLifecycleCallbacksTest {
 
         assertEquals(activity.getClass().getSimpleName() + " Stopped", destroyedSpan.getName());
         assertEquals(activity.getClass().getSimpleName(), destroyedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals(activity.getClass().getSimpleName(), destroyedSpan.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
         assertEquals("ui", destroyedSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
         events = destroyedSpan.getEvents();

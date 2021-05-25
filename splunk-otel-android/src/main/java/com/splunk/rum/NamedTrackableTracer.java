@@ -13,7 +13,7 @@ import io.opentelemetry.context.Scope;
 
 class NamedTrackableTracer implements TrackableTracer {
     static final AttributeKey<String> ACTIVITY_NAME_KEY = AttributeKey.stringKey("activityName");
-    static final AttributeKey<String> FRAGMENT_NAME_KEY = AttributeKey.stringKey("activityName");
+    static final AttributeKey<String> FRAGMENT_NAME_KEY = AttributeKey.stringKey("fragmentName");
 
     private final AtomicBoolean appStartupComplete;
     private final Tracer tracer;
@@ -52,7 +52,7 @@ class NamedTrackableTracer implements TrackableTracer {
         //If the application has never loaded an activity, we name this span specially to show that
         //it's the application starting up. Otherwise, use the activity class name as the base of the span name.
         if (!appStartupComplete.get()) {
-            spanName = "App Startup";
+            spanName = "AppStart";
         } else {
             spanName = trackableName + " Created";
         }
@@ -63,7 +63,8 @@ class NamedTrackableTracer implements TrackableTracer {
     private void startSpan(String spanName) {
         span = tracer.spanBuilder(spanName)
                 .setAttribute(nameKey, trackableName)
-                .setAttribute(SplunkRum.COMPONENT_KEY, "ui")
+                .setAttribute(SplunkRum.SCREEN_NAME_KEY, trackableName)
+                .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_UI)
                 .startSpan();
         scope = span.makeCurrent();
     }
