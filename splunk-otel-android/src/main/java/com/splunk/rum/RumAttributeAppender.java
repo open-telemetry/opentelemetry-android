@@ -22,11 +22,13 @@ class RumAttributeAppender implements SpanProcessor {
     private final Config config;
     private final SessionId sessionId;
     private final String rumVersion;
+    private final VisibleScreenTracker visibleScreenTracker;
 
-    RumAttributeAppender(Config config, SessionId sessionId, String rumVersion) {
+    RumAttributeAppender(Config config, SessionId sessionId, String rumVersion, VisibleScreenTracker visibleScreenTracker) {
         this.config = config;
         this.sessionId = sessionId;
         this.rumVersion = rumVersion;
+        this.visibleScreenTracker = visibleScreenTracker;
     }
 
     @Override
@@ -39,6 +41,13 @@ class RumAttributeAppender implements SpanProcessor {
         span.setAttribute(OS_VERSION_KEY, Build.VERSION.RELEASE);
         span.setAttribute(RUM_VERSION_KEY, rumVersion);
         span.setAttribute(OS_TYPE, "Android");
+
+        String currentScreen = visibleScreenTracker.getCurrentlyVisibleScreen();
+        span.setAttribute(SplunkRum.SCREEN_NAME_KEY, currentScreen);
+        String previouslyVisibleScreen = visibleScreenTracker.getPreviouslyVisibleScreen();
+        if (previouslyVisibleScreen != null) {
+            span.setAttribute(SplunkRum.LAST_SCREEN_NAME_KEY, previouslyVisibleScreen);
+        }
     }
 
     @Override

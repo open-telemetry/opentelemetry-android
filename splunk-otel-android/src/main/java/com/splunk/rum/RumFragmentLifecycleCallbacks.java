@@ -20,9 +20,11 @@ class RumFragmentLifecycleCallbacks extends FragmentManager.FragmentLifecycleCal
     private final Map<String, NamedTrackableTracer> tracersByFragmentClassName = new HashMap<>();
 
     private final Tracer tracer;
+    private final VisibleScreenTracker visibleScreenTracker;
 
-    RumFragmentLifecycleCallbacks(Tracer tracer) {
+    RumFragmentLifecycleCallbacks(Tracer tracer, VisibleScreenTracker visibleScreenTracker) {
         this.tracer = tracer;
+        this.visibleScreenTracker = visibleScreenTracker;
     }
 
     @Override
@@ -68,12 +70,17 @@ class RumFragmentLifecycleCallbacks extends FragmentManager.FragmentLifecycleCal
     @Override
     public void onFragmentResumed(@NonNull FragmentManager fm, @NonNull Fragment f) {
         super.onFragmentResumed(fm, f);
-        getFragmentTracer(f).addEvent("fragmentResumed").endActiveSpan();
+        getOrCreateTracer(f)
+                .startSpanIfNoneInProgress("Resumed")
+                .addEvent("fragmentResumed")
+                .endActiveSpan();
+        visibleScreenTracker.fragmentResumed(f);
     }
 
     @Override
     public void onFragmentPaused(@NonNull FragmentManager fm, @NonNull Fragment f) {
         super.onFragmentPaused(fm, f);
+        visibleScreenTracker.fragmentPaused(f);
         getOrCreateTracer(f).startSpanIfNoneInProgress("Paused").addEvent("fragmentPaused");
     }
 

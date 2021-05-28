@@ -34,6 +34,7 @@ class RumInitializer {
 
     SplunkRum initialize() {
         String rumVersion = detectRumVersion();
+        VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
 
         Clock clock = SystemClock.getInstance();
         long startTimeNanos = clock.now();
@@ -45,14 +46,14 @@ class RumInitializer {
         SessionId sessionId = new SessionId();
         initializationEvents.add(new RumInitializer.InitializationEvent("sessionIdInitialized", clock.now()));
 
-        SdkTracerProvider sdkTracerProvider = buildTracerProvider(clock, zipkinExporter, sessionId, rumVersion);
+        SdkTracerProvider sdkTracerProvider = buildTracerProvider(clock, zipkinExporter, sessionId, rumVersion, visibleScreenTracker);
         initializationEvents.add(new RumInitializer.InitializationEvent("tracerProviderInitialized", clock.now()));
 
         OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider).build();
         initializationEvents.add(new RumInitializer.InitializationEvent("openTelemetrySdkInitialized", clock.now()));
 
         Tracer tracer = openTelemetrySdk.getTracer("SplunkRum");
-        application.registerActivityLifecycleCallbacks(new RumLifecycleCallbacks(tracer));
+        application.registerActivityLifecycleCallbacks(new RumLifecycleCallbacks(tracer, visibleScreenTracker));
         initializationEvents.add(new RumInitializer.InitializationEvent("activityLifecycleCallbacksInitialized", clock.now()));
 
         if (config.isCrashReportingEnabled()) {
@@ -86,11 +87,11 @@ class RumInitializer {
         span.end();
     }
 
-    private SdkTracerProvider buildTracerProvider(Clock clock, SpanExporter zipkinExporter, SessionId sessionId, String rumVersion) {
+    private SdkTracerProvider buildTracerProvider(Clock clock, SpanExporter zipkinExporter, SessionId sessionId, String rumVersion, VisibleScreenTracker visibleScreenTracker) {
         SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder()
                 .setClock(clock)
                 .addSpanProcessor(BatchSpanProcessor.builder(zipkinExporter).build())
-                .addSpanProcessor(new RumAttributeAppender(config, sessionId, rumVersion))
+                .addSpanProcessor(new RumAttributeAppender(config, sessionId, rumVersion, visibleScreenTracker))
                 .setResource(Resource.getDefault().toBuilder().put("service.name", config.getApplicationName()).build());
         if (config.isDebugEnabled()) {
             tracerProviderBuilder.addSpanProcessor(SimpleSpanProcessor.create(new LoggingSpanExporter()));

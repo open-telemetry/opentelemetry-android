@@ -38,6 +38,11 @@ class FragmentCallbackTestHarness {
         callbacks.onFragmentResumed(fragmentManager, fragment);
     }
 
+    void runFragmentResumedLifecycle(Fragment fragment) {
+        FragmentManager fragmentManager = mock(FragmentManager.class);
+        callbacks.onFragmentResumed(fragmentManager, fragment);
+    }
+
     void runFragmentPausedLifecycle(Fragment fragment) {
         FragmentManager fragmentManager = mock(FragmentManager.class);
         callbacks.onFragmentPaused(fragmentManager, fragment);

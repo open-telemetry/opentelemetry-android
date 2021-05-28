@@ -63,9 +63,10 @@ class NamedTrackableTracer implements TrackableTracer {
     private void startSpan(String spanName) {
         span = tracer.spanBuilder(spanName)
                 .setAttribute(nameKey, trackableName)
-                .setAttribute(SplunkRum.SCREEN_NAME_KEY, trackableName)
                 .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_UI)
                 .startSpan();
+        //do this after the span is started, so we can override the default screen.name set by the RumAttributeAppender.
+        span.setAttribute(SplunkRum.SCREEN_NAME_KEY, trackableName);
         scope = span.makeCurrent();
     }
 

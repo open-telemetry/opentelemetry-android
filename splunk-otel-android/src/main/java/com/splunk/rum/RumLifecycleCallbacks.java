@@ -7,6 +7,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,9 +20,11 @@ class RumLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
     private final Map<String, NamedTrackableTracer> tracersByActivityClassName = new HashMap<>();
     private final AtomicBoolean appStartupComplete = new AtomicBoolean();
     private final Tracer tracer;
+    private final VisibleScreenTracker visibleScreenTracker;
 
-    RumLifecycleCallbacks(Tracer tracer) {
+    RumLifecycleCallbacks(Tracer tracer, VisibleScreenTracker visibleScreenTracker) {
         this.tracer = tracer;
+        this.visibleScreenTracker = visibleScreenTracker;
     }
 
     @Override
@@ -31,8 +34,8 @@ class RumLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
                 .addEvent("activityPreCreated");
 
         if (activity instanceof FragmentActivity) {
-            ((FragmentActivity) activity).getSupportFragmentManager()
-                    .registerFragmentLifecycleCallbacks(new RumFragmentLifecycleCallbacks(tracer), true);
+            FragmentManager fragmentManager = ((FragmentActivity) activity).getSupportFragmentManager();
+            fragmentManager.registerFragmentLifecycleCallbacks(new RumFragmentLifecycleCallbacks(tracer, visibleScreenTracker), true);
         }
     }
 
@@ -80,6 +83,7 @@ class RumLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
         getActivityTracer(activity)
                 .addEvent("activityPostResumed")
                 .endSpanForActivityResumed();
+        visibleScreenTracker.activityResumed(activity);
     }
 
     @Override
@@ -87,6 +91,7 @@ class RumLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
         getOrCreateTracer(activity)
                 .startSpanIfNoneInProgress("Paused")
                 .addEvent("activityPrePaused");
+        visibleScreenTracker.activityPaused(activity);
     }
 
     @Override
