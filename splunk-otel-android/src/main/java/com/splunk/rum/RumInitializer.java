@@ -1,6 +1,7 @@
 package com.splunk.rum;
 
 import android.app.Application;
+import android.os.Build;
 
 import com.splunk.android.rum.R;
 
@@ -53,7 +54,11 @@ class RumInitializer {
         initializationEvents.add(new RumInitializer.InitializationEvent("openTelemetrySdkInitialized", clock.now()));
 
         Tracer tracer = openTelemetrySdk.getTracer("SplunkRum");
-        application.registerActivityLifecycleCallbacks(new RumLifecycleCallbacks(tracer, visibleScreenTracker));
+        if (Build.VERSION.SDK_INT < 29) {
+            application.registerActivityLifecycleCallbacks(new Pre29ActivityCallbacks(tracer, visibleScreenTracker));
+        } else {
+            application.registerActivityLifecycleCallbacks(new RumLifecycleCallbacks(tracer, visibleScreenTracker));
+        }
         initializationEvents.add(new RumInitializer.InitializationEvent("activityLifecycleCallbacksInitialized", clock.now()));
 
         if (config.isCrashReportingEnabled()) {
@@ -114,4 +119,5 @@ class RumInitializer {
             this.time = time;
         }
     }
+
 }

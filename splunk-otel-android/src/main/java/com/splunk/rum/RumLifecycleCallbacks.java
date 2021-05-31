@@ -123,14 +123,17 @@ class RumLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityPreSaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
+        //todo: add event
     }
 
     @Override
     public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
+        //todo: add event
     }
 
     @Override
     public void onActivityPostSaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
+        //todo: add event
     }
 
     @Override
