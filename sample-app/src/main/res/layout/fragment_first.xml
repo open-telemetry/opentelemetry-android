@@ -55,6 +55,20 @@
                 android:layout_marginTop="8dp"
                 android:text="@string/http_me_up" />
 
+            <Button
+                android:id="@+id/http_me_not_found"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/http_not_found" />
+
+            <Button
+                android:id="@+id/http_me_bad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/http_me_bad" />
+
             <TextView
                 android:id="@+id/http_result"
                 android:layout_width="50dp"

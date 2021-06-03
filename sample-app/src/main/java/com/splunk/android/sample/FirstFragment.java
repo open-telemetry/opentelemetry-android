@@ -27,7 +27,6 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import io.opentelemetry.api.trace.Span;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -67,22 +66,19 @@ public class FirstFragment extends Fragment {
             throw new IllegalStateException("Crashing due to a bug!");
         });
 
-        binding.httpMe.setOnClickListener(v -> {
-            backgrounder.submit(() -> {
-                Call call = okHttpClient.newCall(new Request.Builder().url("https://ssidhu.o11ystore.com/").get().build());
-                try (Response r = call.execute()) {
-                    int responseCode = r.code();
-                    httpResponse.postValue("" + responseCode);
-                } catch (IOException e) {
-                    //todo SplunkRum.noticeError(...)
-                    Span.current().setAttribute("error", true);
-                    Span.current().setAttribute("exception.kind", e.getClass().getSimpleName());
+        binding.httpMe.setOnClickListener(v -> backgrounder.submit(() -> makeCall("https://ssidhu.o11ystore.com/")));
+        binding.httpMeBad.setOnClickListener(v -> backgrounder.submit(() -> makeCall("https://asdlfkjasd.asdfkjasdf.ifi")));
+        binding.httpMeNotFound.setOnClickListener(v -> backgrounder.submit(() -> makeCall("https://ssidhu.o11ystore.com/foobarbaz")));
+    }
 
-                    e.printStackTrace();
-                    httpResponse.postValue("error");
-                }
-            });
-        });
+    private void makeCall(String url) {
+        Call call = okHttpClient.newCall(new Request.Builder().url(url).get().build());
+        try (Response r = call.execute()) {
+            int responseCode = r.code();
+            httpResponse.postValue("" + responseCode);
+        } catch (IOException e) {
+            httpResponse.postValue("error");
+        }
     }
 
     public LiveData<String> getHttpResponse() {

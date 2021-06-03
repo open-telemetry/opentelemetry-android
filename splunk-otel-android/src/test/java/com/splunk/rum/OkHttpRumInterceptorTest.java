@@ -14,6 +14,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import okhttp3.Interceptor;
 import okhttp3.Protocol;
 import okhttp3.Request;
@@ -21,6 +22,7 @@ import okhttp3.Response;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -60,6 +62,31 @@ public class OkHttpRumInterceptorTest {
         assertEquals("http", spanData.getAttributes().get(SplunkRum.COMPONENT_KEY));
         assertEquals("9499195c502eb217c448a68bfe0f967c", spanData.getAttributes().get(OkHttpRumInterceptor.LINK_TRACE_ID_KEY));
         assertEquals("fe16eca542cd5d86", spanData.getAttributes().get(OkHttpRumInterceptor.LINK_SPAN_ID_KEY));
+    }
+
+    @Test
+    public void spanDecoration_error() throws IOException {
+        ServerTimingHeaderParser headerParser = mock(ServerTimingHeaderParser.class);
+        when(headerParser.parse("headerValue")).thenReturn(new String[]{"9499195c502eb217c448a68bfe0f967c", "fe16eca542cd5d86"});
+
+        Interceptor.Chain fakeChain = mock(Interceptor.Chain.class);
+        Request fakeRequest = mock(Request.class);
+        when(fakeChain.request()).thenReturn(fakeRequest);
+        when(fakeChain.proceed(fakeRequest)).thenThrow(new IOException("failed to make a call"));
+
+        OkHttpRumInterceptor interceptor = new OkHttpRumInterceptor(new TestTracingInterceptor(tracer), headerParser);
+        assertThrows(IOException.class, () -> interceptor.intercept(fakeChain));
+
+        List<SpanData> spans = otelTesting.getSpans();
+        assertEquals(1, spans.size());
+        SpanData spanData = spans.get(0);
+        assertEquals("http", spanData.getAttributes().get(SplunkRum.COMPONENT_KEY));
+        assertEquals("IOException", spanData.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE));
+        assertEquals("failed to make a call", spanData.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE));
+
+        //temporary attributes until the RUM UI/backend can be brought up to date with otel conventions.
+        assertEquals("IOException", spanData.getAttributes().get(OkHttpRumInterceptor.ERROR_TYPE_KEY));
+        assertEquals("failed to make a call", spanData.getAttributes().get(OkHttpRumInterceptor.ERROR_MESSAGE_KEY));
     }
 
     @Test
