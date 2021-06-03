@@ -1,8 +1,24 @@
+/*
+ * Copyright Splunk Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.splunk.rum;
 
 /**
  * Configuration class for the Splunk Android RUM (Real User Monitoring) library.
- *
+ * <p>
  * Both the beaconUrl and the rumAuthToken are mandatory configuration settings. Trying
  * to build a Config instance without both of these items specified will result in an exception being thrown.
  */
@@ -87,6 +103,7 @@ public class Config {
 
         /**
          * Assign the "beacon" URL to be used by the RUM library.
+         *
          * @return this
          */
         public Builder beaconUrl(String beaconUrl) {
@@ -96,6 +113,7 @@ public class Config {
 
         /**
          * Assign the RUM auth token to be used by the RUM library.
+         *
          * @return this
          */
         public Builder rumAuthToken(String rumAuthToken) {
