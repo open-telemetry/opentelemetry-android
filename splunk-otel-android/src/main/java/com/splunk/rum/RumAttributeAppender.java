@@ -57,6 +57,7 @@ class RumAttributeAppender implements SpanProcessor {
         span.setAttribute(OS_VERSION_KEY, Build.VERSION.RELEASE);
         span.setAttribute(RUM_VERSION_KEY, rumVersion);
         span.setAttribute(OS_TYPE, "Android");
+        span.setAllAttributes(config.getGlobalAttributes());
 
         String currentScreen = visibleScreenTracker.getCurrentlyVisibleScreen();
         span.setAttribute(SplunkRum.SCREEN_NAME_KEY, currentScreen);

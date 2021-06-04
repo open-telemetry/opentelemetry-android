@@ -19,10 +19,13 @@ package com.splunk.rum;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,7 +46,9 @@ public class RumAttributeAppenderTest {
 
     @Test
     public void interfaceMethods() {
-        RumAttributeAppender rumAttributeAppender = new RumAttributeAppender(mock(Config.class), mock(SessionId.class), "rumVersion", visibleScreenTracker);
+        Config config = mock(Config.class);
+        when(config.getGlobalAttributes()).thenReturn(Attributes.empty());
+        RumAttributeAppender rumAttributeAppender = new RumAttributeAppender(config, mock(SessionId.class), "rumVersion", visibleScreenTracker);
 
         assertTrue(rumAttributeAppender.isStartRequired());
         assertFalse(rumAttributeAppender.isEndRequired());
@@ -51,8 +56,14 @@ public class RumAttributeAppenderTest {
 
     @Test
     public void appendAttributesOnStart() {
+        Attributes globalAttributes = Attributes.of(
+                stringKey("cheese"), "Camembert",
+                longKey("size"), 5L
+        );
         Config config = mock(Config.class);
         when(config.getApplicationName()).thenReturn("appName");
+        when(config.getGlobalAttributes()).thenReturn(globalAttributes);
+
         SessionId sessionId = mock(SessionId.class);
         when(sessionId.getSessionId()).thenReturn("rumSessionId");
         when(visibleScreenTracker.getCurrentlyVisibleScreen()).thenReturn("ScreenOne");
@@ -72,12 +83,14 @@ public class RumAttributeAppenderTest {
         verify(span).setAttribute(eq(RumAttributeAppender.DEVICE_MODEL_KEY), any());
         verify(span).setAttribute(eq(RumAttributeAppender.DEVICE_MODEL_NAME_KEY), any());
         verify(span).setAttribute(eq(RumAttributeAppender.OS_VERSION_KEY), any());
+        verify(span).setAllAttributes(globalAttributes);
     }
 
     @Test
     public void appendAttributes_noCurrentScreens() {
         Config config = mock(Config.class);
         when(config.getApplicationName()).thenReturn("appName");
+        when(config.getGlobalAttributes()).thenReturn(Attributes.empty());
         SessionId sessionId = mock(SessionId.class);
         when(sessionId.getSessionId()).thenReturn("rumSessionId");
         when(visibleScreenTracker.getCurrentlyVisibleScreen()).thenReturn("unknown");

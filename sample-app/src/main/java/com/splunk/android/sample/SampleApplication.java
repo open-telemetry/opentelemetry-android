@@ -21,6 +21,10 @@ import android.app.Application;
 import com.splunk.rum.Config;
 import com.splunk.rum.SplunkRum;
 
+import io.opentelemetry.api.common.Attributes;
+
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 public class SampleApplication extends Application {
 
     @Override
@@ -33,6 +37,7 @@ public class SampleApplication extends Application {
                 .rumAuthToken(getResources().getString(R.string.rum_auth_token))
                 .applicationName("Android Demo App")
                 .debugEnabled(true)
+                .globalAttributes(Attributes.of(stringKey("vendor"), "Splunk"))
                 .build();
         SplunkRum.initialize(config, this);
     }

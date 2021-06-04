@@ -18,6 +18,9 @@ package com.splunk.rum;
 
 import org.junit.Test;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -36,11 +39,13 @@ public class ConfigTest {
 
     @Test
     public void creation() {
+        Attributes globalAttributes = Attributes.of(AttributeKey.stringKey("cheese"), "Camembert");
         Config config = Config.builder().applicationName("appName")
                 .rumAuthToken("authToken")
                 .beaconUrl("http://beacon")
                 .debugEnabled(true)
                 .crashReportingEnabled(false)
+                .globalAttributes(globalAttributes)
                 .build();
         assertNotNull(config);
         assertEquals("appName", config.getApplicationName());
@@ -48,6 +53,7 @@ public class ConfigTest {
         assertEquals("http://beacon", config.getBeaconUrl());
         assertTrue(config.isDebugEnabled());
         assertFalse(config.isCrashReportingEnabled());
+        assertEquals(globalAttributes, config.getGlobalAttributes());
     }
 
     @Test
@@ -62,5 +68,16 @@ public class ConfigTest {
         assertEquals("http://beacon", config.getBeaconUrl());
         assertFalse(config.isDebugEnabled());
         assertTrue(config.isCrashReportingEnabled());
+        assertEquals(Attributes.empty(), config.getGlobalAttributes());
+    }
+
+    @Test
+    public void creation_nullHandling() {
+        Config config = Config.builder().applicationName("appName")
+                .rumAuthToken("authToken")
+                .beaconUrl("http://beacon")
+                .globalAttributes(null)
+                .build();
+        assertEquals(Attributes.empty(), config.getGlobalAttributes());
     }
 }
