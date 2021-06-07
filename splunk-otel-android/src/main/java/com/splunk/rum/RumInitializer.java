@@ -123,7 +123,7 @@ class RumInitializer {
 
     SpanExporter buildExporter() {
         String endpoint = config.getBeaconUrl() + "?auth=" + config.getRumAuthToken();
-        return ZipkinSpanExporter.builder().setEndpoint(endpoint).build();
+        return new BufferingExporter(ZipkinSpanExporter.builder().setEndpoint(endpoint).build());
     }
 
     static class InitializationEvent {
