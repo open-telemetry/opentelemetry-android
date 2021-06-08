@@ -22,9 +22,14 @@ import android.util.Log;
 import java.util.concurrent.TimeUnit;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTracing;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import okhttp3.Interceptor;
+
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 /**
  * Entrypoint for Splunk's Android RUM (Real User Monitoring) support.
@@ -36,8 +41,11 @@ public class SplunkRum {
     static final String COMPONENT_APPSTART = "appstart";
     static final String COMPONENT_ERROR = "error";
     static final String COMPONENT_UI = "ui";
+    static final AttributeKey<String> ERROR_TYPE_KEY = stringKey("error.type");
+    static final AttributeKey<String> ERROR_MESSAGE_KEY = stringKey("error.message");
 
     private static final String LOG_TAG = "SplunkRum";
+    static final String RUM_TRACER_NAME = "SplunkRum";
 
     private static SplunkRum INSTANCE;
 
@@ -92,13 +100,61 @@ public class SplunkRum {
         return INSTANCE;
     }
 
+    public Interceptor createOkHttpRumInterceptor() {
+        return new OkHttpRumInterceptor(OkHttpTracing.create(openTelemetrySdk).newInterceptor(), new ServerTimingHeaderParser());
+    }
+
+    /**
+     * Add a custom event to RUM monitoring. This can be useful to capture business events, or
+     * simply add instrumentation to your application.
+     * <p>
+     * This event will be turned into a Span and sent to the RUM ingest along with other, auto-generated
+     * spans.
+     *
+     * @param name       The name of the event.
+     * @param attributes Any {@link Attributes} to associate with the event.
+     */
+    public void addRumEvent(String name, Attributes attributes) {
+        openTelemetrySdk.getTracer(RUM_TRACER_NAME)
+                .spanBuilder(name)
+                .setAllAttributes(attributes)
+                .startSpan()
+                .end();
+    }
+
+    /**
+     * Add a custom exception to RUM monitoring. This can be useful for tracking custom error
+     * handling in your application.
+     * <p>
+     * This event will be turned into a Span and sent to the RUM ingest along with other, auto-generated
+     * spans.
+     *
+     * @param name       The name of the event.
+     * @param attributes Any {@link Attributes} to associate with the event.
+     * @param throwable  A {@link Throwable} associated with this event.
+     */
+    public void addRumException(String name, Attributes attributes, Throwable throwable) {
+        Span span = openTelemetrySdk.getTracer(RUM_TRACER_NAME)
+                .spanBuilder(name)
+                .setAllAttributes(attributes)
+                .startSpan();
+        addExceptionAttributes(span, throwable);
+        span.end();
+    }
+
+    static void addExceptionAttributes(Span span, Throwable e) {
+        //record these here since zipkin eats the event attributes that are recorded by default.
+        span.setAttribute(SemanticAttributes.EXCEPTION_TYPE, e.getClass().getSimpleName());
+        span.setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, e.getMessage());
+
+        //these attributes are here to support the RUM UI/backend until it can be updated to use otel conventions.
+        span.setAttribute(ERROR_TYPE_KEY, e.getClass().getSimpleName());
+        span.setAttribute(ERROR_MESSAGE_KEY, e.getMessage());
+    }
+
     //for testing only
     static void resetSingletonForTest() {
         INSTANCE = null;
-    }
-
-    public Interceptor createOkHttpRumInterceptor() {
-        return new OkHttpRumInterceptor(OkHttpTracing.create(openTelemetrySdk).newInterceptor(), new ServerTimingHeaderParser());
     }
 
     //(currently) for testing only

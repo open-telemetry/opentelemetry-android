@@ -21,6 +21,19 @@ import android.app.Application;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
+
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
@@ -61,5 +74,54 @@ public class SplunkRumTest {
     @Test
     public void newConfigBuilder() {
         assertNotNull(SplunkRum.newConfigBuilder());
+    }
+
+    @Test
+    public void addEvent() {
+        InMemorySpanExporter testExporter = InMemorySpanExporter.create();
+        OpenTelemetrySdk testSdk = buildTestSdk(testExporter);
+
+        SplunkRum splunkRum = new SplunkRum(mock(Config.class), testSdk, new SessionId());
+
+        Attributes attributes = Attributes.of(stringKey("one"), "1", longKey("two"), 2L);
+        splunkRum.addRumEvent("foo", attributes);
+
+        List<SpanData> spans = testExporter.getFinishedSpanItems();
+        assertEquals(1, spans.size());
+        assertEquals("foo", spans.get(0).getName());
+        assertEquals(attributes.asMap(), spans.get(0).getAttributes().asMap());
+    }
+
+    @Test
+    public void addException() {
+        InMemorySpanExporter testExporter = InMemorySpanExporter.create();
+        OpenTelemetrySdk testSdk = buildTestSdk(testExporter);
+
+        SplunkRum splunkRum = new SplunkRum(mock(Config.class), testSdk, new SessionId());
+
+        Attributes attributes = Attributes.of(stringKey("one"), "1", longKey("two"), 2L);
+        splunkRum.addRumException("fooError", attributes, new NullPointerException("oopsie"));
+
+        List<SpanData> spans = testExporter.getFinishedSpanItems();
+        assertEquals(1, spans.size());
+        assertEquals("fooError", spans.get(0).getName());
+
+        Attributes expected = attributes.toBuilder()
+                .put(SemanticAttributes.EXCEPTION_MESSAGE, "oopsie")
+                .put(SplunkRum.ERROR_MESSAGE_KEY, "oopsie")
+                .put(SemanticAttributes.EXCEPTION_TYPE, "NullPointerException")
+                .put(SplunkRum.ERROR_TYPE_KEY, "NullPointerException")
+                .build();
+
+        assertEquals(expected.asMap(), spans.get(0).getAttributes().asMap());
+    }
+
+    private OpenTelemetrySdk buildTestSdk(InMemorySpanExporter testExporter) {
+        OpenTelemetrySdk testSdk = OpenTelemetrySdk.builder()
+                .setTracerProvider(SdkTracerProvider.builder()
+                        .addSpanProcessor(SimpleSpanProcessor.create(testExporter))
+                        .build())
+                .build();
+        return testSdk;
     }
 }

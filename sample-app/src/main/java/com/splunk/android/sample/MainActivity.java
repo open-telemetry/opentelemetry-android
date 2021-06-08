@@ -27,9 +27,15 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.splunk.android.sample.databinding.ActivityMainBinding;
+import com.splunk.rum.SplunkRum;
+
+import io.opentelemetry.api.common.Attributes;
+
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final Attributes SETTINGS_FEATURE_ATTRIBUTES = Attributes.of(stringKey("FeatureName"), "Settings");
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
@@ -67,6 +73,9 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            SplunkRum.getInstance()
+                    .addRumException("Unimplemented Feature", SETTINGS_FEATURE_ATTRIBUTES,
+                            new UnsupportedOperationException("Unimplemented Feature: Settings"));
             return true;
         }
 

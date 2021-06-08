@@ -101,8 +101,8 @@ public class OkHttpRumInterceptorTest {
         assertEquals("failed to make a call", spanData.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE));
 
         //temporary attributes until the RUM UI/backend can be brought up to date with otel conventions.
-        assertEquals("IOException", spanData.getAttributes().get(OkHttpRumInterceptor.ERROR_TYPE_KEY));
-        assertEquals("failed to make a call", spanData.getAttributes().get(OkHttpRumInterceptor.ERROR_MESSAGE_KEY));
+        assertEquals("IOException", spanData.getAttributes().get(SplunkRum.ERROR_TYPE_KEY));
+        assertEquals("failed to make a call", spanData.getAttributes().get(SplunkRum.ERROR_MESSAGE_KEY));
     }
 
     @Test

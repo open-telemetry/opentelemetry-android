@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import okhttp3.Call;
 import okhttp3.Connection;
 import okhttp3.Interceptor;
@@ -40,8 +39,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 class OkHttpRumInterceptor implements Interceptor {
     static final AttributeKey<String> LINK_TRACE_ID_KEY = stringKey("link.traceId");
     static final AttributeKey<String> LINK_SPAN_ID_KEY = stringKey("link.spanId");
-    static final AttributeKey<String> ERROR_TYPE_KEY = stringKey("error.type");
-    static final AttributeKey<String> ERROR_MESSAGE_KEY = stringKey("error.message");
 
     private final Interceptor coreInterceptor;
     private final ServerTimingHeaderParser headerParser;
@@ -85,13 +82,7 @@ class OkHttpRumInterceptor implements Interceptor {
             try {
                 response = chain.proceed(request);
             } catch (IOException e) {
-                //record these here since zipkin eats the event attributes that are recorded by default.
-                span.setAttribute(SemanticAttributes.EXCEPTION_TYPE, e.getClass().getSimpleName());
-                span.setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, e.getMessage());
-
-                //these attributes are here to support the RUM UI/backend until it can be updated to use otel conventions.
-                span.setAttribute(ERROR_TYPE_KEY, e.getClass().getSimpleName());
-                span.setAttribute(ERROR_MESSAGE_KEY, e.getMessage());
+                SplunkRum.addExceptionAttributes(span, e);
                 throw e;
             }
 
@@ -149,4 +140,5 @@ class OkHttpRumInterceptor implements Interceptor {
             return chain.withWriteTimeout(i, timeUnit);
         }
     }
+
 }
