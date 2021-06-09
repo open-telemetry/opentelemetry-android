@@ -20,15 +20,9 @@
 
 <p align="center">
   <strong>
-    <a href="https://github.com/signalfx/tracing-examples/tree/main/opentelemetry-tracing/opentelemetry-java-tracing">Examples</a>
-    &nbsp;&nbsp;&bull;&nbsp;&nbsp;
     <a href="docs/faq.md">FAQ</a>
     &nbsp;&nbsp;&bull;&nbsp;&nbsp;
     <a href="SECURITY.md">Security</a>
-    &nbsp;&nbsp;&bull;&nbsp;&nbsp;
-    <a href="docs/supported-libraries.md">Supported Libraries</a>
-    &nbsp;&nbsp;&bull;&nbsp;&nbsp;
-    <a href="docs/troubleshooting.md">Troubleshooting</a>
   </strong>
 </p>
 
@@ -40,9 +34,43 @@ TODO
 
 ## Getting Started 
 
-TODO
+### Configuration
+
+In order to configure the Splunk RUM library, you will need to know three things:
+* Your RUM beacon URL. 
+  * This value looks like `"https://rum-ingest.<realm>.signalfx.com/v1/rum"` where
+the `<realm>` can be found in your Splunk Observability UI in the Account Settings page.
+* Your RUM auth token.  
+  * You can find or create a RUM auth token in the Splunk Observability UI, in your Organization Settings.
+  * Important: this auth token *must* have the `RUM` authorization scope to work. 
+* The name of your application.
+
+Here is an example of a the very minimal configuration which uses these 3 values:
+```java
+        String beaconUrl = "https://rum-ingest.<realm>.signalfx.com/v1/rum";
+        String rumAuthToken = "<your_auth_token>";
+        Config config = SplunkRum.newConfigBuilder()
+                .beaconUrl(beaconUrl)
+                .rumAuthToken(rumAuthToken)
+                .applicationName("My Android App")
+                .build();
+```
+
+There are other options available on the `Config.Builder` instance, including enabling debug mode
+and enabling/disabling various instrumentation features.
+
+### Initialization
+
+To initialize the Splunk RUM monitoring library, from your `android.app.Application` instance, 
+simply call the static initializer in your `Application.onCreate()` implementation:
+```java
+        SplunkRum.initialize(config, this);
+```
+
+Examples of this process can be seen in the sample application included in this repository in the `sample-app` submodule.
 
 ## Sample Application
+This repository includes a sample application that can show off a few features of our mobile RUM product. 
 
 In order to build and run the sample application, you will need to configure a `local.properties` file
 in the root of the project. It will need to have two properties configured:
