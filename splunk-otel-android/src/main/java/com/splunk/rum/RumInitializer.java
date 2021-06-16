@@ -24,6 +24,8 @@ import com.splunk.android.rum.R;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+import java.util.logging.Level;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -49,7 +51,7 @@ class RumInitializer {
         this.application = application;
     }
 
-    SplunkRum initialize() {
+    SplunkRum initialize(Supplier<ConnectionUtil> connectionUtilSupplier) {
         String rumVersion = detectRumVersion();
         VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
 
@@ -57,13 +59,16 @@ class RumInitializer {
         long startTimeNanos = clock.now();
         List<RumInitializer.InitializationEvent> initializationEvents = new ArrayList<>();
 
-        SpanExporter zipkinExporter = buildExporter();
+        ConnectionUtil connectionUtil = connectionUtilSupplier.get();
+        initializationEvents.add(new InitializationEvent("connectionUtilInitialized", clock.now()));
+
+        SpanExporter zipkinExporter = buildExporter(connectionUtil);
         initializationEvents.add(new RumInitializer.InitializationEvent("exporterInitialized", clock.now()));
 
         SessionId sessionId = new SessionId();
         initializationEvents.add(new RumInitializer.InitializationEvent("sessionIdInitialized", clock.now()));
 
-        SdkTracerProvider sdkTracerProvider = buildTracerProvider(clock, zipkinExporter, sessionId, rumVersion, visibleScreenTracker);
+        SdkTracerProvider sdkTracerProvider = buildTracerProvider(clock, zipkinExporter, sessionId, rumVersion, visibleScreenTracker, connectionUtil);
         initializationEvents.add(new RumInitializer.InitializationEvent("tracerProviderInitialized", clock.now()));
 
         OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider).build();
@@ -80,6 +85,10 @@ class RumInitializer {
         if (config.isCrashReportingEnabled()) {
             CrashReporter.initializeCrashReporting(tracer, openTelemetrySdk);
             initializationEvents.add(new RumInitializer.InitializationEvent("crashReportingInitialized", clock.now()));
+        }
+
+        if (config.isNetworkMonitorEnabled()) {
+            new NetworkMonitor(connectionUtil).addConnectivityListener(tracer);
         }
 
         recordInitializationSpan(startTimeNanos, initializationEvents, tracer);
@@ -108,11 +117,17 @@ class RumInitializer {
         span.end();
     }
 
-    private SdkTracerProvider buildTracerProvider(Clock clock, SpanExporter zipkinExporter, SessionId sessionId, String rumVersion, VisibleScreenTracker visibleScreenTracker) {
+    private SdkTracerProvider buildTracerProvider(
+            Clock clock,
+            SpanExporter zipkinExporter,
+            SessionId sessionId,
+            String rumVersion,
+            VisibleScreenTracker visibleScreenTracker,
+            ConnectionUtil connectionUtil) {
         SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder()
                 .setClock(clock)
                 .addSpanProcessor(BatchSpanProcessor.builder(zipkinExporter).build())
-                .addSpanProcessor(new RumAttributeAppender(config, sessionId, rumVersion, visibleScreenTracker))
+                .addSpanProcessor(new RumAttributeAppender(config, sessionId, rumVersion, visibleScreenTracker, connectionUtil))
                 .setResource(Resource.getDefault().toBuilder().put("service.name", config.getApplicationName()).build());
         if (config.isDebugEnabled()) {
             tracerProviderBuilder.addSpanProcessor(SimpleSpanProcessor.create(new LoggingSpanExporter()));
@@ -121,9 +136,14 @@ class RumInitializer {
                 .build();
     }
 
-    SpanExporter buildExporter() {
+    SpanExporter buildExporter(ConnectionUtil connectionUtil) {
         String endpoint = config.getBeaconUrl() + "?auth=" + config.getRumAuthToken();
-        return new BufferingExporter(ZipkinSpanExporter.builder().setEndpoint(endpoint).build());
+        if (!config.isDebugEnabled()) {
+            //tell the Zipkin exporter to shut up already. We're on mobile, network stuff happens.
+            // we'll do our best to hang on to the spans with the wrapping BufferingExporter.
+            ZipkinSpanExporter.baseLogger.setLevel(Level.SEVERE);
+        }
+        return new BufferingExporter(connectionUtil, ZipkinSpanExporter.builder().setEndpoint(endpoint).build());
     }
 
     static class InitializationEvent {

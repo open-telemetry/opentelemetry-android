@@ -37,6 +37,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -49,11 +50,15 @@ public class SplunkRumTest {
 
     @Test
     public void initialization_onlyOnce() {
+        Application application = mock(Application.class, RETURNS_DEEP_STUBS);
         Config config = mock(Config.class);
+        ConnectionUtil connectionUtil = mock(ConnectionUtil.class, RETURNS_DEEP_STUBS);
+
         when(config.getBeaconUrl()).thenReturn("http://backend");
         when(config.isDebugEnabled()).thenReturn(true);
-        SplunkRum singleton = SplunkRum.initialize(config, mock(Application.class));
-        SplunkRum sameInstance = SplunkRum.initialize(config, mock(Application.class));
+
+        SplunkRum singleton = SplunkRum.initialize(config, application, () -> connectionUtil);
+        SplunkRum sameInstance = SplunkRum.initialize(config, application);
 
         assertSame(singleton, sameInstance);
     }
@@ -65,9 +70,12 @@ public class SplunkRumTest {
 
     @Test
     public void getInstance() {
+        Application application = mock(Application.class, RETURNS_DEEP_STUBS);
         Config config = mock(Config.class);
+
         when(config.getBeaconUrl()).thenReturn("http://backend");
-        SplunkRum singleton = SplunkRum.initialize(config, mock(Application.class));
+
+        SplunkRum singleton = SplunkRum.initialize(config, application, () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
         assertSame(singleton, SplunkRum.getInstance());
     }
 
@@ -117,11 +125,10 @@ public class SplunkRumTest {
     }
 
     private OpenTelemetrySdk buildTestSdk(InMemorySpanExporter testExporter) {
-        OpenTelemetrySdk testSdk = OpenTelemetrySdk.builder()
+        return OpenTelemetrySdk.builder()
                 .setTracerProvider(SdkTracerProvider.builder()
                         .addSpanProcessor(SimpleSpanProcessor.create(testExporter))
                         .build())
                 .build();
-        return testSdk;
     }
 }

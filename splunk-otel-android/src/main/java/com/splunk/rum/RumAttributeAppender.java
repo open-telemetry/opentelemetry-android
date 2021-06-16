@@ -34,17 +34,21 @@ class RumAttributeAppender implements SpanProcessor {
     static final AttributeKey<String> DEVICE_MODEL_KEY = stringKey("device.model");
     static final AttributeKey<String> RUM_VERSION_KEY = stringKey("splunk.rumVersion");
     static final AttributeKey<String> OS_VERSION_KEY = stringKey("os.version");
+    static final AttributeKey<String> NETWORK_TYPE_KEY = stringKey("network.type");
+    static final AttributeKey<String> NETWORK_SUBTYPE_KEY = stringKey("network.subtype");
 
     private final Config config;
     private final SessionId sessionId;
     private final String rumVersion;
     private final VisibleScreenTracker visibleScreenTracker;
+    private final ConnectionUtil connectionUtil;
 
-    RumAttributeAppender(Config config, SessionId sessionId, String rumVersion, VisibleScreenTracker visibleScreenTracker) {
+    RumAttributeAppender(Config config, SessionId sessionId, String rumVersion, VisibleScreenTracker visibleScreenTracker, ConnectionUtil connectionUtil) {
         this.config = config;
         this.sessionId = sessionId;
         this.rumVersion = rumVersion;
         this.visibleScreenTracker = visibleScreenTracker;
+        this.connectionUtil = connectionUtil;
     }
 
     @Override
@@ -65,6 +69,9 @@ class RumAttributeAppender implements SpanProcessor {
         if (previouslyVisibleScreen != null) {
             span.setAttribute(SplunkRum.LAST_SCREEN_NAME_KEY, previouslyVisibleScreen);
         }
+        CurrentNetwork currentNetwork = connectionUtil.getActiveNetwork();
+        span.setAttribute(NETWORK_TYPE_KEY, currentNetwork.getState().getHumanName());
+        currentNetwork.getSubType().ifPresent(subtype -> span.setAttribute(NETWORK_SUBTYPE_KEY, subtype));
     }
 
     @Override

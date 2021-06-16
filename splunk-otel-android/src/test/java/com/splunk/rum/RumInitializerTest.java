@@ -29,6 +29,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -42,11 +43,11 @@ public class RumInitializerTest {
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
         RumInitializer testInitializer = new RumInitializer(config, application) {
             @Override
-            SpanExporter buildExporter() {
+            SpanExporter buildExporter(ConnectionUtil connectionUtil) {
                 return testExporter;
             }
         };
-        SplunkRum splunkRum = testInitializer.initialize();
+        SplunkRum splunkRum = testInitializer.initialize(() -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
         splunkRum.flushSpans();
 
         List<SpanData> spans = testExporter.getFinishedSpanItems();
@@ -56,7 +57,8 @@ public class RumInitializerTest {
         assertEquals("appstart", initSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
 
         List<EventData> events = initSpan.getEvents();
-        assertEquals(6, events.size());
+        assertEquals(7, events.size());
+        checkEventExists(events, "connectionUtilInitialized");
         checkEventExists(events, "exporterInitialized");
         checkEventExists(events, "sessionIdInitialized");
         checkEventExists(events, "tracerProviderInitialized");

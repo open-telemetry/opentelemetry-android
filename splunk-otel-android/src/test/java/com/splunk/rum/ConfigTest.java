@@ -45,6 +45,7 @@ public class ConfigTest {
                 .beaconUrl("http://beacon")
                 .debugEnabled(true)
                 .crashReportingEnabled(false)
+                .networkMonitorEnabled(false)
                 .globalAttributes(globalAttributes)
                 .build();
         assertNotNull(config);
@@ -53,6 +54,7 @@ public class ConfigTest {
         assertEquals("http://beacon", config.getBeaconUrl());
         assertTrue(config.isDebugEnabled());
         assertFalse(config.isCrashReportingEnabled());
+        assertFalse(config.isNetworkMonitorEnabled());
         assertEquals(globalAttributes, config.getGlobalAttributes());
     }
 
@@ -68,6 +70,7 @@ public class ConfigTest {
         assertEquals("http://beacon", config.getBeaconUrl());
         assertFalse(config.isDebugEnabled());
         assertTrue(config.isCrashReportingEnabled());
+        assertTrue(config.isNetworkMonitorEnabled());
         assertEquals(Attributes.empty(), config.getGlobalAttributes());
     }
 

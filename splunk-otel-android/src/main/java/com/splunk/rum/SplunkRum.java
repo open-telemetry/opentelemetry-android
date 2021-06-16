@@ -20,6 +20,7 @@ import android.app.Application;
 import android.util.Log;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -44,7 +45,7 @@ public class SplunkRum {
     static final AttributeKey<String> ERROR_TYPE_KEY = stringKey("error.type");
     static final AttributeKey<String> ERROR_MESSAGE_KEY = stringKey("error.message");
 
-    private static final String LOG_TAG = "SplunkRum";
+    static final String LOG_TAG = "SplunkRum";
     static final String RUM_TRACER_NAME = "SplunkRum";
 
     private static SplunkRum INSTANCE;
@@ -76,12 +77,17 @@ public class SplunkRum {
      * @return A fully initialized {@link SplunkRum} instance, ready for use.
      */
     public static SplunkRum initialize(Config config, Application application) {
+        return initialize(config, application, () -> new ConnectionUtil(application.getApplicationContext()));
+    }
+
+    //for testing purposes
+    static SplunkRum initialize(Config config, Application application, Supplier<ConnectionUtil> connectionUtilSupplier) {
         if (INSTANCE != null) {
             Log.w(LOG_TAG, "Singleton SplunkRum instance has already been initialized.");
             return INSTANCE;
         }
 
-        INSTANCE = new RumInitializer(config, application).initialize();
+        INSTANCE = new RumInitializer(config, application).initialize(connectionUtilSupplier);
 
         if (config.isDebugEnabled()) {
             Log.i(LOG_TAG, "Splunk RUM monitoring initialized with session ID: " + INSTANCE.sessionId);

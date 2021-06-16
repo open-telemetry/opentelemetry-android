@@ -32,6 +32,7 @@ public class Config {
     private final String applicationName;
     private final boolean crashReportingEnabled;
     private final Attributes globalAttributes;
+    private final boolean networkMonitorEnabled;
 
     private Config(Builder builder) {
         this.beaconUrl = builder.beaconUrl;
@@ -40,6 +41,7 @@ public class Config {
         this.applicationName = builder.applicationName;
         this.crashReportingEnabled = builder.crashReportingEnabled;
         this.globalAttributes = builder.globalAttributes;
+        this.networkMonitorEnabled = builder.networkMonitorEnabled;
     }
 
     /**
@@ -92,11 +94,16 @@ public class Config {
         return new Builder();
     }
 
+    public boolean isNetworkMonitorEnabled() {
+        return networkMonitorEnabled;
+    }
+
 
     /**
      * Builder class for the Splunk RUM {@link Config} class.
      */
     public static class Builder {
+        public boolean networkMonitorEnabled = true;
         private String beaconUrl;
         private String rumAuthToken;
         private boolean debugEnabled = false;
@@ -152,6 +159,16 @@ public class Config {
          */
         public Builder crashReportingEnabled(boolean enable) {
             this.crashReportingEnabled = enable;
+            return this;
+        }
+
+        /**
+         * Enable/disable the network monitoring feature. Enabled by default.
+         *
+         * @return this
+         */
+        public Builder networkMonitorEnabled(boolean enable) {
+            this.networkMonitorEnabled = enable;
             return this;
         }
 
