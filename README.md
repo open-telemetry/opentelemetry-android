@@ -30,7 +30,8 @@
 
 # Splunk Android RUM Instrumentation
 
-TODO
+> :construction: This project is currently in **BETA**.
+
 
 ## Getting Started 
 
