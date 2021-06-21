@@ -54,16 +54,16 @@ public class FirstFragment extends Fragment {
 
     private final ExecutorService backgrounder = Executors.newSingleThreadExecutor();
     private final MutableLiveData<String> httpResponse = new MutableLiveData<>();
+    private final MutableLiveData<String> sessionId = new MutableLiveData<>();
 
     private FragmentFirstBinding binding;
     private OkHttpClient okHttpClient;
+    private SplunkRum splunkRum;
 
     @Override
-    public View onCreateView(
-            LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState
-    ) {
-        okHttpClient = buildOkHttpClient();
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        splunkRum = SplunkRum.getInstance();
+        okHttpClient = buildOkHttpClient(splunkRum);
         binding = FragmentFirstBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -85,6 +85,8 @@ public class FirstFragment extends Fragment {
         binding.httpMe.setOnClickListener(v -> backgrounder.submit(() -> makeCall("https://ssidhu.o11ystore.com/")));
         binding.httpMeBad.setOnClickListener(v -> backgrounder.submit(() -> makeCall("https://asdlfkjasd.asdfkjasdf.ifi")));
         binding.httpMeNotFound.setOnClickListener(v -> backgrounder.submit(() -> makeCall("https://ssidhu.o11ystore.com/foobarbaz")));
+
+        sessionId.postValue(splunkRum.getRumSessionId());
     }
 
     private void makeCall(String url) {
@@ -101,16 +103,25 @@ public class FirstFragment extends Fragment {
         return httpResponse;
     }
 
+    public LiveData<String> getSessionId() {
+        return sessionId;
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
     }
 
-    @NonNull
-    private OkHttpClient buildOkHttpClient() {
+    @Override
+    public void onResume() {
+        super.onResume();
+        sessionId.postValue(splunkRum.getRumSessionId());
+    }
+
+    private OkHttpClient buildOkHttpClient(SplunkRum splunkRum) {
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
-                .addInterceptor(SplunkRum.getInstance().createOkHttpRumInterceptor());
+                .addInterceptor(splunkRum.createOkHttpRumInterceptor());
         try {
             // NOTE: This is really bad and dangerous. Don't ever do this in the real world.
             // it's only necessary because the demo endpoint uses a self-signed SSL cert.

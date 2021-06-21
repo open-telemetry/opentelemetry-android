@@ -85,11 +85,23 @@ public class SplunkRumTest {
     }
 
     @Test
+    public void nonNullMethods() {
+        Application application = mock(Application.class, RETURNS_DEEP_STUBS);
+        Config config = mock(Config.class);
+
+        when(config.getBeaconUrl()).thenReturn("http://backend");
+
+        SplunkRum splunkRum = SplunkRum.initialize(config, application, () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
+        assertNotNull(splunkRum.getOpenTelemetry());
+        assertNotNull(splunkRum.getRumSessionId());
+    }
+
+    @Test
     public void addEvent() {
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
         OpenTelemetrySdk testSdk = buildTestSdk(testExporter);
 
-        SplunkRum splunkRum = new SplunkRum(mock(Config.class), testSdk, new SessionId());
+        SplunkRum splunkRum = new SplunkRum(testSdk, new SessionId());
 
         Attributes attributes = Attributes.of(stringKey("one"), "1", longKey("two"), 2L);
         splunkRum.addRumEvent("foo", attributes);
@@ -105,7 +117,7 @@ public class SplunkRumTest {
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
         OpenTelemetrySdk testSdk = buildTestSdk(testExporter);
 
-        SplunkRum splunkRum = new SplunkRum(mock(Config.class), testSdk, new SessionId());
+        SplunkRum splunkRum = new SplunkRum(testSdk, new SessionId());
 
         Attributes attributes = Attributes.of(stringKey("one"), "1", longKey("two"), 2L);
         splunkRum.addRumException("fooError", attributes, new NullPointerException("oopsie"));

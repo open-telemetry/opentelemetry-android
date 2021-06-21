@@ -26,30 +26,38 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.splunk.android.sample.databinding.FragmentSecondBinding;
+import com.splunk.rum.SplunkRum;
+
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 
 public class SecondFragment extends Fragment {
 
     private FragmentSecondBinding binding;
+    private Tracer sampleAppTracer;
 
     @Override
-    public View onCreateView(
-            LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState
-    ) {
-
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        sampleAppTracer = SplunkRum.getInstance().getOpenTelemetry().getTracer("sampleAppTracer");
         binding = FragmentSecondBinding.inflate(inflater, container, false);
         return binding.getRoot();
-
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        binding.buttonSecond.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        binding.buttonSecond.setOnClickListener(v -> {
+            //an example of using the OpenTelemetry API directly to generate a 100% custom span.
+            Span span = sampleAppTracer
+                    .spanBuilder("buttonClicked")
+                    .setAttribute("buttonName", "backButton")
+                    .startSpan();
+            try (Scope s = span.makeCurrent()) {
                 NavHostFragment.findNavController(SecondFragment.this)
                         .navigate(R.id.action_SecondFragment_to_FirstFragment);
+            } finally {
+                span.end();
             }
         });
     }

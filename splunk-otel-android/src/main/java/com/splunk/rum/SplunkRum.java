@@ -22,6 +22,7 @@ import android.util.Log;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
@@ -50,12 +51,10 @@ public class SplunkRum {
 
     private static SplunkRum INSTANCE;
 
-    private final Config config;
     private final SessionId sessionId;
     private final OpenTelemetrySdk openTelemetrySdk;
 
-    SplunkRum(Config config, OpenTelemetrySdk openTelemetrySdk, SessionId sessionId) {
-        this.config = config;
+    SplunkRum(OpenTelemetrySdk openTelemetrySdk, SessionId sessionId) {
         this.openTelemetrySdk = openTelemetrySdk;
         this.sessionId = sessionId;
     }
@@ -106,8 +105,30 @@ public class SplunkRum {
         return INSTANCE;
     }
 
+    /**
+     * Create an OkHttp3 {@link Interceptor} configured with the OpenTelemetry instance backing this
+     * class. It will provide both standard OpenTelemetry spans and additionally Splunk RUM-specific
+     * attributes.
+     */
     public Interceptor createOkHttpRumInterceptor() {
         return new OkHttpRumInterceptor(OkHttpTracing.create(openTelemetrySdk).newInterceptor(), new ServerTimingHeaderParser());
+    }
+
+    /**
+     * Get a handle to the instance of the OpenTelemetry API that this instance is using for instrumentation.
+     */
+    public OpenTelemetry getOpenTelemetry() {
+        return openTelemetrySdk;
+    }
+
+    /**
+     * Get the Splunk Session ID associated with this instance of the RUM instrumentation library.
+     * Note: this value can change throughout the lifetime of an application instance, so it
+     * is recommended that you do not cache this value, but always retrieve it from here when
+     * needed.
+     */
+    public String getRumSessionId() {
+        return sessionId.getSessionId();
     }
 
     /**

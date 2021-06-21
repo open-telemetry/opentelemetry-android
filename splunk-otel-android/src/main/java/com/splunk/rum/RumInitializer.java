@@ -93,7 +93,7 @@ class RumInitializer {
 
         recordInitializationSpan(startTimeNanos, initializationEvents, tracer);
 
-        return new SplunkRum(config, openTelemetrySdk, sessionId);
+        return new SplunkRum(openTelemetrySdk, sessionId);
     }
 
     private String detectRumVersion() {
