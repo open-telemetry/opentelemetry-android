@@ -21,6 +21,7 @@ import android.os.Build;
 
 import com.splunk.android.rum.R;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -143,7 +144,13 @@ class RumInitializer {
             // we'll do our best to hang on to the spans with the wrapping BufferingExporter.
             ZipkinSpanExporter.baseLogger.setLevel(Level.SEVERE);
         }
-        return new BufferingExporter(connectionUtil, ZipkinSpanExporter.builder().setEndpoint(endpoint).build());
+        ZipkinSpanExporter zipkinSpanExporter = ZipkinSpanExporter.builder().setEndpoint(endpoint).build();
+        SpanExporter throttlingExporter = ThrottlingExporter.newBuilder(zipkinSpanExporter)
+                .categorizeByAttribute(SplunkRum.COMPONENT_KEY)
+                .maxSpansInWindow(100)
+                .windowSize(Duration.ofSeconds(30))
+                .build();
+        return new BufferingExporter(connectionUtil, throttlingExporter);
     }
 
     static class InitializationEvent {

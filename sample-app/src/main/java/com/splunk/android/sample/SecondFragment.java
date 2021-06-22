@@ -23,16 +23,30 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.splunk.android.sample.databinding.FragmentSecondBinding;
 import com.splunk.rum.SplunkRum;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 
 public class SecondFragment extends Fragment {
+
+    private final ScheduledExecutorService spammer = Executors.newSingleThreadScheduledExecutor();
+    private final MutableLiveData<String> spanCountLabel = new MutableLiveData<>();
+    private final AtomicLong spans = new AtomicLong(0);
+
+    private ScheduledFuture<?> spamTask;
 
     private FragmentSecondBinding binding;
     private Tracer sampleAppTracer;
@@ -44,8 +58,13 @@ public class SecondFragment extends Fragment {
         return binding.getRoot();
     }
 
+    @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        binding.setLifecycleOwner(getViewLifecycleOwner());
+        binding.setSecondFragment(this);
+
+        resetLabel();
 
         binding.buttonSecond.setOnClickListener(v -> {
             //an example of using the OpenTelemetry API directly to generate a 100% custom span.
@@ -60,6 +79,7 @@ public class SecondFragment extends Fragment {
                 span.end();
             }
         });
+        binding.buttonSpam.setOnClickListener(v -> toggleSpam());
     }
 
     @Override
@@ -68,4 +88,36 @@ public class SecondFragment extends Fragment {
         binding = null;
     }
 
+    public LiveData<String> getSpanCountLabel() {
+        return spanCountLabel;
+    }
+
+    private void toggleSpam() {
+        if (spamTask == null) {
+            resetLabel();
+            spamTask = spammer.scheduleAtFixedRate(this::createSpamSpan, 0, 50, TimeUnit.MILLISECONDS);
+            binding.buttonSpam.setText(R.string.stop_spam);
+        } else {
+            spamTask.cancel(false);
+            spamTask = null;
+            binding.buttonSpam.setText(R.string.start_spam);
+        }
+    }
+
+    private void resetLabel() {
+        spans.set(0);
+        updateLabel();
+    }
+
+    private void updateLabel() {
+        spanCountLabel.postValue(getString(R.string.spam_status, spans.get()));
+    }
+
+    private void createSpamSpan() {
+        sampleAppTracer.spanBuilder("spam span no. " + spans.incrementAndGet())
+                .setAttribute("number", spans.get())
+                .startSpan()
+                .end();
+        updateLabel();
+    }
 }

@@ -16,4 +16,8 @@
     <string name="http_me_up">HTTP me up!</string>
     <string name="http_me_bad">Http Error</string>
     <string name="http_not_found">HTTP Not Found</string>
+
+    <string name="start_spam">Spam start!</string>
+    <string name="stop_spam">Spam stop</string>
+    <string name="spam_status">Created %d spans</string>
 </resources>
