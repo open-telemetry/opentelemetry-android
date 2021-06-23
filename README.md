@@ -35,6 +35,74 @@
 
 ## Getting Started 
 
+### Getting the library
+
+Our plan is to publish this library on maven central, but until that plan comes to fruition, there are
+two options for bringing in this library as a dependency for your Android app:
+
+#### Use as a gradle dependency via jitpack.io:
+
+Add [jitpack.io](https://jitpack.io/#signalfx/splunk-otel-android/) as a maven repository to the 
+`repositories` section of your main build.gradle:
+
+```
+allprojects {
+    repositories {
+        google()
+...
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
+
+Then, add the latest release as a dependency in your application's build.gradle file. Note that
+these are jitpack.io maven coordinates, and are not the same as what will be available via 
+maven central.
+
+```
+dependencies {
+...
+    implementation ("com.github.signalfx:splunk-otel-android:v0.1.0-beta")
+...
+}
+```
+
+#### Build the library locally:
+
+First, clone this repository locally: 
+
+```
+git clone https://github.com/signalfx/splunk-otel-android.git
+```
+
+Then build locally and publish to your local maven repository:
+
+```
+./gradlew publishToMavenLocal
+```
+
+Make sure you have `mavenLocal()` as a repository in your application's main `build.gradle`:
+
+```
+allprojects {
+    repositories {
+        google()
+...
+        mavenLocal()
+    }
+}
+```
+
+Then, add the locally built library as a dependency in your application's build.gradle:
+
+```
+dependencies {
+...
+    implementation ("com.splunk:splunk-otel-android:0.1.0-SNAPSHOT")
+...
+}
+```
+
 ### Configuration
 
 In order to configure the Splunk RUM library, you will need to know three things:
