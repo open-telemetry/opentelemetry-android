@@ -23,15 +23,12 @@ android {
     }
 
     buildTypes {
-        debug {
-            resValue("string", "rum_beacon_url", localProperties['rum.beacon.url'])
-            resValue("string", "rum_auth_token", localProperties['rum.auth.token'])
+        all {
+            resValue("string", "rum_beacon_url", localProperties['rum.beacon.url'] ?: "http://backend")
+            resValue("string", "rum_auth_token", localProperties['rum.auth.token'] ?: "dummyAuthToken")
         }
 
         release {
-            //TODO: is there a better way to put values in for these so the build doesn't fail?
-            resValue("string", "rum_beacon_url", "http://backend")
-            resValue("string", "rum_auth_token", "dummyAuthToken")
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
