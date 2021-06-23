@@ -39,6 +39,7 @@ class ThrottlingExporter implements SpanExporter {
     private final long windowSizeInNanos;
     private final int maxSpansInWindow;
     // note: no need to make this thread-safe since it will only ever be called from the BatchSpanProcessor worker thread.
+    // the implementation here needs to support null keys, or we'd need to use a default component value.
     private final Map<String, Window> categoryToWindow = new HashMap<>();
 
     private ThrottlingExporter(Builder builder) {
@@ -89,7 +90,12 @@ class ThrottlingExporter implements SpanExporter {
 
             // remove oldest entries until the window shrinks to the configured size
             while (true) {
-                long first = timestamps.peekFirst();
+                Long first = timestamps.peekFirst();
+                //this shouldn't happen, due to the single-threaded nature of things here, but
+                //just to be on the safe side, don't blow up if something has cleared out the window.
+                if (first == null) {
+                    break;
+                }
                 if (endNanos - first < windowSizeInNanos) {
                     break;
                 }

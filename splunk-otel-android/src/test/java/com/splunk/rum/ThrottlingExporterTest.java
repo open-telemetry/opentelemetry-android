@@ -117,7 +117,12 @@ public class ThrottlingExporterTest {
                 span("ui", now.plus(10, ChronoUnit.SECONDS)),
                 span("ui", now.plus(15, ChronoUnit.SECONDS)),
                 span("ui", now.plus(20, ChronoUnit.SECONDS)),
-                span("error", now.plus(25, ChronoUnit.SECONDS))
+                span("error", now.plus(25, ChronoUnit.SECONDS)),
+                //user-generated spans probably won't have a "component" attribute at all.
+                span(null, now.plus(30, ChronoUnit.SECONDS)),
+                span(null, now.plus(35, ChronoUnit.SECONDS)),
+                span(null, now.plus(40, ChronoUnit.SECONDS)),
+                span(null, now.plus(45, ChronoUnit.SECONDS))
         );
 
         // when
@@ -130,7 +135,11 @@ public class ThrottlingExporterTest {
                 spanData.get(2),
                 spanData.get(3),
                 // idx=4 will be skipped because it's the 3rd component=ui span in the last 15 secs
-                spanData.get(5)
+                spanData.get(5),
+                spanData.get(6),
+                spanData.get(7),
+                // idx = 8 will be skipped because it's the 3rd no-component span in the 2-span, 15s window
+                spanData.get(9)
         ));
     }
 
@@ -210,4 +219,5 @@ public class ThrottlingExporterTest {
                 .setAttributes(Attributes.of(SplunkRum.COMPONENT_KEY, component))
                 .build();
     }
+
 }
