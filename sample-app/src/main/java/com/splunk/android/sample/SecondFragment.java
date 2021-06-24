@@ -79,6 +79,9 @@ public class SecondFragment extends Fragment {
                 span.end();
             }
         });
+        binding.buttonToWebview.setOnClickListener(v ->
+                NavHostFragment.findNavController(SecondFragment.this)
+                        .navigate(R.id.action_SecondFragment_to_webViewFragment));
         binding.buttonSpam.setOnClickListener(v -> toggleSpam());
     }
 

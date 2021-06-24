@@ -1,0 +1,20 @@
+<html>
+<head>
+    <!-- Tip: Use relative URLs when referring to other in-app content to give
+              your app code the flexibility to change the scheme or domain as
+              necessary. -->
+    <link rel="stylesheet" href="/assets/stylesheet.css">
+</head>
+<body>
+<p>This file was loaded from in-app content</p>
+<input type="button" value="Say hello" onClick="showAndroidToast('Hello Android!')"/>
+<script type="text/javascript">
+    function showAndroidToast(toast) {
+        Android.showToast(toast);
+    }
+
+
+</script>
+
+</body>
+</html>
