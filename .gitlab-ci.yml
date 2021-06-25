@@ -8,7 +8,7 @@ stages:
 build:
   stage: build
   script:
-    - ./gradlew build publish -PmavenCentralUsername=$SONATYPE_USERNAME -PmavenCentralPassword=$SONATYPE_PASSWORD
+    - touch local.properties; ./gradlew build publish -PmavenCentralUsername=$SONATYPE_USERNAME -PmavenCentralPassword=$SONATYPE_PASSWORD
 
 release:
   stage: release
