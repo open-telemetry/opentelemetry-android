@@ -1,0 +1,18 @@
+image:
+  name: "openjdk:11.0.11-9-jdk"
+
+stages:
+  - build
+  - release
+
+build:
+  stage: build
+  script:
+    - ./gradlew build publish -PmavenCentralUsername=$SONATYPE_USERNAME -PmavenCentralPassword=$SONATYPE_PASSWORD
+
+release:
+  stage: release
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+.*/'
+  script:
+    - echo "TODO how to deploy this?"
