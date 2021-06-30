@@ -18,8 +18,7 @@ allprojects {
         google()
         mavenCentral()
     }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
+    if (findProperty("release") != "true") {
+        project.version += "-SNAPSHOT"
+    }
 }
