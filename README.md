@@ -37,10 +37,9 @@
 
 ### Getting the library
 
-Our plan is to publish this library on maven central, but until that plan comes to fruition, there are
-two options for bringing in this library as a dependency for your Android app:
+There are two options for bringing in this library as a dependency for your Android app:
 
-#### Use as a gradle dependency via jitpack.io:
+#### Use as a gradle dependency from maven central:
 
 Add [jitpack.io](https://jitpack.io/#signalfx/splunk-otel-android/) as a maven repository to the 
 `repositories` section of your main build.gradle:
@@ -50,19 +49,17 @@ allprojects {
     repositories {
         google()
 ...
-        maven { url 'https://jitpack.io' }
+        mavenCentral()
     }
 }
 ```
 
-Then, add the latest release as a dependency in your application's build.gradle file. Note that
-these are jitpack.io maven coordinates, and are not the same as what will be available via 
-maven central.
+Then, add the latest release as a dependency in your application's build.gradle file.
 
 ```
 dependencies {
 ...
-    implementation ("com.github.signalfx:splunk-otel-android:v0.1.0-beta")
+    implementation ("com.splunk:splunk-otel-android:0.1.0")
 ...
 }
 ```
@@ -98,7 +95,7 @@ Then, add the locally built library as a dependency in your application's build.
 ```
 dependencies {
 ...
-    implementation ("com.splunk:splunk-otel-android:0.1.0-SNAPSHOT")
+    implementation ("com.splunk:splunk-otel-android:0.2.0-SNAPSHOT")
 ...
 }
 ```
