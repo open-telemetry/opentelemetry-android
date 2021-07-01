@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import okhttp3.Call;
 import okhttp3.Connection;
 import okhttp3.Interceptor;
@@ -78,13 +79,14 @@ class OkHttpRumInterceptor implements Interceptor {
             Span span = Span.current();
             span.setAttribute(SplunkRum.COMPONENT_KEY, "http");
 
-            Response response = null;
+            Response response;
             try {
                 response = chain.proceed(request);
             } catch (IOException e) {
                 SplunkRum.addExceptionAttributes(span, e);
                 throw e;
             }
+            recordContentLength(span, response);
 
             String serverTimingHeader = response.header("Server-Timing");
 
@@ -94,6 +96,21 @@ class OkHttpRumInterceptor implements Interceptor {
                 span.setAttribute(LINK_SPAN_ID_KEY, ids[1]);
             }
             return response;
+        }
+
+        private void recordContentLength(Span span, Response response) {
+            //make a best low-impact effort at getting the content length on the response.
+            String contentLengthHeader = response.header("Content-Length");
+            if (contentLengthHeader != null) {
+                try {
+                    long contentLength = Long.parseLong(contentLengthHeader);
+                    if (contentLength > 0) {
+                        span.setAttribute(SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH, contentLength);
+                    }
+                } catch (NumberFormatException e) {
+                    //who knows what we got back? It wasn't a number!
+                }
+            }
         }
 
         @Override

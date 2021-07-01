@@ -67,6 +67,7 @@ public class OkHttpRumInterceptorTest {
                 .message("hello")
                 .code(200)
                 .addHeader("Server-Timing", "headerValue")
+                .addHeader("Content-Length", "101")
                 .build());
 
         OkHttpRumInterceptor interceptor = new OkHttpRumInterceptor(new TestTracingInterceptor(tracer), headerParser);
@@ -78,6 +79,7 @@ public class OkHttpRumInterceptorTest {
         assertEquals("http", spanData.getAttributes().get(SplunkRum.COMPONENT_KEY));
         assertEquals("9499195c502eb217c448a68bfe0f967c", spanData.getAttributes().get(OkHttpRumInterceptor.LINK_TRACE_ID_KEY));
         assertEquals("fe16eca542cd5d86", spanData.getAttributes().get(OkHttpRumInterceptor.LINK_SPAN_ID_KEY));
+        assertEquals(101L, (long) spanData.getAttributes().get(SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH));
     }
 
     @Test
