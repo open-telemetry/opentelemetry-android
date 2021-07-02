@@ -41,8 +41,7 @@ There are two options for bringing in this library as a dependency for your Andr
 
 #### Use as a gradle dependency from maven central:
 
-Add [jitpack.io](https://jitpack.io/#signalfx/splunk-otel-android/) as a maven repository to the 
-`repositories` section of your main build.gradle:
+Add Maven Central as a maven repository to the `repositories` section of your main build.gradle:
 
 ```
 allprojects {
