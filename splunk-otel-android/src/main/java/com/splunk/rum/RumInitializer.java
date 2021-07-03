@@ -34,6 +34,7 @@ import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -56,24 +57,27 @@ class RumInitializer {
         String rumVersion = detectRumVersion();
         VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
 
-        Clock clock = SystemClock.getInstance();
-        long startTimeNanos = clock.now();
+        //note: these are both `internal` to opentelemetry-java, so we might need to adjust if they change.
+        Clock baseClock = SystemClock.getInstance();
+        Clock timingClock = MonotonicClock.create(baseClock);
+
+        long startTimeNanos = timingClock.now();
         List<RumInitializer.InitializationEvent> initializationEvents = new ArrayList<>();
 
         ConnectionUtil connectionUtil = connectionUtilSupplier.get();
-        initializationEvents.add(new InitializationEvent("connectionUtilInitialized", clock.now()));
+        initializationEvents.add(new InitializationEvent("connectionUtilInitialized", timingClock.now()));
 
         SpanExporter zipkinExporter = buildExporter(connectionUtil);
-        initializationEvents.add(new RumInitializer.InitializationEvent("exporterInitialized", clock.now()));
+        initializationEvents.add(new RumInitializer.InitializationEvent("exporterInitialized", timingClock.now()));
 
         SessionId sessionId = new SessionId();
-        initializationEvents.add(new RumInitializer.InitializationEvent("sessionIdInitialized", clock.now()));
+        initializationEvents.add(new RumInitializer.InitializationEvent("sessionIdInitialized", timingClock.now()));
 
-        SdkTracerProvider sdkTracerProvider = buildTracerProvider(clock, zipkinExporter, sessionId, rumVersion, visibleScreenTracker, connectionUtil);
-        initializationEvents.add(new RumInitializer.InitializationEvent("tracerProviderInitialized", clock.now()));
+        SdkTracerProvider sdkTracerProvider = buildTracerProvider(baseClock, zipkinExporter, sessionId, rumVersion, visibleScreenTracker, connectionUtil);
+        initializationEvents.add(new RumInitializer.InitializationEvent("tracerProviderInitialized", timingClock.now()));
 
         OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider).build();
-        initializationEvents.add(new RumInitializer.InitializationEvent("openTelemetrySdkInitialized", clock.now()));
+        initializationEvents.add(new RumInitializer.InitializationEvent("openTelemetrySdkInitialized", timingClock.now()));
 
         Tracer tracer = openTelemetrySdk.getTracer(SplunkRum.RUM_TRACER_NAME);
         if (Build.VERSION.SDK_INT < 29) {
@@ -81,11 +85,11 @@ class RumInitializer {
         } else {
             application.registerActivityLifecycleCallbacks(new RumLifecycleCallbacks(tracer, visibleScreenTracker));
         }
-        initializationEvents.add(new RumInitializer.InitializationEvent("activityLifecycleCallbacksInitialized", clock.now()));
+        initializationEvents.add(new RumInitializer.InitializationEvent("activityLifecycleCallbacksInitialized", timingClock.now()));
 
         if (config.isCrashReportingEnabled()) {
             CrashReporter.initializeCrashReporting(tracer, openTelemetrySdk);
-            initializationEvents.add(new RumInitializer.InitializationEvent("crashReportingInitialized", clock.now()));
+            initializationEvents.add(new RumInitializer.InitializationEvent("crashReportingInitialized", timingClock.now()));
         }
 
         if (config.isNetworkMonitorEnabled()) {
