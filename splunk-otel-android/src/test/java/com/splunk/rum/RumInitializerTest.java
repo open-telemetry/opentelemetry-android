@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import java.util.List;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -55,6 +56,8 @@ public class RumInitializerTest {
         SpanData initSpan = spans.get(0);
         assertEquals("SplunkRum.initialize", initSpan.getName());
         assertEquals("appstart", initSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
+        assertEquals("[debug:false,crashReporting:true,networkMonitor:false]",
+                initSpan.getAttributes().get(AttributeKey.stringKey("config_settings")));
 
         List<EventData> events = initSpan.getEvents();
         assertEquals(7, events.size());

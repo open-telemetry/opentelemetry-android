@@ -96,7 +96,7 @@ class RumInitializer {
             new NetworkMonitor(connectionUtil).addConnectivityListener(tracer);
         }
 
-        recordInitializationSpan(startTimeNanos, initializationEvents, tracer);
+        recordInitializationSpan(startTimeNanos, initializationEvents, tracer, config);
 
         return new SplunkRum(openTelemetrySdk, sessionId);
     }
@@ -111,11 +111,17 @@ class RumInitializer {
         return "unknown";
     }
 
-    private static void recordInitializationSpan(long startTimeNanos, List<InitializationEvent> initializationEvents, Tracer tracer) {
+    private static void recordInitializationSpan(long startTimeNanos, List<InitializationEvent> initializationEvents, Tracer tracer, Config config) {
         Span span = tracer.spanBuilder("SplunkRum.initialize")
                 .setStartTimestamp(startTimeNanos, TimeUnit.NANOSECONDS)
                 .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_APPSTART)
                 .startSpan();
+
+        String configSettings = "[debug:" + config.isDebugEnabled() + "," +
+                "crashReporting:" + config.isCrashReportingEnabled() + "," +
+                "networkMonitor:" + config.isNetworkMonitorEnabled() + "]";
+        span.setAttribute("config_settings", configSettings);
+
         for (RumInitializer.InitializationEvent initializationEvent : initializationEvents) {
             span.addEvent(initializationEvent.name, initializationEvent.time, TimeUnit.NANOSECONDS);
         }
