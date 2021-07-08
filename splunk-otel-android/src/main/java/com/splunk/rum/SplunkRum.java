@@ -100,7 +100,8 @@ public class SplunkRum {
      */
     public static SplunkRum getInstance() {
         if (INSTANCE == null) {
-            throw new IllegalStateException("SplunkRum has not been initialized.");
+            Log.d(LOG_TAG, "SplunkRum not initialized. Returning no-op implementation");
+            return NoOpSplunkRum.INSTANCE;
         }
         return INSTANCE;
     }
@@ -188,4 +189,16 @@ public class SplunkRum {
     void flushSpans() {
         openTelemetrySdk.getSdkTracerProvider().forceFlush().join(1, TimeUnit.SECONDS);
     }
+
+    /**
+     * Initialize a no-op version of the SplunkRum API, including the instance of OpenTelemetry that
+     * is available. This can be useful for testing, or configuring your app without RUM enabled,
+     * but still using the APIs.
+     *
+     * @return A no-op instance of {@link SplunkRum}
+     */
+    public static SplunkRum noop() {
+        return NoOpSplunkRum.INSTANCE;
+    }
+
 }

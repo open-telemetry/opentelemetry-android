@@ -36,7 +36,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -65,7 +65,8 @@ public class SplunkRumTest {
 
     @Test
     public void getInstance_preConfig() {
-        assertThrows(IllegalStateException.class, SplunkRum::getInstance);
+        SplunkRum instance = SplunkRum.getInstance();
+        assertTrue(instance instanceof NoOpSplunkRum);
     }
 
     @Test
