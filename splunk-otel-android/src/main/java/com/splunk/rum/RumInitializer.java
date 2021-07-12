@@ -34,8 +34,6 @@ import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.internal.MonotonicClock;
-import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
@@ -57,9 +55,8 @@ class RumInitializer {
         String rumVersion = detectRumVersion();
         VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
 
-        //note: these are both `internal` to opentelemetry-java, so we might need to adjust if they change.
-        Clock baseClock = SystemClock.getInstance();
-        Clock timingClock = MonotonicClock.create(baseClock);
+        Clock baseClock = Clock.getDefault();
+        AnchoredClock timingClock = AnchoredClock.create(baseClock);
 
         long startTimeNanos = timingClock.now();
         List<RumInitializer.InitializationEvent> initializationEvents = new ArrayList<>();
@@ -170,6 +167,28 @@ class RumInitializer {
         private InitializationEvent(String name, long time) {
             this.name = name;
             this.time = time;
+        }
+    }
+
+    //copied from otel-java
+    static final class AnchoredClock {
+        private final Clock clock;
+        private final long epochNanos;
+        private final long nanoTime;
+
+        private AnchoredClock(Clock clock, long epochNanos, long nanoTime) {
+            this.clock = clock;
+            this.epochNanos = epochNanos;
+            this.nanoTime = nanoTime;
+        }
+
+        public static AnchoredClock create(Clock clock) {
+            return new AnchoredClock(clock, clock.now(), clock.nanoTime());
+        }
+
+        long now() {
+            long deltaNanos = this.clock.nanoTime() - this.nanoTime;
+            return this.epochNanos + deltaNanos;
         }
     }
 

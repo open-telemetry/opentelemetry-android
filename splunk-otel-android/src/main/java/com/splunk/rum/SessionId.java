@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.internal.SystemClock;
 
 class SessionId {
     private static final long SESSION_LIFETIME_NANOS = TimeUnit.HOURS.toNanos(4);
@@ -32,7 +31,7 @@ class SessionId {
     private volatile long createTimeNanos;
 
     SessionId() {
-        this(SystemClock.getInstance());
+        this(Clock.getDefault());
     }
 
     //for testing

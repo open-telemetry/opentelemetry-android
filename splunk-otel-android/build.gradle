@@ -45,12 +45,12 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.3.0'
     implementation 'androidx.navigation:navigation-fragment:2.3.5'
 
-    api platform("io.opentelemetry:opentelemetry-bom:1.3.0")
+    api platform("io.opentelemetry:opentelemetry-bom:1.4.0")
     implementation 'io.opentelemetry:opentelemetry-sdk'
     implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
     implementation 'io.opentelemetry:opentelemetry-exporter-logging'
 
-    implementation platform("io.opentelemetry:opentelemetry-bom-alpha:1.3.0-alpha")
+    implementation platform("io.opentelemetry:opentelemetry-bom-alpha:1.4.0-alpha")
     implementation 'io.opentelemetry:opentelemetry-semconv'
     implementation 'io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0:1.3.1-alpha'
 
@@ -102,7 +102,7 @@ publishing {
                     developer {
                         id = "splunk"
                         name = "Splunk Instrumentation Authors"
-                        email = "support+sonatype@signalfx.com"
+                        email = "support+java@signalfx.com"
                         organization = "Splunk"
                         organizationUrl = "https://www.splunk.com"
                     }

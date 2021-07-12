@@ -21,7 +21,7 @@ import org.junit.Test;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.testing.time.TestClock;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -44,15 +44,15 @@ public class SessionIdTest {
         SessionId sessionId = new SessionId(clock);
         String value = sessionId.getSessionId();
         assertEquals(value, sessionId.getSessionId());
-        clock.advanceMillis(TimeUnit.HOURS.toMillis(3));
+        clock.advance(3, TimeUnit.HOURS);
         assertEquals(value, sessionId.getSessionId());
-        clock.advanceMillis(TimeUnit.MINUTES.toMillis(59));
+        clock.advance(59, TimeUnit.MINUTES);
         assertEquals(value, sessionId.getSessionId());
-        clock.advanceMillis(TimeUnit.SECONDS.toMillis(59));
+        clock.advance(59, TimeUnit.SECONDS);
         assertEquals(value, sessionId.getSessionId());
 
         //now it should change.
-        clock.advanceMillis(TimeUnit.SECONDS.toMillis(1));
+        clock.advance(1, TimeUnit.SECONDS);
         String newSessionId = sessionId.getSessionId();
         assertNotNull(newSessionId);
         assertNotEquals(value, newSessionId);
