@@ -114,6 +114,30 @@ public class SplunkRumTest {
     }
 
     @Test
+    public void recordAnr() {
+        InMemorySpanExporter testExporter = InMemorySpanExporter.create();
+        OpenTelemetrySdk testSdk = buildTestSdk(testExporter);
+        StackTraceElement[] stackTrace = new Exception().getStackTrace();
+        StringBuilder stringBuilder = new StringBuilder();
+        for (StackTraceElement stackTraceElement : stackTrace) {
+            stringBuilder.append(stackTraceElement).append("\n");
+        }
+
+        SplunkRum splunkRum = new SplunkRum(testSdk, new SessionId());
+
+        Attributes expectedAttributes = Attributes.of(
+                SemanticAttributes.EXCEPTION_STACKTRACE, stringBuilder.toString(),
+                SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_ERROR);
+
+        splunkRum.recordAnr(stackTrace);
+
+        List<SpanData> spans = testExporter.getFinishedSpanItems();
+        assertEquals(1, spans.size());
+        assertEquals("ANR", spans.get(0).getName());
+        assertEquals(expectedAttributes.asMap(), spans.get(0).getAttributes().asMap());
+    }
+
+    @Test
     public void addException() {
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
         OpenTelemetrySdk testSdk = buildTestSdk(testExporter);

@@ -186,6 +186,7 @@ public class SplunkRum {
         openTelemetrySdk.getTracer(RUM_TRACER_NAME)
                 .spanBuilder("ANR")
                 .setAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, formatStackTrace(stackTrace))
+                .setAttribute(COMPONENT_KEY, COMPONENT_ERROR)
                 .startSpan()
                 .end();
     }

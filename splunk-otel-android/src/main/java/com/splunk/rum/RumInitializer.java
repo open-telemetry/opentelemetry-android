@@ -112,7 +112,7 @@ class RumInitializer {
         Handler uiHandler = new Handler(mainLooper);
         AnrWatcher anrWatcher = new AnrWatcher(uiHandler, mainThread, SplunkRum::getInstance);
         Executors.newScheduledThreadPool(1)
-                .scheduleWithFixedDelay(anrWatcher, 1, 1, TimeUnit.SECONDS);
+                .scheduleAtFixedRate(anrWatcher, 1, 1, TimeUnit.SECONDS);
     }
 
     private String detectRumVersion() {

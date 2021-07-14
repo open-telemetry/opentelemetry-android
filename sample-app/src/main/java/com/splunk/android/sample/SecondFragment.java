@@ -30,6 +30,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.splunk.android.sample.databinding.FragmentSecondBinding;
 import com.splunk.rum.SplunkRum;
 
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -87,7 +88,7 @@ public class SecondFragment extends Fragment {
         binding.buttonFreeze.setOnClickListener(v -> {
             Span appFreezer = sampleAppTracer.spanBuilder("app freezer").startSpan();
             try (Scope scope = appFreezer.makeCurrent()) {
-                for (int i = 0; i < 60; i++) {
+                for (int i = 0; i < 20; i++) {
                     Thread.sleep(1_000);
                     appFreezer.addEvent("still sleeping");
                 }
@@ -95,6 +96,21 @@ public class SecondFragment extends Fragment {
                 e.printStackTrace();
             } finally {
                 appFreezer.end();
+            }
+        });
+        binding.buttonWork.setOnClickListener(v -> {
+            Span hardWorker = sampleAppTracer.spanBuilder("main thread working hard").startSpan();
+            try (Scope scope = hardWorker.makeCurrent()) {
+                Random random = new Random();
+                long startTime = System.currentTimeMillis();
+                while (true) {
+                    random.nextDouble();
+                    if (System.currentTimeMillis() - startTime > 20_000) {
+                        break;
+                    }
+                }
+            } finally {
+                hardWorker.end();
             }
         });
     }
