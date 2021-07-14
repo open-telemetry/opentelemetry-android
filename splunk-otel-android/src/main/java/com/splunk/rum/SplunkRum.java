@@ -17,6 +17,7 @@
 package com.splunk.rum;
 
 import android.app.Application;
+import android.os.Looper;
 import android.util.Log;
 
 import java.util.concurrent.TimeUnit;
@@ -86,7 +87,8 @@ public class SplunkRum {
             return INSTANCE;
         }
 
-        INSTANCE = new RumInitializer(config, application).initialize(connectionUtilSupplier);
+        INSTANCE = new RumInitializer(config, application)
+                .initialize(connectionUtilSupplier, Looper.getMainLooper());
 
         if (config.isDebugEnabled()) {
             Log.i(LOG_TAG, "Splunk RUM monitoring initialized with session ID: " + INSTANCE.sessionId);
@@ -180,6 +182,22 @@ public class SplunkRum {
         span.setAttribute(ERROR_MESSAGE_KEY, e.getMessage());
     }
 
+    void recordAnr(StackTraceElement[] stackTrace) {
+        openTelemetrySdk.getTracer(RUM_TRACER_NAME)
+                .spanBuilder("ANR")
+                .setAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, formatStackTrace(stackTrace))
+                .startSpan()
+                .end();
+    }
+
+    private String formatStackTrace(StackTraceElement[] stackTrace) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (StackTraceElement stackTraceElement : stackTrace) {
+            stringBuilder.append(stackTraceElement).append("\n");
+        }
+        return stringBuilder.toString();
+    }
+
     //for testing only
     static void resetSingletonForTest() {
         INSTANCE = null;
@@ -200,5 +218,4 @@ public class SplunkRum {
     public static SplunkRum noop() {
         return NoOpSplunkRum.INSTANCE;
     }
-
 }

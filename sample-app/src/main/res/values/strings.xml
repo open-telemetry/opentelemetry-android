@@ -20,4 +20,5 @@
     <string name="start_spam">Spam start!</string>
     <string name="stop_spam">Spam stop</string>
     <string name="spam_status">Created %d spans</string>
+    <string name="freeze">Freeze!</string>
 </resources>

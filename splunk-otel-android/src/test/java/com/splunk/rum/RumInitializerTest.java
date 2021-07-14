@@ -17,6 +17,7 @@
 package com.splunk.rum;
 
 import android.app.Application;
+import android.os.Looper;
 
 import org.junit.Test;
 
@@ -40,6 +41,8 @@ public class RumInitializerTest {
         Config config = mock(Config.class);
         when(config.getBeaconUrl()).thenReturn("http://backend");
         when(config.isCrashReportingEnabled()).thenReturn(true);
+        when(config.isAnrDetectionEnabled()).thenReturn(true);
+        when(config.isNetworkMonitorEnabled()).thenReturn(true);
         Application application = mock(Application.class);
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
         RumInitializer testInitializer = new RumInitializer(config, application) {
@@ -48,7 +51,7 @@ public class RumInitializerTest {
                 return testExporter;
             }
         };
-        SplunkRum splunkRum = testInitializer.initialize(() -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
+        SplunkRum splunkRum = testInitializer.initialize(() -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS), mock(Looper.class));
         splunkRum.flushSpans();
 
         List<SpanData> spans = testExporter.getFinishedSpanItems();
@@ -56,11 +59,11 @@ public class RumInitializerTest {
         SpanData initSpan = spans.get(0);
         assertEquals("SplunkRum.initialize", initSpan.getName());
         assertEquals("appstart", initSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
-        assertEquals("[debug:false,crashReporting:true,networkMonitor:false]",
+        assertEquals("[debug:false,crashReporting:true,anrReporting:true,networkMonitor:true]",
                 initSpan.getAttributes().get(AttributeKey.stringKey("config_settings")));
 
         List<EventData> events = initSpan.getEvents();
-        assertEquals(7, events.size());
+        assertEquals(9, events.size());
         checkEventExists(events, "connectionUtilInitialized");
         checkEventExists(events, "exporterInitialized");
         checkEventExists(events, "sessionIdInitialized");
@@ -68,6 +71,8 @@ public class RumInitializerTest {
         checkEventExists(events, "openTelemetrySdkInitialized");
         checkEventExists(events, "activityLifecycleCallbacksInitialized");
         checkEventExists(events, "crashReportingInitialized");
+        checkEventExists(events, "anrMonitorInitialized");
+        checkEventExists(events, "networkMonitorInitialized");
     }
 
     private void checkEventExists(List<EventData> events, String eventName) {

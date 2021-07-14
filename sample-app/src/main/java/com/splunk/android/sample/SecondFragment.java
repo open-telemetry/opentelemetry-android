@@ -83,6 +83,20 @@ public class SecondFragment extends Fragment {
                 NavHostFragment.findNavController(SecondFragment.this)
                         .navigate(R.id.action_SecondFragment_to_webViewFragment));
         binding.buttonSpam.setOnClickListener(v -> toggleSpam());
+
+        binding.buttonFreeze.setOnClickListener(v -> {
+            Span appFreezer = sampleAppTracer.spanBuilder("app freezer").startSpan();
+            try (Scope scope = appFreezer.makeCurrent()) {
+                for (int i = 0; i < 60; i++) {
+                    Thread.sleep(1_000);
+                    appFreezer.addEvent("still sleeping");
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                appFreezer.end();
+            }
+        });
     }
 
     @Override

@@ -18,12 +18,15 @@ package com.splunk.rum;
 
 import android.app.Application;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.splunk.android.rum.R;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -51,7 +54,7 @@ class RumInitializer {
         this.application = application;
     }
 
-    SplunkRum initialize(Supplier<ConnectionUtil> connectionUtilSupplier) {
+    SplunkRum initialize(Supplier<ConnectionUtil> connectionUtilSupplier, Looper mainLooper) {
         String rumVersion = detectRumVersion();
         VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
 
@@ -91,11 +94,25 @@ class RumInitializer {
 
         if (config.isNetworkMonitorEnabled()) {
             new NetworkMonitor(connectionUtil).addConnectivityListener(tracer);
+            initializationEvents.add(new RumInitializer.InitializationEvent("networkMonitorInitialized", timingClock.now()));
+        }
+
+        if (config.isAnrDetectionEnabled()) {
+            initializeAnrReporting(mainLooper);
+            initializationEvents.add(new RumInitializer.InitializationEvent("anrMonitorInitialized", timingClock.now()));
         }
 
         recordInitializationSpan(startTimeNanos, initializationEvents, tracer, config);
 
         return new SplunkRum(openTelemetrySdk, sessionId);
+    }
+
+    private void initializeAnrReporting(Looper mainLooper) {
+        Thread mainThread = mainLooper.getThread();
+        Handler uiHandler = new Handler(mainLooper);
+        AnrWatcher anrWatcher = new AnrWatcher(uiHandler, mainThread, SplunkRum::getInstance);
+        Executors.newScheduledThreadPool(1)
+                .scheduleWithFixedDelay(anrWatcher, 1, 1, TimeUnit.SECONDS);
     }
 
     private String detectRumVersion() {
@@ -116,6 +133,7 @@ class RumInitializer {
 
         String configSettings = "[debug:" + config.isDebugEnabled() + "," +
                 "crashReporting:" + config.isCrashReportingEnabled() + "," +
+                "anrReporting:" + config.isAnrDetectionEnabled() + "," +
                 "networkMonitor:" + config.isNetworkMonitorEnabled() + "]";
         span.setAttribute("config_settings", configSettings);
 

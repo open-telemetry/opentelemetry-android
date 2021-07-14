@@ -46,6 +46,7 @@ public class ConfigTest {
                 .debugEnabled(true)
                 .crashReportingEnabled(false)
                 .networkMonitorEnabled(false)
+                .anrDetectionEnabled(false)
                 .globalAttributes(globalAttributes)
                 .build();
         assertNotNull(config);
@@ -55,6 +56,7 @@ public class ConfigTest {
         assertTrue(config.isDebugEnabled());
         assertFalse(config.isCrashReportingEnabled());
         assertFalse(config.isNetworkMonitorEnabled());
+        assertFalse(config.isAnrDetectionEnabled());
         assertEquals(globalAttributes, config.getGlobalAttributes());
     }
 
@@ -71,6 +73,7 @@ public class ConfigTest {
         assertFalse(config.isDebugEnabled());
         assertTrue(config.isCrashReportingEnabled());
         assertTrue(config.isNetworkMonitorEnabled());
+        assertTrue(config.isAnrDetectionEnabled());
         assertEquals(Attributes.empty(), config.getGlobalAttributes());
     }
 

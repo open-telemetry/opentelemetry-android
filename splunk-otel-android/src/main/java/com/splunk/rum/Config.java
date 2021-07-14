@@ -33,6 +33,7 @@ public class Config {
     private final boolean crashReportingEnabled;
     private final Attributes globalAttributes;
     private final boolean networkMonitorEnabled;
+    private final boolean anrDetectionEnabled;
 
     private Config(Builder builder) {
         this.beaconUrl = builder.beaconUrl;
@@ -42,6 +43,7 @@ public class Config {
         this.crashReportingEnabled = builder.crashReportingEnabled;
         this.globalAttributes = builder.globalAttributes;
         this.networkMonitorEnabled = builder.networkMonitorEnabled;
+        this.anrDetectionEnabled = builder.anrDetectionEnabled;
     }
 
     /**
@@ -98,12 +100,16 @@ public class Config {
         return networkMonitorEnabled;
     }
 
+    public boolean isAnrDetectionEnabled() {
+        return anrDetectionEnabled;
+    }
 
     /**
      * Builder class for the Splunk RUM {@link Config} class.
      */
     public static class Builder {
         public boolean networkMonitorEnabled = true;
+        public boolean anrDetectionEnabled = true;
         private String beaconUrl;
         private String rumAuthToken;
         private boolean debugEnabled = false;
@@ -179,6 +185,18 @@ public class Config {
          */
         public Builder applicationName(String applicationName) {
             this.applicationName = applicationName;
+            return this;
+        }
+
+        /**
+         * Enable/disable the ANR detection feature. Enabled by default. If enabled, if the main
+         * thread is unresponsive for 5s or more, an event including the main thread's stack trace will be
+         * reported to the RUM system.
+         *
+         * @return this.
+         */
+        public Builder anrDetectionEnabled(boolean enable) {
+            this.anrDetectionEnabled = enable;
             return this;
         }
 
