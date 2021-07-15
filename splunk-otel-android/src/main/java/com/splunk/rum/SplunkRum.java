@@ -27,6 +27,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTracing;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
@@ -145,11 +146,25 @@ public class SplunkRum {
      * @param attributes Any {@link Attributes} to associate with the event.
      */
     public void addRumEvent(String name, Attributes attributes) {
-        openTelemetrySdk.getTracer(RUM_TRACER_NAME)
+        getTracer()
                 .spanBuilder(name)
                 .setAllAttributes(attributes)
                 .startSpan()
                 .end();
+    }
+
+    /**
+     * Start a timer for a named workflow.
+     * <p>
+     * Important: You *MUST* guarantee that either {@link WorkflowTimer#close()} or {@link WorkflowTimer#end()}
+     * are called on the instance returned from this method, or you will potentially create a memory
+     * leak and have mis-constructed span parenting in the rest of your instrumentation.
+     *
+     * @param workflowName The name of the workflow to start.
+     * @return A {@link WorkflowTimer} that has had the timer started.
+     */
+    public WorkflowTimer startWorkflow(String workflowName) {
+        return WorkflowTimer.create(getTracer(), workflowName);
     }
 
     /**
@@ -164,12 +179,16 @@ public class SplunkRum {
      * @param throwable  A {@link Throwable} associated with this event.
      */
     public void addRumException(String name, Attributes attributes, Throwable throwable) {
-        Span span = openTelemetrySdk.getTracer(RUM_TRACER_NAME)
+        Span span = getTracer()
                 .spanBuilder(name)
                 .setAllAttributes(attributes)
                 .startSpan();
         addExceptionAttributes(span, throwable);
         span.end();
+    }
+
+    private Tracer getTracer() {
+        return openTelemetrySdk.getTracer(RUM_TRACER_NAME);
     }
 
     static void addExceptionAttributes(Span span, Throwable e) {
@@ -183,7 +202,7 @@ public class SplunkRum {
     }
 
     void recordAnr(StackTraceElement[] stackTrace) {
-        openTelemetrySdk.getTracer(RUM_TRACER_NAME)
+        getTracer()
                 .spanBuilder("ANR")
                 .setAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, formatStackTrace(stackTrace))
                 .setAttribute(COMPONENT_KEY, COMPONENT_ERROR)

@@ -29,6 +29,7 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.splunk.android.sample.databinding.FragmentFirstBinding;
 import com.splunk.rum.SplunkRum;
+import com.splunk.rum.WorkflowTimer;
 
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 
@@ -82,7 +83,11 @@ public class FirstFragment extends Fragment {
             throw new IllegalStateException("Crashing due to a bug!");
         });
 
-        binding.httpMe.setOnClickListener(v -> backgrounder.submit(() -> makeCall("https://ssidhu.o11ystore.com/")));
+        binding.httpMe.setOnClickListener(v -> {
+            try (WorkflowTimer workflow = splunkRum.startWorkflow("Custom Workflow")) {
+                backgrounder.submit(() -> makeCall("https://ssidhu.o11ystore.com/"));
+            }
+        });
         binding.httpMeBad.setOnClickListener(v -> backgrounder.submit(() -> makeCall("https://asdlfkjasd.asdfkjasdf.ifi")));
         binding.httpMeNotFound.setOnClickListener(v -> backgrounder.submit(() -> makeCall("https://ssidhu.o11ystore.com/foobarbaz")));
 

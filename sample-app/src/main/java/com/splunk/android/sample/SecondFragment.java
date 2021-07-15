@@ -29,6 +29,7 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.splunk.android.sample.databinding.FragmentSecondBinding;
 import com.splunk.rum.SplunkRum;
+import com.splunk.rum.WorkflowTimer;
 
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -86,21 +87,19 @@ public class SecondFragment extends Fragment {
         binding.buttonSpam.setOnClickListener(v -> toggleSpam());
 
         binding.buttonFreeze.setOnClickListener(v -> {
-            Span appFreezer = sampleAppTracer.spanBuilder("app freezer").startSpan();
-            try (Scope scope = appFreezer.makeCurrent()) {
+            try (WorkflowTimer appFreezer =
+                         SplunkRum.getInstance().startWorkflow("app freezer")) {
                 for (int i = 0; i < 20; i++) {
                     Thread.sleep(1_000);
                     appFreezer.addEvent("still sleeping");
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            } finally {
-                appFreezer.end();
             }
         });
         binding.buttonWork.setOnClickListener(v -> {
-            Span hardWorker = sampleAppTracer.spanBuilder("main thread working hard").startSpan();
-            try (Scope scope = hardWorker.makeCurrent()) {
+            try (WorkflowTimer hardWorker =
+                         SplunkRum.getInstance().startWorkflow("main thread working hard")) {
                 Random random = new Random();
                 long startTime = System.currentTimeMillis();
                 while (true) {
@@ -109,8 +108,6 @@ public class SecondFragment extends Fragment {
                         break;
                     }
                 }
-            } finally {
-                hardWorker.end();
             }
         });
     }
