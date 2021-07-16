@@ -20,7 +20,7 @@ import android.app.Activity;
 
 import androidx.fragment.app.Fragment;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
@@ -30,8 +30,10 @@ import io.opentelemetry.context.Scope;
 class NamedTrackableTracer implements TrackableTracer {
     static final AttributeKey<String> ACTIVITY_NAME_KEY = AttributeKey.stringKey("activityName");
     static final AttributeKey<String> FRAGMENT_NAME_KEY = AttributeKey.stringKey("fragmentName");
+    static final AttributeKey<String> START_TYPE_KEY = AttributeKey.stringKey("start.type");
+    static final String APP_START_SPAN_NAME = "AppStart";
 
-    private final AtomicBoolean appStartupComplete;
+    private final AtomicReference<String> initialAppActivity;
     private final Tracer tracer;
     private final String trackableName;
     private final AttributeKey<String> nameKey;
@@ -39,17 +41,17 @@ class NamedTrackableTracer implements TrackableTracer {
     private Span span;
     private Scope scope;
 
-    NamedTrackableTracer(Activity activity, AtomicBoolean appStartupComplete, Tracer tracer) {
-        this.appStartupComplete = appStartupComplete;
+    NamedTrackableTracer(Activity activity, AtomicReference<String> initialAppActivity, Tracer tracer) {
+        this.initialAppActivity = initialAppActivity;
         this.tracer = tracer;
         this.trackableName = activity.getClass().getSimpleName();
         this.nameKey = ACTIVITY_NAME_KEY;
     }
 
-    NamedTrackableTracer(Fragment activity, Tracer tracer) {
-        this.appStartupComplete = new AtomicBoolean(true);
+    NamedTrackableTracer(Fragment fragment, Tracer tracer) {
+        this.initialAppActivity = new AtomicReference<>("not relevant for fragments");
         this.tracer = tracer;
-        this.trackableName = activity.getClass().getSimpleName();
+        this.trackableName = fragment.getClass().getSimpleName();
         this.nameKey = FRAGMENT_NAME_KEY;
     }
 
@@ -64,19 +66,36 @@ class NamedTrackableTracer implements TrackableTracer {
 
     @Override
     public TrackableTracer startTrackableCreation() {
-        String spanName;
-        //If the application has never loaded an activity, we name this span specially to show that
-        //it's the application starting up. Otherwise, use the activity class name as the base of the span name.
-        if (!appStartupComplete.get()) {
-            spanName = "AppStart";
+        //If the application has never loaded an activity, or this is the initial activity getting re-created,
+        // we name this span specially to show that it's the application starting up. Otherwise, use
+        // the activity class name as the base of the span name.
+        if (initialAppActivity.get() == null || trackableName.equals(initialAppActivity.get())) {
+            Span span = startSpan(APP_START_SPAN_NAME);
+            span.setAttribute(START_TYPE_KEY, initialAppActivity.get() == null ? "cold" : "warm");
         } else {
-            spanName = trackableName + " Created";
+            startSpan(trackableName + " Created");
         }
-        startSpan(spanName);
         return this;
     }
 
-    private void startSpan(String spanName) {
+    @Override
+    public TrackableTracer initiateRestartSpanIfNecessary(boolean multiActivityApp) {
+        if (span != null) {
+            return this;
+        }
+        //restarting the first activity is a "hot" AppStart
+        //Note: in a multi-activity application, navigating back to the first activity can trigger
+        //this, so it would not be ideal to call it an AppStart.
+        if (!multiActivityApp && trackableName.equals(initialAppActivity.get())) {
+            Span span = startSpan(APP_START_SPAN_NAME);
+            span.setAttribute(START_TYPE_KEY, "hot");
+        } else {
+            startSpan(trackableName + " Restarted");
+        }
+        return this;
+    }
+
+    private Span startSpan(String spanName) {
         span = tracer.spanBuilder(spanName)
                 .setAttribute(nameKey, trackableName)
                 .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_UI)
@@ -84,11 +103,14 @@ class NamedTrackableTracer implements TrackableTracer {
         //do this after the span is started, so we can override the default screen.name set by the RumAttributeAppender.
         span.setAttribute(SplunkRum.SCREEN_NAME_KEY, trackableName);
         scope = span.makeCurrent();
+        return span;
     }
 
     @Override
     public void endSpanForActivityResumed() {
-        appStartupComplete.set(true);
+        if (initialAppActivity.get() == null) {
+            initialAppActivity.set(trackableName);
+        }
         endActiveSpan();
     }
 

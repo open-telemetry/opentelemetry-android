@@ -27,7 +27,7 @@ import androidx.fragment.app.FragmentManager;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import io.opentelemetry.api.trace.Tracer;
 
@@ -35,7 +35,7 @@ class Pre29ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     private final Tracer tracer;
     private final VisibleScreenTracker visibleScreenTracker;
     private final Map<String, NamedTrackableTracer> tracersByActivityClassName = new HashMap<>();
-    private final AtomicBoolean appStartupComplete = new AtomicBoolean();
+    private final AtomicReference<String> initialAppActivity = new AtomicReference<>();
 
     Pre29ActivityCallbacks(Tracer tracer, VisibleScreenTracker visibleScreenTracker) {
         this.tracer = tracer;
@@ -57,7 +57,7 @@ class Pre29ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     @Override
     public void onActivityStarted(@NonNull Activity activity) {
         getOrCreateTracer(activity)
-                .startSpanIfNoneInProgress("Restarted")
+                .initiateRestartSpanIfNecessary(tracersByActivityClassName.size() > 1)
                 .addEvent("activityStarted");
     }
 
@@ -103,16 +103,8 @@ class Pre29ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     private TrackableTracer getOrCreateTracer(Activity activity) {
         NamedTrackableTracer activityTracer = tracersByActivityClassName.get(activity.getClass().getName());
         if (activityTracer == null) {
-            activityTracer = new NamedTrackableTracer(activity, appStartupComplete, tracer);
+            activityTracer = new NamedTrackableTracer(activity, initialAppActivity, tracer);
             tracersByActivityClassName.put(activity.getClass().getName(), activityTracer);
-        }
-        return activityTracer;
-    }
-
-    private TrackableTracer getActivityTracer(@NonNull Activity activity) {
-        NamedTrackableTracer activityTracer = tracersByActivityClassName.get(activity.getClass().getName());
-        if (activityTracer == null) {
-            return TrackableTracer.NO_OP_TRACER;
         }
         return activityTracer;
     }

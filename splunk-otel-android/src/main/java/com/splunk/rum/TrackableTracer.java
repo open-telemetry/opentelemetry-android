@@ -24,6 +24,8 @@ interface TrackableTracer {
 
     TrackableTracer startTrackableCreation();
 
+    TrackableTracer initiateRestartSpanIfNecessary(boolean multiActivityApp);
+
     TrackableTracer addEvent(String eventName);
 
     void endSpanForActivityResumed();
@@ -39,6 +41,11 @@ interface TrackableTracer {
 
         @Override
         public TrackableTracer startTrackableCreation() {
+            return this;
+        }
+
+        @Override
+        public TrackableTracer initiateRestartSpanIfNecessary(boolean multiActivityApp) {
             return this;
         }
 
