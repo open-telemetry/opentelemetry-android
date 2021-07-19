@@ -50,6 +50,7 @@ public class SplunkRum {
 
     static final String LOG_TAG = "SplunkRum";
     static final String RUM_TRACER_NAME = "SplunkRum";
+    static final AttributeKey<String> WORKFLOW_NAME_KEY = stringKey("workflow.name");
 
     private static SplunkRum INSTANCE;
 
@@ -154,17 +155,16 @@ public class SplunkRum {
     }
 
     /**
-     * Start a timer for a named workflow.
-     * <p>
-     * Important: You *MUST* guarantee that either {@link WorkflowTimer#close()} or {@link WorkflowTimer#end()}
-     * are called on the instance returned from this method, or you will potentially create a memory
-     * leak and have mis-constructed span parenting in the rest of your instrumentation.
+     * Start a Span to time a named workflow.
      *
      * @param workflowName The name of the workflow to start.
-     * @return A {@link WorkflowTimer} that has had the timer started.
+     * @return A {@link Span} that has been started.
      */
-    public WorkflowTimer startWorkflow(String workflowName) {
-        return WorkflowTimer.create(getTracer(), workflowName);
+    public Span startWorkflow(String workflowName) {
+        return getTracer()
+                .spanBuilder(workflowName)
+                .setAttribute(WORKFLOW_NAME_KEY, workflowName)
+                .startSpan();
     }
 
     /**

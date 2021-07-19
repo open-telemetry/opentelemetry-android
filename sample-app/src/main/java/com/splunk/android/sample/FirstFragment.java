@@ -29,7 +29,6 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.splunk.android.sample.databinding.FragmentFirstBinding;
 import com.splunk.rum.SplunkRum;
-import com.splunk.rum.WorkflowTimer;
 
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 
@@ -44,6 +43,8 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -84,11 +85,20 @@ public class FirstFragment extends Fragment {
         });
 
         binding.httpMe.setOnClickListener(v -> {
-            try (WorkflowTimer workflow = splunkRum.startWorkflow("Custom Workflow")) {
-                backgrounder.submit(() -> makeCall("https://ssidhu.o11ystore.com/"));
-            }
+            Span workflow = splunkRum.startWorkflow("Custom Workflow");
+            backgrounder.submit(() -> {
+                makeCall("https://ssidhu.o11ystore.com/");
+                workflow.end();
+            });
         });
-        binding.httpMeBad.setOnClickListener(v -> backgrounder.submit(() -> makeCall("https://asdlfkjasd.asdfkjasdf.ifi")));
+        binding.httpMeBad.setOnClickListener(v -> {
+            Span workflow = splunkRum.startWorkflow("Workflow With Error");
+            backgrounder.submit(() -> {
+                makeCall("https://asdlfkjasd.asdfkjasdf.ifi");
+                workflow.setStatus(StatusCode.ERROR);
+                workflow.end();
+            });
+        });
         binding.httpMeNotFound.setOnClickListener(v -> backgrounder.submit(() -> makeCall("https://ssidhu.o11ystore.com/foobarbaz")));
 
         sessionId.postValue(splunkRum.getRumSessionId());

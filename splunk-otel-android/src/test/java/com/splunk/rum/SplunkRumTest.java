@@ -19,13 +19,19 @@ package com.splunk.rum;
 import android.app.Application;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.List;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
+import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -43,8 +49,13 @@ import static org.mockito.Mockito.when;
 
 public class SplunkRumTest {
 
+    @Rule
+    public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
+    private Tracer tracer;
+
     @Before
-    public void setUp() {
+    public void setup() {
+        tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
         SplunkRum.resetSingletonForTest();
     }
 
@@ -99,15 +110,13 @@ public class SplunkRumTest {
 
     @Test
     public void addEvent() {
-        InMemorySpanExporter testExporter = InMemorySpanExporter.create();
-        OpenTelemetrySdk testSdk = buildTestSdk(testExporter);
 
-        SplunkRum splunkRum = new SplunkRum(testSdk, new SessionId());
+        SplunkRum splunkRum = new SplunkRum((OpenTelemetrySdk) otelTesting.getOpenTelemetry(), new SessionId());
 
         Attributes attributes = Attributes.of(stringKey("one"), "1", longKey("two"), 2L);
         splunkRum.addRumEvent("foo", attributes);
 
-        List<SpanData> spans = testExporter.getFinishedSpanItems();
+        List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
         assertEquals("foo", spans.get(0).getName());
         assertEquals(attributes.asMap(), spans.get(0).getAttributes().asMap());
@@ -115,15 +124,13 @@ public class SplunkRumTest {
 
     @Test
     public void recordAnr() {
-        InMemorySpanExporter testExporter = InMemorySpanExporter.create();
-        OpenTelemetrySdk testSdk = buildTestSdk(testExporter);
         StackTraceElement[] stackTrace = new Exception().getStackTrace();
         StringBuilder stringBuilder = new StringBuilder();
         for (StackTraceElement stackTraceElement : stackTrace) {
             stringBuilder.append(stackTraceElement).append("\n");
         }
 
-        SplunkRum splunkRum = new SplunkRum(testSdk, new SessionId());
+        SplunkRum splunkRum = new SplunkRum((OpenTelemetrySdk) otelTesting.getOpenTelemetry(), new SessionId());
 
         Attributes expectedAttributes = Attributes.of(
                 SemanticAttributes.EXCEPTION_STACKTRACE, stringBuilder.toString(),
@@ -131,7 +138,7 @@ public class SplunkRumTest {
 
         splunkRum.recordAnr(stackTrace);
 
-        List<SpanData> spans = testExporter.getFinishedSpanItems();
+        List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
         assertEquals("ANR", spans.get(0).getName());
         assertEquals(expectedAttributes.asMap(), spans.get(0).getAttributes().asMap());
@@ -167,5 +174,27 @@ public class SplunkRumTest {
                         .addSpanProcessor(SimpleSpanProcessor.create(testExporter))
                         .build())
                 .build();
+    }
+
+    @Test
+    public void createAndEnd() {
+        SplunkRum splunkRum = new SplunkRum((OpenTelemetrySdk) otelTesting.getOpenTelemetry(), new SessionId());
+
+        Span span = splunkRum.startWorkflow("workflow");
+        Span inner = tracer.spanBuilder("foo").startSpan();
+        try (Scope scope = inner.makeCurrent()) {
+            //do nothing
+        } finally {
+            inner.end();
+        }
+        span.end();
+
+        List<SpanData> spans = otelTesting.getSpans();
+        assertEquals(2, spans.size());
+        //verify we're not trying to do any propagation of the context here.
+        assertEquals(spans.get(0).getParentSpanId(), SpanId.getInvalid());
+        assertEquals("foo", spans.get(0).getName());
+        assertEquals("workflow", spans.get(1).getName());
+        assertEquals("workflow", spans.get(1).getAttributes().get(SplunkRum.WORKFLOW_NAME_KEY));
     }
 }
