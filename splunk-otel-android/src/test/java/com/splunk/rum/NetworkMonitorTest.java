@@ -53,7 +53,7 @@ public class NetworkMonitorTest {
         assertEquals("network.change", spanData.getName());
         Attributes attributes = spanData.getAttributes();
         assertEquals("available", attributes.get(NetworkMonitor.NETWORK_STATUS_KEY));
-        assertEquals("WIFI", attributes.get(RumAttributeAppender.NETWORK_TYPE_KEY));
+        assertEquals("wifi", attributes.get(RumAttributeAppender.NETWORK_TYPE_KEY));
         assertNull(attributes.get(RumAttributeAppender.NETWORK_SUBTYPE_KEY));
     }
 
@@ -69,7 +69,7 @@ public class NetworkMonitorTest {
         assertEquals("network.change", spanData.getName());
         Attributes attributes = spanData.getAttributes();
         assertEquals("available", attributes.get(NetworkMonitor.NETWORK_STATUS_KEY));
-        assertEquals("CELLULAR", attributes.get(RumAttributeAppender.NETWORK_TYPE_KEY));
+        assertEquals("cell", attributes.get(RumAttributeAppender.NETWORK_TYPE_KEY));
         assertEquals("LTE", attributes.get(RumAttributeAppender.NETWORK_SUBTYPE_KEY));
     }
 
@@ -85,7 +85,7 @@ public class NetworkMonitorTest {
         assertEquals("network.change", spanData.getName());
         Attributes attributes = spanData.getAttributes();
         assertEquals("lost", attributes.get(NetworkMonitor.NETWORK_STATUS_KEY));
-        assertEquals("NONE", attributes.get(RumAttributeAppender.NETWORK_TYPE_KEY));
+        assertEquals("unavailable", attributes.get(RumAttributeAppender.NETWORK_TYPE_KEY));
         assertNull(attributes.get(RumAttributeAppender.NETWORK_SUBTYPE_KEY));
     }
 }

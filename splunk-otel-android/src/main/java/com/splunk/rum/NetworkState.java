@@ -17,11 +17,12 @@
 package com.splunk.rum;
 
 enum NetworkState {
-    NO_NETWORK_AVAILABLE("NONE"),
-    TRANSPORT_CELLULAR("CELLULAR"),
-    TRANSPORT_WIFI("WIFI"),
-    TRANSPORT_VPN("VPN"),
-    TRANSPORT_UNKNOWN("UNKNOWN");
+    //note: these will be in the otel semantic conventions as of spec v1.6.0
+    NO_NETWORK_AVAILABLE("unavailable"),
+    TRANSPORT_CELLULAR("cell"),
+    TRANSPORT_WIFI("wifi"),
+    TRANSPORT_VPN("vpn"),
+    TRANSPORT_UNKNOWN("unknown");
 
     private final String humanName;
 

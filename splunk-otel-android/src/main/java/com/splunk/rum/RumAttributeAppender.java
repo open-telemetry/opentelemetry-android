@@ -23,6 +23,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_TYPE;
@@ -30,12 +31,14 @@ import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS
 class RumAttributeAppender implements SpanProcessor {
     static final AttributeKey<String> APP_NAME_KEY = stringKey("app");
     static final AttributeKey<String> SESSION_ID_KEY = stringKey("splunk.rumSessionId");
-    static final AttributeKey<String> DEVICE_MODEL_NAME_KEY = stringKey("device.model.name");
-    static final AttributeKey<String> DEVICE_MODEL_KEY = stringKey("device.model");
+    static final AttributeKey<String> DEVICE_MODEL_NAME_KEY = ResourceAttributes.DEVICE_MODEL_NAME;
+    static final AttributeKey<String> DEVICE_MODEL_KEY = ResourceAttributes.DEVICE_MODEL_IDENTIFIER;
     static final AttributeKey<String> RUM_VERSION_KEY = stringKey("splunk.rumVersion");
-    static final AttributeKey<String> OS_VERSION_KEY = stringKey("os.version");
-    static final AttributeKey<String> NETWORK_TYPE_KEY = stringKey("network.type");
-    static final AttributeKey<String> NETWORK_SUBTYPE_KEY = stringKey("network.subtype");
+    static final AttributeKey<String> OS_VERSION_KEY = ResourceAttributes.OS_VERSION;
+
+    //note: these will be in the otel semantic conventions as of spec v1.6.0
+    static final AttributeKey<String> NETWORK_TYPE_KEY = stringKey("host.connection.type");
+    static final AttributeKey<String> NETWORK_SUBTYPE_KEY = stringKey("host.connection.subtype");
 
     private final Config config;
     private final SessionId sessionId;

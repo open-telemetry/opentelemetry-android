@@ -80,7 +80,7 @@ public class RumAttributeAppenderTest {
         verify(span).setAttribute(RumAttributeAppender.SESSION_ID_KEY, "rumSessionId");
         verify(span).setAttribute(ResourceAttributes.OS_TYPE, "Android");
         verify(span).setAttribute(SplunkRum.SCREEN_NAME_KEY, "ScreenOne");
-        verify(span).setAttribute(RumAttributeAppender.NETWORK_TYPE_KEY, "CELLULAR");
+        verify(span).setAttribute(RumAttributeAppender.NETWORK_TYPE_KEY, "cell");
         verify(span).setAttribute(RumAttributeAppender.NETWORK_SUBTYPE_KEY, "LTE");
 
         //these values don't seem to be available in unit tests, so just assert that something was set.
