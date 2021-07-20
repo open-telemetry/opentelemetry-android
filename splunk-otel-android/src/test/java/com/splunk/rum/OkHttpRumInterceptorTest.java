@@ -32,12 +32,10 @@ import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import okhttp3.Interceptor;
-import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -54,83 +52,24 @@ public class OkHttpRumInterceptorTest {
     }
 
     @Test
-    public void spanDecoration() throws IOException {
-        ServerTimingHeaderParser headerParser = mock(ServerTimingHeaderParser.class);
-        when(headerParser.parse("headerValue")).thenReturn(new String[]{"9499195c502eb217c448a68bfe0f967c", "fe16eca542cd5d86"});
-
-        Interceptor.Chain fakeChain = mock(Interceptor.Chain.class);
-        Request fakeRequest = mock(Request.class);
-        when(fakeChain.request()).thenReturn(fakeRequest);
-        when(fakeChain.proceed(fakeRequest)).thenReturn(new Response.Builder()
-                .request(fakeRequest)
-                .protocol(Protocol.HTTP_1_1)
-                .message("hello")
-                .code(200)
-                .addHeader("Server-Timing", "headerValue")
-                .addHeader("Content-Length", "101")
-                .build());
-
-        OkHttpRumInterceptor interceptor = new OkHttpRumInterceptor(new TestTracingInterceptor(tracer), headerParser);
-        interceptor.intercept(fakeChain);
-
-        List<SpanData> spans = otelTesting.getSpans();
-        assertEquals(1, spans.size());
-        SpanData spanData = spans.get(0);
-        assertEquals("http", spanData.getAttributes().get(SplunkRum.COMPONENT_KEY));
-        assertEquals("9499195c502eb217c448a68bfe0f967c", spanData.getAttributes().get(OkHttpRumInterceptor.LINK_TRACE_ID_KEY));
-        assertEquals("fe16eca542cd5d86", spanData.getAttributes().get(OkHttpRumInterceptor.LINK_SPAN_ID_KEY));
-        assertEquals(101L, (long) spanData.getAttributes().get(SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH));
-    }
-
-    @Test
     public void spanDecoration_error() throws IOException {
-        ServerTimingHeaderParser headerParser = mock(ServerTimingHeaderParser.class);
-        when(headerParser.parse("headerValue")).thenReturn(new String[]{"9499195c502eb217c448a68bfe0f967c", "fe16eca542cd5d86"});
-
         Interceptor.Chain fakeChain = mock(Interceptor.Chain.class);
         Request fakeRequest = mock(Request.class);
         when(fakeChain.request()).thenReturn(fakeRequest);
         when(fakeChain.proceed(fakeRequest)).thenThrow(new IOException("failed to make a call"));
 
-        OkHttpRumInterceptor interceptor = new OkHttpRumInterceptor(new TestTracingInterceptor(tracer), headerParser);
+        OkHttpRumInterceptor interceptor = new OkHttpRumInterceptor(new TestTracingInterceptor(tracer));
         assertThrows(IOException.class, () -> interceptor.intercept(fakeChain));
 
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
         SpanData spanData = spans.get(0);
-        assertEquals("http", spanData.getAttributes().get(SplunkRum.COMPONENT_KEY));
         assertEquals("IOException", spanData.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE));
         assertEquals("failed to make a call", spanData.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE));
 
         //temporary attributes until the RUM UI/backend can be brought up to date with otel conventions.
         assertEquals("IOException", spanData.getAttributes().get(SplunkRum.ERROR_TYPE_KEY));
         assertEquals("failed to make a call", spanData.getAttributes().get(SplunkRum.ERROR_MESSAGE_KEY));
-    }
-
-    @Test
-    public void spanDecoration_noHeader() throws IOException {
-        ServerTimingHeaderParser headerParser = mock(ServerTimingHeaderParser.class);
-        when(headerParser.parse(null)).thenReturn(new String[0]);
-
-        Interceptor.Chain fakeChain = mock(Interceptor.Chain.class);
-        Request fakeRequest = mock(Request.class);
-        when(fakeChain.request()).thenReturn(fakeRequest);
-        when(fakeChain.proceed(fakeRequest)).thenReturn(new Response.Builder()
-                .request(fakeRequest)
-                .protocol(Protocol.HTTP_1_1)
-                .message("hello")
-                .code(200)
-                .build());
-
-        OkHttpRumInterceptor interceptor = new OkHttpRumInterceptor(new TestTracingInterceptor(tracer), headerParser);
-        interceptor.intercept(fakeChain);
-
-        List<SpanData> spans = otelTesting.getSpans();
-        assertEquals(1, spans.size());
-        SpanData spanData = spans.get(0);
-        assertEquals("http", spanData.getAttributes().get(SplunkRum.COMPONENT_KEY));
-        assertNull(spanData.getAttributes().get(OkHttpRumInterceptor.LINK_TRACE_ID_KEY));
-        assertNull(spanData.getAttributes().get(OkHttpRumInterceptor.LINK_SPAN_ID_KEY));
     }
 
     private static class TestTracingInterceptor implements Interceptor {

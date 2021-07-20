@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import okhttp3.Call;
 import okhttp3.Connection;
 import okhttp3.Interceptor;
@@ -33,26 +32,24 @@ import okhttp3.Response;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 /**
- * Note: When the the okhttp3 interceptor from otel has been converted to use the new Instrumentation APIs,
- * we'll be able to do this much more simply without all this craziness just by giving the otel interceptor
- * a response handler implementation.
+ * This currently allows handling exceptions during the request and recording exception attributes to the
+ * RUM http span. Hopefully the otel instrumentation will support this use-case soon and we won't
+ * need to do these hijinks to capture this information.
  */
 class OkHttpRumInterceptor implements Interceptor {
     static final AttributeKey<String> LINK_TRACE_ID_KEY = stringKey("link.traceId");
     static final AttributeKey<String> LINK_SPAN_ID_KEY = stringKey("link.spanId");
 
     private final Interceptor coreInterceptor;
-    private final ServerTimingHeaderParser headerParser;
 
-    public OkHttpRumInterceptor(Interceptor coreInterceptor, ServerTimingHeaderParser headerParser) {
+    public OkHttpRumInterceptor(Interceptor coreInterceptor) {
         this.coreInterceptor = coreInterceptor;
-        this.headerParser = headerParser;
     }
 
     @NotNull
     @Override
     public Response intercept(@NotNull Chain chain) throws IOException {
-        return coreInterceptor.intercept(new DelegatingChain(chain, headerParser));
+        return coreInterceptor.intercept(new DelegatingChain(chain));
     }
 
     /**
@@ -60,11 +57,9 @@ class OkHttpRumInterceptor implements Interceptor {
      */
     private static class DelegatingChain implements Chain {
         private final Chain chain;
-        private final ServerTimingHeaderParser headerParser;
 
-        public DelegatingChain(Chain chain, ServerTimingHeaderParser headerParser) {
+        public DelegatingChain(Chain chain) {
             this.chain = chain;
-            this.headerParser = headerParser;
         }
 
         @NotNull
@@ -76,41 +71,14 @@ class OkHttpRumInterceptor implements Interceptor {
         @NotNull
         @Override
         public Response proceed(@NotNull Request request) throws IOException {
-            Span span = Span.current();
-            span.setAttribute(SplunkRum.COMPONENT_KEY, "http");
-
             Response response;
             try {
                 response = chain.proceed(request);
             } catch (IOException e) {
-                SplunkRum.addExceptionAttributes(span, e);
+                SplunkRum.addExceptionAttributes(Span.current(), e);
                 throw e;
             }
-            recordContentLength(span, response);
-
-            String serverTimingHeader = response.header("Server-Timing");
-
-            String[] ids = headerParser.parse(serverTimingHeader);
-            if (ids.length == 2) {
-                span.setAttribute(LINK_TRACE_ID_KEY, ids[0]);
-                span.setAttribute(LINK_SPAN_ID_KEY, ids[1]);
-            }
             return response;
-        }
-
-        private void recordContentLength(Span span, Response response) {
-            //make a best low-impact effort at getting the content length on the response.
-            String contentLengthHeader = response.header("Content-Length");
-            if (contentLengthHeader != null) {
-                try {
-                    long contentLength = Long.parseLong(contentLengthHeader);
-                    if (contentLength > 0) {
-                        span.setAttribute(SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH, contentLength);
-                    }
-                } catch (NumberFormatException e) {
-                    //who knows what we got back? It wasn't a number!
-                }
-            }
         }
 
         @Override

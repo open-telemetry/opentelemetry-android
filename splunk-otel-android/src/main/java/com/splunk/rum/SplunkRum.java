@@ -116,7 +116,12 @@ public class SplunkRum {
      * attributes.
      */
     public Interceptor createOkHttpRumInterceptor() {
-        return new OkHttpRumInterceptor(OkHttpTracing.create(openTelemetrySdk).newInterceptor(), new ServerTimingHeaderParser());
+        Interceptor coreInterceptor = OkHttpTracing
+                .newBuilder(openTelemetrySdk)
+                .addAttributesExtractor(new RumResponseAttributesExtractor(new ServerTimingHeaderParser()))
+                .build()
+                .newInterceptor();
+        return new OkHttpRumInterceptor(coreInterceptor);
     }
 
     /**
