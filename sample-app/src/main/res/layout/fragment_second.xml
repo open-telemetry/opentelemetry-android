@@ -43,6 +43,13 @@
                 android:text="@string/next" />
 
             <Button
+                android:id="@+id/button_to_custom_tab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/custom_tab" />
+
+            <Button
                 android:id="@+id/button_second"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

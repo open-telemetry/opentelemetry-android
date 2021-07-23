@@ -16,12 +16,14 @@
 
 package com.splunk.android.sample;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -52,11 +54,22 @@ public class SecondFragment extends Fragment {
     private FragmentSecondBinding binding;
     private Tracer sampleAppTracer;
 
+    private Span customChromeTabTimer;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         sampleAppTracer = SplunkRum.getInstance().getOpenTelemetry().getTracer("sampleAppTracer");
         binding = FragmentSecondBinding.inflate(inflater, container, false);
         return binding.getRoot();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (customChromeTabTimer != null) {
+            customChromeTabTimer.end();
+            customChromeTabTimer = null;
+        }
     }
 
     @Override
@@ -83,6 +96,18 @@ public class SecondFragment extends Fragment {
         binding.buttonToWebview.setOnClickListener(v ->
                 NavHostFragment.findNavController(SecondFragment.this)
                         .navigate(R.id.action_SecondFragment_to_webViewFragment));
+
+        binding.buttonToCustomTab.setOnClickListener(v -> {
+            String url = "https://ssidhu.o11ystore.com/";
+            customChromeTabTimer = SplunkRum.getInstance().startWorkflow("Visit to Chrome Custom Tab");
+            new CustomTabsIntent.Builder()
+                    .setColorScheme(CustomTabsIntent.COLOR_SCHEME_DARK)
+                    .setStartAnimations(getContext(), android.R.anim.slide_in_left, android.R.anim.slide_out_right)
+                    .setExitAnimations(getContext(), android.R.anim.slide_out_right, android.R.anim.slide_in_left)
+                    .build()
+                    .launchUrl(this.getContext(), Uri.parse(url));
+        });
+
         binding.buttonSpam.setOnClickListener(v -> toggleSpam());
 
         binding.buttonFreeze.setOnClickListener(v -> {

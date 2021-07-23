@@ -22,4 +22,5 @@
     <string name="spam_status">Created %d spans</string>
     <string name="freeze">Freeze!</string>
     <string name="work_it">Work it!</string>
+    <string name="custom_tab">Chrome</string>
 </resources>
