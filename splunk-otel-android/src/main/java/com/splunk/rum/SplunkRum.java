@@ -43,6 +43,7 @@ public class SplunkRum {
     static final AttributeKey<String> SCREEN_NAME_KEY = AttributeKey.stringKey("screen.name");
     static final AttributeKey<String> LAST_SCREEN_NAME_KEY = AttributeKey.stringKey("last.screen.name");
     static final String COMPONENT_APPSTART = "appstart";
+    static final String COMPONENT_CRASH = "crash";
     static final String COMPONENT_ERROR = "error";
     static final String COMPONENT_UI = "ui";
     static final AttributeKey<String> ERROR_TYPE_KEY = stringKey("error.type");

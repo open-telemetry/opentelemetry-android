@@ -50,12 +50,13 @@ class CrashReporter {
         public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
             StringWriter writer = new StringWriter();
             e.printStackTrace(new PrintWriter(writer));
-            tracer.spanBuilder("crash.report")
+            String exceptionType = e.getClass().getSimpleName();
+            tracer.spanBuilder(exceptionType)
                     .setAttribute(SemanticAttributes.THREAD_ID, t.getId())
                     .setAttribute(SemanticAttributes.THREAD_NAME, t.getName())
                     .setAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, writer.toString())
                     .setAttribute(SemanticAttributes.EXCEPTION_ESCAPED, true)
-                    .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_ERROR)
+                    .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_CRASH)
                     .startSpan()
                     .setStatus(StatusCode.ERROR)
                     .end();

@@ -62,9 +62,9 @@ public class CrashReporterTest {
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
         SpanData crashSpan = spans.get(0);
-        assertEquals("crash.report", crashSpan.getName());
+        assertEquals(oopsie.getClass().getSimpleName(), crashSpan.getName());
         assertEquals(crashThread.getId(), (long) crashSpan.getAttributes().get(SemanticAttributes.THREAD_ID));
-        assertEquals(SplunkRum.COMPONENT_ERROR, crashSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
+        assertEquals(SplunkRum.COMPONENT_CRASH, crashSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
         assertEquals("badThread", crashSpan.getAttributes().get(SemanticAttributes.THREAD_NAME));
         assertTrue(crashSpan.getAttributes().get(SemanticAttributes.EXCEPTION_ESCAPED));
 
