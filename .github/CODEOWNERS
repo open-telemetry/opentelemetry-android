@@ -8,7 +8,7 @@ CODEOWNERS @signalfx/gdi-java-maintainers
 #
 #####################################################
 
-*.md @signalfx/docs
-*.rst @signalfx/docs
-docs/ @signalfx/docs
-README* @signalfx/docs @signalfx/gdi-specification-approvers @signalfx/gdi-specification-maintainers
+*.md    @signalfx/gdi-java-maintainers @signalfx/gdi-java-approvers @signalfx/docs
+*.rst   @signalfx/gdi-java-maintainers @signalfx/gdi-java-approvers @signalfx/docs
+docs/   @signalfx/gdi-java-maintainers @signalfx/gdi-java-approvers @signalfx/docs
+README* @signalfx/gdi-java-maintainers @signalfx/gdi-java-approvers @signalfx/docs @signalfx/gdi-specification-approvers @signalfx/gdi-specification-maintainers
