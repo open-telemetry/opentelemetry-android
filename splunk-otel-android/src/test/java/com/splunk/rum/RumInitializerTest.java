@@ -39,7 +39,7 @@ public class RumInitializerTest {
     @Test
     public void initializationSpan() {
         Config config = mock(Config.class);
-        when(config.getBeaconUrl()).thenReturn("http://backend");
+        when(config.getBeaconEndpoint()).thenReturn("http://backend");
         when(config.isCrashReportingEnabled()).thenReturn(true);
         when(config.isAnrDetectionEnabled()).thenReturn(true);
         when(config.isNetworkMonitorEnabled()).thenReturn(true);

@@ -163,7 +163,7 @@ class RumInitializer {
     }
 
     SpanExporter buildExporter(ConnectionUtil connectionUtil) {
-        String endpoint = config.getBeaconUrl() + "?auth=" + config.getRumAuthToken();
+        String endpoint = config.getBeaconEndpoint() + "?auth=" + config.getRumAccessToken();
         if (!config.isDebugEnabled()) {
             //tell the Zipkin exporter to shut up already. We're on mobile, network stuff happens.
             // we'll do our best to hang on to the spans with the wrapping BufferingExporter.

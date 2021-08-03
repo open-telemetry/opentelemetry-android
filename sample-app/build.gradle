@@ -24,8 +24,8 @@ android {
 
     buildTypes {
         all {
-            resValue("string", "rum_beacon_url", localProperties['rum.beacon.url'] ?: "http://backend")
-            resValue("string", "rum_auth_token", localProperties['rum.auth.token'] ?: "dummyAuthToken")
+            resValue("string", "rum_realm", localProperties['rum.realm'] ?: "us0")
+            resValue("string", "rum_access_token", localProperties['rum.access.token'] ?: "dummyAuth")
         }
 
         release {

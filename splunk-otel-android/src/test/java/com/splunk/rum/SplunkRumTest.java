@@ -65,7 +65,7 @@ public class SplunkRumTest {
         Config config = mock(Config.class);
         ConnectionUtil connectionUtil = mock(ConnectionUtil.class, RETURNS_DEEP_STUBS);
 
-        when(config.getBeaconUrl()).thenReturn("http://backend");
+        when(config.getBeaconEndpoint()).thenReturn("http://backend");
         when(config.isDebugEnabled()).thenReturn(true);
 
         SplunkRum singleton = SplunkRum.initialize(config, application, () -> connectionUtil);
@@ -85,7 +85,7 @@ public class SplunkRumTest {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
         Config config = mock(Config.class);
 
-        when(config.getBeaconUrl()).thenReturn("http://backend");
+        when(config.getBeaconEndpoint()).thenReturn("http://backend");
 
         SplunkRum singleton = SplunkRum.initialize(config, application, () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
         assertSame(singleton, SplunkRum.getInstance());
@@ -101,7 +101,7 @@ public class SplunkRumTest {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
         Config config = mock(Config.class);
 
-        when(config.getBeaconUrl()).thenReturn("http://backend");
+        when(config.getBeaconEndpoint()).thenReturn("http://backend");
 
         SplunkRum splunkRum = SplunkRum.initialize(config, application, () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
         assertNotNull(splunkRum.getOpenTelemetry());

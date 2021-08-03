@@ -99,24 +99,32 @@ dependencies {
 }
 ```
 
+### Features
+* Crash reporting
+* ANR detection
+* Network change detection
+* Full Android Activity and Fragment lifecycle monitoring
+* Access to the OpenTelemetry APIs for manual instrumentation
+* SplunkRum APIs for creating custom RUM events and reporting exceptions
+* Access to an OkHttp3 Interceptor implementation for monitoring http client requests
+
 ### Configuration
 
 In order to configure the Splunk RUM library, you will need to know three things:
-* Your RUM beacon URL. 
-  * This value looks like `"https://rum-ingest.<realm>.signalfx.com/v1/rum"` where
-the `<realm>` can be found in your Splunk Observability UI in the Account Settings page.
-* Your RUM auth token.  
-  * You can find or create a RUM auth token in the Splunk Observability UI, in your Organization Settings.
-  * Important: this auth token *must* have the `RUM` authorization scope to work. 
+* Your Splunk realm. 
+  * The realm can be found in your Splunk Observability UI in the Account Settings page.
+* Your RUM access token.  
+  * You can find or create a RUM access token in the Splunk Observability UI, in your Organization Settings.
+  * Important: this access token *must* have the `RUM` authorization scope to work. 
 * The name of your application.
 
 Here is an example of a the very minimal configuration which uses these 3 values:
 ```java
-        String beaconUrl = "https://rum-ingest.<realm>.signalfx.com/v1/rum";
-        String rumAuthToken = "<your_auth_token>";
+        String beaconUrl = "<realm>";
+        String rumAccessToken = "<your_RUM_access_token>";
         Config config = SplunkRum.newConfigBuilder()
-                .beaconUrl(beaconUrl)
-                .rumAuthToken(rumAuthToken)
+                .realm(realm)
+                .rumAccessToken(rumAuth)
                 .applicationName("My Android App")
                 .build();
 ```
@@ -141,7 +149,7 @@ In order to build and run the sample application, you will need to configure a `
 in the root of the project. It will need to have two properties configured:
 
 ```properties
-rum.auth.token=<a valid Splunk RUM auth token>
+rum.access.token=<a valid Splunk RUM access token>
 rum.beacon.url=https://rum-ingest.<realm>.signalfx.com/v1/rum
 ```
 
