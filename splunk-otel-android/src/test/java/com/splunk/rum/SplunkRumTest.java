@@ -152,13 +152,14 @@ public class SplunkRumTest {
         SplunkRum splunkRum = new SplunkRum(testSdk, new SessionId());
 
         Attributes attributes = Attributes.of(stringKey("one"), "1", longKey("two"), 2L);
-        splunkRum.addRumException("fooError", attributes, new NullPointerException("oopsie"));
+        splunkRum.addRumException(new NullPointerException("oopsie"), attributes);
 
         List<SpanData> spans = testExporter.getFinishedSpanItems();
         assertEquals(1, spans.size());
-        assertEquals("fooError", spans.get(0).getName());
+        assertEquals("NullPointerException", spans.get(0).getName());
 
         Attributes expected = attributes.toBuilder()
+                .put(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_ERROR)
                 .put(SemanticAttributes.EXCEPTION_MESSAGE, "oopsie")
                 .put(SplunkRum.ERROR_MESSAGE_KEY, "oopsie")
                 .put(SemanticAttributes.EXCEPTION_TYPE, "NullPointerException")

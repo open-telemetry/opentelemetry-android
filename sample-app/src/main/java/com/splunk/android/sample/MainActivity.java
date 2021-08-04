@@ -74,8 +74,9 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             SplunkRum.getInstance()
-                    .addRumException("Unimplemented Feature", SETTINGS_FEATURE_ATTRIBUTES,
-                            new UnsupportedOperationException("Unimplemented Feature: Settings"));
+                    .addRumException(
+                            new UnsupportedOperationException("Unimplemented Feature: Settings"),
+                            SETTINGS_FEATURE_ATTRIBUTES);
             return true;
         }
 

@@ -183,11 +183,46 @@ public class SplunkRum {
      * @param name       The name of the event.
      * @param attributes Any {@link Attributes} to associate with the event.
      * @param throwable  A {@link Throwable} associated with this event.
+     * @deprecated Use {@link #addRumException(Throwable, Attributes)} instead.
      */
+    @Deprecated
     public void addRumException(String name, Attributes attributes, Throwable throwable) {
         Span span = getTracer()
                 .spanBuilder(name)
                 .setAllAttributes(attributes)
+                .startSpan();
+        addExceptionAttributes(span, throwable);
+        span.end();
+    }
+
+    /**
+     * Add a custom exception to RUM monitoring. This can be useful for tracking custom error
+     * handling in your application.
+     * <p>
+     * This event will be turned into a Span and sent to the RUM ingest along with other, auto-generated
+     * spans.
+     *
+     * @param throwable A {@link Throwable} associated with this event.
+     */
+    public void addRumException(Throwable throwable) {
+        addRumException(throwable, Attributes.empty());
+    }
+
+    /**
+     * Add a custom exception to RUM monitoring. This can be useful for tracking custom error
+     * handling in your application.
+     * <p>
+     * This event will be turned into a Span and sent to the RUM ingest along with other, auto-generated
+     * spans.
+     *
+     * @param throwable  A {@link Throwable} associated with this event.
+     * @param attributes Any {@link Attributes} to associate with the event.
+     */
+    public void addRumException(Throwable throwable, Attributes attributes) {
+        Span span = getTracer()
+                .spanBuilder(throwable.getClass().getSimpleName())
+                .setAllAttributes(attributes)
+                .setAttribute(COMPONENT_KEY, COMPONENT_ERROR)
                 .startSpan();
         addExceptionAttributes(span, throwable);
         span.end();
