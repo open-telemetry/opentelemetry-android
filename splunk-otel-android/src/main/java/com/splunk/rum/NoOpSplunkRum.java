@@ -18,7 +18,6 @@ package com.splunk.rum;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTracing;
 import okhttp3.Interceptor;
 
@@ -26,7 +25,7 @@ class NoOpSplunkRum extends SplunkRum {
     static final NoOpSplunkRum INSTANCE = new NoOpSplunkRum();
 
     private NoOpSplunkRum() {
-        super(null, null);
+        super(null, null, null);
     }
 
     @Override

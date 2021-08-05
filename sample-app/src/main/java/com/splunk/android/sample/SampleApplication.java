@@ -23,8 +23,6 @@ import com.splunk.rum.SplunkRum;
 
 import io.opentelemetry.api.common.Attributes;
 
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
-
 public class SampleApplication extends Application {
 
     @Override
@@ -38,7 +36,7 @@ public class SampleApplication extends Application {
                 .applicationName("Android Demo App")
                 .debugEnabled(true)
                 .deploymentEnvironment("demo")
-                .globalAttributes(Attributes.of(stringKey("vendor"), "Splunk"))
+                .globalAttributes(Attributes.builder().put("vendor", "Splunk").build())
                 .build();
         SplunkRum.initialize(config, this);
     }

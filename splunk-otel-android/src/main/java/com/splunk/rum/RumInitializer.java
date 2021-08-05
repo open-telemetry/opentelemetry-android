@@ -104,7 +104,7 @@ class RumInitializer {
 
         recordInitializationSpan(startTimeNanos, initializationEvents, tracer, config);
 
-        return new SplunkRum(openTelemetrySdk, sessionId);
+        return new SplunkRum(openTelemetrySdk, sessionId, config);
     }
 
     private void initializeAnrReporting(Looper mainLooper) {

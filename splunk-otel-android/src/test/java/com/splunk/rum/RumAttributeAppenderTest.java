@@ -57,6 +57,35 @@ public class RumAttributeAppenderTest {
     }
 
     @Test
+    public void updateGlobalAttributes() {
+        Attributes initialAttributes = Attributes.of(
+                stringKey("cheese"), "Camembert",
+                longKey("size"), 5L
+        );
+
+        Config config = Config.builder()
+                .globalAttributes(initialAttributes)
+                .realm("us0")
+                .rumAccessToken("123456")
+                .applicationName("appName")
+                .build();
+
+        RumAttributeAppender rumAttributeAppender = new RumAttributeAppender(config, new SessionId(), "version", visibleScreenTracker, connectionUtil);
+
+        ReadWriteSpan span = mock(ReadWriteSpan.class);
+        rumAttributeAppender.onStart(Context.current(), span);
+        verify(span).setAllAttributes(initialAttributes);
+
+        config.updateGlobalAttributes(attributesBuilder -> attributesBuilder.put("cheese", "cheddar"));
+
+        span = mock(ReadWriteSpan.class);
+        rumAttributeAppender.onStart(Context.current(), span);
+
+        Attributes updatedAttributes = Attributes.of(stringKey("cheese"), "cheddar", longKey("size"), 5L);
+        verify(span).setAllAttributes(updatedAttributes);
+    }
+
+    @Test
     public void appendAttributesOnStart() {
         Attributes globalAttributes = Attributes.of(
                 stringKey("cheese"), "Camembert",

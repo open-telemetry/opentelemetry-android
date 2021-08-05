@@ -16,7 +16,11 @@
 
 package com.splunk.rum;
 
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
 /**
@@ -32,9 +36,9 @@ public class Config {
     private final boolean debugEnabled;
     private final String applicationName;
     private final boolean crashReportingEnabled;
-    private final Attributes globalAttributes;
     private final boolean networkMonitorEnabled;
     private final boolean anrDetectionEnabled;
+    private final AtomicReference<Attributes> globalAttributes = new AtomicReference<>();
 
     private Config(Builder builder) {
         this.beaconEndpoint = builder.beaconEndpoint;
@@ -42,15 +46,19 @@ public class Config {
         this.debugEnabled = builder.debugEnabled;
         this.applicationName = builder.applicationName;
         this.crashReportingEnabled = builder.crashReportingEnabled;
+        this.globalAttributes.set(addDeploymentEnvironment(builder));
+        this.networkMonitorEnabled = builder.networkMonitorEnabled;
+        this.anrDetectionEnabled = builder.anrDetectionEnabled;
+    }
+
+    private Attributes addDeploymentEnvironment(Builder builder) {
         Attributes globalAttributes = builder.globalAttributes;
         if (builder.deploymentEnvironment != null) {
             globalAttributes = globalAttributes.toBuilder()
                     .put(ResourceAttributes.DEPLOYMENT_ENVIRONMENT, builder.deploymentEnvironment)
                     .build();
         }
-        this.globalAttributes = globalAttributes;
-        this.networkMonitorEnabled = builder.networkMonitorEnabled;
-        this.anrDetectionEnabled = builder.anrDetectionEnabled;
+        return globalAttributes;
     }
 
     /**
@@ -93,7 +101,7 @@ public class Config {
      * instrumentation.
      */
     public Attributes getGlobalAttributes() {
-        return globalAttributes;
+        return globalAttributes.get();
     }
 
     /**
@@ -109,6 +117,12 @@ public class Config {
 
     public boolean isAnrDetectionEnabled() {
         return anrDetectionEnabled;
+    }
+
+    void updateGlobalAttributes(Consumer<AttributesBuilder> updater) {
+        AttributesBuilder builder = globalAttributes.get().toBuilder();
+        updater.accept(builder);
+        globalAttributes.set(builder.build());
     }
 
     /**

@@ -49,6 +49,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static org.apache.http.conn.ssl.SSLSocketFactory.SSL;
 
 public class FirstFragment extends Fragment {
@@ -83,8 +84,11 @@ public class FirstFragment extends Fragment {
         });
 
         binding.httpMe.setOnClickListener(v -> {
-            Span workflow = splunkRum.startWorkflow("Custom Workflow");
+            Span workflow = splunkRum.startWorkflow("User Login");
+            //not really a login, but it does make an http call
             makeCall("https://ssidhu.o11ystore.com/", workflow);
+            //maybe this call gave us a real customer id, so let's put it into the global attributes
+            splunkRum.setGlobalAttribute(longKey("customerId"), 123456L);
         });
         binding.httpMeBad.setOnClickListener(v -> {
             Span workflow = splunkRum.startWorkflow("Workflow With Error");

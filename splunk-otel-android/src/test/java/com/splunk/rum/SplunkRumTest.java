@@ -52,6 +52,7 @@ public class SplunkRumTest {
     @Rule
     public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
     private Tracer tracer;
+    private final Config config = Config.builder().realm("us0").rumAccessToken("token").applicationName("appName").build();
 
     @Before
     public void setup() {
@@ -110,8 +111,7 @@ public class SplunkRumTest {
 
     @Test
     public void addEvent() {
-
-        SplunkRum splunkRum = new SplunkRum((OpenTelemetrySdk) otelTesting.getOpenTelemetry(), new SessionId());
+        SplunkRum splunkRum = new SplunkRum((OpenTelemetrySdk) otelTesting.getOpenTelemetry(), new SessionId(), config);
 
         Attributes attributes = Attributes.of(stringKey("one"), "1", longKey("two"), 2L);
         splunkRum.addRumEvent("foo", attributes);
@@ -123,6 +123,16 @@ public class SplunkRumTest {
     }
 
     @Test
+    public void updateGlobalAttributes() {
+        SplunkRum splunkRum = new SplunkRum((OpenTelemetrySdk) otelTesting.getOpenTelemetry(), new SessionId(), config);
+
+        splunkRum.updateGlobalAttributes(attributesBuilder -> attributesBuilder.put("key", "value"));
+        splunkRum.setGlobalAttribute(longKey("otherKey"), 1234L);
+
+        assertEquals(Attributes.of(stringKey("key"), "value", longKey("otherKey"), 1234L), config.getGlobalAttributes());
+    }
+
+    @Test
     public void recordAnr() {
         StackTraceElement[] stackTrace = new Exception().getStackTrace();
         StringBuilder stringBuilder = new StringBuilder();
@@ -130,7 +140,7 @@ public class SplunkRumTest {
             stringBuilder.append(stackTraceElement).append("\n");
         }
 
-        SplunkRum splunkRum = new SplunkRum((OpenTelemetrySdk) otelTesting.getOpenTelemetry(), new SessionId());
+        SplunkRum splunkRum = new SplunkRum((OpenTelemetrySdk) otelTesting.getOpenTelemetry(), new SessionId(), config);
 
         Attributes expectedAttributes = Attributes.of(
                 SemanticAttributes.EXCEPTION_STACKTRACE, stringBuilder.toString(),
@@ -149,7 +159,7 @@ public class SplunkRumTest {
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
         OpenTelemetrySdk testSdk = buildTestSdk(testExporter);
 
-        SplunkRum splunkRum = new SplunkRum(testSdk, new SessionId());
+        SplunkRum splunkRum = new SplunkRum(testSdk, new SessionId(), config);
 
         Attributes attributes = Attributes.of(stringKey("one"), "1", longKey("two"), 2L);
         splunkRum.addRumException(new NullPointerException("oopsie"), attributes);
@@ -179,7 +189,7 @@ public class SplunkRumTest {
 
     @Test
     public void createAndEnd() {
-        SplunkRum splunkRum = new SplunkRum((OpenTelemetrySdk) otelTesting.getOpenTelemetry(), new SessionId());
+        SplunkRum splunkRum = new SplunkRum((OpenTelemetrySdk) otelTesting.getOpenTelemetry(), new SessionId(), config);
 
         Span span = splunkRum.startWorkflow("workflow");
         Span inner = tracer.spanBuilder("foo").startSpan();

@@ -18,10 +18,10 @@ package com.splunk.rum;
 
 import org.junit.Test;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -40,7 +40,7 @@ public class ConfigTest {
 
     @Test
     public void creation() {
-        Attributes globalAttributes = Attributes.of(AttributeKey.stringKey("cheese"), "Camembert");
+        Attributes globalAttributes = Attributes.of(stringKey("cheese"), "Camembert");
         Attributes expectedFinalAttributes = globalAttributes.toBuilder()
                 .put(ResourceAttributes.DEPLOYMENT_ENVIRONMENT, "production")
                 .build();
@@ -90,5 +90,18 @@ public class ConfigTest {
                 .globalAttributes(null)
                 .build();
         assertEquals(Attributes.empty(), config.getGlobalAttributes());
+    }
+
+    @Test
+    public void updateGlobalAttributes() {
+        Config config = Config.builder().applicationName("appName")
+                .rumAccessToken("accessToken")
+                .realm("us0")
+                .globalAttributes(Attributes.of(stringKey("food"), "candy"))
+                .build();
+
+        config.updateGlobalAttributes(ab -> ab.put("drink", "lemonade"));
+        Attributes result = config.getGlobalAttributes();
+        assertEquals(Attributes.of(stringKey("drink"), "lemonade", stringKey("food"), "candy"), result);
     }
 }
