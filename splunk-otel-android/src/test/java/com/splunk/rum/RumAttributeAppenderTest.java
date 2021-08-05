@@ -98,7 +98,6 @@ public class RumAttributeAppenderTest {
         SessionId sessionId = mock(SessionId.class);
         when(sessionId.getSessionId()).thenReturn("rumSessionId");
         when(visibleScreenTracker.getCurrentlyVisibleScreen()).thenReturn("unknown");
-        when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn(null);
 
         ReadWriteSpan span = mock(ReadWriteSpan.class);
 

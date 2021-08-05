@@ -98,6 +98,7 @@ class RumLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
     public void onActivityPostResumed(@NonNull Activity activity) {
         getActivityTracer(activity)
                 .addEvent("activityPostResumed")
+                .addPreviousScreenAttribute()
                 .endSpanForActivityResumed();
         visibleScreenTracker.activityResumed(activity);
     }
@@ -176,7 +177,7 @@ class RumLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
     private TrackableTracer getOrCreateTracer(Activity activity) {
         NamedTrackableTracer activityTracer = tracersByActivityClassName.get(activity.getClass().getName());
         if (activityTracer == null) {
-            activityTracer = new NamedTrackableTracer(activity, initialAppActivity, tracer);
+            activityTracer = new NamedTrackableTracer(activity, initialAppActivity, tracer, visibleScreenTracker);
             tracersByActivityClassName.put(activity.getClass().getName(), activityTracer);
         }
         return activityTracer;

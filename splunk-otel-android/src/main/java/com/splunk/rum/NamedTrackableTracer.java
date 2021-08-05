@@ -36,22 +36,25 @@ class NamedTrackableTracer implements TrackableTracer {
     private final AtomicReference<String> initialAppActivity;
     private final Tracer tracer;
     private final String trackableName;
+    private final VisibleScreenTracker visibleScreenTracker;
     private final AttributeKey<String> nameKey;
 
     private Span span;
     private Scope scope;
 
-    NamedTrackableTracer(Activity activity, AtomicReference<String> initialAppActivity, Tracer tracer) {
+    NamedTrackableTracer(Activity activity, AtomicReference<String> initialAppActivity, Tracer tracer, VisibleScreenTracker visibleScreenTracker) {
         this.initialAppActivity = initialAppActivity;
         this.tracer = tracer;
         this.trackableName = activity.getClass().getSimpleName();
+        this.visibleScreenTracker = visibleScreenTracker;
         this.nameKey = ACTIVITY_NAME_KEY;
     }
 
-    NamedTrackableTracer(Fragment fragment, Tracer tracer) {
+    NamedTrackableTracer(Fragment fragment, Tracer tracer, VisibleScreenTracker visibleScreenTracker) {
         this.initialAppActivity = new AtomicReference<>("not relevant for fragments");
         this.tracer = tracer;
         this.trackableName = fragment.getClass().getSimpleName();
+        this.visibleScreenTracker = visibleScreenTracker;
         this.nameKey = FRAGMENT_NAME_KEY;
     }
 
@@ -124,6 +127,15 @@ class NamedTrackableTracer implements TrackableTracer {
             span.end();
             span = null;
         }
+    }
+
+    @Override
+    public TrackableTracer addPreviousScreenAttribute() {
+        String previouslyVisibleScreen = visibleScreenTracker.getPreviouslyVisibleScreen();
+        if (!trackableName.equals(previouslyVisibleScreen)) {
+            span.setAttribute(SplunkRum.LAST_SCREEN_NAME_KEY, previouslyVisibleScreen);
+        }
+        return this;
     }
 
     @Override

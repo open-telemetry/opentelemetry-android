@@ -32,11 +32,13 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class NamedTrackableTracerTest {
     @Rule
     public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
     private Tracer tracer;
+    private final VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
 
     @Before
     public void setup() {
@@ -45,73 +47,110 @@ public class NamedTrackableTracerTest {
 
     @Test
     public void restart_nonInitialActivity() {
-        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>("FirstActivity"), tracer);
+        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>("FirstActivity"), tracer, visibleScreenTracker);
         trackableTracer.initiateRestartSpanIfNecessary(false);
         trackableTracer.endActiveSpan();
-        List<SpanData> generatedSpans = otelTesting.getSpans();
-        assertEquals(1, generatedSpans.size());
-        SpanData span = generatedSpans.get(0);
+        SpanData span = getSingleSpan();
         assertEquals("Activity Restarted", span.getName());
         assertNull(span.getAttributes().get(NamedTrackableTracer.START_TYPE_KEY));
     }
 
     @Test
     public void restart_initialActivity() {
-        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>("Activity"), tracer);
+        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>("Activity"), tracer, visibleScreenTracker);
         trackableTracer.initiateRestartSpanIfNecessary(false);
         trackableTracer.endActiveSpan();
-        List<SpanData> generatedSpans = otelTesting.getSpans();
-        assertEquals(1, generatedSpans.size());
-        SpanData span = generatedSpans.get(0);
+        SpanData span = getSingleSpan();
         assertEquals("AppStart", span.getName());
         assertEquals("hot", span.getAttributes().get(NamedTrackableTracer.START_TYPE_KEY));
     }
 
     @Test
     public void restart_initialActivity_multiActivityApp() {
-        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>("Activity"), tracer);
+        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>("Activity"), tracer, visibleScreenTracker);
         trackableTracer.initiateRestartSpanIfNecessary(true);
         trackableTracer.endActiveSpan();
-        List<SpanData> generatedSpans = otelTesting.getSpans();
-        assertEquals(1, generatedSpans.size());
-        SpanData span = generatedSpans.get(0);
+        SpanData span = getSingleSpan();
         assertEquals("Activity Restarted", span.getName());
         assertNull(span.getAttributes().get(NamedTrackableTracer.START_TYPE_KEY));
     }
 
     @Test
     public void create_nonInitialActivity() {
-        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>("FirstActivity"), tracer);
+        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>("FirstActivity"), tracer, visibleScreenTracker);
         trackableTracer.startTrackableCreation();
         trackableTracer.endActiveSpan();
-        List<SpanData> generatedSpans = otelTesting.getSpans();
-        assertEquals(1, generatedSpans.size());
-        SpanData span = generatedSpans.get(0);
+        SpanData span = getSingleSpan();
         assertEquals("Activity Created", span.getName());
         assertNull(span.getAttributes().get(NamedTrackableTracer.START_TYPE_KEY));
     }
 
     @Test
     public void create_initialActivity() {
-        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>("Activity"), tracer);
+        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>("Activity"), tracer, visibleScreenTracker);
         trackableTracer.startTrackableCreation();
         trackableTracer.endActiveSpan();
-        List<SpanData> generatedSpans = otelTesting.getSpans();
-        assertEquals(1, generatedSpans.size());
-        SpanData span = generatedSpans.get(0);
+        SpanData span = getSingleSpan();
         assertEquals("AppStart", span.getName());
         assertEquals("warm", span.getAttributes().get(NamedTrackableTracer.START_TYPE_KEY));
     }
 
     @Test
     public void create_initialActivity_firstTime() {
-        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>(), tracer);
+        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>(), tracer, visibleScreenTracker);
         trackableTracer.startTrackableCreation();
         trackableTracer.endActiveSpan();
-        List<SpanData> generatedSpans = otelTesting.getSpans();
-        assertEquals(1, generatedSpans.size());
-        SpanData span = generatedSpans.get(0);
+        SpanData span = getSingleSpan();
         assertEquals("AppStart", span.getName());
         assertEquals("cold", span.getAttributes().get(NamedTrackableTracer.START_TYPE_KEY));
+    }
+
+    @Test
+    public void addPreviousScreen_noPrevious() {
+        VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
+
+        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>(), tracer, visibleScreenTracker);
+
+        trackableTracer.startSpanIfNoneInProgress("starting");
+        trackableTracer.addPreviousScreenAttribute();
+        trackableTracer.endActiveSpan();
+
+        SpanData span = getSingleSpan();
+        assertNull(span.getAttributes().get(SplunkRum.LAST_SCREEN_NAME_KEY));
+    }
+
+    @Test
+    public void addPreviousScreen_currentSameAsPrevious() {
+        VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
+        when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("Activity");
+
+        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>(), tracer, visibleScreenTracker);
+
+        trackableTracer.startSpanIfNoneInProgress("starting");
+        trackableTracer.addPreviousScreenAttribute();
+        trackableTracer.endActiveSpan();
+
+        SpanData span = getSingleSpan();
+        assertNull(span.getAttributes().get(SplunkRum.LAST_SCREEN_NAME_KEY));
+    }
+
+    @Test
+    public void addPreviousScreen() {
+        when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
+
+        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>(), tracer, visibleScreenTracker);
+
+        trackableTracer.startSpanIfNoneInProgress("starting");
+        trackableTracer.addPreviousScreenAttribute();
+        trackableTracer.endActiveSpan();
+
+        SpanData span = getSingleSpan();
+        assertEquals("previousScreen", span.getAttributes().get(SplunkRum.LAST_SCREEN_NAME_KEY));
+    }
+
+    private SpanData getSingleSpan() {
+        List<SpanData> generatedSpans = otelTesting.getSpans();
+        assertEquals(1, generatedSpans.size());
+        return generatedSpans.get(0);
     }
 }

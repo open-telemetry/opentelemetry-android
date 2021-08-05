@@ -32,6 +32,8 @@ interface TrackableTracer {
 
     void endActiveSpan();
 
+    TrackableTracer addPreviousScreenAttribute();
+
     class NoOpTracer implements TrackableTracer {
 
         @Override
@@ -55,6 +57,11 @@ interface TrackableTracer {
 
         @Override
         public void endActiveSpan() {
+        }
+
+        @Override
+        public TrackableTracer addPreviousScreenAttribute() {
+            return this;
         }
 
         @Override

@@ -68,10 +68,6 @@ class RumAttributeAppender implements SpanProcessor {
 
         String currentScreen = visibleScreenTracker.getCurrentlyVisibleScreen();
         span.setAttribute(SplunkRum.SCREEN_NAME_KEY, currentScreen);
-        String previouslyVisibleScreen = visibleScreenTracker.getPreviouslyVisibleScreen();
-        if (previouslyVisibleScreen != null) {
-            span.setAttribute(SplunkRum.LAST_SCREEN_NAME_KEY, previouslyVisibleScreen);
-        }
         CurrentNetwork currentNetwork = connectionUtil.getActiveNetwork();
         span.setAttribute(NETWORK_TYPE_KEY, currentNetwork.getState().getHumanName());
         currentNetwork.getSubType().ifPresent(subtype -> span.setAttribute(NETWORK_SUBTYPE_KEY, subtype));

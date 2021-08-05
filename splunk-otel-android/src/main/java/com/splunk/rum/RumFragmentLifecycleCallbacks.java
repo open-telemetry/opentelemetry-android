@@ -89,6 +89,7 @@ class RumFragmentLifecycleCallbacks extends FragmentManager.FragmentLifecycleCal
         getOrCreateTracer(f)
                 .startSpanIfNoneInProgress("Resumed")
                 .addEvent("fragmentResumed")
+                .addPreviousScreenAttribute()
                 .endActiveSpan();
         visibleScreenTracker.fragmentResumed(f);
     }
@@ -146,7 +147,7 @@ class RumFragmentLifecycleCallbacks extends FragmentManager.FragmentLifecycleCal
     private TrackableTracer getOrCreateTracer(Fragment fragment) {
         NamedTrackableTracer activityTracer = tracersByFragmentClassName.get(fragment.getClass().getName());
         if (activityTracer == null) {
-            activityTracer = new NamedTrackableTracer(fragment, tracer);
+            activityTracer = new NamedTrackableTracer(fragment, tracer, visibleScreenTracker);
             tracersByFragmentClassName.put(fragment.getClass().getName(), activityTracer);
         }
         return activityTracer;
