@@ -35,8 +35,6 @@ import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -46,6 +44,7 @@ import javax.net.ssl.X509TrustManager;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -54,7 +53,6 @@ import static org.apache.http.conn.ssl.SSLSocketFactory.SSL;
 
 public class FirstFragment extends Fragment {
 
-    private final ExecutorService backgrounder = Executors.newSingleThreadExecutor();
     private final MutableLiveData<String> httpResponse = new MutableLiveData<>();
     private final MutableLiveData<String> sessionId = new MutableLiveData<>();
 
@@ -86,32 +84,37 @@ public class FirstFragment extends Fragment {
 
         binding.httpMe.setOnClickListener(v -> {
             Span workflow = splunkRum.startWorkflow("Custom Workflow");
-            backgrounder.submit(() -> {
-                makeCall("https://ssidhu.o11ystore.com/");
-                workflow.end();
-            });
+            makeCall("https://ssidhu.o11ystore.com/", workflow);
         });
         binding.httpMeBad.setOnClickListener(v -> {
             Span workflow = splunkRum.startWorkflow("Workflow With Error");
-            backgrounder.submit(() -> {
-                makeCall("https://asdlfkjasd.asdfkjasdf.ifi");
-                workflow.setStatus(StatusCode.ERROR);
-                workflow.end();
-            });
+            makeCall("https://asdlfkjasd.asdfkjasdf.ifi", workflow);
         });
-        binding.httpMeNotFound.setOnClickListener(v -> backgrounder.submit(() -> makeCall("https://ssidhu.o11ystore.com/foobarbaz")));
+        binding.httpMeNotFound.setOnClickListener(v -> {
+            Span workflow = splunkRum.startWorkflow("Workflow with 404");
+            makeCall("https://ssidhu.o11ystore.com/foobarbaz", workflow);
+        });
 
         sessionId.postValue(splunkRum.getRumSessionId());
     }
 
-    private void makeCall(String url) {
+    private void makeCall(String url, Span workflow) {
         Call call = okHttpClient.newCall(new Request.Builder().url(url).get().build());
-        try (Response r = call.execute()) {
-            int responseCode = r.code();
-            httpResponse.postValue("" + responseCode);
-        } catch (IOException e) {
-            httpResponse.postValue("error");
-        }
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                httpResponse.postValue("error");
+                workflow.setStatus(StatusCode.ERROR);
+                workflow.end();
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) {
+                int responseCode = response.code();
+                httpResponse.postValue("" + responseCode);
+                workflow.end();
+            }
+        });
     }
 
     public LiveData<String> getHttpResponse() {
