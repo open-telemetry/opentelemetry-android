@@ -16,6 +16,9 @@
 
 package com.splunk.android.sample;
 
+import static org.apache.http.conn.ssl.SSLSocketFactory.SSL;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,6 +38,7 @@ import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.ExecutorService;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -43,14 +47,14 @@ import javax.net.ssl.X509TrustManager;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
-import static io.opentelemetry.api.common.AttributeKey.longKey;
-import static org.apache.http.conn.ssl.SSLSocketFactory.SSL;
 
 public class FirstFragment extends Fragment {
 
@@ -103,22 +107,25 @@ public class FirstFragment extends Fragment {
     }
 
     private void makeCall(String url, Span workflow) {
-        Call call = okHttpClient.newCall(new Request.Builder().url(url).get().build());
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                httpResponse.postValue("error");
-                workflow.setStatus(StatusCode.ERROR);
-                workflow.end();
-            }
+        //make sure the span is in the current context so it can be propagated into the async call.
+        try (Scope scope = workflow.makeCurrent()) {
+            Call call = okHttpClient.newCall(new Request.Builder().url(url).get().build());
+            call.enqueue(new Callback() {
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    httpResponse.postValue("error");
+                    workflow.setStatus(StatusCode.ERROR);
+                    workflow.end();
+                }
 
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) {
-                int responseCode = response.code();
-                httpResponse.postValue("" + responseCode);
-                workflow.end();
-            }
-        });
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response) {
+                    int responseCode = response.code();
+                    httpResponse.postValue("" + responseCode);
+                    workflow.end();
+                }
+            });
+        }
     }
 
     public LiveData<String> getHttpResponse() {
@@ -142,7 +149,11 @@ public class FirstFragment extends Fragment {
     }
 
     private OkHttpClient buildOkHttpClient(SplunkRum splunkRum) {
+        //grab the default executor service that okhttp uses, and wrap it with one that will propagate the otel context.
+        ExecutorService delegateExecutorService = new Dispatcher().executorService();
+        ExecutorService contextAwareExecutorService = Context.taskWrapping(delegateExecutorService);
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .dispatcher(new Dispatcher(contextAwareExecutorService))
                 .addInterceptor(splunkRum.createOkHttpRumInterceptor());
         try {
             // NOTE: This is really bad and dangerous. Don't ever do this in the real world.
