@@ -32,7 +32,6 @@
 
 > :construction: This project is currently in **BETA**.
 
-
 ## Getting Started 
 
 ### Getting the library
@@ -58,7 +57,7 @@ Then, add the latest release as a dependency in your application's build.gradle 
 ```
 dependencies {
 ...
-    implementation ("com.splunk:splunk-otel-android:0.2.0")
+    implementation ("com.splunk:splunk-otel-android:0.3.0")
 ...
 }
 ```
