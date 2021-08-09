@@ -16,6 +16,8 @@
 
 package com.splunk.rum;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import android.app.Application;
 import android.os.Looper;
 import android.util.Log;
@@ -34,8 +36,6 @@ import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTracing;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import okhttp3.Interceptor;
-
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 /**
  * Entrypoint for Splunk's Android RUM (Real User Monitoring) support.
@@ -175,28 +175,6 @@ public class SplunkRum {
                 .spanBuilder(workflowName)
                 .setAttribute(WORKFLOW_NAME_KEY, workflowName)
                 .startSpan();
-    }
-
-    /**
-     * Add a custom exception to RUM monitoring. This can be useful for tracking custom error
-     * handling in your application.
-     * <p>
-     * This event will be turned into a Span and sent to the RUM ingest along with other, auto-generated
-     * spans.
-     *
-     * @param name       The name of the event.
-     * @param attributes Any {@link Attributes} to associate with the event.
-     * @param throwable  A {@link Throwable} associated with this event.
-     * @deprecated Use {@link #addRumException(Throwable, Attributes)} instead.
-     */
-    @Deprecated
-    public void addRumException(String name, Attributes attributes, Throwable throwable) {
-        Span span = getTracer()
-                .spanBuilder(name)
-                .setAllAttributes(attributes)
-                .startSpan();
-        addExceptionAttributes(span, throwable);
-        span.end();
     }
 
     /**

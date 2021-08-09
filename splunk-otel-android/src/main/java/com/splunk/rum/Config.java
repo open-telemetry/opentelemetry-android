@@ -150,20 +150,6 @@ public class Config {
         }
 
         /**
-         * Assign the "beacon" URL to be used by the RUM library.
-         * <p>
-         * Note that if you are using standard Splunk ingest, it is simpler to just use {@link #realm(String)}
-         * and let this configuration set the full URL for you.
-         *
-         * @return this
-         * @deprecated Use {@link #beaconEndpoint(String)} now.
-         */
-        public Builder beaconUrl(String beaconUrl) {
-            this.beaconEndpoint = beaconUrl;
-            return this;
-        }
-
-        /**
          * Assign the "beacon" endpoint URL to be used by the RUM library.
          * <p>
          * Note that if you are using standard Splunk ingest, it is simpler to just use {@link #realm(String)}
@@ -178,27 +164,13 @@ public class Config {
 
         /**
          * Sets the realm for the beacon to send RUM telemetry to. This should be used in place
-         * of the {@link #beaconUrl(String)} method in most cases.
+         * of the {@link #beaconEndpoint(String)} method in most cases.
          *
          * @param realm A valid Splunk "realm"
          * @return this
          */
         public Builder realm(String realm) {
             this.beaconEndpoint = "https://rum-ingest." + realm + ".signalfx.com/v1/rum";
-            return this;
-        }
-
-        /**
-         * Assign the RUM auth token to be used by the RUM library.
-         * <p>
-         * This method is deprecated and will be removed in the next release.
-         *
-         * @return this
-         * @deprecated Use {@link #rumAccessToken(String)} now.
-         */
-        @Deprecated
-        public Builder rumAuthToken(String rumAuthToken) {
-            this.rumAccessToken = rumAuthToken;
             return this;
         }
 

@@ -49,11 +49,6 @@ class NoOpSplunkRum extends SplunkRum {
     }
 
     @Override
-    public void addRumException(String name, Attributes attributes, Throwable throwable) {
-        //no-op
-    }
-
-    @Override
     public void addRumException(Throwable throwable, Attributes attributes) {
         //no-op
     }
