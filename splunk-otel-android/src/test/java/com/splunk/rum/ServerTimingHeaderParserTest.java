@@ -16,9 +16,9 @@
 
 package com.splunk.rum;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertArrayEquals;
+
+import org.junit.Test;
 
 //the header looks like: traceparent;desc="00-9499195c502eb217c448a68bfe0f967c-fe16eca542cd5d86-01"
 public class ServerTimingHeaderParserTest {
@@ -43,5 +43,14 @@ public class ServerTimingHeaderParserTest {
         String spanId = "fe16eca542cd5d86";
         assertArrayEquals(new String[]{traceId, spanId},
                 parser.parse("traceparent;desc=\"00-" + traceId + "-" + spanId + "-01\""));
+    }
+
+    @Test
+    public void parsableHeader_singleQuotes() {
+        ServerTimingHeaderParser parser = new ServerTimingHeaderParser();
+        String traceId = "9499195c502eb217c448a68bfe0f967c";
+        String spanId = "fe16eca542cd5d86";
+        assertArrayEquals(new String[]{traceId, spanId},
+                parser.parse("traceparent;desc='00-" + traceId + "-" + spanId + "-01'"));
     }
 }
