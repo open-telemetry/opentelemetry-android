@@ -16,8 +16,12 @@
 
 package com.splunk.rum;
 
+import java.util.function.Consumer;
+
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTracing;
 import okhttp3.Interceptor;
 
@@ -36,6 +40,16 @@ class NoOpSplunkRum extends SplunkRum {
     @Override
     public OpenTelemetry getOpenTelemetry() {
         return OpenTelemetry.noop();
+    }
+
+    @Override
+    Tracer getTracer() {
+        return getOpenTelemetry().getTracer("unused");
+    }
+
+    @Override
+    public void updateGlobalAttributes(Consumer<AttributesBuilder> attributesUpdater) {
+        //no-op
     }
 
     @Override

@@ -17,9 +17,11 @@
 package com.splunk.rum;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 
 public class NoOpSplunkRumTest {
@@ -29,9 +31,16 @@ public class NoOpSplunkRumTest {
         NoOpSplunkRum instance = NoOpSplunkRum.INSTANCE;
         instance.addRumEvent("foo", Attributes.empty());
         instance.addRumException(new RuntimeException(), Attributes.empty());
+
         assertNotNull(instance.createOkHttpRumInterceptor());
         assertNotNull(instance.getOpenTelemetry());
         assertNotNull(instance.getRumSessionId());
+        assertNotNull(instance.getTracer());
+        assertNotNull(instance.startWorkflow("foo"));
+
+        instance.updateGlobalAttributes(attributesBuilder -> {
+        });
+        assertSame(instance, instance.setGlobalAttribute(AttributeKey.stringKey("foo"), "bar"));
         instance.flushSpans();
     }
 }

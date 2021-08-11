@@ -210,7 +210,7 @@ public class SplunkRum {
         span.end();
     }
 
-    private Tracer getTracer() {
+    Tracer getTracer() {
         return openTelemetrySdk.getTracer(RUM_TRACER_NAME);
     }
 
