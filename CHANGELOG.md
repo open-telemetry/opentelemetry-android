@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+---
+
+## Version 0.4.0
+
+- All methods deprecated in v0.3.0 have been removed.
+- The span names generated for Activity/Fragment lifecycle events no longer include the
+  Activity/Fragment name as a prefix. There is still an attribute which tracks the name.
+
+---
 
 ## Version 0.3.0
 
@@ -23,6 +32,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - New methods have been added to the `SplunkRum` API to allow updating the "global" attributes that
   are added to every span and event.
 
+---
 ## Version 0.2.0
 
 - Instrumentation has been updated to use OpenTelemetry v1.4.1
@@ -37,6 +47,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The instrumentation now tracks 3 types of AppStart spans: cold, hot and warm. Note that "hot"
   starts are not tracked for multi-Activity apps, only single-Activity.
 
+---
 ## Version 0.1.0
 
 This is the first official beta release of the project.
