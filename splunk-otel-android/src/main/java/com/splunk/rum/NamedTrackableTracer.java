@@ -63,7 +63,7 @@ class NamedTrackableTracer implements TrackableTracer {
         if (span != null) {
             return this;
         }
-        startSpan(trackableName + " " + action);
+        startSpan(action);
         return this;
     }
 
@@ -76,7 +76,7 @@ class NamedTrackableTracer implements TrackableTracer {
             Span span = startSpan(APP_START_SPAN_NAME);
             span.setAttribute(START_TYPE_KEY, initialAppActivity.get() == null ? "cold" : "warm");
         } else {
-            startSpan(trackableName + " Created");
+            startSpan("Created");
         }
         return this;
     }
@@ -93,7 +93,7 @@ class NamedTrackableTracer implements TrackableTracer {
             Span span = startSpan(APP_START_SPAN_NAME);
             span.setAttribute(START_TYPE_KEY, "hot");
         } else {
-            startSpan(trackableName + " Restarted");
+            startSpan("Restarted");
         }
         return this;
     }

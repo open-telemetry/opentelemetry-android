@@ -16,6 +16,12 @@
 
 package com.splunk.rum;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import android.app.Activity;
 
 import org.junit.Before;
@@ -29,12 +35,6 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class RumLifecycleCallbacksTest {
     @Rule
@@ -176,7 +176,7 @@ public class RumLifecycleCallbacksTest {
 
         SpanData span = spans.get(0);
 
-        assertEquals(activity.getClass().getSimpleName() + " Resumed", span.getName());
+        assertEquals("Resumed", span.getName());
         assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
         assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
         assertEquals(SplunkRum.COMPONENT_UI, span.getAttributes().get(SplunkRum.COMPONENT_KEY));
@@ -205,7 +205,7 @@ public class RumLifecycleCallbacksTest {
 
         SpanData span = spans.get(0);
 
-        assertEquals(activity.getClass().getSimpleName() + " Destroyed", span.getName());
+        assertEquals("Destroyed", span.getName());
         assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
         assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
         assertEquals(SplunkRum.COMPONENT_UI, span.getAttributes().get(SplunkRum.COMPONENT_KEY));
@@ -234,7 +234,7 @@ public class RumLifecycleCallbacksTest {
 
         SpanData stoppedSpan = spans.get(0);
 
-        assertEquals(activity.getClass().getSimpleName() + " Stopped", stoppedSpan.getName());
+        assertEquals("Stopped", stoppedSpan.getName());
         assertEquals(activity.getClass().getSimpleName(), stoppedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
         assertEquals(activity.getClass().getSimpleName(), stoppedSpan.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
         assertEquals(SplunkRum.COMPONENT_UI, stoppedSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
@@ -249,7 +249,7 @@ public class RumLifecycleCallbacksTest {
 
         SpanData destroyedSpan = spans.get(1);
 
-        assertEquals(activity.getClass().getSimpleName() + " Destroyed", destroyedSpan.getName());
+        assertEquals("Destroyed", destroyedSpan.getName());
         assertEquals(activity.getClass().getSimpleName(), destroyedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
         assertEquals(activity.getClass().getSimpleName(), destroyedSpan.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
         assertEquals("ui", destroyedSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
@@ -278,7 +278,7 @@ public class RumLifecycleCallbacksTest {
 
         SpanData stoppedSpan = spans.get(0);
 
-        assertEquals(activity.getClass().getSimpleName() + " Paused", stoppedSpan.getName());
+        assertEquals("Paused", stoppedSpan.getName());
         assertEquals(activity.getClass().getSimpleName(), stoppedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
         assertEquals(activity.getClass().getSimpleName(), stoppedSpan.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
         assertEquals(SplunkRum.COMPONENT_UI, stoppedSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
@@ -293,7 +293,7 @@ public class RumLifecycleCallbacksTest {
 
         SpanData destroyedSpan = spans.get(1);
 
-        assertEquals(activity.getClass().getSimpleName() + " Stopped", destroyedSpan.getName());
+        assertEquals("Stopped", destroyedSpan.getName());
         assertEquals(activity.getClass().getSimpleName(), destroyedSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
         assertEquals(activity.getClass().getSimpleName(), destroyedSpan.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
         assertEquals("ui", destroyedSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));

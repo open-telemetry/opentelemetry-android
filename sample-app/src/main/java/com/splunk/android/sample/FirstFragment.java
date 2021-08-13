@@ -55,6 +55,7 @@ import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class FirstFragment extends Fragment {
 
@@ -120,9 +121,11 @@ public class FirstFragment extends Fragment {
 
                 @Override
                 public void onResponse(@NonNull Call call, @NonNull Response response) {
-                    int responseCode = response.code();
-                    httpResponse.postValue("" + responseCode);
-                    workflow.end();
+                    try (ResponseBody body = response.body()) {
+                        int responseCode = response.code();
+                        httpResponse.postValue("" + responseCode);
+                        workflow.end();
+                    }
                 }
             });
         }

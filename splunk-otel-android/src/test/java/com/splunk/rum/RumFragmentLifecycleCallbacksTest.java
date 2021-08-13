@@ -16,6 +16,13 @@
 
 package com.splunk.rum;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import androidx.fragment.app.Fragment;
 
 import org.junit.Before;
@@ -29,13 +36,6 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class RumFragmentLifecycleCallbacksTest {
     @Rule
@@ -60,7 +60,7 @@ public class RumFragmentLifecycleCallbacksTest {
 
         SpanData spanData = spans.get(0);
 
-        assertEquals(fragment.getClass().getSimpleName() + " Created", spanData.getName());
+        assertEquals("Created", spanData.getName());
         assertEquals(fragment.getClass().getSimpleName(), spanData.getAttributes().get(NamedTrackableTracer.FRAGMENT_NAME_KEY));
         assertEquals(fragment.getClass().getSimpleName(), spanData.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
         assertEquals(SplunkRum.COMPONENT_UI, spanData.getAttributes().get(SplunkRum.COMPONENT_KEY));
@@ -90,7 +90,7 @@ public class RumFragmentLifecycleCallbacksTest {
 
         SpanData spanData = spans.get(0);
 
-        assertEquals(fragment.getClass().getSimpleName() + " Restored", spanData.getName());
+        assertEquals("Restored", spanData.getName());
         assertEquals(fragment.getClass().getSimpleName(), spanData.getAttributes().get(NamedTrackableTracer.FRAGMENT_NAME_KEY));
         assertEquals(fragment.getClass().getSimpleName(), spanData.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
         assertEquals(SplunkRum.COMPONENT_UI, spanData.getAttributes().get(SplunkRum.COMPONENT_KEY));
@@ -115,7 +115,7 @@ public class RumFragmentLifecycleCallbacksTest {
 
         SpanData spanData = spans.get(0);
 
-        assertEquals(fragment.getClass().getSimpleName() + " Resumed", spanData.getName());
+        assertEquals("Resumed", spanData.getName());
         assertEquals(fragment.getClass().getSimpleName(), spanData.getAttributes().get(NamedTrackableTracer.FRAGMENT_NAME_KEY));
         assertEquals(SplunkRum.COMPONENT_UI, spanData.getAttributes().get(SplunkRum.COMPONENT_KEY));
         assertNull(spanData.getAttributes().get(SplunkRum.LAST_SCREEN_NAME_KEY));
@@ -137,7 +137,7 @@ public class RumFragmentLifecycleCallbacksTest {
 
         SpanData spanData = spans.get(0);
 
-        assertEquals(fragment.getClass().getSimpleName() + " Paused", spanData.getName());
+        assertEquals("Paused", spanData.getName());
         assertEquals(fragment.getClass().getSimpleName(), spanData.getAttributes().get(NamedTrackableTracer.FRAGMENT_NAME_KEY));
         assertEquals(fragment.getClass().getSimpleName(), spanData.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
         assertEquals(SplunkRum.COMPONENT_UI, spanData.getAttributes().get(SplunkRum.COMPONENT_KEY));
@@ -161,7 +161,7 @@ public class RumFragmentLifecycleCallbacksTest {
 
         SpanData pauseSpan = spans.get(0);
 
-        assertEquals(fragment.getClass().getSimpleName() + " Paused", pauseSpan.getName());
+        assertEquals("Paused", pauseSpan.getName());
         assertEquals(fragment.getClass().getSimpleName(), pauseSpan.getAttributes().get(NamedTrackableTracer.FRAGMENT_NAME_KEY));
         assertEquals(fragment.getClass().getSimpleName(), pauseSpan.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
         assertEquals(SplunkRum.COMPONENT_UI, pauseSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
@@ -174,7 +174,7 @@ public class RumFragmentLifecycleCallbacksTest {
 
         SpanData destroyViewSpan = spans.get(1);
 
-        assertEquals(fragment.getClass().getSimpleName() + " ViewDestroyed", destroyViewSpan.getName());
+        assertEquals("ViewDestroyed", destroyViewSpan.getName());
         assertEquals(fragment.getClass().getSimpleName(), destroyViewSpan.getAttributes().get(NamedTrackableTracer.FRAGMENT_NAME_KEY));
         assertEquals(fragment.getClass().getSimpleName(), destroyViewSpan.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
         assertEquals(SplunkRum.COMPONENT_UI, destroyViewSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
@@ -186,7 +186,7 @@ public class RumFragmentLifecycleCallbacksTest {
 
         SpanData detachSpan = spans.get(2);
 
-        assertEquals(fragment.getClass().getSimpleName() + " Destroyed", detachSpan.getName());
+        assertEquals("Destroyed", detachSpan.getName());
         assertNotNull(detachSpan.getAttributes().get(NamedTrackableTracer.FRAGMENT_NAME_KEY));
         assertEquals(SplunkRum.COMPONENT_UI, detachSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
         assertNull(detachSpan.getAttributes().get(SplunkRum.LAST_SCREEN_NAME_KEY));
@@ -209,7 +209,7 @@ public class RumFragmentLifecycleCallbacksTest {
 
         SpanData span = spans.get(0);
 
-        assertEquals(fragment.getClass().getSimpleName() + " ViewDestroyed", span.getName());
+        assertEquals("ViewDestroyed", span.getName());
         assertEquals(fragment.getClass().getSimpleName(), span.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
         assertEquals(fragment.getClass().getSimpleName(), span.getAttributes().get(NamedTrackableTracer.FRAGMENT_NAME_KEY));
         assertEquals(SplunkRum.COMPONENT_UI, span.getAttributes().get(SplunkRum.COMPONENT_KEY));
@@ -232,7 +232,7 @@ public class RumFragmentLifecycleCallbacksTest {
 
         SpanData destroyViewSpan = spans.get(0);
 
-        assertEquals(fragment.getClass().getSimpleName() + " ViewDestroyed", destroyViewSpan.getName());
+        assertEquals("ViewDestroyed", destroyViewSpan.getName());
         assertEquals(fragment.getClass().getSimpleName(), destroyViewSpan.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
         assertEquals(fragment.getClass().getSimpleName(), destroyViewSpan.getAttributes().get(NamedTrackableTracer.FRAGMENT_NAME_KEY));
         assertEquals(SplunkRum.COMPONENT_UI, destroyViewSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
@@ -244,7 +244,7 @@ public class RumFragmentLifecycleCallbacksTest {
 
         SpanData detachSpan = spans.get(1);
 
-        assertEquals(fragment.getClass().getSimpleName() + " Destroyed", detachSpan.getName());
+        assertEquals("Destroyed", detachSpan.getName());
         assertEquals(fragment.getClass().getSimpleName(), detachSpan.getAttributes().get(NamedTrackableTracer.FRAGMENT_NAME_KEY));
         assertEquals(SplunkRum.COMPONENT_UI, detachSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
         assertNull(detachSpan.getAttributes().get(SplunkRum.LAST_SCREEN_NAME_KEY));
@@ -267,7 +267,7 @@ public class RumFragmentLifecycleCallbacksTest {
 
         SpanData detachSpan = spans.get(0);
 
-        assertEquals(fragment.getClass().getSimpleName() + " Detached", detachSpan.getName());
+        assertEquals("Detached", detachSpan.getName());
         assertEquals(fragment.getClass().getSimpleName(), detachSpan.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
         assertEquals(fragment.getClass().getSimpleName(), detachSpan.getAttributes().get(NamedTrackableTracer.FRAGMENT_NAME_KEY));
         assertEquals(SplunkRum.COMPONENT_UI, detachSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));

@@ -16,6 +16,11 @@
 
 package com.splunk.rum;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import android.app.Activity;
 
 import org.junit.Before;
@@ -28,11 +33,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class NamedTrackableTracerTest {
     @Rule
@@ -51,7 +51,7 @@ public class NamedTrackableTracerTest {
         trackableTracer.initiateRestartSpanIfNecessary(false);
         trackableTracer.endActiveSpan();
         SpanData span = getSingleSpan();
-        assertEquals("Activity Restarted", span.getName());
+        assertEquals("Restarted", span.getName());
         assertNull(span.getAttributes().get(NamedTrackableTracer.START_TYPE_KEY));
     }
 
@@ -71,7 +71,7 @@ public class NamedTrackableTracerTest {
         trackableTracer.initiateRestartSpanIfNecessary(true);
         trackableTracer.endActiveSpan();
         SpanData span = getSingleSpan();
-        assertEquals("Activity Restarted", span.getName());
+        assertEquals("Restarted", span.getName());
         assertNull(span.getAttributes().get(NamedTrackableTracer.START_TYPE_KEY));
     }
 
@@ -81,7 +81,7 @@ public class NamedTrackableTracerTest {
         trackableTracer.startTrackableCreation();
         trackableTracer.endActiveSpan();
         SpanData span = getSingleSpan();
-        assertEquals("Activity Created", span.getName());
+        assertEquals("Created", span.getName());
         assertNull(span.getAttributes().get(NamedTrackableTracer.START_TYPE_KEY));
     }
 
