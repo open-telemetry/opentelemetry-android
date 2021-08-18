@@ -37,10 +37,12 @@ class RumLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
     private final AtomicReference<String> initialAppActivity = new AtomicReference<>();
     private final Tracer tracer;
     private final VisibleScreenTracker visibleScreenTracker;
+    private final AppStartupTimer startupTimer;
 
-    RumLifecycleCallbacks(Tracer tracer, VisibleScreenTracker visibleScreenTracker) {
+    RumLifecycleCallbacks(Tracer tracer, VisibleScreenTracker visibleScreenTracker, AppStartupTimer startupTimer) {
         this.tracer = tracer;
         this.visibleScreenTracker = visibleScreenTracker;
+        this.startupTimer = startupTimer;
     }
 
     @Override
@@ -177,7 +179,7 @@ class RumLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
     private TrackableTracer getOrCreateTracer(Activity activity) {
         NamedTrackableTracer activityTracer = tracersByActivityClassName.get(activity.getClass().getName());
         if (activityTracer == null) {
-            activityTracer = new NamedTrackableTracer(activity, initialAppActivity, tracer, visibleScreenTracker);
+            activityTracer = new NamedTrackableTracer(activity, initialAppActivity, tracer, visibleScreenTracker, startupTimer);
             tracersByActivityClassName.put(activity.getClass().getName(), activityTracer);
         }
         return activityTracer;

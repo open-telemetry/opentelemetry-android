@@ -36,10 +36,12 @@ class Pre29ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     private final VisibleScreenTracker visibleScreenTracker;
     private final Map<String, NamedTrackableTracer> tracersByActivityClassName = new HashMap<>();
     private final AtomicReference<String> initialAppActivity = new AtomicReference<>();
+    private final AppStartupTimer appStartupTimer;
 
-    Pre29ActivityCallbacks(Tracer tracer, VisibleScreenTracker visibleScreenTracker) {
+    Pre29ActivityCallbacks(Tracer tracer, VisibleScreenTracker visibleScreenTracker, AppStartupTimer appStartupTimer) {
         this.tracer = tracer;
         this.visibleScreenTracker = visibleScreenTracker;
+        this.appStartupTimer = appStartupTimer;
     }
 
     @Override
@@ -104,7 +106,7 @@ class Pre29ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     private TrackableTracer getOrCreateTracer(Activity activity) {
         NamedTrackableTracer activityTracer = tracersByActivityClassName.get(activity.getClass().getName());
         if (activityTracer == null) {
-            activityTracer = new NamedTrackableTracer(activity, initialAppActivity, tracer, visibleScreenTracker);
+            activityTracer = new NamedTrackableTracer(activity, initialAppActivity, tracer, visibleScreenTracker, appStartupTimer);
             tracersByActivityClassName.put(activity.getClass().getName(), activityTracer);
         }
         return activityTracer;

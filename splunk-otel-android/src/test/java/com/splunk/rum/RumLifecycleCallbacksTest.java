@@ -41,6 +41,7 @@ public class RumLifecycleCallbacksTest {
     public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
     private Tracer tracer;
     private VisibleScreenTracker visibleScreenTracker;
+    private final AppStartupTimer startupTimer = new AppStartupTimer();
 
     @Before
     public void setup() {
@@ -50,25 +51,30 @@ public class RumLifecycleCallbacksTest {
 
     @Test
     public void appStartup() {
-        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer, visibleScreenTracker);
+        startupTimer.start(tracer);
+        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer, visibleScreenTracker, startupTimer);
         ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         Activity activity = mock(Activity.class);
         testHarness.runAppStartupLifecycle(activity);
+        startupTimer.end();
 
         List<SpanData> spans = otelTesting.getSpans();
-        assertEquals(1, spans.size());
+        assertEquals(2, spans.size());
 
-        SpanData span = spans.get(0);
+        SpanData startupSpan = spans.get(0);
 
-        assertEquals("AppStart", span.getName());
-        assertEquals("cold", span.getAttributes().get(NamedTrackableTracer.START_TYPE_KEY));
-        assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
-        assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
-        assertEquals(SplunkRum.COMPONENT_UI, span.getAttributes().get(SplunkRum.COMPONENT_KEY));
-        assertNull(span.getAttributes().get(SplunkRum.LAST_SCREEN_NAME_KEY));
+        assertEquals("AppStart", startupSpan.getName());
+        assertEquals("cold", startupSpan.getAttributes().get(SplunkRum.START_TYPE_KEY));
 
-        List<EventData> events = span.getEvents();
+        SpanData creationSpan = spans.get(1);
+
+        assertEquals(activity.getClass().getSimpleName(), creationSpan.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
+        assertEquals(activity.getClass().getSimpleName(), creationSpan.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
+        assertEquals(SplunkRum.COMPONENT_UI, creationSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
+        assertNull(creationSpan.getAttributes().get(SplunkRum.LAST_SCREEN_NAME_KEY));
+
+        List<EventData> events = creationSpan.getEvents();
         assertEquals(9, events.size());
 
         checkEventExists(events, "activityPreCreated");
@@ -86,7 +92,7 @@ public class RumLifecycleCallbacksTest {
 
     @Test
     public void activityCreation() {
-        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer, visibleScreenTracker);
+        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer, visibleScreenTracker, startupTimer);
         ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(rumLifecycleCallbacks);
         startupAppAndClearSpans(testHarness);
 
@@ -98,10 +104,10 @@ public class RumLifecycleCallbacksTest {
         SpanData span = spans.get(0);
 
         assertEquals("AppStart", span.getName());
-        assertEquals("warm", span.getAttributes().get(NamedTrackableTracer.START_TYPE_KEY));
+        assertEquals("warm", span.getAttributes().get(SplunkRum.START_TYPE_KEY));
         assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
         assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
-        assertEquals(SplunkRum.COMPONENT_UI, span.getAttributes().get(SplunkRum.COMPONENT_KEY));
+        assertEquals(SplunkRum.COMPONENT_APPSTART, span.getAttributes().get(SplunkRum.COMPONENT_KEY));
         assertNull(span.getAttributes().get(SplunkRum.LAST_SCREEN_NAME_KEY));
 
         List<EventData> events = span.getEvents();
@@ -128,7 +134,7 @@ public class RumLifecycleCallbacksTest {
 
     @Test
     public void activityRestart() {
-        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer, visibleScreenTracker);
+        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer, visibleScreenTracker, startupTimer);
         ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
@@ -142,10 +148,10 @@ public class RumLifecycleCallbacksTest {
         SpanData span = spans.get(0);
 
         assertEquals("AppStart", span.getName());
-        assertEquals("hot", span.getAttributes().get(NamedTrackableTracer.START_TYPE_KEY));
+        assertEquals("hot", span.getAttributes().get(SplunkRum.START_TYPE_KEY));
         assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(NamedTrackableTracer.ACTIVITY_NAME_KEY));
         assertEquals(activity.getClass().getSimpleName(), span.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
-        assertEquals(SplunkRum.COMPONENT_UI, span.getAttributes().get(SplunkRum.COMPONENT_KEY));
+        assertEquals(SplunkRum.COMPONENT_APPSTART, span.getAttributes().get(SplunkRum.COMPONENT_KEY));
         assertNull(span.getAttributes().get(SplunkRum.LAST_SCREEN_NAME_KEY));
 
         List<EventData> events = span.getEvents();
@@ -163,7 +169,7 @@ public class RumLifecycleCallbacksTest {
     @Test
     public void activityResumed() {
         when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
-        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer, visibleScreenTracker);
+        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer, visibleScreenTracker, startupTimer);
         ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
@@ -192,7 +198,7 @@ public class RumLifecycleCallbacksTest {
 
     @Test
     public void activityDestroyedFromStopped() {
-        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer, visibleScreenTracker);
+        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer, visibleScreenTracker, startupTimer);
         ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
@@ -221,7 +227,7 @@ public class RumLifecycleCallbacksTest {
 
     @Test
     public void activityDestroyedFromPaused() {
-        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer, visibleScreenTracker);
+        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer, visibleScreenTracker, startupTimer);
         ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
@@ -265,7 +271,7 @@ public class RumLifecycleCallbacksTest {
 
     @Test
     public void activityStoppedFromRunning() {
-        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer, visibleScreenTracker);
+        RumLifecycleCallbacks rumLifecycleCallbacks = new RumLifecycleCallbacks(tracer, visibleScreenTracker, startupTimer);
         ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);

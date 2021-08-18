@@ -41,12 +41,16 @@ import okhttp3.Interceptor;
  * Entrypoint for Splunk's Android RUM (Real User Monitoring) support.
  */
 public class SplunkRum {
+    //initialize this here, statically, to make sure we capture the earliest possible timestamp for startup.
+    private static final AppStartupTimer startupTimer = new AppStartupTimer();
+
     static final AttributeKey<String> COMPONENT_KEY = AttributeKey.stringKey("component");
     static final AttributeKey<String> SCREEN_NAME_KEY = AttributeKey.stringKey("screen.name");
     static final AttributeKey<String> LAST_SCREEN_NAME_KEY = AttributeKey.stringKey("last.screen.name");
     static final AttributeKey<String> ERROR_TYPE_KEY = stringKey("error.type");
     static final AttributeKey<String> ERROR_MESSAGE_KEY = stringKey("error.message");
     static final AttributeKey<String> WORKFLOW_NAME_KEY = stringKey("workflow.name");
+    static final AttributeKey<String> START_TYPE_KEY = stringKey("start.type");
 
     static final String COMPONENT_APPSTART = "appstart";
     static final String COMPONENT_CRASH = "crash";
@@ -94,7 +98,7 @@ public class SplunkRum {
             return INSTANCE;
         }
 
-        INSTANCE = new RumInitializer(config, application)
+        INSTANCE = new RumInitializer(config, application, startupTimer)
                 .initialize(connectionUtilSupplier, Looper.getMainLooper());
 
         if (config.isDebugEnabled()) {

@@ -16,6 +16,12 @@
 
 package com.splunk.rum;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import android.app.Application;
 import android.os.Looper;
 
@@ -29,12 +35,6 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 public class RumInitializerTest {
     @Test
     public void initializationSpan() {
@@ -45,7 +45,8 @@ public class RumInitializerTest {
         when(config.isNetworkMonitorEnabled()).thenReturn(true);
         Application application = mock(Application.class);
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
-        RumInitializer testInitializer = new RumInitializer(config, application) {
+        AppStartupTimer startupTimer = new AppStartupTimer();
+        RumInitializer testInitializer = new RumInitializer(config, application, startupTimer) {
             @Override
             SpanExporter buildExporter(ConnectionUtil connectionUtil) {
                 return testExporter;
@@ -57,6 +58,8 @@ public class RumInitializerTest {
         List<SpanData> spans = testExporter.getFinishedSpanItems();
         assertEquals(1, spans.size());
         SpanData initSpan = spans.get(0);
+        assertEquals(initSpan.getParentSpanContext(), startupTimer.getStartupSpan().getSpanContext());
+
         assertEquals("SplunkRum.initialize", initSpan.getName());
         assertEquals("appstart", initSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
         assertEquals("[debug:false,crashReporting:true,anrReporting:true,networkMonitor:true]",

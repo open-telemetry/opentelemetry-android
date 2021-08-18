@@ -33,6 +33,7 @@ import java.util.logging.Level;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -48,10 +49,12 @@ class RumInitializer {
 
     private final Config config;
     private final Application application;
+    private final AppStartupTimer startupTimer;
 
-    RumInitializer(Config config, Application application) {
+    RumInitializer(Config config, Application application, AppStartupTimer startupTimer) {
         this.config = config;
         this.application = application;
+        this.startupTimer = startupTimer;
     }
 
     SplunkRum initialize(Supplier<ConnectionUtil> connectionUtilSupplier, Looper mainLooper) {
@@ -81,9 +84,9 @@ class RumInitializer {
 
         Tracer tracer = openTelemetrySdk.getTracer(SplunkRum.RUM_TRACER_NAME);
         if (Build.VERSION.SDK_INT < 29) {
-            application.registerActivityLifecycleCallbacks(new Pre29ActivityCallbacks(tracer, visibleScreenTracker));
+            application.registerActivityLifecycleCallbacks(new Pre29ActivityCallbacks(tracer, visibleScreenTracker, startupTimer));
         } else {
-            application.registerActivityLifecycleCallbacks(new RumLifecycleCallbacks(tracer, visibleScreenTracker));
+            application.registerActivityLifecycleCallbacks(new RumLifecycleCallbacks(tracer, visibleScreenTracker, startupTimer));
         }
         initializationEvents.add(new RumInitializer.InitializationEvent("activityLifecycleCallbacksInitialized", timingClock.now()));
 
@@ -102,7 +105,7 @@ class RumInitializer {
             initializationEvents.add(new RumInitializer.InitializationEvent("anrMonitorInitialized", timingClock.now()));
         }
 
-        recordInitializationSpan(startTimeNanos, initializationEvents, tracer, config);
+        recordInitializationSpans(startTimeNanos, initializationEvents, tracer, config);
 
         return new SplunkRum(openTelemetrySdk, sessionId, config);
     }
@@ -125,8 +128,10 @@ class RumInitializer {
         return "unknown";
     }
 
-    private static void recordInitializationSpan(long startTimeNanos, List<InitializationEvent> initializationEvents, Tracer tracer, Config config) {
+    private void recordInitializationSpans(long startTimeNanos, List<InitializationEvent> initializationEvents, Tracer tracer, Config config) {
+        Span overallAppStart = startupTimer.start(tracer);
         Span span = tracer.spanBuilder("SplunkRum.initialize")
+                .setParent(Context.current().with(overallAppStart))
                 .setStartTimestamp(startTimeNanos, TimeUnit.NANOSECONDS)
                 .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_APPSTART)
                 .startSpan();
