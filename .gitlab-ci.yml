@@ -1,3 +1,8 @@
+include:
+  - project: 'prodsec/scp-scanning/gitlab-checkmarx'
+    ref: latest
+    file: '/templates/.sast_scan.yml'
+
 image:
   name: "openjdk:11.0.11-9-jdk"
 
@@ -23,7 +28,18 @@ before_script:
 
 stages:
   - build
+  - verify
   - release
+
+sast-scan:
+  stage: verify
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "main"'
+  extends: .sast_scan
+  variables:
+    SAST_SCANNER: "Semgrep"
+    # Fail build on high severity security vulnerabilities
+    alert_mode: "policy"
 
 build:
   stage: build
