@@ -2,6 +2,9 @@ include:
   - project: 'prodsec/scp-scanning/gitlab-checkmarx'
     ref: latest
     file: '/templates/.sast_scan.yml'
+  - project: 'prodsec/whitesource'
+    ref: latest
+    file: '/templates/.whitesource.yml'
 
 image:
   name: "openjdk:11.0.11-9-jdk"
@@ -50,6 +53,16 @@ sast-scan:
     SAST_SCANNER: "Semgrep"
     # Fail build on high severity security vulnerabilities
     alert_mode: "policy"
+
+whitesource:
+  stage: verify
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "main"'
+  extends: .whitesource
+  variables:
+    ws_user_key: ${WHITESOURCE_USER_KEY}
+    product_id: ${WHITESOURCE_ID}
+    config: java-gradle-wrapper
 
 release:
   stage: release
