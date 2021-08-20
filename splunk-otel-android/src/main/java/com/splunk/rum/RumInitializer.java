@@ -86,7 +86,7 @@ class RumInitializer {
         if (Build.VERSION.SDK_INT < 29) {
             application.registerActivityLifecycleCallbacks(new Pre29ActivityCallbacks(tracer, visibleScreenTracker, startupTimer));
         } else {
-            application.registerActivityLifecycleCallbacks(new RumLifecycleCallbacks(tracer, visibleScreenTracker, startupTimer));
+            application.registerActivityLifecycleCallbacks(new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer));
         }
         initializationEvents.add(new RumInitializer.InitializationEvent("activityLifecycleCallbacksInitialized", timingClock.now()));
 

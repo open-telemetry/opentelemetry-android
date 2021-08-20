@@ -16,16 +16,16 @@
 
 package com.splunk.rum;
 
+import static org.mockito.Mockito.mock;
+
 import android.app.Activity;
 import android.os.Bundle;
 
-import static org.mockito.Mockito.mock;
-
 class ActivityCallbackTestHarness {
 
-    private final RumLifecycleCallbacks callbacks;
+    private final ActivityCallbacks callbacks;
 
-    ActivityCallbackTestHarness(RumLifecycleCallbacks callbacks) {
+    ActivityCallbackTestHarness(ActivityCallbacks callbacks) {
         this.callbacks = callbacks;
     }
 

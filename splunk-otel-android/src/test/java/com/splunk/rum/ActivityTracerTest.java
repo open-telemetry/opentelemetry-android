@@ -34,7 +34,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
 
-public class NamedTrackableTracerTest {
+public class ActivityTracerTest {
     @Rule
     public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
     private Tracer tracer;
@@ -48,7 +48,7 @@ public class NamedTrackableTracerTest {
 
     @Test
     public void restart_nonInitialActivity() {
-        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>("FirstActivity"), tracer, visibleScreenTracker, appStartupTimer);
+        ActivityTracer trackableTracer = new ActivityTracer(mock(Activity.class), new AtomicReference<>("FirstActivity"), tracer, visibleScreenTracker, appStartupTimer);
         trackableTracer.initiateRestartSpanIfNecessary(false);
         trackableTracer.endActiveSpan();
         SpanData span = getSingleSpan();
@@ -58,7 +58,7 @@ public class NamedTrackableTracerTest {
 
     @Test
     public void restart_initialActivity() {
-        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>("Activity"), tracer, visibleScreenTracker, appStartupTimer);
+        ActivityTracer trackableTracer = new ActivityTracer(mock(Activity.class), new AtomicReference<>("Activity"), tracer, visibleScreenTracker, appStartupTimer);
         trackableTracer.initiateRestartSpanIfNecessary(false);
         trackableTracer.endActiveSpan();
         SpanData span = getSingleSpan();
@@ -69,7 +69,7 @@ public class NamedTrackableTracerTest {
 
     @Test
     public void restart_initialActivity_multiActivityApp() {
-        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>("Activity"), tracer, visibleScreenTracker, appStartupTimer);
+        ActivityTracer trackableTracer = new ActivityTracer(mock(Activity.class), new AtomicReference<>("Activity"), tracer, visibleScreenTracker, appStartupTimer);
         trackableTracer.initiateRestartSpanIfNecessary(true);
         trackableTracer.endActiveSpan();
         SpanData span = getSingleSpan();
@@ -79,8 +79,8 @@ public class NamedTrackableTracerTest {
 
     @Test
     public void create_nonInitialActivity() {
-        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>("FirstActivity"), tracer, visibleScreenTracker, appStartupTimer);
-        trackableTracer.startTrackableCreation();
+        ActivityTracer trackableTracer = new ActivityTracer(mock(Activity.class), new AtomicReference<>("FirstActivity"), tracer, visibleScreenTracker, appStartupTimer);
+        trackableTracer.startActivityCreation();
         trackableTracer.endActiveSpan();
         SpanData span = getSingleSpan();
         assertEquals("Created", span.getName());
@@ -89,8 +89,8 @@ public class NamedTrackableTracerTest {
 
     @Test
     public void create_initialActivity() {
-        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>("Activity"), tracer, visibleScreenTracker, appStartupTimer);
-        trackableTracer.startTrackableCreation();
+        ActivityTracer trackableTracer = new ActivityTracer(mock(Activity.class), new AtomicReference<>("Activity"), tracer, visibleScreenTracker, appStartupTimer);
+        trackableTracer.startActivityCreation();
         trackableTracer.endActiveSpan();
         SpanData span = getSingleSpan();
         assertEquals("AppStart", span.getName());
@@ -101,8 +101,8 @@ public class NamedTrackableTracerTest {
     @Test
     public void create_initialActivity_firstTime() {
         appStartupTimer.start(tracer);
-        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>(), tracer, visibleScreenTracker, appStartupTimer);
-        trackableTracer.startTrackableCreation();
+        ActivityTracer trackableTracer = new ActivityTracer(mock(Activity.class), new AtomicReference<>(), tracer, visibleScreenTracker, appStartupTimer);
+        trackableTracer.startActivityCreation();
         trackableTracer.endActiveSpan();
         appStartupTimer.end();
 
@@ -121,7 +121,7 @@ public class NamedTrackableTracerTest {
     public void addPreviousScreen_noPrevious() {
         VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
 
-        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>(), tracer, visibleScreenTracker, appStartupTimer);
+        ActivityTracer trackableTracer = new ActivityTracer(mock(Activity.class), new AtomicReference<>(), tracer, visibleScreenTracker, appStartupTimer);
 
         trackableTracer.startSpanIfNoneInProgress("starting");
         trackableTracer.addPreviousScreenAttribute();
@@ -136,7 +136,7 @@ public class NamedTrackableTracerTest {
         VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
         when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("Activity");
 
-        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>(), tracer, visibleScreenTracker, appStartupTimer);
+        ActivityTracer trackableTracer = new ActivityTracer(mock(Activity.class), new AtomicReference<>(), tracer, visibleScreenTracker, appStartupTimer);
 
         trackableTracer.startSpanIfNoneInProgress("starting");
         trackableTracer.addPreviousScreenAttribute();
@@ -150,7 +150,7 @@ public class NamedTrackableTracerTest {
     public void addPreviousScreen() {
         when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
 
-        NamedTrackableTracer trackableTracer = new NamedTrackableTracer(mock(Activity.class), new AtomicReference<>(), tracer, visibleScreenTracker, appStartupTimer);
+        ActivityTracer trackableTracer = new ActivityTracer(mock(Activity.class), new AtomicReference<>(), tracer, visibleScreenTracker, appStartupTimer);
 
         trackableTracer.startSpanIfNoneInProgress("starting");
         trackableTracer.addPreviousScreenAttribute();
