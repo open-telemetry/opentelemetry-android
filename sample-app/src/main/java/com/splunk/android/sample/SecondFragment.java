@@ -170,7 +170,7 @@ public class SecondFragment extends Fragment {
     }
 
     private void createSpamSpan() {
-        sampleAppTracer.spanBuilder("spam span no. " + spans.incrementAndGet())
+        sampleAppTracer.spanBuilder("Spam Span no. " + spans.incrementAndGet())
                 .setAttribute("number", spans.get())
                 .startSpan()
                 .end();

@@ -174,7 +174,9 @@ class RumInitializer {
             // we'll do our best to hang on to the spans with the wrapping BufferingExporter.
             ZipkinSpanExporter.baseLogger.setLevel(Level.SEVERE);
         }
-        ZipkinSpanExporter zipkinSpanExporter = ZipkinSpanExporter.builder().setEndpoint(endpoint).build();
+        ZipkinSpanExporter zipkinSpanExporter = ZipkinSpanExporter.builder()
+                .setEncoder(new CustomZipkinEncoder())
+                .setEndpoint(endpoint).build();
         SpanExporter throttlingExporter = ThrottlingExporter.newBuilder(zipkinSpanExporter)
                 .categorizeByAttribute(SplunkRum.COMPONENT_KEY)
                 .maxSpansInWindow(100)
