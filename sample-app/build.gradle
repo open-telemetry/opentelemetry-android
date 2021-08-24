@@ -26,11 +26,11 @@ android {
         all {
             resValue("string", "rum_realm", localProperties['rum.realm'] ?: "us0")
             resValue("string", "rum_access_token", localProperties['rum.access.token'] ?: "dummyAuth")
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
 
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
