@@ -144,7 +144,7 @@ public class Config {
          */
         public Config build() {
             if (rumAccessToken == null || beaconEndpoint == null || applicationName == null) {
-                throw new IllegalStateException("You must provide a rumAuthToken, a beaconUrl, and an application name to create a valid Config instance.");
+                throw new IllegalStateException("You must provide a rumAccessToken, a realm (or full beaconEndpoint), and an applicationName to create a valid Config instance.");
             }
             return new Config(this);
         }

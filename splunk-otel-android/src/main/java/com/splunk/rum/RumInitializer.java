@@ -167,6 +167,7 @@ class RumInitializer {
                 .build();
     }
 
+    //visible for testing
     SpanExporter buildExporter(ConnectionUtil connectionUtil) {
         String endpoint = config.getBeaconEndpoint() + "?auth=" + config.getRumAccessToken();
         if (!config.isDebugEnabled()) {
@@ -174,15 +175,20 @@ class RumInitializer {
             // we'll do our best to hang on to the spans with the wrapping BufferingExporter.
             ZipkinSpanExporter.baseLogger.setLevel(Level.SEVERE);
         }
-        ZipkinSpanExporter zipkinSpanExporter = ZipkinSpanExporter.builder()
-                .setEncoder(new CustomZipkinEncoder())
-                .setEndpoint(endpoint).build();
-        SpanExporter throttlingExporter = ThrottlingExporter.newBuilder(zipkinSpanExporter)
+        SpanExporter zipkinSpanExporter = getCoreSpanExporter(endpoint);
+
+        return ThrottlingExporter.newBuilder(new BufferingExporter(connectionUtil, zipkinSpanExporter))
                 .categorizeByAttribute(SplunkRum.COMPONENT_KEY)
                 .maxSpansInWindow(100)
                 .windowSize(Duration.ofSeconds(30))
                 .build();
-        return new BufferingExporter(connectionUtil, throttlingExporter);
+    }
+
+    //visible for testing
+    SpanExporter getCoreSpanExporter(String endpoint) {
+        return ZipkinSpanExporter.builder()
+                .setEncoder(new CustomZipkinEncoder())
+                .setEndpoint(endpoint).build();
     }
 
     static class InitializationEvent {
