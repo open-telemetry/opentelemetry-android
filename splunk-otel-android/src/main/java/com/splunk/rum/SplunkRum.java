@@ -140,7 +140,7 @@ public class SplunkRum {
      * {@link Call.Factory} is the primary useful interface implemented by the OkHttpClient, this
      * should be a drop-in replacement for any usages of OkHttpClient.
      *
-     * @param client The {@link OkHttpClient} to wrap with OpenTelemetry & RUM instrumentation.
+     * @param client The {@link OkHttpClient} to wrap with OpenTelemetry and RUM instrumentation.
      * @return A {@link okhttp3.Call.Factory} implementation.
      */
     public Call.Factory createRumOkHttpCallFactory(OkHttpClient client) {

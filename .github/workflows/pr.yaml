@@ -15,4 +15,4 @@ jobs:
           java-version: 11
 
       - name: Build and test
-        run: touch ./local.properties; ./gradlew build --no-daemon
+        run: touch ./local.properties; ./gradlew build javadoc --no-daemon
