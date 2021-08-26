@@ -35,7 +35,9 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTracing;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import okhttp3.Call;
 import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
 
 /**
  * Entrypoint for Splunk's Android RUM (Real User Monitoring) support.
@@ -123,14 +125,33 @@ public class SplunkRum {
      * Create an OkHttp3 {@link Interceptor} configured with the OpenTelemetry instance backing this
      * class. It will provide both standard OpenTelemetry spans and additionally Splunk RUM-specific
      * attributes.
+     *
+     * @deprecated The OpenTelemetry {@link Interceptor} has been deprecated in favor of using an instrumented
+     * {@link okhttp3.Call.Factory} implementation. Please use {@link #createRumOkHttpCallFactory(OkHttpClient)}.
      */
+    @Deprecated
     public Interceptor createOkHttpRumInterceptor() {
-        Interceptor coreInterceptor = OkHttpTracing
+        Interceptor coreInterceptor = createOkHttpTracing().newInterceptor();
+        return new OkHttpRumInterceptor(coreInterceptor);
+    }
+
+    /**
+     * Wrap the provided {@link OkHttpClient} with OpenTelemetry and RUM instrumentation. Since
+     * {@link Call.Factory} is the primary useful interface implemented by the OkHttpClient, this
+     * should be a drop-in replacement for any usages of OkHttpClient.
+     *
+     * @param client The {@link OkHttpClient} to wrap with OpenTelemetry & RUM instrumentation.
+     * @return A {@link okhttp3.Call.Factory} implementation.
+     */
+    public Call.Factory createRumOkHttpCallFactory(OkHttpClient client) {
+        return createOkHttpTracing().newCallFactory(client);
+    }
+
+    private OkHttpTracing createOkHttpTracing() {
+        return OkHttpTracing
                 .newBuilder(openTelemetrySdk)
                 .addAttributesExtractor(new RumResponseAttributesExtractor(new ServerTimingHeaderParser()))
-                .build()
-                .newInterceptor();
-        return new OkHttpRumInterceptor(coreInterceptor);
+                .build();
     }
 
     /**

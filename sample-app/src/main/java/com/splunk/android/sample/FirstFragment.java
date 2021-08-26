@@ -38,7 +38,6 @@ import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.ExecutorService;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -47,11 +46,9 @@ import javax.net.ssl.X509TrustManager;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -63,7 +60,7 @@ public class FirstFragment extends Fragment {
     private final MutableLiveData<String> sessionId = new MutableLiveData<>();
 
     private FragmentFirstBinding binding;
-    private OkHttpClient okHttpClient;
+    private Call.Factory okHttpClient;
     private SplunkRum splunkRum;
 
     @Override
@@ -115,7 +112,7 @@ public class FirstFragment extends Fragment {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
                     httpResponse.postValue("error");
-                    workflow.setStatus(StatusCode.ERROR);
+                    workflow.setStatus(StatusCode.ERROR, "failure to communicate");
                     workflow.end();
                 }
 
@@ -151,27 +148,23 @@ public class FirstFragment extends Fragment {
         sessionId.postValue(splunkRum.getRumSessionId());
     }
 
-    private OkHttpClient buildOkHttpClient(SplunkRum splunkRum) {
+    private Call.Factory buildOkHttpClient(SplunkRum splunkRum) {
         //grab the default executor service that okhttp uses, and wrap it with one that will propagate the otel context.
-        ExecutorService delegateExecutorService = new Dispatcher().executorService();
-        ExecutorService contextAwareExecutorService = Context.taskWrapping(delegateExecutorService);
-        OkHttpClient.Builder builder = new OkHttpClient.Builder()
-                .dispatcher(new Dispatcher(contextAwareExecutorService))
-                .addInterceptor(splunkRum.createOkHttpRumInterceptor());
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
         try {
             // NOTE: This is really bad and dangerous. Don't ever do this in the real world.
             // it's only necessary because the demo endpoint uses a self-signed SSL cert.
             SSLContext sslContext = SSLContext.getInstance(SSL);
             sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
             SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
-            return builder
+            return splunkRum.createRumOkHttpCallFactory(builder
                     .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0])
                     .hostnameVerifier(new AllowAllHostnameVerifier())
-                    .build();
+                    .build());
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             e.printStackTrace();
+            return splunkRum.createRumOkHttpCallFactory(builder.build());
         }
-        return builder.build();
     }
 
     private static final TrustManager[] trustAllCerts = new TrustManager[]{

@@ -23,7 +23,9 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTracing;
+import okhttp3.Call;
 import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
 
 class NoOpSplunkRum extends SplunkRum {
     static final NoOpSplunkRum INSTANCE = new NoOpSplunkRum();
@@ -35,6 +37,11 @@ class NoOpSplunkRum extends SplunkRum {
     @Override
     public Interceptor createOkHttpRumInterceptor() {
         return OkHttpTracing.create(OpenTelemetry.noop()).newInterceptor();
+    }
+
+    @Override
+    public Call.Factory createRumOkHttpCallFactory(OkHttpClient client) {
+        return client;
     }
 
     @Override
