@@ -20,6 +20,7 @@ import android.app.Application;
 
 import com.splunk.rum.Config;
 import com.splunk.rum.SplunkRum;
+import com.splunk.rum.StandardAttributes;
 
 import io.opentelemetry.api.common.Attributes;
 
@@ -36,7 +37,11 @@ public class SampleApplication extends Application {
                 .applicationName("Android Demo App")
                 .debugEnabled(true)
                 .deploymentEnvironment("demo")
-                .globalAttributes(Attributes.builder().put("vendor", "Splunk").build())
+                .globalAttributes(
+                        Attributes.builder()
+                                .put("vendor", "Splunk")
+                                .put(StandardAttributes.APP_VERSION, BuildConfig.VERSION_NAME)
+                                .build())
                 .build();
         SplunkRum.initialize(config, this);
     }
