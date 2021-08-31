@@ -16,37 +16,55 @@
 
 package com.splunk.rum;
 
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
-
 import static com.splunk.rum.RumAttributeAppender.NETWORK_SUBTYPE_KEY;
 import static com.splunk.rum.RumAttributeAppender.NETWORK_TYPE_KEY;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-class NetworkMonitor {
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+
+class NetworkMonitor implements AppStateListener {
     static final AttributeKey<String> NETWORK_STATUS_KEY = stringKey("network.status");
 
     private final ConnectionUtil connectionUtil;
+    private final AtomicBoolean shouldEmitChangeEvents = new AtomicBoolean(true);
 
     NetworkMonitor(ConnectionUtil connectionUtil) {
         this.connectionUtil = connectionUtil;
     }
 
     void addConnectivityListener(Tracer tracer) {
-        connectionUtil.setInternetStateListener(new TracingConnectionStateListener(tracer));
+        connectionUtil.setInternetStateListener(new TracingConnectionStateListener(tracer, shouldEmitChangeEvents));
+    }
+
+    @Override
+    public void appForegrounded() {
+        shouldEmitChangeEvents.set(true);
+    }
+
+    @Override
+    public void appBackgrounded() {
+        shouldEmitChangeEvents.set(false);
     }
 
     //visibleForTesting
     static class TracingConnectionStateListener implements ConnectionStateListener {
         private final Tracer tracer;
+        private final AtomicBoolean shouldEmitChangeEvents;
 
-        TracingConnectionStateListener(Tracer tracer) {
+        TracingConnectionStateListener(Tracer tracer, AtomicBoolean shouldEmitChangeEvents) {
             this.tracer = tracer;
+            this.shouldEmitChangeEvents = shouldEmitChangeEvents;
         }
 
         @Override
         public void onAvailable(boolean deviceIsOnline, CurrentNetwork activeNetwork) {
+            if (!shouldEmitChangeEvents.get()) {
+                return;
+            }
             if (activeNetwork.getState() == NetworkState.NO_NETWORK_AVAILABLE) {
                 tracer.spanBuilder("network.change")
                         .setAttribute(NETWORK_STATUS_KEY, "lost")

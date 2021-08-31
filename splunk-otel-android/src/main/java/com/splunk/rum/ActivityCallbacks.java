@@ -26,6 +26,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -38,11 +39,15 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     private final Tracer tracer;
     private final VisibleScreenTracker visibleScreenTracker;
     private final AppStartupTimer startupTimer;
+    private final List<AppStateListener> appStateListeners;
+    //we count the number of activities that have been "started" and not yet "stopped" here to figure out when the app goes into the background.
+    private int numberOfOpenActivities = 0;
 
-    ActivityCallbacks(Tracer tracer, VisibleScreenTracker visibleScreenTracker, AppStartupTimer startupTimer) {
+    ActivityCallbacks(Tracer tracer, VisibleScreenTracker visibleScreenTracker, AppStartupTimer startupTimer, List<AppStateListener> appStateListeners) {
         this.tracer = tracer;
         this.visibleScreenTracker = visibleScreenTracker;
         this.startupTimer = startupTimer;
+        this.appStateListeners = appStateListeners;
     }
 
     @Override
@@ -76,6 +81,12 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityStarted(@NonNull Activity activity) {
+        if (numberOfOpenActivities == 0) {
+            for (AppStateListener appStateListener : appStateListeners) {
+                appStateListener.appForegrounded();
+            }
+        }
+        numberOfOpenActivities++;
         addEvent(activity, "activityStarted");
     }
 
@@ -132,6 +143,11 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityStopped(@NonNull Activity activity) {
+        if (--numberOfOpenActivities == 0) {
+            for (AppStateListener appStateListener : appStateListeners) {
+                appStateListener.appBackgrounded();
+            }
+        }
         addEvent(activity, "activityStopped");
     }
 

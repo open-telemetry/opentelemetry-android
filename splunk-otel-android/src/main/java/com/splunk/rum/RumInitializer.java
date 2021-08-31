@@ -27,6 +27,8 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -82,11 +84,24 @@ class RumInitializer {
         OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider).build();
         initializationEvents.add(new RumInitializer.InitializationEvent("openTelemetrySdkInitialized", timingClock.now()));
 
+        List<AppStateListener> appStateListeners = new ArrayList<>();
+        if (config.isAnrDetectionEnabled()) {
+            appStateListeners.add(initializeAnrReporting(mainLooper));
+            initializationEvents.add(new RumInitializer.InitializationEvent("anrMonitorInitialized", timingClock.now()));
+        }
+
         Tracer tracer = openTelemetrySdk.getTracer(SplunkRum.RUM_TRACER_NAME);
+        if (config.isNetworkMonitorEnabled()) {
+            NetworkMonitor networkMonitor = new NetworkMonitor(connectionUtil);
+            networkMonitor.addConnectivityListener(tracer);
+            appStateListeners.add(networkMonitor);
+            initializationEvents.add(new RumInitializer.InitializationEvent("networkMonitorInitialized", timingClock.now()));
+        }
+
         if (Build.VERSION.SDK_INT < 29) {
-            application.registerActivityLifecycleCallbacks(new Pre29ActivityCallbacks(tracer, visibleScreenTracker, startupTimer));
+            application.registerActivityLifecycleCallbacks(new Pre29ActivityCallbacks(tracer, visibleScreenTracker, startupTimer, appStateListeners));
         } else {
-            application.registerActivityLifecycleCallbacks(new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer));
+            application.registerActivityLifecycleCallbacks(new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer, appStateListeners));
         }
         initializationEvents.add(new RumInitializer.InitializationEvent("activityLifecycleCallbacksInitialized", timingClock.now()));
 
@@ -95,27 +110,34 @@ class RumInitializer {
             initializationEvents.add(new RumInitializer.InitializationEvent("crashReportingInitialized", timingClock.now()));
         }
 
-        if (config.isNetworkMonitorEnabled()) {
-            new NetworkMonitor(connectionUtil).addConnectivityListener(tracer);
-            initializationEvents.add(new RumInitializer.InitializationEvent("networkMonitorInitialized", timingClock.now()));
-        }
-
-        if (config.isAnrDetectionEnabled()) {
-            initializeAnrReporting(mainLooper);
-            initializationEvents.add(new RumInitializer.InitializationEvent("anrMonitorInitialized", timingClock.now()));
-        }
-
         recordInitializationSpans(startTimeNanos, initializationEvents, tracer, config);
 
         return new SplunkRum(openTelemetrySdk, sessionId, config);
     }
 
-    private void initializeAnrReporting(Looper mainLooper) {
+    private AppStateListener initializeAnrReporting(Looper mainLooper) {
         Thread mainThread = mainLooper.getThread();
         Handler uiHandler = new Handler(mainLooper);
         AnrWatcher anrWatcher = new AnrWatcher(uiHandler, mainThread, SplunkRum::getInstance);
-        Executors.newScheduledThreadPool(1)
-                .scheduleAtFixedRate(anrWatcher, 1, 1, TimeUnit.SECONDS);
+        ScheduledExecutorService anrScheduler = Executors.newScheduledThreadPool(1);
+        final ScheduledFuture<?> scheduledFuture = anrScheduler.scheduleAtFixedRate(anrWatcher, 1, 1, TimeUnit.SECONDS);
+        return new AppStateListener() {
+            private ScheduledFuture<?> future = scheduledFuture;
+            @Override
+            public void appForegrounded() {
+                if (future == null) {
+                    future = anrScheduler.scheduleAtFixedRate(anrWatcher, 1, 1, TimeUnit.SECONDS);
+                }
+            }
+
+            @Override
+            public void appBackgrounded() {
+                if (future != null) {
+                    future.cancel(true);
+                    future = null;
+                }
+            }
+        };
     }
 
     private String detectRumVersion() {

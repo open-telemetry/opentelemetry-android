@@ -16,19 +16,21 @@
 
 package com.splunk.rum;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 public class NetworkMonitorTest {
     @Rule
@@ -43,7 +45,7 @@ public class NetworkMonitorTest {
 
     @Test
     public void networkAvailable_wifi() {
-        NetworkMonitor.TracingConnectionStateListener listener = new NetworkMonitor.TracingConnectionStateListener(tracer);
+        NetworkMonitor.TracingConnectionStateListener listener = new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
 
         listener.onAvailable(true, new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null));
 
@@ -59,7 +61,7 @@ public class NetworkMonitorTest {
 
     @Test
     public void networkAvailable_cellular() {
-        NetworkMonitor.TracingConnectionStateListener listener = new NetworkMonitor.TracingConnectionStateListener(tracer);
+        NetworkMonitor.TracingConnectionStateListener listener = new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
 
         listener.onAvailable(true, new CurrentNetwork(NetworkState.TRANSPORT_CELLULAR, "LTE"));
 
@@ -75,7 +77,7 @@ public class NetworkMonitorTest {
 
     @Test
     public void networkLost() {
-        NetworkMonitor.TracingConnectionStateListener listener = new NetworkMonitor.TracingConnectionStateListener(tracer);
+        NetworkMonitor.TracingConnectionStateListener listener = new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
 
         listener.onAvailable(false, new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE, null));
 
@@ -87,5 +89,21 @@ public class NetworkMonitorTest {
         assertEquals("lost", attributes.get(NetworkMonitor.NETWORK_STATUS_KEY));
         assertEquals("unavailable", attributes.get(RumAttributeAppender.NETWORK_TYPE_KEY));
         assertNull(attributes.get(RumAttributeAppender.NETWORK_SUBTYPE_KEY));
+    }
+
+    @Test
+    public void noEventsPlease() {
+        AtomicBoolean shouldEmitChangeEvents = new AtomicBoolean(false);
+
+        NetworkMonitor.TracingConnectionStateListener listener = new NetworkMonitor.TracingConnectionStateListener(tracer, shouldEmitChangeEvents);
+
+        listener.onAvailable(false, new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE, null));
+        assertTrue(otelTesting.getSpans().isEmpty());
+        listener.onAvailable(true, new CurrentNetwork(NetworkState.TRANSPORT_CELLULAR, "LTE"));
+        assertTrue(otelTesting.getSpans().isEmpty());
+
+        shouldEmitChangeEvents.set(true);
+        listener.onAvailable(false, new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE, null));
+        assertEquals(1, otelTesting.getSpans().size());
     }
 }

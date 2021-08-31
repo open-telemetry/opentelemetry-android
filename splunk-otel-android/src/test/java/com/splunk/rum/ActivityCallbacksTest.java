@@ -20,7 +20,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static java.util.Collections.singletonList;
 
 import android.app.Activity;
 
@@ -42,6 +46,7 @@ public class ActivityCallbacksTest {
     private Tracer tracer;
     private VisibleScreenTracker visibleScreenTracker;
     private final AppStartupTimer startupTimer = new AppStartupTimer();
+    private final AppStateListener appStateListener = mock(AppStateListener.class);
 
     @Before
     public void setup() {
@@ -52,7 +57,7 @@ public class ActivityCallbacksTest {
     @Test
     public void appStartup() {
         startupTimer.start(tracer);
-        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer);
+        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer, singletonList(appStateListener));
         ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(activityCallbacks);
 
         Activity activity = mock(Activity.class);
@@ -88,11 +93,13 @@ public class ActivityCallbacksTest {
         checkEventExists(events, "activityPreResumed");
         checkEventExists(events, "activityResumed");
         checkEventExists(events, "activityPostResumed");
+
+        verify(appStateListener).appForegrounded();
     }
 
     @Test
     public void activityCreation() {
-        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer);
+        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer, singletonList(appStateListener));
         ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(activityCallbacks);
         startupAppAndClearSpans(testHarness);
 
@@ -124,17 +131,20 @@ public class ActivityCallbacksTest {
         checkEventExists(events, "activityPreResumed");
         checkEventExists(events, "activityResumed");
         checkEventExists(events, "activityPostResumed");
+
+        verify(appStateListener).appForegrounded();
     }
 
     private void startupAppAndClearSpans(ActivityCallbackTestHarness testHarness) {
         //make sure that the initial state has been set up & the application is started.
         testHarness.runAppStartupLifecycle(mock(Activity.class));
         otelTesting.clearSpans();
+        verify(appStateListener).appForegrounded();
     }
 
     @Test
     public void activityRestart() {
-        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer);
+        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer, singletonList(appStateListener));
         ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(activityCallbacks);
 
         startupAppAndClearSpans(testHarness);
@@ -164,12 +174,14 @@ public class ActivityCallbacksTest {
         checkEventExists(events, "activityPreResumed");
         checkEventExists(events, "activityResumed");
         checkEventExists(events, "activityPostResumed");
+
+        verify(appStateListener).appForegrounded();
     }
 
     @Test
     public void activityResumed() {
         when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
-        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer);
+        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer, singletonList(appStateListener));
         ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(activityCallbacks);
 
         startupAppAndClearSpans(testHarness);
@@ -194,11 +206,13 @@ public class ActivityCallbacksTest {
         checkEventExists(events, "activityPreResumed");
         checkEventExists(events, "activityResumed");
         checkEventExists(events, "activityPostResumed");
+
+        verifyNoMoreInteractions(appStateListener);
     }
 
     @Test
     public void activityDestroyedFromStopped() {
-        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer);
+        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer, singletonList(appStateListener));
         ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(activityCallbacks);
 
         startupAppAndClearSpans(testHarness);
@@ -223,11 +237,13 @@ public class ActivityCallbacksTest {
         checkEventExists(events, "activityPreDestroyed");
         checkEventExists(events, "activityDestroyed");
         checkEventExists(events, "activityPostDestroyed");
+
+        verify(appStateListener, never()).appBackgrounded();
     }
 
     @Test
     public void activityDestroyedFromPaused() {
-        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer);
+        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer, singletonList(appStateListener));
         ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(activityCallbacks);
 
         startupAppAndClearSpans(testHarness);
@@ -267,11 +283,13 @@ public class ActivityCallbacksTest {
         checkEventExists(events, "activityPreDestroyed");
         checkEventExists(events, "activityDestroyed");
         checkEventExists(events, "activityPostDestroyed");
+
+        verify(appStateListener).appBackgrounded();
     }
 
     @Test
     public void activityStoppedFromRunning() {
-        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer);
+        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer, singletonList(appStateListener));
         ActivityCallbackTestHarness testHarness = new ActivityCallbackTestHarness(activityCallbacks);
 
         startupAppAndClearSpans(testHarness);
@@ -311,6 +329,8 @@ public class ActivityCallbacksTest {
         checkEventExists(events, "activityPreStopped");
         checkEventExists(events, "activityStopped");
         checkEventExists(events, "activityPostStopped");
+
+        verify(appStateListener).appBackgrounded();
     }
 
     private void checkEventExists(List<EventData> events, String eventName) {

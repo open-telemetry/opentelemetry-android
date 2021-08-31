@@ -20,7 +20,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static java.util.Collections.singletonList;
 
 import android.app.Activity;
 
@@ -42,6 +45,7 @@ public class Pre29ActivityLifecycleCallbacksTest {
     private Tracer tracer;
     private VisibleScreenTracker visibleScreenTracker;
     private final AppStartupTimer appStartupTimer = new AppStartupTimer();
+    private final AppStateListener appStateListener = mock(AppStateListener.class);
 
     @Before
     public void setup() {
@@ -52,7 +56,7 @@ public class Pre29ActivityLifecycleCallbacksTest {
     @Test
     public void appStartup() {
         appStartupTimer.start(tracer);
-        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer);
+        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer, singletonList(appStateListener));
         Pre29ActivityCallbackTestHarness testHarness = new Pre29ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         Activity activity = mock(Activity.class);
@@ -80,11 +84,13 @@ public class Pre29ActivityLifecycleCallbacksTest {
         checkEventExists(events, "activityCreated");
         checkEventExists(events, "activityStarted");
         checkEventExists(events, "activityResumed");
+
+        verify(appStateListener).appForegrounded();
     }
 
     @Test
     public void activityCreation() {
-        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer);
+        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer, singletonList(appStateListener));
         Pre29ActivityCallbackTestHarness testHarness = new Pre29ActivityCallbackTestHarness(rumLifecycleCallbacks);
         startupAppAndClearSpans(testHarness);
 
@@ -108,17 +114,20 @@ public class Pre29ActivityLifecycleCallbacksTest {
         checkEventExists(events, "activityCreated");
         checkEventExists(events, "activityStarted");
         checkEventExists(events, "activityResumed");
+
+        verifyNoMoreInteractions(appStateListener);
     }
 
     private void startupAppAndClearSpans(Pre29ActivityCallbackTestHarness testHarness) {
         //make sure that the initial state has been set up & the application is started.
         testHarness.runAppStartupLifecycle(mock(Activity.class));
         otelTesting.clearSpans();
+        verify(appStateListener).appForegrounded();
     }
 
     @Test
     public void activityRestart() {
-        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer);
+        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer, singletonList(appStateListener));
         Pre29ActivityCallbackTestHarness testHarness = new Pre29ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
@@ -143,13 +152,15 @@ public class Pre29ActivityLifecycleCallbacksTest {
 
         checkEventExists(events, "activityStarted");
         checkEventExists(events, "activityResumed");
+
+        verifyNoMoreInteractions(appStateListener);
     }
 
     @Test
     public void activityResumed() {
         when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
 
-        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer);
+        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer, singletonList(appStateListener));
         Pre29ActivityCallbackTestHarness testHarness = new Pre29ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
@@ -172,11 +183,13 @@ public class Pre29ActivityLifecycleCallbacksTest {
         assertEquals(1, events.size());
 
         checkEventExists(events, "activityResumed");
+
+        verifyNoMoreInteractions(appStateListener);
     }
 
     @Test
     public void activityDestroyedFromStopped() {
-        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer);
+        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer, singletonList(appStateListener));
         Pre29ActivityCallbackTestHarness testHarness = new Pre29ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
@@ -199,11 +212,12 @@ public class Pre29ActivityLifecycleCallbacksTest {
         assertEquals(1, events.size());
 
         checkEventExists(events, "activityDestroyed");
+        verifyNoMoreInteractions(appStateListener);
     }
 
     @Test
     public void activityDestroyedFromPaused() {
-        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer);
+        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer, singletonList(appStateListener));
         Pre29ActivityCallbackTestHarness testHarness = new Pre29ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
@@ -239,11 +253,13 @@ public class Pre29ActivityLifecycleCallbacksTest {
         assertEquals(1, events.size());
 
         checkEventExists(events, "activityDestroyed");
+
+        verify(appStateListener).appBackgrounded();
     }
 
     @Test
     public void activityStoppedFromRunning() {
-        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer);
+        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer, singletonList(appStateListener));
         Pre29ActivityCallbackTestHarness testHarness = new Pre29ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
@@ -279,6 +295,7 @@ public class Pre29ActivityLifecycleCallbacksTest {
         assertEquals(1, events.size());
 
         checkEventExists(events, "activityStopped");
+        verify(appStateListener).appBackgrounded();
     }
 
     private void checkEventExists(List<EventData> events, String eventName) {
