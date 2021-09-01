@@ -21,6 +21,7 @@ import android.app.Application;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.internal.stubbing.answers.ReturnsArgumentAt;
 
 import java.util.List;
 
@@ -43,6 +44,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -68,6 +70,7 @@ public class SplunkRumTest {
 
         when(config.getBeaconEndpoint()).thenReturn("http://backend");
         when(config.isDebugEnabled()).thenReturn(true);
+        when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
 
         SplunkRum singleton = SplunkRum.initialize(config, application, () -> connectionUtil);
         SplunkRum sameInstance = SplunkRum.initialize(config, application);
@@ -87,6 +90,7 @@ public class SplunkRumTest {
         Config config = mock(Config.class);
 
         when(config.getBeaconEndpoint()).thenReturn("http://backend");
+        when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
 
         SplunkRum singleton = SplunkRum.initialize(config, application, () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
         assertSame(singleton, SplunkRum.getInstance());
@@ -103,6 +107,7 @@ public class SplunkRumTest {
         Config config = mock(Config.class);
 
         when(config.getBeaconEndpoint()).thenReturn("http://backend");
+        when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
 
         SplunkRum splunkRum = SplunkRum.initialize(config, application, () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
         assertNotNull(splunkRum.getOpenTelemetry());

@@ -18,9 +18,11 @@ package com.splunk.rum;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
 /**
@@ -39,6 +41,7 @@ public class Config {
     private final boolean networkMonitorEnabled;
     private final boolean anrDetectionEnabled;
     private final AtomicReference<Attributes> globalAttributes = new AtomicReference<>();
+    private final Function<SpanExporter, SpanExporter> spanFilterExporterDecorator;
 
     private Config(Builder builder) {
         this.beaconEndpoint = builder.beaconEndpoint;
@@ -49,6 +52,7 @@ public class Config {
         this.globalAttributes.set(addDeploymentEnvironment(builder));
         this.networkMonitorEnabled = builder.networkMonitorEnabled;
         this.anrDetectionEnabled = builder.anrDetectionEnabled;
+        this.spanFilterExporterDecorator = builder.spanFilterBuilder.build();
     }
 
     private Attributes addDeploymentEnvironment(Builder builder) {
@@ -125,6 +129,10 @@ public class Config {
         globalAttributes.set(builder.build());
     }
 
+    SpanExporter decorateWithSpanFilter(SpanExporter exporter) {
+        return spanFilterExporterDecorator.apply(exporter);
+    }
+
     /**
      * Builder class for the Splunk RUM {@link Config} class.
      */
@@ -138,6 +146,7 @@ public class Config {
         private boolean crashReportingEnabled = true;
         private Attributes globalAttributes = Attributes.empty();
         private String deploymentEnvironment;
+        private final SpanFilterBuilder spanFilterBuilder = new SpanFilterBuilder();
 
         /**
          * Create a new instance of {@link Config} from the options provided.
@@ -257,6 +266,17 @@ public class Config {
          */
         public Builder deploymentEnvironment(String environment) {
             this.deploymentEnvironment = environment;
+            return this;
+        }
+
+        /**
+         * Configure span data filtering.
+         *
+         * @param configurer A function that will configure the passed {@link SpanFilterBuilder}.
+         * @return {@code this}.
+         */
+        public Builder filterSpans(Consumer<SpanFilterBuilder> configurer) {
+            configurer.accept(spanFilterBuilder);
             return this;
         }
     }

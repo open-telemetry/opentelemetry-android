@@ -39,6 +39,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
@@ -93,9 +94,12 @@ public class SecondFragment extends Fragment {
                 span.end();
             }
         });
-        binding.buttonToWebview.setOnClickListener(v ->
-                NavHostFragment.findNavController(SecondFragment.this)
-                        .navigate(R.id.action_SecondFragment_to_webViewFragment));
+        binding.buttonToWebview.setOnClickListener(v -> {
+            SplunkRum.getInstance().addRumEvent("this span will be ignored", Attributes.empty());
+
+            NavHostFragment.findNavController(SecondFragment.this)
+                    .navigate(R.id.action_SecondFragment_to_webViewFragment);
+        });
 
         binding.buttonToCustomTab.setOnClickListener(v -> {
             String url = "https://ssidhu.o11ystore.com/";

@@ -199,11 +199,12 @@ class RumInitializer {
         }
         SpanExporter zipkinSpanExporter = getCoreSpanExporter(endpoint);
 
-        return ThrottlingExporter.newBuilder(new BufferingExporter(connectionUtil, zipkinSpanExporter))
+        ThrottlingExporter throttlingExporter = ThrottlingExporter.newBuilder(new BufferingExporter(connectionUtil, zipkinSpanExporter))
                 .categorizeByAttribute(SplunkRum.COMPONENT_KEY)
                 .maxSpansInWindow(100)
                 .windowSize(Duration.ofSeconds(30))
                 .build();
+        return config.decorateWithSpanFilter(throttlingExporter);
     }
 
     //visible for testing

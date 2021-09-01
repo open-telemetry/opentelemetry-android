@@ -16,6 +16,8 @@
 
 package com.splunk.android.sample;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import android.app.Application;
 
 import com.splunk.rum.Config;
@@ -42,6 +44,10 @@ public class SampleApplication extends Application {
                                 .put("vendor", "Splunk")
                                 .put(StandardAttributes.APP_VERSION, BuildConfig.VERSION_NAME)
                                 .build())
+                .filterSpans(spanFilter ->
+                        spanFilter
+                                .removeSpanAttribute(stringKey("http.user_agent"))
+                                .rejectSpansByName(spanName -> spanName.contains("ignored")))
                 .build();
         SplunkRum.initialize(config, this);
     }
