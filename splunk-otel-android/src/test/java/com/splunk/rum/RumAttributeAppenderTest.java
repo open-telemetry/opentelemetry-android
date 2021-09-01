@@ -16,16 +16,6 @@
 
 package com.splunk.rum;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.ReadWriteSpan;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
-
-import static io.opentelemetry.api.common.AttributeKey.longKey;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,6 +24,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.trace.ReadWriteSpan;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
 public class RumAttributeAppenderTest {
 
@@ -107,15 +107,16 @@ public class RumAttributeAppenderTest {
         verify(span).setAttribute(RumAttributeAppender.RUM_VERSION_KEY, "rumVersion");
         verify(span).setAttribute(RumAttributeAppender.APP_NAME_KEY, "appName");
         verify(span).setAttribute(RumAttributeAppender.SESSION_ID_KEY, "rumSessionId");
-        verify(span).setAttribute(ResourceAttributes.OS_TYPE, "Android");
+        verify(span).setAttribute(ResourceAttributes.OS_TYPE, "linux");
+        verify(span).setAttribute(ResourceAttributes.OS_NAME, "Android");
         verify(span).setAttribute(SplunkRum.SCREEN_NAME_KEY, "ScreenOne");
         verify(span).setAttribute(RumAttributeAppender.NETWORK_TYPE_KEY, "cell");
         verify(span).setAttribute(RumAttributeAppender.NETWORK_SUBTYPE_KEY, "LTE");
 
         //these values don't seem to be available in unit tests, so just assert that something was set.
-        verify(span).setAttribute(eq(RumAttributeAppender.DEVICE_MODEL_KEY), any());
-        verify(span).setAttribute(eq(RumAttributeAppender.DEVICE_MODEL_NAME_KEY), any());
-        verify(span).setAttribute(eq(RumAttributeAppender.OS_VERSION_KEY), any());
+        verify(span).setAttribute(eq(ResourceAttributes.DEVICE_MODEL_IDENTIFIER), any());
+        verify(span).setAttribute(eq(ResourceAttributes.DEVICE_MODEL_NAME), any());
+        verify(span).setAttribute(eq(ResourceAttributes.OS_VERSION), any());
         verify(span).setAllAttributes(globalAttributes);
     }
 

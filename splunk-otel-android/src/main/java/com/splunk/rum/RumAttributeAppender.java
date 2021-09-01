@@ -17,7 +17,11 @@
 package com.splunk.rum;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_IDENTIFIER;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_NAME;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_NAME;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_TYPE;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_VERSION;
 
 import android.os.Build;
 
@@ -26,19 +30,16 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
 class RumAttributeAppender implements SpanProcessor {
     static final AttributeKey<String> APP_NAME_KEY = stringKey("app");
     static final AttributeKey<String> SESSION_ID_KEY = stringKey("splunk.rumSessionId");
-    static final AttributeKey<String> DEVICE_MODEL_NAME_KEY = ResourceAttributes.DEVICE_MODEL_NAME;
-    static final AttributeKey<String> DEVICE_MODEL_KEY = ResourceAttributes.DEVICE_MODEL_IDENTIFIER;
     static final AttributeKey<String> RUM_VERSION_KEY = stringKey("splunk.rumVersion");
-    static final AttributeKey<String> OS_VERSION_KEY = ResourceAttributes.OS_VERSION;
 
-    //note: these will be in the otel semantic conventions as of spec v1.6.0
+    //note: these 2 will be in the otel semantic conventions as of spec v1.6.0
     static final AttributeKey<String> NETWORK_TYPE_KEY = stringKey("host.connection.type");
     static final AttributeKey<String> NETWORK_SUBTYPE_KEY = stringKey("host.connection.subtype");
+
     static final AttributeKey<String> SPLUNK_OPERATION_KEY = stringKey("_splunk_operation");
 
     private final Config config;
@@ -59,14 +60,16 @@ class RumAttributeAppender implements SpanProcessor {
     public void onStart(Context parentContext, ReadWriteSpan span) {
         //set this custom attribute in order to let the CustomZipkinEncoder use it for the span name on the wire.
         span.setAttribute(SPLUNK_OPERATION_KEY, span.getName());
+
         span.setAttribute(APP_NAME_KEY, config.getApplicationName());
         span.setAttribute(SESSION_ID_KEY, sessionId.getSessionId());
-
-        span.setAttribute(DEVICE_MODEL_NAME_KEY, Build.MODEL);
-        span.setAttribute(DEVICE_MODEL_KEY, Build.MODEL);
-        span.setAttribute(OS_VERSION_KEY, Build.VERSION.RELEASE);
         span.setAttribute(RUM_VERSION_KEY, rumVersion);
-        span.setAttribute(OS_TYPE, "Android");
+
+        span.setAttribute(DEVICE_MODEL_NAME, Build.MODEL);
+        span.setAttribute(DEVICE_MODEL_IDENTIFIER, Build.MODEL);
+        span.setAttribute(OS_NAME, "Android");
+        span.setAttribute(OS_TYPE, "linux");
+        span.setAttribute(OS_VERSION, Build.VERSION.RELEASE);
         span.setAllAttributes(config.getGlobalAttributes());
 
         String currentScreen = visibleScreenTracker.getCurrentlyVisibleScreen();
