@@ -25,6 +25,7 @@ import com.splunk.android.rum.R;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -40,9 +41,11 @@ import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -52,6 +55,8 @@ class RumInitializer {
     private final Config config;
     private final Application application;
     private final AppStartupTimer startupTimer;
+    private final List<RumInitializer.InitializationEvent> initializationEvents = new ArrayList<>();
+    private final AnchoredClock timingClock = AnchoredClock.create(Clock.getDefault());
 
     RumInitializer(Config config, Application application, AppStartupTimer startupTimer) {
         this.config = config;
@@ -63,11 +68,7 @@ class RumInitializer {
         String rumVersion = detectRumVersion();
         VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
 
-        Clock baseClock = Clock.getDefault();
-        AnchoredClock timingClock = AnchoredClock.create(baseClock);
-
         long startTimeNanos = timingClock.now();
-        List<RumInitializer.InitializationEvent> initializationEvents = new ArrayList<>();
 
         ConnectionUtil connectionUtil = connectionUtilSupplier.get();
         initializationEvents.add(new InitializationEvent("connectionUtilInitialized", timingClock.now()));
@@ -78,7 +79,7 @@ class RumInitializer {
         SessionId sessionId = new SessionId();
         initializationEvents.add(new RumInitializer.InitializationEvent("sessionIdInitialized", timingClock.now()));
 
-        SdkTracerProvider sdkTracerProvider = buildTracerProvider(baseClock, zipkinExporter, sessionId, rumVersion, visibleScreenTracker, connectionUtil);
+        SdkTracerProvider sdkTracerProvider = buildTracerProvider(Clock.getDefault(), zipkinExporter, sessionId, rumVersion, visibleScreenTracker, connectionUtil);
         initializationEvents.add(new RumInitializer.InitializationEvent("tracerProviderInitialized", timingClock.now()));
 
         OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider).build();
@@ -177,16 +178,27 @@ class RumInitializer {
             String rumVersion,
             VisibleScreenTracker visibleScreenTracker,
             ConnectionUtil connectionUtil) {
+        BatchSpanProcessor batchSpanProcessor = BatchSpanProcessor.builder(zipkinExporter).build();
+        initializationEvents.add(new RumInitializer.InitializationEvent("batchSpanProcessorInitialized", timingClock.now()));
+
+        RumAttributeAppender attributeAppender = new RumAttributeAppender(config, sessionId, rumVersion, visibleScreenTracker, connectionUtil);
+        initializationEvents.add(new RumInitializer.InitializationEvent("attributeAppenderInitialized", timingClock.now()));
+
+        Resource resource = Resource.getDefault().toBuilder().put("service.name", config.getApplicationName()).build();
+        initializationEvents.add(new RumInitializer.InitializationEvent("resourceInitialized", timingClock.now()));
+
         SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder()
                 .setClock(clock)
-                .addSpanProcessor(BatchSpanProcessor.builder(zipkinExporter).build())
-                .addSpanProcessor(new RumAttributeAppender(config, sessionId, rumVersion, visibleScreenTracker, connectionUtil))
-                .setResource(Resource.getDefault().toBuilder().put("service.name", config.getApplicationName()).build());
+                .addSpanProcessor(batchSpanProcessor)
+                .addSpanProcessor(attributeAppender)
+                .setResource(resource);
+        initializationEvents.add(new RumInitializer.InitializationEvent("tracerProviderBuilderInitialized", timingClock.now()));
+
         if (config.isDebugEnabled()) {
             tracerProviderBuilder.addSpanProcessor(SimpleSpanProcessor.create(new LoggingSpanExporter()));
+            initializationEvents.add(new RumInitializer.InitializationEvent("debugSpanExporterInitialized", timingClock.now()));
         }
-        return tracerProviderBuilder
-                .build();
+        return tracerProviderBuilder.build();
     }
 
     //visible for testing
@@ -196,8 +208,10 @@ class RumInitializer {
             //tell the Zipkin exporter to shut up already. We're on mobile, network stuff happens.
             // we'll do our best to hang on to the spans with the wrapping BufferingExporter.
             ZipkinSpanExporter.baseLogger.setLevel(Level.SEVERE);
+            initializationEvents.add(new InitializationEvent("logger setup complete", timingClock.now()));
         }
         SpanExporter zipkinSpanExporter = getCoreSpanExporter(endpoint);
+        initializationEvents.add(new InitializationEvent("zipkin exporter initialized", timingClock.now()));
 
         ThrottlingExporter throttlingExporter = ThrottlingExporter.newBuilder(new BufferingExporter(connectionUtil, zipkinSpanExporter))
                 .categorizeByAttribute(SplunkRum.COMPONENT_KEY)
@@ -209,9 +223,10 @@ class RumInitializer {
 
     //visible for testing
     SpanExporter getCoreSpanExporter(String endpoint) {
-        return ZipkinSpanExporter.builder()
+        //return a lazy init exporter so the main thread doesn't block on the setup.
+        return new LazyInitSpanExporter(() -> ZipkinSpanExporter.builder()
                 .setEncoder(new CustomZipkinEncoder())
-                .setEndpoint(endpoint).build();
+                .setEndpoint(endpoint).build());
     }
 
     static class InitializationEvent {
@@ -246,4 +261,39 @@ class RumInitializer {
         }
     }
 
+    private static class LazyInitSpanExporter implements SpanExporter {
+        private volatile SpanExporter delegate;
+        private final Supplier<SpanExporter> s;
+
+        public LazyInitSpanExporter(Supplier<SpanExporter> s) {
+            this.s = s;
+        }
+
+        private SpanExporter getDelegate() {
+            if (delegate != null) {
+                return delegate;
+            }
+            synchronized (this) {
+                if (delegate == null) {
+                    delegate = s.get();
+                }
+            }
+            return delegate;
+        }
+
+        @Override
+        public CompletableResultCode export(Collection<SpanData> spans) {
+            return getDelegate().export(spans);
+        }
+
+        @Override
+        public CompletableResultCode flush() {
+            return getDelegate().flush();
+        }
+
+        @Override
+        public CompletableResultCode shutdown() {
+            return getDelegate().shutdown();
+        }
+    }
 }
