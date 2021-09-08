@@ -16,7 +16,6 @@
 
 package com.splunk.rum;
 
-import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -26,7 +25,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 //note: based on ideas from stack overflow: https://stackoverflow.com/questions/32547006/connectivitymanager-getnetworkinfoint-deprecated
@@ -35,37 +33,33 @@ class ConnectionUtil {
     static final CurrentNetwork NO_NETWORK = new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE, null);
     static final CurrentNetwork UNKNOWN_NETWORK = new CurrentNetwork(NetworkState.TRANSPORT_UNKNOWN, null);
 
-    private final ConnectionMonitor connectionMonitor;
     private final NetworkDetector networkDetector;
 
-    private final AtomicReference<CurrentNetwork> currentNetwork = new AtomicReference<>();
+    private volatile CurrentNetwork currentNetwork;
+    private volatile ConnectionStateListener connectionStateListener;
 
-    ConnectionUtil(Context context) {
-        this(ConnectionUtil::createNetworkMonitoringRequest, NetworkDetector.create(context), (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
+    ConnectionUtil(NetworkDetector networkDetector) {
+        this.networkDetector = networkDetector;
     }
 
-    //for testing, since building the NetworkRequest fails in junit due to .. Android.
-    ConnectionUtil(Supplier<NetworkRequest> createNetworkMonitoringRequest, NetworkDetector networkDetector, ConnectivityManager connectivityManager) {
-        this.connectionMonitor = new ConnectionMonitor();
-
+    void startMonitoring(Supplier<NetworkRequest> createNetworkMonitoringRequest, ConnectivityManager connectivityManager) {
+        refreshNetworkStatus();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            connectivityManager.registerDefaultNetworkCallback(connectionMonitor);
+            connectivityManager.registerDefaultNetworkCallback(new ConnectionMonitor());
         } else {
             NetworkRequest networkRequest = createNetworkMonitoringRequest.get();
-            connectivityManager.registerNetworkCallback(networkRequest, connectionMonitor);
+            connectivityManager.registerNetworkCallback(networkRequest, new ConnectionMonitor());
         }
-        this.networkDetector = networkDetector;
-        refreshNetworkStatus();
     }
 
     CurrentNetwork refreshNetworkStatus() {
         CurrentNetwork activeNetwork = networkDetector.detectCurrentNetwork();
-        currentNetwork.set(activeNetwork);
+        currentNetwork = activeNetwork;
         return activeNetwork;
     }
 
-    private static NetworkRequest createNetworkMonitoringRequest() {
-        //todo: this throws an NPE when running in junit. what's up with that?
+    static NetworkRequest createNetworkMonitoringRequest() {
+        //note: this throws an NPE when running in junit without robolectric, due to Android
         return new NetworkRequest.Builder()
                 .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
@@ -76,24 +70,18 @@ class ConnectionUtil {
     }
 
     boolean isOnline() {
-        return currentNetwork.get().isOnline();
+        return currentNetwork.isOnline();
     }
 
     CurrentNetwork getActiveNetwork() {
-        return currentNetwork.get();
+        return currentNetwork;
     }
 
     void setInternetStateListener(ConnectionStateListener listener) {
-        connectionMonitor.setOnConnectionStateListener(listener);
+        connectionStateListener = listener;
     }
 
-    class ConnectionMonitor extends ConnectivityManager.NetworkCallback {
-
-        private ConnectionStateListener connectionStateListener;
-
-        void setOnConnectionStateListener(ConnectionStateListener connectionStateListener) {
-            this.connectionStateListener = connectionStateListener;
-        }
+    private class ConnectionMonitor extends ConnectivityManager.NetworkCallback {
 
         @Override
         public void onAvailable(@NonNull Network network) {
@@ -112,7 +100,7 @@ class ConnectionUtil {
             //this method, we'll force it to be NO_NETWORK, rather than relying on the ConnectivityManager to have the right
             //state at the right time during this event.
             CurrentNetwork activeNetwork = NO_NETWORK;
-            currentNetwork.set(activeNetwork);
+            currentNetwork = activeNetwork;
             if (connectionStateListener != null) {
                 connectionStateListener.onAvailable(false, activeNetwork);
                 Log.d(SplunkRum.LOG_TAG, "  onLost: isConnected:" + false + ", activeNetwork: " + activeNetwork);

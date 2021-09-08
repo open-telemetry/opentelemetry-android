@@ -19,6 +19,8 @@ package com.splunk.rum;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import android.app.Application;
+import android.content.Context;
+import android.net.ConnectivityManager;
 import android.os.Looper;
 import android.util.Log;
 
@@ -90,7 +92,12 @@ public class SplunkRum {
      * @return A fully initialized {@link SplunkRum} instance, ready for use.
      */
     public static SplunkRum initialize(Config config, Application application) {
-        return initialize(config, application, () -> new ConnectionUtil(application.getApplicationContext()));
+        return initialize(config, application, () -> {
+            Context context = application.getApplicationContext();
+            ConnectionUtil connectionUtil = new ConnectionUtil(NetworkDetector.create(context));
+            connectionUtil.startMonitoring(ConnectionUtil::createNetworkMonitoringRequest, (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
+            return connectionUtil;
+        });
     }
 
     //for testing purposes
