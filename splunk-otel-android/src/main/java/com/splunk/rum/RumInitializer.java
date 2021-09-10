@@ -124,6 +124,7 @@ class RumInitializer {
         final ScheduledFuture<?> scheduledFuture = anrScheduler.scheduleAtFixedRate(anrWatcher, 1, 1, TimeUnit.SECONDS);
         return new AppStateListener() {
             private ScheduledFuture<?> future = scheduledFuture;
+
             @Override
             public void appForegrounded() {
                 if (future == null) {
@@ -195,7 +196,9 @@ class RumInitializer {
         initializationEvents.add(new RumInitializer.InitializationEvent("tracerProviderBuilderInitialized", timingClock.now()));
 
         if (config.isDebugEnabled()) {
-            tracerProviderBuilder.addSpanProcessor(SimpleSpanProcessor.create(new LoggingSpanExporter()));
+            tracerProviderBuilder.addSpanProcessor(
+                    SimpleSpanProcessor.create(
+                            config.decorateWithSpanFilter(new LoggingSpanExporter())));
             initializationEvents.add(new RumInitializer.InitializationEvent("debugSpanExporterInitialized", timingClock.now()));
         }
         return tracerProviderBuilder.build();

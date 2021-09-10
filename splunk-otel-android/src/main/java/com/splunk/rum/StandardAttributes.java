@@ -18,6 +18,7 @@ package com.splunk.rum;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 /**
  * This class hold {@link AttributeKey}s for standard RUM-related attributes that are not in the
@@ -30,6 +31,14 @@ public final class StandardAttributes {
      * @see Config.Builder#globalAttributes(Attributes)
      */
     public static final AttributeKey<String> APP_VERSION = AttributeKey.stringKey("app.version");
+
+    /**
+     * Full HTTP client request URL in the form {@code scheme://host[:port]/path?query[#fragment]}. Useful
+     * for span data filtering with the {@link SpanFilterBuilder}.
+     *
+     * @see SemanticAttributes#HTTP_URL
+     */
+    public static final AttributeKey<String> HTTP_URL = SemanticAttributes.HTTP_URL;
 
     private StandardAttributes() {
     }

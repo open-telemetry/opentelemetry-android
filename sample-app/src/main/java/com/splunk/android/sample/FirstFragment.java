@@ -88,7 +88,7 @@ public class FirstFragment extends Fragment {
         binding.httpMe.setOnClickListener(v -> {
             Span workflow = splunkRum.startWorkflow("User Login");
             //not really a login, but it does make an http call
-            makeCall("https://ssidhu.o11ystore.com/", workflow);
+            makeCall("https://ssidhu.o11ystore.com?user=me&pass=secret123secret", workflow);
             //maybe this call gave us a real customer id, so let's put it into the global attributes
             splunkRum.setGlobalAttribute(longKey("customerId"), 123456L);
         });
