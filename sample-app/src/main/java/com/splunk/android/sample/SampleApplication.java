@@ -30,7 +30,7 @@ import io.opentelemetry.api.common.Attributes;
 
 public class SampleApplication extends Application {
 
-    private static final Pattern HTTP_URL_SENSITIVE_DATA_PATTERN = Pattern.compile("(user|pass)=\\\\w+");
+    private static final Pattern HTTP_URL_SENSITIVE_DATA_PATTERN = Pattern.compile("(user|pass)=\\w+");
 
     @Override
     public void onCreate() {

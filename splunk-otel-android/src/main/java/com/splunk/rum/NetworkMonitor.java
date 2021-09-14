@@ -16,15 +16,15 @@
 
 package com.splunk.rum;
 
-import static com.splunk.rum.RumAttributeAppender.NETWORK_SUBTYPE_KEY;
-import static com.splunk.rum.RumAttributeAppender.NETWORK_TYPE_KEY;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_TYPE;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 class NetworkMonitor implements AppStateListener {
     static final AttributeKey<String> NETWORK_STATUS_KEY = stringKey("network.status");
@@ -70,15 +70,15 @@ class NetworkMonitor implements AppStateListener {
                         .setAttribute(NETWORK_STATUS_KEY, "lost")
                         .startSpan()
                         //put this after span start to override what might be set in the RumAttributeAppender.
-                        .setAttribute(NETWORK_TYPE_KEY, activeNetwork.getState().getHumanName())
+                        .setAttribute(NET_HOST_CONNECTION_TYPE, activeNetwork.getState().getHumanName())
                         .end();
             } else {
                 Span available = tracer.spanBuilder("network.change")
                         .setAttribute(NETWORK_STATUS_KEY, "available")
                         .startSpan()
                         //put these after span start to override what might be set in the RumAttributeAppender.
-                        .setAttribute(NETWORK_TYPE_KEY, activeNetwork.getState().getHumanName());
-                activeNetwork.getSubType().ifPresent(subType -> available.setAttribute(NETWORK_SUBTYPE_KEY, subType));
+                        .setAttribute(NET_HOST_CONNECTION_TYPE, activeNetwork.getState().getHumanName());
+                activeNetwork.getSubType().ifPresent(subType -> available.setAttribute(SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE, subType));
                 available.end();
             }
         }

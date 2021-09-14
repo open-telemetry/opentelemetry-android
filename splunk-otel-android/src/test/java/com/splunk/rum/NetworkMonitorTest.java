@@ -19,6 +19,8 @@ package com.splunk.rum;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_TYPE;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -55,8 +57,8 @@ public class NetworkMonitorTest {
         assertEquals("network.change", spanData.getName());
         Attributes attributes = spanData.getAttributes();
         assertEquals("available", attributes.get(NetworkMonitor.NETWORK_STATUS_KEY));
-        assertEquals("wifi", attributes.get(RumAttributeAppender.NETWORK_TYPE_KEY));
-        assertNull(attributes.get(RumAttributeAppender.NETWORK_SUBTYPE_KEY));
+        assertEquals("wifi", attributes.get(NET_HOST_CONNECTION_TYPE));
+        assertNull(attributes.get(NET_HOST_CONNECTION_SUBTYPE));
     }
 
     @Test
@@ -71,8 +73,8 @@ public class NetworkMonitorTest {
         assertEquals("network.change", spanData.getName());
         Attributes attributes = spanData.getAttributes();
         assertEquals("available", attributes.get(NetworkMonitor.NETWORK_STATUS_KEY));
-        assertEquals("cell", attributes.get(RumAttributeAppender.NETWORK_TYPE_KEY));
-        assertEquals("LTE", attributes.get(RumAttributeAppender.NETWORK_SUBTYPE_KEY));
+        assertEquals("cell", attributes.get(NET_HOST_CONNECTION_TYPE));
+        assertEquals("LTE", attributes.get(NET_HOST_CONNECTION_SUBTYPE));
     }
 
     @Test
@@ -87,8 +89,8 @@ public class NetworkMonitorTest {
         assertEquals("network.change", spanData.getName());
         Attributes attributes = spanData.getAttributes();
         assertEquals("lost", attributes.get(NetworkMonitor.NETWORK_STATUS_KEY));
-        assertEquals("unavailable", attributes.get(RumAttributeAppender.NETWORK_TYPE_KEY));
-        assertNull(attributes.get(RumAttributeAppender.NETWORK_SUBTYPE_KEY));
+        assertEquals("unavailable", attributes.get(NET_HOST_CONNECTION_TYPE));
+        assertNull(attributes.get(NET_HOST_CONNECTION_SUBTYPE));
     }
 
     @Test

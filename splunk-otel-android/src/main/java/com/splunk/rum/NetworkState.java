@@ -16,13 +16,15 @@
 
 package com.splunk.rum;
 
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+
 enum NetworkState {
-    //note: these will be in the otel semantic conventions as of spec v1.6.0
-    NO_NETWORK_AVAILABLE("unavailable"),
-    TRANSPORT_CELLULAR("cell"),
-    TRANSPORT_WIFI("wifi"),
-    TRANSPORT_VPN("vpn"),
-    TRANSPORT_UNKNOWN("unknown");
+    NO_NETWORK_AVAILABLE(SemanticAttributes.NetHostConnectionTypeValues.UNAVAILABLE),
+    TRANSPORT_CELLULAR(SemanticAttributes.NetHostConnectionTypeValues.CELL),
+    TRANSPORT_WIFI(SemanticAttributes.NetHostConnectionTypeValues.WIFI),
+    TRANSPORT_UNKNOWN(SemanticAttributes.NetHostConnectionTypeValues.UNKNOWN),
+    //this one doesn't seem to have an otel value at this point.
+    TRANSPORT_VPN("vpn");
 
     private final String humanName;
 

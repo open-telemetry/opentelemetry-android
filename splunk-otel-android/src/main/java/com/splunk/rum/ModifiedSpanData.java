@@ -118,5 +118,13 @@ final class ModifiedSpanData implements SpanData {
         return original.getResource();
     }
 
+    @Override
+    public String toString() {
+        return "ModifiedSpanData{" +
+                "original=" + original +
+                ", modifiedAttributes=" + modifiedAttributes +
+                '}';
+    }
+
     // TODO: hashCode, equals ?
 }

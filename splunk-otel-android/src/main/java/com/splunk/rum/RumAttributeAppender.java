@@ -22,6 +22,8 @@ import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DE
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_NAME;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_TYPE;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_VERSION;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_TYPE;
 
 import android.os.Build;
 
@@ -35,10 +37,6 @@ class RumAttributeAppender implements SpanProcessor {
     static final AttributeKey<String> APP_NAME_KEY = stringKey("app");
     static final AttributeKey<String> SESSION_ID_KEY = stringKey("splunk.rumSessionId");
     static final AttributeKey<String> RUM_VERSION_KEY = stringKey("splunk.rumVersion");
-
-    //note: these 2 will be in the otel semantic conventions as of spec v1.6.0
-    static final AttributeKey<String> NETWORK_TYPE_KEY = stringKey("host.connection.type");
-    static final AttributeKey<String> NETWORK_SUBTYPE_KEY = stringKey("host.connection.subtype");
 
     static final AttributeKey<String> SPLUNK_OPERATION_KEY = stringKey("_splunk_operation");
 
@@ -75,8 +73,8 @@ class RumAttributeAppender implements SpanProcessor {
         String currentScreen = visibleScreenTracker.getCurrentlyVisibleScreen();
         span.setAttribute(SplunkRum.SCREEN_NAME_KEY, currentScreen);
         CurrentNetwork currentNetwork = connectionUtil.getActiveNetwork();
-        span.setAttribute(NETWORK_TYPE_KEY, currentNetwork.getState().getHumanName());
-        currentNetwork.getSubType().ifPresent(subtype -> span.setAttribute(NETWORK_SUBTYPE_KEY, subtype));
+        span.setAttribute(NET_HOST_CONNECTION_TYPE, currentNetwork.getState().getHumanName());
+        currentNetwork.getSubType().ifPresent(subtype -> span.setAttribute(NET_HOST_CONNECTION_SUBTYPE, subtype));
     }
 
     @Override

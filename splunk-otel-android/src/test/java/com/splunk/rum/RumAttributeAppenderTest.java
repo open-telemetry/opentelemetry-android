@@ -34,6 +34,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 public class RumAttributeAppenderTest {
 
@@ -110,8 +111,8 @@ public class RumAttributeAppenderTest {
         verify(span).setAttribute(ResourceAttributes.OS_TYPE, "linux");
         verify(span).setAttribute(ResourceAttributes.OS_NAME, "Android");
         verify(span).setAttribute(SplunkRum.SCREEN_NAME_KEY, "ScreenOne");
-        verify(span).setAttribute(RumAttributeAppender.NETWORK_TYPE_KEY, "cell");
-        verify(span).setAttribute(RumAttributeAppender.NETWORK_SUBTYPE_KEY, "LTE");
+        verify(span).setAttribute(SemanticAttributes.NET_HOST_CONNECTION_TYPE, "cell");
+        verify(span).setAttribute(SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE, "LTE");
 
         //these values don't seem to be available in unit tests, so just assert that something was set.
         verify(span).setAttribute(eq(ResourceAttributes.DEVICE_MODEL_IDENTIFIER), any());
