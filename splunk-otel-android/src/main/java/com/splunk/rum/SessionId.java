@@ -29,6 +29,7 @@ class SessionId {
     private final Clock clock;
     private final AtomicReference<String> value = new AtomicReference<>();
     private volatile long createTimeNanos;
+    private volatile SessionIdChangeListener sessionIdChangeListener;
 
     SessionId() {
         this(Clock.getDefault());
@@ -50,15 +51,22 @@ class SessionId {
 
     String getSessionId() {
         String currentValue = value.get();
-        if (currentValue == null || sessionExpired()) {
+        if (sessionExpired()) {
             String newId = createNewId();
             //if this returns false, then another thread updated the value already.
             if (value.compareAndSet(currentValue, newId)) {
                 createTimeNanos = clock.now();
+                if (sessionIdChangeListener != null) {
+                    sessionIdChangeListener.onChange(currentValue, newId);
+                }
             }
             return value.get();
         }
         return currentValue;
+    }
+
+    void setSessionIdChangeListener(SessionIdChangeListener sessionIdChangeListener) {
+        this.sessionIdChangeListener = sessionIdChangeListener;
     }
 
     private boolean sessionExpired() {

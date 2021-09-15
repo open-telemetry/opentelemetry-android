@@ -92,6 +92,8 @@ class RumInitializer {
         }
 
         Tracer tracer = openTelemetrySdk.getTracer(SplunkRum.RUM_TRACER_NAME);
+        sessionId.setSessionIdChangeListener(new SessionIdChangeTracer(tracer));
+
         if (config.isNetworkMonitorEnabled()) {
             NetworkMonitor networkMonitor = new NetworkMonitor(connectionUtil);
             networkMonitor.addConnectivityListener(tracer);

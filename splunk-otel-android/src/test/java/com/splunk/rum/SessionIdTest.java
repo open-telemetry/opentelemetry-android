@@ -27,6 +27,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 public class SessionIdTest {
 
@@ -56,5 +61,22 @@ public class SessionIdTest {
         String newSessionId = sessionId.getSessionId();
         assertNotNull(newSessionId);
         assertNotEquals(value, newSessionId);
+    }
+
+    @Test
+    public void shouldCallSessionIdChangeListener() {
+        TestClock clock = TestClock.create();
+        SessionIdChangeListener listener = mock(SessionIdChangeListener.class);
+        SessionId sessionId = new SessionId(clock);
+        sessionId.setSessionIdChangeListener(listener);
+
+        String firstSessionId = sessionId.getSessionId();
+        clock.advance(3, TimeUnit.HOURS);
+        sessionId.getSessionId();
+        verify(listener, never()).onChange(anyString(), anyString());
+
+        clock.advance(1, TimeUnit.HOURS);
+        String secondSessionId = sessionId.getSessionId();
+        verify(listener).onChange(firstSessionId, secondSessionId);
     }
 }
