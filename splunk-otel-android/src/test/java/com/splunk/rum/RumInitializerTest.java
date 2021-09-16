@@ -23,9 +23,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import android.app.Application;
 import android.os.Looper;
+
+import com.google.common.base.Strings;
 
 import org.junit.Test;
 
@@ -33,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
@@ -65,7 +69,7 @@ public class RumInitializerTest {
         assertEquals("SplunkRum.initialize", initSpan.getName());
         assertEquals("appstart", initSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
         assertEquals("[debug:false,crashReporting:true,anrReporting:true,networkMonitor:true]",
-                initSpan.getAttributes().get(AttributeKey.stringKey("config_settings")));
+                initSpan.getAttributes().get(stringKey("config_settings")));
 
         List<EventData> events = initSpan.getEvents();
         assertTrue(events.size() > 0);
@@ -83,6 +87,36 @@ public class RumInitializerTest {
     private void checkEventExists(List<EventData> events, String eventName) {
         assertTrue("Event with name " + eventName + " not found",
                 events.stream().map(EventData::getName).anyMatch(name -> name.equals(eventName)));
+    }
+
+    @Test
+    public void spanLimitsAreConfigured() {
+        Config config = Config.builder().realm("dev").applicationName("testApp").rumAccessToken("accessToken").build();
+        Application application = mock(Application.class);
+        InMemorySpanExporter testExporter = InMemorySpanExporter.create();
+        AppStartupTimer startupTimer = new AppStartupTimer();
+        RumInitializer testInitializer = new RumInitializer(config, application, startupTimer) {
+            @Override
+            SpanExporter buildExporter(ConnectionUtil connectionUtil) {
+                return testExporter;
+            }
+        };
+        SplunkRum splunkRum = testInitializer.initialize(() -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS), mock(Looper.class));
+        splunkRum.flushSpans();
+
+        testExporter.reset();
+
+        AttributeKey<String> longAttributeKey = stringKey("longAttribute");
+        splunkRum.addRumEvent("testEvent", Attributes.of(longAttributeKey, Strings.repeat("a", 3000)));
+
+        splunkRum.flushSpans();
+        List<SpanData> spans = testExporter.getFinishedSpanItems();
+        assertEquals(1, spans.size());
+
+        SpanData eventSpan = spans.get(0);
+        assertEquals("testEvent", eventSpan.getName());
+        String truncatedValue = eventSpan.getAttributes().get(longAttributeKey);
+        assertEquals(Strings.repeat("a", 2048), truncatedValue);
     }
 
     /**

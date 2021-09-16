@@ -45,6 +45,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -194,6 +195,7 @@ class RumInitializer {
                 .setClock(clock)
                 .addSpanProcessor(batchSpanProcessor)
                 .addSpanProcessor(attributeAppender)
+                .setSpanLimits(SpanLimits.builder().setMaxAttributeValueLength(2048).build())
                 .setResource(resource);
         initializationEvents.add(new RumInitializer.InitializationEvent("tracerProviderBuilderInitialized", timingClock.now()));
 
