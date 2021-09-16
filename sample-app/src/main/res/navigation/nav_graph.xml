@@ -27,6 +27,9 @@
         <action
             android:id="@+id/action_SecondFragment_to_webViewFragment"
             app:destination="@id/webViewFragment" />
+        <action
+            android:id="@+id/action_SecondFragment_to_shopWebViewFragment"
+            app:destination="@id/shopWebViewFragment" />
     </fragment>
     <fragment
         android:id="@+id/webViewFragment"
@@ -37,4 +40,8 @@
             android:id="@+id/action_webViewFragment_to_SecondFragment"
             app:destination="@id/SecondFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/shopWebViewFragment"
+        android:name="com.splunk.android.sample.ShopWebViewFragment"
+        android:label="Online Boutique" />
 </navigation>

@@ -16,35 +16,29 @@
 
 package com.splunk.android.sample;
 
-import android.content.Context;
+import android.net.http.SslError;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
+import android.webkit.SslErrorHandler;
 import android.webkit.WebView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.webkit.WebViewAssetLoader;
 import androidx.webkit.WebViewClientCompat;
 
 import com.splunk.android.sample.databinding.FragmentWebViewBinding;
 import com.splunk.rum.SplunkRum;
 
-import io.opentelemetry.api.common.Attributes;
-
 /**
  * A simple {@link Fragment} subclass with a WebView in it.
  */
-public class WebViewFragment extends Fragment {
+public class ShopWebViewFragment extends Fragment {
 
     private FragmentWebViewBinding binding;
-    private WebViewAssetLoader assetLoader;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,10 +48,6 @@ public class WebViewFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        this.assetLoader = new WebViewAssetLoader.Builder()
-                .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this.getContext()))
-                .addPathHandler("/res/", new WebViewAssetLoader.ResourcesPathHandler(this.getContext()))
-                .build();
         // Inflate the layout for this fragment
         this.binding = FragmentWebViewBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -66,44 +56,28 @@ public class WebViewFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        binding.webView.setWebViewClient(new LocalContentWebViewClient(assetLoader));
-        binding.webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
-
+        String storeUrl = "https://ssidhu.o11ystore.com";
+        binding.webView.setWebViewClient(new WebViewClientCompat() {
+            @Override
+            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+                //let our self-signed cert through. :(
+                if (error.getUrl().startsWith(storeUrl)) {
+                    handler.proceed();
+                } else {
+                    super.onReceivedSslError(view, handler, error);
+                }
+            }
+        });
         binding.webView.getSettings().setJavaScriptEnabled(true);
-        binding.webView.addJavascriptInterface(new WebAppInterface(getContext()), "Android");
+        binding.webView.addJavascriptInterface(new MobileRumSessionId(), "MobileRum");
+        binding.webView.loadUrl(storeUrl);
     }
 
-    private static class LocalContentWebViewClient extends WebViewClientCompat {
-        private final WebViewAssetLoader assetLoader;
-
-        private LocalContentWebViewClient(WebViewAssetLoader assetLoader) {
-            this.assetLoader = assetLoader;
-        }
-
-        @Nullable
-        @Override
-        public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-            return assetLoader.shouldInterceptRequest(request.getUrl());
-        }
-    }
-
-    public static class WebAppInterface {
-        private final Context context;
-
-        public WebAppInterface(Context context) {
-            this.context = context;
-        }
-
-        @JavascriptInterface
-        public void showToast(String toast) {
-            SplunkRum.getInstance().addRumEvent("WebViewButtonClicked", Attributes.empty());
-            Toast.makeText(context, toast, Toast.LENGTH_LONG).show();
-        }
+    public static class MobileRumSessionId {
 
         @JavascriptInterface
         public String getSessionId() {
             return SplunkRum.getInstance().getRumSessionId();
         }
-
     }
 }

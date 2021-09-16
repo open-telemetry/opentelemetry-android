@@ -101,6 +101,11 @@ public class SecondFragment extends Fragment {
                     .navigate(R.id.action_SecondFragment_to_webViewFragment);
         });
 
+        binding.buttonToShopWebview.setOnClickListener(v -> {
+            NavHostFragment.findNavController(SecondFragment.this)
+                    .navigate(R.id.action_SecondFragment_to_shopWebViewFragment);
+        });
+
         binding.buttonToCustomTab.setOnClickListener(v -> {
             String url = "https://ssidhu.o11ystore.com/";
             customChromeTabTimer = SplunkRum.getInstance().startWorkflow("Visit to Chrome Custom Tab");

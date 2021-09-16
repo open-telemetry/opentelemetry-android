@@ -8,12 +8,15 @@
 <body>
 <p>This file was loaded from in-app content</p>
 <input type="button" value="Say hello" onClick="showAndroidToast('Hello Android!')"/>
+
+<p>Session ID: <span id="session_id"></span></p>
+
 <script type="text/javascript">
     function showAndroidToast(toast) {
         Android.showToast(toast);
     }
 
-
+    document.getElementById("session_id").innerHTML = Android.getSessionId();
 </script>
 
 </body>

@@ -40,7 +40,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="@string/next" />
+                android:text="@string/local_web_view" />
+
+            <Button
+                android:id="@+id/button_to_shop_webview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/web_view" />
 
             <Button
                 android:id="@+id/button_to_custom_tab"
