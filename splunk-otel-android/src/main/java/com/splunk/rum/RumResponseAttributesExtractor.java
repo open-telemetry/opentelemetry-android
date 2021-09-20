@@ -41,7 +41,7 @@ class RumResponseAttributesExtractor extends AttributesExtractor<Request, Respon
     }
 
     @Override
-    protected void onEnd(AttributesBuilder attributes, Request request, Response response) {
+    protected void onEnd(AttributesBuilder attributes, Request request, Response response, Throwable error) {
         //null response means the call failed completely
         if (response == null) {
             return;

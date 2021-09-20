@@ -50,7 +50,7 @@ public class RumResponseAttributesExtractorTest {
         RumResponseAttributesExtractor attributesExtractor = new RumResponseAttributesExtractor(headerParser);
         AttributesBuilder attributesBuilder = Attributes.builder();
         attributesExtractor.onStart(attributesBuilder, fakeRequest);
-        attributesExtractor.onEnd(attributesBuilder, fakeRequest, response);
+        attributesExtractor.onEnd(attributesBuilder, fakeRequest, response, null);
         Attributes attributes = attributesBuilder.build();
 
         assertEquals("http", attributes.get(SplunkRum.COMPONENT_KEY));
@@ -74,7 +74,7 @@ public class RumResponseAttributesExtractorTest {
 
         RumResponseAttributesExtractor attributesExtractor = new RumResponseAttributesExtractor(headerParser);
         AttributesBuilder attributesBuilder = Attributes.builder();
-        attributesExtractor.onEnd(attributesBuilder, fakeRequest, response);
+        attributesExtractor.onEnd(attributesBuilder, fakeRequest, response, null);
         attributesExtractor.onStart(attributesBuilder, fakeRequest);
         Attributes attributes = attributesBuilder.build();
 
@@ -99,7 +99,7 @@ public class RumResponseAttributesExtractorTest {
 
         RumResponseAttributesExtractor attributesExtractor = new RumResponseAttributesExtractor(headerParser);
         AttributesBuilder attributesBuilder = Attributes.builder();
-        attributesExtractor.onEnd(attributesBuilder, fakeRequest, response);
+        attributesExtractor.onEnd(attributesBuilder, fakeRequest, response, null);
         attributesExtractor.onStart(attributesBuilder, fakeRequest);
         Attributes attributes = attributesBuilder.build();
 
