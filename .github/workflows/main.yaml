@@ -1,7 +1,10 @@
-name: PR build
+name: "Continuous Build"
 
 on:
-  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build:

@@ -9,9 +9,9 @@
 </p>
 
 <p align="center">
-<!--   <a href="https://github.com/signalfx/splunk-otel-android/actions?query=workflow%3A%22CI+build%22"> -->
-<!--     <img alt="Build Status" src="https://img.shields.io/github/workflow/status/signalfx/splunk-otel-android/CI%20build?style=for-the-badge"> -->
-<!--   </a> -->
+   <a href="https://github.com/signalfx/splunk-otel-android/actions?query=workflow%3A%22Continuous+Build%22">
+     <img alt="Build Status" src="https://img.shields.io/github/workflow/status/signalfx/splunk-otel-android/Continuous%20Build?style=for-the-badge">
+   </a>
 <!--   <a href="https://github.com/signalfx/splunk-otel-android/releases"> -->
 <!--     <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/signalfx/splunk-otel-android?include_prereleases&style=for-the-badge"> -->
 <!--   </a> -->
