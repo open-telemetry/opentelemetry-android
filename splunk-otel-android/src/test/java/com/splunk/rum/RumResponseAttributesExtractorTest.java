@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -29,6 +30,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.io.IOException;
 
 public class RumResponseAttributesExtractorTest {
 
@@ -107,4 +110,25 @@ public class RumResponseAttributesExtractorTest {
         assertEquals(101L, (long) attributes.get(HTTP_RESPONSE_CONTENT_LENGTH));
     }
 
+    @Test
+    public void shouldAddExceptionAttributes() {
+        ServerTimingHeaderParser headerParser = mock(ServerTimingHeaderParser.class);
+        RumResponseAttributesExtractor attributesExtractor = new RumResponseAttributesExtractor(headerParser);
+
+        Request fakeRequest = mock(Request.class);
+        Exception error = new IOException("failed to make a call");
+
+        AttributesBuilder attributesBuilder = Attributes.builder();
+        attributesExtractor.onEnd(attributesBuilder, fakeRequest, null, error);
+        attributesExtractor.onStart(attributesBuilder, fakeRequest);
+        Attributes attributes = attributesBuilder.build();
+
+        assertEquals(5, attributes.size());
+        assertEquals("http", attributes.get(SplunkRum.COMPONENT_KEY));
+        assertEquals("IOException", attributes.get(SemanticAttributes.EXCEPTION_TYPE));
+        assertEquals("failed to make a call", attributes.get(SemanticAttributes.EXCEPTION_MESSAGE));
+        //temporary attributes until the RUM UI/backend can be brought up to date with otel conventions.
+        assertEquals("IOException", attributes.get(SplunkRum.ERROR_TYPE_KEY));
+        assertEquals("failed to make a call", attributes.get(SplunkRum.ERROR_MESSAGE_KEY));
+    }
 }

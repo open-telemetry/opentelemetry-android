@@ -16,14 +16,14 @@
 
 package com.splunk.rum;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import okhttp3.Request;
 import okhttp3.Response;
-
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 class RumResponseAttributesExtractor extends AttributesExtractor<Request, Response> {
     static final AttributeKey<String> LINK_TRACE_ID_KEY = stringKey("link.traceId");
@@ -42,10 +42,15 @@ class RumResponseAttributesExtractor extends AttributesExtractor<Request, Respon
 
     @Override
     protected void onEnd(AttributesBuilder attributes, Request request, Response response, Throwable error) {
-        //null response means the call failed completely
-        if (response == null) {
-            return;
+        if (response != null) {
+            onResponse(attributes, response);
         }
+        if (error != null) {
+            onError(attributes, error);
+        }
+    }
+
+    private void onResponse(AttributesBuilder attributes, Response response) {
         recordContentLength(attributes, response);
         String serverTimingHeader = response.header("Server-Timing");
 
@@ -69,5 +74,9 @@ class RumResponseAttributesExtractor extends AttributesExtractor<Request, Respon
                 //who knows what we got back? It wasn't a number!
             }
         }
+    }
+
+    private void onError(AttributesBuilder attributes, Throwable error) {
+        SplunkRum.addExceptionAttributes((key, value) -> attributes.put((AttributeKey<? super Object>) key, value), error);
     }
 }

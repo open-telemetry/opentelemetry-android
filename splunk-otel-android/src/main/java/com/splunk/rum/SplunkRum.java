@@ -24,7 +24,10 @@ import android.net.ConnectivityManager;
 import android.os.Looper;
 import android.util.Log;
 
+import org.w3c.dom.Attr;
+
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -247,13 +250,17 @@ public class SplunkRum {
     }
 
     static void addExceptionAttributes(Span span, Throwable e) {
+        addExceptionAttributes((key, value) -> span.setAttribute((AttributeKey<? super Object>) key, value), e);
+    }
+
+    static void addExceptionAttributes(BiConsumer<AttributeKey<?>, Object> setAttribute, Throwable e) {
         //record these here since zipkin eats the event attributes that are recorded by default.
-        span.setAttribute(SemanticAttributes.EXCEPTION_TYPE, e.getClass().getSimpleName());
-        span.setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, e.getMessage());
+        setAttribute.accept(SemanticAttributes.EXCEPTION_TYPE, e.getClass().getSimpleName());
+        setAttribute.accept(SemanticAttributes.EXCEPTION_MESSAGE, e.getMessage());
 
         //these attributes are here to support the RUM UI/backend until it can be updated to use otel conventions.
-        span.setAttribute(ERROR_TYPE_KEY, e.getClass().getSimpleName());
-        span.setAttribute(ERROR_MESSAGE_KEY, e.getMessage());
+        setAttribute.accept(ERROR_TYPE_KEY, e.getClass().getSimpleName());
+        setAttribute.accept(ERROR_MESSAGE_KEY, e.getMessage());
     }
 
     void recordAnr(StackTraceElement[] stackTrace) {
