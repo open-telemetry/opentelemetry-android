@@ -16,6 +16,9 @@
 
 package com.splunk.rum;
 
+import static com.splunk.rum.ConnectionUtil.NO_NETWORK;
+import static com.splunk.rum.ConnectionUtil.UNKNOWN_NETWORK;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -27,9 +30,6 @@ import android.telephony.TelephonyManager;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
-
-import static com.splunk.rum.ConnectionUtil.NO_NETWORK;
-import static com.splunk.rum.ConnectionUtil.UNKNOWN_NETWORK;
 
 @RequiresApi(api = Build.VERSION_CODES.Q)
 class PostApi29NetworkDetector implements NetworkDetector {

@@ -16,11 +16,11 @@
 
 package com.splunk.rum;
 
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-
 import static com.splunk.rum.ConnectionUtil.NO_NETWORK;
 import static com.splunk.rum.ConnectionUtil.UNKNOWN_NETWORK;
+
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
 class SimpleNetworkDetector implements NetworkDetector {
     private final ConnectivityManager connectivityManager;

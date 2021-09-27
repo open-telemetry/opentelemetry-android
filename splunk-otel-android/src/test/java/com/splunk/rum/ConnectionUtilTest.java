@@ -123,6 +123,15 @@ public class ConnectionUtilTest {
     }
 
     @Test
+    public void networkDetectorException() {
+        NetworkDetector networkDetector = mock(NetworkDetector.class);
+        when(networkDetector.detectCurrentNetwork()).thenThrow(new SecurityException("bug"));
+
+        ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);
+        assertEquals(ConnectionUtil.UNKNOWN_NETWORK, connectionUtil.refreshNetworkStatus());
+    }
+
+    @Test
     @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
     public void shouldNotFailOnImmediateConnectionManagerCall_lollipop() {
         NetworkRequest networkRequest = mock(NetworkRequest.class);
