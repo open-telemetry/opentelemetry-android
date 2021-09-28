@@ -21,7 +21,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.JavascriptInterface;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebView;
 
@@ -69,15 +68,8 @@ public class ShopWebViewFragment extends Fragment {
             }
         });
         binding.webView.getSettings().setJavaScriptEnabled(true);
-        binding.webView.addJavascriptInterface(new MobileRumSessionId(), "MobileRum");
+        SplunkRum.getInstance().integrateWithBrowserRum(binding.webView);
         binding.webView.loadUrl(storeUrl);
     }
 
-    public static class MobileRumSessionId {
-
-        @JavascriptInterface
-        public String getSessionId() {
-            return SplunkRum.getInstance().getRumSessionId();
-        }
-    }
 }

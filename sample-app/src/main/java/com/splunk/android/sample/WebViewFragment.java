@@ -71,6 +71,7 @@ public class WebViewFragment extends Fragment {
 
         binding.webView.getSettings().setJavaScriptEnabled(true);
         binding.webView.addJavascriptInterface(new WebAppInterface(getContext()), "Android");
+        SplunkRum.getInstance().integrateWithBrowserRum(binding.webView);
     }
 
     private static class LocalContentWebViewClient extends WebViewClientCompat {
@@ -99,11 +100,5 @@ public class WebViewFragment extends Fragment {
             SplunkRum.getInstance().addRumEvent("WebViewButtonClicked", Attributes.empty());
             Toast.makeText(context, toast, Toast.LENGTH_LONG).show();
         }
-
-        @JavascriptInterface
-        public String getSessionId() {
-            return SplunkRum.getInstance().getRumSessionId();
-        }
-
     }
 }

@@ -20,6 +20,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
 
+import android.webkit.WebView;
+
 import org.junit.Test;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -46,5 +48,7 @@ public class NoOpSplunkRumTest {
         });
         assertSame(instance, instance.setGlobalAttribute(AttributeKey.stringKey("foo"), "bar"));
         instance.flushSpans();
+
+        instance.integrateWithBrowserRum(mock(WebView.class));
     }
 }

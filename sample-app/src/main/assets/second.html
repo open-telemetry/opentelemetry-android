@@ -6,8 +6,8 @@
     <link rel="stylesheet" href="/assets/stylesheet.css">
 </head>
 <body>
-<p>This file was loaded from in-app content</p>
-<input type="button" value="Say hello" onClick="showAndroidToast('Hello Android!')"/>
+<p>This file was <b>also</b> loaded from in-app content</p>
+<input type="button" value="Say goodbye" onClick="showAndroidToast('Goodbye Android!')"/>
 
 <p>Session ID: <span id="session_id"></span></p>
 
@@ -17,11 +17,11 @@
     }
 
     document.getElementById("session_id").innerHTML = SplunkRumNative.getNativeSessionId();
+
 </script>
 
 <p>
-    <a href="https://appassets.androidplatform.net/assets/second.html">Next Web Page</a>
+    <a href="https://appassets.androidplatform.net/assets/index.html">Back</a>
 </p>
-
 </body>
 </html>

@@ -16,6 +16,8 @@
 
 package com.splunk.rum;
 
+import android.webkit.WebView;
+
 import java.util.function.Consumer;
 
 import io.opentelemetry.api.OpenTelemetry;
@@ -71,6 +73,11 @@ class NoOpSplunkRum extends SplunkRum {
 
     @Override
     public void addRumException(Throwable throwable, Attributes attributes) {
+        //no-op
+    }
+
+    @Override
+    public void integrateWithBrowserRum(WebView webView) {
         //no-op
     }
 

@@ -16,7 +16,22 @@
 
 package com.splunk.rum;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import android.app.Application;
+import android.webkit.WebView;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,17 +52,6 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-
-import static io.opentelemetry.api.common.AttributeKey.longKey;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class SplunkRumTest {
 
@@ -213,4 +217,20 @@ public class SplunkRumTest {
         assertEquals("workflow", spans.get(1).getName());
         assertEquals("workflow", spans.get(1).getAttributes().get(SplunkRum.WORKFLOW_NAME_KEY));
     }
+
+    @Test
+    public void integrateWithBrowserRum() {
+        Application application = mock(Application.class, RETURNS_DEEP_STUBS);
+        Config config = mock(Config.class);
+        WebView webView = mock(WebView.class);
+
+        when(config.getBeaconEndpoint()).thenReturn("http://backend");
+        when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
+
+        SplunkRum splunkRum = SplunkRum.initialize(config, application, () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
+        splunkRum.integrateWithBrowserRum(webView);
+
+        verify(webView).addJavascriptInterface(isA(NativeRumSessionId.class), eq("SplunkRumNative"));
+    }
+
 }

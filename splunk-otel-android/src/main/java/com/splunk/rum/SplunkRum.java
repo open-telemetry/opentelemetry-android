@@ -23,8 +23,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.os.Looper;
 import android.util.Log;
-
-import org.w3c.dom.Attr;
+import android.webkit.WebView;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
@@ -333,4 +332,18 @@ public class SplunkRum {
     public static SplunkRum noop() {
         return NoOpSplunkRum.INSTANCE;
     }
+
+    /**
+     * This method will enable Splunk Browser-based RUM to integrate with the current Android RUM
+     * Session. It injects a javascript object named "SplunkRumNative" into your WebView which exposes
+     * the Android Session ID to the browser-based RUM javascript implementation.
+     * <p>
+     * Please note: This API is not stable and may change in future releases.
+     *
+     * @param webView The WebView to inject the javascript object into.
+     */
+    public void integrateWithBrowserRum(WebView webView) {
+        webView.addJavascriptInterface(new NativeRumSessionId(this), "SplunkRumNative");
+    }
+
 }
