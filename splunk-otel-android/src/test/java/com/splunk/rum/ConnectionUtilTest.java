@@ -23,6 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -129,6 +130,37 @@ public class ConnectionUtilTest {
 
         ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);
         assertEquals(ConnectionUtil.UNKNOWN_NETWORK, connectionUtil.refreshNetworkStatus());
+    }
+
+    @Test
+    @Config(sdk = Build.VERSION_CODES.Q)
+    public void networkDetectorExceptionOnCallbackRegistration() {
+        NetworkDetector networkDetector = mock(NetworkDetector.class);
+        ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
+
+        when(networkDetector.detectCurrentNetwork()).thenReturn(new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null));
+        doThrow(new SecurityException("bug"))
+                .when(connectivityManager).registerDefaultNetworkCallback(isA(NetworkCallback.class));
+
+        ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);
+        connectionUtil.startMonitoring(() -> mock(NetworkRequest.class), connectivityManager);
+        assertEquals(new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null), connectionUtil.refreshNetworkStatus());
+    }
+
+    @Test
+    @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+    public void networkDetectorExceptionOnCallbackRegistration_lollipop() {
+        NetworkDetector networkDetector = mock(NetworkDetector.class);
+        ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
+        NetworkRequest networkRequest = mock(NetworkRequest.class);
+
+        when(networkDetector.detectCurrentNetwork()).thenReturn(new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null));
+        doThrow(new SecurityException("bug"))
+                .when(connectivityManager).registerNetworkCallback(eq(networkRequest), isA(NetworkCallback.class));
+
+        ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);
+        connectionUtil.startMonitoring(() -> networkRequest, connectivityManager);
+        assertEquals(new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null), connectionUtil.refreshNetworkStatus());
     }
 
     @Test
