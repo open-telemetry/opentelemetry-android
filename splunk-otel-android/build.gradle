@@ -53,7 +53,7 @@ dependencies {
     implementation 'io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0:1.6.2-alpha'
 
     api 'io.opentelemetry:opentelemetry-api'
-    api 'com.squareup.okhttp3:okhttp:4.9.1'
+    api 'com.squareup.okhttp3:okhttp:4.9.2'
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:3.12.4'
