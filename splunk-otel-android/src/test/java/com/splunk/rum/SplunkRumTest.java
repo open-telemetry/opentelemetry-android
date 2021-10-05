@@ -50,6 +50,7 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
@@ -159,8 +160,10 @@ public class SplunkRumTest {
 
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
-        assertEquals("ANR", spans.get(0).getName());
-        assertEquals(expectedAttributes.asMap(), spans.get(0).getAttributes().asMap());
+        SpanData anrSpan = spans.get(0);
+        assertEquals("ANR", anrSpan.getName());
+        assertEquals(expectedAttributes.asMap(), anrSpan.getAttributes().asMap());
+        assertEquals(StatusData.error(), anrSpan.getStatus());
     }
 
     @Test

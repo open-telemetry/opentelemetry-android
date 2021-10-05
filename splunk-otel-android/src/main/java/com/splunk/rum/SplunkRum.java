@@ -35,6 +35,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTracing;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -268,6 +269,7 @@ public class SplunkRum {
                 .setAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, formatStackTrace(stackTrace))
                 .setAttribute(COMPONENT_KEY, COMPONENT_ERROR)
                 .startSpan()
+                .setStatus(StatusCode.ERROR)
                 .end();
     }
 
