@@ -44,10 +44,11 @@ import org.robolectric.annotation.Config;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(maxSdk = Build.VERSION_CODES.S)
 public class ConnectionUtilTest {
 
     @Test
-    @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+    @Config(maxSdk = Build.VERSION_CODES.LOLLIPOP)
     public void lollipop() {
         NetworkRequest networkRequest = mock(NetworkRequest.class);
         NetworkDetector networkDetector = mock(NetworkDetector.class);
@@ -85,8 +86,8 @@ public class ConnectionUtilTest {
     }
 
     @Test
-    @Config(sdk = Build.VERSION_CODES.Q)
-    public void quiznos() {
+    @Config(maxSdk = Build.VERSION_CODES.S, minSdk = Build.VERSION_CODES.O)
+    public void modernSdks() {
         NetworkRequest networkRequest = mock(NetworkRequest.class);
         NetworkDetector networkDetector = mock(NetworkDetector.class);
         ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
@@ -133,7 +134,7 @@ public class ConnectionUtilTest {
     }
 
     @Test
-    @Config(sdk = Build.VERSION_CODES.Q)
+    @Config(maxSdk = Build.VERSION_CODES.S, minSdk = Build.VERSION_CODES.O)
     public void networkDetectorExceptionOnCallbackRegistration() {
         NetworkDetector networkDetector = mock(NetworkDetector.class);
         ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
@@ -148,7 +149,7 @@ public class ConnectionUtilTest {
     }
 
     @Test
-    @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+    @Config(maxSdk = Build.VERSION_CODES.LOLLIPOP)
     public void networkDetectorExceptionOnCallbackRegistration_lollipop() {
         NetworkDetector networkDetector = mock(NetworkDetector.class);
         ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
@@ -164,7 +165,7 @@ public class ConnectionUtilTest {
     }
 
     @Test
-    @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+    @Config(maxSdk = Build.VERSION_CODES.LOLLIPOP)
     public void shouldNotFailOnImmediateConnectionManagerCall_lollipop() {
         NetworkRequest networkRequest = mock(NetworkRequest.class);
         NetworkDetector networkDetector = mock(NetworkDetector.class);
@@ -182,8 +183,8 @@ public class ConnectionUtilTest {
     }
 
     @Test
-    @Config(sdk = Build.VERSION_CODES.Q)
-    public void shouldNotFailOnImmediateConnectionManagerCall_quiznos() {
+    @Config(maxSdk = Build.VERSION_CODES.S, minSdk = Build.VERSION_CODES.O)
+    public void shouldNotFailOnImmediateConnectionManagerCall() {
         NetworkRequest networkRequest = mock(NetworkRequest.class);
         NetworkDetector networkDetector = mock(NetworkDetector.class);
         ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
