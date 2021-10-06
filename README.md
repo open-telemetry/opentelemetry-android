@@ -50,6 +50,10 @@
 This library supports Android API levels 21 and above, with [core library desugaring][desugar]
 enabled.
 
+WARNING: It is *VERY IMPORTANT* that you are have enabled [core library desugaring][desugar] in the build for
+your app. If you have not done this, and you are targetting API levels below 26, your app will crash
+on devices running API level < 26.
+
 ### Getting the library
 
 There are two options for bringing in this library as a dependency for your Android app:
@@ -73,7 +77,7 @@ Then, add the latest release as a dependency in your application's build.gradle 
 ```
 dependencies {
 ...
-    implementation ("com.splunk:splunk-otel-android:0.10.0")
+    implementation ("com.splunk:splunk-otel-android:0.11.0")
 ...
 }
 ```
@@ -109,7 +113,7 @@ Then, add the locally built library as a dependency in your application's build.
 ```
 dependencies {
 ...
-    implementation ("com.splunk:splunk-otel-android:0.11.0-SNAPSHOT")
+    implementation ("com.splunk:splunk-otel-android:0.12.0-SNAPSHOT")
 ...
 }
 ```
