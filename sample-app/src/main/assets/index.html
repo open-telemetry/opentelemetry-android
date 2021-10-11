@@ -4,6 +4,15 @@
               your app code the flexibility to change the scheme or domain as
               necessary. -->
     <link rel="stylesheet" href="/assets/stylesheet.css">
+    <script src="https://cdn.signalfx.com/o11y-gdi-rum/latest/splunk-otel-web.js"
+            crossorigin="anonymous"></script>
+    <script>
+      SplunkRum.init({
+          beaconUrl: 'https://rum-ingest.' + Android.getRumRealm() + '.signalfx.com/v1/rum',
+          rumAuth: Android.getRumAccessToken(),
+          app: 'Android WebView Spectacular.com'
+        });
+    </script>
 </head>
 <body>
 <p>This file was loaded from in-app content</p>
@@ -17,6 +26,7 @@
     }
 
     document.getElementById("session_id").innerHTML = SplunkRumNative.getNativeSessionId();
+
 </script>
 
 <p>
