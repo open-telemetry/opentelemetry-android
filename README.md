@@ -30,7 +30,7 @@
 
 # Splunk Android RUM Instrumentation
 
-> :construction: This project is currently in **BETA**.
+> :construction: This project is currently in **BETA**. It is officially supported by Splunk. However, breaking changes MAY be introduced.
 
 ## Features
 
