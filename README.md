@@ -30,6 +30,8 @@
 
 # Splunk Android RUM Instrumentation
 
+Splunk RUM Product Documentation can be found [here](https://docs.splunk.com/Observability/rum/intro-to-rum.html#nav-Introduction-to-Splunk-RUM).
+
 > :construction: This project is currently in **BETA**. It is officially supported by Splunk. However, breaking changes MAY be introduced.
 
 ## Features
@@ -41,7 +43,7 @@
 * Access to the OpenTelemetry APIs for manual instrumentation
 * SplunkRum APIs for creating custom RUM events and reporting exceptions
 * Access to an OkHttp3 Call.Factory implementation for monitoring http client requests
-* APIs to redact any span from export, or change span attributes before export.
+* APIs to redact any span from export, or change span attributes before export
 
 ## Getting Started
 
