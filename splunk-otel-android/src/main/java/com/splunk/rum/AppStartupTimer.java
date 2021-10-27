@@ -22,9 +22,12 @@ import java.util.concurrent.TimeUnit;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.sdk.common.Clock;
 
 class AppStartupTimer {
-    private final long firstPossibleTimestamp = System.currentTimeMillis();
+    //exposed so it can be used for the rest of the startup sequence timing.
+    final RumInitializer.AnchoredClock startupClock = RumInitializer.AnchoredClock.create(Clock.getDefault());
+    private final long firstPossibleTimestamp = startupClock.now();
     private volatile Span overallAppStartSpan = null;
 
     Span start(Tracer tracer) {
@@ -33,7 +36,7 @@ class AppStartupTimer {
             return overallAppStartSpan;
         }
         final Span appStart = tracer.spanBuilder("AppStart")
-                .setStartTimestamp(firstPossibleTimestamp, TimeUnit.MILLISECONDS)
+                .setStartTimestamp(firstPossibleTimestamp, TimeUnit.NANOSECONDS)
                 .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_APPSTART)
                 .setAttribute(SplunkRum.START_TYPE_KEY, "cold")
                 .startSpan();
@@ -43,7 +46,7 @@ class AppStartupTimer {
 
     void end() {
         if (overallAppStartSpan != null) {
-            overallAppStartSpan.end();
+            overallAppStartSpan.end(startupClock.now(), TimeUnit.NANOSECONDS);
             overallAppStartSpan = null;
         }
     }
