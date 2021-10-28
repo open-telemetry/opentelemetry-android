@@ -136,11 +136,11 @@ Here is an example of a the very minimal configuration which uses these 3 values
 
 ```java
 class MyApplication extends Application {
-    private final String beaconUrl = "<realm>";
+    private final String realm = "<realm>";
     private final String rumAccessToken = "<your_RUM_access_token>";
     private final Config config = SplunkRum.newConfigBuilder()
             .realm(realm)
-            .rumAccessToken(rumAuth)
+            .rumAccessToken(rumAccessToken)
             .applicationName("My Android App")
             .build();
 }
