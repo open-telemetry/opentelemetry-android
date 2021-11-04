@@ -16,6 +16,8 @@
 
 package com.splunk.rum;
 
+import android.util.Log;
+
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -147,6 +149,7 @@ public class Config {
         private Attributes globalAttributes = Attributes.empty();
         private String deploymentEnvironment;
         private final SpanFilterBuilder spanFilterBuilder = new SpanFilterBuilder();
+        private String realm;
 
         /**
          * Create a new instance of {@link Config} from the options provided.
@@ -167,6 +170,10 @@ public class Config {
          * @return this
          */
         public Builder beaconEndpoint(String beaconEndpoint) {
+            if (realm != null) {
+                Log.w(SplunkRum.LOG_TAG, "Explicitly setting the beaconEndpoint will override the realm configuration.");
+                realm = null;
+            }
             this.beaconEndpoint = beaconEndpoint;
             return this;
         }
@@ -179,7 +186,12 @@ public class Config {
          * @return this
          */
         public Builder realm(String realm) {
+            if (beaconEndpoint != null && this.realm == null) {
+                Log.w(SplunkRum.LOG_TAG, "beaconEndpoint has already been set. Realm configuration will be ignored.");
+                return this;
+            }
             this.beaconEndpoint = "https://rum-ingest." + realm + ".signalfx.com/v1/rum";
+            this.realm = realm;
             return this;
         }
 

@@ -16,17 +16,17 @@
 
 package com.splunk.rum;
 
-import org.junit.Test;
-
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
-
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
+import org.junit.Test;
+
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
 public class ConfigTest {
 
@@ -103,5 +103,17 @@ public class ConfigTest {
         config.updateGlobalAttributes(ab -> ab.put("drink", "lemonade"));
         Attributes result = config.getGlobalAttributes();
         assertEquals(Attributes.of(stringKey("drink"), "lemonade", stringKey("food"), "candy"), result);
+    }
+
+    @Test
+    public void beaconOverridesRealm() {
+        Config config = Config.builder().applicationName("appName")
+                .rumAccessToken("authToken")
+                .realm("us1")
+                .beaconEndpoint("http://beacon")
+                .globalAttributes(null)
+                .realm("us0")
+                .build();
+        assertEquals("http://beacon", config.getBeaconEndpoint());
     }
 }
