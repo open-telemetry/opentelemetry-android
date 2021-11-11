@@ -79,7 +79,7 @@ Then, add the latest release as a dependency in your application's build.gradle 
 ```
 dependencies {
 ...
-    implementation ("com.splunk:splunk-otel-android:0.11.0")
+    implementation ("com.splunk:splunk-otel-android:0.12.0")
 ...
 }
 ```
@@ -115,7 +115,7 @@ Then, add the locally built library as a dependency in your application's build.
 ```
 dependencies {
 ...
-    implementation ("com.splunk:splunk-otel-android:0.12.0-SNAPSHOT")
+    implementation ("com.splunk:splunk-otel-android:0.13.0-SNAPSHOT")
 ...
 }
 ```
