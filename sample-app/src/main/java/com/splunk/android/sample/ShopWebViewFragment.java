@@ -55,7 +55,7 @@ public class ShopWebViewFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        String storeUrl = "https://ssidhu.o11ystore.com";
+        String storeUrl = "https://pmrum.o11ystore.com";
         binding.webView.setWebViewClient(new WebViewClientCompat() {
             @Override
             public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
