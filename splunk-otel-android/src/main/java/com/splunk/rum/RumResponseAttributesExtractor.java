@@ -25,7 +25,7 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import okhttp3.Request;
 import okhttp3.Response;
 
-class RumResponseAttributesExtractor extends AttributesExtractor<Request, Response> {
+class RumResponseAttributesExtractor implements AttributesExtractor<Request, Response> {
     static final AttributeKey<String> LINK_TRACE_ID_KEY = stringKey("link.traceId");
     static final AttributeKey<String> LINK_SPAN_ID_KEY = stringKey("link.spanId");
 
@@ -36,12 +36,12 @@ class RumResponseAttributesExtractor extends AttributesExtractor<Request, Respon
     }
 
     @Override
-    protected void onStart(AttributesBuilder attributes, Request request) {
+    public void onStart(AttributesBuilder attributes, Request request) {
         attributes.put(SplunkRum.COMPONENT_KEY, "http");
     }
 
     @Override
-    protected void onEnd(AttributesBuilder attributes, Request request, Response response, Throwable error) {
+    public void onEnd(AttributesBuilder attributes, Request request, Response response, Throwable error) {
         if (response != null) {
             onResponse(attributes, response);
         }
