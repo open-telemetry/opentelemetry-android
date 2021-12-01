@@ -36,7 +36,7 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 class RumAttributeAppender implements SpanProcessor {
     static final AttributeKey<String> APP_NAME_KEY = stringKey("app");
     static final AttributeKey<String> SESSION_ID_KEY = stringKey("splunk.rumSessionId");
-    static final AttributeKey<String> RUM_VERSION_KEY = stringKey("splunk.rumVersion");
+    static final AttributeKey<String> RUM_VERSION_KEY = stringKey("splunk.rum.version");
 
     static final AttributeKey<String> SPLUNK_OPERATION_KEY = stringKey("_splunk_operation");
 
