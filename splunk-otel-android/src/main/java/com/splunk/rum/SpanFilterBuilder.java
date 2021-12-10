@@ -25,8 +25,8 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**
- * Allows to modify span data before it is sent to the exported. Spans can be modified or entirely
- * rejected from export.
+ * Allows modification of span data before it is sent to the exporter. Spans can be modified or
+ * entirely rejected from export.
  */
 public final class SpanFilterBuilder {
 

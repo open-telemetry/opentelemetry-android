@@ -21,6 +21,7 @@ import androidx.annotation.NonNull;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -51,15 +52,15 @@ class CrashReporter {
             StringWriter writer = new StringWriter();
             e.printStackTrace(new PrintWriter(writer));
             String exceptionType = e.getClass().getSimpleName();
-            tracer.spanBuilder(exceptionType)
+            Span span = tracer.spanBuilder(exceptionType)
                     .setAttribute(SemanticAttributes.THREAD_ID, t.getId())
                     .setAttribute(SemanticAttributes.THREAD_NAME, t.getName())
                     .setAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, writer.toString())
                     .setAttribute(SemanticAttributes.EXCEPTION_ESCAPED, true)
                     .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_CRASH)
-                    .startSpan()
-                    .setStatus(StatusCode.ERROR)
-                    .end();
+                    .startSpan();
+            SplunkRum.addExceptionAttributes(span, e);
+            span.setStatus(StatusCode.ERROR).end();
             //do our best to make sure the crash makes it out of the VM
             sdkTracerProvider.forceFlush();
             //preserve any existing behavior:

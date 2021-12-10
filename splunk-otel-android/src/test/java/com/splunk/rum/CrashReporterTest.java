@@ -72,6 +72,11 @@ public class CrashReporterTest {
         assertTrue(crashSpan.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE).contains("NullPointerException"));
         assertTrue(crashSpan.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE).contains("oopsie"));
 
+        assertEquals("NullPointerException", crashSpan.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE));
+        assertEquals("oopsie", crashSpan.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE));
+        assertEquals("NullPointerException", crashSpan.getAttributes().get(SplunkRum.ERROR_TYPE_KEY));
+        assertEquals("oopsie", crashSpan.getAttributes().get(SplunkRum.ERROR_MESSAGE_KEY));
+
         assertEquals(StatusCode.ERROR, crashSpan.getStatus().getStatusCode());
 
         assertTrue(existingHandler.wasDelegatedTo.get());
