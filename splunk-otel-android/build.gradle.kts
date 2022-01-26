@@ -58,7 +58,7 @@ dependencies {
     api("com.squareup.okhttp3:okhttp:4.9.3")
 
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.mockito:mockito-core:4.3.0")
+    testImplementation("org.mockito:mockito-core:4.3.1")
     testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
     testImplementation("org.robolectric:robolectric:4.7.3")
     testImplementation("androidx.test:core:1.4.0")
