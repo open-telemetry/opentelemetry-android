@@ -126,9 +126,17 @@ public class Config {
     }
 
     void updateGlobalAttributes(Consumer<AttributesBuilder> updater) {
-        AttributesBuilder builder = globalAttributes.get().toBuilder();
-        updater.accept(builder);
-        globalAttributes.set(builder.build());
+        while (true) {
+            Attributes oldAttributes = globalAttributes.get();
+
+            AttributesBuilder builder = oldAttributes.toBuilder();
+            updater.accept(builder);
+            Attributes newAttributes = builder.build();
+
+            if (globalAttributes.compareAndSet(oldAttributes, newAttributes)) {
+                break;
+            }
+        }
     }
 
     SpanExporter decorateWithSpanFilter(SpanExporter exporter) {

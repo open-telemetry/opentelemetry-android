@@ -16,11 +16,24 @@
 
 package com.splunk.android.sample;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -29,15 +42,19 @@ import androidx.navigation.ui.NavigationUI;
 import com.splunk.android.sample.databinding.ActivityMainBinding;
 import com.splunk.rum.SplunkRum;
 
-import io.opentelemetry.api.common.Attributes;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import io.opentelemetry.api.common.Attributes;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final Attributes SETTINGS_FEATURE_ATTRIBUTES = Attributes.of(stringKey("FeatureName"), "Settings");
+    static final int LOCATION_REQUEST_CODE = 42;
+
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
+    private final LocationListener locationListener = new RumLocationListener();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +72,41 @@ public class MainActivity extends AppCompatActivity {
         binding.fab.setOnClickListener(view -> {
             new MailDialogFragment(this).show(getSupportFragmentManager(), "Mail");
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            startListeningForLocations();
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        ((LocationManager) this.getSystemService(Context.LOCATION_SERVICE))
+                .removeUpdates(locationListener);
+    }
+
+    // we're pretty sure the permission was granted, so we're supressing the permission lint check
+    @SuppressLint("MissingPermission")
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_REQUEST_CODE
+                && Arrays.stream(grantResults).allMatch(result -> result == PackageManager.PERMISSION_GRANTED)) {
+            startListeningForLocations();
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+    private void startListeningForLocations() {
+        ((LocationManager) this.getSystemService(Context.LOCATION_SERVICE))
+                .requestLocationUpdates(LocationManager.GPS_PROVIDER, TimeUnit.SECONDS.toMillis(10), 100, locationListener);
     }
 
     @Override
@@ -88,5 +140,14 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         return NavigationUI.navigateUp(navController, appBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    private static final class RumLocationListener implements LocationListener {
+
+        @Override
+        public void onLocationChanged(@NonNull Location location) {
+            Log.d("Location", "Got location " + location.toString());
+            SplunkRum.getInstance().updateLocation(location);
+        }
     }
 }

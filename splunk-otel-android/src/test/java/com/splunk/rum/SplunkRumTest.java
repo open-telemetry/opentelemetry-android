@@ -31,6 +31,7 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import android.app.Application;
+import android.location.Location;
 import android.webkit.WebView;
 
 import org.junit.Before;
@@ -236,4 +237,21 @@ public class SplunkRumTest {
         verify(webView).addJavascriptInterface(isA(NativeRumSessionId.class), eq("SplunkRumNative"));
     }
 
+    @Test
+    public void updateLocation() {
+        SplunkRum splunkRum = new SplunkRum((OpenTelemetrySdk) otelTesting.getOpenTelemetry(), new SessionId(), config);
+
+        Location location = mock(Location.class);
+        when(location.getLatitude()).thenReturn(42d);
+        when(location.getLongitude()).thenReturn(43d);
+        splunkRum.updateLocation(location);
+
+        assertEquals(
+                Attributes.of(SplunkRum.LOCATION_LATITUDE_KEY, 42d, SplunkRum.LOCATION_LONGITUDE_KEY, 43d),
+                config.getGlobalAttributes());
+
+        splunkRum.updateLocation(null);
+
+        assertTrue(config.getGlobalAttributes().isEmpty());
+    }
 }

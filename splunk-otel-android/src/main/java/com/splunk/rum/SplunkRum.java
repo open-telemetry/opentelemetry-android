@@ -16,14 +16,18 @@
 
 package com.splunk.rum;
 
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import android.app.Application;
 import android.content.Context;
+import android.location.Location;
 import android.net.ConnectivityManager;
 import android.os.Looper;
 import android.util.Log;
 import android.webkit.WebView;
+
+import androidx.annotation.Nullable;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
@@ -58,6 +62,8 @@ public class SplunkRum {
     static final AttributeKey<String> ERROR_MESSAGE_KEY = stringKey("error.message");
     static final AttributeKey<String> WORKFLOW_NAME_KEY = stringKey("workflow.name");
     static final AttributeKey<String> START_TYPE_KEY = stringKey("start.type");
+    static final AttributeKey<Double> LOCATION_LATITUDE_KEY = doubleKey("location.lat");
+    static final AttributeKey<Double> LOCATION_LONGITUDE_KEY = doubleKey("location.long");
 
     static final String COMPONENT_APPSTART = "appstart";
     static final String COMPONENT_CRASH = "crash";
@@ -289,8 +295,8 @@ public class SplunkRum {
      * <p>
      * If you attempt to set a value to null or use a null key, this call will be ignored.
      * <p>
-     * Note: If multiple concurrent calls are made to this, the resulting set of attributes will
-     * only reflect one of the updates, and which one wins is non-deterministic.
+     * Note: this operation performs an atomic update. The passed function should be free from side
+     * effects, since it may be called multiple times in case of thread contention.
      *
      * @param key   The {@link AttributeKey} for the attribute.
      * @param value The value of the attribute, which must match the generic type of the key.
@@ -305,8 +311,8 @@ public class SplunkRum {
     /**
      * Update the global set of attributes that will be appended to every span and event.
      * <p>
-     * Note: If multiple concurrent calls are made to this, the resulting set of attributes will
-     * only reflect one of the updates, and which one wins is non-deterministic.
+     * Note: this operation performs an atomic update. The passed function should be free from side
+     * effects, since it may be called multiple times in case of thread contention.
      *
      * @param attributesUpdater A function which will update the current set of attributes, by operating on a {@link AttributesBuilder} from the current set.
      */
@@ -348,4 +354,26 @@ public class SplunkRum {
         webView.addJavascriptInterface(new NativeRumSessionId(this), "SplunkRumNative");
     }
 
+    /**
+     * Updates the current location. The latitude and longitude will be appended to every span and
+     * event.
+     * <p>
+     * Note: this operation performs an atomic update. You can safely call it from your
+     * {@code LocationListener} or {@code LocationCallback}.
+     *
+     * @param location the current location. Passing {@code null} removes the location data.
+     */
+    public void updateLocation(@Nullable Location location) {
+        if (location == null) {
+            updateGlobalAttributes(attributes ->
+                    attributes
+                            .remove(LOCATION_LATITUDE_KEY)
+                            .remove(LOCATION_LONGITUDE_KEY));
+        } else {
+            updateGlobalAttributes(attributes ->
+                    attributes
+                            .put(LOCATION_LATITUDE_KEY, location.getLatitude())
+                            .put(LOCATION_LONGITUDE_KEY, location.getLongitude()));
+        }
+    }
 }

@@ -19,7 +19,9 @@ package com.splunk.rum;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import android.location.Location;
 import android.webkit.WebView;
 
 import org.junit.Test;
@@ -50,5 +52,8 @@ public class NoOpSplunkRumTest {
         instance.flushSpans();
 
         instance.integrateWithBrowserRum(mock(WebView.class));
+
+        Location location = mock(Location.class);
+        instance.updateLocation(location);
     }
 }
