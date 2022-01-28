@@ -80,14 +80,15 @@ final class SpanFilter implements SpanExporter {
         }
 
         AttributesBuilder modifiedAttributes = Attributes.builder();
-        span.getAttributes().forEach((key, oldValue) -> {
+        for (Map.Entry<AttributeKey<?>, Object> entry : span.getAttributes().asMap().entrySet()) {
+            AttributeKey<?> key = entry.getKey();
             Function<? super Object, ?> valueModifier =
                     (Function<? super Object, ?>) spanAttributeReplacements.getOrDefault(key, Function.identity());
-            Object newValue = valueModifier.apply(oldValue);
+            Object newValue = valueModifier.apply(entry.getValue());
             if (newValue != null) {
                 modifiedAttributes.put((AttributeKey<Object>) key, newValue);
             }
-        });
+        }
 
         return new ModifiedSpanData(span, modifiedAttributes.build());
     }
