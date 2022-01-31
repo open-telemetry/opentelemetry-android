@@ -47,16 +47,15 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment:2.3.5")
     compileOnly("com.android.volley:volley:1.2.1")
 
-    api(platform("io.opentelemetry:opentelemetry-bom:1.10.0"))
+    api(platform("io.opentelemetry:opentelemetry-bom:1.10.1"))
+    api("io.opentelemetry:opentelemetry-api")
     implementation("io.opentelemetry:opentelemetry-sdk")
 
-    implementation(platform("io.opentelemetry:opentelemetry-bom-alpha:1.10.0-alpha"))
+    implementation(platform("io.opentelemetry:opentelemetry-bom-alpha:1.10.1-alpha"))
     implementation("io.opentelemetry:opentelemetry-semconv")
 
-    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.10.0-alpha"))
+    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.10.1-alpha"))
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
-
-    api("io.opentelemetry:opentelemetry-api")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.assertj:assertj-core:3.22.0")
