@@ -1,4 +1,5 @@
 import java.net.URI
+import java.time.Duration
 
 plugins {
     id("com.android.library")
@@ -72,6 +73,10 @@ dependencies {
 val sourcesJar by tasks.registering(Jar::class) {
     from(android.sourceSets.named("main").get().java.srcDirs)
     archiveClassifier.set("sources")
+}
+
+tasks.withType<Test>().configureEach {
+    timeout.set(Duration.ofMinutes(15))
 }
 
 publishing {
