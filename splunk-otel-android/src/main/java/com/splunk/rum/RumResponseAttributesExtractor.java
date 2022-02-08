@@ -16,7 +16,8 @@
 
 package com.splunk.rum;
 
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static com.splunk.rum.SplunkRum.LINK_SPAN_ID_KEY;
+import static com.splunk.rum.SplunkRum.LINK_TRACE_ID_KEY;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -26,8 +27,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 class RumResponseAttributesExtractor implements AttributesExtractor<Request, Response> {
-    static final AttributeKey<String> LINK_TRACE_ID_KEY = stringKey("link.traceId");
-    static final AttributeKey<String> LINK_SPAN_ID_KEY = stringKey("link.spanId");
 
     private final ServerTimingHeaderParser serverTimingHeaderParser;
 

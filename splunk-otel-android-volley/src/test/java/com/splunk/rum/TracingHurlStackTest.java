@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.splunk.rum.volley;
+package com.splunk.rum;
 
 import static android.os.Looper.getMainLooper;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,20 +22,22 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Fail.fail;
 import static org.robolectric.Shadows.shadowOf;
 
-import com.android.volley.Cache;
+import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Network;
+import com.android.volley.Header;
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
+import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.BasicNetwork;
-import com.android.volley.toolbox.NoCache;
+import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.RequestFuture;
 import com.android.volley.toolbox.StringRequest;
 import com.google.mockwebserver.MockResponse;
 import com.google.mockwebserver.MockWebServer;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -45,49 +47,32 @@ import org.robolectric.util.Scheduler;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 @RunWith(RobolectricTestRunner.class)
 @LooperMode(LooperMode.Mode.LEGACY)
 public class TracingHurlStackTest {
 
-    private InMemorySpanExporter exporter;
+    @Rule
+    public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
     private TestRequestQueue testQueue;
     private MockWebServer server;
 
     @Before
     public void setup() {
-
-        //setup OpenTelemetry
-        exporter = InMemorySpanExporter.create();
-
-        SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
-                .addSpanProcessor(SimpleSpanProcessor.create(exporter))
-                .build();
-
-        OpenTelemetry otel = OpenTelemetrySdk.builder()
-                .setTracerProvider(sdkTracerProvider)
-                .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-                .build();
-
         //setup Volley with TracingHurlStack
-        testQueue = TestRequestQueue.create(otel);
+        HurlStack tracingHurlStack = VolleyTracing.create(otelTesting.getOpenTelemetry()).newHurlStack();
+        testQueue = TestRequestQueue.create(tracingHurlStack);
 
         //setup test server
         server = new MockWebServer();
@@ -96,7 +81,8 @@ public class TracingHurlStackTest {
     @Test
     public void success() throws IOException, InterruptedException, ExecutionException, TimeoutException {
 
-        server.enqueue(new MockResponse().setBody("success"));
+        String responseBody = "success";
+        server.enqueue(new MockResponse().setBody(responseBody));
         server.play();
 
         URL url = server.getUrl("/success");
@@ -115,19 +101,19 @@ public class TracingHurlStackTest {
         assertThat(server.takeRequest().getPath()).isEqualTo("/success"); //server received request
         assertThat(result).isEqualTo("success");
 
-        List<SpanData> spans = exporter.getFinishedSpanItems();
+        List<SpanData> spans = otelTesting.getSpans();
         assertThat(spans).hasSize(1);
 
         SpanData span = spans.get(0);
 
-        verifyAttributes(span, url, 200L);
-
+        verifyAttributes(span, url, 200L, responseBody);
     }
 
     @Test
     public void serverError() throws IOException, InterruptedException {
 
-        server.enqueue(new MockResponse().setResponseCode(500));
+        String responseBody = "error";
+        server.enqueue(new MockResponse().setBody(responseBody).setResponseCode(500));
         server.play();
 
         URL url = server.getUrl("/error");
@@ -145,16 +131,16 @@ public class TracingHurlStackTest {
 
         assertThat(server.takeRequest().getPath()).isEqualTo("/error"); //server received request
 
-        List<SpanData> spans = exporter.getFinishedSpanItems();
+        List<SpanData> spans = otelTesting.getSpans();
         assertThat(spans).hasSize(1);
 
         SpanData span = spans.get(0);
 
-        verifyAttributes(span, url, 500L);
+        verifyAttributes(span, url, 500L, responseBody);
     }
 
     @Test
-    public void connectionError() throws IOException, InterruptedException {
+    public void connectionError() throws IOException {
 
         server.enqueue(new MockResponse().setBody("should not be received"));
         server.play();
@@ -177,7 +163,7 @@ public class TracingHurlStackTest {
 
         assertThat(server.getRequestCount()).isEqualTo(0); //server received no requests
 
-        List<SpanData> spans = exporter.getFinishedSpanItems();
+        List<SpanData> spans = otelTesting.getSpans();
         assertThat(spans).hasSize(1);
 
         SpanData span = spans.get(0);
@@ -189,15 +175,17 @@ public class TracingHurlStackTest {
                 .hasSize(1)
                 .allSatisfy(e -> e.getName().equals(SemanticAttributes.EXCEPTION_EVENT_NAME));
 
-        verifyAttributes(span, url, null);
-
+        verifyAttributes(span, url, null, null);
     }
 
     @Test
-    public void reusedRequest() throws IOException, InterruptedException {
+    public void reusedRequest() throws IOException {
 
-        server.enqueue(new MockResponse().setBody("success1"));
-        server.enqueue(new MockResponse().setBody("success2"));
+        String firstResponseBody = "first response";
+        String secondResponseBody = "second response";
+
+        server.enqueue(new MockResponse().setBody(firstResponseBody));
+        server.enqueue(new MockResponse().setBody(secondResponseBody));
         server.play();
 
         URL url = server.getUrl("/success");
@@ -216,19 +204,19 @@ public class TracingHurlStackTest {
 
         assertThat(server.getRequestCount()).isEqualTo(2);
 
-        List<SpanData> spans = exporter.getFinishedSpanItems();
+        List<SpanData> spans = otelTesting.getSpans();
         assertThat(spans).hasSize(2);
 
         SpanData firstSpan = spans.get(0);
-        verifyAttributes(firstSpan, url, 200L);
+        verifyAttributes(firstSpan, url, 200L, firstResponseBody);
 
         SpanData secondSpan = spans.get(1);
-        verifyAttributes(secondSpan, url, 200L);
+        verifyAttributes(secondSpan, url, 200L, secondResponseBody);
     }
 
     //TODO: concurrent tests
 
-    private void verifyAttributes(SpanData span, URL url, Long status) {
+    private void verifyAttributes(SpanData span, URL url, Long status, String responseBody) {
         assertThat(span.getName()).isEqualTo("HTTP GET");
 
         Attributes spanAttributes = span.getAttributes();
@@ -238,6 +226,9 @@ public class TracingHurlStackTest {
         assertThat(spanAttributes.get(SemanticAttributes.HTTP_URL)).isEqualTo(url.toString());
         assertThat(spanAttributes.get(SemanticAttributes.HTTP_METHOD)).isEqualTo("GET");
 
+        if(responseBody != null){
+            assertThat(span.getAttributes().get(SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH)).isEqualTo(responseBody.length());
+        }
     }
 
     private int findUnusedPort() {
@@ -249,30 +240,6 @@ public class TracingHurlStackTest {
             fail("Port is not available");
         }
         return -1;
-    }
-
-
-    static class TestRequestQueue {
-
-        private final RequestQueue queue;
-
-        public static TestRequestQueue create(OpenTelemetry otel) {
-            return new TestRequestQueue(otel);
-        }
-
-        private TestRequestQueue(OpenTelemetry otel) {
-            VolleyTracing tracing = VolleyTracing.create(otel);
-
-            Cache cache = new NoCache();
-            Network network = new BasicNetwork(tracing.newHurlStack());
-
-            queue = new RequestQueue(cache, network);
-            queue.start();
-        }
-
-        public <T> void addToQueue(Request<T> req) {
-            queue.add(req);
-        }
     }
 
 }

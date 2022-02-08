@@ -46,6 +46,8 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment:2.3.5")
     compileOnly("com.android.volley:volley:1.2.1")
 
+    implementation(project(":splunk-otel-android"))
+
     api(platform("io.opentelemetry:opentelemetry-bom:1.10.1"))
     api("io.opentelemetry:opentelemetry-api")
     implementation("io.opentelemetry:opentelemetry-sdk")
@@ -60,6 +62,7 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.22.0")
     testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
     testImplementation("org.robolectric:robolectric:4.7.3")
+    testImplementation("org.mockito:mockito-core:4.2.0")
     testImplementation("androidx.test:core:1.4.0")
     testImplementation("com.google.mockwebserver:mockwebserver:20130706")
     testImplementation("com.android.volley:volley:1.2.0")

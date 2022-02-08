@@ -72,6 +72,9 @@ public class SplunkRum {
     static final String LOG_TAG = "SplunkRum";
     static final String RUM_TRACER_NAME = "SplunkRum";
 
+    static final AttributeKey<String> LINK_TRACE_ID_KEY = stringKey("link.traceId");
+    static final AttributeKey<String> LINK_SPAN_ID_KEY = stringKey("link.spanId");
+
     private static SplunkRum INSTANCE;
 
     private final SessionId sessionId;

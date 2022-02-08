@@ -21,7 +21,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import okhttp3.Call;
 import okhttp3.Connection;
@@ -29,16 +28,12 @@ import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
-
 /**
  * This currently allows handling exceptions during the request and recording exception attributes to the
  * RUM http span. Hopefully the otel instrumentation will support this use-case soon and we won't
  * need to do these hijinks to capture this information.
  */
 class OkHttpRumInterceptor implements Interceptor {
-    static final AttributeKey<String> LINK_TRACE_ID_KEY = stringKey("link.traceId");
-    static final AttributeKey<String> LINK_SPAN_ID_KEY = stringKey("link.spanId");
 
     private final Interceptor coreInterceptor;
 

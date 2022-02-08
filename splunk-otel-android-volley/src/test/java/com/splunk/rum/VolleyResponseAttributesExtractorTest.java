@@ -16,41 +16,41 @@
 
 package com.splunk.rum;
 
-import org.junit.Test;
-
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import okhttp3.Protocol;
-import okhttp3.Request;
-import okhttp3.Response;
-
-import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH;
+
+import com.android.volley.Header;
+import com.android.volley.Request;
+import com.android.volley.toolbox.HttpResponse;
+
+import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-public class RumResponseAttributesExtractorTest {
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+
+public class VolleyResponseAttributesExtractorTest {
 
     @Test
     public void spanDecoration() {
         ServerTimingHeaderParser headerParser = mock(ServerTimingHeaderParser.class);
         when(headerParser.parse("headerValue")).thenReturn(new String[]{"9499195c502eb217c448a68bfe0f967c", "fe16eca542cd5d86"});
 
-        Request fakeRequest = mock(Request.class);
-        Response response = new Response.Builder()
-                .request(fakeRequest)
-                .protocol(Protocol.HTTP_1_1)
-                .message("hello")
-                .code(200)
-                .addHeader("Server-Timing", "headerValue")
-                .addHeader("Content-Length", "101")
-                .build();
+        List<Header> responseHeaders = Collections.singletonList(
+                new Header("Server-Timing", "headerValue")
+        );
+        RequestWrapper fakeRequest = new RequestWrapper(mock(Request.class), Collections.emptyMap());
+        HttpResponse response = new HttpResponse(200, responseHeaders, "hello".getBytes());
 
-        RumResponseAttributesExtractor attributesExtractor = new RumResponseAttributesExtractor(headerParser);
+        VolleyResponseAttributesExtractor attributesExtractor = new VolleyResponseAttributesExtractor(headerParser);
         AttributesBuilder attributesBuilder = Attributes.builder();
         attributesExtractor.onStart(attributesBuilder, fakeRequest);
         attributesExtractor.onEnd(attributesBuilder, fakeRequest, response, null);
@@ -59,7 +59,6 @@ public class RumResponseAttributesExtractorTest {
         assertEquals("http", attributes.get(SplunkRum.COMPONENT_KEY));
         assertEquals("9499195c502eb217c448a68bfe0f967c", attributes.get(SplunkRum.LINK_TRACE_ID_KEY));
         assertEquals("fe16eca542cd5d86", attributes.get(SplunkRum.LINK_SPAN_ID_KEY));
-        assertEquals(101L, (long) attributes.get(HTTP_RESPONSE_CONTENT_LENGTH));
     }
 
     @Test
@@ -67,15 +66,11 @@ public class RumResponseAttributesExtractorTest {
         ServerTimingHeaderParser headerParser = mock(ServerTimingHeaderParser.class);
         when(headerParser.parse(null)).thenReturn(new String[0]);
 
-        Request fakeRequest = mock(Request.class);
-        Response response = new Response.Builder()
-                .request(fakeRequest)
-                .protocol(Protocol.HTTP_1_1)
-                .message("hello")
-                .code(200)
-                .build();
+        RequestWrapper fakeRequest = new RequestWrapper(mock(Request.class), Collections.emptyMap());
+        HttpResponse response = new HttpResponse(200, Collections.emptyList(), "hello".getBytes());
 
-        RumResponseAttributesExtractor attributesExtractor = new RumResponseAttributesExtractor(headerParser);
+
+        VolleyResponseAttributesExtractor attributesExtractor = new VolleyResponseAttributesExtractor(headerParser);
         AttributesBuilder attributesBuilder = Attributes.builder();
         attributesExtractor.onEnd(attributesBuilder, fakeRequest, response, null);
         attributesExtractor.onStart(attributesBuilder, fakeRequest);
@@ -87,35 +82,11 @@ public class RumResponseAttributesExtractorTest {
     }
 
     @Test
-    public void spanDecoration_contentLength() {
-        ServerTimingHeaderParser headerParser = mock(ServerTimingHeaderParser.class);
-        when(headerParser.parse(null)).thenReturn(new String[0]);
-
-        Request fakeRequest = mock(Request.class);
-        Response response = new Response.Builder()
-                .request(fakeRequest)
-                .protocol(Protocol.HTTP_1_1)
-                .message("hello")
-                .addHeader("Content-Length", "101")
-                .code(200)
-                .build();
-
-        RumResponseAttributesExtractor attributesExtractor = new RumResponseAttributesExtractor(headerParser);
-        AttributesBuilder attributesBuilder = Attributes.builder();
-        attributesExtractor.onEnd(attributesBuilder, fakeRequest, response, null);
-        attributesExtractor.onStart(attributesBuilder, fakeRequest);
-        Attributes attributes = attributesBuilder.build();
-
-        assertEquals("http", attributes.get(SplunkRum.COMPONENT_KEY));
-        assertEquals(101L, (long) attributes.get(HTTP_RESPONSE_CONTENT_LENGTH));
-    }
-
-    @Test
     public void shouldAddExceptionAttributes() {
         ServerTimingHeaderParser headerParser = mock(ServerTimingHeaderParser.class);
-        RumResponseAttributesExtractor attributesExtractor = new RumResponseAttributesExtractor(headerParser);
+        VolleyResponseAttributesExtractor attributesExtractor = new VolleyResponseAttributesExtractor(headerParser);
 
-        Request fakeRequest = mock(Request.class);
+        RequestWrapper fakeRequest = new RequestWrapper(mock(Request.class), Collections.emptyMap());
         Exception error = new IOException("failed to make a call");
 
         AttributesBuilder attributesBuilder = Attributes.builder();
@@ -131,4 +102,5 @@ public class RumResponseAttributesExtractorTest {
         assertEquals("IOException", attributes.get(SplunkRum.ERROR_TYPE_KEY));
         assertEquals("failed to make a call", attributes.get(SplunkRum.ERROR_MESSAGE_KEY));
     }
+
 }

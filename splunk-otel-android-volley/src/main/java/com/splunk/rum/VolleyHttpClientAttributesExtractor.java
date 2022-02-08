@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.splunk.rum.volley;
+package com.splunk.rum;
 
 import androidx.annotation.Nullable;
 

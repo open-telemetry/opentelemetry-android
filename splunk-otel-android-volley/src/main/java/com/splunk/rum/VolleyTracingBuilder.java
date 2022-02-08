@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.splunk.rum.volley;
+package com.splunk.rum;
 
 import com.android.volley.toolbox.HttpResponse;
 
@@ -88,6 +88,7 @@ public final class VolleyTracingBuilder {
                         .setSpanStatusExtractor(spanStatusExtractor)
                         .addAttributesExtractor(httpAttributesExtractor)
                         .addAttributesExtractor(netAttributesExtractor)
+                        .addAttributesExtractor(new VolleyResponseAttributesExtractor(new ServerTimingHeaderParser()))
                         .addAttributesExtractors(additionalExtractors)
                         .newClientInstrumenter(ClientRequestHeaderSetter.INSTANCE);
 
