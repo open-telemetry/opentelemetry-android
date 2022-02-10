@@ -59,7 +59,7 @@ dependencies {
     implementation("com.google.android.material:material:1.5.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.3")
     implementation("androidx.navigation:navigation-fragment:2.4.0")
-    implementation("androidx.navigation:navigation-ui:2.4.0")
+    implementation("androidx.navigation:navigation-ui:2.4.1")
     implementation(project(":splunk-otel-android"))
 
     testImplementation("junit:junit:4.13.2")
