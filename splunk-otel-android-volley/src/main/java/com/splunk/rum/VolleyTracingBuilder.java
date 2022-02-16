@@ -28,8 +28,10 @@ import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanStatusExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.CapturedHttpHeaders;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanStatusExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.net.NetClientAttributesExtractor;
 
 /**
  * A builder for {@link VolleyTracing}.
@@ -73,21 +75,21 @@ public final class VolleyTracingBuilder {
      * Returns a new {@link VolleyTracing} with the settings of this {@link VolleyTracingBuilder}.
      */
     public VolleyTracing build() {
-        VolleyHttpClientAttributesExtractor httpAttributesExtractor =
-                new VolleyHttpClientAttributesExtractor(capturedHttpHeaders);
-        VolleyNetClientAttributesExtractor netAttributesExtractor =
-                new VolleyNetClientAttributesExtractor();
+        VolleyHttpClientAttributesGetter httpAttributesGetter =
+                new VolleyHttpClientAttributesGetter();
+        VolleyNetClientAttributesGetter netAttributesGetter =
+                new VolleyNetClientAttributesGetter();
         SpanStatusExtractor<RequestWrapper, HttpResponse> spanStatusExtractor =
-                HttpSpanStatusExtractor.create(httpAttributesExtractor);
+                HttpSpanStatusExtractor.create(httpAttributesGetter);
         SpanNameExtractor<RequestWrapper> spanNameExtractor =
-                HttpSpanNameExtractor.create(httpAttributesExtractor);
+                HttpSpanNameExtractor.create(httpAttributesGetter);
 
         Instrumenter<RequestWrapper, HttpResponse> instrumenter =
                 Instrumenter.<RequestWrapper, HttpResponse>builder(
                         openTelemetry, INSTRUMENTATION_NAME, spanNameExtractor)
                         .setSpanStatusExtractor(spanStatusExtractor)
-                        .addAttributesExtractor(httpAttributesExtractor)
-                        .addAttributesExtractor(netAttributesExtractor)
+                        .addAttributesExtractor(HttpClientAttributesExtractor.create(httpAttributesGetter, capturedHttpHeaders))
+                        .addAttributesExtractor(NetClientAttributesExtractor.create(netAttributesGetter))
                         .addAttributesExtractor(new VolleyResponseAttributesExtractor(new ServerTimingHeaderParser()))
                         .addAttributesExtractors(additionalExtractors)
                         .newClientInstrumenter(ClientRequestHeaderSetter.INSTANCE);

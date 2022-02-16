@@ -20,10 +20,10 @@ import com.android.volley.toolbox.HttpResponse;
 
 import androidx.annotation.Nullable;
 
-import io.opentelemetry.instrumentation.api.instrumenter.net.NetClientAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.net.NetClientAttributesGetter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
-final class VolleyNetClientAttributesExtractor extends NetClientAttributesExtractor<RequestWrapper, HttpResponse> {
+final class VolleyNetClientAttributesGetter implements NetClientAttributesGetter<RequestWrapper, HttpResponse> {
 
     @Override
     public String transport(RequestWrapper requestWrapper, @Nullable HttpResponse httpResponse) {

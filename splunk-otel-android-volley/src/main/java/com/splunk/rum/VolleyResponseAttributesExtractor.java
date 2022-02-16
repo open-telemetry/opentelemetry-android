@@ -10,6 +10,7 @@ import com.android.volley.toolbox.HttpResponse;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 
 class VolleyResponseAttributesExtractor implements AttributesExtractor<RequestWrapper, HttpResponse> {
@@ -21,12 +22,12 @@ class VolleyResponseAttributesExtractor implements AttributesExtractor<RequestWr
     }
 
     @Override
-    public void onStart(AttributesBuilder attributes, RequestWrapper requestWrapper) {
+    public void onStart(AttributesBuilder attributes, Context parentContext, RequestWrapper requestWrapper) {
         attributes.put(SplunkRum.COMPONENT_KEY, "http");
     }
 
     @Override
-    public void onEnd(AttributesBuilder attributes, RequestWrapper requestWrapper, @Nullable HttpResponse response, @Nullable Throwable error) {
+    public void onEnd(AttributesBuilder attributes, Context context, RequestWrapper requestWrapper, @Nullable HttpResponse response, @Nullable Throwable error) {
         if (response != null) {
             onResponse(attributes, response);
         }

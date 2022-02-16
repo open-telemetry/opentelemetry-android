@@ -27,28 +27,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import io.opentelemetry.instrumentation.api.instrumenter.http.CapturedHttpHeaders;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesGetter;
 
-final class VolleyHttpClientAttributesExtractor extends HttpClientAttributesExtractor<RequestWrapper, HttpResponse> {
-
-    VolleyHttpClientAttributesExtractor(CapturedHttpHeaders capturedHttpHeaders) {
-        super(capturedHttpHeaders);
-    }
+final class VolleyHttpClientAttributesGetter implements HttpClientAttributesGetter<RequestWrapper, HttpResponse> {
 
     @Override
-    protected String url(RequestWrapper requestWrapper) {
+    public String url(RequestWrapper requestWrapper) {
         return requestWrapper.getRequest().getUrl();
     }
 
     @Nullable
     @Override
-    protected String flavor(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
+    public String flavor(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
         return null;
     }
 
     @Override
-    protected String method(RequestWrapper requestWrapper) {
+    public String method(RequestWrapper requestWrapper) {
         Request<?> request = requestWrapper.getRequest();
         switch (request.getMethod()) {
             case Request.Method.GET:
@@ -73,7 +68,7 @@ final class VolleyHttpClientAttributesExtractor extends HttpClientAttributesExtr
     }
 
     @Override
-    protected List<String> requestHeader(RequestWrapper requestWrapper, String name) {
+    public List<String> requestHeader(RequestWrapper requestWrapper, String name) {
         String header;
         try {
             header = requestWrapper.getRequest().getHeaders().get(name);
@@ -91,7 +86,7 @@ final class VolleyHttpClientAttributesExtractor extends HttpClientAttributesExtr
 
     @Nullable
     @Override
-    protected Long requestContentLength(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
+    public Long requestContentLength(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
         Request<?> request = requestWrapper.getRequest();
         try {
             return request.getBody() != null ? (long) request.getBody().length : null;
@@ -102,28 +97,28 @@ final class VolleyHttpClientAttributesExtractor extends HttpClientAttributesExtr
 
     @Nullable
     @Override
-    protected Long requestContentLengthUncompressed(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
+    public Long requestContentLengthUncompressed(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
         return null;
     }
 
     @Override
-    protected Integer statusCode(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
+    public Integer statusCode(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
         return response.getStatusCode();
     }
 
     @Override
-    protected Long responseContentLength(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
+    public Long responseContentLength(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
         return (long) response.getContentLength();
     }
 
     @Nullable
     @Override
-    protected Long responseContentLengthUncompressed(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
+    public Long responseContentLengthUncompressed(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
         return null;
     }
 
     @Override
-    protected List<String> responseHeader(RequestWrapper requestWrapper, @Nullable HttpResponse response,
+    public List<String> responseHeader(RequestWrapper requestWrapper, @Nullable HttpResponse response,
                                           String name) {
         return headersToList(response.getHeaders(), name);
     }

@@ -52,8 +52,8 @@ public class VolleyResponseAttributesExtractorTest {
 
         VolleyResponseAttributesExtractor attributesExtractor = new VolleyResponseAttributesExtractor(headerParser);
         AttributesBuilder attributesBuilder = Attributes.builder();
-        attributesExtractor.onStart(attributesBuilder, fakeRequest);
-        attributesExtractor.onEnd(attributesBuilder, fakeRequest, response, null);
+        attributesExtractor.onStart(attributesBuilder, null, fakeRequest);
+        attributesExtractor.onEnd(attributesBuilder, null, fakeRequest, response, null);
         Attributes attributes = attributesBuilder.build();
 
         assertEquals("http", attributes.get(SplunkRum.COMPONENT_KEY));
@@ -72,8 +72,8 @@ public class VolleyResponseAttributesExtractorTest {
 
         VolleyResponseAttributesExtractor attributesExtractor = new VolleyResponseAttributesExtractor(headerParser);
         AttributesBuilder attributesBuilder = Attributes.builder();
-        attributesExtractor.onEnd(attributesBuilder, fakeRequest, response, null);
-        attributesExtractor.onStart(attributesBuilder, fakeRequest);
+        attributesExtractor.onEnd(attributesBuilder, null, fakeRequest, response, null);
+        attributesExtractor.onStart(attributesBuilder, null, fakeRequest);
         Attributes attributes = attributesBuilder.build();
 
         assertEquals("http", attributes.get(SplunkRum.COMPONENT_KEY));
@@ -90,8 +90,8 @@ public class VolleyResponseAttributesExtractorTest {
         Exception error = new IOException("failed to make a call");
 
         AttributesBuilder attributesBuilder = Attributes.builder();
-        attributesExtractor.onEnd(attributesBuilder, fakeRequest, null, error);
-        attributesExtractor.onStart(attributesBuilder, fakeRequest);
+        attributesExtractor.onEnd(attributesBuilder, null, fakeRequest, null, error);
+        attributesExtractor.onStart(attributesBuilder, null, fakeRequest);
         Attributes attributes = attributesBuilder.build();
 
         assertEquals(5, attributes.size());
