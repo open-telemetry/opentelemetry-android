@@ -37,6 +37,13 @@ android {
     testOptions {
         unitTests.isReturnDefaultValues = true
         unitTests.isIncludeAndroidResources = true
+
+        unitTests.all {
+            it.testLogging.showStandardStreams = true
+            it.testLogging {
+                events("started", "passed", "failed")
+            }
+        }
     }
 }
 
