@@ -16,10 +16,13 @@
 
 package com.splunk.rum;
 
+import static com.splunk.rum.SplunkRum.LOG_TAG;
+
 import android.app.Application;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import com.splunk.android.rum.R;
 
@@ -103,10 +106,21 @@ class RumInitializer {
             initializationEvents.add(new RumInitializer.InitializationEvent("networkMonitorInitialized", timingClock.now()));
         }
 
+
+        SlowRenderingDetector slowRenderingDetector = buildSlowRenderingDetector(config, tracer);
+        slowRenderingDetector.start();
+
         if (Build.VERSION.SDK_INT < 29) {
             application.registerActivityLifecycleCallbacks(new Pre29ActivityCallbacks(tracer, visibleScreenTracker, startupTimer, appStateListeners));
         } else {
-            application.registerActivityLifecycleCallbacks(new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer, appStateListeners));
+            ActivityCallbacks activityCallbacks = ActivityCallbacks.builder()
+                    .tracer(tracer)
+                    .visibleScreenTracker(visibleScreenTracker)
+                    .startupTimer(startupTimer)
+                    .appStateListeners(appStateListeners)
+                    .slowRenderingDetector(slowRenderingDetector)
+                    .build();
+            application.registerActivityLifecycleCallbacks(activityCallbacks);
         }
         initializationEvents.add(new RumInitializer.InitializationEvent("activityLifecycleCallbacksInitialized", timingClock.now()));
 
@@ -118,6 +132,21 @@ class RumInitializer {
         recordInitializationSpans(startTimeNanos, initializationEvents, tracer, config);
 
         return new SplunkRum(openTelemetrySdk, sessionId, config);
+    }
+
+    private SlowRenderingDetector buildSlowRenderingDetector(Config config, Tracer tracer) {
+        if(config.isSlowRenderingDetectionDisabled()){
+            Log.w(LOG_TAG, "Slow/frozen rendering detection has been disabled by user.");
+            return SlowRenderingDetector.NO_OP;
+        }
+        try {
+            initializationEvents.add(new RumInitializer.InitializationEvent("slowRenderingDetectorInitialized", timingClock.now()));
+            Class.forName("androidx.core.app.FrameMetricsAggregator");
+            return new SlowRenderingDetectorImpl(tracer, config.getSlowRenderPollingDuration());
+        } catch (ClassNotFoundException e) {
+            Log.w(LOG_TAG, "FrameMetricsAggregator is not available on this platform - slow/frozen rendering detection is disabled.");
+            return SlowRenderingDetector.NO_OP;
+        }
     }
 
     private AppStateListener initializeAnrReporting(Looper mainLooper) {
@@ -167,6 +196,7 @@ class RumInitializer {
         String configSettings = "[debug:" + config.isDebugEnabled() + "," +
                 "crashReporting:" + config.isCrashReportingEnabled() + "," +
                 "anrReporting:" + config.isAnrDetectionEnabled() + "," +
+                "slowRenderingDetector:" + config.isSlowRenderingDetectionEnabled() + "," +
                 "networkMonitor:" + config.isNetworkMonitorEnabled() + "]";
         span.setAttribute("config_settings", configSettings);
 

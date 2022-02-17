@@ -39,6 +39,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.internal.stubbing.answers.ReturnsArgumentAt;
 
+import java.time.Duration;
 import java.util.List;
 
 import io.opentelemetry.api.common.Attributes;
@@ -77,6 +78,7 @@ public class SplunkRumTest {
         when(config.getBeaconEndpoint()).thenReturn("http://backend");
         when(config.isDebugEnabled()).thenReturn(true);
         when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
+        when(config.getSlowRenderPollingDuration()).thenReturn(Duration.ofMillis(1000));
 
         SplunkRum singleton = SplunkRum.initialize(config, application, () -> connectionUtil);
         SplunkRum sameInstance = SplunkRum.initialize(config, application);
@@ -97,6 +99,7 @@ public class SplunkRumTest {
 
         when(config.getBeaconEndpoint()).thenReturn("http://backend");
         when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
+        when(config.getSlowRenderPollingDuration()).thenReturn(Duration.ofMillis(1000));
 
         SplunkRum singleton = SplunkRum.initialize(config, application, () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
         assertSame(singleton, SplunkRum.getInstance());
@@ -114,6 +117,7 @@ public class SplunkRumTest {
 
         when(config.getBeaconEndpoint()).thenReturn("http://backend");
         when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
+        when(config.getSlowRenderPollingDuration()).thenReturn(Duration.ofMillis(1000));
 
         SplunkRum splunkRum = SplunkRum.initialize(config, application, () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
         assertNotNull(splunkRum.getOpenTelemetry());
@@ -230,6 +234,7 @@ public class SplunkRumTest {
 
         when(config.getBeaconEndpoint()).thenReturn("http://backend");
         when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
+        when(config.getSlowRenderPollingDuration()).thenReturn(Duration.ofMillis(1000));
 
         SplunkRum splunkRum = SplunkRum.initialize(config, application, () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
         splunkRum.integrateWithBrowserRum(webView);

@@ -132,6 +132,15 @@ public class SecondFragment extends Fragment {
                 appFreezer.end();
             }
         });
+        binding.drawSlowly.setOnClickListener(v -> {
+            boolean slowlyNow = binding.animatedView.toggleSlowly();
+            if(slowlyNow){
+                binding.drawSlowly.setText("Draw Normally");
+            }
+            else {
+                binding.drawSlowly.setText("Draw Slowly");
+            }
+        });
         binding.buttonWork.setOnClickListener(v -> {
             Span hardWorker =
                     SplunkRum.getInstance().startWorkflow("main thread working hard");

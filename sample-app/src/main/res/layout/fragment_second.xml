@@ -15,14 +15,26 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+
         <TextView
             android:id="@+id/textview_second"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="second fragment"
+            app:layout_constraintBottom_toTopOf="@id/animatedView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.splunk.android.sample.DemoAnimatedView
+            android:id="@+id/animatedView"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
             app:layout_constraintBottom_toTopOf="@id/button_box"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+        />
 
         <LinearLayout
             android:id="@+id/button_box"
@@ -63,19 +75,40 @@
                 android:layout_marginTop="8dp"
                 android:text="@string/previous" />
 
-            <Button
-                android:id="@+id/button_freeze"
+            <LinearLayout
+                android:id="@+id/freezy_box"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/freeze" />
+                android:orientation="horizontal"
+
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/textview_second">
+
+                <Button
+                        android:id="@+id/button_freeze"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/freeze" />
+
+                <Button
+                    android:id="@+id/button_work"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/work_it" />
+
+            </LinearLayout>
 
             <Button
-                android:id="@+id/button_work"
+                android:id="@+id/draw_slowly"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="@string/work_it" />
+                android:text="Draw Slowly" />
 
             <Button
                 android:id="@+id/button_spam"
