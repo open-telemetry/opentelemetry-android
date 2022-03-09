@@ -28,7 +28,7 @@
 
 ---
 
-# Splunk Android RUM Instrumentation
+# Splunk OpenTelemetry Instrumentation for Android
 
 Splunk RUM Product Documentation can be found [here](https://docs.splunk.com/Observability/rum/intro-to-rum.html#nav-Introduction-to-Splunk-RUM).
 
