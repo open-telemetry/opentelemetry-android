@@ -233,7 +233,7 @@ class RumInitializer {
         if (config.isDebugEnabled()) {
             tracerProviderBuilder.addSpanProcessor(
                     SimpleSpanProcessor.create(
-                            config.decorateWithSpanFilter(new LoggingSpanExporter())));
+                            config.decorateWithSpanFilter(LoggingSpanExporter.create())));
             initializationEvents.add(new RumInitializer.InitializationEvent("debugSpanExporterInitialized", timingClock.now()));
         }
         return tracerProviderBuilder.build();
