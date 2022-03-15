@@ -49,6 +49,7 @@ public class Config {
     private final Function<SpanExporter, SpanExporter> spanFilterExporterDecorator;
     private final boolean slowRenderingDetectionEnabled;
     private final Duration slowRenderPollingDuration;
+    private final boolean diskBufferingEnabled;
 
     private Config(Builder builder) {
         this.beaconEndpoint = builder.beaconEndpoint;
@@ -62,6 +63,7 @@ public class Config {
         this.slowRenderPollingDuration = builder.slowRenderPollingDuration;
         this.slowRenderingDetectionEnabled = builder.slowRenderingDetectionEnabled;
         this.spanFilterExporterDecorator = builder.spanFilterBuilder.build();
+        this.diskBufferingEnabled = builder.diskBufferingEnabled;
     }
 
     private Attributes addDeploymentEnvironment(Builder builder) {
@@ -173,13 +175,18 @@ public class Config {
         return spanFilterExporterDecorator.apply(exporter);
     }
 
+    public boolean isDiskBufferingEnabled() {
+        return diskBufferingEnabled;
+    }
+
     /**
      * Builder class for the Splunk RUM {@link Config} class.
      */
     public static class Builder {
-        public boolean networkMonitorEnabled = true;
-        public boolean anrDetectionEnabled = true;
-        public boolean slowRenderingDetectionEnabled = DEFAULT_ENABLE_SLOW_RENDERING_DETECTION;
+        private boolean networkMonitorEnabled = true;
+        private boolean anrDetectionEnabled = true;
+        private boolean slowRenderingDetectionEnabled = DEFAULT_ENABLE_SLOW_RENDERING_DETECTION;
+        private boolean diskBufferingEnabled = false;
         private String beaconEndpoint;
         private String rumAccessToken;
         private boolean debugEnabled = false;
@@ -253,6 +260,17 @@ public class Config {
          */
         public Builder debugEnabled(boolean enable) {
             this.debugEnabled = enable;
+            return this;
+        }
+
+        /**
+         * Enables the storage-based buffering of telemetry. By default, telemetry will be buffered
+         * in memory and throttled. If this feature is enabled, telemetry is buffered in the local
+         * storage until it is exported.
+         * @return this
+         */
+        public Builder enableDiskBuffering(){
+            this.diskBufferingEnabled = true;
             return this;
         }
 

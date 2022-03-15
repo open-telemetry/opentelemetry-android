@@ -31,6 +31,7 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import android.app.Application;
+import android.content.Context;
 import android.location.Location;
 import android.webkit.WebView;
 
@@ -39,6 +40,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.internal.stubbing.answers.ReturnsArgumentAt;
 
+import java.io.File;
 import java.time.Duration;
 import java.util.List;
 
@@ -74,11 +76,14 @@ public class SplunkRumTest {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
         Config config = mock(Config.class);
         ConnectionUtil connectionUtil = mock(ConnectionUtil.class, RETURNS_DEEP_STUBS);
+        Context context = mock(Context.class);
 
         when(config.getBeaconEndpoint()).thenReturn("http://backend");
         when(config.isDebugEnabled()).thenReturn(true);
         when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
         when(config.getSlowRenderPollingDuration()).thenReturn(Duration.ofMillis(1000));
+        when(application.getApplicationContext()).thenReturn(context);
+        when(context.getFilesDir()).thenReturn(new File("/my/storage/spot"));
 
         SplunkRum singleton = SplunkRum.initialize(config, application, () -> connectionUtil);
         SplunkRum sameInstance = SplunkRum.initialize(config, application);
@@ -96,10 +101,13 @@ public class SplunkRumTest {
     public void getInstance() {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
         Config config = mock(Config.class);
+        Context context = mock(Context.class);
 
         when(config.getBeaconEndpoint()).thenReturn("http://backend");
         when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
         when(config.getSlowRenderPollingDuration()).thenReturn(Duration.ofMillis(1000));
+        when(application.getApplicationContext()).thenReturn(context);
+        when(context.getFilesDir()).thenReturn(new File("/my/storage/spot"));
 
         SplunkRum singleton = SplunkRum.initialize(config, application, () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
         assertSame(singleton, SplunkRum.getInstance());
@@ -114,10 +122,13 @@ public class SplunkRumTest {
     public void nonNullMethods() {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
         Config config = mock(Config.class);
+        Context context = mock(Context.class);
 
         when(config.getBeaconEndpoint()).thenReturn("http://backend");
         when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
         when(config.getSlowRenderPollingDuration()).thenReturn(Duration.ofMillis(1000));
+        when(application.getApplicationContext()).thenReturn(context);
+        when(context.getFilesDir()).thenReturn(new File("/my/storage/spot"));
 
         SplunkRum splunkRum = SplunkRum.initialize(config, application, () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
         assertNotNull(splunkRum.getOpenTelemetry());
@@ -231,10 +242,13 @@ public class SplunkRumTest {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
         Config config = mock(Config.class);
         WebView webView = mock(WebView.class);
+        Context context = mock(Context.class);
 
         when(config.getBeaconEndpoint()).thenReturn("http://backend");
         when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
         when(config.getSlowRenderPollingDuration()).thenReturn(Duration.ofMillis(1000));
+        when(application.getApplicationContext()).thenReturn(context);
+        when(context.getFilesDir()).thenReturn(new File("/my/storage/spot"));
 
         SplunkRum splunkRum = SplunkRum.initialize(config, application, () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
         splunkRum.integrateWithBrowserRum(webView);

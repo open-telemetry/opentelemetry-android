@@ -53,6 +53,7 @@ public class ConfigTest {
                 .anrDetectionEnabled(false)
                 .globalAttributes(globalAttributes)
                 .deploymentEnvironment("production")
+                .enableDiskBuffering()
                 .build();
         assertNotNull(config);
         assertEquals("appName", config.getApplicationName());
@@ -63,6 +64,7 @@ public class ConfigTest {
         assertFalse(config.isNetworkMonitorEnabled());
         assertFalse(config.isAnrDetectionEnabled());
         assertEquals(expectedFinalAttributes, config.getGlobalAttributes());
+        assertTrue(config.isDiskBufferingEnabled());
     }
 
     @Test
@@ -80,6 +82,7 @@ public class ConfigTest {
         assertTrue(config.isNetworkMonitorEnabled());
         assertTrue(config.isAnrDetectionEnabled());
         assertEquals(Attributes.empty(), config.getGlobalAttributes());
+        assertFalse(config.isDiskBufferingEnabled());
     }
 
     @Test

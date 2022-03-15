@@ -40,7 +40,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class BufferingExporterTest {
+public class MemoryBufferingExporterTest {
     private final ConnectionUtil connectionUtil = mock(ConnectionUtil.class);
 
     @Before
@@ -52,7 +52,7 @@ public class BufferingExporterTest {
     @Test
     public void happyPath() {
         SpanExporter delegate = mock(SpanExporter.class);
-        BufferingExporter bufferingExporter = new BufferingExporter(connectionUtil, delegate);
+        MemoryBufferingExporter bufferingExporter = new MemoryBufferingExporter(connectionUtil, delegate);
 
         Collection<SpanData> spans = Arrays.asList(mock(SpanData.class), mock(SpanData.class));
         when(delegate.export(spans)).thenReturn(CompletableResultCode.ofSuccess());
@@ -68,7 +68,7 @@ public class BufferingExporterTest {
                 .thenReturn(new CurrentNetwork(NetworkState.TRANSPORT_UNKNOWN, null));
 
         SpanExporter delegate = mock(SpanExporter.class);
-        BufferingExporter bufferingExporter = new BufferingExporter(connectionUtil, delegate);
+        MemoryBufferingExporter bufferingExporter = new MemoryBufferingExporter(connectionUtil, delegate);
 
         Collection<SpanData> spans = Arrays.asList(mock(SpanData.class), mock(SpanData.class));
 
@@ -91,7 +91,7 @@ public class BufferingExporterTest {
     @Test
     public void retryPath() {
         SpanExporter delegate = mock(SpanExporter.class);
-        BufferingExporter bufferingExporter = new BufferingExporter(connectionUtil, delegate);
+        MemoryBufferingExporter bufferingExporter = new MemoryBufferingExporter(connectionUtil, delegate);
 
         SpanData one = mock(SpanData.class);
         SpanData two = mock(SpanData.class);
@@ -112,7 +112,7 @@ public class BufferingExporterTest {
     @Test
     public void flush_withBacklog() {
         SpanExporter delegate = mock(SpanExporter.class);
-        BufferingExporter bufferingExporter = new BufferingExporter(connectionUtil, delegate);
+        MemoryBufferingExporter bufferingExporter = new MemoryBufferingExporter(connectionUtil, delegate);
 
         SpanData one = mock(SpanData.class);
         SpanData two = mock(SpanData.class);
@@ -133,7 +133,7 @@ public class BufferingExporterTest {
     @Test
     public void flush() {
         SpanExporter delegate = mock(SpanExporter.class);
-        BufferingExporter bufferingExporter = new BufferingExporter(connectionUtil, delegate);
+        MemoryBufferingExporter bufferingExporter = new MemoryBufferingExporter(connectionUtil, delegate);
         when(delegate.flush()).thenReturn(CompletableResultCode.ofSuccess());
 
         CompletableResultCode secondResult = bufferingExporter.flush();
@@ -144,7 +144,7 @@ public class BufferingExporterTest {
     @Test
     public void maxBacklog() {
         SpanExporter delegate = mock(SpanExporter.class);
-        BufferingExporter bufferingExporter = new BufferingExporter(connectionUtil, delegate);
+        MemoryBufferingExporter bufferingExporter = new MemoryBufferingExporter(connectionUtil, delegate);
 
         List<SpanData> firstSet = new ArrayList<>();
         for (int i = 0; i < 110; i++) {
@@ -175,7 +175,7 @@ public class BufferingExporterTest {
     @Test
     public void shutdown() {
         SpanExporter delegate = mock(SpanExporter.class);
-        BufferingExporter bufferingExporter = new BufferingExporter(connectionUtil, delegate);
+        MemoryBufferingExporter bufferingExporter = new MemoryBufferingExporter(connectionUtil, delegate);
 
         bufferingExporter.shutdown();
         verify(delegate).shutdown();

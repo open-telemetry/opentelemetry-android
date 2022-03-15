@@ -30,7 +30,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
-class BufferingExporter implements SpanExporter {
+class MemoryBufferingExporter implements SpanExporter {
     private static final int MAX_BACKLOG_SIZE = 100;
 
     private final ConnectionUtil connectionUtil;
@@ -38,7 +38,7 @@ class BufferingExporter implements SpanExporter {
     //note: no need to make this queue thread-safe since it will only ever be called from the BatchSpanProcessor worker thread.
     private final Queue<SpanData> backlog = new ArrayDeque<>(MAX_BACKLOG_SIZE);
 
-    BufferingExporter(ConnectionUtil connectionUtil, SpanExporter delegate) {
+    MemoryBufferingExporter(ConnectionUtil connectionUtil, SpanExporter delegate) {
         this.connectionUtil = connectionUtil;
         this.delegate = delegate;
     }

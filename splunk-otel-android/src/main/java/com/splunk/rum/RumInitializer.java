@@ -24,12 +24,16 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.splunk.android.rum.R;
 
+import java.io.File;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -53,6 +57,8 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import zipkin2.reporter.Sender;
+import zipkin2.reporter.okhttp3.OkHttpSender;
 
 class RumInitializer {
 
@@ -78,7 +84,7 @@ class RumInitializer {
         ConnectionUtil connectionUtil = connectionUtilSupplier.get();
         initializationEvents.add(new InitializationEvent("connectionUtilInitialized", timingClock.now()));
 
-        SpanExporter zipkinExporter = buildExporter(connectionUtil);
+        SpanExporter zipkinExporter = buildFilteringExporter(connectionUtil);
         initializationEvents.add(new RumInitializer.InitializationEvent("exporterInitialized", timingClock.now()));
 
         SessionId sessionId = new SessionId();
@@ -240,23 +246,63 @@ class RumInitializer {
     }
 
     //visible for testing
-    SpanExporter buildExporter(ConnectionUtil connectionUtil) {
-        String endpoint = config.getBeaconEndpoint() + "?auth=" + config.getRumAccessToken();
+    SpanExporter buildFilteringExporter(ConnectionUtil connectionUtil) {
+        SpanExporter exporter = buildExporter(connectionUtil);
+        SpanExporter filteredExporter = config.decorateWithSpanFilter(exporter);
+        initializationEvents.add(new InitializationEvent("zipkin exporter initialized", timingClock.now()));
+        return filteredExporter;
+    }
+
+    private SpanExporter buildExporter(ConnectionUtil connectionUtil) {
         if (!config.isDebugEnabled()) {
             //tell the Zipkin exporter to shut up already. We're on mobile, network stuff happens.
             // we'll do our best to hang on to the spans with the wrapping BufferingExporter.
             ZipkinSpanExporter.baseLogger.setLevel(Level.SEVERE);
             initializationEvents.add(new InitializationEvent("logger setup complete", timingClock.now()));
         }
-        SpanExporter zipkinSpanExporter = getCoreSpanExporter(endpoint);
-        initializationEvents.add(new InitializationEvent("zipkin exporter initialized", timingClock.now()));
 
-        ThrottlingExporter throttlingExporter = ThrottlingExporter.newBuilder(new BufferingExporter(connectionUtil, zipkinSpanExporter))
+        if (config.isDiskBufferingEnabled()) {
+            return buildStorageBufferingExporter(connectionUtil);
+        }
+
+        return buildMemoryBufferingThrottledExporter(connectionUtil);
+    }
+
+    private SpanExporter buildStorageBufferingExporter(ConnectionUtil connectionUtil) {
+        Sender sender = OkHttpSender.newBuilder()
+                .endpoint(getEndpoint())
+                .build();
+        File spanFilesPath = FileUtils.getSpansDirectory(application);
+
+        DiskToZipkinExporter diskToZipkinExporter = DiskToZipkinExporter.builder()
+                .connectionUtil(connectionUtil)
+                .sender(sender)
+                .spanFilesPath(spanFilesPath)
+                .build();
+        diskToZipkinExporter.startPolling();
+
+        return getToDiskExporter();
+    }
+
+    @NonNull
+    private String getEndpoint() {
+        return config.getBeaconEndpoint() + "?auth=" + config.getRumAccessToken();
+    }
+
+    private SpanExporter buildMemoryBufferingThrottledExporter(ConnectionUtil connectionUtil) {
+        String endpoint = getEndpoint();
+        SpanExporter zipkinSpanExporter = getCoreSpanExporter(endpoint);
+        return ThrottlingExporter.newBuilder(new MemoryBufferingExporter(connectionUtil, zipkinSpanExporter))
                 .categorizeByAttribute(SplunkRum.COMPONENT_KEY)
                 .maxSpansInWindow(100)
                 .windowSize(Duration.ofSeconds(30))
                 .build();
-        return config.decorateWithSpanFilter(throttlingExporter);
+    }
+
+    SpanExporter getToDiskExporter(){
+        return new LazyInitSpanExporter(() -> {
+            return ZipkinWriteToDiskExporterFactory.create(application);
+        });
     }
 
     //visible for testing

@@ -47,6 +47,7 @@ dependencies {
     api(platform("io.opentelemetry:opentelemetry-bom:1.12.0"))
     implementation("io.opentelemetry:opentelemetry-sdk")
     implementation("io.opentelemetry:opentelemetry-exporter-zipkin")
+    implementation("io.zipkin.reporter2:zipkin-sender-okhttp3")
     implementation("io.opentelemetry:opentelemetry-exporter-logging")
 
     implementation(platform("io.opentelemetry:opentelemetry-bom-alpha:1.12.0-alpha"))

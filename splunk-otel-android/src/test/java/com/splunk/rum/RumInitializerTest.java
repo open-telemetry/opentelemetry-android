@@ -54,7 +54,7 @@ public class RumInitializerTest {
         AppStartupTimer startupTimer = new AppStartupTimer();
         RumInitializer testInitializer = new RumInitializer(config, application, startupTimer) {
             @Override
-            SpanExporter buildExporter(ConnectionUtil connectionUtil) {
+            SpanExporter buildFilteringExporter(ConnectionUtil connectionUtil) {
                 return testExporter;
             }
         };
@@ -97,7 +97,7 @@ public class RumInitializerTest {
         AppStartupTimer startupTimer = new AppStartupTimer();
         RumInitializer testInitializer = new RumInitializer(config, application, startupTimer) {
             @Override
-            SpanExporter buildExporter(ConnectionUtil connectionUtil) {
+            SpanExporter buildFilteringExporter(ConnectionUtil connectionUtil) {
                 return testExporter;
             }
         };
@@ -144,7 +144,7 @@ public class RumInitializerTest {
 
         long currentTimeNanos = MILLISECONDS.toNanos(System.currentTimeMillis());
 
-        SpanExporter spanExporter = testInitializer.buildExporter(connectionUtil);
+        SpanExporter spanExporter = testInitializer.buildFilteringExporter(connectionUtil);
         List<SpanData> batch1 = new ArrayList<>();
         for (int i = 0; i < 99; i++) {
             batch1.add(createTestSpan(currentTimeNanos - MINUTES.toNanos(1)));

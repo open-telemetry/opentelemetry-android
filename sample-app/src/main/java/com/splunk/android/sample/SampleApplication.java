@@ -44,6 +44,7 @@ public class SampleApplication extends Application {
                 .rumAccessToken(getResources().getString(R.string.rum_access_token))
                 .applicationName("Android Demo App")
                 .debugEnabled(true)
+                .enableDiskBuffering()
                 .deploymentEnvironment("demo")
                 .globalAttributes(
                         Attributes.builder()
