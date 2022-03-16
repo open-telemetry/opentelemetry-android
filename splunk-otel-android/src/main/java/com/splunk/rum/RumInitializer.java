@@ -141,14 +141,14 @@ class RumInitializer {
     }
 
     private SlowRenderingDetector buildSlowRenderingDetector(Config config, Tracer tracer) {
-        if(config.isSlowRenderingDetectionDisabled()){
+        if (!config.isSlowRenderingDetectionEnabled()) {
             Log.w(LOG_TAG, "Slow/frozen rendering detection has been disabled by user.");
             return SlowRenderingDetector.NO_OP;
         }
         try {
             initializationEvents.add(new RumInitializer.InitializationEvent("slowRenderingDetectorInitialized", timingClock.now()));
             Class.forName("androidx.core.app.FrameMetricsAggregator");
-            return new SlowRenderingDetectorImpl(tracer, config.getSlowRenderPollingDuration());
+            return new SlowRenderingDetectorImpl(tracer, config.getSlowRenderingDetectionPollInterval());
         } catch (ClassNotFoundException e) {
             Log.w(LOG_TAG, "FrameMetricsAggregator is not available on this platform - slow/frozen rendering detection is disabled.");
             return SlowRenderingDetector.NO_OP;

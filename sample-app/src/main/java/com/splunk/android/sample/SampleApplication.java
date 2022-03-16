@@ -40,11 +40,11 @@ public class SampleApplication extends Application {
                 // note: for these values to be resolved, put them in your local.properties file as
                 // rum.beacon.url and rum.access.token
                 .realm(getResources().getString(R.string.rum_realm))
-                .slowRenderPollingDuration(Duration.ofMillis(1000))
+                .slowRenderingDetectionPollInterval(Duration.ofMillis(1000))
                 .rumAccessToken(getResources().getString(R.string.rum_access_token))
                 .applicationName("Android Demo App")
                 .debugEnabled(true)
-                .enableDiskBuffering()
+                .diskBufferingEnabled(true)
                 .deploymentEnvironment("demo")
                 .globalAttributes(
                         Attributes.builder()

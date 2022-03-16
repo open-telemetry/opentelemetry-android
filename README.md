@@ -241,10 +241,10 @@ when initializing your instance of the SplunkRum API:
   This can be used to provide customizations of the spans that are emitted by the library. Examples
   include: removing spans altogether from export, removing span attributes, changing span attributes
   or changing the span name. See the javadoc on the `SpanFilterBuilder` class for more details.
-- `slowRenderPollingDuration(Duration)` :
+- `slowRenderingDetectionPollInterval(Duration)` :
   Set/change the default polling interval for slow/frozen render detection.
   Default is 1000ms. Value must be positive. 
-- `disableSlowRenderingDetection()` :
+- `slowRenderingDetectionEnabled(boolean)` :
   Disable the detection of slow frame renders (default is enabled). 
 
 #### APIs provided by the `SplunkRum` instance:

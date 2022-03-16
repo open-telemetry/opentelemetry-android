@@ -53,7 +53,7 @@ public class ConfigTest {
                 .anrDetectionEnabled(false)
                 .globalAttributes(globalAttributes)
                 .deploymentEnvironment("production")
-                .enableDiskBuffering()
+                .diskBufferingEnabled(true)
                 .build();
         assertNotNull(config);
         assertEquals("appName", config.getApplicationName());

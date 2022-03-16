@@ -81,7 +81,7 @@ public class SplunkRumTest {
         when(config.getBeaconEndpoint()).thenReturn("http://backend");
         when(config.isDebugEnabled()).thenReturn(true);
         when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
-        when(config.getSlowRenderPollingDuration()).thenReturn(Duration.ofMillis(1000));
+        when(config.getSlowRenderingDetectionPollInterval()).thenReturn(Duration.ofMillis(1000));
         when(application.getApplicationContext()).thenReturn(context);
         when(context.getFilesDir()).thenReturn(new File("/my/storage/spot"));
 
@@ -105,7 +105,7 @@ public class SplunkRumTest {
 
         when(config.getBeaconEndpoint()).thenReturn("http://backend");
         when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
-        when(config.getSlowRenderPollingDuration()).thenReturn(Duration.ofMillis(1000));
+        when(config.getSlowRenderingDetectionPollInterval()).thenReturn(Duration.ofMillis(1000));
         when(application.getApplicationContext()).thenReturn(context);
         when(context.getFilesDir()).thenReturn(new File("/my/storage/spot"));
 
@@ -126,7 +126,7 @@ public class SplunkRumTest {
 
         when(config.getBeaconEndpoint()).thenReturn("http://backend");
         when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
-        when(config.getSlowRenderPollingDuration()).thenReturn(Duration.ofMillis(1000));
+        when(config.getSlowRenderingDetectionPollInterval()).thenReturn(Duration.ofMillis(1000));
         when(application.getApplicationContext()).thenReturn(context);
         when(context.getFilesDir()).thenReturn(new File("/my/storage/spot"));
 
@@ -246,7 +246,7 @@ public class SplunkRumTest {
 
         when(config.getBeaconEndpoint()).thenReturn("http://backend");
         when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
-        when(config.getSlowRenderPollingDuration()).thenReturn(Duration.ofMillis(1000));
+        when(config.getSlowRenderingDetectionPollInterval()).thenReturn(Duration.ofMillis(1000));
         when(application.getApplicationContext()).thenReturn(context);
         when(context.getFilesDir()).thenReturn(new File("/my/storage/spot"));
 

@@ -21,27 +21,27 @@ import java.util.concurrent.TimeUnit;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 
-public class SlowRenderingDetectorImpl implements SlowRenderingDetector {
+class SlowRenderingDetectorImpl implements SlowRenderingDetector {
 
-    public static final int SLOW_THRESHOLD_MS = 16;
-    public static final int FROZEN_THRESHOLD_MS = 700;
+    static final int SLOW_THRESHOLD_MS = 16;
+    static final int FROZEN_THRESHOLD_MS = 700;
     private final FrameMetricsAggregator frameMetrics;
     private final ScheduledExecutorService executorService;
 
     private final Set<Activity> activities = new HashSet<>();
     private final Tracer tracer;
-    private final Duration slowRenderPollingDuration;
+    private final Duration pollInterval;
 
-    public SlowRenderingDetectorImpl(Tracer tracer, Duration slowRenderPollingDuration) {
-        this(tracer, new FrameMetricsAggregator(DRAW_DURATION), Executors.newScheduledThreadPool(1), slowRenderPollingDuration);
+    SlowRenderingDetectorImpl(Tracer tracer, Duration pollInterval) {
+        this(tracer, new FrameMetricsAggregator(DRAW_DURATION), Executors.newScheduledThreadPool(1), pollInterval);
     }
 
     // Exists for testing
-    SlowRenderingDetectorImpl(Tracer tracer, FrameMetricsAggregator frameMetricsAggregator, ScheduledExecutorService executorService, Duration slowRenderPollingDuration) {
+    SlowRenderingDetectorImpl(Tracer tracer, FrameMetricsAggregator frameMetricsAggregator, ScheduledExecutorService executorService, Duration pollInterval) {
         this.tracer = tracer;
         this.frameMetrics = frameMetricsAggregator;
         this.executorService = executorService;
-        this.slowRenderPollingDuration = slowRenderPollingDuration;
+        this.pollInterval = pollInterval;
     }
 
     @Override
@@ -61,7 +61,7 @@ public class SlowRenderingDetectorImpl implements SlowRenderingDetector {
 
     @Override
     public void start() {
-        executorService.scheduleAtFixedRate(this::reportSlowRenders, slowRenderPollingDuration.toMillis(), slowRenderPollingDuration.toMillis(), TimeUnit.MILLISECONDS);
+        executorService.scheduleAtFixedRate(this::reportSlowRenders, pollInterval.toMillis(), pollInterval.toMillis(), TimeUnit.MILLISECONDS);
     }
 
     private void reportSlowRenders() {

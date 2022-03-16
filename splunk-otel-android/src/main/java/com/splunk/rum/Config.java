@@ -36,8 +36,6 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
  */
 public class Config {
 
-    public static final boolean DEFAULT_ENABLE_SLOW_RENDERING_DETECTION = true;
-    public static final Duration DEFAULT_SLOW_RENDER_POLLING_INTERVAL = Duration.ofSeconds(1);
     private final String beaconEndpoint;
     private final String rumAccessToken;
     private final boolean debugEnabled;
@@ -48,7 +46,7 @@ public class Config {
     private final AtomicReference<Attributes> globalAttributes = new AtomicReference<>();
     private final Function<SpanExporter, SpanExporter> spanFilterExporterDecorator;
     private final boolean slowRenderingDetectionEnabled;
-    private final Duration slowRenderPollingDuration;
+    private final Duration slowRenderingDetectionPollInterval;
     private final boolean diskBufferingEnabled;
 
     private Config(Builder builder) {
@@ -60,7 +58,7 @@ public class Config {
         this.globalAttributes.set(addDeploymentEnvironment(builder));
         this.networkMonitorEnabled = builder.networkMonitorEnabled;
         this.anrDetectionEnabled = builder.anrDetectionEnabled;
-        this.slowRenderPollingDuration = builder.slowRenderPollingDuration;
+        this.slowRenderingDetectionPollInterval = builder.slowRenderingDetectionPollInterval;
         this.slowRenderingDetectionEnabled = builder.slowRenderingDetectionEnabled;
         this.spanFilterExporterDecorator = builder.spanFilterBuilder.build();
         this.diskBufferingEnabled = builder.diskBufferingEnabled;
@@ -112,16 +110,9 @@ public class Config {
     }
 
     /**
-     * Is the slow rendering detection feature disabled or not.
-     */
-    public boolean isSlowRenderingDetectionDisabled() {
-        return !isSlowRenderingDetectionEnabled();
-    }
-
-    /**
      * Is the slow rendering detection feature enabled or not.
      */
-    public boolean isSlowRenderingDetectionEnabled(){
+    public boolean isSlowRenderingDetectionEnabled() {
         return slowRenderingDetectionEnabled;
     }
 
@@ -134,16 +125,15 @@ public class Config {
     }
 
     /**
-     * Create a new instance of the {@link Builder} class. All default configuration options will be pre-populated.
+     * Is the network monitoring feature enabled or not.
      */
-    public static Builder builder() {
-        return new Builder();
-    }
-
     public boolean isNetworkMonitorEnabled() {
         return networkMonitorEnabled;
     }
 
+    /**
+     * Is the ANR detection feature enabled or not.
+     */
     public boolean isAnrDetectionEnabled() {
         return anrDetectionEnabled;
     }
@@ -151,10 +141,25 @@ public class Config {
     /**
      * Returns the number of ms to be used for polling frame render durations,
      * used in slow render and freeze draw detection.
-     * @return - Duration of the polling interval
+     *
+     * @return Duration of the polling interval.
      */
-    public Duration getSlowRenderPollingDuration() {
-        return slowRenderPollingDuration;
+    public Duration getSlowRenderingDetectionPollInterval() {
+        return slowRenderingDetectionPollInterval;
+    }
+
+    /**
+     * Is the storage-based buffering of telemetry enabled or not.
+     */
+    public boolean isDiskBufferingEnabled() {
+        return diskBufferingEnabled;
+    }
+
+    /**
+     * Create a new instance of the {@link Builder} class. All default configuration options will be pre-populated.
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
     void updateGlobalAttributes(Consumer<AttributesBuilder> updater) {
@@ -175,17 +180,16 @@ public class Config {
         return spanFilterExporterDecorator.apply(exporter);
     }
 
-    public boolean isDiskBufferingEnabled() {
-        return diskBufferingEnabled;
-    }
-
     /**
      * Builder class for the Splunk RUM {@link Config} class.
      */
     public static class Builder {
+
+        private static final Duration DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL = Duration.ofSeconds(1);
+
         private boolean networkMonitorEnabled = true;
         private boolean anrDetectionEnabled = true;
-        private boolean slowRenderingDetectionEnabled = DEFAULT_ENABLE_SLOW_RENDERING_DETECTION;
+        private boolean slowRenderingDetectionEnabled = true;
         private boolean diskBufferingEnabled = false;
         private String beaconEndpoint;
         private String rumAccessToken;
@@ -196,7 +200,7 @@ public class Config {
         private String deploymentEnvironment;
         private final SpanFilterBuilder spanFilterBuilder = new SpanFilterBuilder();
         private String realm;
-        private Duration slowRenderPollingDuration = DEFAULT_SLOW_RENDER_POLLING_INTERVAL;
+        private Duration slowRenderingDetectionPollInterval = DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL;
 
         /**
          * Create a new instance of {@link Config} from the options provided.
@@ -214,7 +218,7 @@ public class Config {
          * Note that if you are using standard Splunk ingest, it is simpler to just use {@link #realm(String)}
          * and let this configuration set the full endpoint URL for you.
          *
-         * @return this
+         * @return {@code this}.
          */
         public Builder beaconEndpoint(String beaconEndpoint) {
             if (realm != null) {
@@ -230,7 +234,7 @@ public class Config {
          * of the {@link #beaconEndpoint(String)} method in most cases.
          *
          * @param realm A valid Splunk "realm"
-         * @return this
+         * @return {@code this}.
          */
         public Builder realm(String realm) {
             if (beaconEndpoint != null && this.realm == null) {
@@ -245,7 +249,7 @@ public class Config {
         /**
          * Assign the RUM auth token to be used by the RUM library.
          *
-         * @return this
+         * @return {@code this}.
          */
         public Builder rumAccessToken(String rumAuthToken) {
             this.rumAccessToken = rumAuthToken;
@@ -256,10 +260,10 @@ public class Config {
          * Enable/disable debugging information to be emitted from the RUM library. This is set to
          * {@code false} by default.
          *
-         * @return this
+         * @return {@code this}.
          */
-        public Builder debugEnabled(boolean enable) {
-            this.debugEnabled = enable;
+        public Builder debugEnabled(boolean enabled) {
+            this.debugEnabled = enabled;
             return this;
         }
 
@@ -267,37 +271,38 @@ public class Config {
          * Enables the storage-based buffering of telemetry. By default, telemetry will be buffered
          * in memory and throttled. If this feature is enabled, telemetry is buffered in the local
          * storage until it is exported.
-         * @return this
+         *
+         * @return {@code this}.
          */
-        public Builder enableDiskBuffering(){
-            this.diskBufferingEnabled = true;
+        public Builder diskBufferingEnabled(boolean enabled){
+            this.diskBufferingEnabled = enabled;
             return this;
         }
 
         /**
          * Enable/disable the crash reporting feature. Enabled by default.
          *
-         * @return this
+         * @return {@code this}.
          */
-        public Builder crashReportingEnabled(boolean enable) {
-            this.crashReportingEnabled = enable;
+        public Builder crashReportingEnabled(boolean enabled) {
+            this.crashReportingEnabled = enabled;
             return this;
         }
 
         /**
          * Enable/disable the network monitoring feature. Enabled by default.
          *
-         * @return this
+         * @return {@code this}.
          */
-        public Builder networkMonitorEnabled(boolean enable) {
-            this.networkMonitorEnabled = enable;
+        public Builder networkMonitorEnabled(boolean enabled) {
+            this.networkMonitorEnabled = enabled;
             return this;
         }
 
         /**
          * Assign an application name that will be used to identify your application in the Splunk RUM UI.
          *
-         * @return this.
+         * @return {@code this}.
          */
         public Builder applicationName(String applicationName) {
             this.applicationName = applicationName;
@@ -309,24 +314,35 @@ public class Config {
          * thread is unresponsive for 5s or more, an event including the main thread's stack trace will be
          * reported to the RUM system.
          *
-         * @return this.
+         * @return {@code this}.
          */
-        public Builder anrDetectionEnabled(boolean enable) {
-            this.anrDetectionEnabled = enable;
+        public Builder anrDetectionEnabled(boolean enabled) {
+            this.anrDetectionEnabled = enabled;
+            return this;
+        }
+
+        /**
+         * Enable/disable the slow rendering detection feature. Enabled by default.
+         *
+         * @return {@code this}.
+         */
+        public Builder slowRenderingDetectionEnabled(boolean enabled) {
+            slowRenderingDetectionEnabled = enabled;
             return this;
         }
 
         /**
          * Configures the rate at which frame render durations are polled.
-         * @param interval - The period that should be used for polling
-         * @return this
+         *
+         * @param interval The period that should be used for polling.
+         * @return {@code this}.
          */
-        public Builder slowRenderPollingDuration(Duration interval){
-            if(interval.toMillis() <= 0){
+        public Builder slowRenderingDetectionPollInterval(Duration interval) {
+            if (interval.toMillis() <= 0) {
                 Log.e(SplunkRum.LOG_TAG, "invalid slowRenderPollingDuration: " + interval + " is not positive");
                 return this;
             }
-            this.slowRenderPollingDuration = interval;
+            this.slowRenderingDetectionPollInterval = interval;
             return this;
         }
 
@@ -334,7 +350,7 @@ public class Config {
          * Provide a set of global {@link Attributes} that will be applied to every span generated
          * by the RUM instrumentation.
          *
-         * @return this.
+         * @return {@code this}.
          */
         public Builder globalAttributes(Attributes attributes) {
             this.globalAttributes = attributes == null ? Attributes.empty() : attributes;
@@ -346,7 +362,7 @@ public class Config {
          * attribute to help identify in the Splunk RUM UI.
          *
          * @param environment The deployment environment name.
-         * @return this.
+         * @return {@code this}.
          */
         public Builder deploymentEnvironment(String environment) {
             this.deploymentEnvironment = environment;
@@ -361,15 +377,6 @@ public class Config {
          */
         public Builder filterSpans(Consumer<SpanFilterBuilder> configurer) {
             configurer.accept(spanFilterBuilder);
-            return this;
-        }
-
-        /**
-         * Call this to disable the detection of slow rendering
-         * @return this
-         */
-        public Builder disableSlowRenderingDetection(){
-            slowRenderingDetectionEnabled = false;
             return this;
         }
     }

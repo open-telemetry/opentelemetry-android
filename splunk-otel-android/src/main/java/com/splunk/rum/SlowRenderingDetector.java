@@ -2,7 +2,7 @@ package com.splunk.rum;
 
 import android.app.Activity;
 
-public interface SlowRenderingDetector {
+interface SlowRenderingDetector {
     SlowRenderingDetector NO_OP = new NoOp();
 
     void add(Activity activity);
