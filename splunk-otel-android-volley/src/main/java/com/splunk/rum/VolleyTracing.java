@@ -30,10 +30,24 @@ import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 public final class VolleyTracing {
 
     /**
+     * Returns a new {@link VolleyTracing} configured with the given {@link SplunkRum}.
+     */
+    public static VolleyTracing create(SplunkRum splunkRum) {
+        return create(splunkRum.getOpenTelemetry());
+    }
+
+    /**
      * Returns a new {@link VolleyTracing} configured with the given {@link OpenTelemetry}.
      */
     public static VolleyTracing create(OpenTelemetry openTelemetry) {
         return builder(openTelemetry).build();
+    }
+
+    /**
+     * Returns a new {@link VolleyTracingBuilder} configured with the given {@link SplunkRum}.
+     */
+    public static VolleyTracingBuilder builder(SplunkRum splunkRum) {
+        return new VolleyTracingBuilder(splunkRum.getOpenTelemetry());
     }
 
     /**

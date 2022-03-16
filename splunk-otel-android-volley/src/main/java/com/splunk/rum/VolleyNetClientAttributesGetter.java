@@ -23,7 +23,8 @@ import androidx.annotation.Nullable;
 import io.opentelemetry.instrumentation.api.instrumenter.net.NetClientAttributesGetter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
-final class VolleyNetClientAttributesGetter implements NetClientAttributesGetter<RequestWrapper, HttpResponse> {
+enum VolleyNetClientAttributesGetter implements NetClientAttributesGetter<RequestWrapper, HttpResponse> {
+    INSTANCE;
 
     @Override
     public String transport(RequestWrapper requestWrapper, @Nullable HttpResponse httpResponse) {

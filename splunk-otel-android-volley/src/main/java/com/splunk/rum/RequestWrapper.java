@@ -22,7 +22,11 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-final class RequestWrapper {
+/**
+ * A wrapper class containing the {@link Request} and {@linkplain Map additional headers}, as passed
+ * to {@link com.android.volley.toolbox.BaseHttpStack}.
+ */
+public final class RequestWrapper {
     private final Request<?> request;
     private final Map<String, String> additionalHeaders;
     private URL url;
@@ -40,12 +44,17 @@ final class RequestWrapper {
         return url;
     }
 
-    Request<?> getRequest() {
+    /**
+     * Returns the HTTP request that will be executed.
+     */
+    public Request<?> getRequest() {
         return request;
     }
 
-    Map<String, String> getAdditionalHeaders() {
+    /**
+     * Returns additional headers that will be sent together with {@link Request#getHeaders()}.
+     */
+    public Map<String, String> getAdditionalHeaders() {
         return additionalHeaders;
     }
-
 }

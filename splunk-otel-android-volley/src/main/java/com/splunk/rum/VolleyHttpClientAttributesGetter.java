@@ -29,7 +29,8 @@ import java.util.List;
 
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesGetter;
 
-final class VolleyHttpClientAttributesGetter implements HttpClientAttributesGetter<RequestWrapper, HttpResponse> {
+enum VolleyHttpClientAttributesGetter implements HttpClientAttributesGetter<RequestWrapper, HttpResponse> {
+    INSTANCE;
 
     @Override
     public String url(RequestWrapper requestWrapper) {
