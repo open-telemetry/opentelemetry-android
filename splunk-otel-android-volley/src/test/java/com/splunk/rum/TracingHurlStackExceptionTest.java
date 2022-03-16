@@ -16,25 +16,25 @@
 
 package com.splunk.rum;
 
-import static android.os.Looper.getMainLooper;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.robolectric.Shadows.shadowOf;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.RequestFuture;
 import com.android.volley.toolbox.StringRequest;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.LooperMode;
-import org.robolectric.util.Scheduler;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import io.opentelemetry.api.common.Attributes;
@@ -43,32 +43,33 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 @RunWith(RobolectricTestRunner.class)
-@LooperMode(LooperMode.Mode.LEGACY)
 public class TracingHurlStackExceptionTest {
 
     @Rule
     public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
-
     private TestRequestQueue testQueue;
+    private StuckTestHelper stuckTestHelper;
 
     @Before
     public void setup() {
         //setup Volley with TracingHurlStack
         HurlStack tracingHurlStack = VolleyTracing.create(otelTesting.getOpenTelemetry()).newHurlStack(new FailingURLRewriter());
         testQueue = TestRequestQueue.create(tracingHurlStack);
+        stuckTestHelper = StuckTestHelper.start();
+    }
+
+    @After
+    public void cleanup() {
+        stuckTestHelper.close();
     }
 
     @Test
     public void spanDecoration_error() {
-
         RequestFuture<String> response = RequestFuture.newFuture();
         StringRequest stringRequest = new StringRequest(Request.Method.GET, "whatever",
                 response, response);
 
         testQueue.addToQueue(stringRequest);
-
-        Scheduler scheduler = shadowOf(getMainLooper()).getScheduler();
-        while (!scheduler.advanceToLastPostedRunnable());
 
         assertThatThrownBy(() -> response.get(3, TimeUnit.SECONDS)).hasRootCauseInstanceOf(RuntimeException.class);
 
