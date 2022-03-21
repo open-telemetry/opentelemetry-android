@@ -24,20 +24,25 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.Clock;
 
 class SessionId {
+
     private static final long SESSION_LIFETIME_NANOS = TimeUnit.HOURS.toNanos(4);
+    private static final long SESSION_TIMEOUT_NANOS = TimeUnit.MINUTES.toNanos(15);
+    private static final long NO_TIMEOUT = -1;
 
     private final Clock clock;
     private final AtomicReference<String> value = new AtomicReference<>();
+    private final SessionIdTimeoutHandler timeoutHandler;
     private volatile long createTimeNanos;
     private volatile SessionIdChangeListener sessionIdChangeListener;
 
-    SessionId() {
-        this(Clock.getDefault());
+    SessionId(SessionIdTimeoutHandler timeoutHandler) {
+        this(Clock.getDefault(), timeoutHandler);
     }
 
     //for testing
-    SessionId(Clock clock) {
+    SessionId(Clock clock, SessionIdTimeoutHandler timeoutHandler) {
         this.clock = clock;
+        this.timeoutHandler = timeoutHandler;
         value.set(createNewId());
         createTimeNanos = clock.now();
     }
@@ -50,28 +55,37 @@ class SessionId {
     }
 
     String getSessionId() {
-        String currentValue = value.get();
-        if (sessionExpired()) {
+        String oldValue = value.get();
+        String currentValue = oldValue;
+        boolean sessionIdChanged = false;
+
+        if (sessionExpired() || timeoutHandler.hasTimedOut()) {
             String newId = createNewId();
             //if this returns false, then another thread updated the value already.
-            if (value.compareAndSet(currentValue, newId)) {
+            sessionIdChanged = value.compareAndSet(oldValue, newId);
+            if (sessionIdChanged) {
                 createTimeNanos = clock.now();
-                if (sessionIdChangeListener != null) {
-                    sessionIdChangeListener.onChange(currentValue, newId);
-                }
             }
-            return value.get();
+            currentValue = value.get();
         }
+
+        timeoutHandler.bump();
+        // sessionId change listener needs tobe called after bumping the timer because it may create a new span
+        if (sessionIdChanged && sessionIdChangeListener != null) {
+            sessionIdChangeListener.onChange(oldValue, currentValue);
+        }
+
         return currentValue;
+    }
+
+    private boolean sessionExpired() {
+        // TODO: it probably should use nanoTime(); now() javadoc explicitly states that it's not meant to be used to compute duration
+        long elapsedTime = clock.now() - createTimeNanos;
+        return elapsedTime >= SESSION_LIFETIME_NANOS;
     }
 
     void setSessionIdChangeListener(SessionIdChangeListener sessionIdChangeListener) {
         this.sessionIdChangeListener = sessionIdChangeListener;
-    }
-
-    private boolean sessionExpired() {
-        long elapsedTime = clock.now() - createTimeNanos;
-        return elapsedTime >= SESSION_LIFETIME_NANOS;
     }
 
     @Override

@@ -71,7 +71,7 @@ public class RumAttributeAppenderTest {
                 .applicationName("appName")
                 .build();
 
-        RumAttributeAppender rumAttributeAppender = new RumAttributeAppender(config, new SessionId(), "version", visibleScreenTracker, connectionUtil);
+        RumAttributeAppender rumAttributeAppender = new RumAttributeAppender(config, new SessionId(new SessionIdTimeoutHandler()), "version", visibleScreenTracker, connectionUtil);
 
         ReadWriteSpan span = mock(ReadWriteSpan.class);
         rumAttributeAppender.onStart(Context.current(), span);
