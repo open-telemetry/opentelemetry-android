@@ -5,7 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Version 0.13.0 [Unreleased]
+## Version 0.14.0 [Unreleased]
+
+## Version 0.13.0
+
+* Update RUM property to support GDI spec 1.2 (#198)
+* Add `exception.type` and `exception.message` for crash report spans (#200)
+* Initial support for Volley HurlStack instrumentation (#209)
+* Support for detecting slow and frozen renders, enabled by default (#236)
+* Sample app updated to support slow renders (#236)
+* Updated to OpenTelemetry Java v1.12.0 (#254)
+* Add experimental support of buffering telemetry through storage (#251)
+* Consistency improvements to public configuration API (#255)
+* Add session timeout after a period of inactivity (#226)
+* Numerous dependency upgrades
 
 ---
 ## Version 0.12.0
