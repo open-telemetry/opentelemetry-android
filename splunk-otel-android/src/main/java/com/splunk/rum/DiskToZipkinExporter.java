@@ -28,7 +28,7 @@ class DiskToZipkinExporter {
 
     private final ScheduledExecutorService threadPool;
     private final ConnectionUtil connectionUtil;
-    private final Sender sender;
+    private final FileSender fileSender;
     private final File spanFilesPath;
     private final FileUtils fileUtils;
     private final BandwidthTracker bandwidthTracker;
@@ -37,7 +37,7 @@ class DiskToZipkinExporter {
     DiskToZipkinExporter(Builder builder) {
         this.threadPool = builder.threadPool;
         this.connectionUtil = builder.connectionUtil;
-        this.sender = builder.sender;
+        this.fileSender = builder.fileSender;
         this.spanFilesPath = builder.spanFilesPath;
         this.fileUtils = builder.fileUtils;
         this.bandwidthTracker = builder.bandwidthTracker;
@@ -57,7 +57,7 @@ class DiskToZipkinExporter {
         }
     }
 
-    private void exportPendingFiles() throws IOException {
+    private void exportPendingFiles() {
         if (!connectionUtil.refreshNetworkStatus().isOnline()) {
             Log.i(SplunkRum.LOG_TAG, "Network offline, leaving spans on disk for for eventual export.");
             return;
@@ -73,7 +73,7 @@ class DiskToZipkinExporter {
                 break;
             }
 
-            boolean dataWasSent = handleFileOnDisk(file);
+            boolean dataWasSent = fileSender.handleFileOnDisk(file);
             sentAnything |= dataWasSent;
             if (!dataWasSent) {   // Don't bother trying any remaining files if this one failed.
                 break;
@@ -84,43 +84,12 @@ class DiskToZipkinExporter {
         }
     }
 
-    private List<File> getPendingFiles() throws IOException {
+    private List<File> getPendingFiles() {
         return fileUtils.listFiles(spanFilesPath)
                 .filter(fileUtils::isRegularFile)
                 .filter(file -> file.toString().endsWith(".spans"))
                 .sorted(Comparator.comparing(File::getName))
                 .collect(Collectors.toList());
-    }
-
-    private boolean handleFileOnDisk(File file) {
-        Log.d(LOG_TAG, "Reading file content for ingest: " + file);
-        List<byte[]> encodedSpans = readFileCompletely(file);
-        if(encodedSpans.isEmpty()) {
-            return false;
-        }
-
-        try {
-            bandwidthTracker.tick(encodedSpans);
-            Call<Void> httpCall = sender.sendSpans(encodedSpans);
-            httpCall.execute();
-            Log.d(LOG_TAG, "File content " + file + " successfully uploaded");
-            return true;
-        } catch (IOException e) {
-            Log.w(LOG_TAG, "Error sending file content", e);
-            return false;
-        }
-        finally {
-            fileUtils.safeDelete(file);
-        }
-    }
-
-    private List<byte[]> readFileCompletely(File file) {
-        try {
-            return fileUtils.readFileCompletely(file);
-        } catch (IOException e) {
-            Log.w(LOG_TAG, "Error reading span data from file " + file, e);
-            return emptyList();
-        }
     }
 
     void stop() {
@@ -132,9 +101,9 @@ class DiskToZipkinExporter {
     }
 
     static class Builder {
-        private BandwidthTracker bandwidthTracker = new BandwidthTracker();
+        private FileSender fileSender;
+        private BandwidthTracker bandwidthTracker;
         private ScheduledExecutorService threadPool = Executors.newSingleThreadScheduledExecutor();
-        private Sender sender;
         private ConnectionUtil connectionUtil;
         private File spanFilesPath;
         private FileUtils fileUtils = new FileUtils();
@@ -155,8 +124,8 @@ class DiskToZipkinExporter {
             return this;
         }
 
-        Builder sender(Sender sender) {
-            this.sender = sender;
+        Builder fileSender(FileSender fileSender){
+            this.fileSender = fileSender;
             return this;
         }
 

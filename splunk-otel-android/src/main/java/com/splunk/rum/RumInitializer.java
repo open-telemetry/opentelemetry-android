@@ -275,10 +275,16 @@ class RumInitializer {
                 .endpoint(getEndpoint())
                 .build();
         File spanFilesPath = FileUtils.getSpansDirectory(application);
+        BandwidthTracker bandwidthTracker = new BandwidthTracker();
 
+        FileSender fileSender = FileSender.builder()
+                .sender(sender)
+                .bandwidthTracker(bandwidthTracker)
+                .build();
         DiskToZipkinExporter diskToZipkinExporter = DiskToZipkinExporter.builder()
                 .connectionUtil(connectionUtil)
-                .sender(sender)
+                .fileSender(fileSender)
+                .bandwidthTracker(bandwidthTracker)
                 .spanFilesPath(spanFilesPath)
                 .build();
         diskToZipkinExporter.startPolling();
