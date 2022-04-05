@@ -30,6 +30,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.splunk.android.sample.databinding.FragmentSecondBinding;
+import com.splunk.rum.RumScreenName;
 import com.splunk.rum.SplunkRum;
 
 import java.util.Random;
@@ -44,6 +45,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 
+@RumScreenName("Fragment 2️⃣")
 public class SecondFragment extends Fragment {
 
     private final ScheduledExecutorService spammer = Executors.newSingleThreadScheduledExecutor();

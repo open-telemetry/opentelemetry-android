@@ -40,6 +40,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.splunk.android.sample.databinding.ActivityMainBinding;
+import com.splunk.rum.RumScreenName;
 import com.splunk.rum.SplunkRum;
 
 import java.util.Arrays;
@@ -47,6 +48,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.opentelemetry.api.common.Attributes;
 
+@RumScreenName("Buttercup")
 public class MainActivity extends AppCompatActivity {
 
     private static final Attributes SETTINGS_FEATURE_ATTRIBUTES = Attributes.of(stringKey("FeatureName"), "Settings");

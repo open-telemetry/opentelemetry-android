@@ -96,6 +96,20 @@ public class FragmentTracerTest {
         assertEquals("previousScreen", span.getAttributes().get(SplunkRum.LAST_SCREEN_NAME_KEY));
     }
 
+    @Test
+    public void testAnnotatedScreenName() {
+        Fragment fragment = new AnnotatedFragment();
+        FragmentTracer fragmentTracer = new FragmentTracer(fragment, tracer, visibleScreenTracker);
+        fragmentTracer.startFragmentCreation();
+        fragmentTracer.endActiveSpan();
+        SpanData span = getSingleSpan();
+        assertEquals("bumpity", span.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
+    }
+
+    @RumScreenName("bumpity")
+    static class AnnotatedFragment extends Fragment {
+    }
+
     private SpanData getSingleSpan() {
         List<SpanData> generatedSpans = otelTesting.getSpans();
         assertEquals(1, generatedSpans.size());

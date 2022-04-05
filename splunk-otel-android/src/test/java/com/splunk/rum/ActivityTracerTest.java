@@ -160,6 +160,20 @@ public class ActivityTracerTest {
         assertEquals("previousScreen", span.getAttributes().get(SplunkRum.LAST_SCREEN_NAME_KEY));
     }
 
+    @Test
+    public void testAnnotatedActivity() {
+        Activity annotatedActivity = new AnnotatedActivity();
+        ActivityTracer activityTracer = new ActivityTracer(annotatedActivity, new AtomicReference<>(), tracer, visibleScreenTracker, appStartupTimer);
+        activityTracer.startActivityCreation();
+        activityTracer.endActiveSpan();
+        SpanData span = getSingleSpan();
+        assertEquals("squarely", span.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
+    }
+
+    @RumScreenName("squarely")
+    static class AnnotatedActivity extends Activity {
+    }
+
     private SpanData getSingleSpan() {
         List<SpanData> generatedSpans = otelTesting.getSpans();
         assertEquals(1, generatedSpans.size());
