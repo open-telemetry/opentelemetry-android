@@ -50,7 +50,7 @@ android {
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.3.1")
-    implementation("androidx.navigation:navigation-fragment:2.4.1")
+    implementation("androidx.navigation:navigation-fragment:2.4.2")
     compileOnly("com.android.volley:volley:1.2.1")
 
     implementation(project(":splunk-otel-android"))
