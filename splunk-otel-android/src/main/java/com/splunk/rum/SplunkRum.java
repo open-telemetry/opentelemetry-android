@@ -29,8 +29,9 @@ import android.webkit.WebView;
 
 import androidx.annotation.Nullable;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -150,8 +151,7 @@ public class SplunkRum {
      */
     @Deprecated
     public Interceptor createOkHttpRumInterceptor() {
-        Interceptor coreInterceptor = createOkHttpTracing().newInterceptor();
-        return new OkHttpRumInterceptor(coreInterceptor);
+        return createOkHttpTracing().newInterceptor();
     }
 
     /**
@@ -245,31 +245,17 @@ public class SplunkRum {
      * @param attributes Any {@link Attributes} to associate with the event.
      */
     public void addRumException(Throwable throwable, Attributes attributes) {
-        Span span = getTracer()
+        getTracer()
                 .spanBuilder(throwable.getClass().getSimpleName())
                 .setAllAttributes(attributes)
                 .setAttribute(COMPONENT_KEY, COMPONENT_ERROR)
-                .startSpan();
-        addExceptionAttributes(span, throwable);
-        span.end();
+                .startSpan()
+                .recordException(throwable)
+                .end();
     }
 
     Tracer getTracer() {
         return openTelemetrySdk.getTracer(RUM_TRACER_NAME);
-    }
-
-    static void addExceptionAttributes(Span span, Throwable e) {
-        addExceptionAttributes((key, value) -> span.setAttribute((AttributeKey<? super Object>) key, value), e);
-    }
-
-    static void addExceptionAttributes(BiConsumer<AttributeKey<?>, Object> setAttribute, Throwable e) {
-        //record these here since zipkin eats the event attributes that are recorded by default.
-        setAttribute.accept(SemanticAttributes.EXCEPTION_TYPE, e.getClass().getSimpleName());
-        setAttribute.accept(SemanticAttributes.EXCEPTION_MESSAGE, e.getMessage());
-
-        //these attributes are here to support the RUM UI/backend until it can be updated to use otel conventions.
-        setAttribute.accept(ERROR_TYPE_KEY, e.getClass().getSimpleName());
-        setAttribute.accept(ERROR_MESSAGE_KEY, e.getMessage());
     }
 
     void recordAnr(StackTraceElement[] stackTrace) {

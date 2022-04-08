@@ -21,6 +21,7 @@ import static com.splunk.rum.SplunkRum.LINK_TRACE_ID_KEY;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import okhttp3.Request;
@@ -35,17 +36,14 @@ class RumResponseAttributesExtractor implements AttributesExtractor<Request, Res
     }
 
     @Override
-    public void onStart(AttributesBuilder attributes, Request request) {
+    public void onStart(AttributesBuilder attributes, Context parentContext, Request request) {
         attributes.put(SplunkRum.COMPONENT_KEY, "http");
     }
 
     @Override
-    public void onEnd(AttributesBuilder attributes, Request request, Response response, Throwable error) {
+    public void onEnd(AttributesBuilder attributes, Context context, Request request, Response response, Throwable error) {
         if (response != null) {
             onResponse(attributes, response);
-        }
-        if (error != null) {
-            onError(attributes, error);
         }
     }
 
@@ -73,9 +71,5 @@ class RumResponseAttributesExtractor implements AttributesExtractor<Request, Res
                 //who knows what we got back? It wasn't a number!
             }
         }
-    }
-
-    private void onError(AttributesBuilder attributes, Throwable error) {
-        SplunkRum.addExceptionAttributes((key, value) -> attributes.put((AttributeKey<? super Object>) key, value), error);
     }
 }

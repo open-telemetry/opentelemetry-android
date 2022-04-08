@@ -133,6 +133,6 @@ public final class SpanFilterBuilder {
         Map<AttributeKey<?>, Predicate<?>> rejectSpanAttributesPredicates = new HashMap<>(this.rejectSpanAttributesPredicates);
         Map<AttributeKey<?>, Function<?, ?>> spanAttributeReplacements = new HashMap<>(this.spanAttributeReplacements);
 
-        return exporter -> new SpanFilter(exporter, rejectSpanNamesPredicate, rejectSpanAttributesPredicates, spanAttributeReplacements);
+        return exporter -> new SpanDataModifier(exporter, rejectSpanNamesPredicate, rejectSpanAttributesPredicates, spanAttributeReplacements);
     }
 }

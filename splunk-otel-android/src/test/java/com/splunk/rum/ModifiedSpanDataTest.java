@@ -18,9 +18,13 @@ package com.splunk.rum;
 
 import static org.junit.Assert.assertEquals;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import org.junit.Test;
+
+import java.util.Arrays;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
@@ -31,9 +35,12 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 public class ModifiedSpanDataTest {
     private static final String TRACE_ID = TraceId.fromLongs(0, 42);
@@ -59,7 +66,8 @@ public class ModifiedSpanDataTest {
                 .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.create("test", "0.0.1"))
                 .setResource(Resource.getDefault())
                 .build();
-        SpanData modified = new ModifiedSpanData(original, Attributes.of(stringKey("attribute"), "modified"));
+
+        SpanData modified = ModifiedSpanData.create(original, Attributes.builder().put(stringKey("attribute"), "modified"));
 
         assertEquals(original.getName(), modified.getName());
         assertEquals(original.getKind(), modified.getKind());
@@ -77,5 +85,43 @@ public class ModifiedSpanDataTest {
         assertEquals(1, modified.getTotalAttributeCount());
         assertEquals(original.getInstrumentationLibraryInfo(), modified.getInstrumentationLibraryInfo());
         assertEquals(original.getResource(), modified.getResource());
+    }
+
+    @Test
+    public void shouldConvertExceptionEventsToSpanAttributes() {
+        SpanData original = TestSpanData.builder()
+                .setName("test")
+                .setKind(SpanKind.CLIENT)
+                .setStatus(StatusData.unset())
+                .setStartEpochNanos(12345)
+                .setEndEpochNanos(67890)
+                .setHasEnded(true)
+                .setEvents(Arrays.asList(
+                        EventData.create(123, "test", Attributes.of(stringKey("attribute"), "value")),
+                        EventData.create(456, SemanticAttributes.EXCEPTION_EVENT_NAME, Attributes.builder()
+                                .put(SemanticAttributes.EXCEPTION_TYPE, "com.example.Error")
+                                .put(SemanticAttributes.EXCEPTION_MESSAGE, "failed")
+                                .put(SemanticAttributes.EXCEPTION_STACKTRACE, "<stacktrace>")
+                                .build())
+                ))
+                .setAttributes(Attributes.of(stringKey("attribute"), "value"))
+                .build();
+
+        SpanData modified = ModifiedSpanData.create(original);
+
+        assertThat(modified)
+                .hasName("test")
+                .hasKind(SpanKind.CLIENT)
+                .hasEvents(EventData.create(123, "test", Attributes.of(stringKey("attribute"), "value")))
+                .hasTotalRecordedEvents(1)
+                .hasAttributes(Attributes.builder()
+                        .put(stringKey("attribute"), "value")
+                        .put(SemanticAttributes.EXCEPTION_TYPE, "Error")
+                        .put(SplunkRum.ERROR_TYPE_KEY, "Error")
+                        .put(SemanticAttributes.EXCEPTION_MESSAGE, "failed")
+                        .put(SplunkRum.ERROR_MESSAGE_KEY, "failed")
+                        .put(SemanticAttributes.EXCEPTION_STACKTRACE, "<stacktrace>")
+                        .build())
+                .hasTotalAttributeCount(6);
     }
 }

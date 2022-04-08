@@ -16,6 +16,13 @@
 
 package com.splunk.rum;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+
 import androidx.annotation.NonNull;
 
 import org.junit.Before;
@@ -30,13 +37,8 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 public class CrashReporterTest {
     @Rule
@@ -61,23 +63,16 @@ public class CrashReporterTest {
 
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
-        SpanData crashSpan = spans.get(0);
-        assertEquals(oopsie.getClass().getSimpleName(), crashSpan.getName());
-        assertEquals(crashThread.getId(), (long) crashSpan.getAttributes().get(SemanticAttributes.THREAD_ID));
-        assertEquals(SplunkRum.COMPONENT_CRASH, crashSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
-        assertEquals("badThread", crashSpan.getAttributes().get(SemanticAttributes.THREAD_NAME));
-        assertTrue(crashSpan.getAttributes().get(SemanticAttributes.EXCEPTION_ESCAPED));
 
-        assertNotNull(crashSpan.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE));
-        assertTrue(crashSpan.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE).contains("NullPointerException"));
-        assertTrue(crashSpan.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE).contains("oopsie"));
-
-        assertEquals("NullPointerException", crashSpan.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE));
-        assertEquals("oopsie", crashSpan.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE));
-        assertEquals("NullPointerException", crashSpan.getAttributes().get(SplunkRum.ERROR_TYPE_KEY));
-        assertEquals("oopsie", crashSpan.getAttributes().get(SplunkRum.ERROR_MESSAGE_KEY));
-
-        assertEquals(StatusCode.ERROR, crashSpan.getStatus().getStatusCode());
+        assertThat(spans.get(0))
+                .hasName("NullPointerException")
+                .hasAttributesSatisfyingExactly(
+                        equalTo(SemanticAttributes.THREAD_ID, crashThread.getId()),
+                        equalTo(SemanticAttributes.THREAD_NAME, "badThread"),
+                        equalTo(SemanticAttributes.EXCEPTION_ESCAPED, true),
+                        equalTo(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_CRASH))
+                .hasException(oopsie)
+                .hasStatus(StatusData.error());
 
         assertTrue(existingHandler.wasDelegatedTo.get());
         verify(sdkTracerProvider).forceFlush();

@@ -62,6 +62,7 @@ dependencies {
     testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
     testImplementation("org.robolectric:robolectric:4.7.3")
     testImplementation("androidx.test:core:1.4.0")
+    testImplementation("org.assertj:assertj-core:3.22.0")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
 }

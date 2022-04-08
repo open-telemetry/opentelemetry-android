@@ -8,7 +8,6 @@ import androidx.annotation.Nullable;
 import com.android.volley.Header;
 import com.android.volley.toolbox.HttpResponse;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
@@ -31,9 +30,6 @@ class VolleyResponseAttributesExtractor implements AttributesExtractor<RequestWr
         if (response != null) {
             onResponse(attributes, response);
         }
-        if (error != null) {
-            onError(attributes, error);
-        }
     }
 
 
@@ -47,13 +43,9 @@ class VolleyResponseAttributesExtractor implements AttributesExtractor<RequestWr
         }
     }
 
-    private void onError(AttributesBuilder attributes, Throwable error) {
-        SplunkRum.addExceptionAttributes((key, value) -> attributes.put((AttributeKey<? super Object>) key, value), error);
-    }
-
-    private String getHeader(HttpResponse response, String headerName){
-        for(Header header : response.getHeaders()){
-            if(header.getName().equals(headerName)){
+    private String getHeader(HttpResponse response, String headerName) {
+        for (Header header : response.getHeaders()) {
+            if (header.getName().equals(headerName)) {
                 return header.getValue();
             }
         }

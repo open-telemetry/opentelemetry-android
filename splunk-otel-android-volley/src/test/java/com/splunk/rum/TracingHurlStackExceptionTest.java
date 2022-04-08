@@ -16,8 +16,8 @@
 
 package com.splunk.rum;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.HurlStack;
@@ -32,12 +32,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
@@ -77,13 +73,13 @@ public class TracingHurlStackExceptionTest {
         assertThat(spans).hasSize(1);
 
         SpanData span = spans.get(0);
-
-        Attributes spanAttributes = span.getAttributes();
-        assertThat(spanAttributes.get(SplunkRum.ERROR_TYPE_KEY)).isEqualTo("RuntimeException");
-        assertThat(spanAttributes.get(SplunkRum.ERROR_MESSAGE_KEY)).isEqualTo("Something went wrong");
-
-        assertThat(spanAttributes.get(SemanticAttributes.EXCEPTION_TYPE)).isEqualTo("RuntimeException");
-        assertThat(spanAttributes.get(SemanticAttributes.EXCEPTION_MESSAGE)).isEqualTo("Something went wrong");
+        assertThat(span)
+                .hasEventsSatisfyingExactly(
+                        e -> e.hasName(SemanticAttributes.EXCEPTION_EVENT_NAME)
+                                .hasAttributesSatisfying(a -> assertThat(a)
+                                        .containsEntry(SemanticAttributes.EXCEPTION_TYPE, "java.lang.RuntimeException")
+                                        .containsEntry(SemanticAttributes.EXCEPTION_MESSAGE, "Something went wrong")
+                                        .containsKey(SemanticAttributes.EXCEPTION_STACKTRACE)));
     }
 
     static class FailingURLRewriter implements HurlStack.UrlRewriter {

@@ -24,6 +24,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,7 +34,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -41,12 +44,14 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SpanFilterTest {
+public class SpanDataModifierTest {
     static final AttributeKey<String> ATTRIBUTE = stringKey("attribute");
     static final AttributeKey<String> OTHER_ATTRIBUTE = stringKey("other_attribute");
     static final AttributeKey<Long> LONG_ATTRIBUTE = longKey("long_attribute");
@@ -72,13 +77,18 @@ public class SpanFilterTest {
         SpanData span4 = span("span4");
 
         CompletableResultCode expectedResult = new CompletableResultCode();
-        when(delegate.export(asList(span1, span3))).thenReturn(expectedResult);
+        when(delegate.export(spansCaptor.capture())).thenReturn(expectedResult);
 
         // when
         CompletableResultCode result = underTest.export(asList(span1, span2, span3, span4));
 
         // then
         assertSame(expectedResult, result);
+
+        assertThat(spansCaptor.getValue())
+                .satisfiesExactly(
+                        s -> assertThat(s).hasName(span1.getName()),
+                        s -> assertThat(s).hasName(span3.getName()));
     }
 
     @Test
@@ -98,7 +108,7 @@ public class SpanFilterTest {
         SpanData yetAnotherRejected = span("span", Attributes.of(ATTRIBUTE, "pass", LONG_ATTRIBUTE, 123L));
 
         CompletableResultCode expectedResult = new CompletableResultCode();
-        when(delegate.export(asList(differentKey, differentValue))).thenReturn(expectedResult);
+        when(delegate.export(spansCaptor.capture())).thenReturn(expectedResult);
 
         // when
         CompletableResultCode result = underTest.export(
@@ -106,6 +116,15 @@ public class SpanFilterTest {
 
         // then
         assertSame(expectedResult, result);
+
+        assertThat(spansCaptor.getValue())
+                .satisfiesExactly(
+                        s -> assertThat(s)
+                                .hasName(differentKey.getName())
+                                .hasAttributes(differentKey.getAttributes()),
+                        s -> assertThat(s)
+                                .hasName(differentValue.getName())
+                                .hasAttributes(differentValue.getAttributes()));
     }
 
     @Test
@@ -211,13 +230,19 @@ public class SpanFilterTest {
         SpanData span = span("span", Attributes.of(ATTRIBUTE, "test"));
 
         CompletableResultCode expectedResult = new CompletableResultCode();
-        when(delegate.export(singletonList(span))).thenReturn(expectedResult);
+        when(delegate.export(spansCaptor.capture())).thenReturn(expectedResult);
 
         // when
         CompletableResultCode result = underTest.export(singletonList(span));
 
         // then
         assertSame(expectedResult, result);
+
+        assertThat(spansCaptor.getValue())
+                .satisfiesExactly(
+                        s -> assertThat(s)
+                                .hasName(span.getName())
+                                .hasAttributes(span.getAttributes()));
     }
 
     @Test
@@ -233,11 +258,50 @@ public class SpanFilterTest {
         verify(delegate).shutdown();
     }
 
+    @Test
+    public void shouldAlwaysTransformExceptionEvents() {
+        // given
+        SpanExporter underTest = new SpanFilterBuilder().build().apply(delegate);
+
+        String stacktrace = "com.example.SomeException: boom!\n\tat com.example.SomeClass.method(SomeClass.java:123)";
+        EventData exceptionEvent = EventData.create(123, SemanticAttributes.EXCEPTION_EVENT_NAME,
+                Attributes.builder()
+                        .put(SemanticAttributes.EXCEPTION_TYPE, "com.example.SomeException")
+                        .put(SemanticAttributes.EXCEPTION_MESSAGE, "boom!")
+                        .put(SemanticAttributes.EXCEPTION_STACKTRACE, stacktrace)
+                        .build());
+        SpanData span = span("span", Attributes.of(ATTRIBUTE, "test"), exceptionEvent);
+
+        CompletableResultCode expectedResult = new CompletableResultCode();
+        when(delegate.export(spansCaptor.capture())).thenReturn(expectedResult);
+
+        // when
+        CompletableResultCode result = underTest.export(singletonList(span));
+
+        // then
+        assertSame(expectedResult, result);
+
+        assertThat(spansCaptor.getValue())
+                .satisfiesExactly(
+                        s -> assertThat(s)
+                                .hasName(span.getName())
+                                .hasEvents(Collections.emptyList())
+                                .hasTotalRecordedEvents(0)
+                                .hasAttributes(span.getAttributes().toBuilder()
+                                        .put(SemanticAttributes.EXCEPTION_TYPE, "SomeException")
+                                        .put(SplunkRum.ERROR_TYPE_KEY, "SomeException")
+                                        .put(SemanticAttributes.EXCEPTION_MESSAGE, "boom!")
+                                        .put(SplunkRum.ERROR_MESSAGE_KEY, "boom!")
+                                        .put(SemanticAttributes.EXCEPTION_STACKTRACE, stacktrace)
+                                        .build())
+                                .hasTotalAttributeCount(6));
+    }
+
     private static SpanData span(String name) {
         return span(name, Attributes.empty());
     }
 
-    private static SpanData span(String name, Attributes attributes) {
+    private static SpanData span(String name, Attributes attributes, EventData... events) {
         return TestSpanData.builder()
                 .setName(name)
                 .setKind(SpanKind.INTERNAL)
@@ -246,6 +310,7 @@ public class SpanFilterTest {
                 .setStartEpochNanos(0)
                 .setEndEpochNanos(123)
                 .setAttributes(attributes)
+                .setEvents(Arrays.asList(events))
                 .build();
     }
 }

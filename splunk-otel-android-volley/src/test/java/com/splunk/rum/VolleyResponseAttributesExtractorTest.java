@@ -27,13 +27,11 @@ import com.android.volley.toolbox.HttpResponse;
 
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 public class VolleyResponseAttributesExtractorTest {
 
@@ -78,27 +76,4 @@ public class VolleyResponseAttributesExtractorTest {
         assertNull(attributes.get(SplunkRum.LINK_TRACE_ID_KEY));
         assertNull(attributes.get(SplunkRum.LINK_SPAN_ID_KEY));
     }
-
-    @Test
-    public void shouldAddExceptionAttributes() {
-        ServerTimingHeaderParser headerParser = mock(ServerTimingHeaderParser.class);
-        VolleyResponseAttributesExtractor attributesExtractor = new VolleyResponseAttributesExtractor(headerParser);
-
-        RequestWrapper fakeRequest = new RequestWrapper(mock(Request.class), Collections.emptyMap());
-        Exception error = new IOException("failed to make a call");
-
-        AttributesBuilder attributesBuilder = Attributes.builder();
-        attributesExtractor.onEnd(attributesBuilder, null, fakeRequest, null, error);
-        attributesExtractor.onStart(attributesBuilder, null, fakeRequest);
-        Attributes attributes = attributesBuilder.build();
-
-        assertEquals(5, attributes.size());
-        assertEquals("http", attributes.get(SplunkRum.COMPONENT_KEY));
-        assertEquals("IOException", attributes.get(SemanticAttributes.EXCEPTION_TYPE));
-        assertEquals("failed to make a call", attributes.get(SemanticAttributes.EXCEPTION_MESSAGE));
-        //temporary attributes until the RUM UI/backend can be brought up to date with otel conventions.
-        assertEquals("IOException", attributes.get(SplunkRum.ERROR_TYPE_KEY));
-        assertEquals("failed to make a call", attributes.get(SplunkRum.ERROR_MESSAGE_KEY));
-    }
-
 }

@@ -16,11 +16,13 @@
 
 package com.splunk.rum;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static java.util.Collections.emptyList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
@@ -38,12 +40,14 @@ import java.util.List;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 public class RumInitializerTest {
     @Test
@@ -170,5 +174,50 @@ public class RumInitializerTest {
                 .setHasEnded(true)
                 .setEndEpochNanos(startTimeNanos)
                 .build();
+    }
+
+    @Test
+    public void shouldTranslateExceptionEventsToSpanAttributes() {
+        InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
+
+        Config config = Config.builder()
+                .realm("us0")
+                .rumAccessToken("secret!")
+                .applicationName("test")
+                .debugEnabled(true)
+                .build();
+        Application application = mock(Application.class);
+        ConnectionUtil connectionUtil = mock(ConnectionUtil.class, RETURNS_DEEP_STUBS);
+        when(connectionUtil.refreshNetworkStatus().isOnline()).thenReturn(true);
+
+        RumInitializer initializer = new RumInitializer(config, application, new AppStartupTimer()) {
+            @Override
+            SpanExporter getCoreSpanExporter(String endpoint) {
+                return spanExporter;
+            }
+        };
+
+        SplunkRum splunkRum = initializer.initialize(() -> connectionUtil, mock(Looper.class));
+
+        Exception e = new IllegalArgumentException("booom!");
+        splunkRum.addRumException(e, Attributes.of(stringKey("attribute"), "oh no!"));
+        splunkRum.flushSpans();
+
+        List<SpanData> spans = spanExporter.getFinishedSpanItems();
+        assertThat(spans)
+                .satisfiesExactly(
+                        span -> OpenTelemetryAssertions.assertThat(span)
+                                .hasName("SplunkRum.initialize"),
+                        span -> OpenTelemetryAssertions.assertThat(span)
+                                .hasName("IllegalArgumentException")
+                                .hasAttributesSatisfying(attributes -> OpenTelemetryAssertions.assertThat(attributes)
+                                        .containsEntry(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_ERROR)
+                                        .containsEntry(stringKey("attribute"), "oh no!")
+                                        .containsEntry(SemanticAttributes.EXCEPTION_TYPE, "IllegalArgumentException")
+                                        .containsEntry(SplunkRum.ERROR_TYPE_KEY, "IllegalArgumentException")
+                                        .containsEntry(SemanticAttributes.EXCEPTION_MESSAGE, "booom!")
+                                        .containsEntry(SplunkRum.ERROR_MESSAGE_KEY, "booom!")
+                                        .containsKey(SemanticAttributes.EXCEPTION_STACKTRACE))
+                                .hasEvents(emptyList()));
     }
 }

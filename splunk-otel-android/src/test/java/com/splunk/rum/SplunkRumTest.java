@@ -29,6 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import android.app.Application;
 import android.content.Context;
@@ -189,22 +190,17 @@ public class SplunkRumTest {
 
         SplunkRum splunkRum = new SplunkRum(testSdk, new SessionId(new SessionIdTimeoutHandler()), config);
 
+        NullPointerException exception = new NullPointerException("oopsie");
         Attributes attributes = Attributes.of(stringKey("one"), "1", longKey("two"), 2L);
-        splunkRum.addRumException(new NullPointerException("oopsie"), attributes);
+        splunkRum.addRumException(exception, attributes);
 
         List<SpanData> spans = testExporter.getFinishedSpanItems();
         assertEquals(1, spans.size());
-        assertEquals("NullPointerException", spans.get(0).getName());
 
-        Attributes expected = attributes.toBuilder()
-                .put(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_ERROR)
-                .put(SemanticAttributes.EXCEPTION_MESSAGE, "oopsie")
-                .put(SplunkRum.ERROR_MESSAGE_KEY, "oopsie")
-                .put(SemanticAttributes.EXCEPTION_TYPE, "NullPointerException")
-                .put(SplunkRum.ERROR_TYPE_KEY, "NullPointerException")
-                .build();
-
-        assertEquals(expected.asMap(), spans.get(0).getAttributes().asMap());
+        assertThat(spans.get(0))
+                .hasName("NullPointerException")
+                .hasAttributes(attributes.toBuilder().put(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_ERROR).build())
+                .hasException(exception);
     }
 
     private OpenTelemetrySdk buildTestSdk(InMemorySpanExporter testExporter) {

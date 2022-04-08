@@ -30,16 +30,16 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
-final class SpanFilter implements SpanExporter {
+final class SpanDataModifier implements SpanExporter {
     private final SpanExporter delegate;
     private final Predicate<String> rejectSpanNamesPredicate;
     private final Map<AttributeKey<?>, Predicate<?>> rejectSpanAttributesPredicates;
     private final Map<AttributeKey<?>, Function<?, ?>> spanAttributeReplacements;
 
-    SpanFilter(SpanExporter delegate,
-               Predicate<String> rejectSpanNamesPredicate,
-               Map<AttributeKey<?>, Predicate<?>> rejectSpanAttributesPredicates,
-               Map<AttributeKey<?>, Function<?, ?>> spanAttributeReplacements) {
+    SpanDataModifier(SpanExporter delegate,
+                     Predicate<String> rejectSpanNamesPredicate,
+                     Map<AttributeKey<?>, Predicate<?>> rejectSpanAttributesPredicates,
+                     Map<AttributeKey<?>, Function<?, ?>> spanAttributeReplacements) {
         this.delegate = delegate;
         this.rejectSpanNamesPredicate = rejectSpanNamesPredicate;
         this.rejectSpanAttributesPredicates = rejectSpanAttributesPredicates;
@@ -48,14 +48,14 @@ final class SpanFilter implements SpanExporter {
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
-        List<SpanData> filtered = new ArrayList<>();
+        List<SpanData> modified = new ArrayList<>();
         for (SpanData span : spans) {
             if (reject(span)) {
                 continue;
             }
-            filtered.add(modify(span));
+            modified.add(modify(span));
         }
-        return delegate.export(filtered);
+        return delegate.export(modified);
     }
 
     private boolean reject(SpanData span) {
@@ -76,7 +76,7 @@ final class SpanFilter implements SpanExporter {
 
     private SpanData modify(SpanData span) {
         if (spanAttributeReplacements.isEmpty()) {
-            return span;
+            return ModifiedSpanData.create(span);
         }
 
         AttributesBuilder modifiedAttributes = Attributes.builder();
@@ -89,7 +89,7 @@ final class SpanFilter implements SpanExporter {
             }
         });
 
-        return new ModifiedSpanData(span, modifiedAttributes.build());
+        return ModifiedSpanData.create(span, modifiedAttributes);
     }
 
     @Override
