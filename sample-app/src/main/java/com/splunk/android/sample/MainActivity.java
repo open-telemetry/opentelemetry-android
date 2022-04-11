@@ -34,6 +34,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.location.LocationListenerCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -144,11 +145,11 @@ public class MainActivity extends AppCompatActivity {
                 || super.onSupportNavigateUp();
     }
 
-    private static final class RumLocationListener implements LocationListener {
+    private static final class RumLocationListener implements LocationListenerCompat {
 
         @Override
         public void onLocationChanged(@NonNull Location location) {
-            Log.d("Location", "Got location " + location.toString());
+            Log.d("Location", "Got location " + location);
             SplunkRum.getInstance().updateLocation(location);
         }
     }
