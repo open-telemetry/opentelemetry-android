@@ -18,10 +18,6 @@ android {
     }
 
     buildTypes {
-        all {
-            //provide the version of the library as a resource so it can be used as a span attribute.
-            resValue("string", "rum.version", "${project.version}")
-        }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -74,7 +70,6 @@ dependencies {
     testImplementation("com.google.mockwebserver:mockwebserver:20130706")
     testImplementation("com.android.volley:volley:1.2.0")
     testImplementation("org.apache.httpcomponents:httpclient:4.5.13")
-
 }
 
 tasks.withType<Test>().configureEach {
