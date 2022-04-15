@@ -18,7 +18,7 @@ class ZipkinWriteToDiskExporterFactory {
     private ZipkinWriteToDiskExporterFactory(){
     }
 
-    static ZipkinSpanExporter create(Application application) {
+    static ZipkinSpanExporter create(Application application, Config config) {
         File spansPath = FileUtils.getSpansDirectory(application);
         if (!spansPath.exists()) {
             if(!spansPath.mkdirs()){
@@ -27,7 +27,17 @@ class ZipkinWriteToDiskExporterFactory {
             }
         }
 
-        Sender sender = new ZipkinToDiskSender(spansPath);
+        FileUtils fileUtils = new FileUtils();
+        DeviceSpanStorageLimiter limiter = DeviceSpanStorageLimiter.builder()
+                .fileUtils(fileUtils)
+                .path(spansPath)
+                .maxStorageUseMb(config.getMaxUsageMegabytes())
+                .build();
+        Sender sender = ZipkinToDiskSender.builder()
+                .path(spansPath)
+                .fileUtils(fileUtils)
+                .storageLimiter(limiter)
+                .build();
         return ZipkinSpanExporter.builder()
                 .setEncoder(new CustomZipkinEncoder())
                 .setSender(sender)

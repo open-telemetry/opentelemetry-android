@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -28,22 +29,30 @@ public class ZipkinToDiskSenderTest {
     private final File finalPath = new File(finalFile);
     private final byte[] span1 = "span one".getBytes(StandardCharsets.UTF_8);
     private final byte[] span2 = "span one".getBytes(StandardCharsets.UTF_8);
+    private final List<byte[]> spans = Arrays.asList(span1, span2);
 
     @Mock
     private FileUtils fileUtils;
     @Mock
     private Clock clock;
+    @Mock
+    private DeviceSpanStorageLimiter limiter;
 
     @Before
-    public void setup(){
+    public void setup() {
         when(clock.millis()).thenReturn(now);
+        when(limiter.ensureFreeSpace()).thenReturn(true);
     }
 
     @Test
     public void testHappyPath() throws Exception {
-        List<byte[]> spans = Arrays.asList(span1, span2);
 
-        ZipkinToDiskSender sender = new ZipkinToDiskSender(path, fileUtils, clock);
+        ZipkinToDiskSender sender = ZipkinToDiskSender.builder()
+                .path(path)
+                .fileUtils(fileUtils)
+                .clock(clock)
+                .storageLimiter(limiter)
+                .build();
         sender.sendSpans(spans);
 
         verify(fileUtils).writeAsLines(finalPath, spans);
@@ -51,12 +60,34 @@ public class ZipkinToDiskSenderTest {
 
     @Test
     public void testWriteFails() throws Exception {
-        List<byte[]> spans = Arrays.asList(span1, span2);
         doThrow(new IOException("boom")).when(fileUtils).writeAsLines(finalPath, spans);
 
-        ZipkinToDiskSender sender = new ZipkinToDiskSender(path, fileUtils, clock);
+        ZipkinToDiskSender sender = ZipkinToDiskSender.builder()
+                .path(path)
+                .fileUtils(fileUtils)
+                .clock(clock)
+                .storageLimiter(limiter)
+                .build();
+
         sender.sendSpans(spans);
         // Exception not thrown
     }
 
+    @Test
+    public void testLimitExceeded() throws Exception {
+
+        when(limiter.ensureFreeSpace()).thenReturn(false);
+
+        ZipkinToDiskSender sender = ZipkinToDiskSender.builder()
+                .path(path)
+                .fileUtils(fileUtils)
+                .clock(clock)
+                .storageLimiter(limiter)
+                .build();
+
+        sender.sendSpans(spans);
+
+        verifyNoMoreInteractions(clock);
+        verifyNoMoreInteractions(fileUtils);
+    }
 }

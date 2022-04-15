@@ -308,9 +308,7 @@ class RumInitializer {
     }
 
     SpanExporter getToDiskExporter(){
-        return new LazyInitSpanExporter(() -> {
-            return ZipkinWriteToDiskExporterFactory.create(application);
-        });
+        return new LazyInitSpanExporter(() -> ZipkinWriteToDiskExporterFactory.create(application, config));
     }
 
     //visible for testing

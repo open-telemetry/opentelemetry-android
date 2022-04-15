@@ -7,6 +7,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Version 0.14.0 [Unreleased]
 
+* Add ability to limit storage usage for buffered telemetry (#TBD)
+
 ## Version 0.13.0
 
 * Update RUM property to support GDI spec 1.2 (#198)

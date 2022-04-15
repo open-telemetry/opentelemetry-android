@@ -41,10 +41,7 @@ public class DiskToZipkinExporterTest {
         when(connectionUtil.refreshNetworkStatus()).thenReturn(currentNetwork);
         when(currentNetwork.isOnline()).thenReturn(true);
         Stream<File> files = Stream.of(file1, imposter, file2);
-        when(fileUtils.listFiles(spanFilesPath)).thenReturn(files);
-        when(fileUtils.isRegularFile(file1)).thenReturn(true);
-        when(fileUtils.isRegularFile(file2)).thenReturn(true);
-        when(fileUtils.isRegularFile(imposter)).thenReturn(true);
+        when(fileUtils.listSpanFiles(spanFilesPath)).thenReturn(files);
     }
 
     @Test
@@ -98,7 +95,7 @@ public class DiskToZipkinExporterTest {
 
     @Test
     public void testOtherExceptionsHandled() throws Exception {
-        when(fileUtils.listFiles(spanFilesPath)).thenThrow(new RuntimeException("unexpected!"));
+        when(fileUtils.listSpanFiles(spanFilesPath)).thenThrow(new RuntimeException("unexpected!"));
         DiskToZipkinExporter exporter = buildExporter();
 
         exporter.doExportCycle();

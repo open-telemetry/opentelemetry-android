@@ -36,6 +36,7 @@ public class SampleApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
         Config config = SplunkRum.newConfigBuilder()
                 // note: for these values to be resolved, put them in your local.properties file as
                 // rum.beacon.url and rum.access.token
@@ -46,6 +47,7 @@ public class SampleApplication extends Application {
                 .debugEnabled(true)
                 .diskBufferingEnabled(true)
                 .deploymentEnvironment("demo")
+                .limitDiskUsageMegabytes(1)
                 .globalAttributes(
                         Attributes.builder()
                                 .put("vendor", "Splunk")

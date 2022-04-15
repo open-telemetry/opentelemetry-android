@@ -251,6 +251,10 @@ when initializing your instance of the SplunkRum API:
 - `diskBufferingEnabled(boolean)` : 
   Enables the storage-based buffering of telemetry. 
   This setting is useful when instrumenting applications that might work offline for extended periods of time.
+- `limitDiskUsageMegabytes(int)` :
+  When disk buffering is enabled, this can be used to adjust the maximum amount of storage
+  that will be used. Default = 25MB.
+
 
 #### APIs provided by the `SplunkRum` instance:
 

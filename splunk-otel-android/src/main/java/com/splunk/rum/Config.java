@@ -16,6 +16,8 @@
 
 package com.splunk.rum;
 
+import static com.splunk.rum.DeviceSpanStorageLimiter.DEFAULT_MAX_STORAGE_USE_MB;
+
 import android.util.Log;
 
 import java.time.Duration;
@@ -48,6 +50,7 @@ public class Config {
     private final boolean slowRenderingDetectionEnabled;
     private final Duration slowRenderingDetectionPollInterval;
     private final boolean diskBufferingEnabled;
+    private final int maxUsageMegabytes;
 
     private Config(Builder builder) {
         this.beaconEndpoint = builder.beaconEndpoint;
@@ -62,6 +65,7 @@ public class Config {
         this.slowRenderingDetectionEnabled = builder.slowRenderingDetectionEnabled;
         this.spanFilterExporterDecorator = builder.spanFilterBuilder.build();
         this.diskBufferingEnabled = builder.diskBufferingEnabled;
+        this.maxUsageMegabytes = builder.maxUsageMegabytes;
     }
 
     private Attributes addDeploymentEnvironment(Builder builder) {
@@ -156,6 +160,14 @@ public class Config {
     }
 
     /**
+     * Returns the max number of megabytes that will be used to buffer telemetry data in storage.
+     * If this value is exceeded, older telemetry will be deleted until the usage is reduced.
+     */
+    public int getMaxUsageMegabytes() {
+        return maxUsageMegabytes;
+    }
+
+    /**
      * Create a new instance of the {@link Builder} class. All default configuration options will be pre-populated.
      */
     public static Builder builder() {
@@ -201,6 +213,7 @@ public class Config {
         private final SpanFilterBuilder spanFilterBuilder = new SpanFilterBuilder();
         private String realm;
         private Duration slowRenderingDetectionPollInterval = DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL;
+        private int maxUsageMegabytes = DEFAULT_MAX_STORAGE_USE_MB;
 
         /**
          * Create a new instance of {@link Config} from the options provided.
@@ -377,6 +390,15 @@ public class Config {
          */
         public Builder filterSpans(Consumer<SpanFilterBuilder> configurer) {
             configurer.accept(spanFilterBuilder);
+            return this;
+        }
+
+        /**
+         * Sets the limit of the max number of megabytes that will be used to buffer telemetry data in storage.
+         * When this value is exceeded, older telemetry will be deleted until the usage is reduced.
+         */
+        public Builder limitDiskUsageMegabytes(int maxUsageMegabytes) {
+            this.maxUsageMegabytes = maxUsageMegabytes;
             return this;
         }
     }

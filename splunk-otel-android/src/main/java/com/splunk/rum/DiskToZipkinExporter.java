@@ -85,9 +85,7 @@ class DiskToZipkinExporter {
     }
 
     private List<File> getPendingFiles() {
-        return fileUtils.listFiles(spanFilesPath)
-                .filter(fileUtils::isRegularFile)
-                .filter(file -> file.toString().endsWith(".spans"))
+        return fileUtils.listSpanFiles(spanFilesPath)
                 .sorted(Comparator.comparing(File::getName))
                 .collect(Collectors.toList());
     }
