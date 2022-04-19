@@ -51,6 +51,8 @@ public class Config {
     private final Duration slowRenderingDetectionPollInterval;
     private final boolean diskBufferingEnabled;
     private final int maxUsageMegabytes;
+    private final boolean sessionBasedSamplerEnabled;
+    private final double sessionBasedSamplerRatio;
 
     private Config(Builder builder) {
         this.beaconEndpoint = builder.beaconEndpoint;
@@ -66,6 +68,8 @@ public class Config {
         this.spanFilterExporterDecorator = builder.spanFilterBuilder.build();
         this.diskBufferingEnabled = builder.diskBufferingEnabled;
         this.maxUsageMegabytes = builder.maxUsageMegabytes;
+        this.sessionBasedSamplerEnabled = builder.sessionBasedSamplerEnabled;
+        this.sessionBasedSamplerRatio = builder.sessionBasedSamplerRatio;
     }
 
     private Attributes addDeploymentEnvironment(Builder builder) {
@@ -168,6 +172,20 @@ public class Config {
     }
 
     /**
+     * Is session-based sampling of traces enabled or not.
+     */
+    public boolean isSessionBasedSamplerEnabled() {
+        return sessionBasedSamplerEnabled;
+    }
+
+    /**
+     * Get ratio of sessions that get sampled (0.0 - 1.0, where 1 is all sessions).
+     */
+    public double getSessionBasedSamplerRatio() {
+        return sessionBasedSamplerRatio;
+    }
+
+    /**
      * Create a new instance of the {@link Builder} class. All default configuration options will be pre-populated.
      */
     public static Builder builder() {
@@ -214,6 +232,8 @@ public class Config {
         private String realm;
         private Duration slowRenderingDetectionPollInterval = DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL;
         private int maxUsageMegabytes = DEFAULT_MAX_STORAGE_USE_MB;
+        private boolean sessionBasedSamplerEnabled = false;
+        private double sessionBasedSamplerRatio = 1.0;
 
         /**
          * Create a new instance of {@link Config} from the options provided.
@@ -399,6 +419,36 @@ public class Config {
          */
         public Builder limitDiskUsageMegabytes(int maxUsageMegabytes) {
             this.maxUsageMegabytes = maxUsageMegabytes;
+            return this;
+        }
+
+        /**
+         * Enable/disable session-based sampling of traces. Disabled by default.
+         *
+         * @return {@code this}.
+         */
+        public Builder sessionBasedSamplingEnabled(boolean enabled) {
+            this.sessionBasedSamplerEnabled = enabled;
+            return this;
+        }
+
+        /**
+         * Set ratio of sessions that get sampled (0.0 - 1.0, where 1 is all sessions). Default is
+         * 1.0.
+         *
+         * @return {@code this}.
+         */
+        public Builder enableSessionBasedSampling(double ratio) {
+            if (ratio < 0.0) {
+                Log.e(SplunkRum.LOG_TAG, "invalid sessionBasedSamplingRatio: " + ratio + " must not be negative");
+                return this;
+            } else if (ratio > 1.0) {
+                Log.e(SplunkRum.LOG_TAG, "invalid sessionBasedSamplingRatio: " + ratio + " must not be greater than 1.0");
+                return this;
+            }
+
+            this.sessionBasedSamplerEnabled = true;
+            this.sessionBasedSamplerRatio = ratio;
             return this;
         }
     }

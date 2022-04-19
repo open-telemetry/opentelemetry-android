@@ -256,7 +256,9 @@ when initializing your instance of the SplunkRum API:
 - `limitDiskUsageMegabytes(int)` :
   When disk buffering is enabled, this can be used to adjust the maximum amount of storage
   that will be used. Default = 25MB.
-
+- `enableSessionBasedSampling(double)` :
+  Enable session ID based sampling and set its sampling ratio. The ratio is a probability of a
+  session being included between between 0.0 (all dropped) and 1.0 (all included).
 
 #### APIs provided by the `SplunkRum` instance:
 
