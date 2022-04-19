@@ -171,6 +171,8 @@ class MyApplication extends Application {
 Examples of this process can be seen in the sample application included in this repository in
 the `sample-app` submodule.
 
+To check whether the RUM library has been initialized, call `SplunkRum.isInitialized()`.
+
 ### Instrument WebViews using the Browser RUM agent
 
 Mobile RUM instrumentation and Browser RUM instrumentation can be used

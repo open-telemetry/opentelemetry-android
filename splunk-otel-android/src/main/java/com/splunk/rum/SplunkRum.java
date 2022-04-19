@@ -131,6 +131,14 @@ public class SplunkRum {
     }
 
     /**
+     *
+     * @return true if the Splunk RUM library has been successfully initialized.
+     */
+    public static boolean isInitialized() {
+        return INSTANCE != null;
+    }
+
+    /**
      * Get the singleton instance of this class.
      */
     public static SplunkRum getInstance() {
