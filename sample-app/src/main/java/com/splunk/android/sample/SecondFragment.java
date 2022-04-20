@@ -21,29 +21,25 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.navigation.fragment.NavHostFragment;
-
 import com.splunk.android.sample.databinding.FragmentSecondBinding;
 import com.splunk.rum.RumScreenName;
 import com.splunk.rum.SplunkRum;
-
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Scope;
 
 @RumScreenName("Fragment 2️⃣")
 public class SecondFragment extends Fragment {
@@ -60,7 +56,8 @@ public class SecondFragment extends Fragment {
     private Span customChromeTabTimer;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(
+            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         sampleAppTracer = SplunkRum.getInstance().getOpenTelemetry().getTracer("sampleAppTracer");
         binding = FragmentSecondBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -83,79 +80,95 @@ public class SecondFragment extends Fragment {
 
         resetLabel();
 
-        binding.buttonSecond.setOnClickListener(v -> {
-            //an example of using the OpenTelemetry API directly to generate a 100% custom span.
-            Span span = sampleAppTracer
-                    .spanBuilder("buttonClicked")
-                    .setAttribute("buttonName", "backButton")
-                    .startSpan();
-            try (Scope s = span.makeCurrent()) {
-                NavHostFragment.findNavController(SecondFragment.this)
-                        .navigate(R.id.action_SecondFragment_to_FirstFragment);
-            } finally {
-                span.end();
-            }
-        });
-        binding.buttonToWebview.setOnClickListener(v -> {
-            SplunkRum.getInstance().addRumEvent("this span will be ignored", Attributes.empty());
+        binding.buttonSecond.setOnClickListener(
+                v -> {
+                    // an example of using the OpenTelemetry API directly to generate a 100% custom
+                    // span.
+                    Span span =
+                            sampleAppTracer
+                                    .spanBuilder("buttonClicked")
+                                    .setAttribute("buttonName", "backButton")
+                                    .startSpan();
+                    try (Scope s = span.makeCurrent()) {
+                        NavHostFragment.findNavController(SecondFragment.this)
+                                .navigate(R.id.action_SecondFragment_to_FirstFragment);
+                    } finally {
+                        span.end();
+                    }
+                });
+        binding.buttonToWebview.setOnClickListener(
+                v -> {
+                    SplunkRum.getInstance()
+                            .addRumEvent("this span will be ignored", Attributes.empty());
 
-            NavHostFragment.findNavController(SecondFragment.this)
-                    .navigate(R.id.action_SecondFragment_to_webViewFragment);
-        });
+                    NavHostFragment.findNavController(SecondFragment.this)
+                            .navigate(R.id.action_SecondFragment_to_webViewFragment);
+                });
 
-        binding.buttonToShopWebview.setOnClickListener(v -> {
-            NavHostFragment.findNavController(SecondFragment.this)
-                    .navigate(R.id.action_SecondFragment_to_shopWebViewFragment);
-        });
+        binding.buttonToShopWebview.setOnClickListener(
+                v -> {
+                    NavHostFragment.findNavController(SecondFragment.this)
+                            .navigate(R.id.action_SecondFragment_to_shopWebViewFragment);
+                });
 
-        binding.buttonToCustomTab.setOnClickListener(v -> {
-            String url = "https://pmrum.o11ystore.com/";
-            customChromeTabTimer = SplunkRum.getInstance().startWorkflow("Visit to Chrome Custom Tab");
-            new CustomTabsIntent.Builder()
-                    .setColorScheme(CustomTabsIntent.COLOR_SCHEME_DARK)
-                    .setStartAnimations(getContext(), android.R.anim.slide_in_left, android.R.anim.slide_out_right)
-                    .setExitAnimations(getContext(), android.R.anim.slide_out_right, android.R.anim.slide_in_left)
-                    .build()
-                    .launchUrl(this.getContext(), Uri.parse(url));
-        });
+        binding.buttonToCustomTab.setOnClickListener(
+                v -> {
+                    String url = "https://pmrum.o11ystore.com/";
+                    customChromeTabTimer =
+                            SplunkRum.getInstance().startWorkflow("Visit to Chrome Custom Tab");
+                    new CustomTabsIntent.Builder()
+                            .setColorScheme(CustomTabsIntent.COLOR_SCHEME_DARK)
+                            .setStartAnimations(
+                                    getContext(),
+                                    android.R.anim.slide_in_left,
+                                    android.R.anim.slide_out_right)
+                            .setExitAnimations(
+                                    getContext(),
+                                    android.R.anim.slide_out_right,
+                                    android.R.anim.slide_in_left)
+                            .build()
+                            .launchUrl(this.getContext(), Uri.parse(url));
+                });
 
         binding.buttonSpam.setOnClickListener(v -> toggleSpam());
 
-        binding.buttonFreeze.setOnClickListener(v -> {
-            Span appFreezer = SplunkRum.getInstance().startWorkflow("app freezer");
-            try {
-                for (int i = 0; i < 20; i++) {
-                    Thread.sleep(1_000);
-                    appFreezer.addEvent("still sleeping");
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } finally {
-                appFreezer.end();
-            }
-        });
-        binding.drawSlowly.setOnClickListener(v -> {
-            boolean slowlyNow = binding.animatedView.toggleSlowly();
-            if(slowlyNow){
-                binding.drawSlowly.setText("Draw Normally");
-            }
-            else {
-                binding.drawSlowly.setText("Draw Slowly");
-            }
-        });
-        binding.buttonWork.setOnClickListener(v -> {
-            Span hardWorker =
-                    SplunkRum.getInstance().startWorkflow("main thread working hard");
-            Random random = new Random();
-            long startTime = System.currentTimeMillis();
-            while (true) {
-                random.nextDouble();
-                if (System.currentTimeMillis() - startTime > 20_000) {
-                    break;
-                }
-            }
-            hardWorker.end();
-        });
+        binding.buttonFreeze.setOnClickListener(
+                v -> {
+                    Span appFreezer = SplunkRum.getInstance().startWorkflow("app freezer");
+                    try {
+                        for (int i = 0; i < 20; i++) {
+                            Thread.sleep(1_000);
+                            appFreezer.addEvent("still sleeping");
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } finally {
+                        appFreezer.end();
+                    }
+                });
+        binding.drawSlowly.setOnClickListener(
+                v -> {
+                    boolean slowlyNow = binding.animatedView.toggleSlowly();
+                    if (slowlyNow) {
+                        binding.drawSlowly.setText("Draw Normally");
+                    } else {
+                        binding.drawSlowly.setText("Draw Slowly");
+                    }
+                });
+        binding.buttonWork.setOnClickListener(
+                v -> {
+                    Span hardWorker =
+                            SplunkRum.getInstance().startWorkflow("main thread working hard");
+                    Random random = new Random();
+                    long startTime = System.currentTimeMillis();
+                    while (true) {
+                        random.nextDouble();
+                        if (System.currentTimeMillis() - startTime > 20_000) {
+                            break;
+                        }
+                    }
+                    hardWorker.end();
+                });
     }
 
     @Override
@@ -171,7 +184,8 @@ public class SecondFragment extends Fragment {
     private void toggleSpam() {
         if (spamTask == null) {
             resetLabel();
-            spamTask = spammer.scheduleAtFixedRate(this::createSpamSpan, 0, 50, TimeUnit.MILLISECONDS);
+            spamTask =
+                    spammer.scheduleAtFixedRate(this::createSpamSpan, 0, 50, TimeUnit.MILLISECONDS);
             binding.buttonSpam.setText(R.string.stop_spam);
         } else {
             spamTask.cancel(false);
@@ -190,7 +204,8 @@ public class SecondFragment extends Fragment {
     }
 
     private void createSpamSpan() {
-        sampleAppTracer.spanBuilder("Spam Span no. " + spans.incrementAndGet())
+        sampleAppTracer
+                .spanBuilder("Spam Span no. " + spans.incrementAndGet())
                 .setAttribute("number", spans.get())
                 .startSpan()
                 .end();

@@ -18,8 +18,6 @@ package com.splunk.rum;
 
 interface SessionIdChangeListener {
 
-    /**
-     * Gets called every time a new sessionId is generated.
-     */
+    /** Gets called every time a new sessionId is generated. */
     void onChange(String oldSessionId, String newSessionId);
 }

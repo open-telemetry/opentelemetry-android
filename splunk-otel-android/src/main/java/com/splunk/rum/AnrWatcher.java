@@ -17,7 +17,6 @@
 package com.splunk.rum;
 
 import android.os.Handler;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -39,7 +38,7 @@ class AnrWatcher implements Runnable {
     public void run() {
         CountDownLatch response = new CountDownLatch(1);
         if (!uiHandler.post(response::countDown)) {
-            //the main thread is probably shutting down. ignore and return.
+            // the main thread is probably shutting down. ignore and return.
             return;
         }
         boolean success;
@@ -55,7 +54,7 @@ class AnrWatcher implements Runnable {
         if (anrCounter.incrementAndGet() >= 5) {
             StackTraceElement[] stackTrace = mainThread.getStackTrace();
             splunkRumSupplier.get().recordAnr(stackTrace);
-            //only report once per 5s.
+            // only report once per 5s.
             anrCounter.set(0);
         }
     }

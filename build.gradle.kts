@@ -11,6 +11,10 @@ buildscript {
     }
 }
 
+plugins {
+    id("splunk.spotless-conventions")
+}
+
 allprojects {
     repositories {
         google()
@@ -22,4 +26,8 @@ allprojects {
     if (findProperty("release") != "true") {
         version = "$version-SNAPSHOT"
     }
+}
+
+subprojects {
+    apply(plugin = "splunk.spotless-conventions")
 }

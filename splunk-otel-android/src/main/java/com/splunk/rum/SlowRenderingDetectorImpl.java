@@ -1,3 +1,19 @@
+/*
+ * Copyright Splunk Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.splunk.rum;
 
 import static androidx.core.app.FrameMetricsAggregator.DRAW_DURATION;
@@ -7,9 +23,9 @@ import static com.splunk.rum.SplunkRum.LOG_TAG;
 import android.app.Activity;
 import android.util.Log;
 import android.util.SparseIntArray;
-
 import androidx.core.app.FrameMetricsAggregator;
-
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashSet;
@@ -17,9 +33,6 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
 
 class SlowRenderingDetectorImpl implements SlowRenderingDetector {
 
@@ -33,11 +46,19 @@ class SlowRenderingDetectorImpl implements SlowRenderingDetector {
     private final Duration pollInterval;
 
     SlowRenderingDetectorImpl(Tracer tracer, Duration pollInterval) {
-        this(tracer, new FrameMetricsAggregator(DRAW_DURATION), Executors.newScheduledThreadPool(1), pollInterval);
+        this(
+                tracer,
+                new FrameMetricsAggregator(DRAW_DURATION),
+                Executors.newScheduledThreadPool(1),
+                pollInterval);
     }
 
     // Exists for testing
-    SlowRenderingDetectorImpl(Tracer tracer, FrameMetricsAggregator frameMetricsAggregator, ScheduledExecutorService executorService, Duration pollInterval) {
+    SlowRenderingDetectorImpl(
+            Tracer tracer,
+            FrameMetricsAggregator frameMetricsAggregator,
+            ScheduledExecutorService executorService,
+            Duration pollInterval) {
         this.tracer = tracer;
         this.frameMetrics = frameMetricsAggregator;
         this.executorService = executorService;
@@ -61,7 +82,11 @@ class SlowRenderingDetectorImpl implements SlowRenderingDetector {
 
     @Override
     public void start() {
-        executorService.scheduleAtFixedRate(this::reportSlowRenders, pollInterval.toMillis(), pollInterval.toMillis(), TimeUnit.MILLISECONDS);
+        executorService.scheduleAtFixedRate(
+                this::reportSlowRenders,
+                pollInterval.toMillis(),
+                pollInterval.toMillis(),
+                TimeUnit.MILLISECONDS);
     }
 
     private void reportSlowRenders() {
@@ -98,20 +123,20 @@ class SlowRenderingDetectorImpl implements SlowRenderingDetector {
         }
 
         Instant now = Instant.now();
-        if(slowCount > 0){
+        if (slowCount > 0) {
             makeSpan("slowRenders", slowCount, now);
         }
-        if(frozenCount > 0){
+        if (frozenCount > 0) {
             makeSpan("frozenRenders", frozenCount, now);
         }
     }
 
     private void makeSpan(String name, int slowCount, Instant now) {
-        Span span = tracer
-                .spanBuilder(name)
-                .setAttribute("count", slowCount)
-                .setStartTimestamp(now)
-                .startSpan();
+        Span span =
+                tracer.spanBuilder(name)
+                        .setAttribute("count", slowCount)
+                        .setStartTimestamp(now)
+                        .startSpan();
         span.end(now);
     }
 }

@@ -17,16 +17,13 @@
 package com.splunk.rum;
 
 import android.app.Activity;
-
 import androidx.annotation.NonNull;
-
-import java.util.concurrent.atomic.AtomicReference;
-
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
+import java.util.concurrent.atomic.AtomicReference;
 
 class ActivityTracer {
     static final AttributeKey<String> ACTIVITY_NAME_KEY = AttributeKey.stringKey("activityName");
@@ -39,7 +36,12 @@ class ActivityTracer {
     private final AppStartupTimer appStartupTimer;
     private final ActiveSpan activeSpan;
 
-    ActivityTracer(Activity activity, AtomicReference<String> initialAppActivity, Tracer tracer, VisibleScreenTracker visibleScreenTracker, AppStartupTimer appStartupTimer) {
+    ActivityTracer(
+            Activity activity,
+            AtomicReference<String> initialAppActivity,
+            Tracer tracer,
+            VisibleScreenTracker visibleScreenTracker,
+            AppStartupTimer appStartupTimer) {
         this.initialAppActivity = initialAppActivity;
         this.tracer = tracer;
         this.activityName = activity.getClass().getSimpleName();
@@ -63,7 +65,8 @@ class ActivityTracer {
     }
 
     private Span makeCreationSpan() {
-        //If the application has never loaded an activity, or this is the initial activity getting re-created,
+        // If the application has never loaded an activity, or this is the initial activity getting
+        // re-created,
         // we name this span specially to show that it's the application starting up. Otherwise, use
         // the activity class name as the base of the span name.
         boolean isColdStart = initialAppActivity.get() == null;
@@ -86,9 +89,9 @@ class ActivityTracer {
 
     @NonNull
     private Span makeRestartSpan(boolean multiActivityApp) {
-        //restarting the first activity is a "hot" AppStart
-        //Note: in a multi-activity application, navigating back to the first activity can trigger
-        //this, so it would not be ideal to call it an AppStart.
+        // restarting the first activity is a "hot" AppStart
+        // Note: in a multi-activity application, navigating back to the first activity can trigger
+        // this, so it would not be ideal to call it an AppStart.
         if (!multiActivityApp && activityName.equals(initialAppActivity.get())) {
             return createAppStartSpan("hot");
         }
@@ -98,7 +101,7 @@ class ActivityTracer {
     private Span createAppStartSpan(String startType) {
         Span span = createSpan(APP_START_SPAN_NAME);
         span.setAttribute(SplunkRum.START_TYPE_KEY, startType);
-        //override the component to be appstart
+        // override the component to be appstart
         span.setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_APPSTART);
         return span;
     }
@@ -108,14 +111,16 @@ class ActivityTracer {
     }
 
     private Span createSpanWithParent(String spanName, Span parentSpan) {
-        final SpanBuilder spanBuilder = tracer.spanBuilder(spanName)
-                .setAttribute(ACTIVITY_NAME_KEY, activityName)
-                .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_UI);
+        final SpanBuilder spanBuilder =
+                tracer.spanBuilder(spanName)
+                        .setAttribute(ACTIVITY_NAME_KEY, activityName)
+                        .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_UI);
         if (parentSpan != null) {
             spanBuilder.setParent(parentSpan.storeInContext(Context.current()));
         }
         Span span = spanBuilder.startSpan();
-        //do this after the span is started, so we can override the default screen.name set by the RumAttributeAppender.
+        // do this after the span is started, so we can override the default screen.name set by the
+        // RumAttributeAppender.
         span.setAttribute(SplunkRum.SCREEN_NAME_KEY, screenName);
         return span;
     }
@@ -128,7 +133,8 @@ class ActivityTracer {
     }
 
     void endActiveSpan() {
-        // If we happen to be in app startup, make sure this ends it. It's harmless if we're already out of the startup phase.
+        // If we happen to be in app startup, make sure this ends it. It's harmless if we're already
+        // out of the startup phase.
         appStartupTimer.end();
         activeSpan.endActiveSpan();
     }

@@ -22,15 +22,14 @@ import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.EXCEP
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.EXCEPTION_STACKTRACE;
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.EXCEPTION_TYPE;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.trace.data.DelegatingSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.ArrayList;
+import java.util.List;
 
 final class ModifiedSpanData extends DelegatingSpanData {
 
@@ -67,12 +66,14 @@ final class ModifiedSpanData extends DelegatingSpanData {
             int dot = type.lastIndexOf('.');
             String simpleType = dot == -1 ? type : type.substring(dot + 1);
             builder.put(EXCEPTION_TYPE, simpleType);
-            // this attribute's here to support the RUM UI/backend until it can be updated to use otel conventions.
+            // this attribute's here to support the RUM UI/backend until it can be updated to use
+            // otel conventions.
             builder.put(ERROR_TYPE_KEY, simpleType);
         }
         if (message != null) {
             builder.put(EXCEPTION_MESSAGE, message);
-            // this attribute's here to support the RUM UI/backend until it can be updated to use otel conventions.
+            // this attribute's here to support the RUM UI/backend until it can be updated to use
+            // otel conventions.
             builder.put(ERROR_MESSAGE_KEY, message);
         }
         if (stacktrace != null) {
@@ -81,7 +82,8 @@ final class ModifiedSpanData extends DelegatingSpanData {
         return builder.build();
     }
 
-    ModifiedSpanData(SpanData original, List<EventData> modifiedEvents, Attributes modifiedAttributes) {
+    ModifiedSpanData(
+            SpanData original, List<EventData> modifiedEvents, Attributes modifiedAttributes) {
         super(original);
         this.modifiedEvents = modifiedEvents;
         this.modifiedAttributes = modifiedAttributes;

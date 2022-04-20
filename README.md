@@ -187,9 +187,9 @@ import android.webkit.WebView;
 import com.splunk.rum.SplunkRum;
 
 //...
-/* 
-Make sure that the WebView instance only loads pages under 
-your control and instrumented with Splunk Browser RUM. The 
+/*
+Make sure that the WebView instance only loads pages under
+your control and instrumented with Splunk Browser RUM. The
 integrateWithBrowserRum() method can expose the splunk.rumSessionId
 of your user to every site/page loaded in the WebView instance.
 */
@@ -247,11 +247,11 @@ when initializing your instance of the SplunkRum API:
   or changing the span name. See the javadoc on the `SpanFilterBuilder` class for more details.
 - `slowRenderingDetectionPollInterval(Duration)` :
   Set/change the default polling interval for slow/frozen render detection.
-  Default is 1000ms. Value must be positive. 
+  Default is 1000ms. Value must be positive.
 - `slowRenderingDetectionEnabled(boolean)` :
   Disables the detection of slow frame renders. Enabled by default.
-- `diskBufferingEnabled(boolean)` : 
-  Enables the storage-based buffering of telemetry. 
+- `diskBufferingEnabled(boolean)` :
+  Enables the storage-based buffering of telemetry.
   This setting is useful when instrumenting applications that might work offline for extended periods of time.
 - `limitDiskUsageMegabytes(int)` :
   When disk buffering is enabled, this can be used to adjust the maximum amount of storage
@@ -294,14 +294,14 @@ when initializing your instance of the SplunkRum API:
 #### Detection of slow or frozen renders
 
 By default, Splunk RUM detects and reports slow or frozen screen renders.
-To disable this feature, call `.slowRenderingDetectionEnabled(false)` on the 
+To disable this feature, call `.slowRenderingDetectionEnabled(false)` on the
 `Config.Builder`.
 
 Splunk RUM defines renders as slow or frozen following the [Android Vitals definitions](https://developer.android.com/topic/performance/vitals/frozen):
 
 | Category | Speed   | spanName      | Attribute   |
 |----------|---------|---------------|-------------|
-| Slow     | >16ms  | slowRenders    | count       | 
+| Slow     | >16ms  | slowRenders    | count       |
 | Frozen   | >700ms | frozenRenders  | count       |
 
 ## Customizing screen names
@@ -310,7 +310,7 @@ By default, the instrumentation uses the simple class name of each `Fragment`
 and `Activity` type as the value of the `screen.name` attribute. To customize the
 screen name, use the `@RumScreenName` annotation.
 
-For example, the following activity appears with the `screen.name` 
+For example, the following activity appears with the `screen.name`
 attribute set to the value "Buttercup":
 
 ```java

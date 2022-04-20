@@ -19,22 +19,20 @@ package com.splunk.rum;
 import static com.splunk.rum.DeviceSpanStorageLimiter.DEFAULT_MAX_STORAGE_USE_MB;
 
 import android.util.Log;
-
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
-
 /**
  * Configuration class for the Splunk Android RUM (Real User Monitoring) library.
- * <p>
- * Both the beaconUrl and the rumAuthToken are mandatory configuration settings. Trying
- * to build a Config instance without both of these items specified will result in an exception being thrown.
+ *
+ * <p>Both the beaconUrl and the rumAuthToken are mandatory configuration settings. Trying to build
+ * a Config instance without both of these items specified will result in an exception being thrown.
  */
 public class Config {
 
@@ -75,51 +73,42 @@ public class Config {
     private Attributes addDeploymentEnvironment(Builder builder) {
         Attributes globalAttributes = builder.globalAttributes;
         if (builder.deploymentEnvironment != null) {
-            globalAttributes = globalAttributes.toBuilder()
-                    .put(ResourceAttributes.DEPLOYMENT_ENVIRONMENT, builder.deploymentEnvironment)
-                    .build();
+            globalAttributes =
+                    globalAttributes.toBuilder()
+                            .put(
+                                    ResourceAttributes.DEPLOYMENT_ENVIRONMENT,
+                                    builder.deploymentEnvironment)
+                            .build();
         }
         return globalAttributes;
     }
 
-    /**
-     * The configured "beacon" URL for the RUM library.
-     */
+    /** The configured "beacon" URL for the RUM library. */
     public String getBeaconEndpoint() {
         return beaconEndpoint;
     }
 
-    /**
-     * The configured RUM access token for the library.
-     */
+    /** The configured RUM access token for the library. */
     public String getRumAccessToken() {
         return rumAccessToken;
     }
 
-    /**
-     * Is debug mode enabled.
-     */
+    /** Is debug mode enabled. */
     public boolean isDebugEnabled() {
         return debugEnabled;
     }
 
-    /**
-     * The name under which this application will be reported to the Splunk RUM system.
-     */
+    /** The name under which this application will be reported to the Splunk RUM system. */
     public String getApplicationName() {
         return applicationName;
     }
 
-    /**
-     * Is the crash-reporting feature enabled or not.
-     */
+    /** Is the crash-reporting feature enabled or not. */
     public boolean isCrashReportingEnabled() {
         return crashReportingEnabled;
     }
 
-    /**
-     * Is the slow rendering detection feature enabled or not.
-     */
+    /** Is the slow rendering detection feature enabled or not. */
     public boolean isSlowRenderingDetectionEnabled() {
         return slowRenderingDetectionEnabled;
     }
@@ -132,23 +121,19 @@ public class Config {
         return globalAttributes.get();
     }
 
-    /**
-     * Is the network monitoring feature enabled or not.
-     */
+    /** Is the network monitoring feature enabled or not. */
     public boolean isNetworkMonitorEnabled() {
         return networkMonitorEnabled;
     }
 
-    /**
-     * Is the ANR detection feature enabled or not.
-     */
+    /** Is the ANR detection feature enabled or not. */
     public boolean isAnrDetectionEnabled() {
         return anrDetectionEnabled;
     }
 
     /**
-     * Returns the number of ms to be used for polling frame render durations,
-     * used in slow render and freeze draw detection.
+     * Returns the number of ms to be used for polling frame render durations, used in slow render
+     * and freeze draw detection.
      *
      * @return Duration of the polling interval.
      */
@@ -156,37 +141,32 @@ public class Config {
         return slowRenderingDetectionPollInterval;
     }
 
-    /**
-     * Is the storage-based buffering of telemetry enabled or not.
-     */
+    /** Is the storage-based buffering of telemetry enabled or not. */
     public boolean isDiskBufferingEnabled() {
         return diskBufferingEnabled;
     }
 
     /**
-     * Returns the max number of megabytes that will be used to buffer telemetry data in storage.
-     * If this value is exceeded, older telemetry will be deleted until the usage is reduced.
+     * Returns the max number of megabytes that will be used to buffer telemetry data in storage. If
+     * this value is exceeded, older telemetry will be deleted until the usage is reduced.
      */
     public int getMaxUsageMegabytes() {
         return maxUsageMegabytes;
     }
 
-    /**
-     * Is session-based sampling of traces enabled or not.
-     */
+    /** Is session-based sampling of traces enabled or not. */
     public boolean isSessionBasedSamplerEnabled() {
         return sessionBasedSamplerEnabled;
     }
 
-    /**
-     * Get ratio of sessions that get sampled (0.0 - 1.0, where 1 is all sessions).
-     */
+    /** Get ratio of sessions that get sampled (0.0 - 1.0, where 1 is all sessions). */
     public double getSessionBasedSamplerRatio() {
         return sessionBasedSamplerRatio;
     }
 
     /**
-     * Create a new instance of the {@link Builder} class. All default configuration options will be pre-populated.
+     * Create a new instance of the {@link Builder} class. All default configuration options will be
+     * pre-populated.
      */
     public static Builder builder() {
         return new Builder();
@@ -210,12 +190,11 @@ public class Config {
         return spanFilterExporterDecorator.apply(exporter);
     }
 
-    /**
-     * Builder class for the Splunk RUM {@link Config} class.
-     */
+    /** Builder class for the Splunk RUM {@link Config} class. */
     public static class Builder {
 
-        private static final Duration DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL = Duration.ofSeconds(1);
+        private static final Duration DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL =
+                Duration.ofSeconds(1);
 
         private boolean networkMonitorEnabled = true;
         private boolean anrDetectionEnabled = true;
@@ -230,32 +209,34 @@ public class Config {
         private String deploymentEnvironment;
         private final SpanFilterBuilder spanFilterBuilder = new SpanFilterBuilder();
         private String realm;
-        private Duration slowRenderingDetectionPollInterval = DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL;
+        private Duration slowRenderingDetectionPollInterval =
+                DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL;
         private int maxUsageMegabytes = DEFAULT_MAX_STORAGE_USE_MB;
         private boolean sessionBasedSamplerEnabled = false;
         private double sessionBasedSamplerRatio = 1.0;
 
-        /**
-         * Create a new instance of {@link Config} from the options provided.
-         */
+        /** Create a new instance of {@link Config} from the options provided. */
         public Config build() {
             if (rumAccessToken == null || beaconEndpoint == null || applicationName == null) {
-                throw new IllegalStateException("You must provide a rumAccessToken, a realm (or full beaconEndpoint), and an applicationName to create a valid Config instance.");
+                throw new IllegalStateException(
+                        "You must provide a rumAccessToken, a realm (or full beaconEndpoint), and an applicationName to create a valid Config instance.");
             }
             return new Config(this);
         }
 
         /**
          * Assign the "beacon" endpoint URL to be used by the RUM library.
-         * <p>
-         * Note that if you are using standard Splunk ingest, it is simpler to just use {@link #realm(String)}
-         * and let this configuration set the full endpoint URL for you.
+         *
+         * <p>Note that if you are using standard Splunk ingest, it is simpler to just use {@link
+         * #realm(String)} and let this configuration set the full endpoint URL for you.
          *
          * @return {@code this}.
          */
         public Builder beaconEndpoint(String beaconEndpoint) {
             if (realm != null) {
-                Log.w(SplunkRum.LOG_TAG, "Explicitly setting the beaconEndpoint will override the realm configuration.");
+                Log.w(
+                        SplunkRum.LOG_TAG,
+                        "Explicitly setting the beaconEndpoint will override the realm configuration.");
                 realm = null;
             }
             this.beaconEndpoint = beaconEndpoint;
@@ -263,15 +244,17 @@ public class Config {
         }
 
         /**
-         * Sets the realm for the beacon to send RUM telemetry to. This should be used in place
-         * of the {@link #beaconEndpoint(String)} method in most cases.
+         * Sets the realm for the beacon to send RUM telemetry to. This should be used in place of
+         * the {@link #beaconEndpoint(String)} method in most cases.
          *
          * @param realm A valid Splunk "realm"
          * @return {@code this}.
          */
         public Builder realm(String realm) {
             if (beaconEndpoint != null && this.realm == null) {
-                Log.w(SplunkRum.LOG_TAG, "beaconEndpoint has already been set. Realm configuration will be ignored.");
+                Log.w(
+                        SplunkRum.LOG_TAG,
+                        "beaconEndpoint has already been set. Realm configuration will be ignored.");
                 return this;
             }
             this.beaconEndpoint = "https://rum-ingest." + realm + ".signalfx.com/v1/rum";
@@ -307,7 +290,7 @@ public class Config {
          *
          * @return {@code this}.
          */
-        public Builder diskBufferingEnabled(boolean enabled){
+        public Builder diskBufferingEnabled(boolean enabled) {
             this.diskBufferingEnabled = enabled;
             return this;
         }
@@ -333,7 +316,8 @@ public class Config {
         }
 
         /**
-         * Assign an application name that will be used to identify your application in the Splunk RUM UI.
+         * Assign an application name that will be used to identify your application in the Splunk
+         * RUM UI.
          *
          * @return {@code this}.
          */
@@ -344,8 +328,8 @@ public class Config {
 
         /**
          * Enable/disable the ANR detection feature. Enabled by default. If enabled, if the main
-         * thread is unresponsive for 5s or more, an event including the main thread's stack trace will be
-         * reported to the RUM system.
+         * thread is unresponsive for 5s or more, an event including the main thread's stack trace
+         * will be reported to the RUM system.
          *
          * @return {@code this}.
          */
@@ -372,7 +356,9 @@ public class Config {
          */
         public Builder slowRenderingDetectionPollInterval(Duration interval) {
             if (interval.toMillis() <= 0) {
-                Log.e(SplunkRum.LOG_TAG, "invalid slowRenderPollingDuration: " + interval + " is not positive");
+                Log.e(
+                        SplunkRum.LOG_TAG,
+                        "invalid slowRenderPollingDuration: " + interval + " is not positive");
                 return this;
             }
             this.slowRenderingDetectionPollInterval = interval;
@@ -414,8 +400,9 @@ public class Config {
         }
 
         /**
-         * Sets the limit of the max number of megabytes that will be used to buffer telemetry data in storage.
-         * When this value is exceeded, older telemetry will be deleted until the usage is reduced.
+         * Sets the limit of the max number of megabytes that will be used to buffer telemetry data
+         * in storage. When this value is exceeded, older telemetry will be deleted until the usage
+         * is reduced.
          */
         public Builder limitDiskUsageMegabytes(int maxUsageMegabytes) {
             this.maxUsageMegabytes = maxUsageMegabytes;
@@ -440,10 +427,16 @@ public class Config {
          */
         public Builder enableSessionBasedSampling(double ratio) {
             if (ratio < 0.0) {
-                Log.e(SplunkRum.LOG_TAG, "invalid sessionBasedSamplingRatio: " + ratio + " must not be negative");
+                Log.e(
+                        SplunkRum.LOG_TAG,
+                        "invalid sessionBasedSamplingRatio: " + ratio + " must not be negative");
                 return this;
             } else if (ratio > 1.0) {
-                Log.e(SplunkRum.LOG_TAG, "invalid sessionBasedSamplingRatio: " + ratio + " must not be greater than 1.0");
+                Log.e(
+                        SplunkRum.LOG_TAG,
+                        "invalid sessionBasedSamplingRatio: "
+                                + ratio
+                                + " must not be greater than 1.0");
                 return this;
             }
 

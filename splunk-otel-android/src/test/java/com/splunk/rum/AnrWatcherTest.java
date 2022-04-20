@@ -16,10 +16,6 @@
 
 package com.splunk.rum;
 
-import android.os.Handler;
-
-import org.junit.Test;
-
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -27,6 +23,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+
+import android.os.Handler;
+import org.junit.Test;
 
 public class AnrWatcherTest {
 
@@ -52,11 +51,13 @@ public class AnrWatcherTest {
 
         AnrWatcher anrWatcher = new AnrWatcher(handler, mainThread, () -> splunkRum);
         for (int i = 0; i < 5; i++) {
-            when(handler.post(isA(Runnable.class))).thenAnswer(invocation -> {
-                Runnable callback = (Runnable) invocation.getArgument(0);
-                callback.run();
-                return true;
-            });
+            when(handler.post(isA(Runnable.class)))
+                    .thenAnswer(
+                            invocation -> {
+                                Runnable callback = (Runnable) invocation.getArgument(0);
+                                callback.run();
+                                return true;
+                            });
             anrWatcher.run();
         }
         verifyNoInteractions(splunkRum);
@@ -71,14 +72,16 @@ public class AnrWatcherTest {
         AnrWatcher anrWatcher = new AnrWatcher(handler, mainThread, () -> splunkRum);
         for (int i = 0; i < 5; i++) {
             int index = i;
-            when(handler.post(isA(Runnable.class))).thenAnswer(invocation -> {
-                Runnable callback = (Runnable) invocation.getArgument(0);
-                //have it fail once
-                if (index != 3) {
-                    callback.run();
-                }
-                return true;
-            });
+            when(handler.post(isA(Runnable.class)))
+                    .thenAnswer(
+                            invocation -> {
+                                Runnable callback = (Runnable) invocation.getArgument(0);
+                                // have it fail once
+                                if (index != 3) {
+                                    callback.run();
+                                }
+                                return true;
+                            });
             anrWatcher.run();
         }
         verifyNoInteractions(splunkRum);

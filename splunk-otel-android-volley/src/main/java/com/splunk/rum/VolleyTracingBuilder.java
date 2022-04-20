@@ -17,10 +17,6 @@
 package com.splunk.rum;
 
 import com.android.volley.toolbox.HttpResponse;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
@@ -31,10 +27,10 @@ import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttribut
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanStatusExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.net.NetClientAttributesExtractor;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * A builder for {@link VolleyTracing}.
- */
+/** A builder for {@link VolleyTracing}. */
 public final class VolleyTracingBuilder {
 
     private static final String INSTRUMENTATION_NAME = "com.splunk.android.volley";
@@ -42,8 +38,10 @@ public final class VolleyTracingBuilder {
     private final OpenTelemetry openTelemetry;
     private final List<AttributesExtractor<RequestWrapper, HttpResponse>> additionalExtractors =
             new ArrayList<>();
-    private final HttpClientAttributesExtractorBuilder<RequestWrapper, HttpResponse> httpClientAttributesExtractorBuilder =
-            HttpClientAttributesExtractor.builder(VolleyHttpClientAttributesGetter.INSTANCE);
+    private final HttpClientAttributesExtractorBuilder<RequestWrapper, HttpResponse>
+            httpClientAttributesExtractorBuilder =
+                    HttpClientAttributesExtractor.builder(
+                            VolleyHttpClientAttributesGetter.INSTANCE);
 
     VolleyTracingBuilder(OpenTelemetry openTelemetry) {
         this.openTelemetry = openTelemetry;
@@ -64,8 +62,7 @@ public final class VolleyTracingBuilder {
      *
      * @param requestHeaders A list of HTTP header names.
      */
-    public VolleyTracingBuilder setCapturedRequestHeaders(
-            List<String> requestHeaders) {
+    public VolleyTracingBuilder setCapturedRequestHeaders(List<String> requestHeaders) {
         this.httpClientAttributesExtractorBuilder.setCapturedRequestHeaders(requestHeaders);
         return this;
     }
@@ -75,8 +72,7 @@ public final class VolleyTracingBuilder {
      *
      * @param responseHeaders A list of HTTP header names.
      */
-    public VolleyTracingBuilder setCapturedResponseHeaders(
-            List<String> responseHeaders) {
+    public VolleyTracingBuilder setCapturedResponseHeaders(List<String> responseHeaders) {
         this.httpClientAttributesExtractorBuilder.setCapturedResponseHeaders(responseHeaders);
         return this;
     }
@@ -96,15 +92,17 @@ public final class VolleyTracingBuilder {
 
         Instrumenter<RequestWrapper, HttpResponse> instrumenter =
                 Instrumenter.<RequestWrapper, HttpResponse>builder(
-                        openTelemetry, INSTRUMENTATION_NAME, spanNameExtractor)
+                                openTelemetry, INSTRUMENTATION_NAME, spanNameExtractor)
                         .setSpanStatusExtractor(spanStatusExtractor)
                         .addAttributesExtractor(httpClientAttributesExtractorBuilder.build())
-                        .addAttributesExtractor(NetClientAttributesExtractor.create(netAttributesGetter))
-                        .addAttributesExtractor(new VolleyResponseAttributesExtractor(new ServerTimingHeaderParser()))
+                        .addAttributesExtractor(
+                                NetClientAttributesExtractor.create(netAttributesGetter))
+                        .addAttributesExtractor(
+                                new VolleyResponseAttributesExtractor(
+                                        new ServerTimingHeaderParser()))
                         .addAttributesExtractors(additionalExtractors)
                         .newClientInstrumenter(ClientRequestHeaderSetter.INSTANCE);
 
         return new VolleyTracing(instrumenter);
     }
-
 }

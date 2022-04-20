@@ -19,16 +19,13 @@ package com.splunk.rum;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import android.location.Location;
 import android.webkit.WebView;
-
-import org.junit.Test;
-
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import okhttp3.OkHttpClient;
+import org.junit.Test;
 
 public class NoOpSplunkRumTest {
 
@@ -46,8 +43,7 @@ public class NoOpSplunkRumTest {
         OkHttpClient okHttpClient = mock(OkHttpClient.class);
         assertSame(okHttpClient, instance.createRumOkHttpCallFactory(okHttpClient));
 
-        instance.updateGlobalAttributes(attributesBuilder -> {
-        });
+        instance.updateGlobalAttributes(attributesBuilder -> {});
         assertSame(instance, instance.setGlobalAttribute(AttributeKey.stringKey("foo"), "bar"));
         instance.flushSpans();
 

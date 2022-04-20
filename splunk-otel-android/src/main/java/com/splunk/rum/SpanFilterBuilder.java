@@ -16,13 +16,12 @@
 
 package com.splunk.rum;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
-
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**
  * Allows modification of span data before it is sent to the exporter. Spans can be modified or
@@ -31,19 +30,19 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 public final class SpanFilterBuilder {
 
     private Predicate<String> rejectSpanNamesPredicate = spanName -> false;
-    private final Map<AttributeKey<?>, Predicate<?>> rejectSpanAttributesPredicates = new HashMap<>();
+    private final Map<AttributeKey<?>, Predicate<?>> rejectSpanAttributesPredicates =
+            new HashMap<>();
     private final Map<AttributeKey<?>, Function<?, ?>> spanAttributeReplacements = new HashMap<>();
 
-    SpanFilterBuilder() {
-    }
+    SpanFilterBuilder() {}
 
     /**
      * Remove matching spans from the exporter pipeline.
-     * <p>
-     * Spans with names that match the {@code spanNamePredicate} will not be exported.
+     *
+     * <p>Spans with names that match the {@code spanNamePredicate} will not be exported.
      *
      * @param spanNamePredicate A function that returns true if a span with passed name should be
-     *                          rejected.
+     *     rejected.
      * @return {@code this}.
      */
     public SpanFilterBuilder rejectSpansByName(Predicate<String> spanNamePredicate) {
@@ -53,30 +52,32 @@ public final class SpanFilterBuilder {
 
     /**
      * Remove matching spans from the exporter pipeline.
-     * <p>
-     * Any span that contains an attribute with key {@code attributeKey} and value matching the
+     *
+     * <p>Any span that contains an attribute with key {@code attributeKey} and value matching the
      * {@code attributeValuePredicate} will not be exported.
      *
-     * @param attributeKey            An attribute key to match.
+     * @param attributeKey An attribute key to match.
      * @param attributeValuePredicate A function that returns true if a span containing an attribute
-     *                                with matching value should be rejected.
+     *     with matching value should be rejected.
      * @return {@code this}.
      */
     public <T> SpanFilterBuilder rejectSpansByAttributeValue(
-            AttributeKey<T> attributeKey,
-            Predicate<? super T> attributeValuePredicate) {
+            AttributeKey<T> attributeKey, Predicate<? super T> attributeValuePredicate) {
 
-        rejectSpanAttributesPredicates.compute(attributeKey,
-                (k, oldValue) -> oldValue == null
-                        ? attributeValuePredicate
-                        : ((Predicate<T>) oldValue).or(attributeValuePredicate));
+        rejectSpanAttributesPredicates.compute(
+                attributeKey,
+                (k, oldValue) ->
+                        oldValue == null
+                                ? attributeValuePredicate
+                                : ((Predicate<T>) oldValue).or(attributeValuePredicate));
         return this;
     }
 
     /**
      * Modify span data before it enters the exporter pipeline.
-     * <p>
-     * Any attribute with key {@code attributeKey} and  will be removed from the span before it is exported.
+     *
+     * <p>Any attribute with key {@code attributeKey} and will be removed from the span before it is
+     * exported.
      *
      * @param attributeKey An attribute key to match.
      * @return {@code this}.
@@ -87,52 +88,61 @@ public final class SpanFilterBuilder {
 
     /**
      * Modify span data before it enters the exporter pipeline.
-     * <p>
-     * Any attribute with key {@code attributeKey} and value matching the
-     * {@code attributeValuePredicate} will be removed from the span before it is exported.
      *
-     * @param attributeKey            An attribute key to match.
+     * <p>Any attribute with key {@code attributeKey} and value matching the {@code
+     * attributeValuePredicate} will be removed from the span before it is exported.
+     *
+     * @param attributeKey An attribute key to match.
      * @param attributeValuePredicate A function that returns true if an attribute with matching
-     *                                value should be removed from the span.
+     *     value should be removed from the span.
      * @return {@code this}.
      */
     public <T> SpanFilterBuilder removeSpanAttribute(
-            AttributeKey<T> attributeKey,
-            Predicate<? super T> attributeValuePredicate) {
+            AttributeKey<T> attributeKey, Predicate<? super T> attributeValuePredicate) {
 
-        return replaceSpanAttribute(attributeKey, old -> attributeValuePredicate.test(old) ? null : old);
+        return replaceSpanAttribute(
+                attributeKey, old -> attributeValuePredicate.test(old) ? null : old);
     }
 
     /**
      * Modify span data before it enters the exporter pipeline.
-     * <p>
-     * The value of any attribute with key {@code attributeKey} will be passed to the
-     * {@code attributeValueModifier} function. The value returned by the function will replace the
+     *
+     * <p>The value of any attribute with key {@code attributeKey} will be passed to the {@code
+     * attributeValueModifier} function. The value returned by the function will replace the
      * original value. When the modifier function returns {@code null} the attribute will be removed
      * from the span.
      *
-     * @param attributeKey           An attribute key to match.
+     * @param attributeKey An attribute key to match.
      * @param attributeValueModifier A function that receives the old attribute value and returns
-     *                               the new one.
+     *     the new one.
      * @return {@code this}.
      */
     public <T> SpanFilterBuilder replaceSpanAttribute(
-            AttributeKey<T> attributeKey,
-            Function<? super T, ? extends T> attributeValueModifier) {
+            AttributeKey<T> attributeKey, Function<? super T, ? extends T> attributeValueModifier) {
 
-        spanAttributeReplacements.compute(attributeKey,
-                (k, oldValue) -> oldValue == null
-                        ? attributeValueModifier
-                        : ((Function<T, T>) oldValue).andThen(attributeValueModifier));
+        spanAttributeReplacements.compute(
+                attributeKey,
+                (k, oldValue) ->
+                        oldValue == null
+                                ? attributeValueModifier
+                                : ((Function<T, T>) oldValue).andThen(attributeValueModifier));
         return this;
     }
 
     Function<SpanExporter, SpanExporter> build() {
-        // make a copy so that the references from the builder are not included in the returned function
+        // make a copy so that the references from the builder are not included in the returned
+        // function
         Predicate<String> rejectSpanNamesPredicate = this.rejectSpanNamesPredicate;
-        Map<AttributeKey<?>, Predicate<?>> rejectSpanAttributesPredicates = new HashMap<>(this.rejectSpanAttributesPredicates);
-        Map<AttributeKey<?>, Function<?, ?>> spanAttributeReplacements = new HashMap<>(this.spanAttributeReplacements);
+        Map<AttributeKey<?>, Predicate<?>> rejectSpanAttributesPredicates =
+                new HashMap<>(this.rejectSpanAttributesPredicates);
+        Map<AttributeKey<?>, Function<?, ?>> spanAttributeReplacements =
+                new HashMap<>(this.spanAttributeReplacements);
 
-        return exporter -> new SpanDataModifier(exporter, rejectSpanNamesPredicate, rejectSpanAttributesPredicates, spanAttributeReplacements);
+        return exporter ->
+                new SpanDataModifier(
+                        exporter,
+                        rejectSpanNamesPredicate,
+                        rejectSpanAttributesPredicates,
+                        spanAttributeReplacements);
     }
 }

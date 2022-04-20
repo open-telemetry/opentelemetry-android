@@ -16,43 +16,37 @@
 
 package com.splunk.android.sample;
 
-import static org.apache.http.conn.ssl.SSLSocketFactory.SSL;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static org.apache.http.conn.ssl.SSLSocketFactory.SSL;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.navigation.fragment.NavHostFragment;
-
 import com.splunk.android.sample.databinding.FragmentFirstBinding;
 import com.splunk.rum.SplunkRum;
-
-import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
-
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.context.Scope;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.context.Scope;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 
 public class FirstFragment extends Fragment {
 
@@ -64,7 +58,8 @@ public class FirstFragment extends Fragment {
     private SplunkRum splunkRum;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(
+            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         splunkRum = SplunkRum.getInstance();
         okHttpClient = buildOkHttpClient(splunkRum);
         binding = FragmentFirstBinding.inflate(inflater, container, false);
@@ -77,54 +72,61 @@ public class FirstFragment extends Fragment {
         binding.setLifecycleOwner(getViewLifecycleOwner());
         binding.setFirstFragment(this);
 
-        binding.buttonFirst.setOnClickListener(v ->
-                NavHostFragment.findNavController(FirstFragment.this)
-                        .navigate(R.id.action_FirstFragment_to_SecondFragment));
+        binding.buttonFirst.setOnClickListener(
+                v ->
+                        NavHostFragment.findNavController(FirstFragment.this)
+                                .navigate(R.id.action_FirstFragment_to_SecondFragment));
 
-        binding.crash.setOnClickListener(v -> {
-            throw new IllegalStateException("Crashing due to a bug!");
-        });
+        binding.crash.setOnClickListener(
+                v -> {
+                    throw new IllegalStateException("Crashing due to a bug!");
+                });
 
-        binding.httpMe.setOnClickListener(v -> {
-            Span workflow = splunkRum.startWorkflow("User Login");
-            //not really a login, but it does make an http call
-            makeCall("https://pmrum.o11ystore.com?user=me&pass=secret123secret", workflow);
-            //maybe this call gave us a real customer id, so let's put it into the global attributes
-            splunkRum.setGlobalAttribute(longKey("customerId"), 123456L);
-        });
-        binding.httpMeBad.setOnClickListener(v -> {
-            Span workflow = splunkRum.startWorkflow("Workflow With Error");
-            makeCall("https://asdlfkjasd.asdfkjasdf.ifi", workflow);
-        });
-        binding.httpMeNotFound.setOnClickListener(v -> {
-            Span workflow = splunkRum.startWorkflow("Workflow with 404");
-            makeCall("https://pmrum.o11ystore.com/foobarbaz", workflow);
-        });
+        binding.httpMe.setOnClickListener(
+                v -> {
+                    Span workflow = splunkRum.startWorkflow("User Login");
+                    // not really a login, but it does make an http call
+                    makeCall("https://pmrum.o11ystore.com?user=me&pass=secret123secret", workflow);
+                    // maybe this call gave us a real customer id, so let's put it into the global
+                    // attributes
+                    splunkRum.setGlobalAttribute(longKey("customerId"), 123456L);
+                });
+        binding.httpMeBad.setOnClickListener(
+                v -> {
+                    Span workflow = splunkRum.startWorkflow("Workflow With Error");
+                    makeCall("https://asdlfkjasd.asdfkjasdf.ifi", workflow);
+                });
+        binding.httpMeNotFound.setOnClickListener(
+                v -> {
+                    Span workflow = splunkRum.startWorkflow("Workflow with 404");
+                    makeCall("https://pmrum.o11ystore.com/foobarbaz", workflow);
+                });
 
         sessionId.postValue(splunkRum.getRumSessionId());
     }
 
     private void makeCall(String url, Span workflow) {
-        //make sure the span is in the current context so it can be propagated into the async call.
+        // make sure the span is in the current context so it can be propagated into the async call.
         try (Scope scope = workflow.makeCurrent()) {
             Call call = okHttpClient.newCall(new Request.Builder().url(url).get().build());
-            call.enqueue(new Callback() {
-                @Override
-                public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                    httpResponse.postValue("error");
-                    workflow.setStatus(StatusCode.ERROR, "failure to communicate");
-                    workflow.end();
-                }
+            call.enqueue(
+                    new Callback() {
+                        @Override
+                        public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                            httpResponse.postValue("error");
+                            workflow.setStatus(StatusCode.ERROR, "failure to communicate");
+                            workflow.end();
+                        }
 
-                @Override
-                public void onResponse(@NonNull Call call, @NonNull Response response) {
-                    try (ResponseBody body = response.body()) {
-                        int responseCode = response.code();
-                        httpResponse.postValue("" + responseCode);
-                        workflow.end();
-                    }
-                }
-            });
+                        @Override
+                        public void onResponse(@NonNull Call call, @NonNull Response response) {
+                            try (ResponseBody body = response.body()) {
+                                int responseCode = response.code();
+                                httpResponse.postValue("" + responseCode);
+                                workflow.end();
+                            }
+                        }
+                    });
         }
     }
 
@@ -149,7 +151,8 @@ public class FirstFragment extends Fragment {
     }
 
     private Call.Factory buildOkHttpClient(SplunkRum splunkRum) {
-        //grab the default executor service that okhttp uses, and wrap it with one that will propagate the otel context.
+        // grab the default executor service that okhttp uses, and wrap it with one that will
+        // propagate the otel context.
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         try {
             // NOTE: This is really bad and dangerous. Don't ever do this in the real world.
@@ -157,34 +160,32 @@ public class FirstFragment extends Fragment {
             SSLContext sslContext = SSLContext.getInstance(SSL);
             sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
             SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
-            return splunkRum.createRumOkHttpCallFactory(builder
-                    .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0])
-                    .hostnameVerifier(new AllowAllHostnameVerifier())
-                    .build());
+            return splunkRum.createRumOkHttpCallFactory(
+                    builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0])
+                            .hostnameVerifier(new AllowAllHostnameVerifier())
+                            .build());
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             e.printStackTrace();
             return splunkRum.createRumOkHttpCallFactory(builder.build());
         }
     }
 
-    private static final TrustManager[] trustAllCerts = new TrustManager[]{
-            new X509TrustManager() {
+    private static final TrustManager[] trustAllCerts =
+            new TrustManager[] {
+                new X509TrustManager() {
 
-                @Override
-                public void checkClientTrusted(java.security.cert.X509Certificate[] chain,
-                                               String authType) {
+                    @Override
+                    public void checkClientTrusted(
+                            java.security.cert.X509Certificate[] chain, String authType) {}
+
+                    @Override
+                    public void checkServerTrusted(
+                            java.security.cert.X509Certificate[] chain, String authType) {}
+
+                    @Override
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return new java.security.cert.X509Certificate[] {};
+                    }
                 }
-
-                @Override
-                public void checkServerTrusted(java.security.cert.X509Certificate[] chain,
-                                               String authType) {
-                }
-
-                @Override
-                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                    return new java.security.cert.X509Certificate[]{};
-                }
-            }
-    };
-
+            };
 }

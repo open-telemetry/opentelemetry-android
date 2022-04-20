@@ -23,18 +23,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.webkit.WebViewClientCompat;
-
 import com.splunk.android.sample.databinding.FragmentWebViewBinding;
 import com.splunk.rum.SplunkRum;
 
-/**
- * A simple {@link Fragment} subclass with a WebView in it.
- */
+/** A simple {@link Fragment} subclass with a WebView in it. */
 public class ShopWebViewFragment extends Fragment {
 
     private FragmentWebViewBinding binding;
@@ -45,8 +41,8 @@ public class ShopWebViewFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(
+            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         this.binding = FragmentWebViewBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -56,20 +52,21 @@ public class ShopWebViewFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         String storeUrl = "https://pmrum.o11ystore.com";
-        binding.webView.setWebViewClient(new WebViewClientCompat() {
-            @Override
-            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-                //let our self-signed cert through. :(
-                if (error.getUrl().startsWith(storeUrl)) {
-                    handler.proceed();
-                } else {
-                    super.onReceivedSslError(view, handler, error);
-                }
-            }
-        });
+        binding.webView.setWebViewClient(
+                new WebViewClientCompat() {
+                    @Override
+                    public void onReceivedSslError(
+                            WebView view, SslErrorHandler handler, SslError error) {
+                        // let our self-signed cert through. :(
+                        if (error.getUrl().startsWith(storeUrl)) {
+                            handler.proceed();
+                        } else {
+                            super.onReceivedSslError(view, handler, error);
+                        }
+                    }
+                });
         binding.webView.getSettings().setJavaScriptEnabled(true);
         SplunkRum.getInstance().integrateWithBrowserRum(binding.webView);
         binding.webView.loadUrl(storeUrl);
     }
-
 }

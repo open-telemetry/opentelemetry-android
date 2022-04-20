@@ -21,17 +21,15 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
-
 import com.splunk.rum.SplunkRum;
-
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 
 public class MailDialogFragment extends DialogFragment {
-    private static final Attributes HELPER_ATTRIBUTES = Attributes.of(AttributeKey.stringKey("helper"), "Clippy");
+    private static final Attributes HELPER_ATTRIBUTES =
+            Attributes.of(AttributeKey.stringKey("helper"), "Clippy");
     private final Activity activity;
 
     public MailDialogFragment(Activity activity) {
@@ -44,8 +42,11 @@ public class MailDialogFragment extends DialogFragment {
         View alertView = inflater.inflate(R.layout.sample_mail_dialog, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setView(alertView)
-                .setNegativeButton(R.string.cancel, (dialog, id) ->
-                        SplunkRum.getInstance().addRumEvent("User Rejected Help", HELPER_ATTRIBUTES));
+                .setNegativeButton(
+                        R.string.cancel,
+                        (dialog, id) ->
+                                SplunkRum.getInstance()
+                                        .addRumEvent("User Rejected Help", HELPER_ATTRIBUTES));
         return builder.create();
     }
 }

@@ -31,20 +31,23 @@ class SimpleNetworkDetector implements NetworkDetector {
 
     @Override
     public CurrentNetwork detectCurrentNetwork() {
-        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo(); // Deprecated in API 29
+        NetworkInfo activeNetwork =
+                connectivityManager.getActiveNetworkInfo(); // Deprecated in API 29
         if (activeNetwork == null) {
             return NO_NETWORK;
         }
         switch (activeNetwork.getType()) {
-            case ConnectivityManager.TYPE_MOBILE:  // Deprecated in API 28
-                return new CurrentNetwork(NetworkState.TRANSPORT_CELLULAR, activeNetwork.getSubtypeName());
-            case ConnectivityManager.TYPE_WIFI:  // Deprecated in API 28
-                return new CurrentNetwork(NetworkState.TRANSPORT_WIFI, activeNetwork.getSubtypeName());
+            case ConnectivityManager.TYPE_MOBILE: // Deprecated in API 28
+                return new CurrentNetwork(
+                        NetworkState.TRANSPORT_CELLULAR, activeNetwork.getSubtypeName());
+            case ConnectivityManager.TYPE_WIFI: // Deprecated in API 28
+                return new CurrentNetwork(
+                        NetworkState.TRANSPORT_WIFI, activeNetwork.getSubtypeName());
             case ConnectivityManager.TYPE_VPN:
-                return new CurrentNetwork(NetworkState.TRANSPORT_VPN, activeNetwork.getSubtypeName());
+                return new CurrentNetwork(
+                        NetworkState.TRANSPORT_VPN, activeNetwork.getSubtypeName());
         }
-        //there is an active network, but it doesn't fall into the neat buckets above
+        // there is an active network, but it doesn't fall into the neat buckets above
         return UNKNOWN_NETWORK;
     }
-
 }

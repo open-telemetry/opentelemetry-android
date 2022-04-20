@@ -17,25 +17,23 @@
 package com.splunk.rum;
 
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
+import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
 
-import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-
 class MemoryBufferingExporter implements SpanExporter {
     private static final int MAX_BACKLOG_SIZE = 100;
 
     private final ConnectionUtil connectionUtil;
     private final SpanExporter delegate;
-    //note: no need to make this queue thread-safe since it will only ever be called from the BatchSpanProcessor worker thread.
+    // note: no need to make this queue thread-safe since it will only ever be called from the
+    // BatchSpanProcessor worker thread.
     private final Queue<SpanData> backlog = new ArrayDeque<>(MAX_BACKLOG_SIZE);
 
     MemoryBufferingExporter(ConnectionUtil connectionUtil, SpanExporter delegate) {
@@ -47,23 +45,28 @@ class MemoryBufferingExporter implements SpanExporter {
     public CompletableResultCode export(Collection<SpanData> spans) {
         backlog.addAll(spans);
         if (!connectionUtil.refreshNetworkStatus().isOnline()) {
-            Log.i(SplunkRum.LOG_TAG, "Network offline, buffering " + spans.size() + " spans for eventual export.");
+            Log.i(
+                    SplunkRum.LOG_TAG,
+                    "Network offline, buffering " + spans.size() + " spans for eventual export.");
             return CompletableResultCode.ofSuccess();
         }
         List<SpanData> toExport = fillFromBacklog();
         Log.d(SplunkRum.LOG_TAG, "Sending " + toExport.size() + " spans for export");
         CompletableResultCode exportResult = delegate.export(toExport);
-        exportResult.whenComplete(() -> {
-            if (exportResult.isSuccess()) {
-                return;
-            }
-            Log.i(SplunkRum.LOG_TAG, "Export failed. adding " + toExport.size() + " spans to the backlog");
-            addFailedSpansToBacklog(toExport);
-        });
+        exportResult.whenComplete(
+                () -> {
+                    if (exportResult.isSuccess()) {
+                        return;
+                    }
+                    Log.i(
+                            SplunkRum.LOG_TAG,
+                            "Export failed. adding " + toExport.size() + " spans to the backlog");
+                    addFailedSpansToBacklog(toExport);
+                });
         return exportResult;
     }
 
-    //todo Should we favor saving certain kinds of span if we're out of space? Or favor recency?
+    // todo Should we favor saving certain kinds of span if we're out of space? Or favor recency?
     private void addFailedSpansToBacklog(List<SpanData> toExport) {
         for (SpanData spanData : toExport) {
             if (backlog.size() < MAX_BACKLOG_SIZE) {
@@ -82,7 +85,8 @@ class MemoryBufferingExporter implements SpanExporter {
     @Override
     public CompletableResultCode flush() {
         if (!backlog.isEmpty()) {
-            //note: the zipkin exporter has a no-op flush() method, so no need to call it after this.
+            // note: the zipkin exporter has a no-op flush() method, so no need to call it after
+            // this.
             return export(fillFromBacklog());
         }
         return delegate.flush();

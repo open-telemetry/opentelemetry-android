@@ -16,11 +16,7 @@
 
 package com.splunk.rum;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-
-import java.util.List;
+import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanId;
@@ -28,12 +24,13 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
-
-import static org.junit.Assert.assertEquals;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 public class WorkflowTest {
-    @Rule
-    public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
+    @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
     private Tracer tracer;
 
     @Before
@@ -43,12 +40,13 @@ public class WorkflowTest {
 
     @Test
     public void createAndEnd() {
-        Span workflowTimer = tracer.spanBuilder("workflow")
-                .setAttribute(SplunkRum.WORKFLOW_NAME_KEY, "workflow")
-                .startSpan();
+        Span workflowTimer =
+                tracer.spanBuilder("workflow")
+                        .setAttribute(SplunkRum.WORKFLOW_NAME_KEY, "workflow")
+                        .startSpan();
         Span inner = tracer.spanBuilder("foo").startSpan();
         try (Scope scope = inner.makeCurrent()) {
-            //do nothing
+            // do nothing
         } finally {
             inner.end();
         }
@@ -56,7 +54,7 @@ public class WorkflowTest {
 
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(2, spans.size());
-        //verify we're not trying to do any propagation of the context here.
+        // verify we're not trying to do any propagation of the context here.
         assertEquals(spans.get(0).getParentSpanId(), SpanId.getInvalid());
         assertEquals(spans.get(0).getName(), "foo");
         assertEquals(spans.get(1).getName(), "workflow");

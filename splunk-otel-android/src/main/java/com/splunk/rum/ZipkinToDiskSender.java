@@ -1,12 +1,26 @@
+/*
+ * Copyright Splunk Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.splunk.rum;
 
 import android.util.Log;
-
 import java.io.File;
 import java.io.IOException;
 import java.time.Clock;
 import java.util.List;
-
 import zipkin2.Call;
 import zipkin2.codec.Encoding;
 import zipkin2.reporter.Sender;
@@ -43,7 +57,11 @@ class ZipkinToDiskSender extends Sender {
     @Override
     public Call<Void> sendSpans(List<byte[]> encodedSpans) {
         if (!storageLimiter.ensureFreeSpace()) {
-            Log.e(SplunkRum.LOG_TAG, "Dropping " + encodedSpans.size() + " spans: Too much telemetry has been buffered or not enough space on device.");
+            Log.e(
+                    SplunkRum.LOG_TAG,
+                    "Dropping "
+                            + encodedSpans.size()
+                            + " spans: Too much telemetry has been buffered or not enough space on device.");
             return Call.create(null);
         }
         long now = clock.millis();
@@ -70,22 +88,22 @@ class ZipkinToDiskSender extends Sender {
         private Clock clock = Clock.systemDefaultZone();
         private DeviceSpanStorageLimiter storageLimiter;
 
-        Builder path(File path){
+        Builder path(File path) {
             this.path = path;
             return this;
         }
 
-        Builder fileUtils(FileUtils fileUtils){
+        Builder fileUtils(FileUtils fileUtils) {
             this.fileUtils = fileUtils;
             return this;
         }
 
-        Builder clock(Clock clock){
+        Builder clock(Clock clock) {
             this.clock = clock;
             return this;
         }
 
-        Builder storageLimiter(DeviceSpanStorageLimiter limiter){
+        Builder storageLimiter(DeviceSpanStorageLimiter limiter) {
             this.storageLimiter = limiter;
             return this;
         }

@@ -42,10 +42,7 @@ class CurrentNetwork {
 
     @Override
     public String toString() {
-        return "CurrentNetwork{" +
-                "state=" + state +
-                ", subType='" + subType + '\'' +
-                '}';
+        return "CurrentNetwork{" + "state=" + state + ", subType='" + subType + '\'' + '}';
     }
 
     @Override
@@ -53,8 +50,7 @@ class CurrentNetwork {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CurrentNetwork that = (CurrentNetwork) o;
-        return state == that.state &&
-                Objects.equals(subType, that.subType);
+        return state == that.state && Objects.equals(subType, that.subType);
     }
 
     @Override

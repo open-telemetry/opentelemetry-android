@@ -19,7 +19,6 @@ package com.splunk.rum;
 import static com.splunk.rum.SplunkRum.LINK_SPAN_ID_KEY;
 import static com.splunk.rum.SplunkRum.LINK_TRACE_ID_KEY;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
@@ -41,7 +40,12 @@ class RumResponseAttributesExtractor implements AttributesExtractor<Request, Res
     }
 
     @Override
-    public void onEnd(AttributesBuilder attributes, Context context, Request request, Response response, Throwable error) {
+    public void onEnd(
+            AttributesBuilder attributes,
+            Context context,
+            Request request,
+            Response response,
+            Throwable error) {
         if (response != null) {
             onResponse(attributes, response);
         }
@@ -59,16 +63,17 @@ class RumResponseAttributesExtractor implements AttributesExtractor<Request, Res
     }
 
     private void recordContentLength(AttributesBuilder attributesBuilder, Response response) {
-        //make a best low-impact effort at getting the content length on the response.
+        // make a best low-impact effort at getting the content length on the response.
         String contentLengthHeader = response.header("Content-Length");
         if (contentLengthHeader != null) {
             try {
                 long contentLength = Long.parseLong(contentLengthHeader);
                 if (contentLength > 0) {
-                    attributesBuilder.put(SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH, contentLength);
+                    attributesBuilder.put(
+                            SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH, contentLength);
                 }
             } catch (NumberFormatException e) {
-                //who knows what we got back? It wasn't a number!
+                // who knows what we got back? It wasn't a number!
             }
         }
     }

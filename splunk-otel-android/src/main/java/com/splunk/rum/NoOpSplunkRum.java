@@ -17,14 +17,12 @@
 package com.splunk.rum;
 
 import android.webkit.WebView;
-
-import java.util.function.Consumer;
-
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTracing;
+import java.util.function.Consumer;
 import okhttp3.Call;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -58,7 +56,7 @@ class NoOpSplunkRum extends SplunkRum {
 
     @Override
     public void updateGlobalAttributes(Consumer<AttributesBuilder> attributesUpdater) {
-        //no-op
+        // no-op
     }
 
     @Override
@@ -68,21 +66,21 @@ class NoOpSplunkRum extends SplunkRum {
 
     @Override
     public void addRumEvent(String name, Attributes attributes) {
-        //no-op
+        // no-op
     }
 
     @Override
     public void addRumException(Throwable throwable, Attributes attributes) {
-        //no-op
+        // no-op
     }
 
     @Override
     public void integrateWithBrowserRum(WebView webView) {
-        //no-op
+        // no-op
     }
 
     @Override
     void flushSpans() {
-        //no-op
+        // no-op
     }
 }

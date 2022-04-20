@@ -26,15 +26,7 @@ import android.net.ConnectivityManager;
 import android.os.Looper;
 import android.util.Log;
 import android.webkit.WebView;
-
 import androidx.annotation.Nullable;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -45,20 +37,23 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTracing;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import okhttp3.Call;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 
-/**
- * Entrypoint for Splunk's Android RUM (Real User Monitoring) support.
- */
+/** Entrypoint for Splunk's Android RUM (Real User Monitoring) support. */
 public class SplunkRum {
-    //initialize this here, statically, to make sure we capture the earliest possible timestamp for startup.
+    // initialize this here, statically, to make sure we capture the earliest possible timestamp for
+    // startup.
     private static final AppStartupTimer startupTimer = new AppStartupTimer();
 
     static final AttributeKey<String> COMPONENT_KEY = AttributeKey.stringKey("component");
     static final AttributeKey<String> SCREEN_NAME_KEY = AttributeKey.stringKey("screen.name");
-    static final AttributeKey<String> LAST_SCREEN_NAME_KEY = AttributeKey.stringKey("last.screen.name");
+    static final AttributeKey<String> LAST_SCREEN_NAME_KEY =
+            AttributeKey.stringKey("last.screen.name");
     static final AttributeKey<String> ERROR_TYPE_KEY = stringKey("error.type");
     static final AttributeKey<String> ERROR_MESSAGE_KEY = stringKey("error.message");
     static final AttributeKey<String> WORKFLOW_NAME_KEY = stringKey("workflow.name");
@@ -88,59 +83,65 @@ public class SplunkRum {
         this.config = config;
     }
 
-    /**
-     * Create a new {@link Config.Builder} instance.
-     */
+    /** Create a new {@link Config.Builder} instance. */
     public static Config.Builder newConfigBuilder() {
         return Config.builder();
     }
 
     /**
-     * Initialized the Splunk RUM library with the provided {@link Config} instance.
-     * Note: if you call this method more than once, only the first one will do anything. Repeated
-     * calls will just immediately return the previously configured instance.
+     * Initialized the Splunk RUM library with the provided {@link Config} instance. Note: if you
+     * call this method more than once, only the first one will do anything. Repeated calls will
+     * just immediately return the previously configured instance.
      *
-     * @param config      The {@link Config} options to use for initialization.
+     * @param config The {@link Config} options to use for initialization.
      * @param application The {@link Application} to be monitored.
      * @return A fully initialized {@link SplunkRum} instance, ready for use.
      */
     public static SplunkRum initialize(Config config, Application application) {
-        return initialize(config, application, () -> {
-            Context context = application.getApplicationContext();
-            ConnectionUtil connectionUtil = new ConnectionUtil(NetworkDetector.create(context));
-            connectionUtil.startMonitoring(ConnectionUtil::createNetworkMonitoringRequest, (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
-            return connectionUtil;
-        });
+        return initialize(
+                config,
+                application,
+                () -> {
+                    Context context = application.getApplicationContext();
+                    ConnectionUtil connectionUtil =
+                            new ConnectionUtil(NetworkDetector.create(context));
+                    connectionUtil.startMonitoring(
+                            ConnectionUtil::createNetworkMonitoringRequest,
+                            (ConnectivityManager)
+                                    context.getSystemService(Context.CONNECTIVITY_SERVICE));
+                    return connectionUtil;
+                });
     }
 
-    //for testing purposes
-    static SplunkRum initialize(Config config, Application application, Supplier<ConnectionUtil> connectionUtilSupplier) {
+    // for testing purposes
+    static SplunkRum initialize(
+            Config config,
+            Application application,
+            Supplier<ConnectionUtil> connectionUtilSupplier) {
         if (INSTANCE != null) {
             Log.w(LOG_TAG, "Singleton SplunkRum instance has already been initialized.");
             return INSTANCE;
         }
 
-        INSTANCE = new RumInitializer(config, application, startupTimer)
-                .initialize(connectionUtilSupplier, Looper.getMainLooper());
+        INSTANCE =
+                new RumInitializer(config, application, startupTimer)
+                        .initialize(connectionUtilSupplier, Looper.getMainLooper());
 
         if (config.isDebugEnabled()) {
-            Log.i(LOG_TAG, "Splunk RUM monitoring initialized with session ID: " + INSTANCE.sessionId);
+            Log.i(
+                    LOG_TAG,
+                    "Splunk RUM monitoring initialized with session ID: " + INSTANCE.sessionId);
         }
 
         return INSTANCE;
     }
 
-    /**
-     *
-     * @return true if the Splunk RUM library has been successfully initialized.
-     */
+    /** @return true if the Splunk RUM library has been successfully initialized. */
     public static boolean isInitialized() {
         return INSTANCE != null;
     }
 
-    /**
-     * Get the singleton instance of this class.
-     */
+    /** Get the singleton instance of this class. */
     public static SplunkRum getInstance() {
         if (INSTANCE == null) {
             Log.d(LOG_TAG, "SplunkRum not initialized. Returning no-op implementation");
@@ -154,8 +155,9 @@ public class SplunkRum {
      * class. It will provide both standard OpenTelemetry spans and additionally Splunk RUM-specific
      * attributes.
      *
-     * @deprecated The OpenTelemetry {@link Interceptor} has been deprecated in favor of using an instrumented
-     * {@link okhttp3.Call.Factory} implementation. Please use {@link #createRumOkHttpCallFactory(OkHttpClient)}.
+     * @deprecated The OpenTelemetry {@link Interceptor} has been deprecated in favor of using an
+     *     instrumented {@link okhttp3.Call.Factory} implementation. Please use {@link
+     *     #createRumOkHttpCallFactory(OkHttpClient)}.
      */
     @Deprecated
     public Interceptor createOkHttpRumInterceptor() {
@@ -175,14 +177,15 @@ public class SplunkRum {
     }
 
     private OkHttpTracing createOkHttpTracing() {
-        return OkHttpTracing
-                .builder(openTelemetrySdk)
-                .addAttributesExtractor(new RumResponseAttributesExtractor(new ServerTimingHeaderParser()))
+        return OkHttpTracing.builder(openTelemetrySdk)
+                .addAttributesExtractor(
+                        new RumResponseAttributesExtractor(new ServerTimingHeaderParser()))
                 .build();
     }
 
     /**
-     * Get a handle to the instance of the OpenTelemetry API that this instance is using for instrumentation.
+     * Get a handle to the instance of the OpenTelemetry API that this instance is using for
+     * instrumentation.
      */
     public OpenTelemetry getOpenTelemetry() {
         return openTelemetrySdk;
@@ -190,9 +193,8 @@ public class SplunkRum {
 
     /**
      * Get the Splunk Session ID associated with this instance of the RUM instrumentation library.
-     * Note: this value can change throughout the lifetime of an application instance, so it
-     * is recommended that you do not cache this value, but always retrieve it from here when
-     * needed.
+     * Note: this value can change throughout the lifetime of an application instance, so it is
+     * recommended that you do not cache this value, but always retrieve it from here when needed.
      */
     public String getRumSessionId() {
         return sessionId.getSessionId();
@@ -201,19 +203,15 @@ public class SplunkRum {
     /**
      * Add a custom event to RUM monitoring. This can be useful to capture business events, or
      * simply add instrumentation to your application.
-     * <p>
-     * This event will be turned into a Span and sent to the RUM ingest along with other, auto-generated
-     * spans.
      *
-     * @param name       The name of the event.
+     * <p>This event will be turned into a Span and sent to the RUM ingest along with other,
+     * auto-generated spans.
+     *
+     * @param name The name of the event.
      * @param attributes Any {@link Attributes} to associate with the event.
      */
     public void addRumEvent(String name, Attributes attributes) {
-        getTracer()
-                .spanBuilder(name)
-                .setAllAttributes(attributes)
-                .startSpan()
-                .end();
+        getTracer().spanBuilder(name).setAllAttributes(attributes).startSpan().end();
     }
 
     /**
@@ -232,9 +230,9 @@ public class SplunkRum {
     /**
      * Add a custom exception to RUM monitoring. This can be useful for tracking custom error
      * handling in your application.
-     * <p>
-     * This event will be turned into a Span and sent to the RUM ingest along with other, auto-generated
-     * spans.
+     *
+     * <p>This event will be turned into a Span and sent to the RUM ingest along with other,
+     * auto-generated spans.
      *
      * @param throwable A {@link Throwable} associated with this event.
      */
@@ -245,11 +243,11 @@ public class SplunkRum {
     /**
      * Add a custom exception to RUM monitoring. This can be useful for tracking custom error
      * handling in your application.
-     * <p>
-     * This event will be turned into a Span and sent to the RUM ingest along with other, auto-generated
-     * spans.
      *
-     * @param throwable  A {@link Throwable} associated with this event.
+     * <p>This event will be turned into a Span and sent to the RUM ingest along with other,
+     * auto-generated spans.
+     *
+     * @param throwable A {@link Throwable} associated with this event.
      * @param attributes Any {@link Attributes} to associate with the event.
      */
     public void addRumException(Throwable throwable, Attributes attributes) {
@@ -286,18 +284,18 @@ public class SplunkRum {
 
     /**
      * Set an attribute in the global attributes that will be appended to every span and event.
-     * <p>
-     * Note: If this key is the same as an existing key in the global attributes, it will replace the
-     * existing value.
-     * <p>
-     * If you attempt to set a value to null or use a null key, this call will be ignored.
-     * <p>
-     * Note: this operation performs an atomic update. The passed function should be free from side
-     * effects, since it may be called multiple times in case of thread contention.
      *
-     * @param key   The {@link AttributeKey} for the attribute.
+     * <p>Note: If this key is the same as an existing key in the global attributes, it will replace
+     * the existing value.
+     *
+     * <p>If you attempt to set a value to null or use a null key, this call will be ignored.
+     *
+     * <p>Note: this operation performs an atomic update. The passed function should be free from
+     * side effects, since it may be called multiple times in case of thread contention.
+     *
+     * @param key The {@link AttributeKey} for the attribute.
      * @param value The value of the attribute, which must match the generic type of the key.
-     * @param <T>   The generic type of the value.
+     * @param <T> The generic type of the value.
      * @return this.
      */
     public <T> SplunkRum setGlobalAttribute(AttributeKey<T> key, T value) {
@@ -307,22 +305,23 @@ public class SplunkRum {
 
     /**
      * Update the global set of attributes that will be appended to every span and event.
-     * <p>
-     * Note: this operation performs an atomic update. The passed function should be free from side
-     * effects, since it may be called multiple times in case of thread contention.
      *
-     * @param attributesUpdater A function which will update the current set of attributes, by operating on a {@link AttributesBuilder} from the current set.
+     * <p>Note: this operation performs an atomic update. The passed function should be free from
+     * side effects, since it may be called multiple times in case of thread contention.
+     *
+     * @param attributesUpdater A function which will update the current set of attributes, by
+     *     operating on a {@link AttributesBuilder} from the current set.
      */
     public void updateGlobalAttributes(Consumer<AttributesBuilder> attributesUpdater) {
         config.updateGlobalAttributes(attributesUpdater);
     }
 
-    //for testing only
+    // for testing only
     static void resetSingletonForTest() {
         INSTANCE = null;
     }
 
-    //(currently) for testing only
+    // (currently) for testing only
     void flushSpans() {
         openTelemetrySdk.getSdkTracerProvider().forceFlush().join(1, TimeUnit.SECONDS);
     }
@@ -340,10 +339,10 @@ public class SplunkRum {
 
     /**
      * This method will enable Splunk Browser-based RUM to integrate with the current Android RUM
-     * Session. It injects a javascript object named "SplunkRumNative" into your WebView which exposes
-     * the Android Session ID to the browser-based RUM javascript implementation.
-     * <p>
-     * Please note: This API is not stable and may change in future releases.
+     * Session. It injects a javascript object named "SplunkRumNative" into your WebView which
+     * exposes the Android Session ID to the browser-based RUM javascript implementation.
+     *
+     * <p>Please note: This API is not stable and may change in future releases.
      *
      * @param webView The WebView to inject the javascript object into.
      */
@@ -354,23 +353,25 @@ public class SplunkRum {
     /**
      * Updates the current location. The latitude and longitude will be appended to every span and
      * event.
-     * <p>
-     * Note: this operation performs an atomic update. You can safely call it from your
-     * {@code LocationListener} or {@code LocationCallback}.
+     *
+     * <p>Note: this operation performs an atomic update. You can safely call it from your {@code
+     * LocationListener} or {@code LocationCallback}.
      *
      * @param location the current location. Passing {@code null} removes the location data.
      */
     public void updateLocation(@Nullable Location location) {
         if (location == null) {
-            updateGlobalAttributes(attributes ->
-                    attributes
-                            .remove(LOCATION_LATITUDE_KEY)
-                            .remove(LOCATION_LONGITUDE_KEY));
+            updateGlobalAttributes(
+                    attributes ->
+                            attributes
+                                    .remove(LOCATION_LATITUDE_KEY)
+                                    .remove(LOCATION_LONGITUDE_KEY));
         } else {
-            updateGlobalAttributes(attributes ->
-                    attributes
-                            .put(LOCATION_LATITUDE_KEY, location.getLatitude())
-                            .put(LOCATION_LONGITUDE_KEY, location.getLongitude()));
+            updateGlobalAttributes(
+                    attributes ->
+                            attributes
+                                    .put(LOCATION_LATITUDE_KEY, location.getLatitude())
+                                    .put(LOCATION_LONGITUDE_KEY, location.getLongitude()));
         }
     }
 }

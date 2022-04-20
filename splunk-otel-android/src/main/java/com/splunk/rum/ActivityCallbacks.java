@@ -19,18 +19,15 @@ package com.splunk.rum;
 import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
-
+import io.opentelemetry.api.trace.Tracer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-
-import io.opentelemetry.api.trace.Tracer;
 
 class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
 
@@ -41,7 +38,8 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     private final AppStartupTimer startupTimer;
     private final List<AppStateListener> appStateListeners;
     private final SlowRenderingDetector slowRenderingDetector;
-    //we count the number of activities that have been "started" and not yet "stopped" here to figure out when the app goes into the background.
+    // we count the number of activities that have been "started" and not yet "stopped" here to
+    // figure out when the app goes into the background.
     private int numberOfOpenActivities = 0;
 
     private ActivityCallbacks(Builder builder) {
@@ -57,14 +55,15 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     }
 
     @Override
-    public void onActivityPreCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
-        getTracer(activity)
-                .startActivityCreation()
-                .addEvent("activityPreCreated");
+    public void onActivityPreCreated(
+            @NonNull Activity activity, @Nullable Bundle savedInstanceState) {
+        getTracer(activity).startActivityCreation().addEvent("activityPreCreated");
 
         if (activity instanceof FragmentActivity) {
-            FragmentManager fragmentManager = ((FragmentActivity) activity).getSupportFragmentManager();
-            fragmentManager.registerFragmentLifecycleCallbacks(new RumFragmentLifecycleCallbacks(tracer, visibleScreenTracker), true);
+            FragmentManager fragmentManager =
+                    ((FragmentActivity) activity).getSupportFragmentManager();
+            fragmentManager.registerFragmentLifecycleCallbacks(
+                    new RumFragmentLifecycleCallbacks(tracer, visibleScreenTracker), true);
         }
     }
 
@@ -74,7 +73,8 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     }
 
     @Override
-    public void onActivityPostCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
+    public void onActivityPostCreated(
+            @NonNull Activity activity, @Nullable Bundle savedInstanceState) {
         addEvent(activity, "activityPostCreated");
     }
 
@@ -103,9 +103,7 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityPreResumed(@NonNull Activity activity) {
-        getTracer(activity)
-                .startSpanIfNoneInProgress("Resumed")
-                .addEvent("activityPreResumed");
+        getTracer(activity).startSpanIfNoneInProgress("Resumed").addEvent("activityPreResumed");
     }
 
     @Override
@@ -125,9 +123,7 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityPrePaused(@NonNull Activity activity) {
-        getTracer(activity)
-                .startSpanIfNoneInProgress("Paused")
-                .addEvent("activityPrePaused");
+        getTracer(activity).startSpanIfNoneInProgress("Paused").addEvent("activityPrePaused");
         visibleScreenTracker.activityPaused(activity);
     }
 
@@ -144,9 +140,7 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityPreStopped(@NonNull Activity activity) {
-        getTracer(activity)
-                .startSpanIfNoneInProgress("Stopped")
-                .addEvent("activityPreStopped");
+        getTracer(activity).startSpanIfNoneInProgress("Stopped").addEvent("activityPreStopped");
     }
 
     @Override
@@ -165,25 +159,25 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     }
 
     @Override
-    public void onActivityPreSaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
-        //todo: add event
+    public void onActivityPreSaveInstanceState(
+            @NonNull Activity activity, @NonNull Bundle outState) {
+        // todo: add event
     }
 
     @Override
     public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
-        //todo: add event
+        // todo: add event
     }
 
     @Override
-    public void onActivityPostSaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
-        //todo: add event
+    public void onActivityPostSaveInstanceState(
+            @NonNull Activity activity, @NonNull Bundle outState) {
+        // todo: add event
     }
 
     @Override
     public void onActivityPreDestroyed(@NonNull Activity activity) {
-        getTracer(activity)
-                .startSpanIfNoneInProgress("Destroyed")
-                .addEvent("activityPreDestroyed");
+        getTracer(activity).startSpanIfNoneInProgress("Destroyed").addEvent("activityPreDestroyed");
     }
 
     @Override
@@ -201,9 +195,16 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     }
 
     private ActivityTracer getTracer(Activity activity) {
-        ActivityTracer activityTracer = tracersByActivityClassName.get(activity.getClass().getName());
+        ActivityTracer activityTracer =
+                tracersByActivityClassName.get(activity.getClass().getName());
         if (activityTracer == null) {
-            activityTracer = new ActivityTracer(activity, initialAppActivity, tracer, visibleScreenTracker, startupTimer);
+            activityTracer =
+                    new ActivityTracer(
+                            activity,
+                            initialAppActivity,
+                            tracer,
+                            visibleScreenTracker,
+                            startupTimer);
             tracersByActivityClassName.put(activity.getClass().getName(), activityTracer);
         }
         return activityTracer;
@@ -216,7 +217,7 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
         private List<AppStateListener> appStateListeners;
         private SlowRenderingDetector slowRenderingDetector;
 
-        public ActivityCallbacks build(){
+        public ActivityCallbacks build() {
             return new ActivityCallbacks(this);
         }
 
@@ -245,5 +246,4 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
             return this;
         }
     }
-
 }

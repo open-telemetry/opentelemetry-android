@@ -17,7 +17,6 @@
 package com.splunk.rum;
 
 import androidx.annotation.NonNull;
-
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -27,17 +26,23 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 class CrashReporter {
 
     static void initializeCrashReporting(Tracer tracer, OpenTelemetrySdk openTelemetrySdk) {
-        Thread.UncaughtExceptionHandler existingHandler = Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler(new CrashReportingExceptionHandler(tracer, openTelemetrySdk.getSdkTracerProvider(), existingHandler));
+        Thread.UncaughtExceptionHandler existingHandler =
+                Thread.getDefaultUncaughtExceptionHandler();
+        Thread.setDefaultUncaughtExceptionHandler(
+                new CrashReportingExceptionHandler(
+                        tracer, openTelemetrySdk.getSdkTracerProvider(), existingHandler));
     }
 
-    //visible for testing
+    // visible for testing
     static class CrashReportingExceptionHandler implements Thread.UncaughtExceptionHandler {
         private final Tracer tracer;
         private final Thread.UncaughtExceptionHandler existingHandler;
         private final SdkTracerProvider sdkTracerProvider;
 
-        CrashReportingExceptionHandler(Tracer tracer, SdkTracerProvider sdkTracerProvider, Thread.UncaughtExceptionHandler existingHandler) {
+        CrashReportingExceptionHandler(
+                Tracer tracer,
+                SdkTracerProvider sdkTracerProvider,
+                Thread.UncaughtExceptionHandler existingHandler) {
             this.tracer = tracer;
             this.existingHandler = existingHandler;
             this.sdkTracerProvider = sdkTracerProvider;
@@ -55,9 +60,9 @@ class CrashReporter {
                     .recordException(e)
                     .setStatus(StatusCode.ERROR)
                     .end();
-            //do our best to make sure the crash makes it out of the VM
+            // do our best to make sure the crash makes it out of the VM
             sdkTracerProvider.forceFlush();
-            //preserve any existing behavior:
+            // preserve any existing behavior:
             if (existingHandler != null) {
                 existingHandler.uncaughtException(t, e);
             }

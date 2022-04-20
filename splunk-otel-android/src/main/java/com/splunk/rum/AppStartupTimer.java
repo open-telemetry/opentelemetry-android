@@ -17,29 +17,29 @@
 package com.splunk.rum;
 
 import androidx.annotation.Nullable;
-
-import java.util.concurrent.TimeUnit;
-
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.Clock;
+import java.util.concurrent.TimeUnit;
 
 class AppStartupTimer {
-    //exposed so it can be used for the rest of the startup sequence timing.
-    final RumInitializer.AnchoredClock startupClock = RumInitializer.AnchoredClock.create(Clock.getDefault());
+    // exposed so it can be used for the rest of the startup sequence timing.
+    final RumInitializer.AnchoredClock startupClock =
+            RumInitializer.AnchoredClock.create(Clock.getDefault());
     private final long firstPossibleTimestamp = startupClock.now();
     private volatile Span overallAppStartSpan = null;
 
     Span start(Tracer tracer) {
-        //guard against a double-start and just return what's already in flight.
+        // guard against a double-start and just return what's already in flight.
         if (overallAppStartSpan != null) {
             return overallAppStartSpan;
         }
-        final Span appStart = tracer.spanBuilder("AppStart")
-                .setStartTimestamp(firstPossibleTimestamp, TimeUnit.NANOSECONDS)
-                .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_APPSTART)
-                .setAttribute(SplunkRum.START_TYPE_KEY, "cold")
-                .startSpan();
+        final Span appStart =
+                tracer.spanBuilder("AppStart")
+                        .setStartTimestamp(firstPossibleTimestamp, TimeUnit.NANOSECONDS)
+                        .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_APPSTART)
+                        .setAttribute(SplunkRum.START_TYPE_KEY, "cold")
+                        .startSpan();
         overallAppStartSpan = appStart;
         return appStart;
     }

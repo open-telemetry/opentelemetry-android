@@ -22,20 +22,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import androidx.fragment.app.Fragment;
-
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.List;
-
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
-import io.opentelemetry.sdk.trace.data.SpanData;
-
 public class FragmentTracerTest {
-    @Rule
-    public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
+    @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
     private Tracer tracer;
     private final VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
 
@@ -46,7 +42,8 @@ public class FragmentTracerTest {
 
     @Test
     public void create() {
-        FragmentTracer trackableTracer = new FragmentTracer(mock(Fragment.class), tracer, visibleScreenTracker);
+        FragmentTracer trackableTracer =
+                new FragmentTracer(mock(Fragment.class), tracer, visibleScreenTracker);
         trackableTracer.startFragmentCreation();
         trackableTracer.endActiveSpan();
         SpanData span = getSingleSpan();
@@ -57,7 +54,8 @@ public class FragmentTracerTest {
     public void addPreviousScreen_noPrevious() {
         VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
 
-        FragmentTracer trackableTracer = new FragmentTracer(mock(Fragment.class), tracer, visibleScreenTracker);
+        FragmentTracer trackableTracer =
+                new FragmentTracer(mock(Fragment.class), tracer, visibleScreenTracker);
 
         trackableTracer.startSpanIfNoneInProgress("starting");
         trackableTracer.addPreviousScreenAttribute();
@@ -72,7 +70,8 @@ public class FragmentTracerTest {
         VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
         when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("Fragment");
 
-        FragmentTracer trackableTracer = new FragmentTracer(mock(Fragment.class), tracer, visibleScreenTracker);
+        FragmentTracer trackableTracer =
+                new FragmentTracer(mock(Fragment.class), tracer, visibleScreenTracker);
 
         trackableTracer.startSpanIfNoneInProgress("starting");
         trackableTracer.addPreviousScreenAttribute();
@@ -86,7 +85,8 @@ public class FragmentTracerTest {
     public void addPreviousScreen() {
         when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
 
-        FragmentTracer fragmentTracer = new FragmentTracer(mock(Fragment.class), tracer, visibleScreenTracker);
+        FragmentTracer fragmentTracer =
+                new FragmentTracer(mock(Fragment.class), tracer, visibleScreenTracker);
 
         fragmentTracer.startSpanIfNoneInProgress("starting");
         fragmentTracer.addPreviousScreenAttribute();
@@ -107,8 +107,7 @@ public class FragmentTracerTest {
     }
 
     @RumScreenName("bumpity")
-    static class AnnotatedFragment extends Fragment {
-    }
+    static class AnnotatedFragment extends Fragment {}
 
     private SpanData getSingleSpan() {
         List<SpanData> generatedSpans = otelTesting.getSpans();

@@ -18,10 +18,9 @@ package com.splunk.rum;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
-
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
+import org.junit.Test;
 import zipkin2.Span;
 
 public class CustomZipkinEncoderTest {
@@ -29,15 +28,18 @@ public class CustomZipkinEncoderTest {
     @Test
     public void nameReplacement() {
         CustomZipkinEncoder encoder = new CustomZipkinEncoder();
-        Span span = Span.newBuilder()
-                .name("lowercase")
-                .traceId(TraceId.fromLongs(1, 2))
-                .id(SpanId.fromLong(1))
-                .putTag(RumAttributeAppender.SPLUNK_OPERATION_KEY.getKey(), "UpperCase")
-                .build();
+        Span span =
+                Span.newBuilder()
+                        .name("lowercase")
+                        .traceId(TraceId.fromLongs(1, 2))
+                        .id(SpanId.fromLong(1))
+                        .putTag(RumAttributeAppender.SPLUNK_OPERATION_KEY.getKey(), "UpperCase")
+                        .build();
         byte[] bytes = encoder.encode(span);
-        //this assertion verifies that we changed the name
-        assertEquals("{\"traceId\":\"00000000000000010000000000000002\",\"id\":\"0000000000000001\",\"name\":\"UpperCase\",\"tags\":{\"_splunk_operation\":\"UpperCase\"}}", new String(bytes));
+        // this assertion verifies that we changed the name
+        assertEquals(
+                "{\"traceId\":\"00000000000000010000000000000002\",\"id\":\"0000000000000001\",\"name\":\"UpperCase\",\"tags\":{\"_splunk_operation\":\"UpperCase\"}}",
+                new String(bytes));
         assertEquals(bytes.length, encoder.sizeInBytes(span));
     }
 }

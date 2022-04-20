@@ -16,10 +16,9 @@
 
 package com.splunk.rum;
 
-import java.util.function.Supplier;
-
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
+import java.util.function.Supplier;
 
 class ActiveSpan {
     private final VisibleScreenTracker visibleScreenTracker;
@@ -36,7 +35,7 @@ class ActiveSpan {
     }
 
     void startSpan(Supplier<Span> spanCreator) {
-        //don't start one if there's already one in progress
+        // don't start one if there's already one in progress
         if (span != null) {
             return;
         }

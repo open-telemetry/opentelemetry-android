@@ -26,7 +26,6 @@ import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_H
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_TYPE;
 
 import android.os.Build;
-
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
@@ -46,7 +45,12 @@ class RumAttributeAppender implements SpanProcessor {
     private final VisibleScreenTracker visibleScreenTracker;
     private final ConnectionUtil connectionUtil;
 
-    RumAttributeAppender(Config config, SessionId sessionId, String rumVersion, VisibleScreenTracker visibleScreenTracker, ConnectionUtil connectionUtil) {
+    RumAttributeAppender(
+            Config config,
+            SessionId sessionId,
+            String rumVersion,
+            VisibleScreenTracker visibleScreenTracker,
+            ConnectionUtil connectionUtil) {
         this.config = config;
         this.sessionId = sessionId;
         this.rumVersion = rumVersion;
@@ -56,7 +60,8 @@ class RumAttributeAppender implements SpanProcessor {
 
     @Override
     public void onStart(Context parentContext, ReadWriteSpan span) {
-        //set this custom attribute in order to let the CustomZipkinEncoder use it for the span name on the wire.
+        // set this custom attribute in order to let the CustomZipkinEncoder use it for the span
+        // name on the wire.
         span.setAttribute(SPLUNK_OPERATION_KEY, span.getName());
 
         span.setAttribute(APP_NAME_KEY, config.getApplicationName());
@@ -74,7 +79,9 @@ class RumAttributeAppender implements SpanProcessor {
         span.setAttribute(SplunkRum.SCREEN_NAME_KEY, currentScreen);
         CurrentNetwork currentNetwork = connectionUtil.getActiveNetwork();
         span.setAttribute(NET_HOST_CONNECTION_TYPE, currentNetwork.getState().getHumanName());
-        currentNetwork.getSubType().ifPresent(subtype -> span.setAttribute(NET_HOST_CONNECTION_SUBTYPE, subtype));
+        currentNetwork
+                .getSubType()
+                .ifPresent(subtype -> span.setAttribute(NET_HOST_CONNECTION_SUBTYPE, subtype));
     }
 
     @Override
@@ -83,8 +90,7 @@ class RumAttributeAppender implements SpanProcessor {
     }
 
     @Override
-    public void onEnd(ReadableSpan span) {
-    }
+    public void onEnd(ReadableSpan span) {}
 
     @Override
     public boolean isEndRequired() {

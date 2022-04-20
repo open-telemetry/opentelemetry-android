@@ -23,7 +23,7 @@ enum NetworkState {
     TRANSPORT_CELLULAR(SemanticAttributes.NetHostConnectionTypeValues.CELL),
     TRANSPORT_WIFI(SemanticAttributes.NetHostConnectionTypeValues.WIFI),
     TRANSPORT_UNKNOWN(SemanticAttributes.NetHostConnectionTypeValues.UNKNOWN),
-    //this one doesn't seem to have an otel value at this point.
+    // this one doesn't seem to have an otel value at this point.
     TRANSPORT_VPN("vpn");
 
     private final String humanName;

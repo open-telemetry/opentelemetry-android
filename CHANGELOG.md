@@ -62,20 +62,20 @@ exception when queried. See the corresponding Android bug: https://issuetracker.
 
 ---
 
-## Version 0.7.0 
+## Version 0.7.0
 
-- OpenTelemetry okhttp instrumentation has been updated to version 1.5.3-alpha. 
+- OpenTelemetry okhttp instrumentation has been updated to version 1.5.3-alpha.
 - For okhttp, SplunkRum now exposes a wrapper for your `OkHttpClient` which implements the `Call.Factory`
   interface. This `Call.Factory` will properly manage context propagation with asynchronous http calls.
 - The okhttp Interceptor provided by SplunkRum has been deprecated. Please use the `Call.Factory` from now on.
   The `createOkHttpRumInterceptor()` method will be removed in a future release.
-- A new class (`com.splunk.rum.StandardAttributes`) has been introduced to provide `AttributeKey`s for 
+- A new class (`com.splunk.rum.StandardAttributes`) has been introduced to provide `AttributeKey`s for
   standard RUM span attributes. Currently this class exposes the `APP_VERSION` attribute.
 - The ANR detector and Network monitor will no longer operate when the app has been put in the background.
 - A new API on the `Config.Builder` allows redacting of spans or redacting/replacing Span attributes. See
   the new `filterSpans(Consumer<SpanFilterBuilder>)` method and the corresponding `com.splunk.rum.SpanFilterBuilder` class
   for details.
-- The `os.type` Span attribute has been changed to 'linux' and `os.name` attribute is now 'Android'. 
+- The `os.type` Span attribute has been changed to 'linux' and `os.name` attribute is now 'Android'.
 
 ---
 

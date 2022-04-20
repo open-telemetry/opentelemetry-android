@@ -20,20 +20,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-
-import java.util.List;
-
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 public class AppStartupTimerTest {
-    @Rule
-    public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
+    @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
     private Tracer tracer;
 
     @Before
@@ -53,7 +50,9 @@ public class AppStartupTimerTest {
         SpanData spanData = spans.get(0);
 
         assertEquals("AppStart", spanData.getName());
-        assertEquals(SplunkRum.COMPONENT_APPSTART, spanData.getAttributes().get(SplunkRum.COMPONENT_KEY));
+        assertEquals(
+                SplunkRum.COMPONENT_APPSTART,
+                spanData.getAttributes().get(SplunkRum.COMPONENT_KEY));
         assertEquals("cold", spanData.getAttributes().get(SplunkRum.START_TYPE_KEY));
     }
 

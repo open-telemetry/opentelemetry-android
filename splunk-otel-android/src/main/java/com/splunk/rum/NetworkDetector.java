@@ -25,9 +25,11 @@ interface NetworkDetector {
     CurrentNetwork detectCurrentNetwork();
 
     static NetworkDetector create(Context context) {
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            TelephonyManager telephonyManager =
+                    (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
             return new PostApi29NetworkDetector(connectivityManager, telephonyManager, context);
         }
         return new SimpleNetworkDetector(connectivityManager);

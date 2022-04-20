@@ -20,14 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -37,6 +29,12 @@ import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SessionIdRatioBasedSamplerTest {
@@ -46,7 +44,8 @@ public class SessionIdRatioBasedSamplerTest {
 
     private final String traceId = idsGenerator.generateTraceId();
     private final Context parentContext = Context.root().with(Span.getInvalid());
-    private final List<LinkData> parentLinks = Collections.singletonList(LinkData.create(SpanContext.getInvalid()));
+    private final List<LinkData> parentLinks =
+            Collections.singletonList(LinkData.create(SpanContext.getInvalid()));
 
     @Test
     public void samplerUsesSessionId() {
@@ -77,7 +76,7 @@ public class SessionIdRatioBasedSamplerTest {
     public void oneRatioAcceptsAll() {
         SessionId sessionId = mock(SessionId.class);
         SessionIdRatioBasedSampler sampler = new SessionIdRatioBasedSampler(1.0, sessionId);
-        
+
         for (String id : Arrays.asList(HIGH_ID, LOW_ID)) {
             when(sessionId.getSessionId()).thenReturn(id);
             assertEquals(shouldSample(sampler), SamplingDecision.RECORD_AND_SAMPLE);
@@ -85,6 +84,13 @@ public class SessionIdRatioBasedSamplerTest {
     }
 
     private SamplingDecision shouldSample(Sampler sampler) {
-        return sampler.shouldSample(parentContext, traceId, "name", SpanKind.INTERNAL, Attributes.empty(), parentLinks).getDecision();
+        return sampler.shouldSample(
+                        parentContext,
+                        traceId,
+                        "name",
+                        SpanKind.INTERNAL,
+                        Attributes.empty(),
+                        parentLinks)
+                .getDecision();
     }
 }

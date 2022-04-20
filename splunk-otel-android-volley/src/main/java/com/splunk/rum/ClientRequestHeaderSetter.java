@@ -19,7 +19,6 @@ package com.splunk.rum;
 import io.opentelemetry.context.propagation.TextMapSetter;
 
 enum ClientRequestHeaderSetter implements TextMapSetter<RequestWrapper> {
-
     INSTANCE;
 
     @Override

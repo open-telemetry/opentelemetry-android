@@ -27,7 +27,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.os.Build;
 import android.telephony.TelephonyManager;
-
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 
@@ -37,7 +36,10 @@ class PostApi29NetworkDetector implements NetworkDetector {
     private final TelephonyManager telephonyManager;
     private final Context context;
 
-    PostApi29NetworkDetector(ConnectivityManager connectivityManager, TelephonyManager telephonyManager, Context context) {
+    PostApi29NetworkDetector(
+            ConnectivityManager connectivityManager,
+            TelephonyManager telephonyManager,
+            Context context) {
         this.connectivityManager = connectivityManager;
         this.telephonyManager = telephonyManager;
         this.context = context;
@@ -46,7 +48,8 @@ class PostApi29NetworkDetector implements NetworkDetector {
     @SuppressLint("MissingPermission")
     @Override
     public CurrentNetwork detectCurrentNetwork() {
-        NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
+        NetworkCapabilities capabilities =
+                connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
         if (capabilities == null) {
             return NO_NETWORK;
         }
@@ -62,13 +65,14 @@ class PostApi29NetworkDetector implements NetworkDetector {
         } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
             return new CurrentNetwork(NetworkState.TRANSPORT_VPN, null);
         }
-        //there is an active network, but it doesn't fall into the neat buckets above
+        // there is an active network, but it doesn't fall into the neat buckets above
         return UNKNOWN_NETWORK;
     }
 
-    //visible for testing
+    // visible for testing
     boolean hasPermission(String permission) {
-        return ActivityCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
+        return ActivityCompat.checkSelfPermission(context, permission)
+                == PackageManager.PERMISSION_GRANTED;
     }
 
     private String getDataNetworkTypeName(int dataNetworkType) {
@@ -116,5 +120,4 @@ class PostApi29NetworkDetector implements NetworkDetector {
         }
         return "UNKNOWN";
     }
-
 }

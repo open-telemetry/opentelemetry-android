@@ -22,16 +22,17 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Build;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import java.util.function.Supplier;
 
-//note: based on ideas from stack overflow: https://stackoverflow.com/questions/32547006/connectivitymanager-getnetworkinfoint-deprecated
+// note: based on ideas from stack overflow:
+// https://stackoverflow.com/questions/32547006/connectivitymanager-getnetworkinfoint-deprecated
 class ConnectionUtil {
 
-    static final CurrentNetwork NO_NETWORK = new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE, null);
-    static final CurrentNetwork UNKNOWN_NETWORK = new CurrentNetwork(NetworkState.TRANSPORT_UNKNOWN, null);
+    static final CurrentNetwork NO_NETWORK =
+            new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE, null);
+    static final CurrentNetwork UNKNOWN_NETWORK =
+            new CurrentNetwork(NetworkState.TRANSPORT_UNKNOWN, null);
 
     private final NetworkDetector networkDetector;
 
@@ -42,17 +43,24 @@ class ConnectionUtil {
         this.networkDetector = networkDetector;
     }
 
-    void startMonitoring(Supplier<NetworkRequest> createNetworkMonitoringRequest, ConnectivityManager connectivityManager) {
+    void startMonitoring(
+            Supplier<NetworkRequest> createNetworkMonitoringRequest,
+            ConnectivityManager connectivityManager) {
         refreshNetworkStatus();
         try {
             registerNetworkCallbacks(createNetworkMonitoringRequest, connectivityManager);
         } catch (Exception e) {
-            //if this fails, we'll go without network change events.
-            Log.w(SplunkRum.LOG_TAG, "Failed to register network callbacks. Automatic network monitoring is disabled.", e);
+            // if this fails, we'll go without network change events.
+            Log.w(
+                    SplunkRum.LOG_TAG,
+                    "Failed to register network callbacks. Automatic network monitoring is disabled.",
+                    e);
         }
     }
 
-    private void registerNetworkCallbacks(Supplier<NetworkRequest> createNetworkMonitoringRequest, ConnectivityManager connectivityManager) {
+    private void registerNetworkCallbacks(
+            Supplier<NetworkRequest> createNetworkMonitoringRequest,
+            ConnectivityManager connectivityManager) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             connectivityManager.registerDefaultNetworkCallback(new ConnectionMonitor());
         } else {
@@ -65,7 +73,7 @@ class ConnectionUtil {
         try {
             currentNetwork = networkDetector.detectCurrentNetwork();
         } catch (Exception e) {
-            //guard against security issues/bugs when accessing the Android connectivityManager.
+            // guard against security issues/bugs when accessing the Android connectivityManager.
             // see: https://issuetracker.google.com/issues/175055271
             currentNetwork = UNKNOWN_NETWORK;
         }
@@ -73,7 +81,7 @@ class ConnectionUtil {
     }
 
     static NetworkRequest createNetworkMonitoringRequest() {
-        //note: this throws an NPE when running in junit without robolectric, due to Android
+        // note: this throws an NPE when running in junit without robolectric, due to Android
         return new NetworkRequest.Builder()
                 .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
@@ -103,21 +111,29 @@ class ConnectionUtil {
             CurrentNetwork activeNetwork = refreshNetworkStatus();
             if (connectionStateListener != null) {
                 connectionStateListener.onAvailable(true, activeNetwork);
-                Log.d(SplunkRum.LOG_TAG, "  onAvailable: isConnected:" + isOnline() + ", activeNetwork: " + activeNetwork);
+                Log.d(
+                        SplunkRum.LOG_TAG,
+                        "  onAvailable: isConnected:"
+                                + isOnline()
+                                + ", activeNetwork: "
+                                + activeNetwork);
             }
         }
 
         @Override
         public void onLost(@NonNull Network network) {
             Log.d(SplunkRum.LOG_TAG, "onLost: ");
-            //it seems that the "currentActiveNetwork" is still the one that is being lost, so for
-            //this method, we'll force it to be NO_NETWORK, rather than relying on the ConnectivityManager to have the right
-            //state at the right time during this event.
+            // it seems that the "currentActiveNetwork" is still the one that is being lost, so for
+            // this method, we'll force it to be NO_NETWORK, rather than relying on the
+            // ConnectivityManager to have the right
+            // state at the right time during this event.
             CurrentNetwork activeNetwork = NO_NETWORK;
             currentNetwork = activeNetwork;
             if (connectionStateListener != null) {
                 connectionStateListener.onAvailable(false, activeNetwork);
-                Log.d(SplunkRum.LOG_TAG, "  onLost: isConnected:" + false + ", activeNetwork: " + activeNetwork);
+                Log.d(
+                        SplunkRum.LOG_TAG,
+                        "  onLost: isConnected:" + false + ", activeNetwork: " + activeNetwork);
             }
         }
     }

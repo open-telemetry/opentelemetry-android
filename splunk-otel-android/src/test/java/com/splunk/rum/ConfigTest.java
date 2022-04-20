@@ -16,45 +16,61 @@
 
 package com.splunk.rum;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
-
-import org.junit.Test;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import org.junit.Test;
 
 public class ConfigTest {
 
     @Test
     public void buildingRequiredFields() {
         assertThrows(IllegalStateException.class, () -> Config.builder().build());
-        assertThrows(IllegalStateException.class, () -> Config.builder().rumAccessToken("abc123").beaconEndpoint("http://backend").build());
-        assertThrows(IllegalStateException.class, () -> Config.builder().beaconEndpoint("http://backend").applicationName("appName").build());
-        assertThrows(IllegalStateException.class, () -> Config.builder().applicationName("appName").rumAccessToken("abc123").build());
+        assertThrows(
+                IllegalStateException.class,
+                () ->
+                        Config.builder()
+                                .rumAccessToken("abc123")
+                                .beaconEndpoint("http://backend")
+                                .build());
+        assertThrows(
+                IllegalStateException.class,
+                () ->
+                        Config.builder()
+                                .beaconEndpoint("http://backend")
+                                .applicationName("appName")
+                                .build());
+        assertThrows(
+                IllegalStateException.class,
+                () -> Config.builder().applicationName("appName").rumAccessToken("abc123").build());
     }
 
     @Test
     public void creation() {
         Attributes globalAttributes = Attributes.of(stringKey("cheese"), "Camembert");
-        Attributes expectedFinalAttributes = globalAttributes.toBuilder()
-                .put(ResourceAttributes.DEPLOYMENT_ENVIRONMENT, "production")
-                .build();
-        Config config = Config.builder().applicationName("appName")
-                .rumAccessToken("authToken")
-                .beaconEndpoint("http://beacon")
-                .debugEnabled(true)
-                .crashReportingEnabled(false)
-                .networkMonitorEnabled(false)
-                .anrDetectionEnabled(false)
-                .globalAttributes(globalAttributes)
-                .deploymentEnvironment("production")
-                .diskBufferingEnabled(true)
-                .build();
+        Attributes expectedFinalAttributes =
+                globalAttributes.toBuilder()
+                        .put(ResourceAttributes.DEPLOYMENT_ENVIRONMENT, "production")
+                        .build();
+        Config config =
+                Config.builder()
+                        .applicationName("appName")
+                        .rumAccessToken("authToken")
+                        .beaconEndpoint("http://beacon")
+                        .debugEnabled(true)
+                        .crashReportingEnabled(false)
+                        .networkMonitorEnabled(false)
+                        .anrDetectionEnabled(false)
+                        .globalAttributes(globalAttributes)
+                        .deploymentEnvironment("production")
+                        .diskBufferingEnabled(true)
+                        .build();
         assertNotNull(config);
         assertEquals("appName", config.getApplicationName());
         assertEquals("authToken", config.getRumAccessToken());
@@ -69,10 +85,12 @@ public class ConfigTest {
 
     @Test
     public void creation_default() {
-        Config config = Config.builder().applicationName("appName")
-                .rumAccessToken("authToken")
-                .realm("foo")
-                .build();
+        Config config =
+                Config.builder()
+                        .applicationName("appName")
+                        .rumAccessToken("authToken")
+                        .realm("foo")
+                        .build();
         assertNotNull(config);
         assertEquals("appName", config.getApplicationName());
         assertEquals("authToken", config.getRumAccessToken());
@@ -87,36 +105,43 @@ public class ConfigTest {
 
     @Test
     public void creation_nullHandling() {
-        Config config = Config.builder().applicationName("appName")
-                .rumAccessToken("authToken")
-                .beaconEndpoint("http://beacon")
-                .globalAttributes(null)
-                .build();
+        Config config =
+                Config.builder()
+                        .applicationName("appName")
+                        .rumAccessToken("authToken")
+                        .beaconEndpoint("http://beacon")
+                        .globalAttributes(null)
+                        .build();
         assertEquals(Attributes.empty(), config.getGlobalAttributes());
     }
 
     @Test
     public void updateGlobalAttributes() {
-        Config config = Config.builder().applicationName("appName")
-                .rumAccessToken("accessToken")
-                .realm("us0")
-                .globalAttributes(Attributes.of(stringKey("food"), "candy"))
-                .build();
+        Config config =
+                Config.builder()
+                        .applicationName("appName")
+                        .rumAccessToken("accessToken")
+                        .realm("us0")
+                        .globalAttributes(Attributes.of(stringKey("food"), "candy"))
+                        .build();
 
         config.updateGlobalAttributes(ab -> ab.put("drink", "lemonade"));
         Attributes result = config.getGlobalAttributes();
-        assertEquals(Attributes.of(stringKey("drink"), "lemonade", stringKey("food"), "candy"), result);
+        assertEquals(
+                Attributes.of(stringKey("drink"), "lemonade", stringKey("food"), "candy"), result);
     }
 
     @Test
     public void beaconOverridesRealm() {
-        Config config = Config.builder().applicationName("appName")
-                .rumAccessToken("authToken")
-                .realm("us1")
-                .beaconEndpoint("http://beacon")
-                .globalAttributes(null)
-                .realm("us0")
-                .build();
+        Config config =
+                Config.builder()
+                        .applicationName("appName")
+                        .rumAccessToken("authToken")
+                        .realm("us1")
+                        .beaconEndpoint("http://beacon")
+                        .globalAttributes(null)
+                        .realm("us0")
+                        .build();
         assertEquals("http://beacon", config.getBeaconEndpoint());
     }
 }

@@ -26,21 +26,16 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.webkit.WebViewAssetLoader;
 import androidx.webkit.WebViewClientCompat;
-
 import com.splunk.android.sample.databinding.FragmentWebViewBinding;
 import com.splunk.rum.SplunkRum;
-
 import io.opentelemetry.api.common.Attributes;
 
-/**
- * A simple {@link Fragment} subclass with a WebView in it.
- */
+/** A simple {@link Fragment} subclass with a WebView in it. */
 public class WebViewFragment extends Fragment {
 
     private FragmentWebViewBinding binding;
@@ -52,12 +47,17 @@ public class WebViewFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        this.assetLoader = new WebViewAssetLoader.Builder()
-                .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this.getContext()))
-                .addPathHandler("/res/", new WebViewAssetLoader.ResourcesPathHandler(this.getContext()))
-                .build();
+    public View onCreateView(
+            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        this.assetLoader =
+                new WebViewAssetLoader.Builder()
+                        .addPathHandler(
+                                "/assets/",
+                                new WebViewAssetLoader.AssetsPathHandler(this.getContext()))
+                        .addPathHandler(
+                                "/res/",
+                                new WebViewAssetLoader.ResourcesPathHandler(this.getContext()))
+                        .build();
         // Inflate the layout for this fragment
         this.binding = FragmentWebViewBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -83,7 +83,8 @@ public class WebViewFragment extends Fragment {
 
         @Nullable
         @Override
-        public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+        public WebResourceResponse shouldInterceptRequest(
+                WebView view, WebResourceRequest request) {
             return assetLoader.shouldInterceptRequest(request.getUrl());
         }
     }

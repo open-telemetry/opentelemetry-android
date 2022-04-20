@@ -18,5 +18,6 @@ package com.splunk.rum;
 
 interface AppStateListener {
     void appForegrounded();
+
     void appBackgrounded();
 }

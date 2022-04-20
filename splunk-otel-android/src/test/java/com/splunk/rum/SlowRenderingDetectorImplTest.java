@@ -1,3 +1,19 @@
+/*
+ * Copyright Splunk Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.splunk.rum;
 
 import static androidx.core.app.FrameMetricsAggregator.DRAW_INDEX;
@@ -12,10 +28,16 @@ import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import android.util.SparseIntArray;
-
 import androidx.annotation.NonNull;
 import androidx.core.app.FrameMetricsAggregator;
-
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,26 +46,13 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
-import io.opentelemetry.sdk.trace.data.SpanData;
-
 @RunWith(MockitoJUnitRunner.class)
 public class SlowRenderingDetectorImplTest {
 
     public static final AttributeKey<Long> COUNT_KEY = AttributeKey.longKey("count");
-    @Rule
-    public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
-    @Mock
-    FrameMetricsAggregator frameMetrics;
-    @Mock
-    Activity activity;
+    @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
+    @Mock FrameMetricsAggregator frameMetrics;
+    @Mock Activity activity;
     Tracer tracer;
 
     @Before
@@ -51,17 +60,18 @@ public class SlowRenderingDetectorImplTest {
         tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
     }
 
-
     @Test
     public void add() {
-        SlowRenderingDetectorImpl testInstance = new SlowRenderingDetectorImpl(tracer, frameMetrics, null, Duration.ofSeconds(0));
+        SlowRenderingDetectorImpl testInstance =
+                new SlowRenderingDetectorImpl(tracer, frameMetrics, null, Duration.ofSeconds(0));
         testInstance.add(activity);
         verify(frameMetrics).add(activity);
     }
 
     @Test
     public void stopBeforeAddOk() {
-        SlowRenderingDetectorImpl testInstance = new SlowRenderingDetectorImpl(tracer, frameMetrics, null, Duration.ofSeconds(0));
+        SlowRenderingDetectorImpl testInstance =
+                new SlowRenderingDetectorImpl(tracer, frameMetrics, null, Duration.ofSeconds(0));
         testInstance.stop(activity);
     }
 
@@ -72,7 +82,8 @@ public class SlowRenderingDetectorImplTest {
 
         when(frameMetrics.remove(activity)).thenReturn(metricsArray);
 
-        SlowRenderingDetectorImpl testInstance = new SlowRenderingDetectorImpl(tracer, frameMetrics, null, Duration.ofMillis(1001));
+        SlowRenderingDetectorImpl testInstance =
+                new SlowRenderingDetectorImpl(tracer, frameMetrics, null, Duration.ofMillis(1001));
 
         testInstance.add(activity);
         testInstance.stop(activity);
@@ -86,13 +97,17 @@ public class SlowRenderingDetectorImplTest {
         ScheduledExecutorService exec = mock(ScheduledExecutorService.class);
 
         when(frameMetrics.reset()).thenReturn(metricsArray);
-        doAnswer(invocation -> {
-            Runnable runnable = invocation.getArgument(0);
-            runnable.run(); // just call it immediately
-            return null;
-        }).when(exec).scheduleAtFixedRate(any(), eq(1001L), eq(1001L), eq(TimeUnit.MILLISECONDS));
+        doAnswer(
+                        invocation -> {
+                            Runnable runnable = invocation.getArgument(0);
+                            runnable.run(); // just call it immediately
+                            return null;
+                        })
+                .when(exec)
+                .scheduleAtFixedRate(any(), eq(1001L), eq(1001L), eq(TimeUnit.MILLISECONDS));
 
-        SlowRenderingDetectorImpl testInstance = new SlowRenderingDetectorImpl(tracer, frameMetrics, exec, Duration.ofMillis(1001));
+        SlowRenderingDetectorImpl testInstance =
+                new SlowRenderingDetectorImpl(tracer, frameMetrics, exec, Duration.ofMillis(1001));
         testInstance.add(activity);
         testInstance.start();
         List<SpanData> spans = otelTesting.getSpans();
@@ -138,5 +153,4 @@ public class SlowRenderingDetectorImplTest {
         when(drawMetrics.keyAt(index)).thenReturn(key);
         when(drawMetrics.get(key)).thenReturn(value);
     }
-
 }

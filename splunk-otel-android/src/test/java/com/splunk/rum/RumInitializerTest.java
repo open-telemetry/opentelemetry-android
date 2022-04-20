@@ -16,27 +16,20 @@
 
 package com.splunk.rum;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static java.util.Collections.emptyList;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static java.util.Collections.emptyList;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import android.app.Application;
 import android.os.Looper;
-
 import com.google.common.base.Strings;
-
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
@@ -48,31 +41,44 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.Test;
 
 public class RumInitializerTest {
     @Test
     public void initializationSpan() {
-        Config config = Config.builder().realm("dev").applicationName("testApp").rumAccessToken("accessToken").build();
+        Config config =
+                Config.builder()
+                        .realm("dev")
+                        .applicationName("testApp")
+                        .rumAccessToken("accessToken")
+                        .build();
         Application application = mock(Application.class);
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
         AppStartupTimer startupTimer = new AppStartupTimer();
-        RumInitializer testInitializer = new RumInitializer(config, application, startupTimer) {
-            @Override
-            SpanExporter buildFilteringExporter(ConnectionUtil connectionUtil) {
-                return testExporter;
-            }
-        };
-        SplunkRum splunkRum = testInitializer.initialize(() -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS), mock(Looper.class));
+        RumInitializer testInitializer =
+                new RumInitializer(config, application, startupTimer) {
+                    @Override
+                    SpanExporter buildFilteringExporter(ConnectionUtil connectionUtil) {
+                        return testExporter;
+                    }
+                };
+        SplunkRum splunkRum =
+                testInitializer.initialize(
+                        () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS), mock(Looper.class));
         splunkRum.flushSpans();
 
         List<SpanData> spans = testExporter.getFinishedSpanItems();
         assertEquals(1, spans.size());
         SpanData initSpan = spans.get(0);
-        assertEquals(initSpan.getParentSpanContext(), startupTimer.getStartupSpan().getSpanContext());
+        assertEquals(
+                initSpan.getParentSpanContext(), startupTimer.getStartupSpan().getSpanContext());
 
         assertEquals("SplunkRum.initialize", initSpan.getName());
         assertEquals("appstart", initSpan.getAttributes().get(SplunkRum.COMPONENT_KEY));
-        assertEquals("[debug:false,crashReporting:true,anrReporting:true,slowRenderingDetector:true,networkMonitor:true]",
+        assertEquals(
+                "[debug:false,crashReporting:true,anrReporting:true,slowRenderingDetector:true,networkMonitor:true]",
                 initSpan.getAttributes().get(stringKey("config_settings")));
 
         List<EventData> events = initSpan.getEvents();
@@ -89,29 +95,39 @@ public class RumInitializerTest {
     }
 
     private void checkEventExists(List<EventData> events, String eventName) {
-        assertTrue("Event with name " + eventName + " not found",
+        assertTrue(
+                "Event with name " + eventName + " not found",
                 events.stream().map(EventData::getName).anyMatch(name -> name.equals(eventName)));
     }
 
     @Test
     public void spanLimitsAreConfigured() {
-        Config config = Config.builder().realm("dev").applicationName("testApp").rumAccessToken("accessToken").build();
+        Config config =
+                Config.builder()
+                        .realm("dev")
+                        .applicationName("testApp")
+                        .rumAccessToken("accessToken")
+                        .build();
         Application application = mock(Application.class);
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
         AppStartupTimer startupTimer = new AppStartupTimer();
-        RumInitializer testInitializer = new RumInitializer(config, application, startupTimer) {
-            @Override
-            SpanExporter buildFilteringExporter(ConnectionUtil connectionUtil) {
-                return testExporter;
-            }
-        };
-        SplunkRum splunkRum = testInitializer.initialize(() -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS), mock(Looper.class));
+        RumInitializer testInitializer =
+                new RumInitializer(config, application, startupTimer) {
+                    @Override
+                    SpanExporter buildFilteringExporter(ConnectionUtil connectionUtil) {
+                        return testExporter;
+                    }
+                };
+        SplunkRum splunkRum =
+                testInitializer.initialize(
+                        () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS), mock(Looper.class));
         splunkRum.flushSpans();
 
         testExporter.reset();
 
         AttributeKey<String> longAttributeKey = stringKey("longAttribute");
-        splunkRum.addRumEvent("testEvent", Attributes.of(longAttributeKey, Strings.repeat("a", 3000)));
+        splunkRum.addRumEvent(
+                "testEvent", Attributes.of(longAttributeKey, Strings.repeat("a", 3000)));
 
         splunkRum.flushSpans();
         List<SpanData> spans = testExporter.getFinishedSpanItems();
@@ -123,22 +139,26 @@ public class RumInitializerTest {
         assertEquals(Strings.repeat("a", 2048), truncatedValue);
     }
 
-    /**
-     * Verify that we have buffering in place in our exporter implementation.
-     */
+    /** Verify that we have buffering in place in our exporter implementation. */
     @Test
     public void verifyExporterBuffering() {
-        Config config = Config.builder().realm("dev").applicationName("testApp").rumAccessToken("accessToken").build();
+        Config config =
+                Config.builder()
+                        .realm("dev")
+                        .applicationName("testApp")
+                        .rumAccessToken("accessToken")
+                        .build();
         Application application = mock(Application.class);
         AppStartupTimer startupTimer = new AppStartupTimer();
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
 
-        RumInitializer testInitializer = new RumInitializer(config, application, startupTimer) {
-            @Override
-            SpanExporter getCoreSpanExporter(String endpoint) {
-                return testExporter;
-            }
-        };
+        RumInitializer testInitializer =
+                new RumInitializer(config, application, startupTimer) {
+                    @Override
+                    SpanExporter getCoreSpanExporter(String endpoint) {
+                        return testExporter;
+                    }
+                };
 
         ConnectionUtil connectionUtil = mock(ConnectionUtil.class);
 
@@ -153,7 +173,7 @@ public class RumInitializerTest {
         for (int i = 0; i < 99; i++) {
             batch1.add(createTestSpan(currentTimeNanos - MINUTES.toNanos(1)));
         }
-        //space out the two batches, so they are well under the rate limit
+        // space out the two batches, so they are well under the rate limit
         List<SpanData> batch2 = new ArrayList<>();
         for (int i = 0; i < 99; i++) {
             batch2.add(createTestSpan(currentTimeNanos));
@@ -161,7 +181,8 @@ public class RumInitializerTest {
         spanExporter.export(batch1);
         spanExporter.export(batch2);
 
-        // we want to verify that everything got exported, including everything buffered while offline.
+        // we want to verify that everything got exported, including everything buffered while
+        // offline.
         assertEquals(198, testExporter.getFinishedSpanItems().size());
     }
 
@@ -180,22 +201,24 @@ public class RumInitializerTest {
     public void shouldTranslateExceptionEventsToSpanAttributes() {
         InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
-        Config config = Config.builder()
-                .realm("us0")
-                .rumAccessToken("secret!")
-                .applicationName("test")
-                .debugEnabled(true)
-                .build();
+        Config config =
+                Config.builder()
+                        .realm("us0")
+                        .rumAccessToken("secret!")
+                        .applicationName("test")
+                        .debugEnabled(true)
+                        .build();
         Application application = mock(Application.class);
         ConnectionUtil connectionUtil = mock(ConnectionUtil.class, RETURNS_DEEP_STUBS);
         when(connectionUtil.refreshNetworkStatus().isOnline()).thenReturn(true);
 
-        RumInitializer initializer = new RumInitializer(config, application, new AppStartupTimer()) {
-            @Override
-            SpanExporter getCoreSpanExporter(String endpoint) {
-                return spanExporter;
-            }
-        };
+        RumInitializer initializer =
+                new RumInitializer(config, application, new AppStartupTimer()) {
+                    @Override
+                    SpanExporter getCoreSpanExporter(String endpoint) {
+                        return spanExporter;
+                    }
+                };
 
         SplunkRum splunkRum = initializer.initialize(() -> connectionUtil, mock(Looper.class));
 
@@ -206,18 +229,39 @@ public class RumInitializerTest {
         List<SpanData> spans = spanExporter.getFinishedSpanItems();
         assertThat(spans)
                 .satisfiesExactly(
-                        span -> OpenTelemetryAssertions.assertThat(span)
-                                .hasName("SplunkRum.initialize"),
-                        span -> OpenTelemetryAssertions.assertThat(span)
-                                .hasName("IllegalArgumentException")
-                                .hasAttributesSatisfying(attributes -> OpenTelemetryAssertions.assertThat(attributes)
-                                        .containsEntry(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_ERROR)
-                                        .containsEntry(stringKey("attribute"), "oh no!")
-                                        .containsEntry(SemanticAttributes.EXCEPTION_TYPE, "IllegalArgumentException")
-                                        .containsEntry(SplunkRum.ERROR_TYPE_KEY, "IllegalArgumentException")
-                                        .containsEntry(SemanticAttributes.EXCEPTION_MESSAGE, "booom!")
-                                        .containsEntry(SplunkRum.ERROR_MESSAGE_KEY, "booom!")
-                                        .containsKey(SemanticAttributes.EXCEPTION_STACKTRACE))
-                                .hasEvents(emptyList()));
+                        span ->
+                                OpenTelemetryAssertions.assertThat(span)
+                                        .hasName("SplunkRum.initialize"),
+                        span ->
+                                OpenTelemetryAssertions.assertThat(span)
+                                        .hasName("IllegalArgumentException")
+                                        .hasAttributesSatisfying(
+                                                attributes ->
+                                                        OpenTelemetryAssertions.assertThat(
+                                                                        attributes)
+                                                                .containsEntry(
+                                                                        SplunkRum.COMPONENT_KEY,
+                                                                        SplunkRum.COMPONENT_ERROR)
+                                                                .containsEntry(
+                                                                        stringKey("attribute"),
+                                                                        "oh no!")
+                                                                .containsEntry(
+                                                                        SemanticAttributes
+                                                                                .EXCEPTION_TYPE,
+                                                                        "IllegalArgumentException")
+                                                                .containsEntry(
+                                                                        SplunkRum.ERROR_TYPE_KEY,
+                                                                        "IllegalArgumentException")
+                                                                .containsEntry(
+                                                                        SemanticAttributes
+                                                                                .EXCEPTION_MESSAGE,
+                                                                        "booom!")
+                                                                .containsEntry(
+                                                                        SplunkRum.ERROR_MESSAGE_KEY,
+                                                                        "booom!")
+                                                                .containsKey(
+                                                                        SemanticAttributes
+                                                                                .EXCEPTION_STACKTRACE))
+                                        .hasEvents(emptyList()));
     }
 }

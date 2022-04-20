@@ -17,7 +17,6 @@
 package com.splunk.rum;
 
 import com.android.volley.Request;
-
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,16 +43,12 @@ public final class RequestWrapper {
         return url;
     }
 
-    /**
-     * Returns the HTTP request that will be executed.
-     */
+    /** Returns the HTTP request that will be executed. */
     public Request<?> getRequest() {
         return request;
     }
 
-    /**
-     * Returns additional headers that will be sent together with {@link Request#getHeaders()}.
-     */
+    /** Returns additional headers that will be sent together with {@link Request#getHeaders()}. */
     public Map<String, String> getAdditionalHeaders() {
         return additionalHeaders;
     }

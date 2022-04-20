@@ -16,12 +16,11 @@
 
 package com.splunk.rum;
 
+import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.sdk.common.Clock;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
-import io.opentelemetry.api.trace.TraceId;
-import io.opentelemetry.sdk.common.Clock;
 
 class SessionId {
 
@@ -39,7 +38,7 @@ class SessionId {
         this(Clock.getDefault(), timeoutHandler);
     }
 
-    //for testing
+    // for testing
     SessionId(Clock clock, SessionIdTimeoutHandler timeoutHandler) {
         this.clock = clock;
         this.timeoutHandler = timeoutHandler;
@@ -49,8 +48,9 @@ class SessionId {
 
     private static String createNewId() {
         Random random = new Random();
-        //The OTel TraceId has exactly the same format as a RUM SessionId, so let's re-use it here, rather
-        //than re-inventing the wheel.
+        // The OTel TraceId has exactly the same format as a RUM SessionId, so let's re-use it here,
+        // rather
+        // than re-inventing the wheel.
         return TraceId.fromLongs(random.nextLong(), random.nextLong());
     }
 
@@ -61,7 +61,7 @@ class SessionId {
 
         if (sessionExpired() || timeoutHandler.hasTimedOut()) {
             String newId = createNewId();
-            //if this returns false, then another thread updated the value already.
+            // if this returns false, then another thread updated the value already.
             sessionIdChanged = value.compareAndSet(oldValue, newId);
             if (sessionIdChanged) {
                 createTimeNanos = clock.now();
@@ -70,7 +70,8 @@ class SessionId {
         }
 
         timeoutHandler.bump();
-        // sessionId change listener needs tobe called after bumping the timer because it may create a new span
+        // sessionId change listener needs tobe called after bumping the timer because it may create
+        // a new span
         if (sessionIdChanged && sessionIdChangeListener != null) {
             sessionIdChangeListener.onChange(oldValue, currentValue);
         }
@@ -79,7 +80,8 @@ class SessionId {
     }
 
     private boolean sessionExpired() {
-        // TODO: it probably should use nanoTime(); now() javadoc explicitly states that it's not meant to be used to compute duration
+        // TODO: it probably should use nanoTime(); now() javadoc explicitly states that it's not
+        // meant to be used to compute duration
         long elapsedTime = clock.now() - createTimeNanos;
         return elapsedTime >= SESSION_LIFETIME_NANOS;
     }

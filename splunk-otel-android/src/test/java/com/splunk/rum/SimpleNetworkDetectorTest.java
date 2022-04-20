@@ -24,9 +24,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
-
 import androidx.test.core.app.ApplicationProvider;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -40,7 +38,9 @@ public class SimpleNetworkDetectorTest {
     @Test
     public void none() {
         ConnectivityManager connectivityManager =
-                (ConnectivityManager) ApplicationProvider.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+                (ConnectivityManager)
+                        ApplicationProvider.getApplicationContext()
+                                .getSystemService(Context.CONNECTIVITY_SERVICE);
 
         Shadows.shadowOf(connectivityManager).setActiveNetworkInfo(null);
         SimpleNetworkDetector networkDetector = new SimpleNetworkDetector(connectivityManager);
@@ -53,14 +53,17 @@ public class SimpleNetworkDetectorTest {
     @Test
     public void other() {
         ConnectivityManager connectivityManager =
-                (ConnectivityManager) ApplicationProvider.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+                (ConnectivityManager)
+                        ApplicationProvider.getApplicationContext()
+                                .getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        NetworkInfo networkInfo = ShadowNetworkInfo.newInstance(
-                NetworkInfo.DetailedState.CONNECTED,
-                ConnectivityManager.TYPE_DUMMY,
-                0,
-                true,
-                NetworkInfo.State.CONNECTED);
+        NetworkInfo networkInfo =
+                ShadowNetworkInfo.newInstance(
+                        NetworkInfo.DetailedState.CONNECTED,
+                        ConnectivityManager.TYPE_DUMMY,
+                        0,
+                        true,
+                        NetworkInfo.State.CONNECTED);
         Shadows.shadowOf(connectivityManager).setActiveNetworkInfo(networkInfo);
 
         SimpleNetworkDetector networkDetector = new SimpleNetworkDetector(connectivityManager);
@@ -73,14 +76,17 @@ public class SimpleNetworkDetectorTest {
     @Test
     public void wifi() {
         ConnectivityManager connectivityManager =
-                (ConnectivityManager) ApplicationProvider.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+                (ConnectivityManager)
+                        ApplicationProvider.getApplicationContext()
+                                .getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        NetworkInfo networkInfo = ShadowNetworkInfo.newInstance(
-                NetworkInfo.DetailedState.CONNECTED,
-                ConnectivityManager.TYPE_WIFI,
-                0,
-                true,
-                NetworkInfo.State.CONNECTED);
+        NetworkInfo networkInfo =
+                ShadowNetworkInfo.newInstance(
+                        NetworkInfo.DetailedState.CONNECTED,
+                        ConnectivityManager.TYPE_WIFI,
+                        0,
+                        true,
+                        NetworkInfo.State.CONNECTED);
         Shadows.shadowOf(connectivityManager).setActiveNetworkInfo(networkInfo);
 
         SimpleNetworkDetector networkDetector = new SimpleNetworkDetector(connectivityManager);
@@ -93,14 +99,17 @@ public class SimpleNetworkDetectorTest {
     @Test
     public void vpn() {
         ConnectivityManager connectivityManager =
-                (ConnectivityManager) ApplicationProvider.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+                (ConnectivityManager)
+                        ApplicationProvider.getApplicationContext()
+                                .getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        NetworkInfo networkInfo = ShadowNetworkInfo.newInstance(
-                NetworkInfo.DetailedState.CONNECTED,
-                ConnectivityManager.TYPE_VPN,
-                0,
-                true,
-                NetworkInfo.State.CONNECTED);
+        NetworkInfo networkInfo =
+                ShadowNetworkInfo.newInstance(
+                        NetworkInfo.DetailedState.CONNECTED,
+                        ConnectivityManager.TYPE_VPN,
+                        0,
+                        true,
+                        NetworkInfo.State.CONNECTED);
         Shadows.shadowOf(connectivityManager).setActiveNetworkInfo(networkInfo);
 
         SimpleNetworkDetector networkDetector = new SimpleNetworkDetector(connectivityManager);
@@ -113,9 +122,11 @@ public class SimpleNetworkDetectorTest {
     @Test
     public void cellularWithSubtype() {
         ConnectivityManager connectivityManager =
-                (ConnectivityManager) ApplicationProvider.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+                (ConnectivityManager)
+                        ApplicationProvider.getApplicationContext()
+                                .getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        //note: looks like the ShadowNetworkInfo doesn't support setting subtype name.
+        // note: looks like the ShadowNetworkInfo doesn't support setting subtype name.
         NetworkInfo networkInfo = mock(NetworkInfo.class);
         when(networkInfo.getType()).thenReturn(ConnectivityManager.TYPE_MOBILE);
         when(networkInfo.getSubtypeName()).thenReturn("LTE");

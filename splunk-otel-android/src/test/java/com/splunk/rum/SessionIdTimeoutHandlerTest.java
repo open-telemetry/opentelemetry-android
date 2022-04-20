@@ -18,12 +18,10 @@ package com.splunk.rum;
 
 import static org.junit.Assert.*;
 
-import org.junit.Test;
-
+import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-
-import io.opentelemetry.sdk.testing.time.TestClock;
+import org.junit.Test;
 
 public class SessionIdTimeoutHandlerTest {
 

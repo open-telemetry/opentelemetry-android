@@ -16,46 +16,41 @@
 
 package com.splunk.rum;
 
-import org.junit.Test;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
-
-import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
+import org.junit.Test;
 
 public class RumResponseAttributesExtractorTest {
 
     @Test
     public void spanDecoration() {
         ServerTimingHeaderParser headerParser = mock(ServerTimingHeaderParser.class);
-        when(headerParser.parse("headerValue")).thenReturn(new String[]{"9499195c502eb217c448a68bfe0f967c", "fe16eca542cd5d86"});
+        when(headerParser.parse("headerValue"))
+                .thenReturn(new String[] {"9499195c502eb217c448a68bfe0f967c", "fe16eca542cd5d86"});
 
         Request fakeRequest = mock(Request.class);
-        Response response = new Response.Builder()
-                .request(fakeRequest)
-                .protocol(Protocol.HTTP_1_1)
-                .message("hello")
-                .code(200)
-                .addHeader("Server-Timing", "headerValue")
-                .addHeader("Content-Length", "101")
-                .build();
+        Response response =
+                new Response.Builder()
+                        .request(fakeRequest)
+                        .protocol(Protocol.HTTP_1_1)
+                        .message("hello")
+                        .code(200)
+                        .addHeader("Server-Timing", "headerValue")
+                        .addHeader("Content-Length", "101")
+                        .build();
 
-        RumResponseAttributesExtractor attributesExtractor = new RumResponseAttributesExtractor(headerParser);
+        RumResponseAttributesExtractor attributesExtractor =
+                new RumResponseAttributesExtractor(headerParser);
         AttributesBuilder attributesBuilder = Attributes.builder();
         attributesExtractor.onStart(attributesBuilder, Context.root(), fakeRequest);
         attributesExtractor.onEnd(attributesBuilder, Context.root(), fakeRequest, response, null);
@@ -75,21 +70,22 @@ public class RumResponseAttributesExtractorTest {
         when(headerParser.parse(null)).thenReturn(new String[0]);
 
         Request fakeRequest = mock(Request.class);
-        Response response = new Response.Builder()
-                .request(fakeRequest)
-                .protocol(Protocol.HTTP_1_1)
-                .message("hello")
-                .code(200)
-                .build();
+        Response response =
+                new Response.Builder()
+                        .request(fakeRequest)
+                        .protocol(Protocol.HTTP_1_1)
+                        .message("hello")
+                        .code(200)
+                        .build();
 
-        RumResponseAttributesExtractor attributesExtractor = new RumResponseAttributesExtractor(headerParser);
+        RumResponseAttributesExtractor attributesExtractor =
+                new RumResponseAttributesExtractor(headerParser);
         AttributesBuilder attributesBuilder = Attributes.builder();
         attributesExtractor.onEnd(attributesBuilder, Context.root(), fakeRequest, response, null);
         attributesExtractor.onStart(attributesBuilder, Context.root(), fakeRequest);
         Attributes attributes = attributesBuilder.build();
 
-        assertThat(attributes)
-                .containsOnly(entry(SplunkRum.COMPONENT_KEY, "http"));
+        assertThat(attributes).containsOnly(entry(SplunkRum.COMPONENT_KEY, "http"));
     }
 
     @Test
@@ -98,15 +94,17 @@ public class RumResponseAttributesExtractorTest {
         when(headerParser.parse(null)).thenReturn(new String[0]);
 
         Request fakeRequest = mock(Request.class);
-        Response response = new Response.Builder()
-                .request(fakeRequest)
-                .protocol(Protocol.HTTP_1_1)
-                .message("hello")
-                .addHeader("Content-Length", "101")
-                .code(200)
-                .build();
+        Response response =
+                new Response.Builder()
+                        .request(fakeRequest)
+                        .protocol(Protocol.HTTP_1_1)
+                        .message("hello")
+                        .addHeader("Content-Length", "101")
+                        .code(200)
+                        .build();
 
-        RumResponseAttributesExtractor attributesExtractor = new RumResponseAttributesExtractor(headerParser);
+        RumResponseAttributesExtractor attributesExtractor =
+                new RumResponseAttributesExtractor(headerParser);
         AttributesBuilder attributesBuilder = Attributes.builder();
         attributesExtractor.onEnd(attributesBuilder, Context.root(), fakeRequest, response, null);
         attributesExtractor.onStart(attributesBuilder, Context.root(), fakeRequest);

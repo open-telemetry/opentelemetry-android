@@ -24,36 +24,36 @@ import static org.mockito.Mockito.when;
 import com.android.volley.Header;
 import com.android.volley.Request;
 import com.android.volley.toolbox.HttpResponse;
-
-import org.junit.Test;
-
-import java.util.Collections;
-import java.util.List;
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import java.util.Collections;
+import java.util.List;
+import org.junit.Test;
 
 public class VolleyResponseAttributesExtractorTest {
 
     @Test
     public void spanDecoration() {
         ServerTimingHeaderParser headerParser = mock(ServerTimingHeaderParser.class);
-        when(headerParser.parse("headerValue")).thenReturn(new String[]{"9499195c502eb217c448a68bfe0f967c", "fe16eca542cd5d86"});
+        when(headerParser.parse("headerValue"))
+                .thenReturn(new String[] {"9499195c502eb217c448a68bfe0f967c", "fe16eca542cd5d86"});
 
-        List<Header> responseHeaders = Collections.singletonList(
-                new Header("Server-Timing", "headerValue")
-        );
-        RequestWrapper fakeRequest = new RequestWrapper(mock(Request.class), Collections.emptyMap());
+        List<Header> responseHeaders =
+                Collections.singletonList(new Header("Server-Timing", "headerValue"));
+        RequestWrapper fakeRequest =
+                new RequestWrapper(mock(Request.class), Collections.emptyMap());
         HttpResponse response = new HttpResponse(200, responseHeaders, "hello".getBytes());
 
-        VolleyResponseAttributesExtractor attributesExtractor = new VolleyResponseAttributesExtractor(headerParser);
+        VolleyResponseAttributesExtractor attributesExtractor =
+                new VolleyResponseAttributesExtractor(headerParser);
         AttributesBuilder attributesBuilder = Attributes.builder();
         attributesExtractor.onStart(attributesBuilder, null, fakeRequest);
         attributesExtractor.onEnd(attributesBuilder, null, fakeRequest, response, null);
         Attributes attributes = attributesBuilder.build();
 
         assertEquals("http", attributes.get(SplunkRum.COMPONENT_KEY));
-        assertEquals("9499195c502eb217c448a68bfe0f967c", attributes.get(SplunkRum.LINK_TRACE_ID_KEY));
+        assertEquals(
+                "9499195c502eb217c448a68bfe0f967c", attributes.get(SplunkRum.LINK_TRACE_ID_KEY));
         assertEquals("fe16eca542cd5d86", attributes.get(SplunkRum.LINK_SPAN_ID_KEY));
     }
 
@@ -62,11 +62,12 @@ public class VolleyResponseAttributesExtractorTest {
         ServerTimingHeaderParser headerParser = mock(ServerTimingHeaderParser.class);
         when(headerParser.parse(null)).thenReturn(new String[0]);
 
-        RequestWrapper fakeRequest = new RequestWrapper(mock(Request.class), Collections.emptyMap());
+        RequestWrapper fakeRequest =
+                new RequestWrapper(mock(Request.class), Collections.emptyMap());
         HttpResponse response = new HttpResponse(200, Collections.emptyList(), "hello".getBytes());
 
-
-        VolleyResponseAttributesExtractor attributesExtractor = new VolleyResponseAttributesExtractor(headerParser);
+        VolleyResponseAttributesExtractor attributesExtractor =
+                new VolleyResponseAttributesExtractor(headerParser);
         AttributesBuilder attributesBuilder = Attributes.builder();
         attributesExtractor.onEnd(attributesBuilder, null, fakeRequest, response, null);
         attributesExtractor.onStart(attributesBuilder, null, fakeRequest);

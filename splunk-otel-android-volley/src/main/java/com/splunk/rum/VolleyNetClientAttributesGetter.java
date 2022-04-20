@@ -16,14 +16,13 @@
 
 package com.splunk.rum;
 
-import com.android.volley.toolbox.HttpResponse;
-
 import androidx.annotation.Nullable;
-
+import com.android.volley.toolbox.HttpResponse;
 import io.opentelemetry.instrumentation.api.instrumenter.net.NetClientAttributesGetter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
-enum VolleyNetClientAttributesGetter implements NetClientAttributesGetter<RequestWrapper, HttpResponse> {
+enum VolleyNetClientAttributesGetter
+        implements NetClientAttributesGetter<RequestWrapper, HttpResponse> {
     INSTANCE;
 
     @Override

@@ -16,33 +16,28 @@
 
 package com.splunk.rum;
 
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 
 import androidx.annotation.NonNull;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 public class CrashReporterTest {
-    @Rule
-    public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
+    @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
     private Tracer tracer;
 
     @Before
@@ -54,7 +49,9 @@ public class CrashReporterTest {
     public void crashReportingSpan() {
         TestDelegateHandler existingHandler = new TestDelegateHandler();
         SdkTracerProvider sdkTracerProvider = mock(SdkTracerProvider.class);
-        CrashReporter.CrashReportingExceptionHandler crashReporter = new CrashReporter.CrashReportingExceptionHandler(tracer, sdkTracerProvider, existingHandler);
+        CrashReporter.CrashReportingExceptionHandler crashReporter =
+                new CrashReporter.CrashReportingExceptionHandler(
+                        tracer, sdkTracerProvider, existingHandler);
 
         NullPointerException oopsie = new NullPointerException("oopsie");
         Thread crashThread = new Thread("badThread");

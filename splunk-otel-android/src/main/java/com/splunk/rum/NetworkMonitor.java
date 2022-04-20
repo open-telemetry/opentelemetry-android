@@ -19,12 +19,11 @@ package com.splunk.rum;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_TYPE;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 class NetworkMonitor implements AppStateListener {
     static final AttributeKey<String> NETWORK_STATUS_KEY = stringKey("network.status");
@@ -37,7 +36,8 @@ class NetworkMonitor implements AppStateListener {
     }
 
     void addConnectivityListener(Tracer tracer) {
-        connectionUtil.setInternetStateListener(new TracingConnectionStateListener(tracer, shouldEmitChangeEvents));
+        connectionUtil.setInternetStateListener(
+                new TracingConnectionStateListener(tracer, shouldEmitChangeEvents));
     }
 
     @Override
@@ -50,7 +50,7 @@ class NetworkMonitor implements AppStateListener {
         shouldEmitChangeEvents.set(false);
     }
 
-    //visibleForTesting
+    // visibleForTesting
     static class TracingConnectionStateListener implements ConnectionStateListener {
         private final Tracer tracer;
         private final AtomicBoolean shouldEmitChangeEvents;
@@ -69,16 +69,28 @@ class NetworkMonitor implements AppStateListener {
                 tracer.spanBuilder("network.change")
                         .setAttribute(NETWORK_STATUS_KEY, "lost")
                         .startSpan()
-                        //put this after span start to override what might be set in the RumAttributeAppender.
-                        .setAttribute(NET_HOST_CONNECTION_TYPE, activeNetwork.getState().getHumanName())
+                        // put this after span start to override what might be set in the
+                        // RumAttributeAppender.
+                        .setAttribute(
+                                NET_HOST_CONNECTION_TYPE, activeNetwork.getState().getHumanName())
                         .end();
             } else {
-                Span available = tracer.spanBuilder("network.change")
-                        .setAttribute(NETWORK_STATUS_KEY, "available")
-                        .startSpan()
-                        //put these after span start to override what might be set in the RumAttributeAppender.
-                        .setAttribute(NET_HOST_CONNECTION_TYPE, activeNetwork.getState().getHumanName());
-                activeNetwork.getSubType().ifPresent(subType -> available.setAttribute(SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE, subType));
+                Span available =
+                        tracer.spanBuilder("network.change")
+                                .setAttribute(NETWORK_STATUS_KEY, "available")
+                                .startSpan()
+                                // put these after span start to override what might be set in the
+                                // RumAttributeAppender.
+                                .setAttribute(
+                                        NET_HOST_CONNECTION_TYPE,
+                                        activeNetwork.getState().getHumanName());
+                activeNetwork
+                        .getSubType()
+                        .ifPresent(
+                                subType ->
+                                        available.setAttribute(
+                                                SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE,
+                                                subType));
                 available.end();
             }
         }

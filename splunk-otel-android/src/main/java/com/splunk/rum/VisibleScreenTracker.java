@@ -17,23 +17,22 @@
 package com.splunk.rum;
 
 import android.app.Activity;
-
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
-
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Wherein we do our best to figure out what "screen" is visible and what was the previously visible "screen".
- * <p>
- * In general, we favor using the last fragment that was resumed, but fall back to the last resumed activity
- * in case we don't have a fragment.
- * <p>
- * We always ignore NavHostFragment instances since they aren't ever visible to the user.
- * <p>
- * We have to treat DialogFragments slightly differently since they don't replace the launching screen, and
- * the launching screen never leaves visibility.
+ * Wherein we do our best to figure out what "screen" is visible and what was the previously visible
+ * "screen".
+ *
+ * <p>In general, we favor using the last fragment that was resumed, but fall back to the last
+ * resumed activity in case we don't have a fragment.
+ *
+ * <p>We always ignore NavHostFragment instances since they aren't ever visible to the user.
+ *
+ * <p>We have to treat DialogFragments slightly differently since they don't replace the launching
+ * screen, and the launching screen never leaves visibility.
  */
 class VisibleScreenTracker {
     private final AtomicReference<String> lastResumedActivity = new AtomicReference<>();
@@ -71,7 +70,7 @@ class VisibleScreenTracker {
     }
 
     void fragmentResumed(Fragment fragment) {
-        //skip the NavHostFragment since it's never really "visible" by itself.
+        // skip the NavHostFragment since it's never really "visible" by itself.
         if (fragment instanceof NavHostFragment) {
             return;
         }
@@ -83,7 +82,7 @@ class VisibleScreenTracker {
     }
 
     void fragmentPaused(Fragment fragment) {
-        //skip the NavHostFragment since it's never really "visible" by itself.
+        // skip the NavHostFragment since it's never really "visible" by itself.
         if (fragment instanceof NavHostFragment) {
             return;
         }

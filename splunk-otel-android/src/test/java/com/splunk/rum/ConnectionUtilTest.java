@@ -34,14 +34,12 @@ import android.net.ConnectivityManager.NetworkCallback;
 import android.net.Network;
 import android.net.NetworkRequest;
 import android.os.Build;
-
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(maxSdk = Build.VERSION_CODES.S)
@@ -55,30 +53,40 @@ public class ConnectionUtilTest {
         ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
 
         when(networkDetector.detectCurrentNetwork())
-                .thenReturn(new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null)) //called on init
+                .thenReturn(new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null)) // called on init
                 .thenReturn(new CurrentNetwork(NetworkState.TRANSPORT_CELLULAR, "LTE"));
 
         ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);
         connectionUtil.startMonitoring(() -> networkRequest, connectivityManager);
 
         assertTrue(connectionUtil.isOnline());
-        assertEquals(new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null), connectionUtil.getActiveNetwork());
+        assertEquals(
+                new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null),
+                connectionUtil.getActiveNetwork());
 
-        ArgumentCaptor<NetworkCallback> monitorCaptor = ArgumentCaptor.forClass(NetworkCallback.class);
-        verify(connectivityManager).registerNetworkCallback(eq(networkRequest), monitorCaptor.capture());
+        ArgumentCaptor<NetworkCallback> monitorCaptor =
+                ArgumentCaptor.forClass(NetworkCallback.class);
+        verify(connectivityManager)
+                .registerNetworkCallback(eq(networkRequest), monitorCaptor.capture());
 
         AtomicInteger notified = new AtomicInteger(0);
-        connectionUtil.setInternetStateListener((deviceIsOnline, currentNetwork) -> {
-            int timesCalled = notified.incrementAndGet();
-            if (timesCalled == 1) {
-                assertTrue(deviceIsOnline);
-                assertEquals(new CurrentNetwork(NetworkState.TRANSPORT_CELLULAR, "LTE"), currentNetwork);
-            } else {
-                assertFalse(deviceIsOnline);
-                assertEquals(new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE, null), currentNetwork);
-            }
-        });
-        //note: we ignore the network passed in and just rely on refreshing the network info when this is happens
+        connectionUtil.setInternetStateListener(
+                (deviceIsOnline, currentNetwork) -> {
+                    int timesCalled = notified.incrementAndGet();
+                    if (timesCalled == 1) {
+                        assertTrue(deviceIsOnline);
+                        assertEquals(
+                                new CurrentNetwork(NetworkState.TRANSPORT_CELLULAR, "LTE"),
+                                currentNetwork);
+                    } else {
+                        assertFalse(deviceIsOnline);
+                        assertEquals(
+                                new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE, null),
+                                currentNetwork);
+                    }
+                });
+        // note: we ignore the network passed in and just rely on refreshing the network info when
+        // this is happens
         monitorCaptor.getValue().onAvailable(null);
         assertEquals(1, notified.get());
         monitorCaptor.getValue().onLost(null);
@@ -100,24 +108,34 @@ public class ConnectionUtilTest {
         connectionUtil.startMonitoring(() -> networkRequest, connectivityManager);
 
         assertTrue(connectionUtil.isOnline());
-        assertEquals(new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null), connectionUtil.getActiveNetwork());
-        verify(connectivityManager, never()).registerNetworkCallback(eq(networkRequest), isA(NetworkCallback.class));
+        assertEquals(
+                new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null),
+                connectionUtil.getActiveNetwork());
+        verify(connectivityManager, never())
+                .registerNetworkCallback(eq(networkRequest), isA(NetworkCallback.class));
 
-        ArgumentCaptor<NetworkCallback> monitorCaptor = ArgumentCaptor.forClass(NetworkCallback.class);
+        ArgumentCaptor<NetworkCallback> monitorCaptor =
+                ArgumentCaptor.forClass(NetworkCallback.class);
         verify(connectivityManager).registerDefaultNetworkCallback(monitorCaptor.capture());
 
         AtomicInteger notified = new AtomicInteger(0);
-        connectionUtil.setInternetStateListener((deviceIsOnline, currentNetwork) -> {
-            int timesCalled = notified.incrementAndGet();
-            if (timesCalled == 1) {
-                assertTrue(deviceIsOnline);
-                assertEquals(new CurrentNetwork(NetworkState.TRANSPORT_CELLULAR, "LTE"), currentNetwork);
-            } else {
-                assertFalse(deviceIsOnline);
-                assertEquals(new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE, null), currentNetwork);
-            }
-        });
-        //note: we ignore the network passed in and just rely on refreshing the network info when this is happens
+        connectionUtil.setInternetStateListener(
+                (deviceIsOnline, currentNetwork) -> {
+                    int timesCalled = notified.incrementAndGet();
+                    if (timesCalled == 1) {
+                        assertTrue(deviceIsOnline);
+                        assertEquals(
+                                new CurrentNetwork(NetworkState.TRANSPORT_CELLULAR, "LTE"),
+                                currentNetwork);
+                    } else {
+                        assertFalse(deviceIsOnline);
+                        assertEquals(
+                                new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE, null),
+                                currentNetwork);
+                    }
+                });
+        // note: we ignore the network passed in and just rely on refreshing the network info when
+        // this is happens
         monitorCaptor.getValue().onAvailable(null);
         assertEquals(1, notified.get());
         monitorCaptor.getValue().onLost(null);
@@ -139,13 +157,17 @@ public class ConnectionUtilTest {
         NetworkDetector networkDetector = mock(NetworkDetector.class);
         ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
 
-        when(networkDetector.detectCurrentNetwork()).thenReturn(new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null));
+        when(networkDetector.detectCurrentNetwork())
+                .thenReturn(new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null));
         doThrow(new SecurityException("bug"))
-                .when(connectivityManager).registerDefaultNetworkCallback(isA(NetworkCallback.class));
+                .when(connectivityManager)
+                .registerDefaultNetworkCallback(isA(NetworkCallback.class));
 
         ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);
         connectionUtil.startMonitoring(() -> mock(NetworkRequest.class), connectivityManager);
-        assertEquals(new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null), connectionUtil.refreshNetworkStatus());
+        assertEquals(
+                new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null),
+                connectionUtil.refreshNetworkStatus());
     }
 
     @Test
@@ -155,13 +177,17 @@ public class ConnectionUtilTest {
         ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
         NetworkRequest networkRequest = mock(NetworkRequest.class);
 
-        when(networkDetector.detectCurrentNetwork()).thenReturn(new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null));
+        when(networkDetector.detectCurrentNetwork())
+                .thenReturn(new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null));
         doThrow(new SecurityException("bug"))
-                .when(connectivityManager).registerNetworkCallback(eq(networkRequest), isA(NetworkCallback.class));
+                .when(connectivityManager)
+                .registerNetworkCallback(eq(networkRequest), isA(NetworkCallback.class));
 
         ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);
         connectionUtil.startMonitoring(() -> networkRequest, connectivityManager);
-        assertEquals(new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null), connectionUtil.refreshNetworkStatus());
+        assertEquals(
+                new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null),
+                connectionUtil.refreshNetworkStatus());
     }
 
     @Test
@@ -171,11 +197,13 @@ public class ConnectionUtilTest {
         NetworkDetector networkDetector = mock(NetworkDetector.class);
         ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
 
-        doAnswer(invocation -> {
-            NetworkCallback callback = invocation.getArgument(1);
-            callback.onAvailable(mock(Network.class));
-            return null;
-        }).when(connectivityManager)
+        doAnswer(
+                        invocation -> {
+                            NetworkCallback callback = invocation.getArgument(1);
+                            callback.onAvailable(mock(Network.class));
+                            return null;
+                        })
+                .when(connectivityManager)
                 .registerNetworkCallback(eq(networkRequest), any(NetworkCallback.class));
 
         ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);
@@ -189,11 +217,13 @@ public class ConnectionUtilTest {
         NetworkDetector networkDetector = mock(NetworkDetector.class);
         ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
 
-        doAnswer(invocation -> {
-            NetworkCallback callback = invocation.getArgument(0);
-            callback.onAvailable(mock(Network.class));
-            return null;
-        }).when(connectivityManager)
+        doAnswer(
+                        invocation -> {
+                            NetworkCallback callback = invocation.getArgument(0);
+                            callback.onAvailable(mock(Network.class));
+                            return null;
+                        })
+                .when(connectivityManager)
                 .registerDefaultNetworkCallback(any(NetworkCallback.class));
 
         ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);

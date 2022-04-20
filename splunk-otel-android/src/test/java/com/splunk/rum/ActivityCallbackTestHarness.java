@@ -30,7 +30,7 @@ class ActivityCallbackTestHarness {
     }
 
     void runAppStartupLifecycle(Activity mainActivity) {
-        //app startup lifecycle is the same as a normal activity lifecycle
+        // app startup lifecycle is the same as a normal activity lifecycle
         runActivityCreationLifecycle(mainActivity);
     }
 
@@ -94,5 +94,4 @@ class ActivityCallbackTestHarness {
         runActivityStartedLifecycle(activity);
         runActivityResumedLifecycle(activity);
     }
-
 }

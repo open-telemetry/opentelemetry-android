@@ -16,10 +16,10 @@
 
 package com.splunk.rum;
 
+import static org.mockito.Mockito.mock;
+
 import android.app.Activity;
 import android.os.Bundle;
-
-import static org.mockito.Mockito.mock;
 
 class Pre29ActivityCallbackTestHarness {
 
@@ -30,7 +30,7 @@ class Pre29ActivityCallbackTestHarness {
     }
 
     void runAppStartupLifecycle(Activity mainActivity) {
-        //app startup lifecycle is the same as a normal activity lifecycle
+        // app startup lifecycle is the same as a normal activity lifecycle
         runActivityCreationLifecycle(mainActivity);
     }
 
@@ -82,5 +82,4 @@ class Pre29ActivityCallbackTestHarness {
         runActivityStartedLifecycle(activity);
         runActivityResumedLifecycle(activity);
     }
-
 }

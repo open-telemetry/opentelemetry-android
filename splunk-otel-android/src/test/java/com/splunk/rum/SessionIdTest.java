@@ -28,22 +28,19 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.sdk.testing.time.TestClock;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
-
-import io.opentelemetry.sdk.testing.time.TestClock;
-
 @RunWith(MockitoJUnitRunner.class)
 public class SessionIdTest {
 
-    @Mock
-    SessionIdTimeoutHandler timeoutHandler;
+    @Mock SessionIdTimeoutHandler timeoutHandler;
 
     @Test
     public void valueValid() {
@@ -66,7 +63,7 @@ public class SessionIdTest {
         clock.advance(59, TimeUnit.SECONDS);
         assertEquals(value, sessionId.getSessionId());
 
-        //now it should change.
+        // now it should change.
         clock.advance(1, TimeUnit.SECONDS);
         String newSessionId = sessionId.getSessionId();
         assertNotNull(newSessionId);

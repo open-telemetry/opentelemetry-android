@@ -23,7 +23,8 @@ import io.opentelemetry.api.trace.Tracer;
 
 final class SessionIdChangeTracer implements SessionIdChangeListener {
 
-    static final AttributeKey<String> PREVIOUS_SESSION_ID_KEY = stringKey("splunk.rum.previous_session_id");
+    static final AttributeKey<String> PREVIOUS_SESSION_ID_KEY =
+            stringKey("splunk.rum.previous_session_id");
 
     private final Tracer tracer;
 

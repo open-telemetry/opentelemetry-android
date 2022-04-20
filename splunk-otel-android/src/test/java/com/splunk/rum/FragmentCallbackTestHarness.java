@@ -16,14 +16,13 @@
 
 package com.splunk.rum;
 
+import static org.mockito.Mockito.mock;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
-
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-
-import static org.mockito.Mockito.mock;
 
 class FragmentCallbackTestHarness {
 
@@ -93,5 +92,4 @@ class FragmentCallbackTestHarness {
 
         callbacks.onFragmentDetached(fragmentManager, fragment);
     }
-
 }

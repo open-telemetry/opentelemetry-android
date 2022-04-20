@@ -17,7 +17,10 @@
 package com.splunk.rum;
 
 import android.util.Log;
-
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -28,18 +31,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-
 class ThrottlingExporter implements SpanExporter {
     private final SpanExporter delegate;
     private final Function<SpanData, String> categoryFunction;
     private final long windowSizeInNanos;
     private final int maxSpansInWindow;
-    // note: no need to make this thread-safe since it will only ever be called from the BatchSpanProcessor worker thread.
-    // the implementation here needs to support null keys, or we'd need to use a default component value.
+    // note: no need to make this thread-safe since it will only ever be called from the
+    // BatchSpanProcessor worker thread.
+    // the implementation here needs to support null keys, or we'd need to use a default component
+    // value.
     private final Map<String, Window> categoryToWindow = new HashMap<>();
 
     private ThrottlingExporter(Builder builder) {
@@ -91,8 +91,9 @@ class ThrottlingExporter implements SpanExporter {
             // remove oldest entries until the window shrinks to the configured size
             while (true) {
                 Long first = timestamps.peekFirst();
-                //this shouldn't happen, due to the single-threaded nature of things here, but
-                //just to be on the safe side, don't blow up if something has cleared out the window.
+                // this shouldn't happen, due to the single-threaded nature of things here, but
+                // just to be on the safe side, don't blow up if something has cleared out the
+                // window.
                 if (first == null) {
                     break;
                 }

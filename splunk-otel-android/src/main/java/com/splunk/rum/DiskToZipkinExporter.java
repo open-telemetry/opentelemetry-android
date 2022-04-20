@@ -1,12 +1,26 @@
+/*
+ * Copyright Splunk Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.splunk.rum;
 
 import static com.splunk.rum.SplunkRum.LOG_TAG;
 import static java.util.Collections.emptyList;
 
 import android.util.Log;
-
 import java.io.File;
-import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -14,13 +28,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import zipkin2.Call;
-import zipkin2.reporter.Sender;
-
 /**
- * An exporter that pulls pre-encoded zipkin spans from storage and sends them
- * via a sender. It is bandwidth sensitive and will throttle back if the limit
- * is exceeded.
+ * An exporter that pulls pre-encoded zipkin spans from storage and sends them via a sender. It is
+ * bandwidth sensitive and will throttle back if the limit is exceeded.
  */
 class DiskToZipkinExporter {
 
@@ -48,7 +58,7 @@ class DiskToZipkinExporter {
         threadPool.scheduleAtFixedRate(this::doExportCycle, 5, 5, TimeUnit.SECONDS);
     }
 
-    //Visible for testing
+    // Visible for testing
     void doExportCycle() {
         try {
             exportPendingFiles();
@@ -59,7 +69,9 @@ class DiskToZipkinExporter {
 
     private void exportPendingFiles() {
         if (!connectionUtil.refreshNetworkStatus().isOnline()) {
-            Log.i(SplunkRum.LOG_TAG, "Network offline, leaving spans on disk for for eventual export.");
+            Log.i(
+                    SplunkRum.LOG_TAG,
+                    "Network offline, leaving spans on disk for for eventual export.");
             return;
         }
 
@@ -69,13 +81,17 @@ class DiskToZipkinExporter {
 
             double sustainedRate = bandwidthTracker.totalSustainedRate();
             if (sustainedRate > bandwidthLimit) {
-                Log.i(SplunkRum.LOG_TAG, String.format("Export rate %.2f exceeds limit of %.2f, backing off", sustainedRate, bandwidthLimit));
+                Log.i(
+                        SplunkRum.LOG_TAG,
+                        String.format(
+                                "Export rate %.2f exceeds limit of %.2f, backing off",
+                                sustainedRate, bandwidthLimit));
                 break;
             }
 
             boolean dataWasSent = fileSender.handleFileOnDisk(file);
             sentAnything |= dataWasSent;
-            if (!dataWasSent) {   // Don't bother trying any remaining files if this one failed.
+            if (!dataWasSent) { // Don't bother trying any remaining files if this one failed.
                 break;
             }
         }
@@ -85,7 +101,8 @@ class DiskToZipkinExporter {
     }
 
     private List<File> getPendingFiles() {
-        return fileUtils.listSpanFiles(spanFilesPath)
+        return fileUtils
+                .listSpanFiles(spanFilesPath)
                 .sorted(Comparator.comparing(File::getName))
                 .collect(Collectors.toList());
     }
@@ -117,12 +134,12 @@ class DiskToZipkinExporter {
             return this;
         }
 
-        Builder bandwidthTracker(BandwidthTracker bandwidthTracker){
+        Builder bandwidthTracker(BandwidthTracker bandwidthTracker) {
             this.bandwidthTracker = bandwidthTracker;
             return this;
         }
 
-        Builder fileSender(FileSender fileSender){
+        Builder fileSender(FileSender fileSender) {
             this.fileSender = fileSender;
             return this;
         }
@@ -146,5 +163,4 @@ class DiskToZipkinExporter {
             return new DiskToZipkinExporter(this);
         }
     }
-
 }

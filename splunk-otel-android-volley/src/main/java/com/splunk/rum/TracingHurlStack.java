@@ -20,17 +20,14 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.toolbox.HttpResponse;
 import com.android.volley.toolbox.HurlStack;
-
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
-
 import javax.net.ssl.SSLSocketFactory;
-
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
-import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 
 final class TracingHurlStack extends HurlStack {
 
@@ -42,12 +39,17 @@ final class TracingHurlStack extends HurlStack {
         this.instrumenter = instrumenter;
     }
 
-    TracingHurlStack(Instrumenter<RequestWrapper, HttpResponse> instrumenter, HurlStack.UrlRewriter urlRewriter) {
+    TracingHurlStack(
+            Instrumenter<RequestWrapper, HttpResponse> instrumenter,
+            HurlStack.UrlRewriter urlRewriter) {
         super(urlRewriter);
         this.instrumenter = instrumenter;
     }
 
-    TracingHurlStack(Instrumenter<RequestWrapper, HttpResponse> instrumenter, HurlStack.UrlRewriter urlRewriter, SSLSocketFactory sslSocketFactory) {
+    TracingHurlStack(
+            Instrumenter<RequestWrapper, HttpResponse> instrumenter,
+            HurlStack.UrlRewriter urlRewriter,
+            SSLSocketFactory sslSocketFactory) {
         super(urlRewriter, sslSocketFactory);
         this.instrumenter = instrumenter;
     }
@@ -85,7 +87,6 @@ final class TracingHurlStack extends HurlStack {
         }
 
         return response;
-
     }
 
     @Override

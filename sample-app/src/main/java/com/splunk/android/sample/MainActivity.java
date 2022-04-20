@@ -29,7 +29,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
@@ -39,20 +38,18 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
-
 import com.splunk.android.sample.databinding.ActivityMainBinding;
 import com.splunk.rum.RumScreenName;
 import com.splunk.rum.SplunkRum;
-
+import io.opentelemetry.api.common.Attributes;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
-
-import io.opentelemetry.api.common.Attributes;
 
 @RumScreenName("Buttercup")
 public class MainActivity extends AppCompatActivity {
 
-    private static final Attributes SETTINGS_FEATURE_ATTRIBUTES = Attributes.of(stringKey("FeatureName"), "Settings");
+    private static final Attributes SETTINGS_FEATURE_ATTRIBUTES =
+            Attributes.of(stringKey("FeatureName"), "Settings");
     static final int LOCATION_REQUEST_CODE = 42;
 
     private AppBarConfiguration appBarConfiguration;
@@ -68,23 +65,29 @@ public class MainActivity extends AppCompatActivity {
 
         setSupportActionBar(binding.toolbar);
 
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+        NavController navController =
+                Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
-        binding.fab.setOnClickListener(view -> {
-            new MailDialogFragment(this).show(getSupportFragmentManager(), "Mail");
-        });
+        binding.fab.setOnClickListener(
+                view -> {
+                    new MailDialogFragment(this).show(getSupportFragmentManager(), "Mail");
+                });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
             startListeningForLocations();
         } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
+                    LOCATION_REQUEST_CODE);
         }
     }
 
@@ -98,10 +101,12 @@ public class MainActivity extends AppCompatActivity {
     // we're pretty sure the permission was granted, so we're supressing the permission lint check
     @SuppressLint("MissingPermission")
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(
+            int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_REQUEST_CODE
-                && Arrays.stream(grantResults).allMatch(result -> result == PackageManager.PERMISSION_GRANTED)) {
+                && Arrays.stream(grantResults)
+                        .allMatch(result -> result == PackageManager.PERMISSION_GRANTED)) {
             startListeningForLocations();
         }
     }
@@ -109,7 +114,11 @@ public class MainActivity extends AppCompatActivity {
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     private void startListeningForLocations() {
         ((LocationManager) this.getSystemService(Context.LOCATION_SERVICE))
-                .requestLocationUpdates(LocationManager.GPS_PROVIDER, TimeUnit.SECONDS.toMillis(10), 100, locationListener);
+                .requestLocationUpdates(
+                        LocationManager.GPS_PROVIDER,
+                        TimeUnit.SECONDS.toMillis(10),
+                        100,
+                        locationListener);
     }
 
     @Override
@@ -140,7 +149,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+        NavController navController =
+                Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         return NavigationUI.navigateUp(navController, appBarConfiguration)
                 || super.onSupportNavigateUp();
     }

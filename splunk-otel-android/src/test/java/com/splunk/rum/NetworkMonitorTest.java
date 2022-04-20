@@ -16,27 +16,24 @@
 
 package com.splunk.rum;
 
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_TYPE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE;
-import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_TYPE;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 public class NetworkMonitorTest {
-    @Rule
-    public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
+    @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
     private Tracer tracer;
 
     @Before
@@ -44,10 +41,10 @@ public class NetworkMonitorTest {
         tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
     }
 
-
     @Test
     public void networkAvailable_wifi() {
-        NetworkMonitor.TracingConnectionStateListener listener = new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
+        NetworkMonitor.TracingConnectionStateListener listener =
+                new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
 
         listener.onAvailable(true, new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null));
 
@@ -63,7 +60,8 @@ public class NetworkMonitorTest {
 
     @Test
     public void networkAvailable_cellular() {
-        NetworkMonitor.TracingConnectionStateListener listener = new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
+        NetworkMonitor.TracingConnectionStateListener listener =
+                new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
 
         listener.onAvailable(true, new CurrentNetwork(NetworkState.TRANSPORT_CELLULAR, "LTE"));
 
@@ -79,7 +77,8 @@ public class NetworkMonitorTest {
 
     @Test
     public void networkLost() {
-        NetworkMonitor.TracingConnectionStateListener listener = new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
+        NetworkMonitor.TracingConnectionStateListener listener =
+                new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
 
         listener.onAvailable(false, new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE, null));
 
@@ -97,7 +96,8 @@ public class NetworkMonitorTest {
     public void noEventsPlease() {
         AtomicBoolean shouldEmitChangeEvents = new AtomicBoolean(false);
 
-        NetworkMonitor.TracingConnectionStateListener listener = new NetworkMonitor.TracingConnectionStateListener(tracer, shouldEmitChangeEvents);
+        NetworkMonitor.TracingConnectionStateListener listener =
+                new NetworkMonitor.TracingConnectionStateListener(tracer, shouldEmitChangeEvents);
 
         listener.onAvailable(false, new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE, null));
         assertTrue(otelTesting.getSpans().isEmpty());

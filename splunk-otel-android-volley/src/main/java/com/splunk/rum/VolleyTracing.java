@@ -18,34 +18,24 @@ package com.splunk.rum;
 
 import com.android.volley.toolbox.HttpResponse;
 import com.android.volley.toolbox.HurlStack;
-
-import javax.net.ssl.SSLSocketFactory;
-
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
+import javax.net.ssl.SSLSocketFactory;
 
-/**
- * Entrypoint for tracing Volley clients.
- */
+/** Entrypoint for tracing Volley clients. */
 public final class VolleyTracing {
 
-    /**
-     * Returns a new {@link VolleyTracing} configured with the given {@link SplunkRum}.
-     */
+    /** Returns a new {@link VolleyTracing} configured with the given {@link SplunkRum}. */
     public static VolleyTracing create(SplunkRum splunkRum) {
         return create(splunkRum.getOpenTelemetry());
     }
 
-    /**
-     * Returns a new {@link VolleyTracing} configured with the given {@link OpenTelemetry}.
-     */
+    /** Returns a new {@link VolleyTracing} configured with the given {@link OpenTelemetry}. */
     public static VolleyTracing create(OpenTelemetry openTelemetry) {
         return builder(openTelemetry).build();
     }
 
-    /**
-     * Returns a new {@link VolleyTracingBuilder} configured with the given {@link SplunkRum}.
-     */
+    /** Returns a new {@link VolleyTracingBuilder} configured with the given {@link SplunkRum}. */
     public static VolleyTracingBuilder builder(SplunkRum splunkRum) {
         return new VolleyTracingBuilder(splunkRum.getOpenTelemetry());
     }
@@ -63,25 +53,25 @@ public final class VolleyTracing {
         this.instrumenter = instrumenter;
     }
 
-    /**
-     * Returns a new {@link HurlStack} capable of tracing requests.
-     */
+    /** Returns a new {@link HurlStack} capable of tracing requests. */
     public HurlStack newHurlStack() {
         return new TracingHurlStack(instrumenter);
     }
 
     /**
-     * Returns a new {@link HurlStack} capable of tracing requests configured with given {@link HurlStack.UrlRewriter}.
+     * Returns a new {@link HurlStack} capable of tracing requests configured with given {@link
+     * HurlStack.UrlRewriter}.
      */
     public HurlStack newHurlStack(HurlStack.UrlRewriter urlRewriter) {
         return new TracingHurlStack(instrumenter, urlRewriter);
     }
 
     /**
-     * Returns a new {@link HurlStack} capable of tracing requests configured with given {@link HurlStack.UrlRewriter} and {@link SSLSocketFactory}.
+     * Returns a new {@link HurlStack} capable of tracing requests configured with given {@link
+     * HurlStack.UrlRewriter} and {@link SSLSocketFactory}.
      */
-    public HurlStack newHurlStack(HurlStack.UrlRewriter urlRewriter, SSLSocketFactory sslSocketFactory) {
+    public HurlStack newHurlStack(
+            HurlStack.UrlRewriter urlRewriter, SSLSocketFactory sslSocketFactory) {
         return new TracingHurlStack(instrumenter, urlRewriter, sslSocketFactory);
     }
-
 }

@@ -17,19 +17,17 @@
 package com.splunk.rum;
 
 import androidx.annotation.Nullable;
-
 import com.android.volley.AuthFailureError;
 import com.android.volley.Header;
 import com.android.volley.Request;
 import com.android.volley.toolbox.HttpResponse;
-
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesGetter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesGetter;
-
-enum VolleyHttpClientAttributesGetter implements HttpClientAttributesGetter<RequestWrapper, HttpResponse> {
+enum VolleyHttpClientAttributesGetter
+        implements HttpClientAttributesGetter<RequestWrapper, HttpResponse> {
     INSTANCE;
 
     @Override
@@ -82,12 +80,12 @@ enum VolleyHttpClientAttributesGetter implements HttpClientAttributesGetter<Requ
         }
 
         return header != null ? Collections.singletonList(header) : Collections.emptyList();
-
     }
 
     @Nullable
     @Override
-    public Long requestContentLength(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
+    public Long requestContentLength(
+            RequestWrapper requestWrapper, @Nullable HttpResponse response) {
         Request<?> request = requestWrapper.getRequest();
         try {
             return request.getBody() != null ? (long) request.getBody().length : null;
@@ -98,7 +96,8 @@ enum VolleyHttpClientAttributesGetter implements HttpClientAttributesGetter<Requ
 
     @Nullable
     @Override
-    public Long requestContentLengthUncompressed(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
+    public Long requestContentLengthUncompressed(
+            RequestWrapper requestWrapper, @Nullable HttpResponse response) {
         return null;
     }
 
@@ -108,19 +107,21 @@ enum VolleyHttpClientAttributesGetter implements HttpClientAttributesGetter<Requ
     }
 
     @Override
-    public Long responseContentLength(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
+    public Long responseContentLength(
+            RequestWrapper requestWrapper, @Nullable HttpResponse response) {
         return (long) response.getContentLength();
     }
 
     @Nullable
     @Override
-    public Long responseContentLengthUncompressed(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
+    public Long responseContentLengthUncompressed(
+            RequestWrapper requestWrapper, @Nullable HttpResponse response) {
         return null;
     }
 
     @Override
-    public List<String> responseHeader(RequestWrapper requestWrapper, @Nullable HttpResponse response,
-                                          String name) {
+    public List<String> responseHeader(
+            RequestWrapper requestWrapper, @Nullable HttpResponse response, String name) {
         return headersToList(response.getHeaders(), name);
     }
 

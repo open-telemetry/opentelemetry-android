@@ -41,7 +41,6 @@ android {
     }
 }
 
-
 dependencies {
     implementation("androidx.appcompat:appcompat:1.3.1")
     implementation("androidx.navigation:navigation-fragment:2.4.2")

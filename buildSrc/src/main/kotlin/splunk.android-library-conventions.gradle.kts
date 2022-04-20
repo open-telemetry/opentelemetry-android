@@ -83,7 +83,7 @@ val sourcesJar by tasks.registering(Jar::class) {
 
 project.afterEvaluate {
 
-    //note: we need to declare this here in afterEvaluate because the android plugin doesn't
+    // note: we need to declare this here in afterEvaluate because the android plugin doesn't
     // resolve dependencies early enough to make the libraryVariants hack work until here.
     val javadoc by tasks.registering(Javadoc::class) {
         source = android.sourceSets.named("main").get().java.getSourceFiles()

@@ -16,6 +16,12 @@
 
 package com.splunk.rum;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -23,23 +29,17 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-
 final class SpanDataModifier implements SpanExporter {
     private final SpanExporter delegate;
     private final Predicate<String> rejectSpanNamesPredicate;
     private final Map<AttributeKey<?>, Predicate<?>> rejectSpanAttributesPredicates;
     private final Map<AttributeKey<?>, Function<?, ?>> spanAttributeReplacements;
 
-    SpanDataModifier(SpanExporter delegate,
-                     Predicate<String> rejectSpanNamesPredicate,
-                     Map<AttributeKey<?>, Predicate<?>> rejectSpanAttributesPredicates,
-                     Map<AttributeKey<?>, Function<?, ?>> spanAttributeReplacements) {
+    SpanDataModifier(
+            SpanExporter delegate,
+            Predicate<String> rejectSpanNamesPredicate,
+            Map<AttributeKey<?>, Predicate<?>> rejectSpanAttributesPredicates,
+            Map<AttributeKey<?>, Function<?, ?>> spanAttributeReplacements) {
         this.delegate = delegate;
         this.rejectSpanNamesPredicate = rejectSpanNamesPredicate;
         this.rejectSpanAttributesPredicates = rejectSpanAttributesPredicates;
@@ -63,7 +63,8 @@ final class SpanDataModifier implements SpanExporter {
             return true;
         }
         Attributes attributes = span.getAttributes();
-        for (Map.Entry<AttributeKey<?>, Predicate<?>> e : rejectSpanAttributesPredicates.entrySet()) {
+        for (Map.Entry<AttributeKey<?>, Predicate<?>> e :
+                rejectSpanAttributesPredicates.entrySet()) {
             AttributeKey<?> key = e.getKey();
             Predicate<? super Object> valuePredicate = (Predicate<? super Object>) e.getValue();
             Object attributeValue = attributes.get(key);
@@ -80,14 +81,18 @@ final class SpanDataModifier implements SpanExporter {
         }
 
         AttributesBuilder modifiedAttributes = Attributes.builder();
-        span.getAttributes().forEach((key, value) -> {
-            Function<? super Object, ?> valueModifier =
-                    (Function<? super Object, ?>) spanAttributeReplacements.getOrDefault(key, Function.identity());
-            Object newValue = valueModifier.apply(value);
-            if (newValue != null) {
-                modifiedAttributes.put((AttributeKey<Object>) key, newValue);
-            }
-        });
+        span.getAttributes()
+                .forEach(
+                        (key, value) -> {
+                            Function<? super Object, ?> valueModifier =
+                                    (Function<? super Object, ?>)
+                                            spanAttributeReplacements.getOrDefault(
+                                                    key, Function.identity());
+                            Object newValue = valueModifier.apply(value);
+                            if (newValue != null) {
+                                modifiedAttributes.put((AttributeKey<Object>) key, newValue);
+                            }
+                        });
 
         return ModifiedSpanData.create(span, modifiedAttributes);
     }

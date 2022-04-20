@@ -19,16 +19,13 @@ package com.splunk.rum;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-
+import io.opentelemetry.api.trace.Tracer;
 import java.util.HashMap;
 import java.util.Map;
-
-import io.opentelemetry.api.trace.Tracer;
 
 class RumFragmentLifecycleCallbacks extends FragmentManager.FragmentLifecycleCallbacks {
     private final Map<String, FragmentTracer> tracersByFragmentClassName = new HashMap<>();
@@ -42,37 +39,41 @@ class RumFragmentLifecycleCallbacks extends FragmentManager.FragmentLifecycleCal
     }
 
     @Override
-    public void onFragmentPreAttached(@NonNull FragmentManager fm, @NonNull Fragment f, @NonNull Context context) {
+    public void onFragmentPreAttached(
+            @NonNull FragmentManager fm, @NonNull Fragment f, @NonNull Context context) {
         super.onFragmentPreAttached(fm, f, context);
-        getTracer(f)
-                .startFragmentCreation()
-                .addEvent("fragmentPreAttached");
+        getTracer(f).startFragmentCreation().addEvent("fragmentPreAttached");
     }
 
     @Override
-    public void onFragmentAttached(@NonNull FragmentManager fm, @NonNull Fragment f, @NonNull Context context) {
+    public void onFragmentAttached(
+            @NonNull FragmentManager fm, @NonNull Fragment f, @NonNull Context context) {
         super.onFragmentAttached(fm, f, context);
         addEvent(f, "fragmentAttached");
     }
 
     @Override
-    public void onFragmentPreCreated(@NonNull FragmentManager fm, @NonNull Fragment f, @Nullable Bundle savedInstanceState) {
+    public void onFragmentPreCreated(
+            @NonNull FragmentManager fm, @NonNull Fragment f, @Nullable Bundle savedInstanceState) {
         super.onFragmentPreCreated(fm, f, savedInstanceState);
         addEvent(f, "fragmentPreCreated");
     }
 
     @Override
-    public void onFragmentCreated(@NonNull FragmentManager fm, @NonNull Fragment f, @Nullable Bundle savedInstanceState) {
+    public void onFragmentCreated(
+            @NonNull FragmentManager fm, @NonNull Fragment f, @Nullable Bundle savedInstanceState) {
         super.onFragmentCreated(fm, f, savedInstanceState);
         addEvent(f, "fragmentCreated");
     }
 
     @Override
-    public void onFragmentViewCreated(@NonNull FragmentManager fm, @NonNull Fragment f, @NonNull View v, @Nullable Bundle savedInstanceState) {
+    public void onFragmentViewCreated(
+            @NonNull FragmentManager fm,
+            @NonNull Fragment f,
+            @NonNull View v,
+            @Nullable Bundle savedInstanceState) {
         super.onFragmentViewCreated(fm, f, v, savedInstanceState);
-        getTracer(f)
-                .startSpanIfNoneInProgress("Restored")
-                .addEvent("fragmentViewCreated");
+        getTracer(f).startSpanIfNoneInProgress("Restored").addEvent("fragmentViewCreated");
     }
 
     @Override
@@ -102,13 +103,12 @@ class RumFragmentLifecycleCallbacks extends FragmentManager.FragmentLifecycleCal
     @Override
     public void onFragmentStopped(@NonNull FragmentManager fm, @NonNull Fragment f) {
         super.onFragmentStopped(fm, f);
-        getTracer(f)
-                .addEvent("fragmentStopped")
-                .endActiveSpan();
+        getTracer(f).addEvent("fragmentStopped").endActiveSpan();
     }
 
     @Override
-    public void onFragmentSaveInstanceState(@NonNull FragmentManager fm, @NonNull Fragment f, @NonNull Bundle outState) {
+    public void onFragmentSaveInstanceState(
+            @NonNull FragmentManager fm, @NonNull Fragment f, @NonNull Bundle outState) {
         super.onFragmentSaveInstanceState(fm, f, outState);
     }
 
@@ -124,16 +124,15 @@ class RumFragmentLifecycleCallbacks extends FragmentManager.FragmentLifecycleCal
     @Override
     public void onFragmentDestroyed(@NonNull FragmentManager fm, @NonNull Fragment f) {
         super.onFragmentDestroyed(fm, f);
-        //note: this might not get called if the dev has checked "retainInstance" on the fragment
-        getTracer(f)
-                .startSpanIfNoneInProgress("Destroyed")
-                .addEvent("fragmentDestroyed");
+        // note: this might not get called if the dev has checked "retainInstance" on the fragment
+        getTracer(f).startSpanIfNoneInProgress("Destroyed").addEvent("fragmentDestroyed");
     }
 
     @Override
     public void onFragmentDetached(@NonNull FragmentManager fm, @NonNull Fragment f) {
         super.onFragmentDetached(fm, f);
-        // this is a terminal operation, but might also be the only thing we see on app getting killed, so
+        // this is a terminal operation, but might also be the only thing we see on app getting
+        // killed, so
         getTracer(f)
                 .startSpanIfNoneInProgress("Detached")
                 .addEvent("fragmentDetached")
@@ -141,14 +140,16 @@ class RumFragmentLifecycleCallbacks extends FragmentManager.FragmentLifecycleCal
     }
 
     private void addEvent(@NonNull Fragment fragment, String eventName) {
-        FragmentTracer fragmentTracer = tracersByFragmentClassName.get(fragment.getClass().getName());
+        FragmentTracer fragmentTracer =
+                tracersByFragmentClassName.get(fragment.getClass().getName());
         if (fragmentTracer != null) {
             fragmentTracer.addEvent(eventName);
         }
     }
 
     private FragmentTracer getTracer(Fragment fragment) {
-        FragmentTracer activityTracer = tracersByFragmentClassName.get(fragment.getClass().getName());
+        FragmentTracer activityTracer =
+                tracersByFragmentClassName.get(fragment.getClass().getName());
         if (activityTracer == null) {
             activityTracer = new FragmentTracer(fragment, tracer, visibleScreenTracker);
             tracersByFragmentClassName.put(fragment.getClass().getName(), activityTracer);

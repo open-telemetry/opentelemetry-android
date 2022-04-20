@@ -19,7 +19,6 @@ package com.splunk.rum;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Fail.fail;
-import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -30,14 +29,12 @@ import com.android.volley.toolbox.RequestFuture;
 import com.android.volley.toolbox.StringRequest;
 import com.google.mockwebserver.MockResponse;
 import com.google.mockwebserver.MockWebServer;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URL;
@@ -48,31 +45,30 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 
 @RunWith(RobolectricTestRunner.class)
 public class TracingHurlStackTest {
 
-    @Rule
-    public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
+    @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
     private TestRequestQueue testQueue;
     private StuckTestHelper stuckTestHelper;
     private MockWebServer server;
 
     @Before
     public void setup() {
-        //setup Volley with TracingHurlStack
-        HurlStack tracingHurlStack = VolleyTracing.create(otelTesting.getOpenTelemetry()).newHurlStack();
+        // setup Volley with TracingHurlStack
+        HurlStack tracingHurlStack =
+                VolleyTracing.create(otelTesting.getOpenTelemetry()).newHurlStack();
         testQueue = TestRequestQueue.create(tracingHurlStack);
         stuckTestHelper = StuckTestHelper.start();
 
-        //setup test server
+        // setup test server
         server = new MockWebServer();
     }
 
@@ -83,7 +79,8 @@ public class TracingHurlStackTest {
     }
 
     @Test
-    public void success() throws IOException, InterruptedException, ExecutionException, TimeoutException {
+    public void success()
+            throws IOException, InterruptedException, ExecutionException, TimeoutException {
 
         String responseBody = "success";
         server.enqueue(new MockResponse().setBody(responseBody));
@@ -92,14 +89,14 @@ public class TracingHurlStackTest {
         URL url = server.getUrl("/success");
 
         RequestFuture<String> response = RequestFuture.newFuture();
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url.toString(),
-                response, response);
+        StringRequest stringRequest =
+                new StringRequest(Request.Method.GET, url.toString(), response, response);
 
         testQueue.addToQueue(stringRequest);
 
         String result = response.get(10, TimeUnit.SECONDS);
 
-        assertThat(server.takeRequest().getPath()).isEqualTo("/success"); //server received request
+        assertThat(server.takeRequest().getPath()).isEqualTo("/success"); // server received request
         assertThat(result).isEqualTo("success");
 
         List<SpanData> spans = otelTesting.getSpans();
@@ -120,14 +117,15 @@ public class TracingHurlStackTest {
         URL url = server.getUrl("/error");
 
         RequestFuture<String> response = RequestFuture.newFuture();
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url.toString(),
-                response, response);
+        StringRequest stringRequest =
+                new StringRequest(Request.Method.GET, url.toString(), response, response);
 
         testQueue.addToQueue(stringRequest);
 
-        assertThatThrownBy(() -> response.get(10, TimeUnit.SECONDS)).hasCauseInstanceOf(VolleyError.class);
+        assertThatThrownBy(() -> response.get(10, TimeUnit.SECONDS))
+                .hasCauseInstanceOf(VolleyError.class);
 
-        assertThat(server.takeRequest().getPath()).isEqualTo("/error"); //server received request
+        assertThat(server.takeRequest().getPath()).isEqualTo("/error"); // server received request
 
         List<SpanData> spans = otelTesting.getSpans();
         assertThat(spans).hasSize(1);
@@ -147,16 +145,17 @@ public class TracingHurlStackTest {
 
         RequestFuture<String> response = RequestFuture.newFuture();
 
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url.toString(),
-                response, response);
+        StringRequest stringRequest =
+                new StringRequest(Request.Method.GET, url.toString(), response, response);
         stringRequest.setRetryPolicy(new DefaultRetryPolicy(50, 0, 1f));
 
         testQueue.addToQueue(stringRequest);
 
-        //thrown exception type depends on the system, e.g. on MacOS - TimeoutError, on Ubuntu - NoConnectionException
+        // thrown exception type depends on the system, e.g. on MacOS - TimeoutError, on Ubuntu -
+        // NoConnectionException
         assertThatThrownBy(() -> response.get(3, TimeUnit.SECONDS)).isInstanceOf(Throwable.class);
 
-        assertThat(server.getRequestCount()).isEqualTo(0); //server received no requests
+        assertThat(server.getRequestCount()).isEqualTo(0); // server received no requests
 
         List<SpanData> spans = otelTesting.getSpans();
         assertThat(spans).hasSize(1);
@@ -185,7 +184,9 @@ public class TracingHurlStackTest {
         URL url = server.getUrl("/success");
 
         TestResponseListener testResponseListener = new TestResponseListener(2);
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url.toString(), testResponseListener, error -> {});
+        StringRequest stringRequest =
+                new StringRequest(
+                        Request.Method.GET, url.toString(), testResponseListener, error -> {});
         testQueue.addToQueue(stringRequest);
         testQueue.addToQueue(stringRequest);
 
@@ -208,7 +209,7 @@ public class TracingHurlStackTest {
         int count = 50;
         String responseBody = "success";
 
-        for(int i = 0; i < count; i++){
+        for (int i = 0; i < count; i++) {
             server.enqueue(new MockResponse().setBody(responseBody));
         }
 
@@ -219,17 +220,22 @@ public class TracingHurlStackTest {
         ExecutorService pool = Executors.newFixedThreadPool(4);
 
         TestResponseListener testResponseListener = new TestResponseListener(count);
-        for(int i = 0; i < count; i++){
+        for (int i = 0; i < count; i++) {
             Runnable job =
-                () -> {
-                    try {
-                        latch.await();
-                    } catch (InterruptedException e) {
-                        throw new AssertionError(e);
-                    }
-                    StringRequest stringRequest = new StringRequest(Request.Method.GET, url.toString(), testResponseListener, error -> {});
-                    testQueue.addToQueue(stringRequest);
-                };
+                    () -> {
+                        try {
+                            latch.await();
+                        } catch (InterruptedException e) {
+                            throw new AssertionError(e);
+                        }
+                        StringRequest stringRequest =
+                                new StringRequest(
+                                        Request.Method.GET,
+                                        url.toString(),
+                                        testResponseListener,
+                                        error -> {});
+                        testQueue.addToQueue(stringRequest);
+                    };
             pool.submit(job);
         }
 
@@ -238,11 +244,12 @@ public class TracingHurlStackTest {
 
         assertThat(server.getRequestCount()).isEqualTo(50);
 
-        otelTesting.getSpans().forEach(
-                span -> {
-                    verifyAttributes(span, url, 200L, "success");
-                }
-        );
+        otelTesting
+                .getSpans()
+                .forEach(
+                        span -> {
+                            verifyAttributes(span, url, 200L, "success");
+                        });
 
         pool.shutdown();
     }
@@ -258,8 +265,9 @@ public class TracingHurlStackTest {
         assertThat(spanAttributes.get(SemanticAttributes.HTTP_URL)).isEqualTo(url.toString());
         assertThat(spanAttributes.get(SemanticAttributes.HTTP_METHOD)).isEqualTo("GET");
 
-        if(responseBody != null){
-            assertThat(span.getAttributes().get(SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH)).isEqualTo(responseBody.length());
+        if (responseBody != null) {
+            assertThat(span.getAttributes().get(SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH))
+                    .isEqualTo(responseBody.length());
         }
     }
 
@@ -286,5 +294,4 @@ public class TracingHurlStackTest {
             countDownLatch.countDown();
         }
     }
-
 }

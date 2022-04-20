@@ -19,18 +19,15 @@ package com.splunk.rum;
 import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
-
+import io.opentelemetry.api.trace.Tracer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-
-import io.opentelemetry.api.trace.Tracer;
 
 class Pre29ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     private final Tracer tracer;
@@ -41,7 +38,11 @@ class Pre29ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     private final List<AppStateListener> appStateListeners;
     private int numberOfOpenActivities = 0;
 
-    Pre29ActivityCallbacks(Tracer tracer, VisibleScreenTracker visibleScreenTracker, AppStartupTimer appStartupTimer, List<AppStateListener> appStateListeners) {
+    Pre29ActivityCallbacks(
+            Tracer tracer,
+            VisibleScreenTracker visibleScreenTracker,
+            AppStartupTimer appStartupTimer,
+            List<AppStateListener> appStateListeners) {
         this.tracer = tracer;
         this.visibleScreenTracker = visibleScreenTracker;
         this.appStartupTimer = appStartupTimer;
@@ -50,13 +51,13 @@ class Pre29ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
-        getTracer(activity)
-                .startActivityCreation()
-                .addEvent("activityCreated");
+        getTracer(activity).startActivityCreation().addEvent("activityCreated");
 
         if (activity instanceof FragmentActivity) {
-            FragmentManager fragmentManager = ((FragmentActivity) activity).getSupportFragmentManager();
-            fragmentManager.registerFragmentLifecycleCallbacks(new RumFragmentLifecycleCallbacks(tracer, visibleScreenTracker), true);
+            FragmentManager fragmentManager =
+                    ((FragmentActivity) activity).getSupportFragmentManager();
+            fragmentManager.registerFragmentLifecycleCallbacks(
+                    new RumFragmentLifecycleCallbacks(tracer, visibleScreenTracker), true);
         }
     }
 
@@ -107,7 +108,7 @@ class Pre29ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
-        //todo: add event
+        // todo: add event
     }
 
     @Override
@@ -119,12 +120,18 @@ class Pre29ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     }
 
     private ActivityTracer getTracer(Activity activity) {
-        ActivityTracer activityTracer = tracersByActivityClassName.get(activity.getClass().getName());
+        ActivityTracer activityTracer =
+                tracersByActivityClassName.get(activity.getClass().getName());
         if (activityTracer == null) {
-            activityTracer = new ActivityTracer(activity, initialAppActivity, tracer, visibleScreenTracker, appStartupTimer);
+            activityTracer =
+                    new ActivityTracer(
+                            activity,
+                            initialAppActivity,
+                            tracer,
+                            visibleScreenTracker,
+                            appStartupTimer);
             tracersByActivityClassName.put(activity.getClass().getName(), activityTracer);
         }
         return activityTracer;
     }
-
 }

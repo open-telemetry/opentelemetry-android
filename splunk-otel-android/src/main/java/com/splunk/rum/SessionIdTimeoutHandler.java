@@ -16,17 +16,18 @@
 
 package com.splunk.rum;
 
-import java.util.concurrent.TimeUnit;
-
 import io.opentelemetry.sdk.common.Clock;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class encapsulates the following criteria about the sessionId timeout:
  *
  * <ul>
- *     <li>If the app is in the foreground sessionId should never time out.
- *     <li>If the app is in the background and no activity (spans) happens for >15 minutes, sessionId should time out.
- *     <li>If the app is in the background and some activity (spans) happens in <15 minute intervals, sessionId should not time out.
+ *   <li>If the app is in the foreground sessionId should never time out.
+ *   <li>If the app is in the background and no activity (spans) happens for >15 minutes, sessionId
+ *       should time out.
+ *   <li>If the app is in the background and some activity (spans) happens in <15 minute intervals,
+ *       sessionId should not time out.
  * </ul>
  *
  * <p>Consequently, when the app spent >15 minutes without any activity (spans) in the background,
@@ -80,9 +81,7 @@ final class SessionIdTimeoutHandler implements AppStateListener {
     private enum State {
         FOREGROUND,
         BACKGROUND,
-        /**
-         * A temporary state representing the first event after the app has been brought back.
-         */
+        /** A temporary state representing the first event after the app has been brought back. */
         TRANSITIONING_TO_FOREGROUND
     }
 }

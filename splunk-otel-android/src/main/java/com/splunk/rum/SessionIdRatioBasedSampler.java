@@ -16,21 +16,20 @@
 
 package com.splunk.rum;
 
-import java.util.List;
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
+import java.util.List;
 
 /**
  * Session ID ratio based sampler. Uses {@link Sampler#traceIdRatioBased(double)} sampler
  * internally, but passes sessionId instead of traceId to the underlying sampler in order to use the
- * same ratio logic but on sessionId instead. This is valid as {@link SessionId} uses
- * {@link io.opentelemetry.api.trace.TraceId#fromLongs(long, long)} internally to generate random
- * session IDs.
+ * same ratio logic but on sessionId instead. This is valid as {@link SessionId} uses {@link
+ * io.opentelemetry.api.trace.TraceId#fromLongs(long, long)} internally to generate random session
+ * IDs.
  */
 class SessionIdRatioBasedSampler implements Sampler {
     private final SessionId sessionId;
@@ -43,13 +42,22 @@ class SessionIdRatioBasedSampler implements Sampler {
     }
 
     @Override
-    public SamplingResult shouldSample(Context parentContext, String traceId, String name, SpanKind spanKind, Attributes attributes, List<LinkData> parentLinks) {
+    public SamplingResult shouldSample(
+            Context parentContext,
+            String traceId,
+            String name,
+            SpanKind spanKind,
+            Attributes attributes,
+            List<LinkData> parentLinks) {
         // Replace traceId with sessionId
-        return ratioBasedSampler.shouldSample(parentContext, sessionId.getSessionId(), name, spanKind, attributes, parentLinks);
+        return ratioBasedSampler.shouldSample(
+                parentContext, sessionId.getSessionId(), name, spanKind, attributes, parentLinks);
     }
 
     @Override
     public String getDescription() {
-        return String.format("SessionIdRatioBased{traceIdRatioBased:%s}", this.ratioBasedSampler.getDescription());
+        return String.format(
+                "SessionIdRatioBased{traceIdRatioBased:%s}",
+                this.ratioBasedSampler.getDescription());
     }
 }
