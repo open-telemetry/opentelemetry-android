@@ -48,15 +48,16 @@ dependencies {
 
     implementation(project(":splunk-otel-android"))
 
-    api(platform("io.opentelemetry:opentelemetry-bom:1.12.0"))
+    api(platform("io.opentelemetry:opentelemetry-bom:1.13.0"))
     api("io.opentelemetry:opentelemetry-api")
     implementation("io.opentelemetry:opentelemetry-sdk")
 
-    implementation(platform("io.opentelemetry:opentelemetry-bom-alpha:1.12.0-alpha"))
+    implementation(platform("io.opentelemetry:opentelemetry-bom-alpha:1.13.0-alpha"))
     implementation("io.opentelemetry:opentelemetry-semconv")
 
-    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.12.1-alpha"))
+    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.13.1-alpha"))
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.assertj:assertj-core:3.22.0")

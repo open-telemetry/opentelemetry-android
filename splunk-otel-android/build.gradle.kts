@@ -44,15 +44,15 @@ dependencies {
     implementation("androidx.core:core:1.3.1")
     implementation("androidx.navigation:navigation-fragment:2.4.2")
 
-    api(platform("io.opentelemetry:opentelemetry-bom:1.12.0"))
+    api(platform("io.opentelemetry:opentelemetry-bom:1.13.0"))
     implementation("io.opentelemetry:opentelemetry-sdk")
     implementation("io.opentelemetry:opentelemetry-exporter-zipkin")
     implementation("io.zipkin.reporter2:zipkin-sender-okhttp3")
     implementation("io.opentelemetry:opentelemetry-exporter-logging")
 
-    implementation(platform("io.opentelemetry:opentelemetry-bom-alpha:1.12.0-alpha"))
+    implementation(platform("io.opentelemetry:opentelemetry-bom-alpha:1.13.0-alpha"))
     implementation("io.opentelemetry:opentelemetry-semconv")
-    implementation("io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0:1.12.0-alpha")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0:1.13.1-alpha")
 
     api("io.opentelemetry:opentelemetry-api")
     api("com.squareup.okhttp3:okhttp:4.9.3")

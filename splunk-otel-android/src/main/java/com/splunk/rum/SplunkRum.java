@@ -34,7 +34,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTracing;
+import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.concurrent.TimeUnit;
@@ -176,8 +176,8 @@ public class SplunkRum {
         return createOkHttpTracing().newCallFactory(client);
     }
 
-    private OkHttpTracing createOkHttpTracing() {
-        return OkHttpTracing.builder(openTelemetrySdk)
+    private OkHttpTelemetry createOkHttpTracing() {
+        return OkHttpTelemetry.builder(openTelemetrySdk)
                 .addAttributesExtractor(
                         new RumResponseAttributesExtractor(new ServerTimingHeaderParser()))
                 .build();
