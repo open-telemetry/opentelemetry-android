@@ -5,9 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Version 0.14.0 [Unreleased]
+## Version 0.14.0
 
-* Add ability to limit storage usage for buffered telemetry (#TBD)
+* Disk caching exporter now retries sending files (#260)
+* Add ability to customize `screen.name` attribute with `@RumScreenName` annotation (#261)
+* Add ability to limit storage usage for buffered telemetry (#272)
+* Add method to check if RUM library has been initialized (#273)
+* Add option to sample traces based on session ID (#273)
 
 ## Version 0.13.0
 
