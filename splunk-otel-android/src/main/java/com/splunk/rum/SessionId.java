@@ -25,8 +25,6 @@ import java.util.concurrent.atomic.AtomicReference;
 class SessionId {
 
     private static final long SESSION_LIFETIME_NANOS = TimeUnit.HOURS.toNanos(4);
-    private static final long SESSION_TIMEOUT_NANOS = TimeUnit.MINUTES.toNanos(15);
-    private static final long NO_TIMEOUT = -1;
 
     private final Clock clock;
     private final AtomicReference<String> value = new AtomicReference<>();
@@ -64,7 +62,7 @@ class SessionId {
             // if this returns false, then another thread updated the value already.
             sessionIdChanged = value.compareAndSet(oldValue, newId);
             if (sessionIdChanged) {
-                createTimeNanos = clock.now();
+                createTimeNanos = clock.nanoTime();
             }
             currentValue = value.get();
         }
@@ -80,9 +78,7 @@ class SessionId {
     }
 
     private boolean sessionExpired() {
-        // TODO: it probably should use nanoTime(); now() javadoc explicitly states that it's not
-        // meant to be used to compute duration
-        long elapsedTime = clock.now() - createTimeNanos;
+        long elapsedTime = clock.nanoTime() - createTimeNanos;
         return elapsedTime >= SESSION_LIFETIME_NANOS;
     }
 
