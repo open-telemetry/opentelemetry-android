@@ -19,6 +19,8 @@ repositories {
 }
 
 dependencies {
-    implementation("com.android.tools.build:gradle:7.1.2")
+    // keep this version in sync with /build.gradle.kts
+    implementation("com.android.tools.build:gradle:7.2.0")
+
     implementation("com.diffplug.spotless:spotless-plugin-gradle:6.4.2")
 }
