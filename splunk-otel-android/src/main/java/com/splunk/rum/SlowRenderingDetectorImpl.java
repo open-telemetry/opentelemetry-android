@@ -67,14 +67,19 @@ class SlowRenderingDetectorImpl implements SlowRenderingDetector {
 
     @Override
     public void add(Activity activity) {
-        activities.add(activity);
-        frameMetrics.add(activity);
+        synchronized (this) {
+            activities.add(activity);
+            frameMetrics.add(activity);
+        }
     }
 
     @Override
     public void stop(Activity activity) {
-        SparseIntArray[] arrays = frameMetrics.remove(activity);
-        activities.remove(activity);
+        SparseIntArray[] arrays;
+        synchronized (this) {
+            arrays = frameMetrics.remove(activity);
+            activities.remove(activity);
+        }
         if (arrays != null) {
             reportSlow(arrays[DRAW_INDEX]);
         }
@@ -91,16 +96,21 @@ class SlowRenderingDetectorImpl implements SlowRenderingDetector {
 
     private void reportSlowRenders() {
         try {
-            SparseIntArray[] metrics = frameMetrics.reset();
+            SparseIntArray[] metrics;
+            synchronized (this) {
+                metrics = frameMetrics.reset();
+            }
             if (metrics != null) {
                 reportSlow(metrics[DRAW_INDEX]);
             }
         } catch (Exception e) {
             Log.w(LOG_TAG, "Exception while processing frame metrics", e);
         }
-        for (Activity activity : activities) {
-            frameMetrics.remove(activity);
-            frameMetrics.add(activity);
+        synchronized (this) {
+            for (Activity activity : activities) {
+                frameMetrics.remove(activity);
+                frameMetrics.add(activity);
+            }
         }
     }
 
