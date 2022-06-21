@@ -136,7 +136,9 @@ public class SplunkRum {
         return INSTANCE;
     }
 
-    /** @return true if the Splunk RUM library has been successfully initialized. */
+    /**
+     * @return true if the Splunk RUM library has been successfully initialized.
+     */
     public static boolean isInitialized() {
         return INSTANCE != null;
     }

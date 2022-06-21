@@ -28,6 +28,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface RumScreenName {
-    /** @return The customized screen name */
+    /**
+     * @return The customized screen name
+     */
     String value();
 }

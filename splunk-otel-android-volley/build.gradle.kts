@@ -48,14 +48,14 @@ dependencies {
 
     implementation(project(":splunk-otel-android"))
 
-    api(platform("io.opentelemetry:opentelemetry-bom:1.14.0"))
+    api(platform("io.opentelemetry:opentelemetry-bom:1.15.0"))
     api("io.opentelemetry:opentelemetry-api")
     implementation("io.opentelemetry:opentelemetry-sdk")
 
-    implementation(platform("io.opentelemetry:opentelemetry-bom-alpha:1.14.0-alpha"))
+    implementation(platform("io.opentelemetry:opentelemetry-bom-alpha:1.15.0-alpha"))
     implementation("io.opentelemetry:opentelemetry-semconv")
 
-    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.14.0-alpha"))
+    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.15.0-alpha"))
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
 
@@ -66,7 +66,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:4.6.1")
     testImplementation("androidx.test:core:1.4.0")
     testImplementation("com.google.mockwebserver:mockwebserver:20130706")
-    testImplementation("com.android.volley:volley:1.2.0")
+    testImplementation("com.android.volley:volley:1.2.1")
     testImplementation("org.apache.httpcomponents:httpclient:4.5.13")
 }
 
