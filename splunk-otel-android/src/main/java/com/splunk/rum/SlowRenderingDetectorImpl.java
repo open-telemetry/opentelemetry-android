@@ -44,6 +44,7 @@ class SlowRenderingDetectorImpl implements SlowRenderingDetector {
     private final Set<Activity> activities = new HashSet<>();
     private final Tracer tracer;
     private final Duration pollInterval;
+    private final Object lock = new Object();
 
     SlowRenderingDetectorImpl(Tracer tracer, Duration pollInterval) {
         this(
@@ -67,7 +68,7 @@ class SlowRenderingDetectorImpl implements SlowRenderingDetector {
 
     @Override
     public void add(Activity activity) {
-        synchronized (this) {
+        synchronized (lock) {
             activities.add(activity);
             frameMetrics.add(activity);
         }
@@ -76,7 +77,7 @@ class SlowRenderingDetectorImpl implements SlowRenderingDetector {
     @Override
     public void stop(Activity activity) {
         SparseIntArray[] arrays;
-        synchronized (this) {
+        synchronized (lock) {
             arrays = frameMetrics.remove(activity);
             activities.remove(activity);
         }
@@ -97,7 +98,7 @@ class SlowRenderingDetectorImpl implements SlowRenderingDetector {
     private void reportSlowRenders() {
         try {
             SparseIntArray[] metrics;
-            synchronized (this) {
+            synchronized (lock) {
                 metrics = frameMetrics.reset();
             }
             if (metrics != null) {
@@ -106,7 +107,7 @@ class SlowRenderingDetectorImpl implements SlowRenderingDetector {
         } catch (Exception e) {
             Log.w(LOG_TAG, "Exception while processing frame metrics", e);
         }
-        synchronized (this) {
+        synchronized (lock) {
             for (Activity activity : activities) {
                 frameMetrics.remove(activity);
                 frameMetrics.add(activity);
