@@ -42,7 +42,7 @@ android {
 dependencies {
     implementation("androidx.appcompat:appcompat:1.3.1")
     implementation("androidx.core:core:1.8.0")
-    implementation("androidx.navigation:navigation-fragment:2.4.2")
+    implementation("androidx.navigation:navigation-fragment:2.5.0")
 
     api(platform("io.opentelemetry:opentelemetry-bom:1.15.0"))
     implementation("io.opentelemetry:opentelemetry-sdk")
