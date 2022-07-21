@@ -41,6 +41,9 @@ android {
     }
 }
 
+val otelVersion = "1.16.0"
+val otelAlphaVersion = "$otelVersion-alpha"
+
 dependencies {
     implementation("androidx.appcompat:appcompat:1.3.1")
     implementation("androidx.navigation:navigation-fragment:2.5.0")
@@ -48,14 +51,14 @@ dependencies {
 
     implementation(project(":splunk-otel-android"))
 
-    api(platform("io.opentelemetry:opentelemetry-bom:1.15.0"))
+    api(platform("io.opentelemetry:opentelemetry-bom:$otelVersion"))
     api("io.opentelemetry:opentelemetry-api")
     implementation("io.opentelemetry:opentelemetry-sdk")
 
-    implementation(platform("io.opentelemetry:opentelemetry-bom-alpha:1.15.0-alpha"))
+    implementation(platform("io.opentelemetry:opentelemetry-bom-alpha:$otelAlphaVersion"))
     implementation("io.opentelemetry:opentelemetry-semconv")
 
-    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.15.0-alpha"))
+    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:$otelAlphaVersion"))
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
 
