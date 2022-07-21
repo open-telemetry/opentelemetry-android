@@ -257,7 +257,10 @@ class RumInitializer {
         for (RumInitializer.InitializationEvent initializationEvent : initializationEvents) {
             span.addEvent(initializationEvent.name, initializationEvent.time, TimeUnit.NANOSECONDS);
         }
-        span.end(timingClock.now(), TimeUnit.NANOSECONDS);
+        long spanEndTime = timingClock.now();
+        // we only want to create SplunkRum.initialize span when there is a AppStart span so we
+        // register a callback that is called right before AppStart span is ended
+        startupTimer.setCompletionCallback(() -> span.end(spanEndTime, TimeUnit.NANOSECONDS));
     }
 
     private SdkTracerProvider buildTracerProvider(

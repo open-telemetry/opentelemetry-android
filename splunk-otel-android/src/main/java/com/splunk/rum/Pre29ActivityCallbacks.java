@@ -51,6 +51,7 @@ class Pre29ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
+        appStartupTimer.startUiInit();
         getTracer(activity).startActivityCreation().addEvent("activityCreated");
 
         if (activity instanceof FragmentActivity) {

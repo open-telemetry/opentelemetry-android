@@ -23,6 +23,7 @@ import android.app.Application;
 import android.content.Context;
 import android.location.Location;
 import android.net.ConnectivityManager;
+import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.webkit.WebView;
@@ -76,6 +77,11 @@ public class SplunkRum {
     private final SessionId sessionId;
     private final OpenTelemetrySdk openTelemetrySdk;
     private final Config config;
+
+    static {
+        Handler handler = new Handler(Looper.getMainLooper());
+        startupTimer.detectBackgroundStart(handler);
+    }
 
     SplunkRum(OpenTelemetrySdk openTelemetrySdk, SessionId sessionId, Config config) {
         this.openTelemetrySdk = openTelemetrySdk;

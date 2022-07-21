@@ -67,6 +67,7 @@ public class RumInitializerTest {
         SplunkRum splunkRum =
                 testInitializer.initialize(
                         () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS), mock(Looper.class));
+        startupTimer.runCompletionCallback();
         splunkRum.flushSpans();
 
         List<SpanData> spans = testExporter.getFinishedSpanItems();
@@ -212,8 +213,9 @@ public class RumInitializerTest {
         ConnectionUtil connectionUtil = mock(ConnectionUtil.class, RETURNS_DEEP_STUBS);
         when(connectionUtil.refreshNetworkStatus().isOnline()).thenReturn(true);
 
+        AppStartupTimer appStartupTimer = new AppStartupTimer();
         RumInitializer initializer =
-                new RumInitializer(config, application, new AppStartupTimer()) {
+                new RumInitializer(config, application, appStartupTimer) {
                     @Override
                     SpanExporter getCoreSpanExporter(String endpoint) {
                         return spanExporter;
@@ -221,6 +223,7 @@ public class RumInitializerTest {
                 };
 
         SplunkRum splunkRum = initializer.initialize(() -> connectionUtil, mock(Looper.class));
+        appStartupTimer.runCompletionCallback();
 
         Exception e = new IllegalArgumentException("booom!");
         splunkRum.addRumException(e, Attributes.of(stringKey("attribute"), "oh no!"));
