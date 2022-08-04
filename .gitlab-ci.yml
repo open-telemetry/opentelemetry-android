@@ -2,9 +2,9 @@ include:
   - project: 'prodsec/scp-scanning/gitlab-checkmarx'
     ref: latest
     file: '/templates/.sast_scan.yml'
-  - project: 'prodsec/whitesource'
-    ref: latest
-    file: '/templates/.whitesource.yml'
+  - project: 'ci-cd/templates'
+    ref: master
+    file: '/prodsec/.oss-scan.yml'
 
 image:
   name: "openjdk:11.0.11-9-jdk"
@@ -54,15 +54,11 @@ sast-scan:
     # Fail build on high severity security vulnerabilities
     alert_mode: "policy"
 
-whitesource:
+oss-scan:
   stage: verify
   rules:
     - if: '$CI_COMMIT_REF_NAME == "main"'
-  extends: .whitesource
-  variables:
-    ws_user_key: ${WHITESOURCE_USER_KEY}
-    product_id: ${WHITESOURCE_ID}
-    config: java-gradle-wrapper
+  extends: .oss-scan
 
 release:
   stage: release
