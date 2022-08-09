@@ -18,6 +18,7 @@ package com.splunk.rum;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import zipkin2.Endpoint;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
 import zipkin2.codec.Encoding;
@@ -49,6 +50,9 @@ class CustomZipkinEncoder implements BytesEncoder<Span> {
 
     @Override
     public byte[] encode(Span span) {
+        Endpoint localEndpoint = Endpoint.newBuilder().serviceName(span.localServiceName()).build();
+        span = span.toBuilder().localEndpoint(localEndpoint).build();
+
         String properSpanName = span.tags().get(RumAttributeAppender.SPLUNK_OPERATION_KEY.getKey());
 
         // note: this can be optimized, if necessary. Let's keep it simple for now.
