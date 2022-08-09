@@ -33,6 +33,15 @@ public final class StandardAttributes {
     public static final AttributeKey<String> APP_VERSION = AttributeKey.stringKey("app.version");
 
     /**
+     * The build type of your app (typically one of debug or release). Useful for adding to global
+     * attributes.
+     *
+     * @see Config.Builder#globalAttributes(Attributes)
+     */
+    public static final AttributeKey<String> APP_BUILD_TYPE =
+            AttributeKey.stringKey("app.build.type");
+
+    /**
      * Full HTTP client request URL in the form {@code scheme://host[:port]/path?query[#fragment]}.
      * Useful for span data filtering with the {@link SpanFilterBuilder}.
      *
