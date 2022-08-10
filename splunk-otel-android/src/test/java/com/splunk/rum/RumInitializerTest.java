@@ -128,7 +128,10 @@ public class RumInitializerTest {
 
         AttributeKey<String> longAttributeKey = stringKey("longAttribute");
         splunkRum.addRumEvent(
-                "testEvent", Attributes.of(longAttributeKey, Strings.repeat("a", 3000)));
+                "testEvent",
+                Attributes.of(
+                        longAttributeKey,
+                        Strings.repeat("a", RumInitializer.MAX_ATTRIBUTE_LENGTH + 1)));
 
         splunkRum.flushSpans();
         List<SpanData> spans = testExporter.getFinishedSpanItems();
@@ -137,7 +140,7 @@ public class RumInitializerTest {
         SpanData eventSpan = spans.get(0);
         assertEquals("testEvent", eventSpan.getName());
         String truncatedValue = eventSpan.getAttributes().get(longAttributeKey);
-        assertEquals(Strings.repeat("a", 2048), truncatedValue);
+        assertEquals(Strings.repeat("a", RumInitializer.MAX_ATTRIBUTE_LENGTH), truncatedValue);
     }
 
     /** Verify that we have buffering in place in our exporter implementation. */

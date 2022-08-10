@@ -57,6 +57,10 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
 
 class RumInitializer {
 
+    // we're setting a fairly large length limit to capture long stack traces; ~256 lines,
+    // assuming 128 chars per line
+    static final int MAX_ATTRIBUTE_LENGTH = 256 * 128;
+
     private final Config config;
     private final Application application;
     private final AppStartupTimer startupTimer;
@@ -295,7 +299,9 @@ class RumInitializer {
                         .addSpanProcessor(batchSpanProcessor)
                         .addSpanProcessor(attributeAppender)
                         .setSpanLimits(
-                                SpanLimits.builder().setMaxAttributeValueLength(2048).build())
+                                SpanLimits.builder()
+                                        .setMaxAttributeValueLength(MAX_ATTRIBUTE_LENGTH)
+                                        .build())
                         .setResource(resource);
         initializationEvents.add(
                 new RumInitializer.InitializationEvent(

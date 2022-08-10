@@ -22,6 +22,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 class CrashReporter {
 
@@ -38,6 +39,7 @@ class CrashReporter {
         private final Tracer tracer;
         private final Thread.UncaughtExceptionHandler existingHandler;
         private final SdkTracerProvider sdkTracerProvider;
+        private final AtomicBoolean crashHappened = new AtomicBoolean(false);
 
         CrashReportingExceptionHandler(
                 Tracer tracer,
@@ -50,12 +52,22 @@ class CrashReporter {
 
         @Override
         public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
+            // the idea here is to set component=crash only for the first error that arrives here
+            // when multiple threads fail at roughly the same time (e.g. because of an OOM error),
+            // the first error to arrive here is actually responsible for crashing the app; and all
+            // the others that are captured before OS actually kills the process are just additional
+            // info (component=error)
+            String component =
+                    crashHappened.compareAndSet(false, true)
+                            ? SplunkRum.COMPONENT_CRASH
+                            : SplunkRum.COMPONENT_ERROR;
+
             String exceptionType = e.getClass().getSimpleName();
             tracer.spanBuilder(exceptionType)
                     .setAttribute(SemanticAttributes.THREAD_ID, t.getId())
                     .setAttribute(SemanticAttributes.THREAD_NAME, t.getName())
                     .setAttribute(SemanticAttributes.EXCEPTION_ESCAPED, true)
-                    .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_CRASH)
+                    .setAttribute(SplunkRum.COMPONENT_KEY, component)
                     .startSpan()
                     .recordException(e)
                     .setStatus(StatusCode.ERROR)

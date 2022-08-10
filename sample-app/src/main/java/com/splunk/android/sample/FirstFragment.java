@@ -36,6 +36,8 @@ import io.opentelemetry.context.Scope;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
@@ -77,10 +79,7 @@ public class FirstFragment extends Fragment {
                         NavHostFragment.findNavController(FirstFragment.this)
                                 .navigate(R.id.action_FirstFragment_to_SecondFragment));
 
-        binding.crash.setOnClickListener(
-                v -> {
-                    throw new IllegalStateException("Crashing due to a bug!");
-                });
+        binding.crash.setOnClickListener(v -> multiThreadCrashing());
 
         binding.httpMe.setOnClickListener(
                 v -> {
@@ -103,6 +102,35 @@ public class FirstFragment extends Fragment {
                 });
 
         sessionId.postValue(splunkRum.getRumSessionId());
+    }
+
+    private void multiThreadCrashing() {
+        CountDownLatch latch = new CountDownLatch(1);
+        int numThreads = 4;
+        for (int i = 0; i < numThreads; ++i) {
+            Thread t =
+                    new Thread(
+                            () -> {
+                                try {
+                                    if (latch.await(10, TimeUnit.SECONDS)) {
+                                        throw new IllegalStateException(
+                                                "Failure from thread "
+                                                        + Thread.currentThread().getName());
+                                    }
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
+            t.setName("crash-thread-" + i);
+            t.start();
+        }
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
+        }
+        latch.countDown();
     }
 
     private void makeCall(String url, Span workflow) {

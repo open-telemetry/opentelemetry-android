@@ -21,6 +21,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equal
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import androidx.annotation.NonNull;
@@ -73,6 +74,47 @@ public class CrashReporterTest {
 
         assertTrue(existingHandler.wasDelegatedTo.get());
         verify(sdkTracerProvider).forceFlush();
+    }
+
+    @Test
+    public void multipleErrorsDuringACrash() {
+        SdkTracerProvider sdkTracerProvider = mock(SdkTracerProvider.class);
+        CrashReporter.CrashReportingExceptionHandler crashReporter =
+                new CrashReporter.CrashReportingExceptionHandler(tracer, sdkTracerProvider, null);
+
+        Exception firstError = new NullPointerException("boom!");
+        Thread crashThread = new Thread("crashThread");
+
+        Exception secondError = new IllegalArgumentException("boom again!");
+        Thread anotherThread = new Thread("someOtherThread");
+
+        crashReporter.uncaughtException(crashThread, firstError);
+        crashReporter.uncaughtException(anotherThread, secondError);
+
+        List<SpanData> spans = otelTesting.getSpans();
+        assertEquals(2, spans.size());
+
+        assertThat(spans.get(0))
+                .hasName("NullPointerException")
+                .hasAttributesSatisfyingExactly(
+                        equalTo(SemanticAttributes.THREAD_ID, crashThread.getId()),
+                        equalTo(SemanticAttributes.THREAD_NAME, "crashThread"),
+                        equalTo(SemanticAttributes.EXCEPTION_ESCAPED, true),
+                        equalTo(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_CRASH))
+                .hasException(firstError)
+                .hasStatus(StatusData.error());
+
+        assertThat(spans.get(1))
+                .hasName("IllegalArgumentException")
+                .hasAttributesSatisfyingExactly(
+                        equalTo(SemanticAttributes.THREAD_ID, anotherThread.getId()),
+                        equalTo(SemanticAttributes.THREAD_NAME, "someOtherThread"),
+                        equalTo(SemanticAttributes.EXCEPTION_ESCAPED, true),
+                        equalTo(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_ERROR))
+                .hasException(secondError)
+                .hasStatus(StatusData.error());
+
+        verify(sdkTracerProvider, times(2)).forceFlush();
     }
 
     private static class TestDelegateHandler implements Thread.UncaughtExceptionHandler {
