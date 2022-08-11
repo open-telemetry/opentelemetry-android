@@ -9,13 +9,13 @@ val localProperties = Properties()
 localProperties.load(FileInputStream(rootProject.file("local.properties")))
 
 android {
-    compileSdk = 31
+    compileSdk = 32
     buildToolsVersion = "30.0.3"
 
     defaultConfig {
         applicationId = "com.splunk.android.sample"
         minSdk = 21
-        targetSdk = 31
+        targetSdk = 32
         versionCode = 1
         versionName = "1.0"
 
@@ -53,7 +53,7 @@ dependencies {
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.6")
 
-    implementation("androidx.appcompat:appcompat:1.4.1")
+    implementation("androidx.appcompat:appcompat:1.5.0")
     implementation("androidx.webkit:webkit:1.4.0")
     implementation("androidx.browser:browser:1.4.0")
     implementation("com.google.android.material:material:1.5.0")

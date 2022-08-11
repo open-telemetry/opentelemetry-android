@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    compileSdk = 31
+    compileSdk = 32
     buildToolsVersion = "30.0.3"
 
     defaultConfig {
         minSdk = 21
-        targetSdk = 31
+        targetSdk = 32
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -43,7 +43,7 @@ val otelVersion = "1.16.0"
 val otelAlphaVersion = "$otelVersion-alpha"
 
 dependencies {
-    implementation("androidx.appcompat:appcompat:1.3.1")
+    implementation("androidx.appcompat:appcompat:1.5.0")
     implementation("androidx.core:core:1.8.0")
     implementation("androidx.navigation:navigation-fragment:2.5.1")
 
