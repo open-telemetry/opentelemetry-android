@@ -9,12 +9,22 @@
 </p>
 
 <p align="center">
-   <a href="https://github.com/signalfx/splunk-otel-android/actions?query=workflow%3A%22Continuous+Build%22">
+  <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.15.0">
+    <img alt="OpenTelemetry Instrumentation for Java Version" src="https://img.shields.io/badge/otel-1.15.0-blueviolet?style=for-the-badge">
+  </a>
+  <a href="https://github.com/signalfx/splunk-otel-android/releases">
+    <img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/signalfx/splunk-otel-android?include_prereleases&style=for-the-badge">
+  </a>
+  <a href="https://maven-badges.herokuapp.com/maven-central/com.splunk/splunk-otel-android">
+    <img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.splunk/splunk-otel-android?style=for-the-badge">
+  </a>
+  <a href="https://github.com/signalfx/splunk-otel-android/actions?query=workflow%3A%22Continuous+Build%22">
      <img alt="Build Status" src="https://img.shields.io/github/workflow/status/signalfx/splunk-otel-android/Continuous%20Build?style=for-the-badge">
-   </a>
-<!--   <a href="https://github.com/signalfx/splunk-otel-android/releases"> -->
-<!--     <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/signalfx/splunk-otel-android?include_prereleases&style=for-the-badge"> -->
-<!--   </a> -->
+  </a>
+
+  <a href="https://github.com/signalfx/gdi-specification/releases/tag/v1.3.0">
+    <img alt="Splunk GDI specification" src="https://img.shields.io/badge/GDI-1.3.0-blueviolet?style=for-the-badge">
+  </a>
   <img alt="Beta" src="https://img.shields.io/badge/status-beta-informational?style=for-the-badge">
 </p>
 
