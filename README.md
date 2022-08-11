@@ -279,7 +279,7 @@ when initializing your instance of the SplunkRum API:
   gives you direct access to the instance of OpenTelemetry that is being used via
   the `getOpenTelemetry()` method. For details on writing manual instrumentation, please refer to
   the [OpenTelemetry docs](https://opentelemetry.io/docs/java/manual_instrumentation/)
-  and [examples](https://github.com/open-telemetry/opentelemetry-java/tree/main/examples).
+  and [examples](https://github.com/open-telemetry/opentelemetry-java-docs#java-opentelemetry-examples).
 - The SplunkRum instance exposes the RUM session ID, in case you wish to provide this to your users
   for troubleshooting purposes. This session ID is generated randomly and contains no PII
   whatsoever.
