@@ -49,6 +49,7 @@ android {
     }
 }
 
+val otelVersion = "1.16.0-alpha"
 dependencies {
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.6")
@@ -61,6 +62,10 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment:2.5.1")
     implementation("androidx.navigation:navigation-ui:2.5.1")
     implementation(project(":splunk-otel-android"))
+    implementation(project(":splunk-otel-android-volley"))
+    implementation("com.android.volley:volley:1.2.1")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:$otelVersion")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:$otelVersion")
 
     testImplementation("junit:junit:4.13.2")
 }

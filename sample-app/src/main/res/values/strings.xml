@@ -15,6 +15,7 @@
     <string name="clippy">clippy</string>
     <string name="http_me_up">HTTP me up!</string>
     <string name="http_me_bad">Http Error</string>
+    <string name="volley_client">Volley HTTP</string>
     <string name="http_not_found">HTTP Not Found</string>
 
     <string name="local_web_view">Local WebView</string>
