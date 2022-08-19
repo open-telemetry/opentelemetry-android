@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.15.0">
-    <img alt="OpenTelemetry Instrumentation for Java Version" src="https://img.shields.io/badge/otel-1.15.0-blueviolet?style=for-the-badge">
+  <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.17.0">
+    <img alt="OpenTelemetry Instrumentation for Java Version" src="https://img.shields.io/badge/otel-1.17.0-blueviolet?style=for-the-badge">
   </a>
   <a href="https://github.com/signalfx/splunk-otel-android/releases">
     <img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/signalfx/splunk-otel-android?include_prereleases&style=for-the-badge">
@@ -22,8 +22,8 @@
      <img alt="Build Status" src="https://img.shields.io/github/workflow/status/signalfx/splunk-otel-android/Continuous%20Build?style=for-the-badge">
   </a>
 
-  <a href="https://github.com/signalfx/gdi-specification/releases/tag/v1.3.0">
-    <img alt="Splunk GDI specification" src="https://img.shields.io/badge/GDI-1.3.0-blueviolet?style=for-the-badge">
+  <a href="https://github.com/signalfx/gdi-specification/releases/tag/v1.4.0">
+    <img alt="Splunk GDI specification" src="https://img.shields.io/badge/GDI-1.4.0-blueviolet?style=for-the-badge">
   </a>
   <img alt="Beta" src="https://img.shields.io/badge/status-beta-informational?style=for-the-badge">
 </p>
@@ -91,7 +91,7 @@ Then, add the latest release as a dependency in your application's build.gradle 
 ```
 dependencies {
 ...
-    implementation ("com.splunk:splunk-otel-android:0.16.0")
+    implementation ("com.splunk:splunk-otel-android:0.17.0")
 ...
 }
 ```
@@ -127,7 +127,7 @@ Then, add the locally built library as a dependency in your application's build.
 ```
 dependencies {
 ...
-    implementation ("com.splunk:splunk-otel-android:0.17.0-SNAPSHOT")
+    implementation ("com.splunk:splunk-otel-android:0.18.0-SNAPSHOT")
 ...
 }
 ```
