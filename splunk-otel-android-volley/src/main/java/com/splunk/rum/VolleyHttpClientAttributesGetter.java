@@ -93,41 +93,10 @@ enum VolleyHttpClientAttributesGetter
         return result;
     }
 
-    @Nullable
     @Override
-    public Long requestContentLength(
-            RequestWrapper requestWrapper, @Nullable HttpResponse response) {
-        Request<?> request = requestWrapper.getRequest();
-        try {
-            return request.getBody() != null ? (long) request.getBody().length : null;
-        } catch (AuthFailureError authFailureError) {
-            return null;
-        }
-    }
-
-    @Nullable
-    @Override
-    public Long requestContentLengthUncompressed(
-            RequestWrapper requestWrapper, @Nullable HttpResponse response) {
-        return null;
-    }
-
-    @Override
-    public Integer statusCode(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
+    public Integer statusCode(
+            RequestWrapper requestWrapper, HttpResponse response, @Nullable Throwable error) {
         return response.getStatusCode();
-    }
-
-    @Override
-    public Long responseContentLength(
-            RequestWrapper requestWrapper, @Nullable HttpResponse response) {
-        return (long) response.getContentLength();
-    }
-
-    @Nullable
-    @Override
-    public Long responseContentLengthUncompressed(
-            RequestWrapper requestWrapper, @Nullable HttpResponse response) {
-        return null;
     }
 
     @Override

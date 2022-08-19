@@ -39,9 +39,4 @@ enum VolleyNetClientAttributesGetter
     public Integer peerPort(RequestWrapper requestWrapper, @Nullable HttpResponse httpResponse) {
         return requestWrapper.getUrl() != null ? requestWrapper.getUrl().getPort() : null;
     }
-
-    @Override
-    public String peerIp(RequestWrapper requestWrapper, @Nullable HttpResponse httpResponse) {
-        return null;
-    }
 }

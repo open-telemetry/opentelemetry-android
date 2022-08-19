@@ -101,7 +101,7 @@ public final class VolleyTracingBuilder {
                                 new VolleyResponseAttributesExtractor(
                                         new ServerTimingHeaderParser()))
                         .addAttributesExtractors(additionalExtractors)
-                        .newClientInstrumenter(ClientRequestHeaderSetter.INSTANCE);
+                        .buildClientInstrumenter(ClientRequestHeaderSetter.INSTANCE);
 
         return new VolleyTracing(instrumenter);
     }

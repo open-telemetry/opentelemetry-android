@@ -22,7 +22,6 @@ import static com.splunk.rum.SplunkRum.LINK_TRACE_ID_KEY;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import okhttp3.Request;
 import okhttp3.Response;
 
@@ -52,29 +51,11 @@ class RumResponseAttributesExtractor implements AttributesExtractor<Request, Res
     }
 
     private void onResponse(AttributesBuilder attributes, Response response) {
-        recordContentLength(attributes, response);
         String serverTimingHeader = response.header("Server-Timing");
-
         String[] ids = serverTimingHeaderParser.parse(serverTimingHeader);
         if (ids.length == 2) {
             attributes.put(LINK_TRACE_ID_KEY, ids[0]);
             attributes.put(LINK_SPAN_ID_KEY, ids[1]);
-        }
-    }
-
-    private void recordContentLength(AttributesBuilder attributesBuilder, Response response) {
-        // make a best low-impact effort at getting the content length on the response.
-        String contentLengthHeader = response.header("Content-Length");
-        if (contentLengthHeader != null) {
-            try {
-                long contentLength = Long.parseLong(contentLengthHeader);
-                if (contentLength > 0) {
-                    attributesBuilder.put(
-                            SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH, contentLength);
-                }
-            } catch (NumberFormatException e) {
-                // who knows what we got back? It wasn't a number!
-            }
         }
     }
 }

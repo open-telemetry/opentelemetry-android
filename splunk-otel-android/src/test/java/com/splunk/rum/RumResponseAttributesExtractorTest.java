@@ -24,7 +24,6 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -46,7 +45,6 @@ public class RumResponseAttributesExtractorTest {
                         .message("hello")
                         .code(200)
                         .addHeader("Server-Timing", "headerValue")
-                        .addHeader("Content-Length", "101")
                         .build();
 
         RumResponseAttributesExtractor attributesExtractor =
@@ -60,8 +58,7 @@ public class RumResponseAttributesExtractorTest {
                 .containsOnly(
                         entry(SplunkRum.COMPONENT_KEY, "http"),
                         entry(SplunkRum.LINK_TRACE_ID_KEY, "9499195c502eb217c448a68bfe0f967c"),
-                        entry(SplunkRum.LINK_SPAN_ID_KEY, "fe16eca542cd5d86"),
-                        entry(SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH, 101L));
+                        entry(SplunkRum.LINK_SPAN_ID_KEY, "fe16eca542cd5d86"));
     }
 
     @Test
@@ -86,33 +83,5 @@ public class RumResponseAttributesExtractorTest {
         Attributes attributes = attributesBuilder.build();
 
         assertThat(attributes).containsOnly(entry(SplunkRum.COMPONENT_KEY, "http"));
-    }
-
-    @Test
-    public void spanDecoration_contentLength() {
-        ServerTimingHeaderParser headerParser = mock(ServerTimingHeaderParser.class);
-        when(headerParser.parse(null)).thenReturn(new String[0]);
-
-        Request fakeRequest = mock(Request.class);
-        Response response =
-                new Response.Builder()
-                        .request(fakeRequest)
-                        .protocol(Protocol.HTTP_1_1)
-                        .message("hello")
-                        .addHeader("Content-Length", "101")
-                        .code(200)
-                        .build();
-
-        RumResponseAttributesExtractor attributesExtractor =
-                new RumResponseAttributesExtractor(headerParser);
-        AttributesBuilder attributesBuilder = Attributes.builder();
-        attributesExtractor.onEnd(attributesBuilder, Context.root(), fakeRequest, response, null);
-        attributesExtractor.onStart(attributesBuilder, Context.root(), fakeRequest);
-        Attributes attributes = attributesBuilder.build();
-
-        assertThat(attributes)
-                .containsOnly(
-                        entry(SplunkRum.COMPONENT_KEY, "http"),
-                        entry(SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH, 101L));
     }
 }
