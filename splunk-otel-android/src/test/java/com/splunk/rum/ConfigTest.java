@@ -116,22 +116,6 @@ public class ConfigTest {
     }
 
     @Test
-    public void updateGlobalAttributes() {
-        Config config =
-                Config.builder()
-                        .applicationName("appName")
-                        .rumAccessToken("accessToken")
-                        .realm("us0")
-                        .globalAttributes(Attributes.of(stringKey("food"), "candy"))
-                        .build();
-
-        config.updateGlobalAttributes(ab -> ab.put("drink", "lemonade"));
-        Attributes result = config.getGlobalAttributes();
-        assertEquals(
-                Attributes.of(stringKey("drink"), "lemonade", stringKey("food"), "candy"), result);
-    }
-
-    @Test
     public void beaconOverridesRealm() {
         Config config =
                 Config.builder()

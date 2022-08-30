@@ -37,6 +37,8 @@ import org.junit.Test;
 
 public class RumAttributeAppenderTest {
 
+    private static final String APP_NAME = "appName";
+
     private VisibleScreenTracker visibleScreenTracker;
     private final ConnectionUtil connectionUtil = mock(ConnectionUtil.class);
 
@@ -49,11 +51,10 @@ public class RumAttributeAppenderTest {
 
     @Test
     public void interfaceMethods() {
-        Config config = mock(Config.class);
-        when(config.getGlobalAttributes()).thenReturn(Attributes.empty());
         RumAttributeAppender rumAttributeAppender =
                 new RumAttributeAppender(
-                        config,
+                        APP_NAME,
+                        Attributes::empty,
                         mock(SessionId.class),
                         "rumVersion",
                         visibleScreenTracker,
@@ -64,48 +65,9 @@ public class RumAttributeAppenderTest {
     }
 
     @Test
-    public void updateGlobalAttributes() {
-        Attributes initialAttributes =
-                Attributes.of(stringKey("cheese"), "Camembert", longKey("size"), 5L);
-
-        Config config =
-                Config.builder()
-                        .globalAttributes(initialAttributes)
-                        .realm("us0")
-                        .rumAccessToken("123456")
-                        .applicationName("appName")
-                        .build();
-
-        RumAttributeAppender rumAttributeAppender =
-                new RumAttributeAppender(
-                        config,
-                        new SessionId(new SessionIdTimeoutHandler()),
-                        "version",
-                        visibleScreenTracker,
-                        connectionUtil);
-
-        ReadWriteSpan span = mock(ReadWriteSpan.class);
-        rumAttributeAppender.onStart(Context.current(), span);
-        verify(span).setAllAttributes(initialAttributes);
-
-        config.updateGlobalAttributes(
-                attributesBuilder -> attributesBuilder.put("cheese", "cheddar"));
-
-        span = mock(ReadWriteSpan.class);
-        rumAttributeAppender.onStart(Context.current(), span);
-
-        Attributes updatedAttributes =
-                Attributes.of(stringKey("cheese"), "cheddar", longKey("size"), 5L);
-        verify(span).setAllAttributes(updatedAttributes);
-    }
-
-    @Test
     public void appendAttributesOnStart() {
         Attributes globalAttributes =
                 Attributes.of(stringKey("cheese"), "Camembert", longKey("size"), 5L);
-        Config config = mock(Config.class);
-        when(config.getApplicationName()).thenReturn("appName");
-        when(config.getGlobalAttributes()).thenReturn(globalAttributes);
 
         SessionId sessionId = mock(SessionId.class);
         when(sessionId.getSessionId()).thenReturn("rumSessionId");
@@ -115,11 +77,16 @@ public class RumAttributeAppenderTest {
 
         RumAttributeAppender rumAttributeAppender =
                 new RumAttributeAppender(
-                        config, sessionId, "rumVersion", visibleScreenTracker, connectionUtil);
+                        APP_NAME,
+                        () -> globalAttributes,
+                        sessionId,
+                        "rumVersion",
+                        visibleScreenTracker,
+                        connectionUtil);
 
         rumAttributeAppender.onStart(Context.current(), span);
         verify(span).setAttribute(RumAttributeAppender.RUM_VERSION_KEY, "rumVersion");
-        verify(span).setAttribute(RumAttributeAppender.APP_NAME_KEY, "appName");
+        verify(span).setAttribute(RumAttributeAppender.APP_NAME_KEY, APP_NAME);
         verify(span).setAttribute(RumAttributeAppender.SESSION_ID_KEY, "rumSessionId");
         verify(span).setAttribute(ResourceAttributes.OS_TYPE, "linux");
         verify(span).setAttribute(ResourceAttributes.OS_NAME, "Android");
@@ -137,9 +104,6 @@ public class RumAttributeAppenderTest {
 
     @Test
     public void appendAttributes_noCurrentScreens() {
-        Config config = mock(Config.class);
-        when(config.getApplicationName()).thenReturn("appName");
-        when(config.getGlobalAttributes()).thenReturn(Attributes.empty());
         SessionId sessionId = mock(SessionId.class);
         when(sessionId.getSessionId()).thenReturn("rumSessionId");
         when(visibleScreenTracker.getCurrentlyVisibleScreen()).thenReturn("unknown");
@@ -148,7 +112,12 @@ public class RumAttributeAppenderTest {
 
         RumAttributeAppender rumAttributeAppender =
                 new RumAttributeAppender(
-                        config, sessionId, "rumVersion", visibleScreenTracker, connectionUtil);
+                        APP_NAME,
+                        Attributes::empty,
+                        sessionId,
+                        "rumVersion",
+                        visibleScreenTracker,
+                        connectionUtil);
 
         rumAttributeAppender.onStart(Context.current(), span);
         verify(span).setAttribute(SplunkRum.SCREEN_NAME_KEY, "unknown");

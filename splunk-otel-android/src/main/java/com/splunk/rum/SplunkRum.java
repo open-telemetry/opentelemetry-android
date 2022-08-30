@@ -39,6 +39,7 @@ import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import okhttp3.Call;
@@ -76,17 +77,20 @@ public class SplunkRum {
 
     private final SessionId sessionId;
     private final OpenTelemetrySdk openTelemetrySdk;
-    private final Config config;
+    private final AtomicReference<Attributes> globalAttributes;
 
     static {
         Handler handler = new Handler(Looper.getMainLooper());
         startupTimer.detectBackgroundStart(handler);
     }
 
-    SplunkRum(OpenTelemetrySdk openTelemetrySdk, SessionId sessionId, Config config) {
+    SplunkRum(
+            OpenTelemetrySdk openTelemetrySdk,
+            SessionId sessionId,
+            AtomicReference<Attributes> globalAttributes) {
         this.openTelemetrySdk = openTelemetrySdk;
         this.sessionId = sessionId;
-        this.config = config;
+        this.globalAttributes = globalAttributes;
     }
 
     /** Create a new {@link Config.Builder} instance. */
@@ -321,7 +325,17 @@ public class SplunkRum {
      *     operating on a {@link AttributesBuilder} from the current set.
      */
     public void updateGlobalAttributes(Consumer<AttributesBuilder> attributesUpdater) {
-        config.updateGlobalAttributes(attributesUpdater);
+        while (true) {
+            Attributes oldAttributes = globalAttributes.get();
+
+            AttributesBuilder builder = oldAttributes.toBuilder();
+            attributesUpdater.accept(builder);
+            Attributes newAttributes = builder.build();
+
+            if (globalAttributes.compareAndSet(oldAttributes, newAttributes)) {
+                break;
+            }
+        }
     }
 
     // for testing only

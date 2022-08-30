@@ -51,6 +51,7 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.File;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -59,13 +60,10 @@ import org.mockito.internal.stubbing.answers.ReturnsArgumentAt;
 public class SplunkRumTest {
 
     @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
+
     private Tracer tracer;
-    private final Config config =
-            Config.builder()
-                    .realm("us0")
-                    .rumAccessToken("token")
-                    .applicationName("appName")
-                    .build();
+    private final AtomicReference<Attributes> globalAttributes =
+            new AtomicReference<>(Attributes.of(stringKey("key"), "value"));
 
     @Before
     public void setup() {
@@ -147,7 +145,7 @@ public class SplunkRumTest {
                 new SplunkRum(
                         (OpenTelemetrySdk) otelTesting.getOpenTelemetry(),
                         new SessionId(new SessionIdTimeoutHandler()),
-                        config);
+                        globalAttributes);
 
         Attributes attributes = Attributes.of(stringKey("one"), "1", longKey("two"), 2L);
         splunkRum.addRumEvent("foo", attributes);
@@ -164,15 +162,15 @@ public class SplunkRumTest {
                 new SplunkRum(
                         (OpenTelemetrySdk) otelTesting.getOpenTelemetry(),
                         new SessionId(new SessionIdTimeoutHandler()),
-                        config);
+                        globalAttributes);
 
         splunkRum.updateGlobalAttributes(
-                attributesBuilder -> attributesBuilder.put("key", "value"));
+                attributesBuilder -> attributesBuilder.put("key", "value2"));
         splunkRum.setGlobalAttribute(longKey("otherKey"), 1234L);
 
         assertEquals(
-                Attributes.of(stringKey("key"), "value", longKey("otherKey"), 1234L),
-                config.getGlobalAttributes());
+                Attributes.of(stringKey("key"), "value2", longKey("otherKey"), 1234L),
+                globalAttributes.get());
     }
 
     @Test
@@ -187,7 +185,7 @@ public class SplunkRumTest {
                 new SplunkRum(
                         (OpenTelemetrySdk) otelTesting.getOpenTelemetry(),
                         new SessionId(new SessionIdTimeoutHandler()),
-                        config);
+                        globalAttributes);
 
         Attributes expectedAttributes =
                 Attributes.of(
@@ -212,7 +210,8 @@ public class SplunkRumTest {
         OpenTelemetrySdk testSdk = buildTestSdk(testExporter);
 
         SplunkRum splunkRum =
-                new SplunkRum(testSdk, new SessionId(new SessionIdTimeoutHandler()), config);
+                new SplunkRum(
+                        testSdk, new SessionId(new SessionIdTimeoutHandler()), globalAttributes);
 
         NullPointerException exception = new NullPointerException("oopsie");
         Attributes attributes = Attributes.of(stringKey("one"), "1", longKey("two"), 2L);
@@ -245,7 +244,7 @@ public class SplunkRumTest {
                 new SplunkRum(
                         (OpenTelemetrySdk) otelTesting.getOpenTelemetry(),
                         new SessionId(new SessionIdTimeoutHandler()),
-                        config);
+                        globalAttributes);
 
         Span span = splunkRum.startWorkflow("workflow");
         Span inner = tracer.spanBuilder("foo").startSpan();
@@ -289,11 +288,12 @@ public class SplunkRumTest {
 
     @Test
     public void updateLocation() {
+        AtomicReference<Attributes> globalAttributes = new AtomicReference<>(Attributes.empty());
         SplunkRum splunkRum =
                 new SplunkRum(
                         (OpenTelemetrySdk) otelTesting.getOpenTelemetry(),
                         new SessionId(new SessionIdTimeoutHandler()),
-                        config);
+                        globalAttributes);
 
         Location location = mock(Location.class);
         when(location.getLatitude()).thenReturn(42d);
@@ -306,10 +306,10 @@ public class SplunkRumTest {
                         42d,
                         SplunkRum.LOCATION_LONGITUDE_KEY,
                         43d),
-                config.getGlobalAttributes());
+                globalAttributes.get());
 
         splunkRum.updateLocation(null);
 
-        assertTrue(config.getGlobalAttributes().isEmpty());
+        assertTrue(globalAttributes.get().isEmpty());
     }
 }

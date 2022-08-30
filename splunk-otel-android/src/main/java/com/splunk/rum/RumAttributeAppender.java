@@ -27,10 +27,12 @@ import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_H
 
 import android.os.Build;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import java.util.function.Supplier;
 
 class RumAttributeAppender implements SpanProcessor {
     static final AttributeKey<String> APP_NAME_KEY = stringKey("app");
@@ -39,19 +41,22 @@ class RumAttributeAppender implements SpanProcessor {
 
     static final AttributeKey<String> SPLUNK_OPERATION_KEY = stringKey("_splunk_operation");
 
-    private final Config config;
+    private final String applicationName;
+    private final Supplier<Attributes> globalAttributesSupplier;
     private final SessionId sessionId;
     private final String rumVersion;
     private final VisibleScreenTracker visibleScreenTracker;
     private final ConnectionUtil connectionUtil;
 
     RumAttributeAppender(
-            Config config,
+            String applicationName,
+            Supplier<Attributes> globalAttributesSupplier,
             SessionId sessionId,
             String rumVersion,
             VisibleScreenTracker visibleScreenTracker,
             ConnectionUtil connectionUtil) {
-        this.config = config;
+        this.applicationName = applicationName;
+        this.globalAttributesSupplier = globalAttributesSupplier;
         this.sessionId = sessionId;
         this.rumVersion = rumVersion;
         this.visibleScreenTracker = visibleScreenTracker;
@@ -64,7 +69,7 @@ class RumAttributeAppender implements SpanProcessor {
         // name on the wire.
         span.setAttribute(SPLUNK_OPERATION_KEY, span.getName());
 
-        span.setAttribute(APP_NAME_KEY, config.getApplicationName());
+        span.setAttribute(APP_NAME_KEY, applicationName);
         span.setAttribute(SESSION_ID_KEY, sessionId.getSessionId());
         span.setAttribute(RUM_VERSION_KEY, rumVersion);
 
@@ -73,7 +78,7 @@ class RumAttributeAppender implements SpanProcessor {
         span.setAttribute(OS_NAME, "Android");
         span.setAttribute(OS_TYPE, "linux");
         span.setAttribute(OS_VERSION, Build.VERSION.RELEASE);
-        span.setAllAttributes(config.getGlobalAttributes());
+        span.setAllAttributes(globalAttributesSupplier.get());
 
         String currentScreen = visibleScreenTracker.getCurrentlyVisibleScreen();
         span.setAttribute(SplunkRum.SCREEN_NAME_KEY, currentScreen);

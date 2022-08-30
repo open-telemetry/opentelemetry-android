@@ -20,11 +20,9 @@ import static com.splunk.rum.DeviceSpanStorageLimiter.DEFAULT_MAX_STORAGE_USE_MB
 
 import android.util.Log;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.time.Duration;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -43,7 +41,7 @@ public class Config {
     private final boolean crashReportingEnabled;
     private final boolean networkMonitorEnabled;
     private final boolean anrDetectionEnabled;
-    private final AtomicReference<Attributes> globalAttributes = new AtomicReference<>();
+    private final Attributes globalAttributes;
     private final Function<SpanExporter, SpanExporter> spanFilterExporterDecorator;
     private final boolean slowRenderingDetectionEnabled;
     private final Duration slowRenderingDetectionPollInterval;
@@ -58,7 +56,7 @@ public class Config {
         this.debugEnabled = builder.debugEnabled;
         this.applicationName = builder.applicationName;
         this.crashReportingEnabled = builder.crashReportingEnabled;
-        this.globalAttributes.set(addDeploymentEnvironment(builder));
+        this.globalAttributes = addDeploymentEnvironment(builder);
         this.networkMonitorEnabled = builder.networkMonitorEnabled;
         this.anrDetectionEnabled = builder.anrDetectionEnabled;
         this.slowRenderingDetectionPollInterval = builder.slowRenderingDetectionPollInterval;
@@ -118,7 +116,7 @@ public class Config {
      * instrumentation.
      */
     public Attributes getGlobalAttributes() {
-        return globalAttributes.get();
+        return globalAttributes;
     }
 
     /** Is the network monitoring feature enabled or not. */
@@ -170,20 +168,6 @@ public class Config {
      */
     public static Builder builder() {
         return new Builder();
-    }
-
-    void updateGlobalAttributes(Consumer<AttributesBuilder> updater) {
-        while (true) {
-            Attributes oldAttributes = globalAttributes.get();
-
-            AttributesBuilder builder = oldAttributes.toBuilder();
-            updater.accept(builder);
-            Attributes newAttributes = builder.build();
-
-            if (globalAttributes.compareAndSet(oldAttributes, newAttributes)) {
-                break;
-            }
-        }
     }
 
     SpanExporter decorateWithSpanFilter(SpanExporter exporter) {

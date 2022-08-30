@@ -25,6 +25,7 @@ import android.os.Looper;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.splunk.android.rum.R;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
@@ -50,6 +51,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import zipkin2.reporter.Sender;
@@ -62,6 +64,7 @@ class RumInitializer {
     static final int MAX_ATTRIBUTE_LENGTH = 256 * 128;
 
     private final Config config;
+    private final AtomicReference<Attributes> globalAttributes;
     private final Application application;
     private final AppStartupTimer startupTimer;
     private final List<RumInitializer.InitializationEvent> initializationEvents = new ArrayList<>();
@@ -69,6 +72,7 @@ class RumInitializer {
 
     RumInitializer(Config config, Application application, AppStartupTimer startupTimer) {
         this.config = config;
+        this.globalAttributes = new AtomicReference<>(config.getGlobalAttributes());
         this.application = application;
         this.startupTimer = startupTimer;
         this.timingClock = startupTimer.startupClock;
@@ -163,7 +167,7 @@ class RumInitializer {
 
         recordInitializationSpans(startTimeNanos, initializationEvents, tracer, config);
 
-        return new SplunkRum(openTelemetrySdk, sessionId, config);
+        return new SplunkRum(openTelemetrySdk, sessionId, globalAttributes);
     }
 
     private SlowRenderingDetector buildSlowRenderingDetector(Config config, Tracer tracer) {
@@ -281,7 +285,12 @@ class RumInitializer {
 
         RumAttributeAppender attributeAppender =
                 new RumAttributeAppender(
-                        config, sessionId, rumVersion, visibleScreenTracker, connectionUtil);
+                        config.getApplicationName(),
+                        globalAttributes::get,
+                        sessionId,
+                        rumVersion,
+                        visibleScreenTracker,
+                        connectionUtil);
         initializationEvents.add(
                 new RumInitializer.InitializationEvent(
                         "attributeAppenderInitialized", timingClock.now()));
