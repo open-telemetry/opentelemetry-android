@@ -349,7 +349,7 @@ rum.realm=<realm>
 rum.access.token=<a valid Splunk RUM access token for the realm>
 ```
 
-# License and versioning
+# License
 
 The Splunk Android RUM Instrumentation is released under the terms of the Apache Software License
 version 2.0. See
