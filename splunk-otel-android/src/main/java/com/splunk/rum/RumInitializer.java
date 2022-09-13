@@ -63,29 +63,30 @@ class RumInitializer {
     // assuming 128 chars per line
     static final int MAX_ATTRIBUTE_LENGTH = 256 * 128;
 
-    private final Config config;
+    private final SplunkRumBuilder builder;
     private final AtomicReference<Attributes> globalAttributes;
     private final Application application;
     private final AppStartupTimer startupTimer;
     private final List<RumInitializer.InitializationEvent> initializationEvents = new ArrayList<>();
     private final AnchoredClock timingClock;
 
-    RumInitializer(Config config, Application application, AppStartupTimer startupTimer) {
-        this.config = config;
-        this.globalAttributes = new AtomicReference<>(config.getGlobalAttributes());
+    RumInitializer(
+            SplunkRumBuilder builder, Application application, AppStartupTimer startupTimer) {
+        this.builder = builder;
+        this.globalAttributes = builder.buildGlobalAttributesRef();
         this.application = application;
         this.startupTimer = startupTimer;
         this.timingClock = startupTimer.startupClock;
     }
 
-    SplunkRum initialize(Supplier<ConnectionUtil> connectionUtilSupplier, Looper mainLooper) {
+    SplunkRum initialize(ConnectionUtil.Factory connectionUtilFactory, Looper mainLooper) {
         String rumVersion = detectRumVersion();
         VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
 
         long startTimeNanos = timingClock.now();
         List<AppStateListener> appStateListeners = new ArrayList<>();
 
-        ConnectionUtil connectionUtil = connectionUtilSupplier.get();
+        ConnectionUtil connectionUtil = connectionUtilFactory.createAndStart(application);
         initializationEvents.add(
                 new InitializationEvent("connectionUtilInitialized", timingClock.now()));
 
@@ -117,7 +118,7 @@ class RumInitializer {
                 new RumInitializer.InitializationEvent(
                         "openTelemetrySdkInitialized", timingClock.now()));
 
-        if (config.isAnrDetectionEnabled()) {
+        if (builder.anrDetectionEnabled) {
             appStateListeners.add(initializeAnrReporting(mainLooper));
             initializationEvents.add(
                     new RumInitializer.InitializationEvent(
@@ -127,7 +128,7 @@ class RumInitializer {
         Tracer tracer = openTelemetrySdk.getTracer(SplunkRum.RUM_TRACER_NAME);
         sessionId.setSessionIdChangeListener(new SessionIdChangeTracer(tracer));
 
-        if (config.isNetworkMonitorEnabled()) {
+        if (builder.networkMonitorEnabled) {
             NetworkMonitor networkMonitor = new NetworkMonitor(connectionUtil);
             networkMonitor.addConnectivityListener(tracer);
             appStateListeners.add(networkMonitor);
@@ -136,7 +137,7 @@ class RumInitializer {
                             "networkMonitorInitialized", timingClock.now()));
         }
 
-        SlowRenderingDetector slowRenderingDetector = buildSlowRenderingDetector(config, tracer);
+        SlowRenderingDetector slowRenderingDetector = buildSlowRenderingDetector(tracer);
         slowRenderingDetector.start();
 
         if (Build.VERSION.SDK_INT < 29) {
@@ -158,20 +159,20 @@ class RumInitializer {
                 new RumInitializer.InitializationEvent(
                         "activityLifecycleCallbacksInitialized", timingClock.now()));
 
-        if (config.isCrashReportingEnabled()) {
+        if (builder.crashReportingEnabled) {
             CrashReporter.initializeCrashReporting(tracer, openTelemetrySdk);
             initializationEvents.add(
                     new RumInitializer.InitializationEvent(
                             "crashReportingInitialized", timingClock.now()));
         }
 
-        recordInitializationSpans(startTimeNanos, initializationEvents, tracer, config);
+        recordInitializationSpans(startTimeNanos, initializationEvents, tracer);
 
         return new SplunkRum(openTelemetrySdk, sessionId, globalAttributes);
     }
 
-    private SlowRenderingDetector buildSlowRenderingDetector(Config config, Tracer tracer) {
-        if (!config.isSlowRenderingDetectionEnabled()) {
+    private SlowRenderingDetector buildSlowRenderingDetector(Tracer tracer) {
+        if (!builder.slowRenderingDetectionEnabled) {
             Log.w(LOG_TAG, "Slow/frozen rendering detection has been disabled by user.");
             return SlowRenderingDetector.NO_OP;
         }
@@ -181,7 +182,7 @@ class RumInitializer {
                             "slowRenderingDetectorInitialized", timingClock.now()));
             Class.forName("androidx.core.app.FrameMetricsAggregator");
             return new SlowRenderingDetectorImpl(
-                    tracer, config.getSlowRenderingDetectionPollInterval());
+                    tracer, builder.slowRenderingDetectionPollInterval);
         } catch (ClassNotFoundException e) {
             Log.w(
                     LOG_TAG,
@@ -232,10 +233,7 @@ class RumInitializer {
     }
 
     private void recordInitializationSpans(
-            long startTimeNanos,
-            List<InitializationEvent> initializationEvents,
-            Tracer tracer,
-            Config config) {
+            long startTimeNanos, List<InitializationEvent> initializationEvents, Tracer tracer) {
         Span overallAppStart = startupTimer.start(tracer);
         Span span =
                 tracer.spanBuilder("SplunkRum.initialize")
@@ -246,19 +244,19 @@ class RumInitializer {
 
         String configSettings =
                 "[debug:"
-                        + config.isDebugEnabled()
+                        + builder.debugEnabled
                         + ","
                         + "crashReporting:"
-                        + config.isCrashReportingEnabled()
+                        + builder.crashReportingEnabled
                         + ","
                         + "anrReporting:"
-                        + config.isAnrDetectionEnabled()
+                        + builder.anrDetectionEnabled
                         + ","
                         + "slowRenderingDetector:"
-                        + config.isSlowRenderingDetectionEnabled()
+                        + builder.slowRenderingDetectionEnabled
                         + ","
                         + "networkMonitor:"
-                        + config.isNetworkMonitorEnabled()
+                        + builder.networkMonitorEnabled
                         + "]";
         span.setAttribute("config_settings", configSettings);
 
@@ -285,7 +283,7 @@ class RumInitializer {
 
         RumAttributeAppender attributeAppender =
                 new RumAttributeAppender(
-                        config.getApplicationName(),
+                        builder.applicationName,
                         globalAttributes::get,
                         sessionId,
                         rumVersion,
@@ -297,7 +295,7 @@ class RumInitializer {
 
         Resource resource =
                 Resource.getDefault().toBuilder()
-                        .put("service.name", config.getApplicationName())
+                        .put("service.name", builder.applicationName)
                         .build();
         initializationEvents.add(
                 new RumInitializer.InitializationEvent("resourceInitialized", timingClock.now()));
@@ -316,16 +314,15 @@ class RumInitializer {
                 new RumInitializer.InitializationEvent(
                         "tracerProviderBuilderInitialized", timingClock.now()));
 
-        if (config.isSessionBasedSamplerEnabled()) {
+        if (builder.sessionBasedSamplerEnabled) {
             tracerProviderBuilder.setSampler(
-                    new SessionIdRatioBasedSampler(
-                            config.getSessionBasedSamplerRatio(), sessionId));
+                    new SessionIdRatioBasedSampler(builder.sessionBasedSamplerRatio, sessionId));
         }
 
-        if (config.isDebugEnabled()) {
+        if (builder.debugEnabled) {
             tracerProviderBuilder.addSpanProcessor(
                     SimpleSpanProcessor.create(
-                            config.decorateWithSpanFilter(LoggingSpanExporter.create())));
+                            builder.decorateWithSpanFilter(LoggingSpanExporter.create())));
             initializationEvents.add(
                     new RumInitializer.InitializationEvent(
                             "debugSpanExporterInitialized", timingClock.now()));
@@ -336,14 +333,14 @@ class RumInitializer {
     // visible for testing
     SpanExporter buildFilteringExporter(ConnectionUtil connectionUtil) {
         SpanExporter exporter = buildExporter(connectionUtil);
-        SpanExporter filteredExporter = config.decorateWithSpanFilter(exporter);
+        SpanExporter filteredExporter = builder.decorateWithSpanFilter(exporter);
         initializationEvents.add(
                 new InitializationEvent("zipkin exporter initialized", timingClock.now()));
         return filteredExporter;
     }
 
     private SpanExporter buildExporter(ConnectionUtil connectionUtil) {
-        if (!config.isDebugEnabled()) {
+        if (builder.debugEnabled) {
             // tell the Zipkin exporter to shut up already. We're on mobile, network stuff happens.
             // we'll do our best to hang on to the spans with the wrapping BufferingExporter.
             ZipkinSpanExporter.baseLogger.setLevel(Level.SEVERE);
@@ -351,7 +348,7 @@ class RumInitializer {
                     new InitializationEvent("logger setup complete", timingClock.now()));
         }
 
-        if (config.isDiskBufferingEnabled()) {
+        if (builder.diskBufferingEnabled) {
             return buildStorageBufferingExporter(connectionUtil);
         }
 
@@ -379,7 +376,7 @@ class RumInitializer {
 
     @NonNull
     private String getEndpoint() {
-        return config.getBeaconEndpoint() + "?auth=" + config.getRumAccessToken();
+        return builder.beaconEndpoint + "?auth=" + builder.rumAccessToken;
     }
 
     private SpanExporter buildMemoryBufferingThrottledExporter(ConnectionUtil connectionUtil) {
@@ -395,7 +392,9 @@ class RumInitializer {
 
     SpanExporter getToDiskExporter() {
         return new LazyInitSpanExporter(
-                () -> ZipkinWriteToDiskExporterFactory.create(application, config));
+                () ->
+                        ZipkinWriteToDiskExporterFactory.create(
+                                application, builder.maxUsageMegabytes));
     }
 
     // visible for testing

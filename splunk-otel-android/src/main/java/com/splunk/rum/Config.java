@@ -31,7 +31,11 @@ import java.util.function.Function;
  *
  * <p>Both the beaconUrl and the rumAuthToken are mandatory configuration settings. Trying to build
  * a Config instance without both of these items specified will result in an exception being thrown.
+ *
+ * @deprecated Use {@link #builder()} and the {@link SplunkRumBuilder} to configure a {@link
+ *     SplunkRum} instance.
  */
+@Deprecated
 public class Config {
 
     private final String beaconEndpoint;
@@ -43,6 +47,7 @@ public class Config {
     private final boolean anrDetectionEnabled;
     private final Attributes globalAttributes;
     private final Function<SpanExporter, SpanExporter> spanFilterExporterDecorator;
+    private final Consumer<SpanFilterBuilder> spanFilterBuilderConfigurer;
     private final boolean slowRenderingDetectionEnabled;
     private final Duration slowRenderingDetectionPollInterval;
     private final boolean diskBufferingEnabled;
@@ -62,6 +67,7 @@ public class Config {
         this.slowRenderingDetectionPollInterval = builder.slowRenderingDetectionPollInterval;
         this.slowRenderingDetectionEnabled = builder.slowRenderingDetectionEnabled;
         this.spanFilterExporterDecorator = builder.spanFilterBuilder.build();
+        this.spanFilterBuilderConfigurer = builder.spanFilterBuilderConfigurer;
         this.diskBufferingEnabled = builder.diskBufferingEnabled;
         this.maxUsageMegabytes = builder.maxUsageMegabytes;
         this.sessionBasedSamplerEnabled = builder.sessionBasedSamplerEnabled;
@@ -170,11 +176,48 @@ public class Config {
         return new Builder();
     }
 
-    SpanExporter decorateWithSpanFilter(SpanExporter exporter) {
-        return spanFilterExporterDecorator.apply(exporter);
+    SplunkRumBuilder toSplunkRumBuilder() {
+        SplunkRumBuilder splunkRumBuilder =
+                new SplunkRumBuilder()
+                        .setApplicationName(applicationName)
+                        .setBeaconEndpoint(beaconEndpoint)
+                        .setRumAccessToken(rumAccessToken);
+        if (debugEnabled) {
+            splunkRumBuilder.enableDebug();
+        }
+        if (diskBufferingEnabled) {
+            splunkRumBuilder.enableDiskBuffering();
+        }
+        if (!crashReportingEnabled) {
+            splunkRumBuilder.disableCrashReporting();
+        }
+        if (!networkMonitorEnabled) {
+            splunkRumBuilder.disableNetworkMonitorEnabled();
+        }
+        if (!anrDetectionEnabled) {
+            splunkRumBuilder.disableAnrDetection();
+        }
+        if (!slowRenderingDetectionEnabled) {
+            splunkRumBuilder.disableSlowRenderingDetection();
+        }
+        splunkRumBuilder
+                .setSlowRenderingDetectionPollInterval(slowRenderingDetectionPollInterval)
+                .setGlobalAttributes(globalAttributes)
+                .filterSpans(spanFilterBuilderConfigurer)
+                .limitDiskUsageMegabytes(maxUsageMegabytes);
+        if (sessionBasedSamplerEnabled) {
+            splunkRumBuilder.enableSessionBasedSampling(sessionBasedSamplerRatio);
+        }
+        return splunkRumBuilder;
     }
 
-    /** Builder class for the Splunk RUM {@link Config} class. */
+    /**
+     * Builder class for the Splunk RUM {@link Config} class.
+     *
+     * @deprecated Use {@link #builder()} and the {@link SplunkRumBuilder} to configure a {@link
+     *     SplunkRum} instance.
+     */
+    @Deprecated
     public static class Builder {
 
         private static final Duration DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL =
@@ -192,6 +235,7 @@ public class Config {
         private Attributes globalAttributes = Attributes.empty();
         private String deploymentEnvironment;
         private final SpanFilterBuilder spanFilterBuilder = new SpanFilterBuilder();
+        private Consumer<SpanFilterBuilder> spanFilterBuilderConfigurer = f -> {};
         private String realm;
         private Duration slowRenderingDetectionPollInterval =
                 DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL;
@@ -379,6 +423,8 @@ public class Config {
          * @return {@code this}.
          */
         public Builder filterSpans(Consumer<SpanFilterBuilder> configurer) {
+            Consumer<SpanFilterBuilder> previous = this.spanFilterBuilderConfigurer;
+            this.spanFilterBuilderConfigurer = previous.andThen(configurer);
             configurer.accept(spanFilterBuilder);
             return this;
         }

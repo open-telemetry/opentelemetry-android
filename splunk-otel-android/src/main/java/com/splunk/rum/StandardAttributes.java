@@ -28,7 +28,7 @@ public final class StandardAttributes {
     /**
      * The version of your app. Useful for adding to global attributes.
      *
-     * @see Config.Builder#globalAttributes(Attributes)
+     * @see SplunkRumBuilder#setGlobalAttributes(Attributes)
      */
     public static final AttributeKey<String> APP_VERSION = AttributeKey.stringKey("app.version");
 
@@ -36,7 +36,7 @@ public final class StandardAttributes {
      * The build type of your app (typically one of debug or release). Useful for adding to global
      * attributes.
      *
-     * @see Config.Builder#globalAttributes(Attributes)
+     * @see SplunkRumBuilder#setGlobalAttributes(Attributes)
      */
     public static final AttributeKey<String> APP_BUILD_TYPE =
             AttributeKey.stringKey("app.build.type");

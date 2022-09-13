@@ -23,7 +23,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -49,13 +48,11 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.File;
-import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.internal.stubbing.answers.ReturnsArgumentAt;
 
 public class SplunkRumTest {
 
@@ -74,19 +71,23 @@ public class SplunkRumTest {
     @Test
     public void initialization_onlyOnce() {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
-        Config config = mock(Config.class);
-        ConnectionUtil connectionUtil = mock(ConnectionUtil.class, RETURNS_DEEP_STUBS);
+        ConnectionUtil.Factory connectionUtilFactory =
+                mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS);
         Context context = mock(Context.class);
 
-        when(config.getBeaconEndpoint()).thenReturn("http://backend");
-        when(config.isDebugEnabled()).thenReturn(true);
-        when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
-        when(config.getSlowRenderingDetectionPollInterval()).thenReturn(Duration.ofMillis(1000));
+        SplunkRumBuilder splunkRumBuilder =
+                new SplunkRumBuilder()
+                        .setApplicationName("appName")
+                        .setBeaconEndpoint("http://backend")
+                        .setRumAccessToken("abracadabra")
+                        .disableAnrDetection();
+
         when(application.getApplicationContext()).thenReturn(context);
         when(context.getFilesDir()).thenReturn(new File("/my/storage/spot"));
 
-        SplunkRum singleton = SplunkRum.initialize(config, application, () -> connectionUtil);
-        SplunkRum sameInstance = SplunkRum.initialize(config, application);
+        SplunkRum singleton =
+                SplunkRum.initialize(splunkRumBuilder, application, connectionUtilFactory);
+        SplunkRum sameInstance = splunkRumBuilder.build(application);
 
         assertSame(singleton, sameInstance);
     }
@@ -100,41 +101,49 @@ public class SplunkRumTest {
     @Test
     public void getInstance() {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
-        Config config = mock(Config.class);
+        ConnectionUtil.Factory connectionUtilFactory =
+                mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS);
         Context context = mock(Context.class);
 
-        when(config.getBeaconEndpoint()).thenReturn("http://backend");
-        when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
-        when(config.getSlowRenderingDetectionPollInterval()).thenReturn(Duration.ofMillis(1000));
+        SplunkRumBuilder splunkRumBuilder =
+                new SplunkRumBuilder()
+                        .setApplicationName("appName")
+                        .setBeaconEndpoint("http://backend")
+                        .setRumAccessToken("abracadabra")
+                        .disableAnrDetection();
+
         when(application.getApplicationContext()).thenReturn(context);
         when(context.getFilesDir()).thenReturn(new File("/my/storage/spot"));
 
         SplunkRum singleton =
-                SplunkRum.initialize(
-                        config, application, () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
+                SplunkRum.initialize(splunkRumBuilder, application, connectionUtilFactory);
         assertSame(singleton, SplunkRum.getInstance());
     }
 
     @Test
-    public void newConfigBuilder() {
-        assertNotNull(SplunkRum.newConfigBuilder());
+    public void newBuilder() {
+        assertNotNull(SplunkRum.builder());
     }
 
     @Test
     public void nonNullMethods() {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
-        Config config = mock(Config.class);
+        ConnectionUtil.Factory connectionUtilFactory =
+                mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS);
         Context context = mock(Context.class);
 
-        when(config.getBeaconEndpoint()).thenReturn("http://backend");
-        when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
-        when(config.getSlowRenderingDetectionPollInterval()).thenReturn(Duration.ofMillis(1000));
         when(application.getApplicationContext()).thenReturn(context);
         when(context.getFilesDir()).thenReturn(new File("/my/storage/spot"));
 
+        SplunkRumBuilder splunkRumBuilder =
+                new SplunkRumBuilder()
+                        .setApplicationName("appName")
+                        .setBeaconEndpoint("http://backend")
+                        .setRumAccessToken("abracadabra")
+                        .disableAnrDetection();
+
         SplunkRum splunkRum =
-                SplunkRum.initialize(
-                        config, application, () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
+                SplunkRum.initialize(splunkRumBuilder, application, connectionUtilFactory);
         assertNotNull(splunkRum.getOpenTelemetry());
         assertNotNull(splunkRum.getRumSessionId());
     }
@@ -267,19 +276,23 @@ public class SplunkRumTest {
     @Test
     public void integrateWithBrowserRum() {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
-        Config config = mock(Config.class);
-        WebView webView = mock(WebView.class);
+        ConnectionUtil.Factory connectionUtilFactory =
+                mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS);
         Context context = mock(Context.class);
+        WebView webView = mock(WebView.class);
 
-        when(config.getBeaconEndpoint()).thenReturn("http://backend");
-        when(config.decorateWithSpanFilter(any())).then(new ReturnsArgumentAt(0));
-        when(config.getSlowRenderingDetectionPollInterval()).thenReturn(Duration.ofMillis(1000));
         when(application.getApplicationContext()).thenReturn(context);
         when(context.getFilesDir()).thenReturn(new File("/my/storage/spot"));
 
+        SplunkRumBuilder splunkRumBuilder =
+                new SplunkRumBuilder()
+                        .setApplicationName("appName")
+                        .setBeaconEndpoint("http://backend")
+                        .setRumAccessToken("abracadabra")
+                        .disableAnrDetection();
+
         SplunkRum splunkRum =
-                SplunkRum.initialize(
-                        config, application, () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS));
+                SplunkRum.initialize(splunkRumBuilder, application, connectionUtilFactory);
         splunkRum.integrateWithBrowserRum(webView);
 
         verify(webView)

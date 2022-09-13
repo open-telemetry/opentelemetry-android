@@ -20,9 +20,7 @@ import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import android.app.Application;
-import android.content.Context;
 import android.location.Location;
-import android.net.ConnectivityManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -41,12 +39,11 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import okhttp3.Call;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 
-/** Entrypoint for Splunk's Android RUM (Real User Monitoring) support. */
+/** Entrypoint for the Splunk OpenTelemetry Instrumentation for Android. */
 public class SplunkRum {
     // initialize this here, statically, to make sure we capture the earliest possible timestamp for
     // startup.
@@ -93,7 +90,18 @@ public class SplunkRum {
         this.globalAttributes = globalAttributes;
     }
 
-    /** Create a new {@link Config.Builder} instance. */
+    /** Creates a new {@link SplunkRumBuilder}, used to set up a {@link SplunkRum} instance. */
+    public static SplunkRumBuilder builder() {
+        return new SplunkRumBuilder();
+    }
+
+    /**
+     * Create a new {@link Config.Builder} instance.
+     *
+     * @deprecated Use {@link #builder()} and the {@link SplunkRumBuilder} to configure a {@link
+     *     SplunkRum} instance.
+     */
+    @Deprecated
     public static Config.Builder newConfigBuilder() {
         return Config.builder();
     }
@@ -106,38 +114,29 @@ public class SplunkRum {
      * @param config The {@link Config} options to use for initialization.
      * @param application The {@link Application} to be monitored.
      * @return A fully initialized {@link SplunkRum} instance, ready for use.
+     * @deprecated Use {@link #builder()} and the {@link SplunkRumBuilder} to configure a {@link
+     *     SplunkRum} instance.
      */
+    @Deprecated
     public static SplunkRum initialize(Config config, Application application) {
-        return initialize(
-                config,
-                application,
-                () -> {
-                    Context context = application.getApplicationContext();
-                    ConnectionUtil connectionUtil =
-                            new ConnectionUtil(NetworkDetector.create(context));
-                    connectionUtil.startMonitoring(
-                            ConnectionUtil::createNetworkMonitoringRequest,
-                            (ConnectivityManager)
-                                    context.getSystemService(Context.CONNECTIVITY_SERVICE));
-                    return connectionUtil;
-                });
+        return config.toSplunkRumBuilder().build(application);
     }
 
     // for testing purposes
     static SplunkRum initialize(
-            Config config,
+            SplunkRumBuilder builder,
             Application application,
-            Supplier<ConnectionUtil> connectionUtilSupplier) {
+            ConnectionUtil.Factory connectionUtilFactory) {
         if (INSTANCE != null) {
             Log.w(LOG_TAG, "Singleton SplunkRum instance has already been initialized.");
             return INSTANCE;
         }
 
         INSTANCE =
-                new RumInitializer(config, application, startupTimer)
-                        .initialize(connectionUtilSupplier, Looper.getMainLooper());
+                new RumInitializer(builder, application, startupTimer)
+                        .initialize(connectionUtilFactory, Looper.getMainLooper());
 
-        if (config.isDebugEnabled()) {
+        if (builder.debugEnabled) {
             Log.i(
                     LOG_TAG,
                     "Splunk RUM monitoring initialized with session ID: " + INSTANCE.sessionId);

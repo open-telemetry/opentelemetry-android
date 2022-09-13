@@ -48,17 +48,16 @@ import org.junit.Test;
 public class RumInitializerTest {
     @Test
     public void initializationSpan() {
-        Config config =
-                Config.builder()
-                        .realm("dev")
-                        .applicationName("testApp")
-                        .rumAccessToken("accessToken")
-                        .build();
+        SplunkRumBuilder splunkRumBuilder =
+                new SplunkRumBuilder()
+                        .setRealm("dev")
+                        .setApplicationName("testApp")
+                        .setRumAccessToken("accessToken");
         Application application = mock(Application.class);
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
         AppStartupTimer startupTimer = new AppStartupTimer();
         RumInitializer testInitializer =
-                new RumInitializer(config, application, startupTimer) {
+                new RumInitializer(splunkRumBuilder, application, startupTimer) {
                     @Override
                     SpanExporter buildFilteringExporter(ConnectionUtil connectionUtil) {
                         return testExporter;
@@ -66,7 +65,7 @@ public class RumInitializerTest {
                 };
         SplunkRum splunkRum =
                 testInitializer.initialize(
-                        () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS), mock(Looper.class));
+                        mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS), mock(Looper.class));
         startupTimer.runCompletionCallback();
         splunkRum.flushSpans();
 
@@ -103,17 +102,16 @@ public class RumInitializerTest {
 
     @Test
     public void spanLimitsAreConfigured() {
-        Config config =
-                Config.builder()
-                        .realm("dev")
-                        .applicationName("testApp")
-                        .rumAccessToken("accessToken")
-                        .build();
+        SplunkRumBuilder splunkRumBuilder =
+                new SplunkRumBuilder()
+                        .setRealm("dev")
+                        .setApplicationName("testApp")
+                        .setRumAccessToken("accessToken");
         Application application = mock(Application.class);
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
         AppStartupTimer startupTimer = new AppStartupTimer();
         RumInitializer testInitializer =
-                new RumInitializer(config, application, startupTimer) {
+                new RumInitializer(splunkRumBuilder, application, startupTimer) {
                     @Override
                     SpanExporter buildFilteringExporter(ConnectionUtil connectionUtil) {
                         return testExporter;
@@ -121,7 +119,7 @@ public class RumInitializerTest {
                 };
         SplunkRum splunkRum =
                 testInitializer.initialize(
-                        () -> mock(ConnectionUtil.class, RETURNS_DEEP_STUBS), mock(Looper.class));
+                        mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS), mock(Looper.class));
         splunkRum.flushSpans();
 
         testExporter.reset();
@@ -146,18 +144,17 @@ public class RumInitializerTest {
     /** Verify that we have buffering in place in our exporter implementation. */
     @Test
     public void verifyExporterBuffering() {
-        Config config =
-                Config.builder()
-                        .realm("dev")
-                        .applicationName("testApp")
-                        .rumAccessToken("accessToken")
-                        .build();
+        SplunkRumBuilder splunkRumBuilder =
+                new SplunkRumBuilder()
+                        .setRealm("dev")
+                        .setApplicationName("testApp")
+                        .setRumAccessToken("accessToken");
         Application application = mock(Application.class);
         AppStartupTimer startupTimer = new AppStartupTimer();
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
 
         RumInitializer testInitializer =
-                new RumInitializer(config, application, startupTimer) {
+                new RumInitializer(splunkRumBuilder, application, startupTimer) {
                     @Override
                     SpanExporter getCoreSpanExporter(String endpoint) {
                         return testExporter;
@@ -205,27 +202,27 @@ public class RumInitializerTest {
     public void shouldTranslateExceptionEventsToSpanAttributes() {
         InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
-        Config config =
-                Config.builder()
-                        .realm("us0")
-                        .rumAccessToken("secret!")
-                        .applicationName("test")
-                        .debugEnabled(true)
-                        .build();
+        SplunkRumBuilder splunkRumBuilder =
+                new SplunkRumBuilder()
+                        .setRealm("us0")
+                        .setRumAccessToken("secret!")
+                        .setApplicationName("test");
         Application application = mock(Application.class);
         ConnectionUtil connectionUtil = mock(ConnectionUtil.class, RETURNS_DEEP_STUBS);
         when(connectionUtil.refreshNetworkStatus().isOnline()).thenReturn(true);
+        ConnectionUtil.Factory connectionUtilFactory = mock(ConnectionUtil.Factory.class);
+        when(connectionUtilFactory.createAndStart(application)).thenReturn(connectionUtil);
 
         AppStartupTimer appStartupTimer = new AppStartupTimer();
         RumInitializer initializer =
-                new RumInitializer(config, application, appStartupTimer) {
+                new RumInitializer(splunkRumBuilder, application, appStartupTimer) {
                     @Override
                     SpanExporter getCoreSpanExporter(String endpoint) {
                         return spanExporter;
                     }
                 };
 
-        SplunkRum splunkRum = initializer.initialize(() -> connectionUtil, mock(Looper.class));
+        SplunkRum splunkRum = initializer.initialize(connectionUtilFactory, mock(Looper.class));
         appStartupTimer.runCompletionCallback();
 
         Exception e = new IllegalArgumentException("booom!");

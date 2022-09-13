@@ -16,6 +16,8 @@
 
 package com.splunk.rum;
 
+import android.app.Application;
+import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -135,6 +137,18 @@ class ConnectionUtil {
                         SplunkRum.LOG_TAG,
                         "  onLost: isConnected:" + false + ", activeNetwork: " + activeNetwork);
             }
+        }
+    }
+
+    static class Factory {
+
+        ConnectionUtil createAndStart(Application application) {
+            Context context = application.getApplicationContext();
+            ConnectionUtil connectionUtil = new ConnectionUtil(NetworkDetector.create(context));
+            connectionUtil.startMonitoring(
+                    ConnectionUtil::createNetworkMonitoringRequest,
+                    (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
+            return connectionUtil;
         }
     }
 }
