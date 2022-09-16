@@ -86,6 +86,8 @@ class SlowRenderingDetectorImpl implements SlowRenderingDetector {
         }
     }
 
+    // the returned future is very unlikely to fail
+    @SuppressWarnings("FutureReturnValueIgnored")
     @Override
     public void start() {
         executorService.scheduleAtFixedRate(
@@ -108,9 +110,13 @@ class SlowRenderingDetectorImpl implements SlowRenderingDetector {
             Log.w(LOG_TAG, "Exception while processing frame metrics", e);
         }
         synchronized (lock) {
-            for (Activity activity : activities) {
-                frameMetrics.remove(activity);
-                frameMetrics.add(activity);
+            try {
+                for (Activity activity : activities) {
+                    frameMetrics.remove(activity);
+                    frameMetrics.add(activity);
+                }
+            } catch (Exception e) {
+                Log.w(LOG_TAG, "Exception updating observed activities", e);
             }
         }
     }

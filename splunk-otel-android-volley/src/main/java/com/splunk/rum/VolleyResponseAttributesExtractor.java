@@ -63,6 +63,7 @@ class VolleyResponseAttributesExtractor
         }
     }
 
+    @Nullable
     private String getHeader(HttpResponse response, String headerName) {
         for (Header header : response.getHeaders()) {
             if (header.getName().equals(headerName)) {

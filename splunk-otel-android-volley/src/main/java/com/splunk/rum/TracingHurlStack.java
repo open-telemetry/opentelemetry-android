@@ -58,35 +58,31 @@ final class TracingHurlStack extends HurlStack {
     public HttpResponse executeRequest(Request<?> request, Map<String, String> additionalHeaders)
             throws IOException, AuthFailureError {
 
-        HttpResponse response = null;
-        Throwable throwable = null;
-
+        Context parentContext = Context.current();
         RequestWrapper requestWrapper = new RequestWrapper(request, additionalHeaders);
         currentRequestWrapper.set(requestWrapper);
 
-        Context parentContext = Context.current();
-        Context context = null;
-        Scope scope = null;
-
-        if (instrumenter.shouldStart(parentContext, requestWrapper)) {
-            context = instrumenter.start(parentContext, requestWrapper);
-            scope = context.makeCurrent();
-        }
-
         try {
-            response = super.executeRequest(request, requestWrapper.getAdditionalHeaders());
-        } catch (Throwable t) {
-            throwable = t;
-            throw t;
-        } finally {
-            if (scope != null) {
-                scope.close();
+            if (!instrumenter.shouldStart(parentContext, requestWrapper)) {
+                return super.executeRequest(request, additionalHeaders);
+            }
+
+            Context context = instrumenter.start(parentContext, requestWrapper);
+            HttpResponse response = null;
+            Throwable throwable = null;
+            try (Scope ignored = context.makeCurrent()) {
+                response = super.executeRequest(request, requestWrapper.getAdditionalHeaders());
+                return response;
+            } catch (Throwable t) {
+                throwable = t;
+                throw t;
+            } finally {
                 instrumenter.end(context, requestWrapper, response, throwable);
             }
+
+        } finally {
             currentRequestWrapper.remove();
         }
-
-        return response;
     }
 
     @Override
@@ -94,8 +90,11 @@ final class TracingHurlStack extends HurlStack {
         // requestWrapper cannot be null here, because this method is called only
         // inside parent's executeRequest() (through a private method - openConnection()),
         // so currentRequestWrapper.set() is always called before that
+        // null-check here is just to satisfy errorprone
         RequestWrapper requestWrapper = currentRequestWrapper.get();
-        requestWrapper.setUrl(url);
+        if (requestWrapper != null) {
+            requestWrapper.setUrl(url);
+        }
         return super.createConnection(url);
     }
 }

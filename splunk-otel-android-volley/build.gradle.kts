@@ -3,6 +3,7 @@ import java.time.Duration
 plugins {
     id("com.android.library")
     id("splunk.android-library-conventions")
+    id("splunk.errorprone-conventions")
 }
 
 android {

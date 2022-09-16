@@ -20,6 +20,7 @@ import static com.splunk.rum.DeviceSpanStorageLimiter.DEFAULT_MAX_STORAGE_USE_MB
 
 import android.app.Application;
 import android.util.Log;
+import androidx.annotation.Nullable;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -33,10 +34,10 @@ public final class SplunkRumBuilder {
     private static final Duration DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL =
             Duration.ofSeconds(1);
 
-    String applicationName;
-    String beaconEndpoint;
-    String rumAccessToken;
-    private String realm;
+    @Nullable String applicationName;
+    @Nullable String beaconEndpoint;
+    @Nullable String rumAccessToken;
+    @Nullable private String realm;
     boolean debugEnabled = false;
     boolean diskBufferingEnabled = false;
     boolean crashReportingEnabled = true;
@@ -45,7 +46,7 @@ public final class SplunkRumBuilder {
     boolean slowRenderingDetectionEnabled = true;
     Duration slowRenderingDetectionPollInterval = DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL;
     private Attributes globalAttributes = Attributes.empty();
-    private String deploymentEnvironment;
+    @Nullable private String deploymentEnvironment;
     private final SpanFilterBuilder spanFilterBuilder = new SpanFilterBuilder();
     int maxUsageMegabytes = DEFAULT_MAX_STORAGE_USE_MB;
     boolean sessionBasedSamplerEnabled = false;

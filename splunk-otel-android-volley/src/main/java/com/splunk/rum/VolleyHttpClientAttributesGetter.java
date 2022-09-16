@@ -43,6 +43,7 @@ enum VolleyHttpClientAttributesGetter
         return null;
     }
 
+    @Nullable
     @Override
     public String method(RequestWrapper requestWrapper) {
         Request<?> request = requestWrapper.getRequest();

@@ -16,18 +16,17 @@
 
 package com.splunk.rum;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import android.app.Activity;
 
-/**
- * This annotation can be used to customize the {@code screen.name} attribute for an instrumented
- * Fragment or Activity.
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface RumScreenName {
-    /** Return the customized screen name. */
-    String value();
+enum NoOpSlowRenderingDetector implements SlowRenderingDetector {
+    INSTANCE;
+
+    @Override
+    public void add(Activity activity) {}
+
+    @Override
+    public void stop(Activity activity) {}
+
+    @Override
+    public void start() {}
 }

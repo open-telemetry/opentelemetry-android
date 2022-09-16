@@ -17,14 +17,14 @@
 package com.splunk.rum;
 
 import static com.splunk.rum.DeviceSpanStorageLimiter.DEFAULT_MAX_STORAGE_USE_MB;
+import static java.util.Objects.requireNonNull;
 
 import android.util.Log;
+import androidx.annotation.Nullable;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.time.Duration;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Configuration class for the Splunk Android RUM (Real User Monitoring) library.
@@ -46,7 +46,6 @@ public class Config {
     private final boolean networkMonitorEnabled;
     private final boolean anrDetectionEnabled;
     private final Attributes globalAttributes;
-    private final Function<SpanExporter, SpanExporter> spanFilterExporterDecorator;
     private final Consumer<SpanFilterBuilder> spanFilterBuilderConfigurer;
     private final boolean slowRenderingDetectionEnabled;
     private final Duration slowRenderingDetectionPollInterval;
@@ -56,17 +55,16 @@ public class Config {
     private final double sessionBasedSamplerRatio;
 
     private Config(Builder builder) {
-        this.beaconEndpoint = builder.beaconEndpoint;
-        this.rumAccessToken = builder.rumAccessToken;
+        this.beaconEndpoint = requireNonNull(builder.beaconEndpoint);
+        this.rumAccessToken = requireNonNull(builder.rumAccessToken);
         this.debugEnabled = builder.debugEnabled;
-        this.applicationName = builder.applicationName;
+        this.applicationName = requireNonNull(builder.applicationName);
         this.crashReportingEnabled = builder.crashReportingEnabled;
         this.globalAttributes = addDeploymentEnvironment(builder);
         this.networkMonitorEnabled = builder.networkMonitorEnabled;
         this.anrDetectionEnabled = builder.anrDetectionEnabled;
         this.slowRenderingDetectionPollInterval = builder.slowRenderingDetectionPollInterval;
         this.slowRenderingDetectionEnabled = builder.slowRenderingDetectionEnabled;
-        this.spanFilterExporterDecorator = builder.spanFilterBuilder.build();
         this.spanFilterBuilderConfigurer = builder.spanFilterBuilderConfigurer;
         this.diskBufferingEnabled = builder.diskBufferingEnabled;
         this.maxUsageMegabytes = builder.maxUsageMegabytes;
@@ -227,16 +225,16 @@ public class Config {
         private boolean anrDetectionEnabled = true;
         private boolean slowRenderingDetectionEnabled = true;
         private boolean diskBufferingEnabled = false;
-        private String beaconEndpoint;
-        private String rumAccessToken;
+        @Nullable private String beaconEndpoint;
+        @Nullable private String rumAccessToken;
         private boolean debugEnabled = false;
-        private String applicationName;
+        @Nullable private String applicationName;
         private boolean crashReportingEnabled = true;
         private Attributes globalAttributes = Attributes.empty();
-        private String deploymentEnvironment;
+        @Nullable private String deploymentEnvironment;
         private final SpanFilterBuilder spanFilterBuilder = new SpanFilterBuilder();
         private Consumer<SpanFilterBuilder> spanFilterBuilderConfigurer = f -> {};
-        private String realm;
+        @Nullable private String realm;
         private Duration slowRenderingDetectionPollInterval =
                 DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL;
         private int maxUsageMegabytes = DEFAULT_MAX_STORAGE_USE_MB;

@@ -34,8 +34,8 @@ class AppStartupTimer {
     final RumInitializer.AnchoredClock startupClock =
             RumInitializer.AnchoredClock.create(Clock.getDefault());
     private final long firstPossibleTimestamp = startupClock.now();
-    private volatile Span overallAppStartSpan = null;
-    private volatile Runnable completionCallback = null;
+    @Nullable private volatile Span overallAppStartSpan = null;
+    @Nullable private volatile Runnable completionCallback = null;
     // whether activity has been created
     // accessed only from UI thread
     private boolean uiInitStarted = false;
@@ -78,6 +78,7 @@ class AppStartupTimer {
     }
 
     void end() {
+        Span overallAppStartSpan = this.overallAppStartSpan;
         if (overallAppStartSpan != null && !uiInitTooLate && !isStartedFromBackground) {
             runCompletionCallback();
             overallAppStartSpan.end(startupClock.now(), TimeUnit.NANOSECONDS);
@@ -92,6 +93,7 @@ class AppStartupTimer {
 
     // visibleForTesting
     void runCompletionCallback() {
+        Runnable completionCallback = this.completionCallback;
         if (completionCallback != null) {
             completionCallback.run();
         }

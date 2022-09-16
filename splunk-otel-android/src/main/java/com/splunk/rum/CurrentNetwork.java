@@ -16,14 +16,15 @@
 
 package com.splunk.rum;
 
+import androidx.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
-class CurrentNetwork {
+final class CurrentNetwork {
     private final NetworkState state;
-    private final String subType;
+    @Nullable private final String subType;
 
-    CurrentNetwork(NetworkState state, String subType) {
+    CurrentNetwork(NetworkState state, @Nullable String subType) {
         this.state = state;
         this.subType = subType;
     }
@@ -32,11 +33,11 @@ class CurrentNetwork {
         return getState() != NetworkState.NO_NETWORK_AVAILABLE;
     }
 
-    public NetworkState getState() {
+    NetworkState getState() {
         return state;
     }
 
-    public Optional<String> getSubType() {
+    Optional<String> getSubType() {
         return Optional.ofNullable(subType);
     }
 
@@ -47,8 +48,12 @@ class CurrentNetwork {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof CurrentNetwork)) {
+            return false;
+        }
         CurrentNetwork that = (CurrentNetwork) o;
         return state == that.state && Objects.equals(subType, that.subType);
     }

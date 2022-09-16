@@ -17,6 +17,7 @@
 package com.splunk.rum;
 
 import static com.splunk.rum.SplunkRum.LOG_TAG;
+import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
 import android.os.Build;
@@ -24,6 +25,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.splunk.android.rum.R;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
@@ -174,7 +176,7 @@ class RumInitializer {
     private SlowRenderingDetector buildSlowRenderingDetector(Tracer tracer) {
         if (!builder.slowRenderingDetectionEnabled) {
             Log.w(LOG_TAG, "Slow/frozen rendering detection has been disabled by user.");
-            return SlowRenderingDetector.NO_OP;
+            return NoOpSlowRenderingDetector.INSTANCE;
         }
         try {
             initializationEvents.add(
@@ -187,7 +189,7 @@ class RumInitializer {
             Log.w(
                     LOG_TAG,
                     "FrameMetricsAggregator is not available on this platform - slow/frozen rendering detection is disabled.");
-            return SlowRenderingDetector.NO_OP;
+            return NoOpSlowRenderingDetector.INSTANCE;
         }
     }
 
@@ -199,7 +201,7 @@ class RumInitializer {
         final ScheduledFuture<?> scheduledFuture =
                 anrScheduler.scheduleAtFixedRate(anrWatcher, 1, 1, TimeUnit.SECONDS);
         return new AppStateListener() {
-            private ScheduledFuture<?> future = scheduledFuture;
+            @Nullable private ScheduledFuture<?> future = scheduledFuture;
 
             @Override
             public void appForegrounded() {
@@ -281,9 +283,10 @@ class RumInitializer {
                 new RumInitializer.InitializationEvent(
                         "batchSpanProcessorInitialized", timingClock.now()));
 
+        String applicationName = requireNonNull(builder.applicationName);
         RumAttributeAppender attributeAppender =
                 new RumAttributeAppender(
-                        builder.applicationName,
+                        applicationName,
                         globalAttributes::get,
                         sessionId,
                         rumVersion,
@@ -294,9 +297,7 @@ class RumInitializer {
                         "attributeAppenderInitialized", timingClock.now()));
 
         Resource resource =
-                Resource.getDefault().toBuilder()
-                        .put("service.name", builder.applicationName)
-                        .build();
+                Resource.getDefault().toBuilder().put("service.name", applicationName).build();
         initializationEvents.add(
                 new RumInitializer.InitializationEvent("resourceInitialized", timingClock.now()));
 
@@ -441,7 +442,7 @@ class RumInitializer {
     }
 
     private static class LazyInitSpanExporter implements SpanExporter {
-        private volatile SpanExporter delegate;
+        @Nullable private volatile SpanExporter delegate;
         private final Supplier<SpanExporter> s;
 
         public LazyInitSpanExporter(Supplier<SpanExporter> s) {
@@ -449,15 +450,16 @@ class RumInitializer {
         }
 
         private SpanExporter getDelegate() {
-            if (delegate != null) {
-                return delegate;
-            }
-            synchronized (this) {
-                if (delegate == null) {
-                    delegate = s.get();
+            SpanExporter d = delegate;
+            if (d == null) {
+                synchronized (this) {
+                    d = delegate;
+                    if (d == null) {
+                        delegate = d = s.get();
+                    }
                 }
             }
-            return delegate;
+            return d;
         }
 
         @Override

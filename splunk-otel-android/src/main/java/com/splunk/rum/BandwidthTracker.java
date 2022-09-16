@@ -32,7 +32,7 @@ class BandwidthTracker {
     private final ArrayDeque<Long> sizes = new ArrayDeque<>();
 
     BandwidthTracker() {
-        this(Clock.systemDefaultZone());
+        this(Clock.systemUTC());
     }
 
     // Exists for testing

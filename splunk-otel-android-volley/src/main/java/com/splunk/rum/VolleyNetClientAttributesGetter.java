@@ -30,11 +30,13 @@ enum VolleyNetClientAttributesGetter
         return SemanticAttributes.NetTransportValues.IP_TCP;
     }
 
+    @Nullable
     @Override
     public String peerName(RequestWrapper requestWrapper, @Nullable HttpResponse httpResponse) {
         return requestWrapper.getUrl() != null ? requestWrapper.getUrl().getHost() : null;
     }
 
+    @Nullable
     @Override
     public Integer peerPort(RequestWrapper requestWrapper, @Nullable HttpResponse httpResponse) {
         return requestWrapper.getUrl() != null ? requestWrapper.getUrl().getPort() : null;

@@ -18,8 +18,10 @@ package com.splunk.rum;
 
 import static com.splunk.rum.SplunkRum.LOG_TAG;
 import static java.util.Comparator.comparingLong;
+import static java.util.Objects.requireNonNull;
 
 import android.util.Log;
+import androidx.annotation.Nullable;
 import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,7 +33,7 @@ class DeviceSpanStorageLimiter {
     private final FileUtils fileUtils;
 
     private DeviceSpanStorageLimiter(Builder builder) {
-        this.path = builder.path;
+        this.path = requireNonNull(builder.path);
         this.maxStorageUseMb = builder.maxStorageUseMb;
         this.fileUtils = builder.fileUtils;
     }
@@ -87,7 +89,7 @@ class DeviceSpanStorageLimiter {
     }
 
     static class Builder {
-        private File path;
+        @Nullable private File path;
         private int maxStorageUseMb = DEFAULT_MAX_STORAGE_USE_MB;
         private FileUtils fileUtils = new FileUtils();
 

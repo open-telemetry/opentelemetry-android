@@ -30,6 +30,8 @@ import okhttp3.OkHttpClient;
 class NoOpSplunkRum extends SplunkRum {
     static final NoOpSplunkRum INSTANCE = new NoOpSplunkRum();
 
+    // passing null values here is fine, they'll never get used anyway
+    @SuppressWarnings("NullAway")
     private NoOpSplunkRum() {
         super(null, null, null);
     }

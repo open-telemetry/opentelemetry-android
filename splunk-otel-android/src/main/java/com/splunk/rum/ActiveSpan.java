@@ -16,6 +16,7 @@
 
 package com.splunk.rum;
 
+import androidx.annotation.Nullable;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import java.util.function.Supplier;
@@ -23,8 +24,8 @@ import java.util.function.Supplier;
 class ActiveSpan {
     private final VisibleScreenTracker visibleScreenTracker;
 
-    private Span span;
-    private Scope scope;
+    @Nullable private Span span;
+    @Nullable private Scope scope;
 
     ActiveSpan(VisibleScreenTracker visibleScreenTracker) {
         this.visibleScreenTracker = visibleScreenTracker;
@@ -34,6 +35,8 @@ class ActiveSpan {
         return span != null;
     }
 
+    // it's fine to not close the scope here, will be closed in endActiveSpan()
+    @SuppressWarnings("MustBeClosedChecker")
     void startSpan(Supplier<Span> spanCreator) {
         // don't start one if there's already one in progress
         if (span != null) {
@@ -65,7 +68,7 @@ class ActiveSpan {
             return;
         }
         String previouslyVisibleScreen = visibleScreenTracker.getPreviouslyVisibleScreen();
-        if (!screenName.equals(previouslyVisibleScreen)) {
+        if (previouslyVisibleScreen != null && !screenName.equals(previouslyVisibleScreen)) {
             span.setAttribute(SplunkRum.LAST_SCREEN_NAME_KEY, previouslyVisibleScreen);
         }
     }

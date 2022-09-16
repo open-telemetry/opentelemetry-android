@@ -16,6 +16,9 @@
 
 package com.splunk.rum;
 
+import static java.util.Objects.requireNonNull;
+
+import androidx.annotation.Nullable;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.Clock;
 import java.util.Random;
@@ -30,7 +33,7 @@ class SessionId {
     private final AtomicReference<String> value = new AtomicReference<>();
     private final SessionIdTimeoutHandler timeoutHandler;
     private volatile long createTimeNanos;
-    private volatile SessionIdChangeListener sessionIdChangeListener;
+    @Nullable private volatile SessionIdChangeListener sessionIdChangeListener;
 
     SessionId(SessionIdTimeoutHandler timeoutHandler) {
         this(Clock.getDefault(), timeoutHandler);
@@ -47,13 +50,13 @@ class SessionId {
     private static String createNewId() {
         Random random = new Random();
         // The OTel TraceId has exactly the same format as a RUM SessionId, so let's re-use it here,
-        // rather
-        // than re-inventing the wheel.
+        // rather than re-inventing the wheel.
         return TraceId.fromLongs(random.nextLong(), random.nextLong());
     }
 
     String getSessionId() {
-        String oldValue = value.get();
+        // value will never be null
+        String oldValue = requireNonNull(value.get());
         String currentValue = oldValue;
         boolean sessionIdChanged = false;
 
@@ -64,12 +67,14 @@ class SessionId {
             if (sessionIdChanged) {
                 createTimeNanos = clock.nanoTime();
             }
-            currentValue = value.get();
+            // value will never be null
+            currentValue = requireNonNull(value.get());
         }
 
         timeoutHandler.bump();
-        // sessionId change listener needs tobe called after bumping the timer because it may create
-        // a new span
+        // sessionId change listener needs to be called after bumping the timer because it may
+        // create a new span
+        SessionIdChangeListener sessionIdChangeListener = this.sessionIdChangeListener;
         if (sessionIdChanged && sessionIdChangeListener != null) {
             sessionIdChangeListener.onChange(oldValue, currentValue);
         }
@@ -88,6 +93,7 @@ class SessionId {
 
     @Override
     public String toString() {
-        return value.get();
+        // value will never be null
+        return requireNonNull(value.get());
     }
 }

@@ -18,6 +18,7 @@ package com.splunk.rum;
 
 import android.app.Activity;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
@@ -110,7 +111,7 @@ class ActivityTracer {
         return createSpanWithParent(spanName, null);
     }
 
-    private Span createSpanWithParent(String spanName, Span parentSpan) {
+    private Span createSpanWithParent(String spanName, @Nullable Span parentSpan) {
         final SpanBuilder spanBuilder =
                 tracer.spanBuilder(spanName)
                         .setAttribute(ACTIVITY_NAME_KEY, activityName)

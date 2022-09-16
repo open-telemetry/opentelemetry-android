@@ -16,10 +16,13 @@
 
 package com.splunk.rum;
 
+import static java.util.Objects.requireNonNull;
+
 import android.util.Log;
+import androidx.annotation.Nullable;
+import io.opentelemetry.sdk.common.Clock;
 import java.io.File;
 import java.io.IOException;
-import java.time.Clock;
 import java.util.List;
 import zipkin2.Call;
 import zipkin2.codec.Encoding;
@@ -33,10 +36,10 @@ class ZipkinToDiskSender extends Sender {
     private final DeviceSpanStorageLimiter storageLimiter;
 
     private ZipkinToDiskSender(Builder builder) {
-        this.path = builder.path;
+        this.path = requireNonNull(builder.path);
         this.fileUtils = builder.fileUtils;
         this.clock = builder.clock;
-        this.storageLimiter = builder.storageLimiter;
+        this.storageLimiter = requireNonNull(builder.storageLimiter);
     }
 
     @Override
@@ -64,7 +67,7 @@ class ZipkinToDiskSender extends Sender {
                             + " spans: Too much telemetry has been buffered or not enough space on device.");
             return Call.create(null);
         }
-        long now = clock.millis();
+        long now = clock.now();
         File filename = createFilename(now);
         try {
             fileUtils.writeAsLines(filename, encodedSpans);
@@ -83,10 +86,10 @@ class ZipkinToDiskSender extends Sender {
     }
 
     static class Builder {
-        private File path;
+        @Nullable private File path;
         private FileUtils fileUtils = new FileUtils();
-        private Clock clock = Clock.systemDefaultZone();
-        private DeviceSpanStorageLimiter storageLimiter;
+        private Clock clock = Clock.getDefault();
+        @Nullable private DeviceSpanStorageLimiter storageLimiter;
 
         Builder path(File path) {
             this.path = path;

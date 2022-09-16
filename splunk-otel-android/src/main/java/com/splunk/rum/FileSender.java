@@ -18,8 +18,10 @@ package com.splunk.rum;
 
 import static com.splunk.rum.SplunkRum.LOG_TAG;
 import static java.util.Collections.emptyList;
+import static java.util.Objects.requireNonNull;
 
 import android.util.Log;
+import androidx.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -40,10 +42,10 @@ class FileSender {
     private final RetryTracker retryTracker;
 
     private FileSender(Builder builder) {
-        this.sender = builder.sender;
+        this.sender = requireNonNull(builder.sender);
         this.fileUtils = builder.fileUtils;
-        this.bandwidthTracker = builder.bandwidthTracker;
-        this.retryTracker = builder.retryTracker;
+        this.bandwidthTracker = requireNonNull(builder.bandwidthTracker);
+        this.retryTracker = builder.buildRetryTracker();
     }
 
     /**
@@ -151,10 +153,9 @@ class FileSender {
 
     static class Builder {
 
-        private Sender sender;
+        @Nullable private Sender sender;
         private FileUtils fileUtils = new FileUtils();
-        private BandwidthTracker bandwidthTracker;
-        private RetryTracker retryTracker;
+        @Nullable private BandwidthTracker bandwidthTracker;
         private int maxRetries = DEFAULT_MAX_RETRIES;
         private Consumer<Integer> backoff = new DefaultBackoff();
 
@@ -185,8 +186,11 @@ class FileSender {
         }
 
         FileSender build() {
-            this.retryTracker = new RetryTracker(maxRetries, backoff);
             return new FileSender(this);
+        }
+
+        private RetryTracker buildRetryTracker() {
+            return new RetryTracker(maxRetries, backoff);
         }
     }
 }

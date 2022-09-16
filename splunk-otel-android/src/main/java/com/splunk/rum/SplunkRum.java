@@ -18,6 +18,7 @@ package com.splunk.rum;
 
 import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
 import android.location.Location;
@@ -70,7 +71,7 @@ public class SplunkRum {
     static final AttributeKey<String> LINK_TRACE_ID_KEY = stringKey("link.traceId");
     static final AttributeKey<String> LINK_SPAN_ID_KEY = stringKey("link.spanId");
 
-    private static SplunkRum INSTANCE;
+    @Nullable private static SplunkRum INSTANCE;
 
     private final SessionId sessionId;
     private final OpenTelemetrySdk openTelemetrySdk;
@@ -145,9 +146,7 @@ public class SplunkRum {
         return INSTANCE;
     }
 
-    /**
-     * @return true if the Splunk RUM library has been successfully initialized.
-     */
+    /** Returns {@code true} if the Splunk RUM library has been successfully initialized. */
     public static boolean isInitialized() {
         return INSTANCE != null;
     }
@@ -325,7 +324,8 @@ public class SplunkRum {
      */
     public void updateGlobalAttributes(Consumer<AttributesBuilder> attributesUpdater) {
         while (true) {
-            Attributes oldAttributes = globalAttributes.get();
+            // we're absolutely certain this will never be null
+            Attributes oldAttributes = requireNonNull(globalAttributes.get());
 
             AttributesBuilder builder = oldAttributes.toBuilder();
             attributesUpdater.accept(builder);

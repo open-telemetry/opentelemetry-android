@@ -58,7 +58,7 @@ class CustomZipkinEncoder implements BytesEncoder<Span> {
         // note: this can be optimized, if necessary. Let's keep it simple for now.
         byte[] rawBytes = JsonCodec.write(this.writer, span);
         String renamedResult =
-                new String(rawBytes)
+                new String(rawBytes, StandardCharsets.UTF_8)
                         .replace(
                                 "\"name\":\"" + span.name() + "\"",
                                 "\"name\":\"" + properSpanName + "\"");

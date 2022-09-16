@@ -26,9 +26,11 @@ import android.util.AtomicFile;
 import android.util.Log;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,12 +58,12 @@ class FileUtils {
 
     List<byte[]> readFileCompletely(File file) throws IOException {
         List<byte[]> result = new ArrayList<>();
-        try (FileReader fileReader = new FileReader(file)) {
-            try (BufferedReader buff = new BufferedReader(fileReader)) {
-                String line;
-                while ((line = buff.readLine()) != null) {
-                    result.add(line.getBytes(StandardCharsets.UTF_8));
-                }
+        try (Reader fileReader =
+                        new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
+                BufferedReader buff = new BufferedReader(fileReader)) {
+            String line;
+            while ((line = buff.readLine()) != null) {
+                result.add(line.getBytes(StandardCharsets.UTF_8));
             }
         }
         return result;

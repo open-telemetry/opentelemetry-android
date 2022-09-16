@@ -16,6 +16,8 @@
 
 package com.splunk.rum;
 
+import static java.util.Objects.requireNonNull;
+
 import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
@@ -43,11 +45,11 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     private int numberOfOpenActivities = 0;
 
     private ActivityCallbacks(Builder builder) {
-        this.tracer = builder.tracer;
-        this.visibleScreenTracker = builder.visibleScreenTracker;
-        this.startupTimer = builder.startupTimer;
-        this.appStateListeners = builder.appStateListeners;
-        this.slowRenderingDetector = builder.slowRenderingDetector;
+        this.tracer = requireNonNull(builder.tracer);
+        this.visibleScreenTracker = requireNonNull(builder.visibleScreenTracker);
+        this.startupTimer = requireNonNull(builder.startupTimer);
+        this.appStateListeners = requireNonNull(builder.appStateListeners);
+        this.slowRenderingDetector = requireNonNull(builder.slowRenderingDetector);
     }
 
     public static Builder builder() {
@@ -212,11 +214,11 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     }
 
     static class Builder {
-        private Tracer tracer;
-        private VisibleScreenTracker visibleScreenTracker;
-        private AppStartupTimer startupTimer;
-        private List<AppStateListener> appStateListeners;
-        private SlowRenderingDetector slowRenderingDetector;
+        @Nullable private Tracer tracer;
+        @Nullable private VisibleScreenTracker visibleScreenTracker;
+        @Nullable private AppStartupTimer startupTimer;
+        @Nullable private List<AppStateListener> appStateListeners;
+        @Nullable private SlowRenderingDetector slowRenderingDetector;
 
         public ActivityCallbacks build() {
             return new ActivityCallbacks(this);

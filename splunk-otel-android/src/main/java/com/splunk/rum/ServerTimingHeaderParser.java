@@ -16,6 +16,7 @@
 
 package com.splunk.rum;
 
+import androidx.annotation.Nullable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,7 +36,7 @@ class ServerTimingHeaderParser {
      *     <p>This will also consider single-quotes valid for delimiting the "desc" section, even
      *     though it's not to spec.
      */
-    String[] parse(String header) {
+    String[] parse(@Nullable String header) {
         if (header == null) {
             return UNPARSEABLE_RESULT;
         }

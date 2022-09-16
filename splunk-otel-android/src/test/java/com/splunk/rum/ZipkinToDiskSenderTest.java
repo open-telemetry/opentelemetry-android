@@ -21,10 +21,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.sdk.common.Clock;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
@@ -50,7 +50,7 @@ public class ZipkinToDiskSenderTest {
 
     @Before
     public void setup() {
-        when(clock.millis()).thenReturn(now);
+        when(clock.now()).thenReturn(now);
         when(limiter.ensureFreeSpace()).thenReturn(true);
     }
 

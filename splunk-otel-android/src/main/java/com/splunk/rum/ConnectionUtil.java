@@ -25,6 +25,7 @@ import android.net.NetworkRequest;
 import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import java.util.function.Supplier;
 
 // note: based on ideas from stack overflow:
@@ -38,8 +39,8 @@ class ConnectionUtil {
 
     private final NetworkDetector networkDetector;
 
-    private volatile CurrentNetwork currentNetwork;
-    private volatile ConnectionStateListener connectionStateListener;
+    private volatile CurrentNetwork currentNetwork = UNKNOWN_NETWORK;
+    @Nullable private volatile ConnectionStateListener connectionStateListener;
 
     ConnectionUtil(NetworkDetector networkDetector) {
         this.networkDetector = networkDetector;
@@ -111,6 +112,8 @@ class ConnectionUtil {
         public void onAvailable(@NonNull Network network) {
             Log.d(SplunkRum.LOG_TAG, "onAvailable: ");
             CurrentNetwork activeNetwork = refreshNetworkStatus();
+            ConnectionStateListener connectionStateListener =
+                    ConnectionUtil.this.connectionStateListener;
             if (connectionStateListener != null) {
                 connectionStateListener.onAvailable(true, activeNetwork);
                 Log.d(
@@ -131,6 +134,8 @@ class ConnectionUtil {
             // state at the right time during this event.
             CurrentNetwork activeNetwork = NO_NETWORK;
             currentNetwork = activeNetwork;
+            ConnectionStateListener connectionStateListener =
+                    ConnectionUtil.this.connectionStateListener;
             if (connectionStateListener != null) {
                 connectionStateListener.onAvailable(false, activeNetwork);
                 Log.d(

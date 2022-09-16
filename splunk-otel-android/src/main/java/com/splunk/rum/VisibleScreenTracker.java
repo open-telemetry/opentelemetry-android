@@ -17,6 +17,7 @@
 package com.splunk.rum;
 
 import android.app.Activity;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
@@ -40,6 +41,7 @@ class VisibleScreenTracker {
     private final AtomicReference<String> lastResumedFragment = new AtomicReference<>();
     private final AtomicReference<String> previouslyLastResumedFragment = new AtomicReference<>();
 
+    @Nullable
     String getPreviouslyVisibleScreen() {
         String previouslyLastFragment = previouslyLastResumedFragment.get();
         if (previouslyLastFragment != null) {

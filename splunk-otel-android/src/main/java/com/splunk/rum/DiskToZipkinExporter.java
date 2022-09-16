@@ -18,8 +18,10 @@ package com.splunk.rum;
 
 import static com.splunk.rum.SplunkRum.LOG_TAG;
 import static java.util.Collections.emptyList;
+import static java.util.Objects.requireNonNull;
 
 import android.util.Log;
+import androidx.annotation.Nullable;
 import java.io.File;
 import java.util.Comparator;
 import java.util.List;
@@ -46,14 +48,16 @@ class DiskToZipkinExporter {
 
     DiskToZipkinExporter(Builder builder) {
         this.threadPool = builder.threadPool;
-        this.connectionUtil = builder.connectionUtil;
-        this.fileSender = builder.fileSender;
-        this.spanFilesPath = builder.spanFilesPath;
+        this.connectionUtil = requireNonNull(builder.connectionUtil);
+        this.fileSender = requireNonNull(builder.fileSender);
+        this.spanFilesPath = requireNonNull(builder.spanFilesPath);
         this.fileUtils = builder.fileUtils;
-        this.bandwidthTracker = builder.bandwidthTracker;
+        this.bandwidthTracker = requireNonNull(builder.bandwidthTracker);
         this.bandwidthLimit = builder.bandwidthLimit;
     }
 
+    // the returned future is very unlikely to fail
+    @SuppressWarnings("FutureReturnValueIgnored")
     void startPolling() {
         threadPool.scheduleAtFixedRate(this::doExportCycle, 5, 5, TimeUnit.SECONDS);
     }
@@ -116,11 +120,11 @@ class DiskToZipkinExporter {
     }
 
     static class Builder {
-        private FileSender fileSender;
-        private BandwidthTracker bandwidthTracker;
+        @Nullable private FileSender fileSender;
+        @Nullable private BandwidthTracker bandwidthTracker;
         private ScheduledExecutorService threadPool = Executors.newSingleThreadScheduledExecutor();
-        private ConnectionUtil connectionUtil;
-        private File spanFilesPath;
+        @Nullable private ConnectionUtil connectionUtil;
+        @Nullable private File spanFilesPath;
         private FileUtils fileUtils = new FileUtils();
         private double bandwidthLimit = DEFAULT_MAX_UNCOMPRESSED_BANDWIDTH;
 
