@@ -16,14 +16,19 @@
 
 package com.splunk.rum;
 
-import static androidx.core.app.FrameMetricsAggregator.DRAW_DURATION;
-import static androidx.core.app.FrameMetricsAggregator.DRAW_INDEX;
 import static com.splunk.rum.SplunkRum.LOG_TAG;
 
 import android.app.Activity;
+import android.os.Build;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.util.Log;
 import android.util.SparseIntArray;
-import androidx.core.app.FrameMetricsAggregator;
+import android.view.FrameMetrics;
+import android.view.Window;
+import androidx.annotation.GuardedBy;
+import androidx.annotation.RequiresApi;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import java.time.Duration;
@@ -34,56 +39,83 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-class SlowRenderingDetectorImpl implements SlowRenderingDetector {
+@RequiresApi(api = Build.VERSION_CODES.N)
+class SlowRenderingDetectorImpl
+        implements SlowRenderingDetector, Window.OnFrameMetricsAvailableListener {
 
     static final int SLOW_THRESHOLD_MS = 16;
     static final int FROZEN_THRESHOLD_MS = 700;
-    private final FrameMetricsAggregator frameMetrics;
-    private final ScheduledExecutorService executorService;
 
-    private final Set<Activity> activities = new HashSet<>();
+    private static final int NANOS_PER_MS = (int) TimeUnit.MILLISECONDS.toNanos(1);
+    // rounding value adds half a millisecond, for rounding to nearest ms
+    private static final int NANOS_ROUNDING_VALUE = NANOS_PER_MS / 2;
+
+    private static final HandlerThread frameMetricsThread =
+            new HandlerThread("FrameMetricsCollector");
+
     private final Tracer tracer;
+    private final ScheduledExecutorService executorService;
+    private final Handler frameMetricsHandler;
     private final Duration pollInterval;
+
     private final Object lock = new Object();
+
+    @GuardedBy("lock")
+    private final Set<Activity> activities = new HashSet<>();
+
+    @GuardedBy("lock")
+    private SparseIntArray drawDurationHistogram = new SparseIntArray();
 
     SlowRenderingDetectorImpl(Tracer tracer, Duration pollInterval) {
         this(
                 tracer,
-                new FrameMetricsAggregator(DRAW_DURATION),
                 Executors.newScheduledThreadPool(1),
+                new Handler(startFrameMetricsLoop()),
                 pollInterval);
     }
 
     // Exists for testing
     SlowRenderingDetectorImpl(
             Tracer tracer,
-            FrameMetricsAggregator frameMetricsAggregator,
             ScheduledExecutorService executorService,
+            Handler frameMetricsHandler,
             Duration pollInterval) {
         this.tracer = tracer;
-        this.frameMetrics = frameMetricsAggregator;
         this.executorService = executorService;
+        this.frameMetricsHandler = frameMetricsHandler;
         this.pollInterval = pollInterval;
+    }
+
+    private static Looper startFrameMetricsLoop() {
+        // just a precaution: this is supposed to be called only once, and the thread should always
+        // be not started here
+        if (!frameMetricsThread.isAlive()) {
+            frameMetricsThread.start();
+        }
+        return frameMetricsThread.getLooper();
     }
 
     @Override
     public void add(Activity activity) {
+        boolean added;
         synchronized (lock) {
-            activities.add(activity);
-            frameMetrics.add(activity);
+            added = activities.add(activity);
+        }
+        if (added) {
+            activity.getWindow().addOnFrameMetricsAvailableListener(this, frameMetricsHandler);
         }
     }
 
     @Override
     public void stop(Activity activity) {
-        SparseIntArray[] arrays;
+        boolean removed;
         synchronized (lock) {
-            arrays = frameMetrics.remove(activity);
-            activities.remove(activity);
+            removed = activities.remove(activity);
         }
-        if (arrays != null) {
-            reportSlow(arrays[DRAW_INDEX]);
+        if (removed) {
+            activity.getWindow().removeOnFrameMetricsAvailableListener(this);
         }
+        reportSlow(getMetrics());
     }
 
     // the returned future is very unlikely to fail
@@ -97,34 +129,44 @@ class SlowRenderingDetectorImpl implements SlowRenderingDetector {
                 TimeUnit.MILLISECONDS);
     }
 
-    private void reportSlowRenders() {
-        try {
-            SparseIntArray[] metrics;
+    @Override
+    public void onFrameMetricsAvailable(
+            Window window, FrameMetrics frameMetrics, int dropCountSinceLastInvocation) {
+        long drawDurationsNs = frameMetrics.getMetric(FrameMetrics.DRAW_DURATION);
+        // ignore values < 0; something must have gone wrong
+        if (drawDurationsNs >= 0) {
             synchronized (lock) {
-                metrics = frameMetrics.reset();
-            }
-            if (metrics != null) {
-                reportSlow(metrics[DRAW_INDEX]);
-            }
-        } catch (Exception e) {
-            Log.w(LOG_TAG, "Exception while processing frame metrics", e);
-        }
-        synchronized (lock) {
-            try {
-                for (Activity activity : activities) {
-                    frameMetrics.remove(activity);
-                    frameMetrics.add(activity);
-                }
-            } catch (Exception e) {
-                Log.w(LOG_TAG, "Exception updating observed activities", e);
+                // calculation copied from FrameMetricsAggregator
+                int durationMs = (int) ((drawDurationsNs + NANOS_ROUNDING_VALUE) / NANOS_PER_MS);
+                int oldValue = drawDurationHistogram.get(durationMs);
+                drawDurationHistogram.put(durationMs, (oldValue + 1));
             }
         }
     }
 
-    private void reportSlow(SparseIntArray durationToCountHistogram) {
-        if (durationToCountHistogram == null) {
-            return;
+    private SparseIntArray getMetrics() {
+        synchronized (lock) {
+            return drawDurationHistogram.clone();
         }
+    }
+
+    private SparseIntArray resetMetrics() {
+        synchronized (lock) {
+            SparseIntArray metrics = drawDurationHistogram;
+            drawDurationHistogram = new SparseIntArray();
+            return metrics;
+        }
+    }
+
+    private void reportSlowRenders() {
+        try {
+            reportSlow(resetMetrics());
+        } catch (Exception e) {
+            Log.w(LOG_TAG, "Exception while processing frame metrics", e);
+        }
+    }
+
+    private void reportSlow(SparseIntArray durationToCountHistogram) {
         int slowCount = 0;
         int frozenCount = 0;
         for (int i = 0; i < durationToCountHistogram.size(); i++) {

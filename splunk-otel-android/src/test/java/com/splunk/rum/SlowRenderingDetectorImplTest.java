@@ -16,20 +16,19 @@
 
 package com.splunk.rum;
 
-import static androidx.core.app.FrameMetricsAggregator.DRAW_INDEX;
-import static org.junit.Assert.assertEquals;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
-import android.util.SparseIntArray;
-import androidx.annotation.NonNull;
-import androidx.core.app.FrameMetricsAggregator;
+import android.os.Build;
+import android.os.Handler;
+import android.view.FrameMetrics;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
@@ -38,21 +37,34 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InOrder;
+import org.mockito.Answers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = Build.VERSION_CODES.N)
 public class SlowRenderingDetectorImplTest {
 
-    public static final AttributeKey<Long> COUNT_KEY = AttributeKey.longKey("count");
+    private static final AttributeKey<Long> COUNT_KEY = AttributeKey.longKey("count");
+
     @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
-    @Mock FrameMetricsAggregator frameMetrics;
-    @Mock Activity activity;
+    @Rule public MockitoRule mocks = MockitoJUnit.rule();
+
+    @Mock Handler frameMetricsHandler;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    Activity activity;
+
+    @Mock FrameMetrics frameMetrics;
     Tracer tracer;
 
     @Before
@@ -63,40 +75,61 @@ public class SlowRenderingDetectorImplTest {
     @Test
     public void add() {
         SlowRenderingDetectorImpl testInstance =
-                new SlowRenderingDetectorImpl(tracer, frameMetrics, null, Duration.ofSeconds(0));
+                new SlowRenderingDetectorImpl(tracer, null, frameMetricsHandler, Duration.ZERO);
+
         testInstance.add(activity);
-        verify(frameMetrics).add(activity);
+
+        verify(activity.getWindow())
+                .addOnFrameMetricsAvailableListener(testInstance, frameMetricsHandler);
     }
 
     @Test
-    public void stopBeforeAddOk() {
+    public void removeBeforeAddOk() {
         SlowRenderingDetectorImpl testInstance =
-                new SlowRenderingDetectorImpl(tracer, frameMetrics, null, Duration.ofSeconds(0));
+                new SlowRenderingDetectorImpl(tracer, null, frameMetricsHandler, Duration.ZERO);
+
         testInstance.stop(activity);
+
+        verifyNoInteractions(activity);
+        assertThat(otelTesting.getSpans()).hasSize(0);
     }
 
     @Test
-    public void stop() {
-
-        SparseIntArray[] metricsArray = makeSomeMetrics();
-
-        when(frameMetrics.remove(activity)).thenReturn(metricsArray);
-
+    public void addAndRemove() {
         SlowRenderingDetectorImpl testInstance =
-                new SlowRenderingDetectorImpl(tracer, frameMetrics, null, Duration.ofMillis(1001));
+                new SlowRenderingDetectorImpl(tracer, null, frameMetricsHandler, Duration.ZERO);
 
         testInstance.add(activity);
         testInstance.stop(activity);
+
+        verify(activity.getWindow())
+                .addOnFrameMetricsAvailableListener(testInstance, frameMetricsHandler);
+        verify(activity.getWindow()).removeOnFrameMetricsAvailableListener(testInstance);
+        assertThat(otelTesting.getSpans()).hasSize(0);
+    }
+
+    @Test
+    public void removeWithMetrics() {
+        SlowRenderingDetectorImpl testInstance =
+                new SlowRenderingDetectorImpl(tracer, null, frameMetricsHandler, Duration.ZERO);
+
+        testInstance.add(activity);
+
+        for (long duration : makeSomeDurations()) {
+            when(frameMetrics.getMetric(FrameMetrics.DRAW_DURATION)).thenReturn(duration);
+            testInstance.onFrameMetricsAvailable(null, frameMetrics, 0);
+        }
+
+        testInstance.stop(activity);
+
         List<SpanData> spans = otelTesting.getSpans();
         assertSpanContent(spans);
     }
 
     @Test
     public void start() {
-        SparseIntArray[] metricsArray = makeSomeMetrics();
         ScheduledExecutorService exec = mock(ScheduledExecutorService.class);
 
-        when(frameMetrics.reset()).thenReturn(metricsArray);
         doAnswer(
                         invocation -> {
                             Runnable runnable = invocation.getArgument(0);
@@ -107,50 +140,46 @@ public class SlowRenderingDetectorImplTest {
                 .scheduleAtFixedRate(any(), eq(1001L), eq(1001L), eq(TimeUnit.MILLISECONDS));
 
         SlowRenderingDetectorImpl testInstance =
-                new SlowRenderingDetectorImpl(tracer, frameMetrics, exec, Duration.ofMillis(1001));
+                new SlowRenderingDetectorImpl(
+                        tracer, exec, frameMetricsHandler, Duration.ofMillis(1001));
+
         testInstance.add(activity);
+
+        for (long duration : makeSomeDurations()) {
+            when(frameMetrics.getMetric(FrameMetrics.DRAW_DURATION)).thenReturn(duration);
+            testInstance.onFrameMetricsAvailable(null, frameMetrics, 0);
+        }
+
         testInstance.start();
+
         List<SpanData> spans = otelTesting.getSpans();
-        assertEquals(2, spans.size());
         assertSpanContent(spans);
-        InOrder inOrder = inOrder(frameMetrics);
-        inOrder.verify(frameMetrics).add(activity);
-        inOrder.verify(frameMetrics).remove(activity);
-        inOrder.verify(frameMetrics).add(activity);
-        inOrder.verifyNoMoreInteractions();
     }
 
-    private void assertSpanContent(List<SpanData> spans) {
-        assertEquals(2, spans.size());
-        SpanData slowRenders = spans.get(0);
-        SpanData frozenRenders = spans.get(1);
-
-        assertEquals("slowRenders", slowRenders.getName());
-        assertEquals(0, slowRenders.getStartEpochNanos() - slowRenders.getEndEpochNanos());
-        long slowCount = slowRenders.getAttributes().get(COUNT_KEY);
-        assertEquals(2, slowCount);
-
-        assertEquals("frozenRenders", frozenRenders.getName());
-        assertEquals(0, frozenRenders.getStartEpochNanos() - frozenRenders.getEndEpochNanos());
-        long frozenCount = frozenRenders.getAttributes().get(COUNT_KEY);
-        assertEquals(1, frozenCount);
+    private static void assertSpanContent(List<SpanData> spans) {
+        assertThat(spans)
+                .hasSize(2)
+                .satisfiesExactly(
+                        span ->
+                                assertThat(span)
+                                        .hasName("slowRenders")
+                                        .endsAt(span.getStartEpochNanos())
+                                        .hasAttribute(COUNT_KEY, 3L),
+                        span ->
+                                assertThat(span)
+                                        .hasName("frozenRenders")
+                                        .endsAt(span.getStartEpochNanos())
+                                        .hasAttribute(COUNT_KEY, 1L));
     }
 
-    @NonNull
-    private SparseIntArray[] makeSomeMetrics() {
-        SparseIntArray[] metricsArray = new SparseIntArray[DRAW_INDEX + 1];
-        SparseIntArray drawMetrics = mock(SparseIntArray.class);
-        when(drawMetrics.size()).thenReturn(3);
-        addFrameMetric(drawMetrics, 0, 12, 17);
-        addFrameMetric(drawMetrics, 1, 100, 2);
-        addFrameMetric(drawMetrics, 2, 701, 1);
-
-        metricsArray[DRAW_INDEX] = drawMetrics;
-        return metricsArray;
-    }
-
-    private void addFrameMetric(SparseIntArray drawMetrics, int index, int key, int value) {
-        when(drawMetrics.keyAt(index)).thenReturn(key);
-        when(drawMetrics.get(key)).thenReturn(value);
+    private List<Long> makeSomeDurations() {
+        return Stream.of(
+                        5L, 11L, 101L, // slow
+                        701L, // frozen
+                        17L, // slow
+                        17L, // slow
+                        16L, 11L)
+                .map(TimeUnit.MILLISECONDS::toNanos)
+                .collect(Collectors.toList());
     }
 }

@@ -178,19 +178,16 @@ class RumInitializer {
             Log.w(LOG_TAG, "Slow/frozen rendering detection has been disabled by user.");
             return NoOpSlowRenderingDetector.INSTANCE;
         }
-        try {
-            initializationEvents.add(
-                    new RumInitializer.InitializationEvent(
-                            "slowRenderingDetectorInitialized", timingClock.now()));
-            Class.forName("androidx.core.app.FrameMetricsAggregator");
-            return new SlowRenderingDetectorImpl(
-                    tracer, builder.slowRenderingDetectionPollInterval);
-        } catch (ClassNotFoundException e) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             Log.w(
                     LOG_TAG,
-                    "FrameMetricsAggregator is not available on this platform - slow/frozen rendering detection is disabled.");
+                    "Slow/frozen rendering detection is not supported on platforms older than Android N (SDK version 24).");
             return NoOpSlowRenderingDetector.INSTANCE;
         }
+        initializationEvents.add(
+                new RumInitializer.InitializationEvent(
+                        "slowRenderingDetectorInitialized", timingClock.now()));
+        return new SlowRenderingDetectorImpl(tracer, builder.slowRenderingDetectionPollInterval);
     }
 
     private AppStateListener initializeAnrReporting(Looper mainLooper) {
