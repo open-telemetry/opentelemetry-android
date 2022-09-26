@@ -30,7 +30,9 @@ interface NetworkDetector {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             TelephonyManager telephonyManager =
                     (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-            return new PostApi29NetworkDetector(connectivityManager, telephonyManager, context);
+            CarrierFinder carrierFinder = new CarrierFinder(telephonyManager);
+            return new PostApi28NetworkDetector(
+                    connectivityManager, telephonyManager, carrierFinder, context);
         }
         return new SimpleNetworkDetector(connectivityManager);
     }

@@ -38,14 +38,17 @@ class SimpleNetworkDetector implements NetworkDetector {
         }
         switch (activeNetwork.getType()) {
             case ConnectivityManager.TYPE_MOBILE: // Deprecated in API 28
-                return new CurrentNetwork(
-                        NetworkState.TRANSPORT_CELLULAR, activeNetwork.getSubtypeName());
+                return CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
+                        .subType(activeNetwork.getSubtypeName())
+                        .build();
             case ConnectivityManager.TYPE_WIFI: // Deprecated in API 28
-                return new CurrentNetwork(
-                        NetworkState.TRANSPORT_WIFI, activeNetwork.getSubtypeName());
+                return CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI)
+                        .subType(activeNetwork.getSubtypeName())
+                        .build();
             case ConnectivityManager.TYPE_VPN:
-                return new CurrentNetwork(
-                        NetworkState.TRANSPORT_VPN, activeNetwork.getSubtypeName());
+                return CurrentNetwork.builder(NetworkState.TRANSPORT_VPN)
+                        .subType(activeNetwork.getSubtypeName())
+                        .build();
         }
         // there is an active network, but it doesn't fall into the neat buckets above
         return UNKNOWN_NETWORK;

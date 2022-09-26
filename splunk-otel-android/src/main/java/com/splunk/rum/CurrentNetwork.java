@@ -16,17 +16,19 @@
 
 package com.splunk.rum;
 
+import android.os.Build;
 import androidx.annotation.Nullable;
 import java.util.Objects;
-import java.util.Optional;
 
 final class CurrentNetwork {
+    @Nullable private final Carrier carrier;
     private final NetworkState state;
     @Nullable private final String subType;
 
-    CurrentNetwork(NetworkState state, @Nullable String subType) {
-        this.state = state;
-        this.subType = subType;
+    private CurrentNetwork(Builder builder) {
+        this.carrier = builder.carrier;
+        this.state = builder.state;
+        this.subType = builder.subType;
     }
 
     boolean isOnline() {
@@ -37,29 +39,92 @@ final class CurrentNetwork {
         return state;
     }
 
-    Optional<String> getSubType() {
-        return Optional.ofNullable(subType);
+    @Nullable
+    String getSubType() {
+        return subType;
     }
 
     @Override
     public String toString() {
-        return "CurrentNetwork{" + "state=" + state + ", subType='" + subType + '\'' + '}';
+        return "CurrentNetwork{"
+                + "carrier="
+                + carrier
+                + ", state="
+                + state
+                + ", subType='"
+                + subType
+                + '\''
+                + '}';
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof CurrentNetwork)) {
-            return false;
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         CurrentNetwork that = (CurrentNetwork) o;
-        return state == that.state && Objects.equals(subType, that.subType);
+        return Objects.equals(carrier, that.carrier)
+                && state == that.state
+                && Objects.equals(subType, that.subType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(state, subType);
+        return Objects.hash(carrier, state, subType);
+    }
+
+    @SuppressWarnings("NullAway")
+    @Nullable
+    public String getCarrierCountryCode() {
+        return haveCarrier() ? carrier.getMobileCountryCode() : null;
+    }
+
+    @SuppressWarnings("NullAway")
+    @Nullable
+    public String getCarrierIsoCountryCode() {
+        return haveCarrier() ? carrier.getIsoCountryCode() : null;
+    }
+
+    @SuppressWarnings("NullAway")
+    @Nullable
+    public String getCarrierNetworkCode() {
+        return haveCarrier() ? carrier.getMobileNetworkCode() : null;
+    }
+
+    @SuppressWarnings("NullAway")
+    @Nullable
+    public String getCarrierName() {
+        return haveCarrier() ? carrier.getName() : null;
+    }
+
+    private boolean haveCarrier() {
+        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) && (carrier != null);
+    }
+
+    static Builder builder(NetworkState state) {
+        return new Builder(state);
+    }
+
+    static class Builder {
+        @Nullable private Carrier carrier;
+        private final NetworkState state;
+        @Nullable private String subType;
+
+        public Builder(NetworkState state) {
+            this.state = state;
+        }
+
+        CurrentNetwork build() {
+            return new CurrentNetwork(this);
+        }
+
+        public Builder carrier(@Nullable Carrier carrier) {
+            this.carrier = carrier;
+            return this;
+        }
+
+        public Builder subType(@Nullable String subType) {
+            this.subType = subType;
+            return this;
+        }
     }
 }

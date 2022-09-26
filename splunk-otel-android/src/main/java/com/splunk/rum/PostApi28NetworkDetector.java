@@ -30,18 +30,21 @@ import android.telephony.TelephonyManager;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 
-@RequiresApi(api = Build.VERSION_CODES.Q)
-class PostApi29NetworkDetector implements NetworkDetector {
+@RequiresApi(api = Build.VERSION_CODES.P)
+class PostApi28NetworkDetector implements NetworkDetector {
     private final ConnectivityManager connectivityManager;
     private final TelephonyManager telephonyManager;
+    private final CarrierFinder carrierFinder;
     private final Context context;
 
-    PostApi29NetworkDetector(
+    PostApi28NetworkDetector(
             ConnectivityManager connectivityManager,
             TelephonyManager telephonyManager,
+            CarrierFinder carrierFinder,
             Context context) {
         this.connectivityManager = connectivityManager;
         this.telephonyManager = telephonyManager;
+        this.carrierFinder = carrierFinder;
         this.context = context;
     }
 
@@ -54,16 +57,20 @@ class PostApi29NetworkDetector implements NetworkDetector {
             return NO_NETWORK;
         }
         String subType = null;
+        Carrier carrier = carrierFinder.get();
         if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
             // If the app has the permission, use it to get a subtype.
             if (hasPermission(Manifest.permission.READ_PHONE_STATE)) {
                 subType = getDataNetworkTypeName(telephonyManager.getDataNetworkType());
             }
-            return new CurrentNetwork(NetworkState.TRANSPORT_CELLULAR, subType);
+            return CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
+                    .carrier(carrier)
+                    .subType(subType)
+                    .build();
         } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-            return new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null);
+            return CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).carrier(carrier).build();
         } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
-            return new CurrentNetwork(NetworkState.TRANSPORT_VPN, null);
+            return CurrentNetwork.builder(NetworkState.TRANSPORT_VPN).carrier(carrier).build();
         }
         // there is an active network, but it doesn't fall into the neat buckets above
         return UNKNOWN_NETWORK;

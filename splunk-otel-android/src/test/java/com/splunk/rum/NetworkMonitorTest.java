@@ -46,7 +46,7 @@ public class NetworkMonitorTest {
         NetworkMonitor.TracingConnectionStateListener listener =
                 new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
 
-        listener.onAvailable(true, new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null));
+        listener.onAvailable(true, CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build());
 
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
@@ -63,7 +63,9 @@ public class NetworkMonitorTest {
         NetworkMonitor.TracingConnectionStateListener listener =
                 new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
 
-        listener.onAvailable(true, new CurrentNetwork(NetworkState.TRANSPORT_CELLULAR, "LTE"));
+        listener.onAvailable(
+                true,
+                CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).subType("LTE").build());
 
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
@@ -80,7 +82,8 @@ public class NetworkMonitorTest {
         NetworkMonitor.TracingConnectionStateListener listener =
                 new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
 
-        listener.onAvailable(false, new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE, null));
+        listener.onAvailable(
+                false, CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
 
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
@@ -99,13 +102,17 @@ public class NetworkMonitorTest {
         NetworkMonitor.TracingConnectionStateListener listener =
                 new NetworkMonitor.TracingConnectionStateListener(tracer, shouldEmitChangeEvents);
 
-        listener.onAvailable(false, new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE, null));
+        listener.onAvailable(
+                false, CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
         assertTrue(otelTesting.getSpans().isEmpty());
-        listener.onAvailable(true, new CurrentNetwork(NetworkState.TRANSPORT_CELLULAR, "LTE"));
+        listener.onAvailable(
+                true,
+                CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).subType("LTE").build());
         assertTrue(otelTesting.getSpans().isEmpty());
 
         shouldEmitChangeEvents.set(true);
-        listener.onAvailable(false, new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE, null));
+        listener.onAvailable(
+                false, CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
         assertEquals(1, otelTesting.getSpans().size());
     }
 }

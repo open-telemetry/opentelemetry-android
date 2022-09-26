@@ -33,9 +33,9 @@ import java.util.function.Supplier;
 class ConnectionUtil {
 
     static final CurrentNetwork NO_NETWORK =
-            new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE, null);
+            CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build();
     static final CurrentNetwork UNKNOWN_NETWORK =
-            new CurrentNetwork(NetworkState.TRANSPORT_UNKNOWN, null);
+            CurrentNetwork.builder(NetworkState.TRANSPORT_UNKNOWN).build();
 
     private final NetworkDetector networkDetector;
 

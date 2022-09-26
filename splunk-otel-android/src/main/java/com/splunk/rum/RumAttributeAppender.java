@@ -22,12 +22,18 @@ import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DE
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_NAME;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_TYPE;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_VERSION;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CARRIER_ICC;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CARRIER_MCC;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CARRIER_MNC;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CARRIER_NAME;
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE;
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_TYPE;
 
 import android.os.Build;
+import androidx.annotation.Nullable;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -83,10 +89,22 @@ class RumAttributeAppender implements SpanProcessor {
         String currentScreen = visibleScreenTracker.getCurrentlyVisibleScreen();
         span.setAttribute(SplunkRum.SCREEN_NAME_KEY, currentScreen);
         CurrentNetwork currentNetwork = connectionUtil.getActiveNetwork();
-        span.setAttribute(NET_HOST_CONNECTION_TYPE, currentNetwork.getState().getHumanName());
-        currentNetwork
-                .getSubType()
-                .ifPresent(subtype -> span.setAttribute(NET_HOST_CONNECTION_SUBTYPE, subtype));
+        appendNetworkAttributes(span, currentNetwork);
+    }
+
+    static void appendNetworkAttributes(Span span, CurrentNetwork currentNetwork) {
+        setIfNotNull(span, NET_HOST_CONNECTION_TYPE, currentNetwork.getState().getHumanName());
+        setIfNotNull(span, NET_HOST_CONNECTION_SUBTYPE, currentNetwork.getSubType());
+        setIfNotNull(span, NET_HOST_CARRIER_NAME, currentNetwork.getCarrierName());
+        setIfNotNull(span, NET_HOST_CARRIER_MCC, currentNetwork.getCarrierCountryCode());
+        setIfNotNull(span, NET_HOST_CARRIER_MNC, currentNetwork.getCarrierNetworkCode());
+        setIfNotNull(span, NET_HOST_CARRIER_ICC, currentNetwork.getCarrierIsoCountryCode());
+    }
+
+    private static void setIfNotNull(Span span, AttributeKey<String> key, @Nullable String value) {
+        if (value != null) {
+            span.setAttribute(key, value);
+        }
     }
 
     @Override

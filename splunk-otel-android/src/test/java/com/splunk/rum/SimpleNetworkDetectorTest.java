@@ -47,7 +47,8 @@ public class SimpleNetworkDetectorTest {
 
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
 
-        assertEquals(new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE, null), currentNetwork);
+        assertEquals(
+                CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build(), currentNetwork);
     }
 
     @Test
@@ -70,7 +71,8 @@ public class SimpleNetworkDetectorTest {
 
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
 
-        assertEquals(new CurrentNetwork(NetworkState.TRANSPORT_UNKNOWN, null), currentNetwork);
+        assertEquals(
+                CurrentNetwork.builder(NetworkState.TRANSPORT_UNKNOWN).build(), currentNetwork);
     }
 
     @Test
@@ -93,7 +95,7 @@ public class SimpleNetworkDetectorTest {
 
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
 
-        assertEquals(new CurrentNetwork(NetworkState.TRANSPORT_WIFI, null), currentNetwork);
+        assertEquals(CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(), currentNetwork);
     }
 
     @Test
@@ -116,7 +118,7 @@ public class SimpleNetworkDetectorTest {
 
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
 
-        assertEquals(new CurrentNetwork(NetworkState.TRANSPORT_VPN, null), currentNetwork);
+        assertEquals(CurrentNetwork.builder(NetworkState.TRANSPORT_VPN).build(), currentNetwork);
     }
 
     @Test
@@ -137,6 +139,8 @@ public class SimpleNetworkDetectorTest {
 
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
 
-        assertEquals(new CurrentNetwork(NetworkState.TRANSPORT_CELLULAR, "LTE"), currentNetwork);
+        assertEquals(
+                CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).subType("LTE").build(),
+                currentNetwork);
     }
 }

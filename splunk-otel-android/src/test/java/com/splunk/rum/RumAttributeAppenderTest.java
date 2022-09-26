@@ -46,7 +46,10 @@ public class RumAttributeAppenderTest {
     public void setUp() {
         visibleScreenTracker = mock(VisibleScreenTracker.class);
         when(connectionUtil.getActiveNetwork())
-                .thenReturn(new CurrentNetwork(NetworkState.TRANSPORT_CELLULAR, "LTE"));
+                .thenReturn(
+                        CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
+                                .subType("LTE")
+                                .build());
     }
 
     @Test

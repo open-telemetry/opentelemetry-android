@@ -22,7 +22,6 @@ import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_H
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 class NetworkMonitor implements AppStateListener {
@@ -78,19 +77,10 @@ class NetworkMonitor implements AppStateListener {
                 Span available =
                         tracer.spanBuilder("network.change")
                                 .setAttribute(NETWORK_STATUS_KEY, "available")
-                                .startSpan()
-                                // put these after span start to override what might be set in the
-                                // RumAttributeAppender.
-                                .setAttribute(
-                                        NET_HOST_CONNECTION_TYPE,
-                                        activeNetwork.getState().getHumanName());
-                activeNetwork
-                        .getSubType()
-                        .ifPresent(
-                                subType ->
-                                        available.setAttribute(
-                                                SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE,
-                                                subType));
+                                .startSpan();
+                // put these after span start to override what might be set in the
+                // RumAttributeAppender.
+                RumAttributeAppender.appendNetworkAttributes(available, activeNetwork);
                 available.end();
             }
         }

@@ -35,7 +35,7 @@ public class NetworkDetectorTest {
         Context context = ApplicationProvider.getApplicationContext();
 
         NetworkDetector networkDetector = NetworkDetector.create(context);
-        assertTrue(networkDetector instanceof PostApi29NetworkDetector);
+        assertTrue(networkDetector instanceof PostApi28NetworkDetector);
     }
 
     @Test
