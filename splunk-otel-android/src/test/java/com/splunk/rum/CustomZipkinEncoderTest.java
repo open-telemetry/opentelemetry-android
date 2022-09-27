@@ -16,13 +16,11 @@
 
 package com.splunk.rum;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import org.junit.Test;
-import zipkin2.Endpoint;
 import zipkin2.Span;
 
 public class CustomZipkinEncoderTest {
@@ -43,28 +41,5 @@ public class CustomZipkinEncoderTest {
                 "{\"traceId\":\"00000000000000010000000000000002\",\"id\":\"0000000000000001\",\"name\":\"UpperCase\",\"tags\":{\"_splunk_operation\":\"UpperCase\"}}",
                 new String(bytes));
         assertEquals(bytes.length, encoder.sizeInBytes(span));
-    }
-
-    @Test
-    public void removeLocalIp() {
-        Span span =
-                Span.newBuilder()
-                        .name("test")
-                        .traceId(TraceId.fromLongs(1, 2))
-                        .id(SpanId.fromLong(1))
-                        .localEndpoint(
-                                Endpoint.newBuilder()
-                                        .serviceName("test-app")
-                                        .ip("127.0.0.1")
-                                        .build())
-                        .build();
-
-        CustomZipkinEncoder encoder = new CustomZipkinEncoder();
-
-        byte[] bytes = encoder.encode(span);
-        assertThat(new String(bytes))
-                .contains("\"localEndpoint\":{\"serviceName\":\"test-app\"}")
-                .doesNotContain(
-                        "\"localEndpoint\":{\"serviceName\":\"test-app\",\"ipv4\":\"127.0.0.1\"}");
     }
 }

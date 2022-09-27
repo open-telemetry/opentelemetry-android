@@ -59,6 +59,8 @@ class ZipkinWriteToDiskExporterFactory {
         return ZipkinSpanExporter.builder()
                 .setEncoder(new CustomZipkinEncoder())
                 .setSender(sender)
+                // remove the local IP address
+                .setLocalIpAddressSupplier(() -> null)
                 .build();
     }
 }
