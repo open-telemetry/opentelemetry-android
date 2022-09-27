@@ -23,7 +23,7 @@ fi
 release_version=$1
 release_tag="v$1"
 
-if [[ ! $release_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+if [[ ! $release_version =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]]
 then
   echo "Invalid release version: $release_version"
   echo "Release version must follow the pattern major.minor.patch, e.g. 1.2.3"
