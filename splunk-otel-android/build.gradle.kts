@@ -5,12 +5,12 @@ plugins {
 }
 
 android {
-    compileSdk = 32
+    compileSdk = 33
     buildToolsVersion = "30.0.3"
 
     defaultConfig {
         minSdk = 21
-        targetSdk = 32
+        targetSdk = 33
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -45,7 +45,7 @@ val otelAlphaVersion = "$otelVersion-alpha"
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.5.1")
-    implementation("androidx.core:core:1.8.0")
+    implementation("androidx.core:core:1.9.0")
     implementation("androidx.navigation:navigation-fragment:2.5.2")
 
     api(platform("io.opentelemetry:opentelemetry-bom:$otelVersion"))
@@ -64,7 +64,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:4.8.0")
     testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
-    testImplementation("org.robolectric:robolectric:4.8.2")
+    testImplementation("org.robolectric:robolectric:4.9")
     testImplementation("androidx.test:core:1.4.0")
     testImplementation("org.assertj:assertj-core:3.23.1")
 
