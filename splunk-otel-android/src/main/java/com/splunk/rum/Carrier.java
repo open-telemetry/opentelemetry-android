@@ -23,7 +23,7 @@ import androidx.annotation.RequiresApi;
 import java.util.Objects;
 
 @RequiresApi(api = Build.VERSION_CODES.P)
-class Carrier {
+final class Carrier {
 
     private final int id;
     private final @Nullable String name;
@@ -82,6 +82,26 @@ class Carrier {
     @Override
     public int hashCode() {
         return Objects.hash(id, name, mobileCountryCode, mobileNetworkCode, isoCountryCode);
+    }
+
+    @Override
+    public String toString() {
+        return "Carrier{"
+                + "id="
+                + id
+                + ", name='"
+                + name
+                + '\''
+                + ", mobileCountryCode='"
+                + mobileCountryCode
+                + '\''
+                + ", mobileNetworkCode='"
+                + mobileNetworkCode
+                + '\''
+                + ", isoCountryCode='"
+                + isoCountryCode
+                + '\''
+                + '}';
     }
 
     static class Builder {
