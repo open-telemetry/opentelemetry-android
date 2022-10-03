@@ -20,8 +20,10 @@ import androidx.annotation.NonNull;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 class CrashReporter {
@@ -73,7 +75,8 @@ class CrashReporter {
                     .setStatus(StatusCode.ERROR)
                     .end();
             // do our best to make sure the crash makes it out of the VM
-            sdkTracerProvider.forceFlush();
+            CompletableResultCode result = sdkTracerProvider.forceFlush();
+            result.join(10, TimeUnit.SECONDS);
             // preserve any existing behavior:
             if (existingHandler != null) {
                 existingHandler.uncaughtException(t, e);

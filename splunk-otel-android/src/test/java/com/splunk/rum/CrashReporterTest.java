@@ -23,15 +23,18 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import androidx.annotation.NonNull;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Rule;
@@ -40,16 +43,20 @@ import org.junit.Test;
 public class CrashReporterTest {
     @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
     private Tracer tracer;
+    private SdkTracerProvider sdkTracerProvider;
+    private CompletableResultCode flushResult;
 
     @Before
     public void setup() {
         tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
+        sdkTracerProvider = mock(SdkTracerProvider.class);
+        flushResult = mock(CompletableResultCode.class);
+        when(sdkTracerProvider.forceFlush()).thenReturn(flushResult);
     }
 
     @Test
     public void crashReportingSpan() {
         TestDelegateHandler existingHandler = new TestDelegateHandler();
-        SdkTracerProvider sdkTracerProvider = mock(SdkTracerProvider.class);
         CrashReporter.CrashReportingExceptionHandler crashReporter =
                 new CrashReporter.CrashReportingExceptionHandler(
                         tracer, sdkTracerProvider, existingHandler);
@@ -74,11 +81,11 @@ public class CrashReporterTest {
 
         assertTrue(existingHandler.wasDelegatedTo.get());
         verify(sdkTracerProvider).forceFlush();
+        verify(flushResult).join(10, TimeUnit.SECONDS);
     }
 
     @Test
     public void multipleErrorsDuringACrash() {
-        SdkTracerProvider sdkTracerProvider = mock(SdkTracerProvider.class);
         CrashReporter.CrashReportingExceptionHandler crashReporter =
                 new CrashReporter.CrashReportingExceptionHandler(tracer, sdkTracerProvider, null);
 
