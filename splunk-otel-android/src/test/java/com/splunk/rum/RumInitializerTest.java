@@ -28,6 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.app.Application;
+import android.content.Context;
 import android.os.Looper;
 import com.google.common.base.Strings;
 import io.opentelemetry.api.common.AttributeKey;
@@ -54,6 +55,10 @@ public class RumInitializerTest {
                         .setApplicationName("testApp")
                         .setRumAccessToken("accessToken");
         Application application = mock(Application.class);
+        Context context = mock(Context.class);
+
+        when(application.getApplicationContext()).thenReturn(context);
+
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
         AppStartupTimer startupTimer = new AppStartupTimer();
         RumInitializer testInitializer =
@@ -108,6 +113,10 @@ public class RumInitializerTest {
                         .setApplicationName("testApp")
                         .setRumAccessToken("accessToken");
         Application application = mock(Application.class);
+        Context context = mock(Context.class);
+
+        when(application.getApplicationContext()).thenReturn(context);
+
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
         AppStartupTimer startupTimer = new AppStartupTimer();
         RumInitializer testInitializer =
@@ -209,6 +218,9 @@ public class RumInitializerTest {
                         .setApplicationName("test");
         Application application = mock(Application.class);
         ConnectionUtil connectionUtil = mock(ConnectionUtil.class, RETURNS_DEEP_STUBS);
+        Context context = mock(Context.class);
+
+        when(application.getApplicationContext()).thenReturn(context);
         when(connectionUtil.refreshNetworkStatus().isOnline()).thenReturn(true);
         ConnectionUtil.Factory connectionUtilFactory = mock(ConnectionUtil.Factory.class);
         when(connectionUtilFactory.createAndStart(application)).thenReturn(connectionUtil);

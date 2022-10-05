@@ -45,13 +45,19 @@ public class CrashReporterTest {
     private Tracer tracer;
     private SdkTracerProvider sdkTracerProvider;
     private CompletableResultCode flushResult;
+    private RuntimeDetails runtimeDetails;
 
     @Before
     public void setup() {
         tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
         sdkTracerProvider = mock(SdkTracerProvider.class);
         flushResult = mock(CompletableResultCode.class);
+        runtimeDetails = mock(RuntimeDetails.class);
+
         when(sdkTracerProvider.forceFlush()).thenReturn(flushResult);
+        when(runtimeDetails.getCurrentBatteryPercent()).thenReturn(12.0d);
+        when(runtimeDetails.getCurrentFreeHeapInBytes()).thenReturn(1024 * 12L);
+        when(runtimeDetails.getCurrentStorageFreeSpaceInBytes()).thenReturn(1024 * 99L);
     }
 
     @Test
@@ -59,7 +65,7 @@ public class CrashReporterTest {
         TestDelegateHandler existingHandler = new TestDelegateHandler();
         CrashReporter.CrashReportingExceptionHandler crashReporter =
                 new CrashReporter.CrashReportingExceptionHandler(
-                        tracer, sdkTracerProvider, existingHandler);
+                        tracer, sdkTracerProvider, existingHandler, runtimeDetails);
 
         NullPointerException oopsie = new NullPointerException("oopsie");
         Thread crashThread = new Thread("badThread");
@@ -75,7 +81,10 @@ public class CrashReporterTest {
                         equalTo(SemanticAttributes.THREAD_ID, crashThread.getId()),
                         equalTo(SemanticAttributes.THREAD_NAME, "badThread"),
                         equalTo(SemanticAttributes.EXCEPTION_ESCAPED, true),
-                        equalTo(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_CRASH))
+                        equalTo(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_CRASH),
+                        equalTo(SplunkRum.STORAGE_SPACE_FREE_KEY, 101376),
+                        equalTo(SplunkRum.HEAP_FREE_KEY, 12288),
+                        equalTo(SplunkRum.BATTERY_PERCENT_KEY, 12.0))
                 .hasException(oopsie)
                 .hasStatus(StatusData.error());
 
@@ -87,7 +96,8 @@ public class CrashReporterTest {
     @Test
     public void multipleErrorsDuringACrash() {
         CrashReporter.CrashReportingExceptionHandler crashReporter =
-                new CrashReporter.CrashReportingExceptionHandler(tracer, sdkTracerProvider, null);
+                new CrashReporter.CrashReportingExceptionHandler(
+                        tracer, sdkTracerProvider, null, runtimeDetails);
 
         Exception firstError = new NullPointerException("boom!");
         Thread crashThread = new Thread("crashThread");
@@ -107,7 +117,10 @@ public class CrashReporterTest {
                         equalTo(SemanticAttributes.THREAD_ID, crashThread.getId()),
                         equalTo(SemanticAttributes.THREAD_NAME, "crashThread"),
                         equalTo(SemanticAttributes.EXCEPTION_ESCAPED, true),
-                        equalTo(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_CRASH))
+                        equalTo(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_CRASH),
+                        equalTo(SplunkRum.STORAGE_SPACE_FREE_KEY, 101376),
+                        equalTo(SplunkRum.HEAP_FREE_KEY, 12288),
+                        equalTo(SplunkRum.BATTERY_PERCENT_KEY, 12.0))
                 .hasException(firstError)
                 .hasStatus(StatusData.error());
 
@@ -117,7 +130,10 @@ public class CrashReporterTest {
                         equalTo(SemanticAttributes.THREAD_ID, anotherThread.getId()),
                         equalTo(SemanticAttributes.THREAD_NAME, "someOtherThread"),
                         equalTo(SemanticAttributes.EXCEPTION_ESCAPED, true),
-                        equalTo(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_ERROR))
+                        equalTo(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_ERROR),
+                        equalTo(SplunkRum.STORAGE_SPACE_FREE_KEY, 101376),
+                        equalTo(SplunkRum.HEAP_FREE_KEY, 12288),
+                        equalTo(SplunkRum.BATTERY_PERCENT_KEY, 12.0))
                 .hasException(secondError)
                 .hasStatus(StatusData.error());
 

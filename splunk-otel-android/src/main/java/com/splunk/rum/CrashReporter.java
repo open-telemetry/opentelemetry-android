@@ -17,9 +17,9 @@
 package com.splunk.rum;
 
 import androidx.annotation.NonNull;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
@@ -28,12 +28,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 class CrashReporter {
 
-    static void initializeCrashReporting(Tracer tracer, OpenTelemetrySdk openTelemetrySdk) {
+    static void initializeCrashReporting(
+            Tracer tracer, SdkTracerProvider sdkTracerProvider, RuntimeDetails runtimeDetails) {
         Thread.UncaughtExceptionHandler existingHandler =
                 Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(
                 new CrashReportingExceptionHandler(
-                        tracer, openTelemetrySdk.getSdkTracerProvider(), existingHandler));
+                        tracer, sdkTracerProvider, existingHandler, runtimeDetails));
     }
 
     // visible for testing
@@ -41,15 +42,18 @@ class CrashReporter {
         private final Tracer tracer;
         private final Thread.UncaughtExceptionHandler existingHandler;
         private final SdkTracerProvider sdkTracerProvider;
+        private final RuntimeDetails runtimeDetails;
         private final AtomicBoolean crashHappened = new AtomicBoolean(false);
 
         CrashReportingExceptionHandler(
                 Tracer tracer,
                 SdkTracerProvider sdkTracerProvider,
-                Thread.UncaughtExceptionHandler existingHandler) {
+                Thread.UncaughtExceptionHandler existingHandler,
+                RuntimeDetails runtimeDetails) {
             this.tracer = tracer;
             this.existingHandler = existingHandler;
             this.sdkTracerProvider = sdkTracerProvider;
+            this.runtimeDetails = runtimeDetails;
         }
 
         @Override
@@ -65,18 +69,27 @@ class CrashReporter {
                             : SplunkRum.COMPONENT_ERROR;
 
             String exceptionType = e.getClass().getSimpleName();
-            tracer.spanBuilder(exceptionType)
-                    .setAttribute(SemanticAttributes.THREAD_ID, t.getId())
-                    .setAttribute(SemanticAttributes.THREAD_NAME, t.getName())
-                    .setAttribute(SemanticAttributes.EXCEPTION_ESCAPED, true)
-                    .setAttribute(SplunkRum.COMPONENT_KEY, component)
-                    .startSpan()
-                    .recordException(e)
-                    .setStatus(StatusCode.ERROR)
-                    .end();
+            SpanBuilder builder =
+                    tracer.spanBuilder(exceptionType)
+                            .setAttribute(SemanticAttributes.THREAD_ID, t.getId())
+                            .setAttribute(SemanticAttributes.THREAD_NAME, t.getName())
+                            .setAttribute(SemanticAttributes.EXCEPTION_ESCAPED, true)
+                            .setAttribute(SplunkRum.COMPONENT_KEY, component)
+                            .setAttribute(
+                                    SplunkRum.STORAGE_SPACE_FREE_KEY,
+                                    runtimeDetails.getCurrentStorageFreeSpaceInBytes())
+                            .setAttribute(
+                                    SplunkRum.HEAP_FREE_KEY,
+                                    runtimeDetails.getCurrentFreeHeapInBytes());
+
+            Double currentBatteryPercent = runtimeDetails.getCurrentBatteryPercent();
+            if (currentBatteryPercent != null) {
+                builder.setAttribute(SplunkRum.BATTERY_PERCENT_KEY, currentBatteryPercent);
+            }
+            builder.startSpan().recordException(e).setStatus(StatusCode.ERROR).end();
             // do our best to make sure the crash makes it out of the VM
-            CompletableResultCode result = sdkTracerProvider.forceFlush();
-            result.join(10, TimeUnit.SECONDS);
+            CompletableResultCode flushResult = sdkTracerProvider.forceFlush();
+            flushResult.join(10, TimeUnit.SECONDS);
             // preserve any existing behavior:
             if (existingHandler != null) {
                 existingHandler.uncaughtException(t, e);

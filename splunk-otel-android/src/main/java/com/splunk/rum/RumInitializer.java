@@ -162,7 +162,10 @@ class RumInitializer {
                         "activityLifecycleCallbacksInitialized", timingClock.now()));
 
         if (builder.crashReportingEnabled) {
-            CrashReporter.initializeCrashReporting(tracer, openTelemetrySdk);
+            RuntimeDetails runtimeDetails =
+                    RuntimeDetails.create(application.getApplicationContext());
+            CrashReporter.initializeCrashReporting(
+                    tracer, openTelemetrySdk.getSdkTracerProvider(), runtimeDetails);
             initializationEvents.add(
                     new RumInitializer.InitializationEvent(
                             "crashReportingInitialized", timingClock.now()));
