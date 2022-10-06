@@ -42,7 +42,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import okhttp3.Call;
-import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 
 /** Entrypoint for the Splunk OpenTelemetry Instrumentation for Android. */
@@ -101,33 +100,6 @@ public class SplunkRum {
         return new SplunkRumBuilder();
     }
 
-    /**
-     * Create a new {@link Config.Builder} instance.
-     *
-     * @deprecated Use {@link #builder()} and the {@link SplunkRumBuilder} to configure a {@link
-     *     SplunkRum} instance.
-     */
-    @Deprecated
-    public static Config.Builder newConfigBuilder() {
-        return Config.builder();
-    }
-
-    /**
-     * Initialized the Splunk RUM library with the provided {@link Config} instance. Note: if you
-     * call this method more than once, only the first one will do anything. Repeated calls will
-     * just immediately return the previously configured instance.
-     *
-     * @param config The {@link Config} options to use for initialization.
-     * @param application The {@link Application} to be monitored.
-     * @return A fully initialized {@link SplunkRum} instance, ready for use.
-     * @deprecated Use {@link #builder()} and the {@link SplunkRumBuilder} to configure a {@link
-     *     SplunkRum} instance.
-     */
-    @Deprecated
-    public static SplunkRum initialize(Config config, Application application) {
-        return config.toSplunkRumBuilder().build(application);
-    }
-
     // for testing purposes
     static SplunkRum initialize(
             SplunkRumBuilder builder,
@@ -163,20 +135,6 @@ public class SplunkRum {
             return NoOpSplunkRum.INSTANCE;
         }
         return INSTANCE;
-    }
-
-    /**
-     * Create an OkHttp3 {@link Interceptor} configured with the OpenTelemetry instance backing this
-     * class. It will provide both standard OpenTelemetry spans and additionally Splunk RUM-specific
-     * attributes.
-     *
-     * @deprecated The OpenTelemetry {@link Interceptor} has been deprecated in favor of using an
-     *     instrumented {@link okhttp3.Call.Factory} implementation. Please use {@link
-     *     #createRumOkHttpCallFactory(OkHttpClient)}.
-     */
-    @Deprecated
-    public Interceptor createOkHttpRumInterceptor() {
-        return createOkHttpTracing().newInterceptor();
     }
 
     /**

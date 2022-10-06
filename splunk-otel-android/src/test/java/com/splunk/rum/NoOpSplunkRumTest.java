@@ -35,7 +35,6 @@ public class NoOpSplunkRumTest {
         instance.addRumEvent("foo", Attributes.empty());
         instance.addRumException(new RuntimeException(), Attributes.empty());
 
-        assertNotNull(instance.createOkHttpRumInterceptor());
         assertNotNull(instance.getOpenTelemetry());
         assertNotNull(instance.getRumSessionId());
         assertNotNull(instance.getTracer());

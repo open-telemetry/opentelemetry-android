@@ -21,10 +21,8 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTelemetry;
 import java.util.function.Consumer;
 import okhttp3.Call;
-import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 
 class NoOpSplunkRum extends SplunkRum {
@@ -34,11 +32,6 @@ class NoOpSplunkRum extends SplunkRum {
     @SuppressWarnings("NullAway")
     private NoOpSplunkRum() {
         super(null, null, null);
-    }
-
-    @Override
-    public Interceptor createOkHttpRumInterceptor() {
-        return OkHttpTelemetry.create(OpenTelemetry.noop()).newInterceptor();
     }
 
     @Override
