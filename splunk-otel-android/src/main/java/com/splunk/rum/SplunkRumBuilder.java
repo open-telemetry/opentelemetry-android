@@ -160,7 +160,7 @@ public final class SplunkRumBuilder {
      *
      * @return {@code this}
      */
-    public SplunkRumBuilder disableNetworkMonitorEnabled() {
+    public SplunkRumBuilder disableNetworkMonitor() {
         this.networkMonitorEnabled = false;
         return this;
     }
