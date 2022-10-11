@@ -33,15 +33,14 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
-class SlowRenderingDetectorImpl
-        implements SlowRenderingDetector, Window.OnFrameMetricsAvailableListener {
+class SlowRenderingDetectorImpl implements SlowRenderingDetector {
 
     static final int SLOW_THRESHOLD_MS = 16;
     static final int FROZEN_THRESHOLD_MS = 700;
@@ -58,13 +57,8 @@ class SlowRenderingDetectorImpl
     private final Handler frameMetricsHandler;
     private final Duration pollInterval;
 
-    private final Object lock = new Object();
-
-    @GuardedBy("lock")
-    private final Set<Activity> activities = new HashSet<>();
-
-    @GuardedBy("lock")
-    private SparseIntArray drawDurationHistogram = new SparseIntArray();
+    private final ConcurrentMap<Activity, PerActivityListener> activities =
+            new ConcurrentHashMap<>();
 
     SlowRenderingDetectorImpl(Tracer tracer, Duration pollInterval) {
         this(
@@ -97,25 +91,20 @@ class SlowRenderingDetectorImpl
 
     @Override
     public void add(Activity activity) {
-        boolean added;
-        synchronized (lock) {
-            added = activities.add(activity);
-        }
-        if (added) {
-            activity.getWindow().addOnFrameMetricsAvailableListener(this, frameMetricsHandler);
+        PerActivityListener listener = new PerActivityListener(activity);
+        PerActivityListener existing = activities.putIfAbsent(activity, listener);
+        if (existing == null) {
+            activity.getWindow().addOnFrameMetricsAvailableListener(listener, frameMetricsHandler);
         }
     }
 
     @Override
     public void stop(Activity activity) {
-        boolean removed;
-        synchronized (lock) {
-            removed = activities.remove(activity);
+        PerActivityListener listener = activities.remove(activity);
+        if (listener != null) {
+            activity.getWindow().removeOnFrameMetricsAvailableListener(listener);
+            reportSlow(listener);
         }
-        if (removed) {
-            activity.getWindow().removeOnFrameMetricsAvailableListener(this);
-        }
-        reportSlow(getMetrics());
     }
 
     // the returned future is very unlikely to fail
@@ -129,46 +118,59 @@ class SlowRenderingDetectorImpl
                 TimeUnit.MILLISECONDS);
     }
 
-    @Override
-    public void onFrameMetricsAvailable(
-            Window window, FrameMetrics frameMetrics, int dropCountSinceLastInvocation) {
-        long drawDurationsNs = frameMetrics.getMetric(FrameMetrics.DRAW_DURATION);
-        // ignore values < 0; something must have gone wrong
-        if (drawDurationsNs >= 0) {
-            synchronized (lock) {
-                // calculation copied from FrameMetricsAggregator
-                int durationMs = (int) ((drawDurationsNs + NANOS_ROUNDING_VALUE) / NANOS_PER_MS);
-                int oldValue = drawDurationHistogram.get(durationMs);
-                drawDurationHistogram.put(durationMs, (oldValue + 1));
+    static class PerActivityListener implements Window.OnFrameMetricsAvailableListener {
+
+        private final Activity activity;
+        private final Object lock = new Object();
+
+        @GuardedBy("lock")
+        private SparseIntArray drawDurationHistogram = new SparseIntArray();
+
+        PerActivityListener(Activity activity) {
+            this.activity = activity;
+        }
+
+        @Override
+        public void onFrameMetricsAvailable(
+                Window window, FrameMetrics frameMetrics, int dropCountSinceLastInvocation) {
+            long drawDurationsNs = frameMetrics.getMetric(FrameMetrics.DRAW_DURATION);
+            // ignore values < 0; something must have gone wrong
+            if (drawDurationsNs >= 0) {
+                synchronized (lock) {
+                    // calculation copied from FrameMetricsAggregator
+                    int durationMs =
+                            (int) ((drawDurationsNs + NANOS_ROUNDING_VALUE) / NANOS_PER_MS);
+                    int oldValue = drawDurationHistogram.get(durationMs);
+                    drawDurationHistogram.put(durationMs, (oldValue + 1));
+                }
             }
         }
-    }
 
-    private SparseIntArray getMetrics() {
-        synchronized (lock) {
-            return drawDurationHistogram.clone();
+        SparseIntArray resetMetrics() {
+            synchronized (lock) {
+                SparseIntArray metrics = drawDurationHistogram;
+                drawDurationHistogram = new SparseIntArray();
+                return metrics;
+            }
         }
-    }
 
-    private SparseIntArray resetMetrics() {
-        synchronized (lock) {
-            SparseIntArray metrics = drawDurationHistogram;
-            drawDurationHistogram = new SparseIntArray();
-            return metrics;
+        public String getActivityName() {
+            return activity.getComponentName().flattenToShortString();
         }
     }
 
     private void reportSlowRenders() {
         try {
-            reportSlow(resetMetrics());
+            activities.forEach((activity, listener) -> reportSlow(listener));
         } catch (Exception e) {
             Log.w(LOG_TAG, "Exception while processing frame metrics", e);
         }
     }
 
-    private void reportSlow(SparseIntArray durationToCountHistogram) {
+    private void reportSlow(PerActivityListener listener) {
         int slowCount = 0;
         int frozenCount = 0;
+        SparseIntArray durationToCountHistogram = listener.resetMetrics();
         for (int i = 0; i < durationToCountHistogram.size(); i++) {
             int duration = durationToCountHistogram.keyAt(i);
             int count = durationToCountHistogram.get(duration);
@@ -183,17 +185,18 @@ class SlowRenderingDetectorImpl
 
         Instant now = Instant.now();
         if (slowCount > 0) {
-            makeSpan("slowRenders", slowCount, now);
+            makeSpan("slowRenders", listener.getActivityName(), slowCount, now);
         }
         if (frozenCount > 0) {
-            makeSpan("frozenRenders", frozenCount, now);
+            makeSpan("frozenRenders", listener.getActivityName(), frozenCount, now);
         }
     }
 
-    private void makeSpan(String name, int slowCount, Instant now) {
+    private void makeSpan(String spanName, String activityName, int slowCount, Instant now) {
         Span span =
-                tracer.spanBuilder(name)
+                tracer.spanBuilder(spanName)
                         .setAttribute("count", slowCount)
+                        .setAttribute("activity.name", activityName)
                         .setStartTimestamp(now)
                         .startSpan();
         span.end(now);

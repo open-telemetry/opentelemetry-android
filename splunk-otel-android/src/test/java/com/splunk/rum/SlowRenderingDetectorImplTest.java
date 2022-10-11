@@ -17,6 +17,7 @@
 package com.splunk.rum;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -26,6 +27,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.os.Build;
 import android.os.Handler;
 import android.view.FrameMetrics;
@@ -44,6 +46,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -70,6 +73,8 @@ public class SlowRenderingDetectorImplTest {
     @Before
     public void setup() {
         tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
+        ComponentName componentName = new ComponentName("io.otel", "Komponent");
+        when(activity.getComponentName()).thenReturn(componentName);
     }
 
     @Test
@@ -79,8 +84,12 @@ public class SlowRenderingDetectorImplTest {
 
         testInstance.add(activity);
 
+        ArgumentCaptor<SlowRenderingDetectorImpl.PerActivityListener> captor =
+                ArgumentCaptor.forClass(SlowRenderingDetectorImpl.PerActivityListener.class);
+
         verify(activity.getWindow())
-                .addOnFrameMetricsAvailableListener(testInstance, frameMetricsHandler);
+                .addOnFrameMetricsAvailableListener(captor.capture(), eq(frameMetricsHandler));
+        assertEquals("io.otel/Komponent", captor.getValue().getActivityName());
     }
 
     @Test
@@ -102,9 +111,12 @@ public class SlowRenderingDetectorImplTest {
         testInstance.add(activity);
         testInstance.stop(activity);
 
+        ArgumentCaptor<SlowRenderingDetectorImpl.PerActivityListener> captor =
+                ArgumentCaptor.forClass(SlowRenderingDetectorImpl.PerActivityListener.class);
+
         verify(activity.getWindow())
-                .addOnFrameMetricsAvailableListener(testInstance, frameMetricsHandler);
-        verify(activity.getWindow()).removeOnFrameMetricsAvailableListener(testInstance);
+                .addOnFrameMetricsAvailableListener(captor.capture(), eq(frameMetricsHandler));
+        verify(activity.getWindow()).removeOnFrameMetricsAvailableListener(captor.getValue());
         assertThat(otelTesting.getSpans()).hasSize(0);
     }
 
@@ -115,9 +127,14 @@ public class SlowRenderingDetectorImplTest {
 
         testInstance.add(activity);
 
+        ArgumentCaptor<SlowRenderingDetectorImpl.PerActivityListener> captor =
+                ArgumentCaptor.forClass(SlowRenderingDetectorImpl.PerActivityListener.class);
+
+        verify(activity.getWindow()).addOnFrameMetricsAvailableListener(captor.capture(), any());
+        SlowRenderingDetectorImpl.PerActivityListener listener = captor.getValue();
         for (long duration : makeSomeDurations()) {
             when(frameMetrics.getMetric(FrameMetrics.DRAW_DURATION)).thenReturn(duration);
-            testInstance.onFrameMetricsAvailable(null, frameMetrics, 0);
+            listener.onFrameMetricsAvailable(null, frameMetrics, 0);
         }
 
         testInstance.stop(activity);
@@ -145,9 +162,14 @@ public class SlowRenderingDetectorImplTest {
 
         testInstance.add(activity);
 
+        ArgumentCaptor<SlowRenderingDetectorImpl.PerActivityListener> captor =
+                ArgumentCaptor.forClass(SlowRenderingDetectorImpl.PerActivityListener.class);
+
+        verify(activity.getWindow()).addOnFrameMetricsAvailableListener(captor.capture(), any());
+        SlowRenderingDetectorImpl.PerActivityListener listener = captor.getValue();
         for (long duration : makeSomeDurations()) {
             when(frameMetrics.getMetric(FrameMetrics.DRAW_DURATION)).thenReturn(duration);
-            testInstance.onFrameMetricsAvailable(null, frameMetrics, 0);
+            listener.onFrameMetricsAvailable(null, frameMetrics, 0);
         }
 
         testInstance.start();
@@ -164,12 +186,18 @@ public class SlowRenderingDetectorImplTest {
                                 assertThat(span)
                                         .hasName("slowRenders")
                                         .endsAt(span.getStartEpochNanos())
-                                        .hasAttribute(COUNT_KEY, 3L),
+                                        .hasAttribute(COUNT_KEY, 3L)
+                                        .hasAttribute(
+                                                AttributeKey.stringKey("activity.name"),
+                                                "io.otel/Komponent"),
                         span ->
                                 assertThat(span)
                                         .hasName("frozenRenders")
                                         .endsAt(span.getStartEpochNanos())
-                                        .hasAttribute(COUNT_KEY, 1L));
+                                        .hasAttribute(COUNT_KEY, 1L)
+                                        .hasAttribute(
+                                                AttributeKey.stringKey("activity.name"),
+                                                "io.otel/Komponent"));
     }
 
     private List<Long> makeSomeDurations() {
