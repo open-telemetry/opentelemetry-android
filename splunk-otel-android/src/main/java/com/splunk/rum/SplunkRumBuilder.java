@@ -25,7 +25,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.time.Duration;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /** A builder of {@link SplunkRum}. */
@@ -311,7 +310,7 @@ public final class SplunkRumBuilder {
         return spanFilterBuilder.build().apply(exporter);
     }
 
-    AtomicReference<Attributes> buildGlobalAttributesRef() {
+    Attributes buildInitialGlobalAttributes() {
         Attributes attrs = globalAttributes;
         if (deploymentEnvironment != null) {
             attrs =
@@ -319,6 +318,6 @@ public final class SplunkRumBuilder {
                             .put(ResourceAttributes.DEPLOYMENT_ENVIRONMENT, deploymentEnvironment)
                             .build();
         }
-        return new AtomicReference<>(attrs);
+        return attrs;
     }
 }

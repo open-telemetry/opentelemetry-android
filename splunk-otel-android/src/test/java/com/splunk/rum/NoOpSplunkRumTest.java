@@ -43,7 +43,7 @@ public class NoOpSplunkRumTest {
         assertSame(okHttpClient, instance.createRumOkHttpCallFactory(okHttpClient));
 
         instance.updateGlobalAttributes(attributesBuilder -> {});
-        assertSame(instance, instance.setGlobalAttribute(AttributeKey.stringKey("foo"), "bar"));
+        instance.setGlobalAttribute(AttributeKey.stringKey("foo"), "bar");
         instance.flushSpans();
 
         instance.integrateWithBrowserRum(mock(WebView.class));

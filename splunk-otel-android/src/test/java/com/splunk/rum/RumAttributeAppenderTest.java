@@ -16,8 +16,6 @@
 
 package com.splunk.rum;
 
-import static io.opentelemetry.api.common.AttributeKey.longKey;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -27,7 +25,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -57,7 +54,6 @@ public class RumAttributeAppenderTest {
         RumAttributeAppender rumAttributeAppender =
                 new RumAttributeAppender(
                         APP_NAME,
-                        Attributes::empty,
                         mock(SessionId.class),
                         "rumVersion",
                         visibleScreenTracker,
@@ -69,9 +65,6 @@ public class RumAttributeAppenderTest {
 
     @Test
     public void appendAttributesOnStart() {
-        Attributes globalAttributes =
-                Attributes.of(stringKey("cheese"), "Camembert", longKey("size"), 5L);
-
         SessionId sessionId = mock(SessionId.class);
         when(sessionId.getSessionId()).thenReturn("rumSessionId");
         when(visibleScreenTracker.getCurrentlyVisibleScreen()).thenReturn("ScreenOne");
@@ -80,12 +73,7 @@ public class RumAttributeAppenderTest {
 
         RumAttributeAppender rumAttributeAppender =
                 new RumAttributeAppender(
-                        APP_NAME,
-                        () -> globalAttributes,
-                        sessionId,
-                        "rumVersion",
-                        visibleScreenTracker,
-                        connectionUtil);
+                        APP_NAME, sessionId, "rumVersion", visibleScreenTracker, connectionUtil);
 
         rumAttributeAppender.onStart(Context.current(), span);
         verify(span).setAttribute(RumAttributeAppender.RUM_VERSION_KEY, "rumVersion");
@@ -102,7 +90,6 @@ public class RumAttributeAppenderTest {
         verify(span).setAttribute(eq(ResourceAttributes.DEVICE_MODEL_IDENTIFIER), any());
         verify(span).setAttribute(eq(ResourceAttributes.DEVICE_MODEL_NAME), any());
         verify(span).setAttribute(eq(ResourceAttributes.OS_VERSION), any());
-        verify(span).setAllAttributes(globalAttributes);
     }
 
     @Test
@@ -115,12 +102,7 @@ public class RumAttributeAppenderTest {
 
         RumAttributeAppender rumAttributeAppender =
                 new RumAttributeAppender(
-                        APP_NAME,
-                        Attributes::empty,
-                        sessionId,
-                        "rumVersion",
-                        visibleScreenTracker,
-                        connectionUtil);
+                        APP_NAME, sessionId, "rumVersion", visibleScreenTracker, connectionUtil);
 
         rumAttributeAppender.onStart(Context.current(), span);
         verify(span).setAttribute(SplunkRum.SCREEN_NAME_KEY, "unknown");

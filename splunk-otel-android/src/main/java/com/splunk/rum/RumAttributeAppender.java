@@ -32,13 +32,11 @@ import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_H
 import android.os.Build;
 import androidx.annotation.Nullable;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import java.util.function.Supplier;
 
 class RumAttributeAppender implements SpanProcessor {
     static final AttributeKey<String> APP_NAME_KEY = stringKey("app");
@@ -48,7 +46,6 @@ class RumAttributeAppender implements SpanProcessor {
     static final AttributeKey<String> SPLUNK_OPERATION_KEY = stringKey("_splunk_operation");
 
     private final String applicationName;
-    private final Supplier<Attributes> globalAttributesSupplier;
     private final SessionId sessionId;
     private final String rumVersion;
     private final VisibleScreenTracker visibleScreenTracker;
@@ -56,13 +53,11 @@ class RumAttributeAppender implements SpanProcessor {
 
     RumAttributeAppender(
             String applicationName,
-            Supplier<Attributes> globalAttributesSupplier,
             SessionId sessionId,
             String rumVersion,
             VisibleScreenTracker visibleScreenTracker,
             ConnectionUtil connectionUtil) {
         this.applicationName = applicationName;
-        this.globalAttributesSupplier = globalAttributesSupplier;
         this.sessionId = sessionId;
         this.rumVersion = rumVersion;
         this.visibleScreenTracker = visibleScreenTracker;
@@ -84,7 +79,6 @@ class RumAttributeAppender implements SpanProcessor {
         span.setAttribute(OS_NAME, "Android");
         span.setAttribute(OS_TYPE, "linux");
         span.setAttribute(OS_VERSION, Build.VERSION.RELEASE);
-        span.setAllAttributes(globalAttributesSupplier.get());
 
         String currentScreen = visibleScreenTracker.getCurrentlyVisibleScreen();
         span.setAttribute(SplunkRum.SCREEN_NAME_KEY, currentScreen);

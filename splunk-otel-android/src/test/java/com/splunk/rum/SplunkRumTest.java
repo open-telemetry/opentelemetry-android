@@ -23,9 +23,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,10 +37,12 @@ import android.content.Context;
 import android.location.Location;
 import android.webkit.WebView;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.rum.internal.GlobalAttributesSpanAppender;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
@@ -50,17 +54,22 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.class)
 public class SplunkRumTest {
 
     @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
 
     private Tracer tracer;
-    private final AtomicReference<Attributes> globalAttributes =
-            new AtomicReference<>(Attributes.of(stringKey("key"), "value"));
+
+    @Mock private GlobalAttributesSpanAppender globalAttributes;
 
     @Before
     public void setup() {
@@ -163,23 +172,6 @@ public class SplunkRumTest {
         assertEquals(1, spans.size());
         assertEquals("foo", spans.get(0).getName());
         assertEquals(attributes.asMap(), spans.get(0).getAttributes().asMap());
-    }
-
-    @Test
-    public void updateGlobalAttributes() {
-        SplunkRum splunkRum =
-                new SplunkRum(
-                        (OpenTelemetrySdk) otelTesting.getOpenTelemetry(),
-                        new SessionId(new SessionIdTimeoutHandler()),
-                        globalAttributes);
-
-        splunkRum.updateGlobalAttributes(
-                attributesBuilder -> attributesBuilder.put("key", "value2"));
-        splunkRum.setGlobalAttribute(longKey("otherKey"), 1234L);
-
-        assertEquals(
-                Attributes.of(stringKey("key"), "value2", longKey("otherKey"), 1234L),
-                globalAttributes.get());
     }
 
     @Test
@@ -301,7 +293,20 @@ public class SplunkRumTest {
 
     @Test
     public void updateLocation() {
-        AtomicReference<Attributes> globalAttributes = new AtomicReference<>(Attributes.empty());
+        AtomicReference<Attributes> updatedAttributes = new AtomicReference<>();
+        GlobalAttributesSpanAppender globalAttributes = mock(GlobalAttributesSpanAppender.class);
+        doAnswer(
+                        invocation -> {
+                            Consumer<AttributesBuilder> updater = invocation.getArgument(0);
+
+                            AttributesBuilder attributesBuilder = Attributes.builder();
+                            updater.accept(attributesBuilder);
+                            updatedAttributes.set(attributesBuilder.build());
+                            return null;
+                        })
+                .when(globalAttributes)
+                .update(any());
+
         SplunkRum splunkRum =
                 new SplunkRum(
                         (OpenTelemetrySdk) otelTesting.getOpenTelemetry(),
@@ -319,10 +324,10 @@ public class SplunkRumTest {
                         42d,
                         SplunkRum.LOCATION_LONGITUDE_KEY,
                         43d),
-                globalAttributes.get());
+                updatedAttributes.get());
 
         splunkRum.updateLocation(null);
 
-        assertTrue(globalAttributes.get().isEmpty());
+        assertTrue(updatedAttributes.get().isEmpty());
     }
 }

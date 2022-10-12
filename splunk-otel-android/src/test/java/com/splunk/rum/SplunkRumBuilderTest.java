@@ -66,14 +66,14 @@ public class SplunkRumBuilderTest {
         assertTrue(builder.networkMonitorEnabled);
         assertTrue(builder.anrDetectionEnabled);
         assertTrue(builder.slowRenderingDetectionEnabled);
-        assertEquals(Attributes.empty(), builder.buildGlobalAttributesRef().get());
+        assertEquals(Attributes.empty(), builder.buildInitialGlobalAttributes());
         assertFalse(builder.sessionBasedSamplerEnabled);
     }
 
     @Test
     public void handleNullAttributes() {
         SplunkRumBuilder builder = SplunkRum.builder().setGlobalAttributes(null);
-        assertEquals(Attributes.empty(), builder.buildGlobalAttributesRef().get());
+        assertEquals(Attributes.empty(), builder.buildInitialGlobalAttributes());
     }
 
     @Test

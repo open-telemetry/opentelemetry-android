@@ -27,12 +27,12 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.splunk.android.rum.R;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
+import io.opentelemetry.rum.internal.GlobalAttributesSpanAppender;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -40,6 +40,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -53,7 +54,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import zipkin2.reporter.Sender;
@@ -66,7 +66,6 @@ class RumInitializer {
     static final int MAX_ATTRIBUTE_LENGTH = 256 * 128;
 
     private final SplunkRumBuilder builder;
-    private final AtomicReference<Attributes> globalAttributes;
     private final Application application;
     private final AppStartupTimer startupTimer;
     private final List<RumInitializer.InitializationEvent> initializationEvents = new ArrayList<>();
@@ -75,7 +74,6 @@ class RumInitializer {
     RumInitializer(
             SplunkRumBuilder builder, Application application, AppStartupTimer startupTimer) {
         this.builder = builder;
-        this.globalAttributes = builder.buildGlobalAttributesRef();
         this.application = application;
         this.startupTimer = startupTimer;
         this.timingClock = startupTimer.startupClock;
@@ -102,6 +100,8 @@ class RumInitializer {
         initializationEvents.add(
                 new RumInitializer.InitializationEvent("sessionIdInitialized", timingClock.now()));
 
+        GlobalAttributesSpanAppender globalAttributesSpanAppender =
+                GlobalAttributesSpanAppender.create(builder.buildInitialGlobalAttributes());
         SdkTracerProvider sdkTracerProvider =
                 buildTracerProvider(
                         Clock.getDefault(),
@@ -109,7 +109,8 @@ class RumInitializer {
                         sessionId,
                         rumVersion,
                         visibleScreenTracker,
-                        connectionUtil);
+                        connectionUtil,
+                        globalAttributesSpanAppender);
         initializationEvents.add(
                 new RumInitializer.InitializationEvent(
                         "tracerProviderInitialized", timingClock.now()));
@@ -173,7 +174,7 @@ class RumInitializer {
 
         recordInitializationSpans(startTimeNanos, initializationEvents, tracer);
 
-        return new SplunkRum(openTelemetrySdk, sessionId, globalAttributes);
+        return new SplunkRum(openTelemetrySdk, sessionId, globalAttributesSpanAppender);
     }
 
     private SlowRenderingDetector buildSlowRenderingDetector(Tracer tracer) {
@@ -277,7 +278,8 @@ class RumInitializer {
             SessionId sessionId,
             String rumVersion,
             VisibleScreenTracker visibleScreenTracker,
-            ConnectionUtil connectionUtil) {
+            ConnectionUtil connectionUtil,
+            SpanProcessor... additionalProcessors) {
         BatchSpanProcessor batchSpanProcessor = BatchSpanProcessor.builder(zipkinExporter).build();
         initializationEvents.add(
                 new RumInitializer.InitializationEvent(
@@ -287,7 +289,6 @@ class RumInitializer {
         RumAttributeAppender attributeAppender =
                 new RumAttributeAppender(
                         applicationName,
-                        globalAttributes::get,
                         sessionId,
                         rumVersion,
                         visibleScreenTracker,
@@ -318,6 +319,10 @@ class RumInitializer {
         if (builder.sessionBasedSamplerEnabled) {
             tracerProviderBuilder.setSampler(
                     new SessionIdRatioBasedSampler(builder.sessionBasedSamplerRatio, sessionId));
+        }
+
+        for (SpanProcessor spanProcessor : additionalProcessors) {
+            tracerProviderBuilder.addSpanProcessor(spanProcessor);
         }
 
         if (builder.debugEnabled) {
