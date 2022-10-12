@@ -43,7 +43,6 @@ public class ActivityCallbacksTest {
     private VisibleScreenTracker visibleScreenTracker;
     private final AppStartupTimer startupTimer = new AppStartupTimer();
     private final AppStateListener appStateListener = mock(AppStateListener.class);
-    private final SlowRenderingDetector slowRenderingDetector = mock(SlowRenderingDetector.class);
 
     @Before
     public void setup() {
@@ -60,7 +59,6 @@ public class ActivityCallbacksTest {
                         .visibleScreenTracker(visibleScreenTracker)
                         .startupTimer(startupTimer)
                         .appStateListeners(singletonList(appStateListener))
-                        .slowRenderingDetector(slowRenderingDetector)
                         .build();
         ActivityCallbackTestHarness testHarness =
                 new ActivityCallbackTestHarness(activityCallbacks);
@@ -105,7 +103,6 @@ public class ActivityCallbacksTest {
         checkEventExists(events, "activityPostResumed");
 
         verify(appStateListener).appForegrounded();
-        verify(slowRenderingDetector).add(activity);
     }
 
     @Test
@@ -116,7 +113,6 @@ public class ActivityCallbacksTest {
                         .visibleScreenTracker(visibleScreenTracker)
                         .startupTimer(startupTimer)
                         .appStateListeners(singletonList(appStateListener))
-                        .slowRenderingDetector(slowRenderingDetector)
                         .build();
 
         ActivityCallbackTestHarness testHarness =
@@ -175,7 +171,6 @@ public class ActivityCallbacksTest {
                         .visibleScreenTracker(visibleScreenTracker)
                         .startupTimer(startupTimer)
                         .appStateListeners(singletonList(appStateListener))
-                        .slowRenderingDetector(slowRenderingDetector)
                         .build();
 
         ActivityCallbackTestHarness testHarness =
@@ -226,7 +221,6 @@ public class ActivityCallbacksTest {
                         .visibleScreenTracker(visibleScreenTracker)
                         .startupTimer(startupTimer)
                         .appStateListeners(singletonList(appStateListener))
-                        .slowRenderingDetector(slowRenderingDetector)
                         .build();
 
         ActivityCallbackTestHarness testHarness =
@@ -270,7 +264,6 @@ public class ActivityCallbacksTest {
                         .visibleScreenTracker(visibleScreenTracker)
                         .startupTimer(startupTimer)
                         .appStateListeners(singletonList(appStateListener))
-                        .slowRenderingDetector(slowRenderingDetector)
                         .build();
 
         ActivityCallbackTestHarness testHarness =
@@ -314,7 +307,6 @@ public class ActivityCallbacksTest {
                         .visibleScreenTracker(visibleScreenTracker)
                         .startupTimer(startupTimer)
                         .appStateListeners(singletonList(appStateListener))
-                        .slowRenderingDetector(slowRenderingDetector)
                         .build();
 
         ActivityCallbackTestHarness testHarness =
@@ -378,7 +370,6 @@ public class ActivityCallbacksTest {
                         .visibleScreenTracker(visibleScreenTracker)
                         .startupTimer(startupTimer)
                         .appStateListeners(singletonList(appStateListener))
-                        .slowRenderingDetector(slowRenderingDetector)
                         .build();
 
         ActivityCallbackTestHarness testHarness =
@@ -411,7 +402,6 @@ public class ActivityCallbacksTest {
         checkEventExists(events, "activityPrePaused");
         checkEventExists(events, "activityPaused");
         checkEventExists(events, "activityPostPaused");
-        verify(slowRenderingDetector).stop(activity);
 
         SpanData destroyedSpan = spans.get(1);
 

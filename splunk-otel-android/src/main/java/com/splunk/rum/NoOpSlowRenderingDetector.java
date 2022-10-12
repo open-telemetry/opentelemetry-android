@@ -16,17 +16,11 @@
 
 package com.splunk.rum;
 
-import android.app.Activity;
+import android.app.Application;
 
 enum NoOpSlowRenderingDetector implements SlowRenderingDetector {
     INSTANCE;
 
     @Override
-    public void add(Activity activity) {}
-
-    @Override
-    public void stop(Activity activity) {}
-
-    @Override
-    public void start() {}
+    public void start(Application application) {}
 }

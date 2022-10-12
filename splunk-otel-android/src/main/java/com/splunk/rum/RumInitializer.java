@@ -141,23 +141,23 @@ class RumInitializer {
         }
 
         SlowRenderingDetector slowRenderingDetector = buildSlowRenderingDetector(tracer);
-        slowRenderingDetector.start();
+        slowRenderingDetector.start(application);
 
+        Application.ActivityLifecycleCallbacks activityCallbacks;
         if (Build.VERSION.SDK_INT < 29) {
-            application.registerActivityLifecycleCallbacks(
+            activityCallbacks =
                     new Pre29ActivityCallbacks(
-                            tracer, visibleScreenTracker, startupTimer, appStateListeners));
+                            tracer, visibleScreenTracker, startupTimer, appStateListeners);
         } else {
-            ActivityCallbacks activityCallbacks =
+            activityCallbacks =
                     ActivityCallbacks.builder()
                             .tracer(tracer)
                             .visibleScreenTracker(visibleScreenTracker)
                             .startupTimer(startupTimer)
                             .appStateListeners(appStateListeners)
-                            .slowRenderingDetector(slowRenderingDetector)
                             .build();
-            application.registerActivityLifecycleCallbacks(activityCallbacks);
         }
+        application.registerActivityLifecycleCallbacks(activityCallbacks);
         initializationEvents.add(
                 new RumInitializer.InitializationEvent(
                         "activityLifecycleCallbacksInitialized", timingClock.now()));

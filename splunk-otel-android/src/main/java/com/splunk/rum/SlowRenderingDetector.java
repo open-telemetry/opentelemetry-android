@@ -16,13 +16,9 @@
 
 package com.splunk.rum;
 
-import android.app.Activity;
+import android.app.Application;
 
 interface SlowRenderingDetector {
 
-    void add(Activity activity);
-
-    void stop(Activity activity);
-
-    void start();
+    void start(Application application);
 }

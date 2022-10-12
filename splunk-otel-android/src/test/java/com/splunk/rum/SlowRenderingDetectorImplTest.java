@@ -27,6 +27,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.ComponentName;
 import android.os.Build;
 import android.os.Handler;
@@ -47,6 +48,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -63,12 +65,15 @@ public class SlowRenderingDetectorImplTest {
     @Rule public MockitoRule mocks = MockitoJUnit.rule();
 
     @Mock Handler frameMetricsHandler;
+    @Mock Application application;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     Activity activity;
 
     @Mock FrameMetrics frameMetrics;
     Tracer tracer;
+
+    @Captor ArgumentCaptor<SlowRenderingDetectorImpl.PerActivityListener> activityListenerCaptor;
 
     @Before
     public void setup() {
@@ -82,14 +87,12 @@ public class SlowRenderingDetectorImplTest {
         SlowRenderingDetectorImpl testInstance =
                 new SlowRenderingDetectorImpl(tracer, null, frameMetricsHandler, Duration.ZERO);
 
-        testInstance.add(activity);
-
-        ArgumentCaptor<SlowRenderingDetectorImpl.PerActivityListener> captor =
-                ArgumentCaptor.forClass(SlowRenderingDetectorImpl.PerActivityListener.class);
+        testInstance.onActivityResumed(activity);
 
         verify(activity.getWindow())
-                .addOnFrameMetricsAvailableListener(captor.capture(), eq(frameMetricsHandler));
-        assertEquals("io.otel/Komponent", captor.getValue().getActivityName());
+                .addOnFrameMetricsAvailableListener(
+                        activityListenerCaptor.capture(), eq(frameMetricsHandler));
+        assertEquals("io.otel/Komponent", activityListenerCaptor.getValue().getActivityName());
     }
 
     @Test
@@ -97,7 +100,7 @@ public class SlowRenderingDetectorImplTest {
         SlowRenderingDetectorImpl testInstance =
                 new SlowRenderingDetectorImpl(tracer, null, frameMetricsHandler, Duration.ZERO);
 
-        testInstance.stop(activity);
+        testInstance.onActivityPaused(activity);
 
         verifyNoInteractions(activity);
         assertThat(otelTesting.getSpans()).hasSize(0);
@@ -108,15 +111,15 @@ public class SlowRenderingDetectorImplTest {
         SlowRenderingDetectorImpl testInstance =
                 new SlowRenderingDetectorImpl(tracer, null, frameMetricsHandler, Duration.ZERO);
 
-        testInstance.add(activity);
-        testInstance.stop(activity);
-
-        ArgumentCaptor<SlowRenderingDetectorImpl.PerActivityListener> captor =
-                ArgumentCaptor.forClass(SlowRenderingDetectorImpl.PerActivityListener.class);
+        testInstance.onActivityResumed(activity);
+        testInstance.onActivityPaused(activity);
 
         verify(activity.getWindow())
-                .addOnFrameMetricsAvailableListener(captor.capture(), eq(frameMetricsHandler));
-        verify(activity.getWindow()).removeOnFrameMetricsAvailableListener(captor.getValue());
+                .addOnFrameMetricsAvailableListener(
+                        activityListenerCaptor.capture(), eq(frameMetricsHandler));
+        verify(activity.getWindow())
+                .removeOnFrameMetricsAvailableListener(activityListenerCaptor.getValue());
+
         assertThat(otelTesting.getSpans()).hasSize(0);
     }
 
@@ -125,19 +128,17 @@ public class SlowRenderingDetectorImplTest {
         SlowRenderingDetectorImpl testInstance =
                 new SlowRenderingDetectorImpl(tracer, null, frameMetricsHandler, Duration.ZERO);
 
-        testInstance.add(activity);
+        testInstance.onActivityResumed(activity);
 
-        ArgumentCaptor<SlowRenderingDetectorImpl.PerActivityListener> captor =
-                ArgumentCaptor.forClass(SlowRenderingDetectorImpl.PerActivityListener.class);
-
-        verify(activity.getWindow()).addOnFrameMetricsAvailableListener(captor.capture(), any());
-        SlowRenderingDetectorImpl.PerActivityListener listener = captor.getValue();
+        verify(activity.getWindow())
+                .addOnFrameMetricsAvailableListener(activityListenerCaptor.capture(), any());
+        SlowRenderingDetectorImpl.PerActivityListener listener = activityListenerCaptor.getValue();
         for (long duration : makeSomeDurations()) {
             when(frameMetrics.getMetric(FrameMetrics.DRAW_DURATION)).thenReturn(duration);
             listener.onFrameMetricsAvailable(null, frameMetrics, 0);
         }
 
-        testInstance.stop(activity);
+        testInstance.onActivityPaused(activity);
 
         List<SpanData> spans = otelTesting.getSpans();
         assertSpanContent(spans);
@@ -160,19 +161,18 @@ public class SlowRenderingDetectorImplTest {
                 new SlowRenderingDetectorImpl(
                         tracer, exec, frameMetricsHandler, Duration.ofMillis(1001));
 
-        testInstance.add(activity);
+        testInstance.onActivityResumed(activity);
 
-        ArgumentCaptor<SlowRenderingDetectorImpl.PerActivityListener> captor =
-                ArgumentCaptor.forClass(SlowRenderingDetectorImpl.PerActivityListener.class);
-
-        verify(activity.getWindow()).addOnFrameMetricsAvailableListener(captor.capture(), any());
-        SlowRenderingDetectorImpl.PerActivityListener listener = captor.getValue();
+        verify(activity.getWindow())
+                .addOnFrameMetricsAvailableListener(activityListenerCaptor.capture(), any());
+        SlowRenderingDetectorImpl.PerActivityListener listener = activityListenerCaptor.getValue();
         for (long duration : makeSomeDurations()) {
             when(frameMetrics.getMetric(FrameMetrics.DRAW_DURATION)).thenReturn(duration);
             listener.onFrameMetricsAvailable(null, frameMetrics, 0);
         }
 
-        testInstance.start();
+        testInstance.start(application);
+        verify(application).registerActivityLifecycleCallbacks(testInstance);
 
         List<SpanData> spans = otelTesting.getSpans();
         assertSpanContent(spans);

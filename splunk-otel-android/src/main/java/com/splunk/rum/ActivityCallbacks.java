@@ -39,7 +39,6 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     private final VisibleScreenTracker visibleScreenTracker;
     private final AppStartupTimer startupTimer;
     private final List<AppStateListener> appStateListeners;
-    private final SlowRenderingDetector slowRenderingDetector;
     // we count the number of activities that have been "started" and not yet "stopped" here to
     // figure out when the app goes into the background.
     private int numberOfOpenActivities = 0;
@@ -49,7 +48,6 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
         this.visibleScreenTracker = requireNonNull(builder.visibleScreenTracker);
         this.startupTimer = requireNonNull(builder.startupTimer);
         this.appStateListeners = requireNonNull(builder.appStateListeners);
-        this.slowRenderingDetector = requireNonNull(builder.slowRenderingDetector);
     }
 
     public static Builder builder() {
@@ -112,7 +110,6 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     @Override
     public void onActivityResumed(@NonNull Activity activity) {
         addEvent(activity, "activityResumed");
-        slowRenderingDetector.add(activity);
     }
 
     @Override
@@ -133,7 +130,6 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     @Override
     public void onActivityPaused(@NonNull Activity activity) {
         addEvent(activity, "activityPaused");
-        slowRenderingDetector.stop(activity);
     }
 
     @Override
@@ -218,7 +214,6 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
         @Nullable private VisibleScreenTracker visibleScreenTracker;
         @Nullable private AppStartupTimer startupTimer;
         @Nullable private List<AppStateListener> appStateListeners;
-        @Nullable private SlowRenderingDetector slowRenderingDetector;
 
         public ActivityCallbacks build() {
             return new ActivityCallbacks(this);
@@ -241,11 +236,6 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
 
         public Builder appStateListeners(List<AppStateListener> appStateListeners) {
             this.appStateListeners = appStateListeners;
-            return this;
-        }
-
-        public Builder slowRenderingDetector(SlowRenderingDetector slowRenderingDetector) {
-            this.slowRenderingDetector = slowRenderingDetector;
             return this;
         }
     }
