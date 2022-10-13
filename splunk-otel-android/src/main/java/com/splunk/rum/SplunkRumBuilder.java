@@ -21,6 +21,7 @@ import static com.splunk.rum.DeviceSpanStorageLimiter.DEFAULT_MAX_STORAGE_USE_MB
 import android.app.Application;
 import android.util.Log;
 import androidx.annotation.Nullable;
+import com.splunk.rum.reactnative.ReactNativeExporter;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -50,6 +51,7 @@ public final class SplunkRumBuilder {
     int maxUsageMegabytes = DEFAULT_MAX_STORAGE_USE_MB;
     boolean sessionBasedSamplerEnabled = false;
     double sessionBasedSamplerRatio = 1.0;
+    boolean reactNativeSupportEnabled = false;
 
     /**
      * Sets the application name that will be used to identify your application in the Splunk RUM
@@ -135,6 +137,11 @@ public final class SplunkRumBuilder {
      */
     public SplunkRumBuilder enableDiskBuffering() {
         this.diskBufferingEnabled = true;
+        return this;
+    }
+
+    public SplunkRumBuilder enableReactNativeSupport() {
+        this.reactNativeSupportEnabled = true;
         return this;
     }
 
@@ -308,6 +315,10 @@ public final class SplunkRumBuilder {
 
     SpanExporter decorateWithSpanFilter(SpanExporter exporter) {
         return spanFilterBuilder.build().apply(exporter);
+    }
+
+    public SpanExporter decorateWithReactNativeExporter(SpanExporter exporter) {
+        return new ReactNativeExporter(exporter);
     }
 
     Attributes buildInitialGlobalAttributes() {

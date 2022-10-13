@@ -342,6 +342,10 @@ class RumInitializer {
         SpanExporter filteredExporter = builder.decorateWithSpanFilter(exporter);
         initializationEvents.add(
                 new InitializationEvent("zipkin exporter initialized", timingClock.now()));
+
+        if (builder.reactNativeSupportEnabled) {
+            return builder.decorateWithReactNativeExporter(filteredExporter);
+        }
         return filteredExporter;
     }
 
