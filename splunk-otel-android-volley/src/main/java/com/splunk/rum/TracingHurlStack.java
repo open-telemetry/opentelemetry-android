@@ -24,14 +24,11 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Map;
 import javax.net.ssl.SSLSocketFactory;
 
 final class TracingHurlStack extends HurlStack {
 
-    private static final ThreadLocal<RequestWrapper> currentRequestWrapper = new ThreadLocal<>();
     private final Instrumenter<RequestWrapper, HttpResponse> instrumenter;
 
     TracingHurlStack(Instrumenter<RequestWrapper, HttpResponse> instrumenter) {
@@ -60,41 +57,22 @@ final class TracingHurlStack extends HurlStack {
 
         Context parentContext = Context.current();
         RequestWrapper requestWrapper = new RequestWrapper(request, additionalHeaders);
-        currentRequestWrapper.set(requestWrapper);
 
-        try {
-            if (!instrumenter.shouldStart(parentContext, requestWrapper)) {
-                return super.executeRequest(request, additionalHeaders);
-            }
+        if (!instrumenter.shouldStart(parentContext, requestWrapper)) {
+            return super.executeRequest(request, additionalHeaders);
+        }
 
-            Context context = instrumenter.start(parentContext, requestWrapper);
-            HttpResponse response = null;
-            Throwable throwable = null;
-            try (Scope ignored = context.makeCurrent()) {
-                response = super.executeRequest(request, requestWrapper.getAdditionalHeaders());
-                return response;
-            } catch (Throwable t) {
-                throwable = t;
-                throw t;
-            } finally {
-                instrumenter.end(context, requestWrapper, response, throwable);
-            }
-
+        Context context = instrumenter.start(parentContext, requestWrapper);
+        HttpResponse response = null;
+        Throwable throwable = null;
+        try (Scope ignored = context.makeCurrent()) {
+            response = super.executeRequest(request, requestWrapper.getAdditionalHeaders());
+            return response;
+        } catch (Throwable t) {
+            throwable = t;
+            throw t;
         } finally {
-            currentRequestWrapper.remove();
+            instrumenter.end(context, requestWrapper, response, throwable);
         }
-    }
-
-    @Override
-    protected HttpURLConnection createConnection(URL url) throws IOException {
-        // requestWrapper cannot be null here, because this method is called only
-        // inside parent's executeRequest() (through a private method - openConnection()),
-        // so currentRequestWrapper.set() is always called before that
-        // null-check here is just to satisfy errorprone
-        RequestWrapper requestWrapper = currentRequestWrapper.get();
-        if (requestWrapper != null) {
-            requestWrapper.setUrl(url);
-        }
-        return super.createConnection(url);
     }
 }

@@ -32,13 +32,13 @@ enum VolleyNetClientAttributesGetter
 
     @Nullable
     @Override
-    public String peerName(RequestWrapper requestWrapper, @Nullable HttpResponse httpResponse) {
-        return requestWrapper.getUrl() != null ? requestWrapper.getUrl().getHost() : null;
+    public String peerName(RequestWrapper requestWrapper) {
+        return UrlParser.getHost(requestWrapper.getRequest().getUrl());
     }
 
     @Nullable
     @Override
-    public Integer peerPort(RequestWrapper requestWrapper, @Nullable HttpResponse httpResponse) {
-        return requestWrapper.getUrl() != null ? requestWrapper.getUrl().getPort() : null;
+    public Integer peerPort(RequestWrapper requestWrapper) {
+        return UrlParser.getPort(requestWrapper.getRequest().getUrl());
     }
 }

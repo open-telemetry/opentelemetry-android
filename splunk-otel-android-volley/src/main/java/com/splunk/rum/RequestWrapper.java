@@ -16,9 +16,7 @@
 
 package com.splunk.rum;
 
-import androidx.annotation.Nullable;
 import com.android.volley.Request;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,20 +27,10 @@ import java.util.Map;
 public final class RequestWrapper {
     private final Request<?> request;
     private final Map<String, String> additionalHeaders;
-    @Nullable private URL url;
 
     RequestWrapper(Request<?> request, Map<String, String> additionalHeaders) {
         this.request = request;
         this.additionalHeaders = new HashMap<>(additionalHeaders);
-    }
-
-    void setUrl(URL url) {
-        this.url = url;
-    }
-
-    @Nullable
-    URL getUrl() {
-        return url;
     }
 
     /** Returns the HTTP request that will be executed. */
