@@ -25,7 +25,6 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import io.opentelemetry.api.trace.Tracer;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -35,18 +34,14 @@ class Pre29ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     private final Map<String, ActivityTracer> tracersByActivityClassName = new HashMap<>();
     private final AtomicReference<String> initialAppActivity = new AtomicReference<>();
     private final AppStartupTimer appStartupTimer;
-    private final List<AppStateListener> appStateListeners;
-    private int numberOfOpenActivities = 0;
 
     Pre29ActivityCallbacks(
             Tracer tracer,
             VisibleScreenTracker visibleScreenTracker,
-            AppStartupTimer appStartupTimer,
-            List<AppStateListener> appStateListeners) {
+            AppStartupTimer appStartupTimer) {
         this.tracer = tracer;
         this.visibleScreenTracker = visibleScreenTracker;
         this.appStartupTimer = appStartupTimer;
-        this.appStateListeners = appStateListeners;
     }
 
     @Override
@@ -64,12 +59,6 @@ class Pre29ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityStarted(@NonNull Activity activity) {
-        if (numberOfOpenActivities == 0) {
-            for (AppStateListener appListener : appStateListeners) {
-                appListener.appForegrounded();
-            }
-        }
-        numberOfOpenActivities++;
         getTracer(activity)
                 .initiateRestartSpanIfNecessary(tracersByActivityClassName.size() > 1)
                 .addEvent("activityStarted");
@@ -96,11 +85,6 @@ class Pre29ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityStopped(@NonNull Activity activity) {
-        if (--numberOfOpenActivities == 0) {
-            for (AppStateListener appListener : appStateListeners) {
-                appListener.appBackgrounded();
-            }
-        }
         getTracer(activity)
                 .startSpanIfNoneInProgress("Stopped")
                 .addEvent("activityStopped")

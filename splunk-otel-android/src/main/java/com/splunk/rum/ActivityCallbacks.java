@@ -16,8 +16,6 @@
 
 package com.splunk.rum;
 
-import static java.util.Objects.requireNonNull;
-
 import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
@@ -27,7 +25,6 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import io.opentelemetry.api.trace.Tracer;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -38,20 +35,14 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
     private final Tracer tracer;
     private final VisibleScreenTracker visibleScreenTracker;
     private final AppStartupTimer startupTimer;
-    private final List<AppStateListener> appStateListeners;
-    // we count the number of activities that have been "started" and not yet "stopped" here to
-    // figure out when the app goes into the background.
-    private int numberOfOpenActivities = 0;
 
-    private ActivityCallbacks(Builder builder) {
-        this.tracer = requireNonNull(builder.tracer);
-        this.visibleScreenTracker = requireNonNull(builder.visibleScreenTracker);
-        this.startupTimer = requireNonNull(builder.startupTimer);
-        this.appStateListeners = requireNonNull(builder.appStateListeners);
-    }
-
-    public static Builder builder() {
-        return new Builder();
+    ActivityCallbacks(
+            Tracer tracer,
+            VisibleScreenTracker visibleScreenTracker,
+            AppStartupTimer startupTimer) {
+        this.tracer = tracer;
+        this.visibleScreenTracker = visibleScreenTracker;
+        this.startupTimer = startupTimer;
     }
 
     @Override
@@ -88,12 +79,6 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityStarted(@NonNull Activity activity) {
-        if (numberOfOpenActivities == 0) {
-            for (AppStateListener appStateListener : appStateListeners) {
-                appStateListener.appForegrounded();
-            }
-        }
-        numberOfOpenActivities++;
         addEvent(activity, "activityStarted");
     }
 
@@ -144,11 +129,6 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityStopped(@NonNull Activity activity) {
-        if (--numberOfOpenActivities == 0) {
-            for (AppStateListener appStateListener : appStateListeners) {
-                appStateListener.appBackgrounded();
-            }
-        }
         addEvent(activity, "activityStopped");
     }
 
@@ -207,36 +187,5 @@ class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
             tracersByActivityClassName.put(activity.getClass().getName(), activityTracer);
         }
         return activityTracer;
-    }
-
-    static class Builder {
-        @Nullable private Tracer tracer;
-        @Nullable private VisibleScreenTracker visibleScreenTracker;
-        @Nullable private AppStartupTimer startupTimer;
-        @Nullable private List<AppStateListener> appStateListeners;
-
-        public ActivityCallbacks build() {
-            return new ActivityCallbacks(this);
-        }
-
-        public Builder tracer(Tracer tracer) {
-            this.tracer = tracer;
-            return this;
-        }
-
-        public Builder visibleScreenTracker(VisibleScreenTracker visibleScreenTracker) {
-            this.visibleScreenTracker = visibleScreenTracker;
-            return this;
-        }
-
-        public Builder startupTimer(AppStartupTimer startupTimer) {
-            this.startupTimer = startupTimer;
-            return this;
-        }
-
-        public Builder appStateListeners(List<AppStateListener> appStateListeners) {
-            this.appStateListeners = appStateListeners;
-            return this;
-        }
     }
 }

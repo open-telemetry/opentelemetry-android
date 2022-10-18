@@ -140,22 +140,19 @@ class RumInitializer {
                             "networkMonitorInitialized", timingClock.now()));
         }
 
+        // the app state listeners need to be run in the first ActivityLifecycleCallbacks since they
+        // might turn off/on additional telemetry depending on whether the app is active or not
+        application.registerActivityLifecycleCallbacks(new AppStateWatcher(appStateListeners));
+
         SlowRenderingDetector slowRenderingDetector = buildSlowRenderingDetector(tracer);
         slowRenderingDetector.start(application);
 
         Application.ActivityLifecycleCallbacks activityCallbacks;
         if (Build.VERSION.SDK_INT < 29) {
             activityCallbacks =
-                    new Pre29ActivityCallbacks(
-                            tracer, visibleScreenTracker, startupTimer, appStateListeners);
+                    new Pre29ActivityCallbacks(tracer, visibleScreenTracker, startupTimer);
         } else {
-            activityCallbacks =
-                    ActivityCallbacks.builder()
-                            .tracer(tracer)
-                            .visibleScreenTracker(visibleScreenTracker)
-                            .startupTimer(startupTimer)
-                            .appStateListeners(appStateListeners)
-                            .build();
+            activityCallbacks = new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer);
         }
         application.registerActivityLifecycleCallbacks(activityCallbacks);
         initializationEvents.add(
