@@ -16,7 +16,16 @@
 
 package com.splunk.rum;
 
+import static com.splunk.rum.SplunkRum.APP_NAME_KEY;
 import static com.splunk.rum.SplunkRum.LOG_TAG;
+import static com.splunk.rum.SplunkRum.RUM_VERSION_KEY;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEPLOYMENT_ENVIRONMENT;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_IDENTIFIER;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_NAME;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_NAME;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_TYPE;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_VERSION;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_NAME;
 import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
@@ -37,6 +46,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
@@ -101,7 +111,7 @@ class RumInitializer {
                 new RumInitializer.InitializationEvent("sessionIdInitialized", timingClock.now()));
 
         GlobalAttributesSpanAppender globalAttributesSpanAppender =
-                GlobalAttributesSpanAppender.create(builder.buildInitialGlobalAttributes());
+                GlobalAttributesSpanAppender.create(builder.globalAttributes);
         SdkTracerProvider sdkTracerProvider =
                 buildTracerProvider(
                         Clock.getDefault(),
@@ -284,18 +294,12 @@ class RumInitializer {
 
         String applicationName = requireNonNull(builder.applicationName);
         RumAttributeAppender attributeAppender =
-                new RumAttributeAppender(
-                        applicationName,
-                        sessionId,
-                        rumVersion,
-                        visibleScreenTracker,
-                        connectionUtil);
+                new RumAttributeAppender(sessionId, visibleScreenTracker, connectionUtil);
         initializationEvents.add(
                 new RumInitializer.InitializationEvent(
                         "attributeAppenderInitialized", timingClock.now()));
 
-        Resource resource =
-                Resource.getDefault().toBuilder().put("service.name", applicationName).build();
+        Resource resource = buildResource(applicationName, rumVersion);
         initializationEvents.add(
                 new RumInitializer.InitializationEvent("resourceInitialized", timingClock.now()));
 
@@ -333,10 +337,29 @@ class RumInitializer {
         return tracerProviderBuilder.build();
     }
 
+    private Resource buildResource(String applicationName, String rumVersion) {
+        ResourceBuilder resourceBuilder =
+                Resource.getDefault().toBuilder()
+                        .put(APP_NAME_KEY, applicationName)
+                        .put(SERVICE_NAME, applicationName);
+        if (builder.deploymentEnvironment != null) {
+            resourceBuilder.put(DEPLOYMENT_ENVIRONMENT, builder.deploymentEnvironment);
+        }
+        return resourceBuilder
+                .put(RUM_VERSION_KEY, rumVersion)
+                .put(DEVICE_MODEL_NAME, Build.MODEL)
+                .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)
+                .put(OS_NAME, "Android")
+                .put(OS_TYPE, "linux")
+                .put(OS_VERSION, Build.VERSION.RELEASE)
+                .build();
+    }
+
     // visible for testing
     SpanExporter buildFilteringExporter(ConnectionUtil connectionUtil) {
         SpanExporter exporter = buildExporter(connectionUtil);
-        SpanExporter filteredExporter = builder.decorateWithSpanFilter(exporter);
+        SpanExporter splunkTranslatedExporter = new SplunkSpanDataModifier(exporter);
+        SpanExporter filteredExporter = builder.decorateWithSpanFilter(splunkTranslatedExporter);
         initializationEvents.add(
                 new InitializationEvent("zipkin exporter initialized", timingClock.now()));
 

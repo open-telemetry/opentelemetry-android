@@ -18,6 +18,7 @@ package com.splunk.rum;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -66,14 +67,15 @@ public class SplunkRumBuilderTest {
         assertTrue(builder.networkMonitorEnabled);
         assertTrue(builder.anrDetectionEnabled);
         assertTrue(builder.slowRenderingDetectionEnabled);
-        assertEquals(Attributes.empty(), builder.buildInitialGlobalAttributes());
+        assertEquals(Attributes.empty(), builder.globalAttributes);
+        assertNull(builder.deploymentEnvironment);
         assertFalse(builder.sessionBasedSamplerEnabled);
     }
 
     @Test
     public void handleNullAttributes() {
         SplunkRumBuilder builder = SplunkRum.builder().setGlobalAttributes(null);
-        assertEquals(Attributes.empty(), builder.buildInitialGlobalAttributes());
+        assertEquals(Attributes.empty(), builder.globalAttributes);
     }
 
     @Test

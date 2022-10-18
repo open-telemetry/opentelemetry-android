@@ -27,14 +27,11 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import org.junit.Before;
 import org.junit.Test;
 
 public class RumAttributeAppenderTest {
-
-    private static final String APP_NAME = "appName";
 
     private VisibleScreenTracker visibleScreenTracker;
     private final ConnectionUtil connectionUtil = mock(ConnectionUtil.class);
@@ -53,11 +50,7 @@ public class RumAttributeAppenderTest {
     public void interfaceMethods() {
         RumAttributeAppender rumAttributeAppender =
                 new RumAttributeAppender(
-                        APP_NAME,
-                        mock(SessionId.class),
-                        "rumVersion",
-                        visibleScreenTracker,
-                        connectionUtil);
+                        mock(SessionId.class), visibleScreenTracker, connectionUtil);
 
         assertTrue(rumAttributeAppender.isStartRequired());
         assertFalse(rumAttributeAppender.isEndRequired());
@@ -72,24 +65,13 @@ public class RumAttributeAppenderTest {
         ReadWriteSpan span = mock(ReadWriteSpan.class);
 
         RumAttributeAppender rumAttributeAppender =
-                new RumAttributeAppender(
-                        APP_NAME, sessionId, "rumVersion", visibleScreenTracker, connectionUtil);
+                new RumAttributeAppender(sessionId, visibleScreenTracker, connectionUtil);
 
         rumAttributeAppender.onStart(Context.current(), span);
-        verify(span).setAttribute(RumAttributeAppender.RUM_VERSION_KEY, "rumVersion");
-        verify(span).setAttribute(RumAttributeAppender.APP_NAME_KEY, APP_NAME);
         verify(span).setAttribute(RumAttributeAppender.SESSION_ID_KEY, "rumSessionId");
-        verify(span).setAttribute(ResourceAttributes.OS_TYPE, "linux");
-        verify(span).setAttribute(ResourceAttributes.OS_NAME, "Android");
         verify(span).setAttribute(SplunkRum.SCREEN_NAME_KEY, "ScreenOne");
         verify(span).setAttribute(SemanticAttributes.NET_HOST_CONNECTION_TYPE, "cell");
         verify(span).setAttribute(SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE, "LTE");
-
-        // these values don't seem to be available in unit tests, so just assert that something was
-        // set.
-        verify(span).setAttribute(eq(ResourceAttributes.DEVICE_MODEL_IDENTIFIER), any());
-        verify(span).setAttribute(eq(ResourceAttributes.DEVICE_MODEL_NAME), any());
-        verify(span).setAttribute(eq(ResourceAttributes.OS_VERSION), any());
     }
 
     @Test
@@ -101,8 +83,7 @@ public class RumAttributeAppenderTest {
         ReadWriteSpan span = mock(ReadWriteSpan.class);
 
         RumAttributeAppender rumAttributeAppender =
-                new RumAttributeAppender(
-                        APP_NAME, sessionId, "rumVersion", visibleScreenTracker, connectionUtil);
+                new RumAttributeAppender(sessionId, visibleScreenTracker, connectionUtil);
 
         rumAttributeAppender.onStart(Context.current(), span);
         verify(span).setAttribute(SplunkRum.SCREEN_NAME_KEY, "unknown");

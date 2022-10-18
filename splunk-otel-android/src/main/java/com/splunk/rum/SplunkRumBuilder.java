@@ -24,7 +24,6 @@ import androidx.annotation.Nullable;
 import com.splunk.rum.reactnative.ReactNativeExporter;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.time.Duration;
 import java.util.function.Consumer;
 
@@ -45,8 +44,8 @@ public final class SplunkRumBuilder {
     boolean anrDetectionEnabled = true;
     boolean slowRenderingDetectionEnabled = true;
     Duration slowRenderingDetectionPollInterval = DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL;
-    private Attributes globalAttributes = Attributes.empty();
-    @Nullable private String deploymentEnvironment;
+    Attributes globalAttributes = Attributes.empty();
+    @Nullable String deploymentEnvironment;
     private final SpanFilterBuilder spanFilterBuilder = new SpanFilterBuilder();
     int maxUsageMegabytes = DEFAULT_MAX_STORAGE_USE_MB;
     boolean sessionBasedSamplerEnabled = false;
@@ -319,16 +318,5 @@ public final class SplunkRumBuilder {
 
     public SpanExporter decorateWithReactNativeExporter(SpanExporter exporter) {
         return new ReactNativeExporter(exporter);
-    }
-
-    Attributes buildInitialGlobalAttributes() {
-        Attributes attrs = globalAttributes;
-        if (deploymentEnvironment != null) {
-            attrs =
-                    attrs.toBuilder()
-                            .put(ResourceAttributes.DEPLOYMENT_ENVIRONMENT, deploymentEnvironment)
-                            .build();
-        }
-        return attrs;
     }
 }

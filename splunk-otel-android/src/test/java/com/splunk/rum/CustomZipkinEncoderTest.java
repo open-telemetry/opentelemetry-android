@@ -33,7 +33,7 @@ public class CustomZipkinEncoderTest {
                         .name("lowercase")
                         .traceId(TraceId.fromLongs(1, 2))
                         .id(SpanId.fromLong(1))
-                        .putTag(RumAttributeAppender.SPLUNK_OPERATION_KEY.getKey(), "UpperCase")
+                        .putTag(SplunkSpanDataModifier.SPLUNK_OPERATION_KEY.getKey(), "UpperCase")
                         .build();
         byte[] bytes = encoder.encode(span);
         // this assertion verifies that we changed the name

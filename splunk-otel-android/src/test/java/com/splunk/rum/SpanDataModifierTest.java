@@ -31,15 +31,11 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -271,66 +267,11 @@ public class SpanDataModifierTest {
         verify(delegate).shutdown();
     }
 
-    @Test
-    public void shouldAlwaysTransformExceptionEvents() {
-        // given
-        SpanExporter underTest = new SpanFilterBuilder().build().apply(delegate);
-
-        String stacktrace =
-                "com.example.SomeException: boom!\n\tat com.example.SomeClass.method(SomeClass.java:123)";
-        EventData exceptionEvent =
-                EventData.create(
-                        123,
-                        SemanticAttributes.EXCEPTION_EVENT_NAME,
-                        Attributes.builder()
-                                .put(SemanticAttributes.EXCEPTION_TYPE, "com.example.SomeException")
-                                .put(SemanticAttributes.EXCEPTION_MESSAGE, "boom!")
-                                .put(SemanticAttributes.EXCEPTION_STACKTRACE, stacktrace)
-                                .build());
-        SpanData span = span("span", Attributes.of(ATTRIBUTE, "test"), exceptionEvent);
-
-        CompletableResultCode expectedResult = new CompletableResultCode();
-        when(delegate.export(spansCaptor.capture())).thenReturn(expectedResult);
-
-        // when
-        CompletableResultCode result = underTest.export(singletonList(span));
-
-        // then
-        assertSame(expectedResult, result);
-
-        assertThat(spansCaptor.getValue())
-                .satisfiesExactly(
-                        s ->
-                                assertThat(s)
-                                        .hasName(span.getName())
-                                        .hasEvents(Collections.emptyList())
-                                        .hasTotalRecordedEvents(0)
-                                        .hasAttributes(
-                                                span.getAttributes().toBuilder()
-                                                        .put(
-                                                                SemanticAttributes.EXCEPTION_TYPE,
-                                                                "SomeException")
-                                                        .put(
-                                                                SplunkRum.ERROR_TYPE_KEY,
-                                                                "SomeException")
-                                                        .put(
-                                                                SemanticAttributes
-                                                                        .EXCEPTION_MESSAGE,
-                                                                "boom!")
-                                                        .put(SplunkRum.ERROR_MESSAGE_KEY, "boom!")
-                                                        .put(
-                                                                SemanticAttributes
-                                                                        .EXCEPTION_STACKTRACE,
-                                                                stacktrace)
-                                                        .build())
-                                        .hasTotalAttributeCount(6));
-    }
-
     private static SpanData span(String name) {
         return span(name, Attributes.empty());
     }
 
-    private static SpanData span(String name, Attributes attributes, EventData... events) {
+    private static SpanData span(String name, Attributes attributes) {
         return TestSpanData.builder()
                 .setName(name)
                 .setKind(SpanKind.INTERNAL)
@@ -339,7 +280,6 @@ public class SpanDataModifierTest {
                 .setStartEpochNanos(0)
                 .setEndEpochNanos(123)
                 .setAttributes(attributes)
-                .setEvents(Arrays.asList(events))
                 .build();
     }
 }

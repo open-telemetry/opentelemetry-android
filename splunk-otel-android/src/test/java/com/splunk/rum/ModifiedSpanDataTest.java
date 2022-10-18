@@ -17,7 +17,6 @@
 package com.splunk.rum;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 
@@ -31,11 +30,8 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import java.util.Arrays;
 import org.junit.Test;
 
 public class ModifiedSpanDataTest {
@@ -71,8 +67,7 @@ public class ModifiedSpanDataTest {
                         .build();
 
         SpanData modified =
-                ModifiedSpanData.create(
-                        original, Attributes.builder().put(stringKey("attribute"), "modified"));
+                new ModifiedSpanData(original, Attributes.of(stringKey("attribute"), "modified"));
 
         assertEquals(original.getName(), modified.getName());
         assertEquals(original.getKind(), modified.getKind());
@@ -91,61 +86,5 @@ public class ModifiedSpanDataTest {
         assertEquals(
                 original.getInstrumentationLibraryInfo(), modified.getInstrumentationLibraryInfo());
         assertEquals(original.getResource(), modified.getResource());
-    }
-
-    @Test
-    public void shouldConvertExceptionEventsToSpanAttributes() {
-        SpanData original =
-                TestSpanData.builder()
-                        .setName("test")
-                        .setKind(SpanKind.CLIENT)
-                        .setStatus(StatusData.unset())
-                        .setStartEpochNanos(12345)
-                        .setEndEpochNanos(67890)
-                        .setHasEnded(true)
-                        .setEvents(
-                                Arrays.asList(
-                                        EventData.create(
-                                                123,
-                                                "test",
-                                                Attributes.of(stringKey("attribute"), "value")),
-                                        EventData.create(
-                                                456,
-                                                SemanticAttributes.EXCEPTION_EVENT_NAME,
-                                                Attributes.builder()
-                                                        .put(
-                                                                SemanticAttributes.EXCEPTION_TYPE,
-                                                                "com.example.Error")
-                                                        .put(
-                                                                SemanticAttributes
-                                                                        .EXCEPTION_MESSAGE,
-                                                                "failed")
-                                                        .put(
-                                                                SemanticAttributes
-                                                                        .EXCEPTION_STACKTRACE,
-                                                                "<stacktrace>")
-                                                        .build())))
-                        .setAttributes(Attributes.of(stringKey("attribute"), "value"))
-                        .build();
-
-        SpanData modified = ModifiedSpanData.create(original);
-
-        assertThat(modified)
-                .hasName("test")
-                .hasKind(SpanKind.CLIENT)
-                .hasEvents(
-                        EventData.create(
-                                123, "test", Attributes.of(stringKey("attribute"), "value")))
-                .hasTotalRecordedEvents(1)
-                .hasAttributes(
-                        Attributes.builder()
-                                .put(stringKey("attribute"), "value")
-                                .put(SemanticAttributes.EXCEPTION_TYPE, "Error")
-                                .put(SplunkRum.ERROR_TYPE_KEY, "Error")
-                                .put(SemanticAttributes.EXCEPTION_MESSAGE, "failed")
-                                .put(SplunkRum.ERROR_MESSAGE_KEY, "failed")
-                                .put(SemanticAttributes.EXCEPTION_STACKTRACE, "<stacktrace>")
-                                .build())
-                .hasTotalAttributeCount(6);
     }
 }

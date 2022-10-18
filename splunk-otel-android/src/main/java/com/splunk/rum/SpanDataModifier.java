@@ -77,7 +77,7 @@ final class SpanDataModifier implements SpanExporter {
 
     private SpanData modify(SpanData span) {
         if (spanAttributeReplacements.isEmpty()) {
-            return ModifiedSpanData.create(span);
+            return span;
         }
 
         AttributesBuilder modifiedAttributes = Attributes.builder();
@@ -94,7 +94,7 @@ final class SpanDataModifier implements SpanExporter {
                             }
                         });
 
-        return ModifiedSpanData.create(span, modifiedAttributes);
+        return new ModifiedSpanData(span, modifiedAttributes.build());
     }
 
     @Override

@@ -29,9 +29,8 @@ import zipkin2.internal.WriteBuffer;
  * We need a custom encoder to correct for the fact that the zipkin Span.Builder lowercases all Span
  * names.
  *
- * <p>We do this by having the {@link RumAttributeAppender} add an additional attribute ({@link
- * RumAttributeAppender#SPLUNK_OPERATION_KEY}) with the span name properly cased, then correcting
- * the span name here at encoding time.
+ * <p>SplunkSpanDataModifier#SPLUNK_OPERATION_KEY}) with the span name properly cased, then
+ * correcting the span name here at encoding time.
  */
 class CustomZipkinEncoder implements BytesEncoder<Span> {
 
@@ -49,7 +48,8 @@ class CustomZipkinEncoder implements BytesEncoder<Span> {
 
     @Override
     public byte[] encode(Span span) {
-        String properSpanName = span.tags().get(RumAttributeAppender.SPLUNK_OPERATION_KEY.getKey());
+        String properSpanName =
+                span.tags().get(SplunkSpanDataModifier.SPLUNK_OPERATION_KEY.getKey());
 
         // note: this can be optimized, if necessary. Let's keep it simple for now.
         byte[] rawBytes = JsonCodec.write(this.writer, span);

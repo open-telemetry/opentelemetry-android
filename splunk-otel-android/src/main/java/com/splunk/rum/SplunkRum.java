@@ -74,6 +74,9 @@ public class SplunkRum {
     static final AttributeKey<String> LINK_TRACE_ID_KEY = stringKey("link.traceId");
     static final AttributeKey<String> LINK_SPAN_ID_KEY = stringKey("link.spanId");
 
+    static final AttributeKey<String> APP_NAME_KEY = stringKey("app");
+    static final AttributeKey<String> RUM_VERSION_KEY = stringKey("splunk.rum.version");
+
     @Nullable private static SplunkRum INSTANCE;
 
     private final SessionId sessionId;

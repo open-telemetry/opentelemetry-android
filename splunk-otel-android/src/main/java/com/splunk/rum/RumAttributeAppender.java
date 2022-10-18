@@ -17,11 +17,6 @@
 package com.splunk.rum;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_IDENTIFIER;
-import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_NAME;
-import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_NAME;
-import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_TYPE;
-import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_VERSION;
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CARRIER_ICC;
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CARRIER_MCC;
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CARRIER_MNC;
@@ -29,7 +24,6 @@ import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_H
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE;
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_TYPE;
 
-import android.os.Build;
 import androidx.annotation.Nullable;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
@@ -39,49 +33,29 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 
 class RumAttributeAppender implements SpanProcessor {
-    static final AttributeKey<String> APP_NAME_KEY = stringKey("app");
+
     static final AttributeKey<String> SESSION_ID_KEY = stringKey("splunk.rumSessionId");
-    static final AttributeKey<String> RUM_VERSION_KEY = stringKey("splunk.rum.version");
 
-    static final AttributeKey<String> SPLUNK_OPERATION_KEY = stringKey("_splunk_operation");
-
-    private final String applicationName;
     private final SessionId sessionId;
-    private final String rumVersion;
     private final VisibleScreenTracker visibleScreenTracker;
     private final ConnectionUtil connectionUtil;
 
     RumAttributeAppender(
-            String applicationName,
             SessionId sessionId,
-            String rumVersion,
             VisibleScreenTracker visibleScreenTracker,
             ConnectionUtil connectionUtil) {
-        this.applicationName = applicationName;
         this.sessionId = sessionId;
-        this.rumVersion = rumVersion;
         this.visibleScreenTracker = visibleScreenTracker;
         this.connectionUtil = connectionUtil;
     }
 
     @Override
     public void onStart(Context parentContext, ReadWriteSpan span) {
-        // set this custom attribute in order to let the CustomZipkinEncoder use it for the span
-        // name on the wire.
-        span.setAttribute(SPLUNK_OPERATION_KEY, span.getName());
-
-        span.setAttribute(APP_NAME_KEY, applicationName);
         span.setAttribute(SESSION_ID_KEY, sessionId.getSessionId());
-        span.setAttribute(RUM_VERSION_KEY, rumVersion);
-
-        span.setAttribute(DEVICE_MODEL_NAME, Build.MODEL);
-        span.setAttribute(DEVICE_MODEL_IDENTIFIER, Build.MODEL);
-        span.setAttribute(OS_NAME, "Android");
-        span.setAttribute(OS_TYPE, "linux");
-        span.setAttribute(OS_VERSION, Build.VERSION.RELEASE);
 
         String currentScreen = visibleScreenTracker.getCurrentlyVisibleScreen();
         span.setAttribute(SplunkRum.SCREEN_NAME_KEY, currentScreen);
+
         CurrentNetwork currentNetwork = connectionUtil.getActiveNetwork();
         appendNetworkAttributes(span, currentNetwork);
     }
