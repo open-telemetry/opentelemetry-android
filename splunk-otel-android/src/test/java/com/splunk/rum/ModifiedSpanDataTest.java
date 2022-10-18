@@ -18,7 +18,7 @@ package com.splunk.rum;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.emptyList;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
@@ -32,14 +32,14 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ModifiedSpanDataTest {
+class ModifiedSpanDataTest {
     private static final String TRACE_ID = TraceId.fromLongs(0, 42);
     private static final String SPAN_ID = SpanId.fromLong(123);
 
     @Test
-    public void shouldForwardAllCallsExceptAttributesToTheOriginal() {
+    void shouldForwardAllCallsExceptAttributesToTheOriginal() {
         SpanData original =
                 TestSpanData.builder()
                         .setName("test")

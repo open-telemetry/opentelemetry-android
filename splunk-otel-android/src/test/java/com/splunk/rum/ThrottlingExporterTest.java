@@ -30,17 +30,17 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ThrottlingExporterTest {
+@ExtendWith(MockitoExtension.class)
+class ThrottlingExporterTest {
     @Mock private SpanExporter delegate;
 
     @Test
-    public void shouldExportAllSpansBelowLimit() {
+    void shouldExportAllSpansBelowLimit() {
         // given
         SpanExporter underTest =
                 ThrottlingExporter.newBuilder(delegate)
@@ -66,7 +66,7 @@ public class ThrottlingExporterTest {
     }
 
     @Test
-    public void shouldThrottleSpansOverLimit() {
+    void shouldThrottleSpansOverLimit() {
         // given
         SpanExporter underTest =
                 ThrottlingExporter.newBuilder(delegate)
@@ -104,7 +104,7 @@ public class ThrottlingExporterTest {
     }
 
     @Test
-    public void shouldCountDifferentComponentsSeparately() {
+    void shouldCountDifferentComponentsSeparately() {
         // given
         SpanExporter underTest =
                 ThrottlingExporter.newBuilder(delegate)
@@ -151,7 +151,7 @@ public class ThrottlingExporterTest {
     }
 
     @Test
-    public void shouldKeepStateBetweenExportCalls() {
+    void shouldKeepStateBetweenExportCalls() {
         // given
         SpanExporter underTest =
                 ThrottlingExporter.newBuilder(delegate)
@@ -196,7 +196,7 @@ public class ThrottlingExporterTest {
     }
 
     @Test
-    public void shouldDelegateFlushCall() {
+    void shouldDelegateFlushCall() {
         // given
         SpanExporter underTest = ThrottlingExporter.newBuilder(delegate).build();
 
@@ -208,7 +208,7 @@ public class ThrottlingExporterTest {
     }
 
     @Test
-    public void shouldDelegateShutdownCall() {
+    void shouldDelegateShutdownCall() {
         // given
         SpanExporter underTest = ThrottlingExporter.newBuilder(delegate).build();
 

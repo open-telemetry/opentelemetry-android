@@ -16,23 +16,23 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 import java.time.Clock;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class BandwidthTrackerTest {
+class BandwidthTrackerTest {
 
     private Clock clock;
     private AtomicLong time;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         clock = mock(Clock.class);
         time = new AtomicLong(System.currentTimeMillis());
         // Clock moves 5s each time its queried
@@ -40,13 +40,13 @@ public class BandwidthTrackerTest {
     }
 
     @Test
-    public void testSustainedRateNoData() {
+    void testSustainedRateNoData() {
         BandwidthTracker tracker = new BandwidthTracker(clock);
         assertEquals(0.0, tracker.totalSustainedRate(), 0.0);
     }
 
     @Test
-    public void testSustainedRate() {
+    void testSustainedRate() {
         BandwidthTracker tracker = new BandwidthTracker(clock);
         tracker.tick(Collections.singletonList(new byte[270000]));
         tracker.tick(Collections.singletonList(new byte[200]));

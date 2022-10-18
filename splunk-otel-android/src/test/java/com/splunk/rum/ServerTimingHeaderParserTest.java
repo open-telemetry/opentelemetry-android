@@ -16,15 +16,15 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 // the header looks like: traceparent;desc="00-9499195c502eb217c448a68bfe0f967c-fe16eca542cd5d86-01"
-public class ServerTimingHeaderParserTest {
+class ServerTimingHeaderParserTest {
 
     @Test
-    public void badHeader() {
+    void badHeader() {
         ServerTimingHeaderParser parser = new ServerTimingHeaderParser();
         assertArrayEquals(new String[0], parser.parse(null));
         assertArrayEquals(new String[0], parser.parse("foo"));
@@ -37,7 +37,7 @@ public class ServerTimingHeaderParserTest {
     }
 
     @Test
-    public void parsableHeader() {
+    void parsableHeader() {
         ServerTimingHeaderParser parser = new ServerTimingHeaderParser();
         String traceId = "9499195c502eb217c448a68bfe0f967c";
         String spanId = "fe16eca542cd5d86";
@@ -47,7 +47,7 @@ public class ServerTimingHeaderParserTest {
     }
 
     @Test
-    public void parsableHeader_singleQuotes() {
+    void parsableHeader_singleQuotes() {
         ServerTimingHeaderParser parser = new ServerTimingHeaderParser();
         String traceId = "9499195c502eb217c448a68bfe0f967c";
         String spanId = "fe16eca542cd5d86";

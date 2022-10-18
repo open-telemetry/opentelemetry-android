@@ -21,8 +21,8 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,15 +37,15 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SpanDataModifierTest {
+@ExtendWith(MockitoExtension.class)
+class SpanDataModifierTest {
     static final AttributeKey<String> ATTRIBUTE = stringKey("attribute");
     static final AttributeKey<String> OTHER_ATTRIBUTE = stringKey("other_attribute");
     static final AttributeKey<Long> LONG_ATTRIBUTE = longKey("long_attribute");
@@ -55,7 +55,7 @@ public class SpanDataModifierTest {
     @Captor ArgumentCaptor<Collection<SpanData>> spansCaptor;
 
     @Test
-    public void shouldRejectSpansByName() {
+    void shouldRejectSpansByName() {
         // given
         SpanExporter underTest =
                 new SpanFilterBuilder()
@@ -85,7 +85,7 @@ public class SpanDataModifierTest {
     }
 
     @Test
-    public void shouldRejectSpansByAttributeValue() {
+    void shouldRejectSpansByAttributeValue() {
         // given
         SpanExporter underTest =
                 new SpanFilterBuilder()
@@ -132,7 +132,7 @@ public class SpanDataModifierTest {
     }
 
     @Test
-    public void shouldRemoveSpanAttributes() {
+    void shouldRemoveSpanAttributes() {
         // given
         SpanExporter underTest =
                 new SpanFilterBuilder()
@@ -166,7 +166,7 @@ public class SpanDataModifierTest {
     }
 
     @Test
-    public void shouldReplaceSpanAttributes() {
+    void shouldReplaceSpanAttributes() {
         // given
         SpanExporter underTest =
                 new SpanFilterBuilder()
@@ -201,7 +201,7 @@ public class SpanDataModifierTest {
     }
 
     @Test
-    public void shouldReplaceSpanAttributes_removeAttributeByReturningNull() {
+    void shouldReplaceSpanAttributes_removeAttributeByReturningNull() {
         // given
         SpanExporter underTest =
                 new SpanFilterBuilder()
@@ -227,7 +227,7 @@ public class SpanDataModifierTest {
     }
 
     @Test
-    public void builderChangesShouldNotApplyToAlreadyDecoratedExporter() {
+    void builderChangesShouldNotApplyToAlreadyDecoratedExporter() {
         // given
         SpanFilterBuilder builder = new SpanFilterBuilder();
         SpanExporter underTest = builder.build().apply(delegate);
@@ -257,7 +257,7 @@ public class SpanDataModifierTest {
     }
 
     @Test
-    public void shouldDelegateCalls() {
+    void shouldDelegateCalls() {
         SpanExporter underTest = new SpanFilterBuilder().build().apply(delegate);
 
         underTest.flush();

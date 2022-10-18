@@ -27,12 +27,12 @@ import io.opentelemetry.context.Context;
 import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RumResponseAttributesExtractorTest {
+class RumResponseAttributesExtractorTest {
 
     @Test
-    public void spanDecoration() {
+    void spanDecoration() {
         ServerTimingHeaderParser headerParser = mock(ServerTimingHeaderParser.class);
         when(headerParser.parse("headerValue"))
                 .thenReturn(new String[] {"9499195c502eb217c448a68bfe0f967c", "fe16eca542cd5d86"});
@@ -62,7 +62,7 @@ public class RumResponseAttributesExtractorTest {
     }
 
     @Test
-    public void spanDecoration_noLinkingHeader() {
+    void spanDecoration_noLinkingHeader() {
         ServerTimingHeaderParser headerParser = mock(ServerTimingHeaderParser.class);
         when(headerParser.parse(null)).thenReturn(new String[0]);
 

@@ -16,30 +16,30 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class AppStartupTimerTest {
-    @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
+class AppStartupTimerTest {
+    @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
     private Tracer tracer;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
     }
 
     @Test
-    public void start_end() {
+    void start_end() {
         AppStartupTimer appStartupTimer = new AppStartupTimer();
         Span startSpan = appStartupTimer.start(tracer);
         assertNotNull(startSpan);
@@ -57,7 +57,7 @@ public class AppStartupTimerTest {
     }
 
     @Test
-    public void multi_end() {
+    void multi_end() {
         AppStartupTimer appStartupTimer = new AppStartupTimer();
         appStartupTimer.start(tracer);
         appStartupTimer.end();
@@ -67,7 +67,7 @@ public class AppStartupTimerTest {
     }
 
     @Test
-    public void multi_start() {
+    void multi_start() {
         AppStartupTimer appStartupTimer = new AppStartupTimer();
         appStartupTimer.start(tracer);
         assertSame(appStartupTimer.start(tracer), appStartupTimer.start(tracer));

@@ -16,34 +16,35 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class ActivityTracerTest {
-    @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
+    @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+
     private Tracer tracer;
     private final VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
     private final AppStartupTimer appStartupTimer = new AppStartupTimer();
 
-    @Before
+    @BeforeEach
     public void setup() {
         tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
     }
 
     @Test
-    public void restart_nonInitialActivity() {
+    void restart_nonInitialActivity() {
         ActivityTracer trackableTracer =
                 new ActivityTracer(
                         mock(Activity.class),

@@ -16,16 +16,16 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NativeRumSessionIdTest {
+class NativeRumSessionIdTest {
 
     @Test
-    public void getNativeSessionId() {
+    void getNativeSessionId() {
         SplunkRum splunkRum = mock(SplunkRum.class);
         when(splunkRum.getRumSessionId()).thenReturn("123456");
 

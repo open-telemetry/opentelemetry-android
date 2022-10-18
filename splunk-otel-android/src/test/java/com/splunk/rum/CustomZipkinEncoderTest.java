@@ -16,17 +16,17 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import zipkin2.Span;
 
-public class CustomZipkinEncoderTest {
+class CustomZipkinEncoderTest {
 
     @Test
-    public void nameReplacement() {
+    void nameReplacement() {
         CustomZipkinEncoder encoder = new CustomZipkinEncoder();
         Span span =
                 Span.newBuilder()

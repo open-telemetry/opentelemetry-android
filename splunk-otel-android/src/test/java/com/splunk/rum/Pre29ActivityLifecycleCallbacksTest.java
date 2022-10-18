@@ -16,37 +16,37 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 import java.util.Optional;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class Pre29ActivityLifecycleCallbacksTest {
-    @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
+class Pre29ActivityLifecycleCallbacksTest {
+    @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
     private Tracer tracer;
     private VisibleScreenTracker visibleScreenTracker;
     private final AppStartupTimer appStartupTimer = new AppStartupTimer();
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
         visibleScreenTracker = mock(VisibleScreenTracker.class);
     }
 
     @Test
-    public void appStartup() {
+    void appStartup() {
         appStartupTimer.start(tracer);
         Pre29ActivityCallbacks rumLifecycleCallbacks =
                 new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer);
@@ -86,7 +86,7 @@ public class Pre29ActivityLifecycleCallbacksTest {
     }
 
     @Test
-    public void activityCreation() {
+    void activityCreation() {
         Pre29ActivityCallbacks rumLifecycleCallbacks =
                 new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer);
         Pre29ActivityCallbackTestHarness testHarness =
@@ -127,7 +127,7 @@ public class Pre29ActivityLifecycleCallbacksTest {
     }
 
     @Test
-    public void activityRestart() {
+    void activityRestart() {
         Pre29ActivityCallbacks rumLifecycleCallbacks =
                 new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer);
         Pre29ActivityCallbackTestHarness testHarness =
@@ -163,7 +163,7 @@ public class Pre29ActivityLifecycleCallbacksTest {
     }
 
     @Test
-    public void activityResumed() {
+    void activityResumed() {
         when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
 
         Pre29ActivityCallbacks rumLifecycleCallbacks =
@@ -198,7 +198,7 @@ public class Pre29ActivityLifecycleCallbacksTest {
     }
 
     @Test
-    public void activityDestroyedFromStopped() {
+    void activityDestroyedFromStopped() {
         Pre29ActivityCallbacks rumLifecycleCallbacks =
                 new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer);
         Pre29ActivityCallbackTestHarness testHarness =
@@ -231,7 +231,7 @@ public class Pre29ActivityLifecycleCallbacksTest {
     }
 
     @Test
-    public void activityDestroyedFromPaused() {
+    void activityDestroyedFromPaused() {
         Pre29ActivityCallbacks rumLifecycleCallbacks =
                 new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer);
         Pre29ActivityCallbackTestHarness testHarness =
@@ -282,7 +282,7 @@ public class Pre29ActivityLifecycleCallbacksTest {
     }
 
     @Test
-    public void activityStoppedFromRunning() {
+    void activityStoppedFromRunning() {
         Pre29ActivityCallbacks rumLifecycleCallbacks =
                 new Pre29ActivityCallbacks(tracer, visibleScreenTracker, appStartupTimer);
         Pre29ActivityCallbackTestHarness testHarness =
@@ -335,6 +335,6 @@ public class Pre29ActivityLifecycleCallbacksTest {
     private void checkEventExists(List<EventData> events, String eventName) {
         Optional<EventData> event =
                 events.stream().filter(e -> e.getName().equals(eventName)).findAny();
-        assertTrue("Event with name " + eventName + " not found", event.isPresent());
+        assertTrue(event.isPresent(), "Event with name " + eventName + " not found");
     }
 }

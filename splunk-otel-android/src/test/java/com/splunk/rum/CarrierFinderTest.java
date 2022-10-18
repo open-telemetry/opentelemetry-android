@@ -21,12 +21,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.telephony.TelephonyManager;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CarrierFinderTest {
+class CarrierFinderTest {
 
     @Test
-    public void testSimpleGet() {
+    void testSimpleGet() {
         Carrier expected =
                 Carrier.builder()
                         .id(206)
@@ -49,7 +49,7 @@ public class CarrierFinderTest {
     }
 
     @Test
-    public void testMostlyInvalid() {
+    void testMostlyInvalid() {
         Carrier expected = Carrier.builder().build();
 
         TelephonyManager manager = mock(TelephonyManager.class);

@@ -16,10 +16,10 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -31,19 +31,19 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SessionIdTest {
+@ExtendWith(MockitoExtension.class)
+class SessionIdTest {
 
     @Mock SessionIdTimeoutHandler timeoutHandler;
 
     @Test
-    public void valueValid() {
+    void valueValid() {
         String sessionId = new SessionId(TestClock.create(), timeoutHandler).getSessionId();
         assertNotNull(sessionId);
         assertEquals(32, sessionId.length());
@@ -51,7 +51,7 @@ public class SessionIdTest {
     }
 
     @Test
-    public void valueSameUntil4Hours() {
+    void valueSameUntil4Hours() {
         TestClock clock = TestClock.create();
         SessionId sessionId = new SessionId(clock, timeoutHandler);
         String value = sessionId.getSessionId();
@@ -71,7 +71,7 @@ public class SessionIdTest {
     }
 
     @Test
-    public void shouldCallSessionIdChangeListener() {
+    void shouldCallSessionIdChangeListener() {
         TestClock clock = TestClock.create();
         SessionIdChangeListener listener = mock(SessionIdChangeListener.class);
         SessionId sessionId = new SessionId(clock, timeoutHandler);
@@ -92,7 +92,7 @@ public class SessionIdTest {
     }
 
     @Test
-    public void shouldCreateNewSessionIdAfterTimeout() {
+    void shouldCreateNewSessionIdAfterTimeout() {
         SessionId sessionId = new SessionId(timeoutHandler);
 
         String value = sessionId.getSessionId();

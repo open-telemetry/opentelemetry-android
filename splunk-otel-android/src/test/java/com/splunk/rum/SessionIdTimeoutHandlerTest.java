@@ -16,17 +16,18 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SessionIdTimeoutHandlerTest {
+class SessionIdTimeoutHandlerTest {
 
     @Test
-    public void shouldNeverTimeOutInForeground() {
+    void shouldNeverTimeOutInForeground() {
         TestClock clock = TestClock.create();
         SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler(clock);
 
@@ -39,7 +40,7 @@ public class SessionIdTimeoutHandlerTest {
     }
 
     @Test
-    public void shouldApply15MinutesTimeoutToAppsInBackground() {
+    void shouldApply15MinutesTimeoutToAppsInBackground() {
         TestClock clock = TestClock.create();
         SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler(clock);
 
@@ -70,7 +71,7 @@ public class SessionIdTimeoutHandlerTest {
     }
 
     @Test
-    public void shouldApplyTimeoutToFirstSpanAfterAppBeingMovedToForeground() {
+    void shouldApplyTimeoutToFirstSpanAfterAppBeingMovedToForeground() {
         TestClock clock = TestClock.create();
         SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler(clock);
 

@@ -25,12 +25,12 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import android.os.Handler;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AnrWatcherTest {
+class AnrWatcherTest {
 
     @Test
-    public void mainThreadDisappearing() {
+    void mainThreadDisappearing() {
         Handler handler = mock(Handler.class);
         Thread mainThread = mock(Thread.class);
         SplunkRum splunkRum = mock(SplunkRum.class);
@@ -44,7 +44,7 @@ public class AnrWatcherTest {
     }
 
     @Test
-    public void noAnr() {
+    void noAnr() {
         Handler handler = mock(Handler.class);
         Thread mainThread = mock(Thread.class);
         SplunkRum splunkRum = mock(SplunkRum.class);
@@ -64,7 +64,7 @@ public class AnrWatcherTest {
     }
 
     @Test
-    public void noAnr_temporaryPause() {
+    void noAnr_temporaryPause() {
         Handler handler = mock(Handler.class);
         Thread mainThread = mock(Thread.class);
         SplunkRum splunkRum = mock(SplunkRum.class);
@@ -88,7 +88,7 @@ public class AnrWatcherTest {
     }
 
     @Test
-    public void anr_detected() {
+    void anr_detected() {
         Handler handler = mock(Handler.class);
         Thread mainThread = mock(Thread.class);
         SplunkRum splunkRum = mock(SplunkRum.class);

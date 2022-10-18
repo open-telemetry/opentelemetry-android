@@ -16,9 +16,9 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -34,21 +34,21 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-public class MemoryBufferingExporterTest {
+class MemoryBufferingExporterTest {
     private final ConnectionUtil connectionUtil = mock(ConnectionUtil.class);
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         when(connectionUtil.refreshNetworkStatus())
                 .thenReturn(CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).build());
     }
 
     @Test
-    public void happyPath() {
+    void happyPath() {
         SpanExporter delegate = mock(SpanExporter.class);
         MemoryBufferingExporter bufferingExporter =
                 new MemoryBufferingExporter(connectionUtil, delegate);
@@ -61,7 +61,7 @@ public class MemoryBufferingExporterTest {
     }
 
     @Test
-    public void offlinePath() {
+    void offlinePath() {
         when(connectionUtil.refreshNetworkStatus())
                 .thenReturn(CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build())
                 .thenReturn(CurrentNetwork.builder(NetworkState.TRANSPORT_UNKNOWN).build());
@@ -89,7 +89,7 @@ public class MemoryBufferingExporterTest {
     }
 
     @Test
-    public void retryPath() {
+    void retryPath() {
         SpanExporter delegate = mock(SpanExporter.class);
         MemoryBufferingExporter bufferingExporter =
                 new MemoryBufferingExporter(connectionUtil, delegate);
@@ -111,7 +111,7 @@ public class MemoryBufferingExporterTest {
     }
 
     @Test
-    public void flush_withBacklog() {
+    void flush_withBacklog() {
         SpanExporter delegate = mock(SpanExporter.class);
         MemoryBufferingExporter bufferingExporter =
                 new MemoryBufferingExporter(connectionUtil, delegate);
@@ -133,7 +133,7 @@ public class MemoryBufferingExporterTest {
     }
 
     @Test
-    public void flush() {
+    void flush() {
         SpanExporter delegate = mock(SpanExporter.class);
         MemoryBufferingExporter bufferingExporter =
                 new MemoryBufferingExporter(connectionUtil, delegate);
@@ -145,7 +145,7 @@ public class MemoryBufferingExporterTest {
     }
 
     @Test
-    public void maxBacklog() {
+    void maxBacklog() {
         SpanExporter delegate = mock(SpanExporter.class);
         MemoryBufferingExporter bufferingExporter =
                 new MemoryBufferingExporter(connectionUtil, delegate);
@@ -177,7 +177,7 @@ public class MemoryBufferingExporterTest {
     }
 
     @Test
-    public void shutdown() {
+    void shutdown() {
         SpanExporter delegate = mock(SpanExporter.class);
         MemoryBufferingExporter bufferingExporter =
                 new MemoryBufferingExporter(connectionUtil, delegate);

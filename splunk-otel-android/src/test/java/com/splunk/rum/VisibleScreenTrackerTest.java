@@ -16,20 +16,20 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
 import android.app.Activity;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class VisibleScreenTrackerTest {
+class VisibleScreenTrackerTest {
 
     @Test
-    public void activityLifecycle() {
+    void activityLifecycle() {
         VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
         Activity activity = mock(Activity.class);
 
@@ -49,7 +49,7 @@ public class VisibleScreenTrackerTest {
     }
 
     @Test
-    public void fragmentLifecycle() {
+    void fragmentLifecycle() {
         VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
         Fragment fragment = mock(Fragment.class);
 
@@ -69,7 +69,7 @@ public class VisibleScreenTrackerTest {
     }
 
     @Test
-    public void fragmentLifecycle_navHostIgnored() {
+    void fragmentLifecycle_navHostIgnored() {
         VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
         Fragment fragment = mock(Fragment.class);
         NavHostFragment navHostFragment = mock(NavHostFragment.class);
@@ -92,7 +92,7 @@ public class VisibleScreenTrackerTest {
     }
 
     @Test
-    public void fragmentLifecycle_dialogFragment() {
+    void fragmentLifecycle_dialogFragment() {
         VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
         Fragment fragment = mock(Fragment.class);
         DialogFragment dialogFragment = mock(DialogFragment.class);
@@ -118,7 +118,7 @@ public class VisibleScreenTrackerTest {
     }
 
     @Test
-    public void fragmentWinsOverActivityLifecycle() {
+    void fragmentWinsOverActivityLifecycle() {
         VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
         Activity activity = mock(Activity.class);
         Fragment fragment = mock(Fragment.class);

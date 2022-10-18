@@ -19,10 +19,10 @@ package com.splunk.rum;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
@@ -45,7 +45,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.rum.internal.GlobalAttributesSpanAppender;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
-import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -55,30 +55,30 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SplunkRumTest {
 
-    @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
+    @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
     private Tracer tracer;
 
     @Mock private GlobalAttributesSpanAppender globalAttributes;
 
-    @Before
+    @BeforeEach
     public void setup() {
         tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
         SplunkRum.resetSingletonForTest();
     }
 
     @Test
-    public void initialization_onlyOnce() {
+    void initialization_onlyOnce() {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
         ConnectionUtil.Factory connectionUtilFactory =
                 mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS);
@@ -102,13 +102,13 @@ public class SplunkRumTest {
     }
 
     @Test
-    public void getInstance_preConfig() {
+    void getInstance_preConfig() {
         SplunkRum instance = SplunkRum.getInstance();
         assertTrue(instance instanceof NoOpSplunkRum);
     }
 
     @Test
-    public void getInstance() {
+    void getInstance() {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
         ConnectionUtil.Factory connectionUtilFactory =
                 mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS);
@@ -130,12 +130,12 @@ public class SplunkRumTest {
     }
 
     @Test
-    public void newBuilder() {
+    void newBuilder() {
         assertNotNull(SplunkRum.builder());
     }
 
     @Test
-    public void nonNullMethods() {
+    void nonNullMethods() {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
         ConnectionUtil.Factory connectionUtilFactory =
                 mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS);
@@ -158,7 +158,7 @@ public class SplunkRumTest {
     }
 
     @Test
-    public void addEvent() {
+    void addEvent() {
         SplunkRum splunkRum =
                 new SplunkRum(
                         (OpenTelemetrySdk) otelTesting.getOpenTelemetry(),
@@ -175,7 +175,7 @@ public class SplunkRumTest {
     }
 
     @Test
-    public void recordAnr() {
+    void recordAnr() {
         StackTraceElement[] stackTrace = new Exception().getStackTrace();
         StringBuilder stringBuilder = new StringBuilder();
         for (StackTraceElement stackTraceElement : stackTrace) {
@@ -206,7 +206,7 @@ public class SplunkRumTest {
     }
 
     @Test
-    public void addException() {
+    void addException() {
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
         OpenTelemetrySdk testSdk = buildTestSdk(testExporter);
 
@@ -240,7 +240,7 @@ public class SplunkRumTest {
     }
 
     @Test
-    public void createAndEnd() {
+    void createAndEnd() {
         SplunkRum splunkRum =
                 new SplunkRum(
                         (OpenTelemetrySdk) otelTesting.getOpenTelemetry(),
@@ -266,7 +266,7 @@ public class SplunkRumTest {
     }
 
     @Test
-    public void integrateWithBrowserRum() {
+    void integrateWithBrowserRum() {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
         ConnectionUtil.Factory connectionUtilFactory =
                 mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS);
@@ -292,7 +292,7 @@ public class SplunkRumTest {
     }
 
     @Test
-    public void updateLocation() {
+    void updateLocation() {
         AtomicReference<Attributes> updatedAttributes = new AtomicReference<>();
         GlobalAttributesSpanAppender globalAttributes = mock(GlobalAttributesSpanAppender.class);
         doAnswer(

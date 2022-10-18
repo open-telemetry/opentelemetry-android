@@ -61,14 +61,22 @@ dependencies {
     api("io.opentelemetry:opentelemetry-api")
     api("com.squareup.okhttp3:okhttp:4.10.0")
 
-    testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:4.8.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:4.8.0")
+    testImplementation(platform("org.junit:junit-bom:5.9.1"))
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("org.junit.vintage:junit-vintage-engine")
     testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
     testImplementation("org.robolectric:robolectric:4.9")
     testImplementation("androidx.test:core:1.4.0")
     testImplementation("org.assertj:assertj-core:3.23.1")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.8")
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
 extra["pomName"] = "Splunk Otel Android"

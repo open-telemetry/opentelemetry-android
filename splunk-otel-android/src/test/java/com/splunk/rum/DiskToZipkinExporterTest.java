@@ -25,14 +25,15 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.stream.Stream;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class DiskToZipkinExporterTest {
+@ExtendWith(MockitoExtension.class)
+class DiskToZipkinExporterTest {
 
     static final int BANDWIDTH_LIMIT = 20 * 1024;
     static final File spanFilesPath = new File("/path/to/thing");
@@ -49,8 +50,8 @@ public class DiskToZipkinExporterTest {
     @Mock FileSender sender;
     @Mock private BandwidthTracker bandwidthTracker;
 
-    @Before
-    public void setup() throws Exception {
+    @BeforeEach
+    void setup() throws Exception {
         when(connectionUtil.refreshNetworkStatus()).thenReturn(currentNetwork);
         when(currentNetwork.isOnline()).thenReturn(true);
         Stream<File> files = Stream.of(file1, imposter, file2);
@@ -58,7 +59,7 @@ public class DiskToZipkinExporterTest {
     }
 
     @Test
-    public void testHappyPathExport() throws Exception {
+    void testHappyPathExport() {
         when(sender.handleFileOnDisk(file1)).thenReturn(true);
         when(sender.handleFileOnDisk(file2)).thenReturn(true);
 
@@ -71,7 +72,7 @@ public class DiskToZipkinExporterTest {
     }
 
     @Test
-    public void fileFailureSkipsSubsequentFiles() throws Exception {
+    void fileFailureSkipsSubsequentFiles() {
 
         when(sender.handleFileOnDisk(file1)).thenReturn(false);
 
@@ -84,7 +85,8 @@ public class DiskToZipkinExporterTest {
     }
 
     @Test
-    public void testSkipsWhenOffline() {
+    void testSkipsWhenOffline() {
+        Mockito.reset(fileUtils);
         when(currentNetwork.isOnline()).thenReturn(false);
 
         DiskToZipkinExporter exporter = buildExporter();
@@ -96,7 +98,7 @@ public class DiskToZipkinExporterTest {
     }
 
     @Test
-    public void testSkipsWhenOverBandwidth() throws Exception {
+    void testSkipsWhenOverBandwidth() {
         when(bandwidthTracker.totalSustainedRate()).thenReturn(BANDWIDTH_LIMIT + 1.0);
 
         DiskToZipkinExporter exporter = buildExporter();
@@ -107,7 +109,7 @@ public class DiskToZipkinExporterTest {
     }
 
     @Test
-    public void testOtherExceptionsHandled() throws Exception {
+    void testOtherExceptionsHandled() {
         when(fileUtils.listSpanFiles(spanFilesPath)).thenThrow(new RuntimeException("unexpected!"));
         DiskToZipkinExporter exporter = buildExporter();
 

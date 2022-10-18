@@ -26,12 +26,12 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class GlobalAttributesSpanAppenderTest {
+@ExtendWith(MockitoExtension.class)
+class GlobalAttributesSpanAppenderTest {
 
     @Mock private ReadWriteSpan span;
 
@@ -39,7 +39,7 @@ public class GlobalAttributesSpanAppenderTest {
             GlobalAttributesSpanAppender.create(Attributes.of(stringKey("key"), "value"));
 
     @Test
-    public void shouldAppendGlobalAttributes() {
+    void shouldAppendGlobalAttributes() {
         globalAttributes.update(attributesBuilder -> attributesBuilder.put("key", "value2"));
         globalAttributes.update(
                 attributesBuilder -> attributesBuilder.put(longKey("otherKey"), 1234L));

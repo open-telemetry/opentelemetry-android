@@ -18,31 +18,31 @@ package com.splunk.rum;
 
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE;
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_TYPE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class NetworkMonitorTest {
-    @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
+class NetworkMonitorTest {
+    @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
     private Tracer tracer;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
     }
 
     @Test
-    public void networkAvailable_wifi() {
+    void networkAvailable_wifi() {
         NetworkMonitor.TracingConnectionStateListener listener =
                 new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
 
@@ -59,7 +59,7 @@ public class NetworkMonitorTest {
     }
 
     @Test
-    public void networkAvailable_cellular() {
+    void networkAvailable_cellular() {
         NetworkMonitor.TracingConnectionStateListener listener =
                 new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
 
@@ -78,7 +78,7 @@ public class NetworkMonitorTest {
     }
 
     @Test
-    public void networkLost() {
+    void networkLost() {
         NetworkMonitor.TracingConnectionStateListener listener =
                 new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
 
@@ -96,7 +96,7 @@ public class NetworkMonitorTest {
     }
 
     @Test
-    public void noEventsPlease() {
+    void noEventsPlease() {
         AtomicBoolean shouldEmitChangeEvents = new AtomicBoolean(false);
 
         NetworkMonitor.TracingConnectionStateListener listener =

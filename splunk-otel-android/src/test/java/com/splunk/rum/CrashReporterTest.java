@@ -18,8 +18,8 @@ package com.splunk.rum;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 import androidx.annotation.NonNull;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -36,19 +36,19 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class CrashReporterTest {
-    @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
+class CrashReporterTest {
+    @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
     private Tracer tracer;
     private SdkTracerProvider sdkTracerProvider;
     private CompletableResultCode flushResult;
     private RuntimeDetails runtimeDetails;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
         sdkTracerProvider = mock(SdkTracerProvider.class);
         flushResult = mock(CompletableResultCode.class);
@@ -61,7 +61,7 @@ public class CrashReporterTest {
     }
 
     @Test
-    public void crashReportingSpan() {
+    void crashReportingSpan() {
         TestDelegateHandler existingHandler = new TestDelegateHandler();
         CrashReporter.CrashReportingExceptionHandler crashReporter =
                 new CrashReporter.CrashReportingExceptionHandler(
@@ -94,7 +94,7 @@ public class CrashReporterTest {
     }
 
     @Test
-    public void multipleErrorsDuringACrash() {
+    void multipleErrorsDuringACrash() {
         CrashReporter.CrashReportingExceptionHandler crashReporter =
                 new CrashReporter.CrashReportingExceptionHandler(
                         tracer, sdkTracerProvider, null, runtimeDetails);

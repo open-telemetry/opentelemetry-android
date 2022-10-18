@@ -16,21 +16,21 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import android.app.Application;
 import io.opentelemetry.api.common.Attributes;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SplunkRumBuilderTest {
+class SplunkRumBuilderTest {
 
     @Test
-    public void buildingRequiredFields() {
+    void buildingRequiredFields() {
         Application app = mock(Application.class);
 
         assertThrows(IllegalStateException.class, () -> SplunkRum.builder().build(app));
@@ -58,7 +58,7 @@ public class SplunkRumBuilderTest {
     }
 
     @Test
-    public void defaultValues() {
+    void defaultValues() {
         SplunkRumBuilder builder = SplunkRum.builder();
 
         assertFalse(builder.debugEnabled);
@@ -73,19 +73,19 @@ public class SplunkRumBuilderTest {
     }
 
     @Test
-    public void handleNullAttributes() {
+    void handleNullAttributes() {
         SplunkRumBuilder builder = SplunkRum.builder().setGlobalAttributes(null);
         assertEquals(Attributes.empty(), builder.globalAttributes);
     }
 
     @Test
-    public void setBeaconFromRealm() {
+    void setBeaconFromRealm() {
         SplunkRumBuilder builder = SplunkRum.builder().setRealm("us0");
         assertEquals("https://rum-ingest.us0.signalfx.com/v1/rum", builder.beaconEndpoint);
     }
 
     @Test
-    public void beaconOverridesRealm() {
+    void beaconOverridesRealm() {
         SplunkRumBuilder builder =
                 SplunkRum.builder().setRealm("us0").setBeaconEndpoint("http://beacon");
         assertEquals("http://beacon", builder.beaconEndpoint);

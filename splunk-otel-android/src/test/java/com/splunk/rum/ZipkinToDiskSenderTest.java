@@ -27,14 +27,15 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ZipkinToDiskSenderTest {
+@ExtendWith(MockitoExtension.class)
+class ZipkinToDiskSenderTest {
 
     private final long now = System.currentTimeMillis();
     private final File path = new File("/my/great/storage/location");
@@ -48,14 +49,14 @@ public class ZipkinToDiskSenderTest {
     @Mock private Clock clock;
     @Mock private DeviceSpanStorageLimiter limiter;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         when(clock.now()).thenReturn(now);
         when(limiter.ensureFreeSpace()).thenReturn(true);
     }
 
     @Test
-    public void testHappyPath() throws Exception {
+    void testHappyPath() throws Exception {
 
         ZipkinToDiskSender sender =
                 ZipkinToDiskSender.builder()
@@ -70,7 +71,7 @@ public class ZipkinToDiskSenderTest {
     }
 
     @Test
-    public void testWriteFails() throws Exception {
+    void testWriteFails() throws Exception {
         doThrow(new IOException("boom")).when(fileUtils).writeAsLines(finalPath, spans);
 
         ZipkinToDiskSender sender =
@@ -86,8 +87,8 @@ public class ZipkinToDiskSenderTest {
     }
 
     @Test
-    public void testLimitExceeded() throws Exception {
-
+    void testLimitExceeded() {
+        Mockito.reset(clock);
         when(limiter.ensureFreeSpace()).thenReturn(false);
 
         ZipkinToDiskSender sender =

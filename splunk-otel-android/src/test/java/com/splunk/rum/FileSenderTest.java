@@ -17,8 +17,8 @@
 package com.splunk.rum;
 
 import static java.util.Collections.emptyList;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -31,16 +31,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import zipkin2.Call;
 import zipkin2.reporter.Sender;
 
-@RunWith(MockitoJUnitRunner.class)
-public class FileSenderTest {
+@ExtendWith(MockitoExtension.class)
+class FileSenderTest {
 
     private final byte[] span1 = "span1".getBytes(StandardCharsets.UTF_8);
     private final byte[] span2 = "span2".getBytes(StandardCharsets.UTF_8);
@@ -54,14 +55,16 @@ public class FileSenderTest {
     @Mock private Call<Void> httpCall;
     @Mock private Consumer<Integer> backoff;
 
-    @Before
-    public void setup() throws Exception {
+    @BeforeEach
+    void setup() throws Exception {
         when(fileUtils.readFileCompletely(file)).thenReturn(fileSpans);
         when(delegate.sendSpans(fileSpans)).thenReturn(httpCall);
     }
 
     @Test
-    public void testEmptyFile() throws Exception {
+    void testEmptyFile() throws Exception {
+        Mockito.reset(fileUtils);
+        Mockito.reset(delegate);
         File file = new File("/asdflkajsdfoij");
         when(fileUtils.readFileCompletely(file)).thenReturn(emptyList());
         FileSender sender = buildSender();
@@ -70,7 +73,7 @@ public class FileSenderTest {
     }
 
     @Test
-    public void testHappyPathSendSpans() {
+    void testHappyPathSendSpans() {
         FileSender sender = buildSender();
         boolean result = sender.handleFileOnDisk(file);
         assertTrue(result);
@@ -78,7 +81,7 @@ public class FileSenderTest {
     }
 
     @Test
-    public void testSendFailsButNotExceeded() throws Exception {
+    void testSendFailsButNotExceeded() throws Exception {
         when(httpCall.execute()).thenThrow(new IOException("boom"));
         FileSender sender = buildSender();
         boolean result = sender.handleFileOnDisk(file);
@@ -88,7 +91,7 @@ public class FileSenderTest {
     }
 
     @Test
-    public void testSenderFailureRetriesExhausted() throws Exception {
+    void testSenderFailureRetriesExhausted() throws Exception {
         when(httpCall.execute()).thenThrow(new IOException("boom"));
         FileSender sender = buildSender(3);
         boolean result = sender.handleFileOnDisk(file);
@@ -106,7 +109,9 @@ public class FileSenderTest {
     }
 
     @Test
-    public void testReadFileFails() throws IOException {
+    void testReadFileFails() throws IOException {
+        Mockito.reset(fileUtils);
+        Mockito.reset(delegate);
         when(fileUtils.readFileCompletely(file)).thenThrow(new IOException("boom"));
         FileSender sender = buildSender();
         boolean result = sender.handleFileOnDisk(file);

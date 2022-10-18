@@ -16,7 +16,7 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -24,20 +24,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.BatteryManager;
 import java.io.File;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class RuntimeDetailsTest {
+class RuntimeDetailsTest {
 
     private Context context;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         context = mock(Context.class);
     }
 
     @Test
-    public void testBattery() {
+    void testBattery() {
         Intent intent = mock(Intent.class);
 
         Integer level = 690;
@@ -52,7 +52,7 @@ public class RuntimeDetailsTest {
     }
 
     @Test
-    public void testFreeSpace() {
+    void testFreeSpace() {
         File filesDir = mock(File.class);
 
         when(context.getFilesDir()).thenReturn(filesDir);

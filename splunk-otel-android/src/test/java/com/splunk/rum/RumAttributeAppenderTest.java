@@ -16,8 +16,8 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -28,16 +28,16 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class RumAttributeAppenderTest {
 
     private VisibleScreenTracker visibleScreenTracker;
     private final ConnectionUtil connectionUtil = mock(ConnectionUtil.class);
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         visibleScreenTracker = mock(VisibleScreenTracker.class);
         when(connectionUtil.getActiveNetwork())
                 .thenReturn(
@@ -47,7 +47,7 @@ public class RumAttributeAppenderTest {
     }
 
     @Test
-    public void interfaceMethods() {
+    void interfaceMethods() {
         RumAttributeAppender rumAttributeAppender =
                 new RumAttributeAppender(
                         mock(SessionId.class), visibleScreenTracker, connectionUtil);
@@ -57,7 +57,7 @@ public class RumAttributeAppenderTest {
     }
 
     @Test
-    public void appendAttributesOnStart() {
+    void appendAttributesOnStart() {
         SessionId sessionId = mock(SessionId.class);
         when(sessionId.getSessionId()).thenReturn("rumSessionId");
         when(visibleScreenTracker.getCurrentlyVisibleScreen()).thenReturn("ScreenOne");
@@ -75,7 +75,7 @@ public class RumAttributeAppenderTest {
     }
 
     @Test
-    public void appendAttributes_noCurrentScreens() {
+    void appendAttributes_noCurrentScreens() {
         SessionId sessionId = mock(SessionId.class);
         when(sessionId.getSessionId()).thenReturn("rumSessionId");
         when(visibleScreenTracker.getCurrentlyVisibleScreen()).thenReturn("unknown");

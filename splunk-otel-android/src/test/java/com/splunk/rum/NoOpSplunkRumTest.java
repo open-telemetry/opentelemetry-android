@@ -16,8 +16,8 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
 
 import android.location.Location;
@@ -25,12 +25,12 @@ import android.webkit.WebView;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import okhttp3.OkHttpClient;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NoOpSplunkRumTest {
+class NoOpSplunkRumTest {
 
     @Test
-    public void doesNotThrow() {
+    void doesNotThrow() {
         NoOpSplunkRum instance = NoOpSplunkRum.INSTANCE;
         instance.addRumEvent("foo", Attributes.empty());
         instance.addRumException(new RuntimeException(), Attributes.empty());

@@ -21,8 +21,8 @@ import static java.util.Collections.emptyList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -44,11 +44,12 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RumInitializerTest {
+class RumInitializerTest {
+
     @Test
-    public void initializationSpan() {
+    void initializationSpan() {
         SplunkRumBuilder splunkRumBuilder =
                 new SplunkRumBuilder()
                         .setRealm("dev")
@@ -101,12 +102,12 @@ public class RumInitializerTest {
 
     private void checkEventExists(List<EventData> events, String eventName) {
         assertTrue(
-                "Event with name " + eventName + " not found",
-                events.stream().map(EventData::getName).anyMatch(name -> name.equals(eventName)));
+                events.stream().map(EventData::getName).anyMatch(name -> name.equals(eventName)),
+                "Event with name " + eventName + " not found");
     }
 
     @Test
-    public void spanLimitsAreConfigured() {
+    void spanLimitsAreConfigured() {
         SplunkRumBuilder splunkRumBuilder =
                 new SplunkRumBuilder()
                         .setRealm("dev")
@@ -152,7 +153,7 @@ public class RumInitializerTest {
 
     /** Verify that we have buffering in place in our exporter implementation. */
     @Test
-    public void verifyExporterBuffering() {
+    void verifyExporterBuffering() {
         SplunkRumBuilder splunkRumBuilder =
                 new SplunkRumBuilder()
                         .setRealm("dev")
@@ -208,7 +209,7 @@ public class RumInitializerTest {
     }
 
     @Test
-    public void shouldTranslateExceptionEventsToSpanAttributes() {
+    void shouldTranslateExceptionEventsToSpanAttributes() {
         InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
         SplunkRumBuilder splunkRumBuilder =

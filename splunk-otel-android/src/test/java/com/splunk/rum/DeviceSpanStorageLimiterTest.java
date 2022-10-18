@@ -16,8 +16,8 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.never;
@@ -26,14 +26,14 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.stream.Stream;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class DeviceSpanStorageLimiterTest {
+@ExtendWith(MockitoExtension.class)
+class DeviceSpanStorageLimiterTest {
 
     private static final int MAX_STORAGE_USE_MB = 3;
     private static final long MAX_STORAGE_USE_BYTES = MAX_STORAGE_USE_MB * 1024 * 1024;
@@ -41,8 +41,8 @@ public class DeviceSpanStorageLimiterTest {
     @Mock private File path;
     private DeviceSpanStorageLimiter limiter;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         limiter =
                 DeviceSpanStorageLimiter.builder()
                         .fileUtils(fileUtils)
@@ -52,7 +52,7 @@ public class DeviceSpanStorageLimiterTest {
     }
 
     @Test
-    public void ensureFreeSpace_littleUsageEnoughFreeSpace() {
+    void ensureFreeSpace_littleUsageEnoughFreeSpace() {
         when(fileUtils.getTotalFileSizeInBytes(path)).thenReturn(10 * 1024L);
         when(path.getFreeSpace()).thenReturn(99L); // Disk is very full
         assertFalse(limiter.ensureFreeSpace());
@@ -60,7 +60,7 @@ public class DeviceSpanStorageLimiterTest {
     }
 
     @Test
-    public void ensureFreeSpace_littleUsageButNotEnoughFreeSpace() {
+    void ensureFreeSpace_littleUsageButNotEnoughFreeSpace() {
         when(fileUtils.getTotalFileSizeInBytes(path)).thenReturn(10 * 1024L);
         when(path.getFreeSpace()).thenReturn(MAX_STORAGE_USE_BYTES * 99); // lots of room
         assertTrue(limiter.ensureFreeSpace());
@@ -68,7 +68,7 @@ public class DeviceSpanStorageLimiterTest {
     }
 
     @Test
-    public void ensureFreeSpace_underLimit() {
+    void ensureFreeSpace_underLimit() {
         when(fileUtils.getTotalFileSizeInBytes(path)).thenReturn(MAX_STORAGE_USE_BYTES - 1);
         when(path.getFreeSpace()).thenReturn(MAX_STORAGE_USE_BYTES + 1);
         boolean result = limiter.ensureFreeSpace();
@@ -77,7 +77,7 @@ public class DeviceSpanStorageLimiterTest {
     }
 
     @Test
-    public void ensureFreeSpace_overLimitHappyDeletion() {
+    void ensureFreeSpace_overLimitHappyDeletion() {
         File file1 = new File("oldest");
         File file2 = new File("younger");
         File file3 = new File("newest");

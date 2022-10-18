@@ -16,7 +16,7 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,12 +32,12 @@ import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SessionIdRatioBasedSamplerTest {
+@ExtendWith(MockitoExtension.class)
+class SessionIdRatioBasedSamplerTest {
     private static final String HIGH_ID = "00000000000000008fffffffffffffff";
     private static final String LOW_ID = "00000000000000000000000000000000";
     private static final IdGenerator idsGenerator = IdGenerator.random();
@@ -48,7 +48,7 @@ public class SessionIdRatioBasedSamplerTest {
             Collections.singletonList(LinkData.create(SpanContext.getInvalid()));
 
     @Test
-    public void samplerUsesSessionId() {
+    void samplerUsesSessionId() {
         SessionId sessionId = mock(SessionId.class);
         SessionIdRatioBasedSampler sampler = new SessionIdRatioBasedSampler(0.5, sessionId);
 
@@ -62,7 +62,7 @@ public class SessionIdRatioBasedSamplerTest {
     }
 
     @Test
-    public void zeroRatioDropsAll() {
+    void zeroRatioDropsAll() {
         SessionId sessionId = mock(SessionId.class);
         SessionIdRatioBasedSampler sampler = new SessionIdRatioBasedSampler(0.0, sessionId);
 
@@ -73,7 +73,7 @@ public class SessionIdRatioBasedSamplerTest {
     }
 
     @Test
-    public void oneRatioAcceptsAll() {
+    void oneRatioAcceptsAll() {
         SessionId sessionId = mock(SessionId.class);
         SessionIdRatioBasedSampler sampler = new SessionIdRatioBasedSampler(1.0, sessionId);
 
