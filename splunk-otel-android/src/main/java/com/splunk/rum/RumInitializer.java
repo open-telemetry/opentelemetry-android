@@ -358,14 +358,11 @@ class RumInitializer {
     // visible for testing
     SpanExporter buildFilteringExporter(ConnectionUtil connectionUtil) {
         SpanExporter exporter = buildExporter(connectionUtil);
-        SpanExporter splunkTranslatedExporter = new SplunkSpanDataModifier(exporter);
+        SpanExporter splunkTranslatedExporter =
+                new SplunkSpanDataModifier(exporter, builder.reactNativeSupportEnabled);
         SpanExporter filteredExporter = builder.decorateWithSpanFilter(splunkTranslatedExporter);
         initializationEvents.add(
                 new InitializationEvent("zipkin exporter initialized", timingClock.now()));
-
-        if (builder.reactNativeSupportEnabled) {
-            return builder.decorateWithReactNativeExporter(filteredExporter);
-        }
         return filteredExporter;
     }
 

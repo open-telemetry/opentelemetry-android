@@ -28,6 +28,7 @@ import static java.util.Collections.unmodifiableSet;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.DelegatingSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -45,6 +46,10 @@ import java.util.stream.Collectors;
 final class SplunkSpanDataModifier implements SpanExporter {
 
     static final AttributeKey<String> SPLUNK_OPERATION_KEY = stringKey("_splunk_operation");
+    static final AttributeKey<String> REACT_NATIVE_TRACE_ID_KEY =
+            AttributeKey.stringKey("_reactnative_traceId");
+    static final AttributeKey<String> REACT_NATIVE_SPAN_ID_KEY =
+            AttributeKey.stringKey("_reactnative_spanId");
 
     private static final Set<AttributeKey<String>> resourceAttributesToCopy =
             unmodifiableSet(
@@ -60,9 +65,11 @@ final class SplunkSpanDataModifier implements SpanExporter {
                                     SplunkRum.RUM_VERSION_KEY)));
 
     private final SpanExporter delegate;
+    private final boolean reactNativeEnabled;
 
-    SplunkSpanDataModifier(SpanExporter delegate) {
+    SplunkSpanDataModifier(SpanExporter delegate, boolean reactNativeEnabled) {
         this.delegate = delegate;
+        this.reactNativeEnabled = reactNativeEnabled;
     }
 
     @Override
@@ -73,6 +80,15 @@ final class SplunkSpanDataModifier implements SpanExporter {
     private SpanData modify(SpanData original) {
         List<EventData> modifiedEvents = new ArrayList<>(original.getEvents().size());
         AttributesBuilder modifiedAttributes = original.getAttributes().toBuilder();
+
+        SpanContext spanContext;
+        if (reactNativeEnabled) {
+            spanContext = extractReactNativeIdsIfPresent(original);
+            modifiedAttributes.remove(REACT_NATIVE_TRACE_ID_KEY);
+            modifiedAttributes.remove(REACT_NATIVE_SPAN_ID_KEY);
+        } else {
+            spanContext = original.getSpanContext();
+        }
 
         // zipkin eats the event attributes that are recorded by default, so we need to convert
         // the exception event to span attributes
@@ -97,7 +113,30 @@ final class SplunkSpanDataModifier implements SpanExporter {
             }
         }
 
-        return new SplunkSpan(original, modifiedEvents, modifiedAttributes.build());
+        return new SplunkSpan(original, spanContext, modifiedEvents, modifiedAttributes.build());
+    }
+
+    private SpanContext extractReactNativeIdsIfPresent(SpanData original) {
+        Attributes attributes = original.getAttributes();
+        SpanContext originalSpanContext = original.getSpanContext();
+
+        String reactNativeTraceId = attributes.get(REACT_NATIVE_TRACE_ID_KEY);
+        String reactNativeSpanId = attributes.get(REACT_NATIVE_SPAN_ID_KEY);
+        if (reactNativeTraceId == null || reactNativeSpanId == null) {
+            return originalSpanContext;
+        }
+
+        return originalSpanContext.isRemote()
+                ? SpanContext.createFromRemoteParent(
+                        reactNativeTraceId,
+                        reactNativeSpanId,
+                        originalSpanContext.getTraceFlags(),
+                        originalSpanContext.getTraceState())
+                : SpanContext.create(
+                        reactNativeTraceId,
+                        reactNativeSpanId,
+                        originalSpanContext.getTraceFlags(),
+                        originalSpanContext.getTraceState());
     }
 
     private static Attributes extractExceptionAttributes(EventData event) {
@@ -138,14 +177,24 @@ final class SplunkSpanDataModifier implements SpanExporter {
 
     private static final class SplunkSpan extends DelegatingSpanData {
 
+        private final SpanContext spanContext;
         private final List<EventData> modifiedEvents;
         private final Attributes modifiedAttributes;
 
         private SplunkSpan(
-                SpanData delegate, List<EventData> modifiedEvents, Attributes modifiedAttributes) {
+                SpanData delegate,
+                SpanContext spanContext,
+                List<EventData> modifiedEvents,
+                Attributes modifiedAttributes) {
             super(delegate);
+            this.spanContext = spanContext;
             this.modifiedEvents = modifiedEvents;
             this.modifiedAttributes = modifiedAttributes;
+        }
+
+        @Override
+        public SpanContext getSpanContext() {
+            return spanContext;
         }
 
         @Override

@@ -21,7 +21,6 @@ import static com.splunk.rum.DeviceSpanStorageLimiter.DEFAULT_MAX_STORAGE_USE_MB
 import android.app.Application;
 import android.util.Log;
 import androidx.annotation.Nullable;
-import com.splunk.rum.reactnative.ReactNativeExporter;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
@@ -39,6 +38,7 @@ public final class SplunkRumBuilder {
     @Nullable private String realm;
     boolean debugEnabled = false;
     boolean diskBufferingEnabled = false;
+    boolean reactNativeSupportEnabled = false;
     boolean crashReportingEnabled = true;
     boolean networkMonitorEnabled = true;
     boolean anrDetectionEnabled = true;
@@ -50,7 +50,6 @@ public final class SplunkRumBuilder {
     int maxUsageMegabytes = DEFAULT_MAX_STORAGE_USE_MB;
     boolean sessionBasedSamplerEnabled = false;
     double sessionBasedSamplerRatio = 1.0;
-    boolean reactNativeSupportEnabled = false;
 
     /**
      * Sets the application name that will be used to identify your application in the Splunk RUM
@@ -139,6 +138,13 @@ public final class SplunkRumBuilder {
         return this;
     }
 
+    /**
+     * Enables support for the React Native instrumentation.
+     *
+     * <p>This feature is disabled by default. You can enable it by calling this method.
+     *
+     * @return {@code this}
+     */
     public SplunkRumBuilder enableReactNativeSupport() {
         this.reactNativeSupportEnabled = true;
         return this;
@@ -314,9 +320,5 @@ public final class SplunkRumBuilder {
 
     SpanExporter decorateWithSpanFilter(SpanExporter exporter) {
         return spanFilterBuilder.build().apply(exporter);
-    }
-
-    public SpanExporter decorateWithReactNativeExporter(SpanExporter exporter) {
-        return new ReactNativeExporter(exporter);
     }
 }
