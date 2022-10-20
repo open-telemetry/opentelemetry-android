@@ -363,7 +363,7 @@ rum.access.token=<a valid Splunk RUM access token for the realm>
 
 # License
 
-The Splunk Android RUM Instrumentation is released under the terms of the Apache Software License
+The Splunk Android RUM Instrumentation is licensed under the terms of the Apache Software License
 version 2.0. See
 [the license file](./LICENSE) for more details.
 
