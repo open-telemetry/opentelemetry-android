@@ -16,7 +16,7 @@ you will also need to add the `splunk-otel-android-volley` dependency to your `b
 ```gradle
 dependencies {
     ...
-    implementation("com.splunk:splunk-otel-android-volley:1.0.0-rc.1")
+    implementation("com.splunk:splunk-otel-android-volley:1.0.0-rc.2")
     ...
 }
 ```

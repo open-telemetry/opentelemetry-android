@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.18.0">
-    <img alt="OpenTelemetry Instrumentation for Java Version" src="https://img.shields.io/badge/otel-1.18.0-blueviolet?style=for-the-badge">
+  <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.19.0">
+    <img alt="OpenTelemetry Instrumentation for Java Version" src="https://img.shields.io/badge/otel-1.19.0-blueviolet?style=for-the-badge">
   </a>
   <a href="https://github.com/signalfx/splunk-otel-android/releases">
     <img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/signalfx/splunk-otel-android?include_prereleases&style=for-the-badge">
@@ -91,7 +91,7 @@ Then, add the latest release as a dependency in your application's build.gradle 
 ```
 dependencies {
 ...
-    implementation ("com.splunk:splunk-otel-android:1.0.0-rc.1")
+    implementation ("com.splunk:splunk-otel-android:1.0.0-rc.2")
 ...
 }
 ```
@@ -127,7 +127,7 @@ Then, add the locally built library as a dependency in your application's build.
 ```
 dependencies {
 ...
-    implementation ("com.splunk:splunk-otel-android:1.0.0-rc.2-SNAPSHOT")
+    implementation ("com.splunk:splunk-otel-android:1.0.0-rc.3-SNAPSHOT")
 ...
 }
 ```

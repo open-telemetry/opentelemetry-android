@@ -9,6 +9,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 * TBD
 
+## Version 1.0.0-rc.2
+
+Release candidate for 1.0.0.
+
+* Updated to OpenTelemetry Java v1.19.0 (#383)
+* Fixed a bug where sometimes crash reports were not exported (#368)
+* Added runtime details (storage, memory, battery) to crash reports (#369)
+* Removed deprecated classes (#372)
+* Included activity name in slow and frozen render reports (#373)
+* Renamed the `SplunkRumBuilder#disableNetworkMonitorEnabled()` method to
+  `SplunkRumBuilder#disableNetworkMonitor()` (#377)
+* Added experimental React Native support (React Native lib will be developed and released
+  separately) (#381)
+
 ## Version 1.0.0-rc.1
 
 Release candidate for 1.0.0.

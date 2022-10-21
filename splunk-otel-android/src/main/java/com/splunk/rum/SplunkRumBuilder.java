@@ -85,7 +85,7 @@ public final class SplunkRumBuilder {
      * Sets the realm for the beacon to send RUM telemetry to. This should be used in place of the
      * {@link #setBeaconEndpoint(String)} method in most cases.
      *
-     * @param realm A valid Splunk "realm"
+     * @param realm A valid Splunk "realm", e.g. "us0", "eu0".
      * @return {@code this}
      */
     public SplunkRumBuilder setRealm(String realm) {
@@ -113,8 +113,7 @@ public final class SplunkRumBuilder {
     /**
      * Enables debugging information to be emitted from the RUM library.
      *
-     * <p>This feature is disabled by default. You can enable it by calling this configuration
-     * method with a {@code true} value.
+     * <p>This feature is disabled by default. You can enable it by calling this method.
      *
      * @return {@code this}
      */
@@ -128,8 +127,7 @@ public final class SplunkRumBuilder {
      * buffered in the local storage until it is exported; otherwise, it is buffered in memory and
      * throttled.
      *
-     * <p>This feature is disabled by default. You can enable it by calling this configuration
-     * method with a {@code true} value.
+     * <p>This feature is disabled by default. You can enable it by calling this method.
      *
      * @return {@code this}
      */
@@ -153,8 +151,7 @@ public final class SplunkRumBuilder {
     /**
      * Disables the crash reporting feature.
      *
-     * <p>This feature is enabled by default. You can disable it by calling this configuration
-     * method with a {@code true} value.
+     * <p>This feature is enabled by default. You can disable it by calling this method.
      *
      * @return {@code this}
      */
@@ -166,8 +163,7 @@ public final class SplunkRumBuilder {
     /**
      * Disables the network monitoring feature.
      *
-     * <p>This feature is enabled by default. You can disable it by calling this configuration
-     * method with a {@code true} value.
+     * <p>This feature is enabled by default. You can disable it by calling this method.
      *
      * @return {@code this}
      */
@@ -181,8 +177,7 @@ public final class SplunkRumBuilder {
      * thread is unresponsive for 5 seconds or more, an event including the main thread's stack
      * trace will be reported to the RUM system.
      *
-     * <p>This feature is enabled by default. You can disable it by calling this configuration
-     * method with a {@code true} value.
+     * <p>This feature is enabled by default. You can disable it by calling this method.
      *
      * @return {@code this}
      */
@@ -194,8 +189,7 @@ public final class SplunkRumBuilder {
     /**
      * Disables the slow rendering detection feature.
      *
-     * <p>This feature is enabled by default. You can disable it by calling this configuration
-     * method with a {@code true} value.
+     * <p>This feature is enabled by default. You can disable it by calling this method.
      *
      * @return {@code this}
      */
@@ -207,7 +201,7 @@ public final class SplunkRumBuilder {
     /**
      * Configures the rate at which frame render durations are polled.
      *
-     * @param interval The period that should be used for polling
+     * @param interval The period that should be used for polling.
      * @return {@code this}
      */
     public SplunkRumBuilder setSlowRenderingDetectionPollInterval(Duration interval) {
@@ -247,7 +241,7 @@ public final class SplunkRumBuilder {
     /**
      * Configures span data filtering.
      *
-     * @param configurer A function that will configure the passed {@link SpanFilterBuilder}
+     * @param configurer A function that will configure the passed {@link SpanFilterBuilder}.
      * @return {@code this}
      */
     public SplunkRumBuilder filterSpans(Consumer<SpanFilterBuilder> configurer) {
@@ -260,6 +254,10 @@ public final class SplunkRumBuilder {
      * storage. When this value is exceeded, older telemetry will be deleted until the usage is
      * reduced.
      *
+     * <p>This setting only applies when {@linkplain #enableDiskBuffering() disk buffering is
+     * enabled}.
+     *
+     * @param maxUsageMegabytes The maximum disk buffer size, in megabytes.
      * @return {@code this}
      */
     public SplunkRumBuilder limitDiskUsageMegabytes(int maxUsageMegabytes) {
@@ -274,6 +272,7 @@ public final class SplunkRumBuilder {
      * <p>This feature is disabled by default - i.e. by default, all sessions are sampled, which is
      * equivalent to {@code ratio = 1.0}.
      *
+     * @param ratio The desired ratio of sampling. Must be within [0.0, 1.0].
      * @return {@code this}
      */
     public SplunkRumBuilder enableSessionBasedSampling(double ratio) {
