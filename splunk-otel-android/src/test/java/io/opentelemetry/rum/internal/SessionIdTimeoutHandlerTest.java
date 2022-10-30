@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -44,7 +44,7 @@ class SessionIdTimeoutHandlerTest {
         TestClock clock = TestClock.create();
         SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler(clock);
 
-        timeoutHandler.appBackgrounded();
+        timeoutHandler.onApplicationBackgrounded();
         timeoutHandler.bump();
 
         assertFalse(timeoutHandler.hasTimedOut());
@@ -75,11 +75,11 @@ class SessionIdTimeoutHandlerTest {
         TestClock clock = TestClock.create();
         SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler(clock);
 
-        timeoutHandler.appBackgrounded();
+        timeoutHandler.onApplicationBackgrounded();
         timeoutHandler.bump();
 
         // the first span after app is moved to the foreground gets timed out
-        timeoutHandler.appForegrounded();
+        timeoutHandler.onApplicationForegrounded();
         clock.advance(20, TimeUnit.MINUTES);
         assertTrue(timeoutHandler.hasTimedOut());
         timeoutHandler.bump();

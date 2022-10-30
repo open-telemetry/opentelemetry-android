@@ -14,10 +14,22 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal;
 
-interface AppStateListener {
-    void appForegrounded();
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.TraceId;
 
-    void appBackgrounded();
+enum NoopOpenTelemetryRum implements OpenTelemetryRum {
+    INSTANCE;
+
+    @Override
+    public OpenTelemetry getOpenTelemetry() {
+        return OpenTelemetry.noop();
+    }
+
+    @Override
+    public String getRumSessionId() {
+        // RUM sessionId has the same format as traceId
+        return TraceId.getInvalid();
+    }
 }

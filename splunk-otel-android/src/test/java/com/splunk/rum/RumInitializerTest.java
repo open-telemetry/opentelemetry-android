@@ -91,9 +91,7 @@ class RumInitializerTest {
         assertTrue(events.size() > 0);
         checkEventExists(events, "connectionUtilInitialized");
         checkEventExists(events, "exporterInitialized");
-        checkEventExists(events, "sessionIdInitialized");
         checkEventExists(events, "tracerProviderInitialized");
-        checkEventExists(events, "openTelemetrySdkInitialized");
         checkEventExists(events, "activityLifecycleCallbacksInitialized");
         checkEventExists(events, "crashReportingInitialized");
         checkEventExists(events, "anrMonitorInitialized");

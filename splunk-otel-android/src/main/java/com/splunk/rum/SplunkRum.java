@@ -36,6 +36,7 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTelemetry;
 import io.opentelemetry.rum.internal.GlobalAttributesSpanAppender;
+import io.opentelemetry.rum.internal.OpenTelemetryRum;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.concurrent.TimeUnit;
@@ -79,8 +80,7 @@ public class SplunkRum {
 
     @Nullable private static SplunkRum INSTANCE;
 
-    private final SessionId sessionId;
-    private final OpenTelemetrySdk openTelemetrySdk;
+    private final OpenTelemetryRum openTelemetryRum;
     private final GlobalAttributesSpanAppender globalAttributes;
 
     static {
@@ -88,12 +88,8 @@ public class SplunkRum {
         startupTimer.detectBackgroundStart(handler);
     }
 
-    SplunkRum(
-            OpenTelemetrySdk openTelemetrySdk,
-            SessionId sessionId,
-            GlobalAttributesSpanAppender globalAttributes) {
-        this.openTelemetrySdk = openTelemetrySdk;
-        this.sessionId = sessionId;
+    SplunkRum(OpenTelemetryRum openTelemetryRum, GlobalAttributesSpanAppender globalAttributes) {
+        this.openTelemetryRum = openTelemetryRum;
         this.globalAttributes = globalAttributes;
     }
 
@@ -119,7 +115,8 @@ public class SplunkRum {
         if (builder.debugEnabled) {
             Log.i(
                     LOG_TAG,
-                    "Splunk RUM monitoring initialized with session ID: " + INSTANCE.sessionId);
+                    "Splunk RUM monitoring initialized with session ID: "
+                            + INSTANCE.getRumSessionId());
         }
 
         return INSTANCE;
@@ -163,7 +160,7 @@ public class SplunkRum {
     }
 
     private OkHttpTelemetry createOkHttpTracing() {
-        return OkHttpTelemetry.builder(openTelemetrySdk)
+        return OkHttpTelemetry.builder(getOpenTelemetry())
                 .addAttributesExtractor(
                         new RumResponseAttributesExtractor(new ServerTimingHeaderParser()))
                 .build();
@@ -174,7 +171,7 @@ public class SplunkRum {
      * instrumentation.
      */
     public OpenTelemetry getOpenTelemetry() {
-        return openTelemetrySdk;
+        return openTelemetryRum.getOpenTelemetry();
     }
 
     /**
@@ -183,7 +180,7 @@ public class SplunkRum {
      * recommended that you do not cache this value, but always retrieve it from here when needed.
      */
     public String getRumSessionId() {
-        return sessionId.getSessionId();
+        return openTelemetryRum.getRumSessionId();
     }
 
     /**
@@ -247,7 +244,7 @@ public class SplunkRum {
     }
 
     Tracer getTracer() {
-        return openTelemetrySdk.getTracer(RUM_TRACER_NAME);
+        return getOpenTelemetry().getTracer(RUM_TRACER_NAME);
     }
 
     void recordAnr(StackTraceElement[] stackTrace) {
@@ -307,7 +304,13 @@ public class SplunkRum {
 
     // (currently) for testing only
     void flushSpans() {
-        openTelemetrySdk.getSdkTracerProvider().forceFlush().join(1, TimeUnit.SECONDS);
+        OpenTelemetry openTelemetry = getOpenTelemetry();
+        if (openTelemetry instanceof OpenTelemetrySdk) {
+            ((OpenTelemetrySdk) openTelemetry)
+                    .getSdkTracerProvider()
+                    .forceFlush()
+                    .join(1, TimeUnit.SECONDS);
+        }
     }
 
     /**

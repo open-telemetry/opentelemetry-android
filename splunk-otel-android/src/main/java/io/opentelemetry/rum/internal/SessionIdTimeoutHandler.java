@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal;
 
+import io.opentelemetry.rum.internal.instrumentation.ApplicationStateListener;
 import io.opentelemetry.sdk.common.Clock;
 import java.util.concurrent.TimeUnit;
 
@@ -33,7 +34,7 @@ import java.util.concurrent.TimeUnit;
  * <p>Consequently, when the app spent >15 minutes without any activity (spans) in the background,
  * after moving to the foreground the first span should trigger the sessionId timeout.
  */
-final class SessionIdTimeoutHandler implements AppStateListener {
+final class SessionIdTimeoutHandler implements ApplicationStateListener {
 
     private static final long SESSION_TIMEOUT_NANOS = TimeUnit.MINUTES.toNanos(15);
 
@@ -51,12 +52,12 @@ final class SessionIdTimeoutHandler implements AppStateListener {
     }
 
     @Override
-    public void appForegrounded() {
+    public void onApplicationForegrounded() {
         state = State.TRANSITIONING_TO_FOREGROUND;
     }
 
     @Override
-    public void appBackgrounded() {
+    public void onApplicationBackgrounded() {
         state = State.BACKGROUND;
     }
 

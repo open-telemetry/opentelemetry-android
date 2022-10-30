@@ -36,23 +36,16 @@ class RumAttributeAppender implements SpanProcessor {
 
     static final AttributeKey<String> SESSION_ID_KEY = stringKey("splunk.rumSessionId");
 
-    private final SessionId sessionId;
     private final VisibleScreenTracker visibleScreenTracker;
     private final ConnectionUtil connectionUtil;
 
-    RumAttributeAppender(
-            SessionId sessionId,
-            VisibleScreenTracker visibleScreenTracker,
-            ConnectionUtil connectionUtil) {
-        this.sessionId = sessionId;
+    RumAttributeAppender(VisibleScreenTracker visibleScreenTracker, ConnectionUtil connectionUtil) {
         this.visibleScreenTracker = visibleScreenTracker;
         this.connectionUtil = connectionUtil;
     }
 
     @Override
     public void onStart(Context parentContext, ReadWriteSpan span) {
-        span.setAttribute(SESSION_ID_KEY, sessionId.getSessionId());
-
         String currentScreen = visibleScreenTracker.getCurrentlyVisibleScreen();
         span.setAttribute(SplunkRum.SCREEN_NAME_KEY, currentScreen);
 

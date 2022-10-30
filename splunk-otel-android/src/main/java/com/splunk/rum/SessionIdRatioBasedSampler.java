@@ -23,20 +23,21 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Session ID ratio based sampler. Uses {@link Sampler#traceIdRatioBased(double)} sampler
  * internally, but passes sessionId instead of traceId to the underlying sampler in order to use the
- * same ratio logic but on sessionId instead. This is valid as {@link SessionId} uses {@link
+ * same ratio logic but on sessionId instead. This is valid as sessionId uses {@link
  * io.opentelemetry.api.trace.TraceId#fromLongs(long, long)} internally to generate random session
  * IDs.
  */
 class SessionIdRatioBasedSampler implements Sampler {
-    private final SessionId sessionId;
     private final Sampler ratioBasedSampler;
+    private final Supplier<SplunkRum> splunkRumSupplier;
 
-    SessionIdRatioBasedSampler(double ratio, SessionId sessionId) {
-        this.sessionId = sessionId;
+    SessionIdRatioBasedSampler(double ratio, Supplier<SplunkRum> splunkRumSupplier) {
+        this.splunkRumSupplier = splunkRumSupplier;
         // SessionId uses the same format as TraceId, so we can reuse trace ID ratio sampler.
         this.ratioBasedSampler = Sampler.traceIdRatioBased(ratio);
     }
@@ -51,7 +52,12 @@ class SessionIdRatioBasedSampler implements Sampler {
             List<LinkData> parentLinks) {
         // Replace traceId with sessionId
         return ratioBasedSampler.shouldSample(
-                parentContext, sessionId.getSessionId(), name, spanKind, attributes, parentLinks);
+                parentContext,
+                splunkRumSupplier.get().getRumSessionId(),
+                name,
+                spanKind,
+                attributes,
+                parentLinks);
     }
 
     @Override

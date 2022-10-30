@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal;
 
 interface SessionIdChangeListener {
 

@@ -17,7 +17,6 @@
 package com.splunk.rum;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
@@ -34,6 +33,7 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,38 +47,37 @@ class SessionIdRatioBasedSamplerTest {
     private final List<LinkData> parentLinks =
             Collections.singletonList(LinkData.create(SpanContext.getInvalid()));
 
+    @Mock SplunkRum splunkRum;
+
     @Test
     void samplerUsesSessionId() {
-        SessionId sessionId = mock(SessionId.class);
-        SessionIdRatioBasedSampler sampler = new SessionIdRatioBasedSampler(0.5, sessionId);
+        SessionIdRatioBasedSampler sampler = new SessionIdRatioBasedSampler(0.5, () -> splunkRum);
 
         // Sampler drops if TraceIdRatioBasedSampler would drop this sessionId
-        when(sessionId.getSessionId()).thenReturn(HIGH_ID);
+        when(splunkRum.getRumSessionId()).thenReturn(HIGH_ID);
         assertEquals(shouldSample(sampler), SamplingDecision.DROP);
 
         // Sampler accepts if TraceIdRatioBasedSampler would accept this sessionId
-        when(sessionId.getSessionId()).thenReturn(LOW_ID);
+        when(splunkRum.getRumSessionId()).thenReturn(LOW_ID);
         assertEquals(shouldSample(sampler), SamplingDecision.RECORD_AND_SAMPLE);
     }
 
     @Test
     void zeroRatioDropsAll() {
-        SessionId sessionId = mock(SessionId.class);
-        SessionIdRatioBasedSampler sampler = new SessionIdRatioBasedSampler(0.0, sessionId);
+        SessionIdRatioBasedSampler sampler = new SessionIdRatioBasedSampler(0.0, () -> splunkRum);
 
         for (String id : Arrays.asList(HIGH_ID, LOW_ID)) {
-            when(sessionId.getSessionId()).thenReturn(id);
+            when(splunkRum.getRumSessionId()).thenReturn(id);
             assertEquals(shouldSample(sampler), SamplingDecision.DROP);
         }
     }
 
     @Test
     void oneRatioAcceptsAll() {
-        SessionId sessionId = mock(SessionId.class);
-        SessionIdRatioBasedSampler sampler = new SessionIdRatioBasedSampler(1.0, sessionId);
+        SessionIdRatioBasedSampler sampler = new SessionIdRatioBasedSampler(1.0, () -> splunkRum);
 
         for (String id : Arrays.asList(HIGH_ID, LOW_ID)) {
-            when(sessionId.getSessionId()).thenReturn(id);
+            when(splunkRum.getRumSessionId()).thenReturn(id);
             assertEquals(shouldSample(sampler), SamplingDecision.RECORD_AND_SAMPLE);
         }
     }

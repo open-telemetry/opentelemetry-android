@@ -31,7 +31,7 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class RumAttributeAppenderTest {
+class RumAttributeAppenderTest {
 
     private VisibleScreenTracker visibleScreenTracker;
     private final ConnectionUtil connectionUtil = mock(ConnectionUtil.class);
@@ -49,8 +49,7 @@ public class RumAttributeAppenderTest {
     @Test
     void interfaceMethods() {
         RumAttributeAppender rumAttributeAppender =
-                new RumAttributeAppender(
-                        mock(SessionId.class), visibleScreenTracker, connectionUtil);
+                new RumAttributeAppender(visibleScreenTracker, connectionUtil);
 
         assertTrue(rumAttributeAppender.isStartRequired());
         assertFalse(rumAttributeAppender.isEndRequired());
@@ -58,17 +57,14 @@ public class RumAttributeAppenderTest {
 
     @Test
     void appendAttributesOnStart() {
-        SessionId sessionId = mock(SessionId.class);
-        when(sessionId.getSessionId()).thenReturn("rumSessionId");
         when(visibleScreenTracker.getCurrentlyVisibleScreen()).thenReturn("ScreenOne");
 
         ReadWriteSpan span = mock(ReadWriteSpan.class);
 
         RumAttributeAppender rumAttributeAppender =
-                new RumAttributeAppender(sessionId, visibleScreenTracker, connectionUtil);
+                new RumAttributeAppender(visibleScreenTracker, connectionUtil);
 
         rumAttributeAppender.onStart(Context.current(), span);
-        verify(span).setAttribute(RumAttributeAppender.SESSION_ID_KEY, "rumSessionId");
         verify(span).setAttribute(SplunkRum.SCREEN_NAME_KEY, "ScreenOne");
         verify(span).setAttribute(SemanticAttributes.NET_HOST_CONNECTION_TYPE, "cell");
         verify(span).setAttribute(SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE, "LTE");
@@ -76,14 +72,12 @@ public class RumAttributeAppenderTest {
 
     @Test
     void appendAttributes_noCurrentScreens() {
-        SessionId sessionId = mock(SessionId.class);
-        when(sessionId.getSessionId()).thenReturn("rumSessionId");
         when(visibleScreenTracker.getCurrentlyVisibleScreen()).thenReturn("unknown");
 
         ReadWriteSpan span = mock(ReadWriteSpan.class);
 
         RumAttributeAppender rumAttributeAppender =
-                new RumAttributeAppender(sessionId, visibleScreenTracker, connectionUtil);
+                new RumAttributeAppender(visibleScreenTracker, connectionUtil);
 
         rumAttributeAppender.onStart(Context.current(), span);
         verify(span).setAttribute(SplunkRum.SCREEN_NAME_KEY, "unknown");

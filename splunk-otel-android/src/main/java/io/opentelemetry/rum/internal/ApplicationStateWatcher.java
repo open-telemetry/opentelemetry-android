@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal;
 
 import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import io.opentelemetry.rum.internal.instrumentation.ApplicationStateListener;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-class AppStateWatcher implements Application.ActivityLifecycleCallbacks {
+final class ApplicationStateWatcher implements Application.ActivityLifecycleCallbacks {
 
-    private final List<AppStateListener> appStateListeners;
+    private final List<ApplicationStateListener> applicationStateListeners =
+            new CopyOnWriteArrayList<>();
     // we count the number of activities that have been "started" and not yet "stopped" here to
     // figure out when the app goes into the background.
     private int numberOfOpenActivities = 0;
 
-    AppStateWatcher(List<AppStateListener> appStateListeners) {
-        this.appStateListeners = appStateListeners;
-    }
+    public ApplicationStateWatcher() {}
 
     @Override
     public void onActivityCreated(
@@ -41,8 +42,8 @@ class AppStateWatcher implements Application.ActivityLifecycleCallbacks {
     @Override
     public void onActivityStarted(@NonNull Activity activity) {
         if (numberOfOpenActivities == 0) {
-            for (AppStateListener appListener : appStateListeners) {
-                appListener.appForegrounded();
+            for (ApplicationStateListener listener : applicationStateListeners) {
+                listener.onApplicationForegrounded();
             }
         }
         numberOfOpenActivities++;
@@ -57,8 +58,8 @@ class AppStateWatcher implements Application.ActivityLifecycleCallbacks {
     @Override
     public void onActivityStopped(@NonNull Activity activity) {
         if (--numberOfOpenActivities == 0) {
-            for (AppStateListener appListener : appStateListeners) {
-                appListener.appBackgrounded();
+            for (ApplicationStateListener listener : applicationStateListeners) {
+                listener.onApplicationBackgrounded();
             }
         }
     }
@@ -68,4 +69,8 @@ class AppStateWatcher implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityDestroyed(@NonNull Activity activity) {}
+
+    void registerListener(ApplicationStateListener listener) {
+        applicationStateListeners.add(listener);
+    }
 }

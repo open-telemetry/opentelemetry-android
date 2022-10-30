@@ -22,9 +22,10 @@ import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_H
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.rum.internal.instrumentation.ApplicationStateListener;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class NetworkMonitor implements AppStateListener {
+class NetworkMonitor implements ApplicationStateListener {
     static final AttributeKey<String> NETWORK_STATUS_KEY = stringKey("network.status");
 
     private final ConnectionUtil connectionUtil;
@@ -40,12 +41,12 @@ class NetworkMonitor implements AppStateListener {
     }
 
     @Override
-    public void appForegrounded() {
+    public void onApplicationForegrounded() {
         shouldEmitChangeEvents.set(true);
     }
 
     @Override
-    public void appBackgrounded() {
+    public void onApplicationBackgrounded() {
         shouldEmitChangeEvents.set(false);
     }
 

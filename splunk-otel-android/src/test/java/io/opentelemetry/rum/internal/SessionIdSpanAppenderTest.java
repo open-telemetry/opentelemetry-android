@@ -16,13 +16,11 @@
 
 package io.opentelemetry.rum.internal;
 
-import static io.opentelemetry.api.common.AttributeKey.longKey;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import org.junit.jupiter.api.Test;
@@ -31,26 +29,22 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class GlobalAttributesSpanAppenderTest {
+class SessionIdSpanAppenderTest {
 
-    @Mock private ReadWriteSpan span;
-
-    private final GlobalAttributesSpanAppender globalAttributes =
-            GlobalAttributesSpanAppender.create(Attributes.of(stringKey("key"), "value"));
+    @Mock SessionId sessionId;
+    @Mock ReadWriteSpan span;
 
     @Test
-    void shouldAppendGlobalAttributes() {
-        globalAttributes.update(attributesBuilder -> attributesBuilder.put("key", "value2"));
-        globalAttributes.update(
-                attributesBuilder -> attributesBuilder.put(longKey("otherKey"), 1234L));
+    void shouldSetSessionIdAsSpanAttribute() {
+        when(sessionId.getSessionId()).thenReturn("42");
 
-        assertTrue(globalAttributes.isStartRequired());
-        globalAttributes.onStart(Context.root(), span);
+        SessionIdSpanAppender underTest = new SessionIdSpanAppender(sessionId);
 
-        verify(span)
-                .setAllAttributes(
-                        Attributes.of(stringKey("key"), "value2", longKey("otherKey"), 1234L));
+        assertTrue(underTest.isStartRequired());
+        underTest.onStart(Context.root(), span);
 
-        assertFalse(globalAttributes.isEndRequired());
+        verify(span).setAttribute(SessionIdSpanAppender.SESSION_ID_KEY, "42");
+
+        assertFalse(underTest.isEndRequired());
     }
 }
