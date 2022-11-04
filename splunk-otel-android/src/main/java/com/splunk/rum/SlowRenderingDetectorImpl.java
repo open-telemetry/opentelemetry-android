@@ -16,6 +16,8 @@
 
 package com.splunk.rum;
 
+import static android.view.FrameMetrics.DRAW_DURATION;
+import static android.view.FrameMetrics.FIRST_DRAW_FRAME;
 import static com.splunk.rum.SplunkRum.LOG_TAG;
 
 import android.app.Activity;
@@ -156,7 +158,13 @@ class SlowRenderingDetectorImpl
         @Override
         public void onFrameMetricsAvailable(
                 Window window, FrameMetrics frameMetrics, int dropCountSinceLastInvocation) {
-            long drawDurationsNs = frameMetrics.getMetric(FrameMetrics.DRAW_DURATION);
+
+            long firstDrawFrame = frameMetrics.getMetric(FIRST_DRAW_FRAME);
+            if (firstDrawFrame == 1) {
+                return;
+            }
+
+            long drawDurationsNs = frameMetrics.getMetric(DRAW_DURATION);
             // ignore values < 0; something must have gone wrong
             if (drawDurationsNs >= 0) {
                 synchronized (lock) {

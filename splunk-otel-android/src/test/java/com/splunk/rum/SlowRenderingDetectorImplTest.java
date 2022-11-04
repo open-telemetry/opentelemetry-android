@@ -16,12 +16,15 @@
 
 package com.splunk.rum;
 
+import static android.view.FrameMetrics.DRAW_DURATION;
+import static android.view.FrameMetrics.FIRST_DRAW_FRAME;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -134,7 +137,7 @@ public class SlowRenderingDetectorImplTest {
                 .addOnFrameMetricsAvailableListener(activityListenerCaptor.capture(), any());
         SlowRenderingDetectorImpl.PerActivityListener listener = activityListenerCaptor.getValue();
         for (long duration : makeSomeDurations()) {
-            when(frameMetrics.getMetric(FrameMetrics.DRAW_DURATION)).thenReturn(duration);
+            when(frameMetrics.getMetric(DRAW_DURATION)).thenReturn(duration);
             listener.onFrameMetricsAvailable(null, frameMetrics, 0);
         }
 
@@ -167,7 +170,7 @@ public class SlowRenderingDetectorImplTest {
                 .addOnFrameMetricsAvailableListener(activityListenerCaptor.capture(), any());
         SlowRenderingDetectorImpl.PerActivityListener listener = activityListenerCaptor.getValue();
         for (long duration : makeSomeDurations()) {
-            when(frameMetrics.getMetric(FrameMetrics.DRAW_DURATION)).thenReturn(duration);
+            when(frameMetrics.getMetric(DRAW_DURATION)).thenReturn(duration);
             listener.onFrameMetricsAvailable(null, frameMetrics, 0);
         }
 
@@ -176,6 +179,15 @@ public class SlowRenderingDetectorImplTest {
 
         List<SpanData> spans = otelTesting.getSpans();
         assertSpanContent(spans);
+    }
+
+    @Test
+    public void activityListenerSkipsFirstFrame() {
+        SlowRenderingDetectorImpl.PerActivityListener listener =
+                new SlowRenderingDetectorImpl.PerActivityListener(null);
+        when(frameMetrics.getMetric(FIRST_DRAW_FRAME)).thenReturn(1L);
+        listener.onFrameMetricsAvailable(null, frameMetrics, 99);
+        verify(frameMetrics, never()).getMetric(DRAW_DURATION);
     }
 
     private static void assertSpanContent(List<SpanData> spans) {
