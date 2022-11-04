@@ -32,13 +32,11 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTelemetry;
 import io.opentelemetry.rum.internal.GlobalAttributesSpanAppender;
 import io.opentelemetry.rum.internal.OpenTelemetryRum;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import okhttp3.Call;
@@ -245,24 +243,6 @@ public class SplunkRum {
 
     Tracer getTracer() {
         return getOpenTelemetry().getTracer(RUM_TRACER_NAME);
-    }
-
-    void recordAnr(StackTraceElement[] stackTrace) {
-        getTracer()
-                .spanBuilder("ANR")
-                .setAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, formatStackTrace(stackTrace))
-                .setAttribute(COMPONENT_KEY, COMPONENT_ERROR)
-                .startSpan()
-                .setStatus(StatusCode.ERROR)
-                .end();
-    }
-
-    private String formatStackTrace(StackTraceElement[] stackTrace) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (StackTraceElement stackTraceElement : stackTrace) {
-            stringBuilder.append(stackTraceElement).append("\n");
-        }
-        return stringBuilder.toString();
     }
 
     /**

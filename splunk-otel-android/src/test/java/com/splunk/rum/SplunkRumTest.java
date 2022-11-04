@@ -49,9 +49,7 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -172,35 +170,6 @@ public class SplunkRumTest {
         assertEquals(1, spans.size());
         assertEquals("foo", spans.get(0).getName());
         assertEquals(attributes.asMap(), spans.get(0).getAttributes().asMap());
-    }
-
-    @Test
-    void recordAnr() {
-        StackTraceElement[] stackTrace = new Exception().getStackTrace();
-        StringBuilder stringBuilder = new StringBuilder();
-        for (StackTraceElement stackTraceElement : stackTrace) {
-            stringBuilder.append(stackTraceElement).append("\n");
-        }
-
-        when(openTelemetryRum.getOpenTelemetry()).thenReturn(otelTesting.getOpenTelemetry());
-
-        SplunkRum splunkRum = new SplunkRum(openTelemetryRum, globalAttributes);
-
-        Attributes expectedAttributes =
-                Attributes.of(
-                        SemanticAttributes.EXCEPTION_STACKTRACE,
-                        stringBuilder.toString(),
-                        SplunkRum.COMPONENT_KEY,
-                        SplunkRum.COMPONENT_ERROR);
-
-        splunkRum.recordAnr(stackTrace);
-
-        List<SpanData> spans = otelTesting.getSpans();
-        assertEquals(1, spans.size());
-        SpanData anrSpan = spans.get(0);
-        assertEquals("ANR", anrSpan.getName());
-        assertEquals(expectedAttributes.asMap(), anrSpan.getAttributes().asMap());
-        assertEquals(StatusData.error(), anrSpan.getStatus());
     }
 
     @Test

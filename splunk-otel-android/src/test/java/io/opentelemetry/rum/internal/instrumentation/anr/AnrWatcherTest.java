@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.anr;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -25,31 +27,37 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import android.os.Handler;
+import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class AnrWatcherTest {
+
+    @RegisterExtension
+    static final OpenTelemetryExtension testing = OpenTelemetryExtension.create();
+
+    @Mock Handler handler;
+    @Mock Thread mainThread;
+    @Mock Instrumenter<StackTraceElement[], Void> instrumenter;
 
     @Test
     void mainThreadDisappearing() {
-        Handler handler = mock(Handler.class);
-        Thread mainThread = mock(Thread.class);
-        SplunkRum splunkRum = mock(SplunkRum.class);
-
-        AnrWatcher anrWatcher = new AnrWatcher(handler, mainThread, () -> splunkRum);
+        AnrWatcher anrWatcher = new AnrWatcher(handler, mainThread, instrumenter);
         for (int i = 0; i < 5; i++) {
             when(handler.post(isA(Runnable.class))).thenReturn(false);
             anrWatcher.run();
         }
-        verifyNoInteractions(splunkRum);
+        verifyNoInteractions(instrumenter);
     }
 
     @Test
     void noAnr() {
-        Handler handler = mock(Handler.class);
-        Thread mainThread = mock(Thread.class);
-        SplunkRum splunkRum = mock(SplunkRum.class);
-
-        AnrWatcher anrWatcher = new AnrWatcher(handler, mainThread, () -> splunkRum);
+        AnrWatcher anrWatcher = new AnrWatcher(handler, mainThread, instrumenter);
         for (int i = 0; i < 5; i++) {
             when(handler.post(isA(Runnable.class)))
                     .thenAnswer(
@@ -60,22 +68,18 @@ class AnrWatcherTest {
                             });
             anrWatcher.run();
         }
-        verifyNoInteractions(splunkRum);
+        verifyNoInteractions(instrumenter);
     }
 
     @Test
     void noAnr_temporaryPause() {
-        Handler handler = mock(Handler.class);
-        Thread mainThread = mock(Thread.class);
-        SplunkRum splunkRum = mock(SplunkRum.class);
-
-        AnrWatcher anrWatcher = new AnrWatcher(handler, mainThread, () -> splunkRum);
+        AnrWatcher anrWatcher = new AnrWatcher(handler, mainThread, instrumenter);
         for (int i = 0; i < 5; i++) {
             int index = i;
             when(handler.post(isA(Runnable.class)))
                     .thenAnswer(
                             invocation -> {
-                                Runnable callback = (Runnable) invocation.getArgument(0);
+                                Runnable callback = invocation.getArgument(0);
                                 // have it fail once
                                 if (index != 3) {
                                     callback.run();
@@ -84,30 +88,28 @@ class AnrWatcherTest {
                             });
             anrWatcher.run();
         }
-        verifyNoInteractions(splunkRum);
+        verifyNoInteractions(instrumenter);
     }
 
     @Test
     void anr_detected() {
-        Handler handler = mock(Handler.class);
-        Thread mainThread = mock(Thread.class);
-        SplunkRum splunkRum = mock(SplunkRum.class);
-
         StackTraceElement[] stackTrace = new StackTraceElement[0];
         when(mainThread.getStackTrace()).thenReturn(stackTrace);
 
-        AnrWatcher anrWatcher = new AnrWatcher(handler, mainThread, () -> splunkRum);
+        AnrWatcher anrWatcher = new AnrWatcher(handler, mainThread, instrumenter);
         when(handler.post(isA(Runnable.class))).thenReturn(true);
         for (int i = 0; i < 5; i++) {
             anrWatcher.run();
         }
-        verify(splunkRum, times(1)).recordAnr(stackTrace);
+        verify(instrumenter, times(1)).start(any(), same(stackTrace));
+        verify(instrumenter, times(1)).end(any(), same(stackTrace), isNull(), isNull());
         for (int i = 0; i < 4; i++) {
             anrWatcher.run();
         }
-        verifyNoMoreInteractions(splunkRum);
+        verifyNoMoreInteractions(instrumenter);
 
         anrWatcher.run();
-        verify(splunkRum, times(2)).recordAnr(stackTrace);
+        verify(instrumenter, times(2)).start(any(), same(stackTrace));
+        verify(instrumenter, times(2)).end(any(), same(stackTrace), isNull(), isNull());
     }
 }

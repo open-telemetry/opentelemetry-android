@@ -17,8 +17,11 @@
 package com.splunk.rum;
 
 import static com.splunk.rum.SplunkRum.APP_NAME_KEY;
+import static com.splunk.rum.SplunkRum.COMPONENT_ERROR;
+import static com.splunk.rum.SplunkRum.COMPONENT_KEY;
 import static com.splunk.rum.SplunkRum.LOG_TAG;
 import static com.splunk.rum.SplunkRum.RUM_VERSION_KEY;
+import static io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor.constant;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEPLOYMENT_ENVIRONMENT;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_IDENTIFIER;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_NAME;
@@ -29,7 +32,6 @@ import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SE
 
 import android.app.Application;
 import android.os.Build;
-import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -43,7 +45,7 @@ import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.rum.internal.GlobalAttributesSpanAppender;
 import io.opentelemetry.rum.internal.OpenTelemetryRum;
 import io.opentelemetry.rum.internal.OpenTelemetryRumBuilder;
-import io.opentelemetry.rum.internal.instrumentation.ApplicationStateListener;
+import io.opentelemetry.rum.internal.instrumentation.anr.AnrDetector;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
@@ -58,9 +60,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -157,8 +156,12 @@ class RumInitializer {
         if (builder.anrDetectionEnabled) {
             otelRumBuilder.addInstrumentation(
                     instrumentedApplication -> {
-                        instrumentedApplication.registerApplicationStateListener(
-                                initializeAnrReporting(mainLooper));
+                        AnrDetector.builder()
+                                .addAttributesExtractor(constant(COMPONENT_KEY, COMPONENT_ERROR))
+                                .setMainLooper(mainLooper)
+                                .build()
+                                .installOn(instrumentedApplication);
+
                         initializationEvents.add(
                                 new RumInitializer.InitializationEvent(
                                         "anrMonitorInitialized", timingClock.now()));
@@ -260,35 +263,6 @@ class RumInitializer {
                 new RumInitializer.InitializationEvent(
                         "slowRenderingDetectorInitialized", timingClock.now()));
         return new SlowRenderingDetectorImpl(tracer, builder.slowRenderingDetectionPollInterval);
-    }
-
-    private ApplicationStateListener initializeAnrReporting(Looper mainLooper) {
-        Thread mainThread = mainLooper.getThread();
-        Handler uiHandler = new Handler(mainLooper);
-        // TODO: this is hacky behavior that utilizes a mutable variable, fix this!
-        AnrWatcher anrWatcher = new AnrWatcher(uiHandler, mainThread, SplunkRum::getInstance);
-        ScheduledExecutorService anrScheduler = Executors.newScheduledThreadPool(1);
-        final ScheduledFuture<?> scheduledFuture =
-                anrScheduler.scheduleAtFixedRate(anrWatcher, 1, 1, TimeUnit.SECONDS);
-        return new ApplicationStateListener() {
-
-            @Nullable private ScheduledFuture<?> future = scheduledFuture;
-
-            @Override
-            public void onApplicationForegrounded() {
-                if (future == null) {
-                    future = anrScheduler.scheduleAtFixedRate(anrWatcher, 1, 1, TimeUnit.SECONDS);
-                }
-            }
-
-            @Override
-            public void onApplicationBackgrounded() {
-                if (future != null) {
-                    future.cancel(true);
-                    future = null;
-                }
-            }
-        };
     }
 
     private String detectRumVersion() {

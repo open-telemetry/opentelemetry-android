@@ -45,8 +45,16 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class RumInitializerTest {
+
+    @Mock Looper mainLooper;
+    @Mock Application application;
+    @Mock Context context;
 
     @Test
     void initializationSpan() {
@@ -55,8 +63,6 @@ class RumInitializerTest {
                         .setRealm("dev")
                         .setApplicationName("testApp")
                         .setRumAccessToken("accessToken");
-        Application application = mock(Application.class);
-        Context context = mock(Context.class);
 
         when(application.getApplicationContext()).thenReturn(context);
 
@@ -71,7 +77,7 @@ class RumInitializerTest {
                 };
         SplunkRum splunkRum =
                 testInitializer.initialize(
-                        mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS), mock(Looper.class));
+                        mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS), mainLooper);
         startupTimer.runCompletionCallback();
         splunkRum.flushSpans();
 
@@ -111,8 +117,6 @@ class RumInitializerTest {
                         .setRealm("dev")
                         .setApplicationName("testApp")
                         .setRumAccessToken("accessToken");
-        Application application = mock(Application.class);
-        Context context = mock(Context.class);
 
         when(application.getApplicationContext()).thenReturn(context);
 
@@ -127,7 +131,7 @@ class RumInitializerTest {
                 };
         SplunkRum splunkRum =
                 testInitializer.initialize(
-                        mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS), mock(Looper.class));
+                        mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS), mainLooper);
         splunkRum.flushSpans();
 
         testExporter.reset();
@@ -157,7 +161,6 @@ class RumInitializerTest {
                         .setRealm("dev")
                         .setApplicationName("testApp")
                         .setRumAccessToken("accessToken");
-        Application application = mock(Application.class);
         AppStartupTimer startupTimer = new AppStartupTimer();
         InMemorySpanExporter testExporter = InMemorySpanExporter.create();
 
@@ -215,11 +218,10 @@ class RumInitializerTest {
                         .setRealm("us0")
                         .setRumAccessToken("secret!")
                         .setApplicationName("test");
-        Application application = mock(Application.class);
-        ConnectionUtil connectionUtil = mock(ConnectionUtil.class, RETURNS_DEEP_STUBS);
-        Context context = mock(Context.class);
 
         when(application.getApplicationContext()).thenReturn(context);
+
+        ConnectionUtil connectionUtil = mock(ConnectionUtil.class, RETURNS_DEEP_STUBS);
         when(connectionUtil.refreshNetworkStatus().isOnline()).thenReturn(true);
         ConnectionUtil.Factory connectionUtilFactory = mock(ConnectionUtil.Factory.class);
         when(connectionUtilFactory.createAndStart(application)).thenReturn(connectionUtil);
@@ -233,7 +235,7 @@ class RumInitializerTest {
                     }
                 };
 
-        SplunkRum splunkRum = initializer.initialize(connectionUtilFactory, mock(Looper.class));
+        SplunkRum splunkRum = initializer.initialize(connectionUtilFactory, mainLooper);
         appStartupTimer.runCompletionCallback();
 
         Exception e = new IllegalArgumentException("booom!");
