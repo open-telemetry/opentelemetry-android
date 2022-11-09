@@ -68,7 +68,7 @@ dependencies {
     testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
     testImplementation("org.robolectric:robolectric:4.9")
     testImplementation("org.mockito:mockito-core:4.8.0")
-    testImplementation("androidx.test:core:1.4.0")
+    testImplementation("androidx.test:core:1.5.0")
     testImplementation("com.google.mockwebserver:mockwebserver:20130706")
     testImplementation("com.android.volley:volley:1.2.1")
     testImplementation("org.apache.httpcomponents:httpclient:4.5.13")
