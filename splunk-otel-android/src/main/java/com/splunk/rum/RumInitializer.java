@@ -46,6 +46,7 @@ import io.opentelemetry.rum.internal.GlobalAttributesSpanAppender;
 import io.opentelemetry.rum.internal.OpenTelemetryRum;
 import io.opentelemetry.rum.internal.OpenTelemetryRumBuilder;
 import io.opentelemetry.rum.internal.instrumentation.anr.AnrDetector;
+import io.opentelemetry.rum.internal.instrumentation.crash.CrashReporter;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
@@ -219,19 +220,16 @@ class RumInitializer {
         if (builder.crashReportingEnabled) {
             otelRumBuilder.addInstrumentation(
                     instrumentedApplication -> {
-                        RuntimeDetails runtimeDetails =
-                                RuntimeDetails.create(
-                                        instrumentedApplication
-                                                .getApplication()
-                                                .getApplicationContext());
-                        CrashReporter.initializeCrashReporting(
-                                instrumentedApplication
-                                        .getOpenTelemetrySdk()
-                                        .getTracer(SplunkRum.RUM_TRACER_NAME),
-                                instrumentedApplication
-                                        .getOpenTelemetrySdk()
-                                        .getSdkTracerProvider(),
-                                runtimeDetails);
+                        CrashReporter.builder()
+                                .addAttributesExtractor(
+                                        RuntimeDetailsExtractor.create(
+                                                instrumentedApplication
+                                                        .getApplication()
+                                                        .getApplicationContext()))
+                                .addAttributesExtractor(new CrashComponentExtractor())
+                                .build()
+                                .installOn(instrumentedApplication);
+
                         initializationEvents.add(
                                 new RumInitializer.InitializationEvent(
                                         "crashReportingInitialized", timingClock.now()));
