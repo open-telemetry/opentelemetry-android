@@ -62,7 +62,7 @@ class FileSenderTest {
     }
 
     @Test
-    void testEmptyFile() throws Exception {
+    void sendEmptyFile() throws Exception {
         Mockito.reset(fileUtils);
         Mockito.reset(delegate);
         File file = new File("/asdflkajsdfoij");
@@ -70,10 +70,11 @@ class FileSenderTest {
         FileSender sender = buildSender();
         boolean result = sender.handleFileOnDisk(file);
         assertFalse(result);
+        verify(fileUtils).safeDelete(file);
     }
 
     @Test
-    void testHappyPathSendSpans() {
+    void happyPathSendSpans() {
         FileSender sender = buildSender();
         boolean result = sender.handleFileOnDisk(file);
         assertTrue(result);
@@ -81,7 +82,7 @@ class FileSenderTest {
     }
 
     @Test
-    void testSendFailsButNotExceeded() throws Exception {
+    void sendFailsButNotExceeded() throws Exception {
         when(httpCall.execute()).thenThrow(new IOException("boom"));
         FileSender sender = buildSender();
         boolean result = sender.handleFileOnDisk(file);
@@ -91,7 +92,7 @@ class FileSenderTest {
     }
 
     @Test
-    void testSenderFailureRetriesExhausted() throws Exception {
+    void senderFailureRetriesExhausted() throws Exception {
         when(httpCall.execute()).thenThrow(new IOException("boom"));
         FileSender sender = buildSender(3);
         boolean result = sender.handleFileOnDisk(file);
@@ -109,7 +110,7 @@ class FileSenderTest {
     }
 
     @Test
-    void testReadFileFails() throws IOException {
+    void readFileFails() throws IOException {
         Mockito.reset(fileUtils);
         Mockito.reset(delegate);
         when(fileUtils.readFileCompletely(file)).thenThrow(new IOException("boom"));

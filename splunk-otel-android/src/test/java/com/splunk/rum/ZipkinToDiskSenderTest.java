@@ -16,8 +16,11 @@
 
 package com.splunk.rum;
 
+import static java.util.Collections.emptyList;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -51,8 +54,8 @@ class ZipkinToDiskSenderTest {
 
     @BeforeEach
     void setup() {
-        when(clock.now()).thenReturn(now);
-        when(limiter.ensureFreeSpace()).thenReturn(true);
+        lenient().when(clock.now()).thenReturn(now);
+        lenient().when(limiter.ensureFreeSpace()).thenReturn(true);
     }
 
     @Test
@@ -68,6 +71,18 @@ class ZipkinToDiskSenderTest {
         sender.sendSpans(spans);
 
         verify(fileUtils).writeAsLines(finalPath, spans);
+    }
+
+    @Test
+    void testEmptyListDoesNotWriteFile() {
+        ZipkinToDiskSender sender =
+                ZipkinToDiskSender.builder()
+                        .path(path)
+                        .fileUtils(fileUtils)
+                        .storageLimiter(limiter)
+                        .build();
+        sender.sendSpans(emptyList());
+        verifyNoInteractions(fileUtils);
     }
 
     @Test

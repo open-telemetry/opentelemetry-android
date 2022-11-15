@@ -59,6 +59,9 @@ class ZipkinToDiskSender extends Sender {
 
     @Override
     public Call<Void> sendSpans(List<byte[]> encodedSpans) {
+        if (encodedSpans.isEmpty()) {
+            return Call.create(null);
+        }
         if (!storageLimiter.ensureFreeSpace()) {
             Log.e(
                     SplunkRum.LOG_TAG,

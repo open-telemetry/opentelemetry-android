@@ -60,6 +60,7 @@ class FileSender {
         Log.d(LOG_TAG, "Reading file content for ingest: " + file);
         List<byte[]> encodedSpans = readFileCompletely(file);
         if (encodedSpans.isEmpty()) {
+            fileUtils.safeDelete(file);
             return false;
         }
 
