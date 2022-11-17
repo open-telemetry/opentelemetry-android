@@ -25,6 +25,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
@@ -66,8 +67,11 @@ class RumAttributeAppenderTest {
 
         rumAttributeAppender.onStart(Context.current(), span);
         verify(span).setAttribute(SplunkRum.SCREEN_NAME_KEY, "ScreenOne");
-        verify(span).setAttribute(SemanticAttributes.NET_HOST_CONNECTION_TYPE, "cell");
-        verify(span).setAttribute(SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE, "LTE");
+        verify(span)
+                .setAllAttributes(
+                        Attributes.of(
+                                SemanticAttributes.NET_HOST_CONNECTION_TYPE, "cell",
+                                SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE, "LTE"));
     }
 
     @Test

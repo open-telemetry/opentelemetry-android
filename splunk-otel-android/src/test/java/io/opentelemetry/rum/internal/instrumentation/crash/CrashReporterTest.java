@@ -73,6 +73,7 @@ class CrashReporterTest {
                         () -> {
                             throw crash;
                         });
+        crashingThread.setDaemon(true);
         crashingThread.start();
 
         Attributes expectedAttributes =

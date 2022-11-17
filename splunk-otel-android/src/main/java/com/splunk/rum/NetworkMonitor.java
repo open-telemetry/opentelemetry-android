@@ -52,8 +52,11 @@ class NetworkMonitor implements ApplicationStateListener {
 
     // visibleForTesting
     static class TracingConnectionStateListener implements ConnectionStateListener {
+
         private final Tracer tracer;
         private final AtomicBoolean shouldEmitChangeEvents;
+        private final CurrentNetworkAttributesExtractor networkAttributesExtractor =
+                new CurrentNetworkAttributesExtractor();
 
         TracingConnectionStateListener(Tracer tracer, AtomicBoolean shouldEmitChangeEvents) {
             this.tracer = tracer;
@@ -81,7 +84,7 @@ class NetworkMonitor implements ApplicationStateListener {
                                 .startSpan();
                 // put these after span start to override what might be set in the
                 // RumAttributeAppender.
-                RumAttributeAppender.appendNetworkAttributes(available, activeNetwork);
+                available.setAllAttributes(networkAttributesExtractor.extract(activeNetwork));
                 available.end();
             }
         }

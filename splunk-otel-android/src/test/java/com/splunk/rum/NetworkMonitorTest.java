@@ -16,33 +16,40 @@
 
 package com.splunk.rum;
 
-import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE;
-import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_TYPE;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.opentelemetry.api.common.Attributes;
+import android.os.Build;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
+import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
-class NetworkMonitorTest {
-    @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+@Config(sdk = Build.VERSION_CODES.P)
+@RunWith(RobolectricTestRunner.class)
+public class NetworkMonitorTest {
+
+    @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
+
     private Tracer tracer;
 
-    @BeforeEach
-    void setup() {
+    @Before
+    public void setup() {
         tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
     }
 
     @Test
-    void networkAvailable_wifi() {
+    public void networkAvailable_wifi() {
         NetworkMonitor.TracingConnectionStateListener listener =
                 new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
 
@@ -50,35 +57,49 @@ class NetworkMonitorTest {
 
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
-        SpanData spanData = spans.get(0);
-        assertEquals("network.change", spanData.getName());
-        Attributes attributes = spanData.getAttributes();
-        assertEquals("available", attributes.get(NetworkMonitor.NETWORK_STATUS_KEY));
-        assertEquals("wifi", attributes.get(NET_HOST_CONNECTION_TYPE));
-        assertNull(attributes.get(NET_HOST_CONNECTION_SUBTYPE));
+        assertThat(spans.get(0))
+                .hasName("network.change")
+                .hasAttributesSatisfyingExactly(
+                        equalTo(NetworkMonitor.NETWORK_STATUS_KEY, "available"),
+                        equalTo(SemanticAttributes.NET_HOST_CONNECTION_TYPE, "wifi"));
     }
 
     @Test
-    void networkAvailable_cellular() {
+    public void networkAvailable_cellular() {
         NetworkMonitor.TracingConnectionStateListener listener =
                 new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
 
-        listener.onAvailable(
-                true,
-                CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).subType("LTE").build());
+        CurrentNetwork network =
+                CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
+                        .subType("LTE")
+                        .carrier(
+                                Carrier.builder()
+                                        .id(206)
+                                        .name("ShadyTel")
+                                        .isoCountryCode("US")
+                                        .mobileCountryCode("usa")
+                                        .mobileNetworkCode("omg")
+                                        .build())
+                        .build();
+
+        listener.onAvailable(true, network);
 
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
-        SpanData spanData = spans.get(0);
-        assertEquals("network.change", spanData.getName());
-        Attributes attributes = spanData.getAttributes();
-        assertEquals("available", attributes.get(NetworkMonitor.NETWORK_STATUS_KEY));
-        assertEquals("cell", attributes.get(NET_HOST_CONNECTION_TYPE));
-        assertEquals("LTE", attributes.get(NET_HOST_CONNECTION_SUBTYPE));
+        assertThat(spans.get(0))
+                .hasName("network.change")
+                .hasAttributesSatisfyingExactly(
+                        equalTo(NetworkMonitor.NETWORK_STATUS_KEY, "available"),
+                        equalTo(SemanticAttributes.NET_HOST_CONNECTION_TYPE, "cell"),
+                        equalTo(SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE, "LTE"),
+                        equalTo(SemanticAttributes.NET_HOST_CARRIER_NAME, "ShadyTel"),
+                        equalTo(SemanticAttributes.NET_HOST_CARRIER_ICC, "US"),
+                        equalTo(SemanticAttributes.NET_HOST_CARRIER_MCC, "usa"),
+                        equalTo(SemanticAttributes.NET_HOST_CARRIER_MNC, "omg"));
     }
 
     @Test
-    void networkLost() {
+    public void networkLost() {
         NetworkMonitor.TracingConnectionStateListener listener =
                 new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
 
@@ -87,16 +108,15 @@ class NetworkMonitorTest {
 
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
-        SpanData spanData = spans.get(0);
-        assertEquals("network.change", spanData.getName());
-        Attributes attributes = spanData.getAttributes();
-        assertEquals("lost", attributes.get(NetworkMonitor.NETWORK_STATUS_KEY));
-        assertEquals("unavailable", attributes.get(NET_HOST_CONNECTION_TYPE));
-        assertNull(attributes.get(NET_HOST_CONNECTION_SUBTYPE));
+        assertThat(spans.get(0))
+                .hasName("network.change")
+                .hasAttributesSatisfyingExactly(
+                        equalTo(NetworkMonitor.NETWORK_STATUS_KEY, "lost"),
+                        equalTo(SemanticAttributes.NET_HOST_CONNECTION_TYPE, "unavailable"));
     }
 
     @Test
-    void noEventsPlease() {
+    public void noEventsPlease() {
         AtomicBoolean shouldEmitChangeEvents = new AtomicBoolean(false);
 
         NetworkMonitor.TracingConnectionStateListener listener =
