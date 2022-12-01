@@ -25,7 +25,8 @@ import android.net.NetworkRequest;
 import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
 // note: based on ideas from stack overflow:
@@ -40,7 +41,7 @@ class ConnectionUtil {
     private final NetworkDetector networkDetector;
 
     private volatile CurrentNetwork currentNetwork = UNKNOWN_NETWORK;
-    @Nullable private volatile ConnectionStateListener connectionStateListener;
+    private final List<NetworkChangeListener> listeners = new CopyOnWriteArrayList<>();
 
     ConnectionUtil(NetworkDetector networkDetector) {
         this.networkDetector = networkDetector;
@@ -94,54 +95,41 @@ class ConnectionUtil {
                 .build();
     }
 
-    boolean isOnline() {
-        return currentNetwork.isOnline();
-    }
-
     CurrentNetwork getActiveNetwork() {
         return currentNetwork;
     }
 
-    void setInternetStateListener(ConnectionStateListener listener) {
-        connectionStateListener = listener;
+    void addNetworkChangeListener(NetworkChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    private void notifyListeners(CurrentNetwork activeNetwork) {
+        for (NetworkChangeListener listener : listeners) {
+            listener.onNetworkChange(activeNetwork);
+        }
     }
 
     private class ConnectionMonitor extends ConnectivityManager.NetworkCallback {
 
         @Override
         public void onAvailable(@NonNull Network network) {
-            Log.d(SplunkRum.LOG_TAG, "onAvailable: ");
             CurrentNetwork activeNetwork = refreshNetworkStatus();
-            ConnectionStateListener connectionStateListener =
-                    ConnectionUtil.this.connectionStateListener;
-            if (connectionStateListener != null) {
-                connectionStateListener.onAvailable(true, activeNetwork);
-                Log.d(
-                        SplunkRum.LOG_TAG,
-                        "  onAvailable: isConnected:"
-                                + isOnline()
-                                + ", activeNetwork: "
-                                + activeNetwork);
-            }
+            Log.d(SplunkRum.LOG_TAG, "  onAvailable: activeNetwork=" + activeNetwork);
+
+            notifyListeners(activeNetwork);
         }
 
         @Override
         public void onLost(@NonNull Network network) {
-            Log.d(SplunkRum.LOG_TAG, "onLost: ");
             // it seems that the "currentActiveNetwork" is still the one that is being lost, so for
             // this method, we'll force it to be NO_NETWORK, rather than relying on the
             // ConnectivityManager to have the right
             // state at the right time during this event.
             CurrentNetwork activeNetwork = NO_NETWORK;
             currentNetwork = activeNetwork;
-            ConnectionStateListener connectionStateListener =
-                    ConnectionUtil.this.connectionStateListener;
-            if (connectionStateListener != null) {
-                connectionStateListener.onAvailable(false, activeNetwork);
-                Log.d(
-                        SplunkRum.LOG_TAG,
-                        "  onLost: isConnected:" + false + ", activeNetwork: " + activeNetwork);
-            }
+            Log.d(SplunkRum.LOG_TAG, "  onLost: activeNetwork=" + activeNetwork);
+
+            notifyListeners(activeNetwork);
         }
     }
 

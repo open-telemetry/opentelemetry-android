@@ -21,23 +21,18 @@ import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 
-class RumAttributeAppender implements SpanProcessor {
+final class NetworkAttributesAppender implements SpanProcessor {
 
-    private final VisibleScreenTracker visibleScreenTracker;
     private final ConnectionUtil connectionUtil;
     private final CurrentNetworkAttributesExtractor networkAttributesExtractor =
             new CurrentNetworkAttributesExtractor();
 
-    RumAttributeAppender(VisibleScreenTracker visibleScreenTracker, ConnectionUtil connectionUtil) {
-        this.visibleScreenTracker = visibleScreenTracker;
+    NetworkAttributesAppender(ConnectionUtil connectionUtil) {
         this.connectionUtil = connectionUtil;
     }
 
     @Override
     public void onStart(Context parentContext, ReadWriteSpan span) {
-        String currentScreen = visibleScreenTracker.getCurrentlyVisibleScreen();
-        span.setAttribute(SplunkRum.SCREEN_NAME_KEY, currentScreen);
-
         CurrentNetwork currentNetwork = connectionUtil.getActiveNetwork();
         span.setAllAttributes(networkAttributesExtractor.extract(currentNetwork));
     }

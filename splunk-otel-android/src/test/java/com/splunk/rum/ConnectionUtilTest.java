@@ -17,8 +17,6 @@
 package com.splunk.rum;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
@@ -64,7 +62,6 @@ public class ConnectionUtilTest {
         ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);
         connectionUtil.startMonitoring(() -> networkRequest, connectivityManager);
 
-        assertTrue(connectionUtil.isOnline());
         assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
                 connectionUtil.getActiveNetwork());
@@ -75,18 +72,16 @@ public class ConnectionUtilTest {
                 .registerNetworkCallback(eq(networkRequest), monitorCaptor.capture());
 
         AtomicInteger notified = new AtomicInteger(0);
-        connectionUtil.setInternetStateListener(
-                (deviceIsOnline, currentNetwork) -> {
+        connectionUtil.addNetworkChangeListener(
+                (currentNetwork) -> {
                     int timesCalled = notified.incrementAndGet();
                     if (timesCalled == 1) {
-                        assertTrue(deviceIsOnline);
                         assertEquals(
                                 CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
                                         .subType("LTE")
                                         .build(),
                                 currentNetwork);
                     } else {
-                        assertFalse(deviceIsOnline);
                         assertEquals(
                                 CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build(),
                                 currentNetwork);
@@ -117,7 +112,6 @@ public class ConnectionUtilTest {
         ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);
         connectionUtil.startMonitoring(() -> networkRequest, connectivityManager);
 
-        assertTrue(connectionUtil.isOnline());
         assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
                 connectionUtil.getActiveNetwork());
@@ -129,18 +123,16 @@ public class ConnectionUtilTest {
         verify(connectivityManager).registerDefaultNetworkCallback(monitorCaptor.capture());
 
         AtomicInteger notified = new AtomicInteger(0);
-        connectionUtil.setInternetStateListener(
-                (deviceIsOnline, currentNetwork) -> {
+        connectionUtil.addNetworkChangeListener(
+                (currentNetwork) -> {
                     int timesCalled = notified.incrementAndGet();
                     if (timesCalled == 1) {
-                        assertTrue(deviceIsOnline);
                         assertEquals(
                                 CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
                                         .subType("LTE")
                                         .build(),
                                 currentNetwork);
                     } else {
-                        assertFalse(deviceIsOnline);
                         assertEquals(
                                 CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build(),
                                 currentNetwork);

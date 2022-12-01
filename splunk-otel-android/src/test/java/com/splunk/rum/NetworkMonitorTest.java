@@ -50,10 +50,10 @@ public class NetworkMonitorTest {
 
     @Test
     public void networkAvailable_wifi() {
-        NetworkMonitor.TracingConnectionStateListener listener =
-                new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
+        NetworkMonitor.TracingNetworkChangeListener listener =
+                new NetworkMonitor.TracingNetworkChangeListener(tracer, new AtomicBoolean(true));
 
-        listener.onAvailable(true, CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build());
+        listener.onNetworkChange(CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build());
 
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
@@ -66,8 +66,8 @@ public class NetworkMonitorTest {
 
     @Test
     public void networkAvailable_cellular() {
-        NetworkMonitor.TracingConnectionStateListener listener =
-                new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
+        NetworkMonitor.TracingNetworkChangeListener listener =
+                new NetworkMonitor.TracingNetworkChangeListener(tracer, new AtomicBoolean(true));
 
         CurrentNetwork network =
                 CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
@@ -82,7 +82,7 @@ public class NetworkMonitorTest {
                                         .build())
                         .build();
 
-        listener.onAvailable(true, network);
+        listener.onNetworkChange(network);
 
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
@@ -100,11 +100,10 @@ public class NetworkMonitorTest {
 
     @Test
     public void networkLost() {
-        NetworkMonitor.TracingConnectionStateListener listener =
-                new NetworkMonitor.TracingConnectionStateListener(tracer, new AtomicBoolean(true));
+        NetworkMonitor.TracingNetworkChangeListener listener =
+                new NetworkMonitor.TracingNetworkChangeListener(tracer, new AtomicBoolean(true));
 
-        listener.onAvailable(
-                false, CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
+        listener.onNetworkChange(CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
 
         List<SpanData> spans = otelTesting.getSpans();
         assertEquals(1, spans.size());
@@ -119,20 +118,17 @@ public class NetworkMonitorTest {
     public void noEventsPlease() {
         AtomicBoolean shouldEmitChangeEvents = new AtomicBoolean(false);
 
-        NetworkMonitor.TracingConnectionStateListener listener =
-                new NetworkMonitor.TracingConnectionStateListener(tracer, shouldEmitChangeEvents);
+        NetworkMonitor.TracingNetworkChangeListener listener =
+                new NetworkMonitor.TracingNetworkChangeListener(tracer, shouldEmitChangeEvents);
 
-        listener.onAvailable(
-                false, CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
+        listener.onNetworkChange(CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
         assertTrue(otelTesting.getSpans().isEmpty());
-        listener.onAvailable(
-                true,
+        listener.onNetworkChange(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).subType("LTE").build());
         assertTrue(otelTesting.getSpans().isEmpty());
 
         shouldEmitChangeEvents.set(true);
-        listener.onAvailable(
-                false, CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
+        listener.onNetworkChange(CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
         assertEquals(1, otelTesting.getSpans().size());
     }
 }

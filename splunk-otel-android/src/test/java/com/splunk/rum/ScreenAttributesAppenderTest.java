@@ -25,35 +25,27 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class RumAttributeAppenderTest {
+class ScreenAttributesAppenderTest {
 
     private VisibleScreenTracker visibleScreenTracker;
-    private final ConnectionUtil connectionUtil = mock(ConnectionUtil.class);
 
     @BeforeEach
     void setUp() {
         visibleScreenTracker = mock(VisibleScreenTracker.class);
-        when(connectionUtil.getActiveNetwork())
-                .thenReturn(
-                        CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
-                                .subType("LTE")
-                                .build());
     }
 
     @Test
     void interfaceMethods() {
-        RumAttributeAppender rumAttributeAppender =
-                new RumAttributeAppender(visibleScreenTracker, connectionUtil);
+        ScreenAttributesAppender screenAttributesAppender =
+                new ScreenAttributesAppender(visibleScreenTracker);
 
-        assertTrue(rumAttributeAppender.isStartRequired());
-        assertFalse(rumAttributeAppender.isEndRequired());
+        assertTrue(screenAttributesAppender.isStartRequired());
+        assertFalse(screenAttributesAppender.isEndRequired());
     }
 
     @Test
@@ -62,16 +54,11 @@ class RumAttributeAppenderTest {
 
         ReadWriteSpan span = mock(ReadWriteSpan.class);
 
-        RumAttributeAppender rumAttributeAppender =
-                new RumAttributeAppender(visibleScreenTracker, connectionUtil);
+        ScreenAttributesAppender screenAttributesAppender =
+                new ScreenAttributesAppender(visibleScreenTracker);
 
-        rumAttributeAppender.onStart(Context.current(), span);
+        screenAttributesAppender.onStart(Context.current(), span);
         verify(span).setAttribute(SplunkRum.SCREEN_NAME_KEY, "ScreenOne");
-        verify(span)
-                .setAllAttributes(
-                        Attributes.of(
-                                SemanticAttributes.NET_HOST_CONNECTION_TYPE, "cell",
-                                SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE, "LTE"));
     }
 
     @Test
@@ -80,10 +67,10 @@ class RumAttributeAppenderTest {
 
         ReadWriteSpan span = mock(ReadWriteSpan.class);
 
-        RumAttributeAppender rumAttributeAppender =
-                new RumAttributeAppender(visibleScreenTracker, connectionUtil);
+        ScreenAttributesAppender screenAttributesAppender =
+                new ScreenAttributesAppender(visibleScreenTracker);
 
-        rumAttributeAppender.onStart(Context.current(), span);
+        screenAttributesAppender.onStart(Context.current(), span);
         verify(span).setAttribute(SplunkRum.SCREEN_NAME_KEY, "unknown");
         verify(span, never()).setAttribute(eq(SplunkRum.LAST_SCREEN_NAME_KEY), any());
     }

@@ -36,8 +36,8 @@ class NetworkMonitor implements ApplicationStateListener {
     }
 
     void addConnectivityListener(Tracer tracer) {
-        connectionUtil.setInternetStateListener(
-                new TracingConnectionStateListener(tracer, shouldEmitChangeEvents));
+        connectionUtil.addNetworkChangeListener(
+                new TracingNetworkChangeListener(tracer, shouldEmitChangeEvents));
     }
 
     @Override
@@ -51,20 +51,20 @@ class NetworkMonitor implements ApplicationStateListener {
     }
 
     // visibleForTesting
-    static class TracingConnectionStateListener implements ConnectionStateListener {
+    static class TracingNetworkChangeListener implements NetworkChangeListener {
 
         private final Tracer tracer;
         private final AtomicBoolean shouldEmitChangeEvents;
         private final CurrentNetworkAttributesExtractor networkAttributesExtractor =
                 new CurrentNetworkAttributesExtractor();
 
-        TracingConnectionStateListener(Tracer tracer, AtomicBoolean shouldEmitChangeEvents) {
+        TracingNetworkChangeListener(Tracer tracer, AtomicBoolean shouldEmitChangeEvents) {
             this.tracer = tracer;
             this.shouldEmitChangeEvents = shouldEmitChangeEvents;
         }
 
         @Override
-        public void onAvailable(boolean deviceIsOnline, CurrentNetwork activeNetwork) {
+        public void onNetworkChange(CurrentNetwork activeNetwork) {
             if (!shouldEmitChangeEvents.get()) {
                 return;
             }

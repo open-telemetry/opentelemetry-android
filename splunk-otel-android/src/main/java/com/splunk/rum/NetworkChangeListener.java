@@ -16,6 +16,7 @@
 
 package com.splunk.rum;
 
-interface ConnectionStateListener {
-    void onAvailable(boolean deviceIsOnline, CurrentNetwork currentNetwork);
+interface NetworkChangeListener {
+
+    void onNetworkChange(CurrentNetwork currentNetwork);
 }

@@ -105,6 +105,14 @@ class RumInitializer {
                 GlobalAttributesSpanAppender.create(builder.globalAttributes);
         otelRumBuilder.addTracerProviderCustomizer(
                 (tracerProviderBuilder, app) -> {
+                    NetworkAttributesAppender networkAttributesAppender =
+                            new NetworkAttributesAppender(connectionUtil);
+                    ScreenAttributesAppender screenAttributesAppender =
+                            new ScreenAttributesAppender(visibleScreenTracker);
+                    initializationEvents.add(
+                            new RumInitializer.InitializationEvent(
+                                    "attributeAppenderInitialized", timingClock.now()));
+
                     SpanExporter zipkinExporter = buildFilteringExporter(connectionUtil);
                     initializationEvents.add(
                             new RumInitializer.InitializationEvent(
@@ -116,15 +124,10 @@ class RumInitializer {
                             new RumInitializer.InitializationEvent(
                                     "batchSpanProcessorInitialized", timingClock.now()));
 
-                    RumAttributeAppender attributeAppender =
-                            new RumAttributeAppender(visibleScreenTracker, connectionUtil);
-                    initializationEvents.add(
-                            new RumInitializer.InitializationEvent(
-                                    "attributeAppenderInitialized", timingClock.now()));
-
                     tracerProviderBuilder
-                            .addSpanProcessor(attributeAppender)
                             .addSpanProcessor(globalAttributesSpanAppender)
+                            .addSpanProcessor(networkAttributesAppender)
+                            .addSpanProcessor(screenAttributesAppender)
                             .addSpanProcessor(batchSpanProcessor)
                             .setSpanLimits(
                                     SpanLimits.builder()
