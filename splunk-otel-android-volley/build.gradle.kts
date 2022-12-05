@@ -71,7 +71,7 @@ dependencies {
     testImplementation("androidx.test:core:1.5.0")
     testImplementation("com.google.mockwebserver:mockwebserver:20130706")
     testImplementation("com.android.volley:volley:1.2.1")
-    testImplementation("org.apache.httpcomponents:httpclient:4.5.13")
+    testImplementation("org.apache.httpcomponents:httpclient:4.5.14")
 }
 
 tasks.withType<Test>().configureEach {
