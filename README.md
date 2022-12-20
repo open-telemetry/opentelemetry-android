@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.19.0">
-    <img alt="OpenTelemetry Instrumentation for Java Version" src="https://img.shields.io/badge/otel-1.19.0-blueviolet?style=for-the-badge">
+  <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.21.0">
+    <img alt="OpenTelemetry Instrumentation for Java Version" src="https://img.shields.io/badge/otel-1.21.0-blueviolet?style=for-the-badge">
   </a>
   <a href="https://github.com/signalfx/splunk-otel-android/releases">
     <img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/signalfx/splunk-otel-android?include_prereleases&style=for-the-badge">
@@ -18,8 +18,8 @@
   <a href="https://maven-badges.herokuapp.com/maven-central/com.splunk/splunk-otel-android">
     <img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.splunk/splunk-otel-android?style=for-the-badge">
   </a>
-  <a href="https://github.com/signalfx/splunk-otel-android/actions?query=workflow%3A%22Continuous+Build%22">
-     <img alt="Build Status" src="https://img.shields.io/github/workflow/status/signalfx/splunk-otel-android/Continuous%20Build?style=for-the-badge">
+  <a href="https://github.com/signalfx/splunk-otel-android/actions/workflows/main.yaml">
+    <img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/signalfx/splunk-otel-android/main.yaml?branch=main&style=for-the-badge">
   </a>
 
   <a href="https://github.com/signalfx/gdi-specification/releases/tag/v1.4.0">
@@ -91,7 +91,7 @@ Then, add the latest release as a dependency in your application's build.gradle 
 ```
 dependencies {
 ...
-    implementation ("com.splunk:splunk-otel-android:1.0.0-rc.2")
+    implementation ("com.splunk:splunk-otel-android:1.0.0-rc.3")
 ...
 }
 ```
@@ -127,7 +127,7 @@ Then, add the locally built library as a dependency in your application's build.
 ```
 dependencies {
 ...
-    implementation ("com.splunk:splunk-otel-android:1.0.0-rc.3-SNAPSHOT")
+    implementation ("com.splunk:splunk-otel-android:1.0.0-rc.4-SNAPSHOT")
 ...
 }
 ```
@@ -321,10 +321,10 @@ To disable this feature, call `.disableSlowRenderingDetection()` on the
 
 Splunk RUM defines renders as slow or frozen following the [Android Vitals definitions](https://developer.android.com/topic/performance/vitals/frozen):
 
-| Category | Speed   | spanName      | Attribute   |
-|----------|---------|---------------|-------------|
-| Slow     | >16ms  | slowRenders    | count       |
-| Frozen   | >700ms | frozenRenders  | count       |
+| Category | Speed  | spanName      | Attribute |
+|----------|--------|---------------|-----------|
+| Slow     | >16ms  | slowRenders   | count     |
+| Frozen   | >700ms | frozenRenders | count     |
 
 ## Customizing screen names
 

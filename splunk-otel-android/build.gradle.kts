@@ -5,6 +5,8 @@ plugins {
 }
 
 android {
+    namespace = "com.splunk.android.rum"
+
     compileSdk = 33
     buildToolsVersion = "30.0.3"
 

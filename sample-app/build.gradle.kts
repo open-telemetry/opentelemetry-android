@@ -9,6 +9,8 @@ val localProperties = Properties()
 localProperties.load(FileInputStream(rootProject.file("local.properties")))
 
 android {
+    namespace = "com.splunk.android.sample"
+
     compileSdk = 33
     buildToolsVersion = "30.0.3"
 

@@ -7,6 +7,8 @@ plugins {
 }
 
 android {
+    namespace = "com.splunk.android.rum.volley"
+
     compileSdk = 33
     buildToolsVersion = "30.0.3"
 

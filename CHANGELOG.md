@@ -9,6 +9,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 * TBD
 
+## Version 1.0.0-rc.3
+
+Release candidate for 1.0.0.
+
+* Updated to OpenTelemetry Java v1.21.0 (#421)
+* Guard against creating empty spans files when using disk buffering (#407)
+* Don't include first frame in draw duration histogram for slow renders (#400)
+
 ## Version 1.0.0-rc.2
 
 Release candidate for 1.0.0.
