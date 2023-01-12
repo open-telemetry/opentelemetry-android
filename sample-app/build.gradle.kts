@@ -58,7 +58,7 @@ dependencies {
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.8")
 
-    implementation("androidx.appcompat:appcompat:1.5.1")
+    implementation("androidx.appcompat:appcompat:1.6.0")
     implementation("androidx.webkit:webkit:1.5.0")
     implementation("androidx.browser:browser:1.4.0")
     implementation("com.google.android.material:material:1.5.0")
