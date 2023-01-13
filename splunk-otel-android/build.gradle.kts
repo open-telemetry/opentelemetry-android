@@ -42,7 +42,7 @@ android {
     }
 }
 
-val otelVersion = "1.21.0"
+val otelVersion = "1.22.0"
 val otelAlphaVersion = "$otelVersion-alpha"
 
 dependencies {
