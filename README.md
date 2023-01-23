@@ -272,7 +272,7 @@ the `SplunkRumBuilder` when initializing your instance of the SplunkRum API:
   This can be used to provide customizations of the spans that are emitted by the library. Examples
   include: removing spans altogether from export, removing span attributes, changing span attributes
   or changing the span name. See the javadoc on the `SpanFilterBuilder` class for more details.
-- `enableDiskBufferingEnabled()` :
+- `enableDiskBuffering()` :
   Enables the storage-based buffering of telemetry.
   This setting is useful when instrumenting applications that might work offline for extended periods of time.
 - `limitDiskUsageMegabytes(int)` :
