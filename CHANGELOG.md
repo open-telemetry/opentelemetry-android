@@ -9,6 +9,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 * TBD
 
+## Version 1.0.0
+
+Version 1.0.0 marks the initial _stable_ release of `splunk-otel-android`.
+
 ## Version 1.0.0-rc.3
 
 Release candidate for 1.0.0.
