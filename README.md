@@ -40,9 +40,7 @@
 
 # Splunk OpenTelemetry Instrumentation for Android
 
-Splunk RUM Product Documentation can be found [here](https://docs.splunk.com/Observability/rum/intro-to-rum.html#nav-Introduction-to-Splunk-RUM).
-
-> :construction: This project is currently in **BETA**. It is officially supported by Splunk. However, breaking changes MAY be introduced.
+For official documentation on the Splunk OTel Instrumentation for Android, see [Instrument Android applications for Splunk RUM](https://docs.splunk.com/Observability/gdi/get-data-in/rum/android/get-android-data-in.html).
 
 ## Features
 
@@ -346,7 +344,7 @@ public class MainActivity extends Activity {
 
 - If you see runtime errors related to Java 8 interfaces and classes, make sure you have
   enabled `coreLibraryDesugaring` per the official Android [documentation][desugar].
-- Please report any bugs either here as a Github issue, or with official Splunk support channels.
+- Report any bugs either here as a Github issue, or with official Splunk support channels.
 
 ## Sample Application
 
