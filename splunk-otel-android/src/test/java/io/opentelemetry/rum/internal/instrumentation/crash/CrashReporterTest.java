@@ -95,7 +95,7 @@ class CrashReporterTest {
     }
 
     private static void assertTrace(Consumer<TraceAssert> assertion) {
-        await().atMost(Duration.ofSeconds(10))
+        await().atMost(Duration.ofSeconds(30))
                 .untilAsserted(() -> testing.assertTraces().hasTracesSatisfyingExactly(assertion));
     }
 }

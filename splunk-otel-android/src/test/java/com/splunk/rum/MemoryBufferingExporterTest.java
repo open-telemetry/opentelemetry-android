@@ -144,6 +144,7 @@ class MemoryBufferingExporterTest {
         verify(delegate).flush();
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void maxBacklog() {
         SpanExporter delegate = mock(SpanExporter.class);
