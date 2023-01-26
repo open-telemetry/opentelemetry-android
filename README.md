@@ -9,8 +9,12 @@
 </p>
 
 <p align="center">
+  <img alt="Stable" src="https://img.shields.io/badge/status-stable-informational?style=for-the-badge">
   <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.21.0">
     <img alt="OpenTelemetry Instrumentation for Java Version" src="https://img.shields.io/badge/otel-1.21.0-blueviolet?style=for-the-badge">
+  </a>
+  <a href="https://github.com/signalfx/gdi-specification/releases/tag/v1.4.0">
+    <img alt="Splunk GDI specification" src="https://img.shields.io/badge/GDI-1.4.0-blueviolet?style=for-the-badge">
   </a>
   <a href="https://github.com/signalfx/splunk-otel-android/releases">
     <img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/signalfx/splunk-otel-android?include_prereleases&style=for-the-badge">
@@ -21,11 +25,6 @@
   <a href="https://github.com/signalfx/splunk-otel-android/actions/workflows/main.yaml">
     <img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/signalfx/splunk-otel-android/main.yaml?branch=main&style=for-the-badge">
   </a>
-
-  <a href="https://github.com/signalfx/gdi-specification/releases/tag/v1.4.0">
-    <img alt="Splunk GDI specification" src="https://img.shields.io/badge/GDI-1.4.0-blueviolet?style=for-the-badge">
-  </a>
-  <img alt="Beta" src="https://img.shields.io/badge/status-beta-informational?style=for-the-badge">
 </p>
 
 <p align="center">
