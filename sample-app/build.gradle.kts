@@ -56,7 +56,7 @@ val otelAlphaVersion = "$otelVersion-alpha"
 
 dependencies {
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.8")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.0")
 
     implementation("androidx.appcompat:appcompat:1.6.0")
     implementation("androidx.webkit:webkit:1.6.0")
