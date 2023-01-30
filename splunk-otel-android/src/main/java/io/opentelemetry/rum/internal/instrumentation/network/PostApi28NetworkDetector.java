@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.network;
 
-import static com.splunk.rum.ConnectionUtil.NO_NETWORK;
-import static com.splunk.rum.ConnectionUtil.UNKNOWN_NETWORK;
+import static io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider.NO_NETWORK;
+import static io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider.UNKNOWN_NETWORK;
 
 import android.Manifest;
 import android.annotation.SuppressLint;

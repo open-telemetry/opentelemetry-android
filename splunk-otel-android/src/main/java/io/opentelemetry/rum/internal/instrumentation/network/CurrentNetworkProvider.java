@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.network;
 
 import android.app.Application;
 import android.content.Context;
@@ -31,22 +31,43 @@ import java.util.function.Supplier;
 
 // note: based on ideas from stack overflow:
 // https://stackoverflow.com/questions/32547006/connectivitymanager-getnetworkinfoint-deprecated
-class ConnectionUtil {
+
+/**
+ * A provider of {@link CurrentNetwork} information. Registers itself in the Android {@link
+ * ConnectivityManager} and listens for network changes.
+ */
+public final class CurrentNetworkProvider {
 
     static final CurrentNetwork NO_NETWORK =
             CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build();
     static final CurrentNetwork UNKNOWN_NETWORK =
             CurrentNetwork.builder(NetworkState.TRANSPORT_UNKNOWN).build();
 
+    /**
+     * Creates a new {@link CurrentNetworkProvider} instance and registers network callbacks in the
+     * Android {@link ConnectivityManager}.
+     */
+    public static CurrentNetworkProvider createAndStart(Application application) {
+        Context context = application.getApplicationContext();
+        CurrentNetworkProvider currentNetworkProvider =
+                new CurrentNetworkProvider(NetworkDetector.create(context));
+        currentNetworkProvider.startMonitoring(
+                CurrentNetworkProvider::createNetworkMonitoringRequest,
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
+        return currentNetworkProvider;
+    }
+
     private final NetworkDetector networkDetector;
 
     private volatile CurrentNetwork currentNetwork = UNKNOWN_NETWORK;
     private final List<NetworkChangeListener> listeners = new CopyOnWriteArrayList<>();
 
-    ConnectionUtil(NetworkDetector networkDetector) {
+    // visible for tests
+    CurrentNetworkProvider(NetworkDetector networkDetector) {
         this.networkDetector = networkDetector;
     }
 
+    // visible for tests
     void startMonitoring(
             Supplier<NetworkRequest> createNetworkMonitoringRequest,
             ConnectivityManager connectivityManager) {
@@ -56,7 +77,7 @@ class ConnectionUtil {
         } catch (Exception e) {
             // if this fails, we'll go without network change events.
             Log.w(
-                    SplunkRum.LOG_TAG,
+                    "OpenTelemetryRum",
                     "Failed to register network callbacks. Automatic network monitoring is disabled.",
                     e);
         }
@@ -73,7 +94,8 @@ class ConnectionUtil {
         }
     }
 
-    CurrentNetwork refreshNetworkStatus() {
+    /** Returns up-to-date {@linkplain CurrentNetwork current network information}. */
+    public CurrentNetwork refreshNetworkStatus() {
         try {
             currentNetwork = networkDetector.detectCurrentNetwork();
         } catch (Exception e) {
@@ -84,7 +106,7 @@ class ConnectionUtil {
         return currentNetwork;
     }
 
-    static NetworkRequest createNetworkMonitoringRequest() {
+    private static NetworkRequest createNetworkMonitoringRequest() {
         // note: this throws an NPE when running in junit without robolectric, due to Android
         return new NetworkRequest.Builder()
                 .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
@@ -95,7 +117,7 @@ class ConnectionUtil {
                 .build();
     }
 
-    CurrentNetwork getActiveNetwork() {
+    CurrentNetwork getCurrentNetwork() {
         return currentNetwork;
     }
 
@@ -109,39 +131,27 @@ class ConnectionUtil {
         }
     }
 
-    private class ConnectionMonitor extends ConnectivityManager.NetworkCallback {
+    private final class ConnectionMonitor extends ConnectivityManager.NetworkCallback {
 
         @Override
         public void onAvailable(@NonNull Network network) {
             CurrentNetwork activeNetwork = refreshNetworkStatus();
-            Log.d(SplunkRum.LOG_TAG, "  onAvailable: activeNetwork=" + activeNetwork);
+            Log.d("OpenTelemetryRum", "  onAvailable: currentNetwork=" + activeNetwork);
 
             notifyListeners(activeNetwork);
         }
 
         @Override
         public void onLost(@NonNull Network network) {
-            // it seems that the "currentActiveNetwork" is still the one that is being lost, so for
+            // it seems that the "currentNetwork" is still the one that is being lost, so for
             // this method, we'll force it to be NO_NETWORK, rather than relying on the
             // ConnectivityManager to have the right
             // state at the right time during this event.
-            CurrentNetwork activeNetwork = NO_NETWORK;
-            currentNetwork = activeNetwork;
-            Log.d(SplunkRum.LOG_TAG, "  onLost: activeNetwork=" + activeNetwork);
+            CurrentNetwork currentNetwork = NO_NETWORK;
+            CurrentNetworkProvider.this.currentNetwork = currentNetwork;
+            Log.d("OpenTelemetryRum", "  onLost: currentNetwork=" + currentNetwork);
 
-            notifyListeners(activeNetwork);
-        }
-    }
-
-    static class Factory {
-
-        ConnectionUtil createAndStart(Application application) {
-            Context context = application.getApplicationContext();
-            ConnectionUtil connectionUtil = new ConnectionUtil(NetworkDetector.create(context));
-            connectionUtil.startMonitoring(
-                    ConnectionUtil::createNetworkMonitoringRequest,
-                    (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
-            return connectionUtil;
+            notifyListeners(currentNetwork);
         }
     }
 }

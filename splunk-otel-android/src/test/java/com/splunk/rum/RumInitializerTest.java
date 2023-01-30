@@ -34,6 +34,8 @@ import com.google.common.base.Strings;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetwork;
+import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
@@ -71,13 +73,13 @@ class RumInitializerTest {
         RumInitializer testInitializer =
                 new RumInitializer(splunkRumBuilder, application, startupTimer) {
                     @Override
-                    SpanExporter buildFilteringExporter(ConnectionUtil connectionUtil) {
+                    SpanExporter buildFilteringExporter(CurrentNetworkProvider connectionUtil) {
                         return testExporter;
                     }
                 };
         SplunkRum splunkRum =
                 testInitializer.initialize(
-                        mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS), mainLooper);
+                        app -> mock(CurrentNetworkProvider.class, RETURNS_DEEP_STUBS), mainLooper);
         startupTimer.runCompletionCallback();
         splunkRum.flushSpans();
 
@@ -125,13 +127,13 @@ class RumInitializerTest {
         RumInitializer testInitializer =
                 new RumInitializer(splunkRumBuilder, application, startupTimer) {
                     @Override
-                    SpanExporter buildFilteringExporter(ConnectionUtil connectionUtil) {
+                    SpanExporter buildFilteringExporter(CurrentNetworkProvider connectionUtil) {
                         return testExporter;
                     }
                 };
         SplunkRum splunkRum =
                 testInitializer.initialize(
-                        mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS), mainLooper);
+                        app -> mock(CurrentNetworkProvider.class, RETURNS_DEEP_STUBS), mainLooper);
         splunkRum.flushSpans();
 
         testExporter.reset();
@@ -172,15 +174,15 @@ class RumInitializerTest {
                     }
                 };
 
-        ConnectionUtil connectionUtil = mock(ConnectionUtil.class);
+        CurrentNetworkProvider currentNetworkProvider = mock(CurrentNetworkProvider.class);
+        CurrentNetwork currentNetwork = mock(CurrentNetwork.class);
 
-        CurrentNetwork offline = CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build();
-        CurrentNetwork online = CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build();
-        when(connectionUtil.refreshNetworkStatus()).thenReturn(offline, online);
+        when(currentNetworkProvider.refreshNetworkStatus()).thenReturn(currentNetwork);
+        when(currentNetwork.isOnline()).thenReturn(false, true);
 
         long currentTimeNanos = MILLISECONDS.toNanos(System.currentTimeMillis());
 
-        SpanExporter spanExporter = testInitializer.buildFilteringExporter(connectionUtil);
+        SpanExporter spanExporter = testInitializer.buildFilteringExporter(currentNetworkProvider);
         List<SpanData> batch1 = new ArrayList<>();
         for (int i = 0; i < 99; i++) {
             batch1.add(createTestSpan(currentTimeNanos - MINUTES.toNanos(1)));
@@ -221,10 +223,9 @@ class RumInitializerTest {
 
         when(application.getApplicationContext()).thenReturn(context);
 
-        ConnectionUtil connectionUtil = mock(ConnectionUtil.class, RETURNS_DEEP_STUBS);
-        when(connectionUtil.refreshNetworkStatus().isOnline()).thenReturn(true);
-        ConnectionUtil.Factory connectionUtilFactory = mock(ConnectionUtil.Factory.class);
-        when(connectionUtilFactory.createAndStart(application)).thenReturn(connectionUtil);
+        CurrentNetworkProvider currentNetworkProvider =
+                mock(CurrentNetworkProvider.class, RETURNS_DEEP_STUBS);
+        when(currentNetworkProvider.refreshNetworkStatus().isOnline()).thenReturn(true);
 
         AppStartupTimer appStartupTimer = new AppStartupTimer();
         RumInitializer initializer =
@@ -235,7 +236,7 @@ class RumInitializerTest {
                     }
                 };
 
-        SplunkRum splunkRum = initializer.initialize(connectionUtilFactory, mainLooper);
+        SplunkRum splunkRum = initializer.initialize(app -> currentNetworkProvider, mainLooper);
         appStartupTimer.runCompletionCallback();
 
         Exception e = new IllegalArgumentException("booom!");

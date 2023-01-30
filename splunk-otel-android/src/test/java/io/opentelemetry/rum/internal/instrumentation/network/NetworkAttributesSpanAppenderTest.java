@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.network;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -32,16 +32,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class NetworkAttributesAppenderTest {
+class NetworkAttributesSpanAppenderTest {
 
-    @Mock ConnectionUtil connectionUtil;
+    @Mock CurrentNetworkProvider currentNetworkProvider;
     @Mock ReadWriteSpan span;
 
-    @InjectMocks NetworkAttributesAppender underTest;
+    @InjectMocks NetworkAttributesSpanAppender underTest;
 
     @Test
     void shouldAppendNetworkAttributes() {
-        when(connectionUtil.getActiveNetwork())
+        when(currentNetworkProvider.getCurrentNetwork())
                 .thenReturn(
                         CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
                                 .subType("LTE")

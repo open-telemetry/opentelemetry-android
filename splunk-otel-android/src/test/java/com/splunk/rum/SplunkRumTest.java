@@ -44,6 +44,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.rum.internal.GlobalAttributesSpanAppender;
 import io.opentelemetry.rum.internal.OpenTelemetryRum;
+import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
@@ -80,8 +81,8 @@ public class SplunkRumTest {
     @Test
     void initialization_onlyOnce() {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
-        ConnectionUtil.Factory connectionUtilFactory =
-                mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS);
+        CurrentNetworkProvider currentNetworkProvider =
+                mock(CurrentNetworkProvider.class, RETURNS_DEEP_STUBS);
         Context context = mock(Context.class);
 
         SplunkRumBuilder splunkRumBuilder =
@@ -95,7 +96,7 @@ public class SplunkRumTest {
         when(context.getFilesDir()).thenReturn(new File("/my/storage/spot"));
 
         SplunkRum singleton =
-                SplunkRum.initialize(splunkRumBuilder, application, connectionUtilFactory);
+                SplunkRum.initialize(splunkRumBuilder, application, app -> currentNetworkProvider);
         SplunkRum sameInstance = splunkRumBuilder.build(application);
 
         assertSame(singleton, sameInstance);
@@ -110,8 +111,8 @@ public class SplunkRumTest {
     @Test
     void getInstance() {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
-        ConnectionUtil.Factory connectionUtilFactory =
-                mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS);
+        CurrentNetworkProvider currentNetworkProvider =
+                mock(CurrentNetworkProvider.class, RETURNS_DEEP_STUBS);
         Context context = mock(Context.class);
 
         SplunkRumBuilder splunkRumBuilder =
@@ -125,7 +126,7 @@ public class SplunkRumTest {
         when(context.getFilesDir()).thenReturn(new File("/my/storage/spot"));
 
         SplunkRum singleton =
-                SplunkRum.initialize(splunkRumBuilder, application, connectionUtilFactory);
+                SplunkRum.initialize(splunkRumBuilder, application, app -> currentNetworkProvider);
         assertSame(singleton, SplunkRum.getInstance());
     }
 
@@ -137,8 +138,8 @@ public class SplunkRumTest {
     @Test
     void nonNullMethods() {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
-        ConnectionUtil.Factory connectionUtilFactory =
-                mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS);
+        CurrentNetworkProvider currentNetworkProvider =
+                mock(CurrentNetworkProvider.class, RETURNS_DEEP_STUBS);
         Context context = mock(Context.class);
 
         when(application.getApplicationContext()).thenReturn(context);
@@ -152,7 +153,7 @@ public class SplunkRumTest {
                         .disableAnrDetection();
 
         SplunkRum splunkRum =
-                SplunkRum.initialize(splunkRumBuilder, application, connectionUtilFactory);
+                SplunkRum.initialize(splunkRumBuilder, application, app -> currentNetworkProvider);
         assertNotNull(splunkRum.getOpenTelemetry());
         assertNotNull(splunkRum.getRumSessionId());
     }
@@ -233,8 +234,8 @@ public class SplunkRumTest {
     @Test
     void integrateWithBrowserRum() {
         Application application = mock(Application.class, RETURNS_DEEP_STUBS);
-        ConnectionUtil.Factory connectionUtilFactory =
-                mock(ConnectionUtil.Factory.class, RETURNS_DEEP_STUBS);
+        CurrentNetworkProvider currentNetworkProvider =
+                mock(CurrentNetworkProvider.class, RETURNS_DEEP_STUBS);
         Context context = mock(Context.class);
         WebView webView = mock(WebView.class);
 
@@ -249,7 +250,7 @@ public class SplunkRumTest {
                         .disableAnrDetection();
 
         SplunkRum splunkRum =
-                SplunkRum.initialize(splunkRumBuilder, application, connectionUtilFactory);
+                SplunkRum.initialize(splunkRumBuilder, application, app -> currentNetworkProvider);
         splunkRum.integrateWithBrowserRum(webView);
 
         verify(webView)

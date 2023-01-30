@@ -23,6 +23,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetwork;
+import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider;
 import java.io.File;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +46,7 @@ class DiskToZipkinExporterTest {
     private final File imposter =
             new File(spanFilesPath.getAbsolutePath() + File.separator + "someImposterFile.dll");
 
-    @Mock private ConnectionUtil connectionUtil;
+    @Mock private CurrentNetworkProvider currentNetworkProvider;
     @Mock private FileUtils fileUtils;
     @Mock private CurrentNetwork currentNetwork;
     @Mock FileSender sender;
@@ -52,7 +54,7 @@ class DiskToZipkinExporterTest {
 
     @BeforeEach
     void setup() throws Exception {
-        when(connectionUtil.refreshNetworkStatus()).thenReturn(currentNetwork);
+        when(currentNetworkProvider.refreshNetworkStatus()).thenReturn(currentNetwork);
         when(currentNetwork.isOnline()).thenReturn(true);
         Stream<File> files = Stream.of(file1, imposter, file2);
         when(fileUtils.listSpanFiles(spanFilesPath)).thenReturn(files);
@@ -124,7 +126,7 @@ class DiskToZipkinExporterTest {
                 .bandwidthLimit(BANDWIDTH_LIMIT)
                 .bandwidthTracker(bandwidthTracker)
                 .spanFilesPath(spanFilesPath)
-                .connectionUtil(connectionUtil)
+                .connectionUtil(currentNetworkProvider)
                 .build();
     }
 }

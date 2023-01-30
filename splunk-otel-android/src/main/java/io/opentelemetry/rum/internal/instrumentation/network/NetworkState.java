@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.network;
 
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
@@ -32,7 +32,7 @@ enum NetworkState {
         this.humanName = humanName;
     }
 
-    public String getHumanName() {
+    String getHumanName() {
         return humanName;
     }
 }

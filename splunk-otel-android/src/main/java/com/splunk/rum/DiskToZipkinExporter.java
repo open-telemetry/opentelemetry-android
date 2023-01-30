@@ -22,6 +22,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.util.Log;
 import androidx.annotation.Nullable;
+import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider;
 import java.io.File;
 import java.util.Comparator;
 import java.util.List;
@@ -39,7 +40,7 @@ class DiskToZipkinExporter {
     static final double DEFAULT_MAX_UNCOMPRESSED_BANDWIDTH = 15.0 * 1024;
 
     private final ScheduledExecutorService threadPool;
-    private final ConnectionUtil connectionUtil;
+    private final CurrentNetworkProvider currentNetworkProvider;
     private final FileSender fileSender;
     private final File spanFilesPath;
     private final FileUtils fileUtils;
@@ -48,7 +49,7 @@ class DiskToZipkinExporter {
 
     DiskToZipkinExporter(Builder builder) {
         this.threadPool = builder.threadPool;
-        this.connectionUtil = requireNonNull(builder.connectionUtil);
+        this.currentNetworkProvider = requireNonNull(builder.currentNetworkProvider);
         this.fileSender = requireNonNull(builder.fileSender);
         this.spanFilesPath = requireNonNull(builder.spanFilesPath);
         this.fileUtils = builder.fileUtils;
@@ -72,7 +73,7 @@ class DiskToZipkinExporter {
     }
 
     private void exportPendingFiles() {
-        if (!connectionUtil.refreshNetworkStatus().isOnline()) {
+        if (!currentNetworkProvider.refreshNetworkStatus().isOnline()) {
             Log.i(
                     SplunkRum.LOG_TAG,
                     "Network offline, leaving spans on disk for for eventual export.");
@@ -123,7 +124,7 @@ class DiskToZipkinExporter {
         @Nullable private FileSender fileSender;
         @Nullable private BandwidthTracker bandwidthTracker;
         private ScheduledExecutorService threadPool = Executors.newSingleThreadScheduledExecutor();
-        @Nullable private ConnectionUtil connectionUtil;
+        @Nullable private CurrentNetworkProvider currentNetworkProvider;
         @Nullable private File spanFilesPath;
         private FileUtils fileUtils = new FileUtils();
         private double bandwidthLimit = DEFAULT_MAX_UNCOMPRESSED_BANDWIDTH;
@@ -133,8 +134,8 @@ class DiskToZipkinExporter {
             return this;
         }
 
-        Builder connectionUtil(ConnectionUtil connectionUtil) {
-            this.connectionUtil = connectionUtil;
+        Builder connectionUtil(CurrentNetworkProvider currentNetworkProvider) {
+            this.currentNetworkProvider = currentNetworkProvider;
             return this;
         }
 

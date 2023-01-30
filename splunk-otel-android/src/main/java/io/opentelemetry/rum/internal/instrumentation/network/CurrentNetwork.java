@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.network;
 
 import android.os.Build;
 import androidx.annotation.Nullable;
 import java.util.Objects;
 
-final class CurrentNetwork {
+/** A value class representing the current network that the device is connected to. */
+public final class CurrentNetwork {
+
     @Nullable private final Carrier carrier;
     private final NetworkState state;
     @Nullable private final String subType;
@@ -31,7 +33,8 @@ final class CurrentNetwork {
         this.subType = builder.subType;
     }
 
-    boolean isOnline() {
+    /** Returns {@code true} if the device has internet connection; {@code false} otherwise. */
+    public boolean isOnline() {
         return getState() != NetworkState.NO_NETWORK_AVAILABLE;
     }
 
@@ -44,17 +47,32 @@ final class CurrentNetwork {
         return subType;
     }
 
-    @Override
-    public String toString() {
-        return "CurrentNetwork{"
-                + "carrier="
-                + carrier
-                + ", state="
-                + state
-                + ", subType='"
-                + subType
-                + '\''
-                + '}';
+    @SuppressWarnings("NullAway")
+    @Nullable
+    String getCarrierCountryCode() {
+        return haveCarrier() ? carrier.getMobileCountryCode() : null;
+    }
+
+    @SuppressWarnings("NullAway")
+    @Nullable
+    String getCarrierIsoCountryCode() {
+        return haveCarrier() ? carrier.getIsoCountryCode() : null;
+    }
+
+    @SuppressWarnings("NullAway")
+    @Nullable
+    String getCarrierNetworkCode() {
+        return haveCarrier() ? carrier.getMobileNetworkCode() : null;
+    }
+
+    @SuppressWarnings("NullAway")
+    @Nullable
+    String getCarrierName() {
+        return haveCarrier() ? carrier.getName() : null;
+    }
+
+    private boolean haveCarrier() {
+        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) && (carrier != null);
     }
 
     @Override
@@ -72,32 +90,17 @@ final class CurrentNetwork {
         return Objects.hash(carrier, state, subType);
     }
 
-    @SuppressWarnings("NullAway")
-    @Nullable
-    public String getCarrierCountryCode() {
-        return haveCarrier() ? carrier.getMobileCountryCode() : null;
-    }
-
-    @SuppressWarnings("NullAway")
-    @Nullable
-    public String getCarrierIsoCountryCode() {
-        return haveCarrier() ? carrier.getIsoCountryCode() : null;
-    }
-
-    @SuppressWarnings("NullAway")
-    @Nullable
-    public String getCarrierNetworkCode() {
-        return haveCarrier() ? carrier.getMobileNetworkCode() : null;
-    }
-
-    @SuppressWarnings("NullAway")
-    @Nullable
-    public String getCarrierName() {
-        return haveCarrier() ? carrier.getName() : null;
-    }
-
-    private boolean haveCarrier() {
-        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) && (carrier != null);
+    @Override
+    public String toString() {
+        return "CurrentNetwork{"
+                + "carrier="
+                + carrier
+                + ", state="
+                + state
+                + ", subType='"
+                + subType
+                + '\''
+                + '}';
     }
 
     static Builder builder(NetworkState state) {
@@ -109,22 +112,22 @@ final class CurrentNetwork {
         private final NetworkState state;
         @Nullable private String subType;
 
-        public Builder(NetworkState state) {
+        private Builder(NetworkState state) {
             this.state = state;
         }
 
-        CurrentNetwork build() {
-            return new CurrentNetwork(this);
-        }
-
-        public Builder carrier(@Nullable Carrier carrier) {
+        Builder carrier(@Nullable Carrier carrier) {
             this.carrier = carrier;
             return this;
         }
 
-        public Builder subType(@Nullable String subType) {
+        Builder subType(@Nullable String subType) {
             this.subType = subType;
             return this;
+        }
+
+        CurrentNetwork build() {
+            return new CurrentNetwork(this);
         }
     }
 }

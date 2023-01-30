@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.network;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;

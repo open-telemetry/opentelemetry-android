@@ -14,26 +14,38 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.network;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 
-final class NetworkAttributesAppender implements SpanProcessor {
+/**
+ * A {@link SpanProcessor} implementation that appends a set of {@linkplain Attributes attributes}
+ * describing the {@linkplain CurrentNetwork current network} to every span that is exported.
+ *
+ * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
+ * time.
+ */
+public final class NetworkAttributesSpanAppender implements SpanProcessor {
 
-    private final ConnectionUtil connectionUtil;
+    public static SpanProcessor create(CurrentNetworkProvider currentNetworkProvider) {
+        return new NetworkAttributesSpanAppender(currentNetworkProvider);
+    }
+
+    private final CurrentNetworkProvider currentNetworkProvider;
     private final CurrentNetworkAttributesExtractor networkAttributesExtractor =
             new CurrentNetworkAttributesExtractor();
 
-    NetworkAttributesAppender(ConnectionUtil connectionUtil) {
-        this.connectionUtil = connectionUtil;
+    NetworkAttributesSpanAppender(CurrentNetworkProvider currentNetworkProvider) {
+        this.currentNetworkProvider = currentNetworkProvider;
     }
 
     @Override
     public void onStart(Context parentContext, ReadWriteSpan span) {
-        CurrentNetwork currentNetwork = connectionUtil.getActiveNetwork();
+        CurrentNetwork currentNetwork = currentNetworkProvider.getCurrentNetwork();
         span.setAllAttributes(networkAttributesExtractor.extract(currentNetwork));
     }
 

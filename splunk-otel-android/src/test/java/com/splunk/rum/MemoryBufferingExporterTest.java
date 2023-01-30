@@ -26,6 +26,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetwork;
+import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -39,19 +41,22 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class MemoryBufferingExporterTest {
-    private final ConnectionUtil connectionUtil = mock(ConnectionUtil.class);
+    private final CurrentNetworkProvider currentNetworkProvider =
+            mock(CurrentNetworkProvider.class);
+    private final CurrentNetwork currentNetwork = mock(CurrentNetwork.class);
 
     @BeforeEach
     void setUp() {
-        when(connectionUtil.refreshNetworkStatus())
-                .thenReturn(CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).build());
+        when(currentNetworkProvider.refreshNetworkStatus()).thenReturn(currentNetwork);
     }
 
     @Test
     void happyPath() {
+        when(currentNetwork.isOnline()).thenReturn(true);
+
         SpanExporter delegate = mock(SpanExporter.class);
         MemoryBufferingExporter bufferingExporter =
-                new MemoryBufferingExporter(connectionUtil, delegate);
+                new MemoryBufferingExporter(currentNetworkProvider, delegate);
 
         Collection<SpanData> spans = Arrays.asList(mock(SpanData.class), mock(SpanData.class));
         when(delegate.export(spans)).thenReturn(CompletableResultCode.ofSuccess());
@@ -62,13 +67,11 @@ class MemoryBufferingExporterTest {
 
     @Test
     void offlinePath() {
-        when(connectionUtil.refreshNetworkStatus())
-                .thenReturn(CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build())
-                .thenReturn(CurrentNetwork.builder(NetworkState.TRANSPORT_UNKNOWN).build());
+        when(currentNetwork.isOnline()).thenReturn(false, true);
 
         SpanExporter delegate = mock(SpanExporter.class);
         MemoryBufferingExporter bufferingExporter =
-                new MemoryBufferingExporter(connectionUtil, delegate);
+                new MemoryBufferingExporter(currentNetworkProvider, delegate);
 
         Collection<SpanData> spans = Arrays.asList(mock(SpanData.class), mock(SpanData.class));
 
@@ -90,9 +93,11 @@ class MemoryBufferingExporterTest {
 
     @Test
     void retryPath() {
+        when(currentNetwork.isOnline()).thenReturn(true);
+
         SpanExporter delegate = mock(SpanExporter.class);
         MemoryBufferingExporter bufferingExporter =
-                new MemoryBufferingExporter(connectionUtil, delegate);
+                new MemoryBufferingExporter(currentNetworkProvider, delegate);
 
         SpanData one = mock(SpanData.class);
         SpanData two = mock(SpanData.class);
@@ -112,9 +117,11 @@ class MemoryBufferingExporterTest {
 
     @Test
     void flush_withBacklog() {
+        when(currentNetwork.isOnline()).thenReturn(true);
+
         SpanExporter delegate = mock(SpanExporter.class);
         MemoryBufferingExporter bufferingExporter =
-                new MemoryBufferingExporter(connectionUtil, delegate);
+                new MemoryBufferingExporter(currentNetworkProvider, delegate);
 
         SpanData one = mock(SpanData.class);
         SpanData two = mock(SpanData.class);
@@ -134,9 +141,11 @@ class MemoryBufferingExporterTest {
 
     @Test
     void flush() {
+        when(currentNetwork.isOnline()).thenReturn(true);
+
         SpanExporter delegate = mock(SpanExporter.class);
         MemoryBufferingExporter bufferingExporter =
-                new MemoryBufferingExporter(connectionUtil, delegate);
+                new MemoryBufferingExporter(currentNetworkProvider, delegate);
         when(delegate.flush()).thenReturn(CompletableResultCode.ofSuccess());
 
         CompletableResultCode secondResult = bufferingExporter.flush();
@@ -147,9 +156,11 @@ class MemoryBufferingExporterTest {
     @SuppressWarnings("unchecked")
     @Test
     void maxBacklog() {
+        when(currentNetwork.isOnline()).thenReturn(true);
+
         SpanExporter delegate = mock(SpanExporter.class);
         MemoryBufferingExporter bufferingExporter =
-                new MemoryBufferingExporter(connectionUtil, delegate);
+                new MemoryBufferingExporter(currentNetworkProvider, delegate);
 
         List<SpanData> firstSet = new ArrayList<>();
         for (int i = 0; i < 110; i++) {
@@ -181,7 +192,7 @@ class MemoryBufferingExporterTest {
     void shutdown() {
         SpanExporter delegate = mock(SpanExporter.class);
         MemoryBufferingExporter bufferingExporter =
-                new MemoryBufferingExporter(connectionUtil, delegate);
+                new MemoryBufferingExporter(currentNetworkProvider, delegate);
 
         bufferingExporter.shutdown();
         verify(delegate).shutdown();

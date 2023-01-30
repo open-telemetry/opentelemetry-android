@@ -47,11 +47,15 @@ import io.opentelemetry.rum.internal.OpenTelemetryRum;
 import io.opentelemetry.rum.internal.OpenTelemetryRumBuilder;
 import io.opentelemetry.rum.internal.instrumentation.anr.AnrDetector;
 import io.opentelemetry.rum.internal.instrumentation.crash.CrashReporter;
+import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider;
+import io.opentelemetry.rum.internal.instrumentation.network.NetworkAttributesSpanAppender;
+import io.opentelemetry.rum.internal.instrumentation.network.NetworkChangeMonitor;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -62,6 +66,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import zipkin2.reporter.Sender;
@@ -87,7 +92,9 @@ class RumInitializer {
         this.timingClock = startupTimer.startupClock;
     }
 
-    SplunkRum initialize(ConnectionUtil.Factory connectionUtilFactory, Looper mainLooper) {
+    SplunkRum initialize(
+            Function<Application, CurrentNetworkProvider> currentNetworkProviderFactory,
+            Looper mainLooper) {
         VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
 
         long startTimeNanos = timingClock.now();
@@ -97,7 +104,8 @@ class RumInitializer {
         initializationEvents.add(
                 new RumInitializer.InitializationEvent("resourceInitialized", timingClock.now()));
 
-        ConnectionUtil connectionUtil = connectionUtilFactory.createAndStart(application);
+        CurrentNetworkProvider currentNetworkProvider =
+                currentNetworkProviderFactory.apply(application);
         initializationEvents.add(
                 new InitializationEvent("connectionUtilInitialized", timingClock.now()));
 
@@ -105,15 +113,15 @@ class RumInitializer {
                 GlobalAttributesSpanAppender.create(builder.globalAttributes);
         otelRumBuilder.addTracerProviderCustomizer(
                 (tracerProviderBuilder, app) -> {
-                    NetworkAttributesAppender networkAttributesAppender =
-                            new NetworkAttributesAppender(connectionUtil);
+                    SpanProcessor networkAttributesSpanAppender =
+                            NetworkAttributesSpanAppender.create(currentNetworkProvider);
                     ScreenAttributesAppender screenAttributesAppender =
                             new ScreenAttributesAppender(visibleScreenTracker);
                     initializationEvents.add(
                             new RumInitializer.InitializationEvent(
                                     "attributeAppenderInitialized", timingClock.now()));
 
-                    SpanExporter zipkinExporter = buildFilteringExporter(connectionUtil);
+                    SpanExporter zipkinExporter = buildFilteringExporter(currentNetworkProvider);
                     initializationEvents.add(
                             new RumInitializer.InitializationEvent(
                                     "exporterInitialized", timingClock.now()));
@@ -126,7 +134,7 @@ class RumInitializer {
 
                     tracerProviderBuilder
                             .addSpanProcessor(globalAttributesSpanAppender)
-                            .addSpanProcessor(networkAttributesAppender)
+                            .addSpanProcessor(networkAttributesSpanAppender)
                             .addSpanProcessor(screenAttributesAppender)
                             .addSpanProcessor(batchSpanProcessor)
                             .setSpanLimits(
@@ -175,12 +183,8 @@ class RumInitializer {
         if (builder.networkMonitorEnabled) {
             otelRumBuilder.addInstrumentation(
                     instrumentedApplication -> {
-                        NetworkMonitor networkMonitor = new NetworkMonitor(connectionUtil);
-                        networkMonitor.addConnectivityListener(
-                                instrumentedApplication
-                                        .getOpenTelemetrySdk()
-                                        .getTracer(SplunkRum.RUM_TRACER_NAME));
-                        instrumentedApplication.registerApplicationStateListener(networkMonitor);
+                        NetworkChangeMonitor.create(currentNetworkProvider)
+                                .installOn(instrumentedApplication);
                         initializationEvents.add(
                                 new RumInitializer.InitializationEvent(
                                         "networkMonitorInitialized", timingClock.now()));
@@ -336,8 +340,8 @@ class RumInitializer {
     }
 
     // visible for testing
-    SpanExporter buildFilteringExporter(ConnectionUtil connectionUtil) {
-        SpanExporter exporter = buildExporter(connectionUtil);
+    SpanExporter buildFilteringExporter(CurrentNetworkProvider currentNetworkProvider) {
+        SpanExporter exporter = buildExporter(currentNetworkProvider);
         SpanExporter splunkTranslatedExporter =
                 new SplunkSpanDataModifier(exporter, builder.reactNativeSupportEnabled);
         SpanExporter filteredExporter = builder.decorateWithSpanFilter(splunkTranslatedExporter);
@@ -346,7 +350,7 @@ class RumInitializer {
         return filteredExporter;
     }
 
-    private SpanExporter buildExporter(ConnectionUtil connectionUtil) {
+    private SpanExporter buildExporter(CurrentNetworkProvider currentNetworkProvider) {
         if (builder.debugEnabled) {
             // tell the Zipkin exporter to shut up already. We're on mobile, network stuff happens.
             // we'll do our best to hang on to the spans with the wrapping BufferingExporter.
@@ -356,13 +360,14 @@ class RumInitializer {
         }
 
         if (builder.diskBufferingEnabled) {
-            return buildStorageBufferingExporter(connectionUtil);
+            return buildStorageBufferingExporter(currentNetworkProvider);
         }
 
-        return buildMemoryBufferingThrottledExporter(connectionUtil);
+        return buildMemoryBufferingThrottledExporter(currentNetworkProvider);
     }
 
-    private SpanExporter buildStorageBufferingExporter(ConnectionUtil connectionUtil) {
+    private SpanExporter buildStorageBufferingExporter(
+            CurrentNetworkProvider currentNetworkProvider) {
         Sender sender = OkHttpSender.newBuilder().endpoint(getEndpoint()).build();
         File spanFilesPath = FileUtils.getSpansDirectory(application);
         BandwidthTracker bandwidthTracker = new BandwidthTracker();
@@ -371,7 +376,7 @@ class RumInitializer {
                 FileSender.builder().sender(sender).bandwidthTracker(bandwidthTracker).build();
         DiskToZipkinExporter diskToZipkinExporter =
                 DiskToZipkinExporter.builder()
-                        .connectionUtil(connectionUtil)
+                        .connectionUtil(currentNetworkProvider)
                         .fileSender(fileSender)
                         .bandwidthTracker(bandwidthTracker)
                         .spanFilesPath(spanFilesPath)
@@ -386,11 +391,12 @@ class RumInitializer {
         return builder.beaconEndpoint + "?auth=" + builder.rumAccessToken;
     }
 
-    private SpanExporter buildMemoryBufferingThrottledExporter(ConnectionUtil connectionUtil) {
+    private SpanExporter buildMemoryBufferingThrottledExporter(
+            CurrentNetworkProvider currentNetworkProvider) {
         String endpoint = getEndpoint();
         SpanExporter zipkinSpanExporter = getCoreSpanExporter(endpoint);
         return ThrottlingExporter.newBuilder(
-                        new MemoryBufferingExporter(connectionUtil, zipkinSpanExporter))
+                        new MemoryBufferingExporter(currentNetworkProvider, zipkinSpanExporter))
                 .categorizeByAttribute(SplunkRum.COMPONENT_KEY)
                 .maxSpansInWindow(100)
                 .windowSize(Duration.ofSeconds(30))

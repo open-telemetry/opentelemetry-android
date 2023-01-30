@@ -14,44 +14,68 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.network;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.os.Build;
-import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.rum.internal.instrumentation.ApplicationStateListener;
+import io.opentelemetry.rum.internal.instrumentation.InstrumentedApplication;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 @Config(sdk = Build.VERSION_CODES.P)
 @RunWith(RobolectricTestRunner.class)
-public class NetworkMonitorTest {
+public class NetworkChangeMonitorTest {
 
     @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
 
-    private Tracer tracer;
+    @Captor ArgumentCaptor<ApplicationStateListener> applicationStateListenerCaptor;
+    @Captor ArgumentCaptor<NetworkChangeListener> networkChangeListenerCaptor;
+
+    @Mock CurrentNetworkProvider currentNetworkProvider;
+    @Mock InstrumentedApplication instrumentedApplication;
+
+    AutoCloseable mocks;
 
     @Before
-    public void setup() {
-        tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
+    public void setUp() {
+        mocks = MockitoAnnotations.openMocks(this);
+        when(instrumentedApplication.getOpenTelemetrySdk())
+                .thenReturn((OpenTelemetrySdk) otelTesting.getOpenTelemetry());
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        mocks.close();
     }
 
     @Test
     public void networkAvailable_wifi() {
-        NetworkMonitor.TracingNetworkChangeListener listener =
-                new NetworkMonitor.TracingNetworkChangeListener(tracer, new AtomicBoolean(true));
+        NetworkChangeMonitor.create(currentNetworkProvider).installOn(instrumentedApplication);
+
+        verify(currentNetworkProvider)
+                .addNetworkChangeListener(networkChangeListenerCaptor.capture());
+        NetworkChangeListener listener = networkChangeListenerCaptor.getValue();
 
         listener.onNetworkChange(CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build());
 
@@ -60,14 +84,17 @@ public class NetworkMonitorTest {
         assertThat(spans.get(0))
                 .hasName("network.change")
                 .hasAttributesSatisfyingExactly(
-                        equalTo(NetworkMonitor.NETWORK_STATUS_KEY, "available"),
+                        equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "available"),
                         equalTo(SemanticAttributes.NET_HOST_CONNECTION_TYPE, "wifi"));
     }
 
     @Test
     public void networkAvailable_cellular() {
-        NetworkMonitor.TracingNetworkChangeListener listener =
-                new NetworkMonitor.TracingNetworkChangeListener(tracer, new AtomicBoolean(true));
+        NetworkChangeMonitor.create(currentNetworkProvider).installOn(instrumentedApplication);
+
+        verify(currentNetworkProvider)
+                .addNetworkChangeListener(networkChangeListenerCaptor.capture());
+        NetworkChangeListener listener = networkChangeListenerCaptor.getValue();
 
         CurrentNetwork network =
                 CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
@@ -89,7 +116,7 @@ public class NetworkMonitorTest {
         assertThat(spans.get(0))
                 .hasName("network.change")
                 .hasAttributesSatisfyingExactly(
-                        equalTo(NetworkMonitor.NETWORK_STATUS_KEY, "available"),
+                        equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "available"),
                         equalTo(SemanticAttributes.NET_HOST_CONNECTION_TYPE, "cell"),
                         equalTo(SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE, "LTE"),
                         equalTo(SemanticAttributes.NET_HOST_CARRIER_NAME, "ShadyTel"),
@@ -100,8 +127,11 @@ public class NetworkMonitorTest {
 
     @Test
     public void networkLost() {
-        NetworkMonitor.TracingNetworkChangeListener listener =
-                new NetworkMonitor.TracingNetworkChangeListener(tracer, new AtomicBoolean(true));
+        NetworkChangeMonitor.create(currentNetworkProvider).installOn(instrumentedApplication);
+
+        verify(currentNetworkProvider)
+                .addNetworkChangeListener(networkChangeListenerCaptor.capture());
+        NetworkChangeListener listener = networkChangeListenerCaptor.getValue();
 
         listener.onNetworkChange(CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
 
@@ -110,25 +140,35 @@ public class NetworkMonitorTest {
         assertThat(spans.get(0))
                 .hasName("network.change")
                 .hasAttributesSatisfyingExactly(
-                        equalTo(NetworkMonitor.NETWORK_STATUS_KEY, "lost"),
+                        equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "lost"),
                         equalTo(SemanticAttributes.NET_HOST_CONNECTION_TYPE, "unavailable"));
     }
 
     @Test
     public void noEventsPlease() {
-        AtomicBoolean shouldEmitChangeEvents = new AtomicBoolean(false);
+        NetworkChangeMonitor.create(currentNetworkProvider).installOn(instrumentedApplication);
 
-        NetworkMonitor.TracingNetworkChangeListener listener =
-                new NetworkMonitor.TracingNetworkChangeListener(tracer, shouldEmitChangeEvents);
+        verify(currentNetworkProvider)
+                .addNetworkChangeListener(networkChangeListenerCaptor.capture());
+        NetworkChangeListener networkListener = networkChangeListenerCaptor.getValue();
 
-        listener.onNetworkChange(CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
+        verify(instrumentedApplication)
+                .registerApplicationStateListener(applicationStateListenerCaptor.capture());
+        ApplicationStateListener applicationListener = applicationStateListenerCaptor.getValue();
+
+        applicationListener.onApplicationBackgrounded();
+
+        networkListener.onNetworkChange(
+                CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
         assertTrue(otelTesting.getSpans().isEmpty());
-        listener.onNetworkChange(
+        networkListener.onNetworkChange(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).subType("LTE").build());
         assertTrue(otelTesting.getSpans().isEmpty());
 
-        shouldEmitChangeEvents.set(true);
-        listener.onNetworkChange(CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
+        applicationListener.onApplicationForegrounded();
+
+        networkListener.onNetworkChange(
+                CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
         assertEquals(1, otelTesting.getSpans().size());
     }
 }

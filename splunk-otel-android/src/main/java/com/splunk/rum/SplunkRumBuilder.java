@@ -22,6 +22,7 @@ import android.app.Application;
 import android.util.Log;
 import androidx.annotation.Nullable;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 import java.util.function.Consumer;
@@ -314,7 +315,7 @@ public final class SplunkRumBuilder {
             throw new IllegalStateException(
                     "You must provide a rumAccessToken, a realm (or full beaconEndpoint), and an applicationName to create a valid Config instance.");
         }
-        return SplunkRum.initialize(this, application, new ConnectionUtil.Factory());
+        return SplunkRum.initialize(this, application, CurrentNetworkProvider::createAndStart);
     }
 
     SpanExporter decorateWithSpanFilter(SpanExporter exporter) {

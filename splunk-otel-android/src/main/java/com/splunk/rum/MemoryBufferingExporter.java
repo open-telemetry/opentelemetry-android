@@ -18,6 +18,7 @@ package com.splunk.rum;
 
 import android.util.Log;
 import androidx.annotation.NonNull;
+import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -30,21 +31,21 @@ import java.util.Queue;
 class MemoryBufferingExporter implements SpanExporter {
     private static final int MAX_BACKLOG_SIZE = 100;
 
-    private final ConnectionUtil connectionUtil;
+    private final CurrentNetworkProvider currentNetworkProvider;
     private final SpanExporter delegate;
     // note: no need to make this queue thread-safe since it will only ever be called from the
     // BatchSpanProcessor worker thread.
     private final Queue<SpanData> backlog = new ArrayDeque<>(MAX_BACKLOG_SIZE);
 
-    MemoryBufferingExporter(ConnectionUtil connectionUtil, SpanExporter delegate) {
-        this.connectionUtil = connectionUtil;
+    MemoryBufferingExporter(CurrentNetworkProvider currentNetworkProvider, SpanExporter delegate) {
+        this.currentNetworkProvider = currentNetworkProvider;
         this.delegate = delegate;
     }
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
         backlog.addAll(spans);
-        if (!connectionUtil.refreshNetworkStatus().isOnline()) {
+        if (!currentNetworkProvider.refreshNetworkStatus().isOnline()) {
             Log.i(
                     SplunkRum.LOG_TAG,
                     "Network offline, buffering " + spans.size() + " spans for eventual export.");

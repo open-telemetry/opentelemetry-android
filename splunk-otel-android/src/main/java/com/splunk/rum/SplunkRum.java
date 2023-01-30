@@ -36,9 +36,11 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.instrumentation.okhttp.v3_0.OkHttpTelemetry;
 import io.opentelemetry.rum.internal.GlobalAttributesSpanAppender;
 import io.opentelemetry.rum.internal.OpenTelemetryRum;
+import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 
@@ -100,7 +102,7 @@ public class SplunkRum {
     static SplunkRum initialize(
             SplunkRumBuilder builder,
             Application application,
-            ConnectionUtil.Factory connectionUtilFactory) {
+            Function<Application, CurrentNetworkProvider> currentNetworkProviderFactory) {
         if (INSTANCE != null) {
             Log.w(LOG_TAG, "Singleton SplunkRum instance has already been initialized.");
             return INSTANCE;
@@ -108,7 +110,7 @@ public class SplunkRum {
 
         INSTANCE =
                 new RumInitializer(builder, application, startupTimer)
-                        .initialize(connectionUtilFactory, Looper.getMainLooper());
+                        .initialize(currentNetworkProviderFactory, Looper.getMainLooper());
 
         if (builder.debugEnabled) {
             Log.i(

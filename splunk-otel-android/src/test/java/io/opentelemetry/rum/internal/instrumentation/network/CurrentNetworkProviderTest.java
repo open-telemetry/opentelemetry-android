@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.network;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,7 +41,7 @@ import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(maxSdk = Build.VERSION_CODES.S)
-public class ConnectionUtilTest {
+public class CurrentNetworkProviderTest {
 
     @Test
     @Config(maxSdk = Build.VERSION_CODES.LOLLIPOP)
@@ -59,12 +59,12 @@ public class ConnectionUtilTest {
                                 .subType("LTE")
                                 .build());
 
-        ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);
-        connectionUtil.startMonitoring(() -> networkRequest, connectivityManager);
+        CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
+        currentNetworkProvider.startMonitoring(() -> networkRequest, connectivityManager);
 
         assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
-                connectionUtil.getActiveNetwork());
+                currentNetworkProvider.getCurrentNetwork());
 
         ArgumentCaptor<NetworkCallback> monitorCaptor =
                 ArgumentCaptor.forClass(NetworkCallback.class);
@@ -72,7 +72,7 @@ public class ConnectionUtilTest {
                 .registerNetworkCallback(eq(networkRequest), monitorCaptor.capture());
 
         AtomicInteger notified = new AtomicInteger(0);
-        connectionUtil.addNetworkChangeListener(
+        currentNetworkProvider.addNetworkChangeListener(
                 (currentNetwork) -> {
                     int timesCalled = notified.incrementAndGet();
                     if (timesCalled == 1) {
@@ -109,12 +109,12 @@ public class ConnectionUtilTest {
                                 .subType("LTE")
                                 .build());
 
-        ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);
-        connectionUtil.startMonitoring(() -> networkRequest, connectivityManager);
+        CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
+        currentNetworkProvider.startMonitoring(() -> networkRequest, connectivityManager);
 
         assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
-                connectionUtil.getActiveNetwork());
+                currentNetworkProvider.getCurrentNetwork());
         verify(connectivityManager, never())
                 .registerNetworkCallback(eq(networkRequest), isA(NetworkCallback.class));
 
@@ -123,7 +123,7 @@ public class ConnectionUtilTest {
         verify(connectivityManager).registerDefaultNetworkCallback(monitorCaptor.capture());
 
         AtomicInteger notified = new AtomicInteger(0);
-        connectionUtil.addNetworkChangeListener(
+        currentNetworkProvider.addNetworkChangeListener(
                 (currentNetwork) -> {
                     int timesCalled = notified.incrementAndGet();
                     if (timesCalled == 1) {
@@ -151,8 +151,10 @@ public class ConnectionUtilTest {
         NetworkDetector networkDetector = mock(NetworkDetector.class);
         when(networkDetector.detectCurrentNetwork()).thenThrow(new SecurityException("bug"));
 
-        ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);
-        assertEquals(ConnectionUtil.UNKNOWN_NETWORK, connectionUtil.refreshNetworkStatus());
+        CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
+        assertEquals(
+                CurrentNetworkProvider.UNKNOWN_NETWORK,
+                currentNetworkProvider.refreshNetworkStatus());
     }
 
     @Test
@@ -167,11 +169,12 @@ public class ConnectionUtilTest {
                 .when(connectivityManager)
                 .registerDefaultNetworkCallback(isA(NetworkCallback.class));
 
-        ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);
-        connectionUtil.startMonitoring(() -> mock(NetworkRequest.class), connectivityManager);
+        CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
+        currentNetworkProvider.startMonitoring(
+                () -> mock(NetworkRequest.class), connectivityManager);
         assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
-                connectionUtil.refreshNetworkStatus());
+                currentNetworkProvider.refreshNetworkStatus());
     }
 
     @Test
@@ -187,11 +190,11 @@ public class ConnectionUtilTest {
                 .when(connectivityManager)
                 .registerNetworkCallback(eq(networkRequest), isA(NetworkCallback.class));
 
-        ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);
-        connectionUtil.startMonitoring(() -> networkRequest, connectivityManager);
+        CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
+        currentNetworkProvider.startMonitoring(() -> networkRequest, connectivityManager);
         assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
-                connectionUtil.refreshNetworkStatus());
+                currentNetworkProvider.refreshNetworkStatus());
     }
 
     @Test
@@ -210,8 +213,8 @@ public class ConnectionUtilTest {
                 .when(connectivityManager)
                 .registerNetworkCallback(eq(networkRequest), any(NetworkCallback.class));
 
-        ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);
-        connectionUtil.startMonitoring(() -> networkRequest, connectivityManager);
+        CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
+        currentNetworkProvider.startMonitoring(() -> networkRequest, connectivityManager);
     }
 
     @Test
@@ -230,7 +233,7 @@ public class ConnectionUtilTest {
                 .when(connectivityManager)
                 .registerDefaultNetworkCallback(any(NetworkCallback.class));
 
-        ConnectionUtil connectionUtil = new ConnectionUtil(networkDetector);
-        connectionUtil.startMonitoring(() -> networkRequest, connectivityManager);
+        CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
+        currentNetworkProvider.startMonitoring(() -> networkRequest, connectivityManager);
     }
 }
