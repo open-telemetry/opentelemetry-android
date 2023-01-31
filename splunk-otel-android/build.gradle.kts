@@ -63,7 +63,7 @@ dependencies {
     api("io.opentelemetry:opentelemetry-api")
     api("com.squareup.okhttp3:okhttp:4.10.0")
 
-    testImplementation("org.mockito:mockito-core:5.1.0")
+    testImplementation("org.mockito:mockito-core:5.1.1")
     testImplementation("org.mockito:mockito-junit-jupiter:5.1.0")
     testImplementation(platform("org.junit:junit-bom:5.9.2"))
     testImplementation("org.junit.jupiter:junit-jupiter-api")
