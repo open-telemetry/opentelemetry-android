@@ -75,7 +75,7 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.awaitility:awaitility:4.2.0")
 
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.1")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.2")
 }
 
 tasks.withType<Test> {
