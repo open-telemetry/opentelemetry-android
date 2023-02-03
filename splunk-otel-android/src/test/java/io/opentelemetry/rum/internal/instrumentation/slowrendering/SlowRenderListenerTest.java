@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.slowrendering;
 
 import static android.view.FrameMetrics.DRAW_DURATION;
 import static android.view.FrameMetrics.FIRST_DRAW_FRAME;
@@ -60,7 +60,7 @@ import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = Build.VERSION_CODES.N)
-public class SlowRenderingDetectorImplTest {
+public class SlowRenderListenerTest {
 
     private static final AttributeKey<Long> COUNT_KEY = AttributeKey.longKey("count");
 
@@ -76,7 +76,7 @@ public class SlowRenderingDetectorImplTest {
     @Mock FrameMetrics frameMetrics;
     Tracer tracer;
 
-    @Captor ArgumentCaptor<SlowRenderingDetectorImpl.PerActivityListener> activityListenerCaptor;
+    @Captor ArgumentCaptor<SlowRenderListener.PerActivityListener> activityListenerCaptor;
 
     @Before
     public void setup() {
@@ -87,8 +87,8 @@ public class SlowRenderingDetectorImplTest {
 
     @Test
     public void add() {
-        SlowRenderingDetectorImpl testInstance =
-                new SlowRenderingDetectorImpl(tracer, null, frameMetricsHandler, Duration.ZERO);
+        SlowRenderListener testInstance =
+                new SlowRenderListener(tracer, null, frameMetricsHandler, Duration.ZERO);
 
         testInstance.onActivityResumed(activity);
 
@@ -100,8 +100,8 @@ public class SlowRenderingDetectorImplTest {
 
     @Test
     public void removeBeforeAddOk() {
-        SlowRenderingDetectorImpl testInstance =
-                new SlowRenderingDetectorImpl(tracer, null, frameMetricsHandler, Duration.ZERO);
+        SlowRenderListener testInstance =
+                new SlowRenderListener(tracer, null, frameMetricsHandler, Duration.ZERO);
 
         testInstance.onActivityPaused(activity);
 
@@ -111,8 +111,8 @@ public class SlowRenderingDetectorImplTest {
 
     @Test
     public void addAndRemove() {
-        SlowRenderingDetectorImpl testInstance =
-                new SlowRenderingDetectorImpl(tracer, null, frameMetricsHandler, Duration.ZERO);
+        SlowRenderListener testInstance =
+                new SlowRenderListener(tracer, null, frameMetricsHandler, Duration.ZERO);
 
         testInstance.onActivityResumed(activity);
         testInstance.onActivityPaused(activity);
@@ -128,14 +128,14 @@ public class SlowRenderingDetectorImplTest {
 
     @Test
     public void removeWithMetrics() {
-        SlowRenderingDetectorImpl testInstance =
-                new SlowRenderingDetectorImpl(tracer, null, frameMetricsHandler, Duration.ZERO);
+        SlowRenderListener testInstance =
+                new SlowRenderListener(tracer, null, frameMetricsHandler, Duration.ZERO);
 
         testInstance.onActivityResumed(activity);
 
         verify(activity.getWindow())
                 .addOnFrameMetricsAvailableListener(activityListenerCaptor.capture(), any());
-        SlowRenderingDetectorImpl.PerActivityListener listener = activityListenerCaptor.getValue();
+        SlowRenderListener.PerActivityListener listener = activityListenerCaptor.getValue();
         for (long duration : makeSomeDurations()) {
             when(frameMetrics.getMetric(DRAW_DURATION)).thenReturn(duration);
             listener.onFrameMetricsAvailable(null, frameMetrics, 0);
@@ -160,22 +160,20 @@ public class SlowRenderingDetectorImplTest {
                 .when(exec)
                 .scheduleAtFixedRate(any(), eq(1001L), eq(1001L), eq(TimeUnit.MILLISECONDS));
 
-        SlowRenderingDetectorImpl testInstance =
-                new SlowRenderingDetectorImpl(
-                        tracer, exec, frameMetricsHandler, Duration.ofMillis(1001));
+        SlowRenderListener testInstance =
+                new SlowRenderListener(tracer, exec, frameMetricsHandler, Duration.ofMillis(1001));
 
         testInstance.onActivityResumed(activity);
 
         verify(activity.getWindow())
                 .addOnFrameMetricsAvailableListener(activityListenerCaptor.capture(), any());
-        SlowRenderingDetectorImpl.PerActivityListener listener = activityListenerCaptor.getValue();
+        SlowRenderListener.PerActivityListener listener = activityListenerCaptor.getValue();
         for (long duration : makeSomeDurations()) {
             when(frameMetrics.getMetric(DRAW_DURATION)).thenReturn(duration);
             listener.onFrameMetricsAvailable(null, frameMetrics, 0);
         }
 
-        testInstance.start(application);
-        verify(application).registerActivityLifecycleCallbacks(testInstance);
+        testInstance.start();
 
         List<SpanData> spans = otelTesting.getSpans();
         assertSpanContent(spans);
@@ -183,8 +181,8 @@ public class SlowRenderingDetectorImplTest {
 
     @Test
     public void activityListenerSkipsFirstFrame() {
-        SlowRenderingDetectorImpl.PerActivityListener listener =
-                new SlowRenderingDetectorImpl.PerActivityListener(null);
+        SlowRenderListener.PerActivityListener listener =
+                new SlowRenderListener.PerActivityListener(null);
         when(frameMetrics.getMetric(FIRST_DRAW_FRAME)).thenReturn(1L);
         listener.onFrameMetricsAvailable(null, frameMetrics, 99);
         verify(frameMetrics, never()).getMetric(DRAW_DURATION);

@@ -19,7 +19,6 @@ package com.splunk.rum;
 import static com.splunk.rum.SplunkRum.APP_NAME_KEY;
 import static com.splunk.rum.SplunkRum.COMPONENT_ERROR;
 import static com.splunk.rum.SplunkRum.COMPONENT_KEY;
-import static com.splunk.rum.SplunkRum.LOG_TAG;
 import static com.splunk.rum.SplunkRum.RUM_VERSION_KEY;
 import static io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor.constant;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEPLOYMENT_ENVIRONMENT;
@@ -29,11 +28,11 @@ import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_TYPE;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_VERSION;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_NAME;
+import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
 import android.os.Build;
 import android.os.Looper;
-import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.splunk.android.rum.R;
@@ -50,6 +49,7 @@ import io.opentelemetry.rum.internal.instrumentation.crash.CrashReporter;
 import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.rum.internal.instrumentation.network.NetworkAttributesSpanAppender;
 import io.opentelemetry.rum.internal.instrumentation.network.NetworkChangeMonitor;
+import io.opentelemetry.rum.internal.instrumentation.slowrendering.SlowRenderingDetector;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
@@ -100,7 +100,7 @@ class RumInitializer {
         long startTimeNanos = timingClock.now();
         OpenTelemetryRumBuilder otelRumBuilder = OpenTelemetryRum.builder();
 
-        otelRumBuilder.setResource(buildResource(builder.applicationName, detectRumVersion()));
+        otelRumBuilder.setResource(createResource());
         initializationEvents.add(
                 new RumInitializer.InitializationEvent("resourceInitialized", timingClock.now()));
 
@@ -166,40 +166,17 @@ class RumInitializer {
                 });
 
         if (builder.anrDetectionEnabled) {
-            otelRumBuilder.addInstrumentation(
-                    instrumentedApplication -> {
-                        AnrDetector.builder()
-                                .addAttributesExtractor(constant(COMPONENT_KEY, COMPONENT_ERROR))
-                                .setMainLooper(mainLooper)
-                                .build()
-                                .installOn(instrumentedApplication);
-
-                        initializationEvents.add(
-                                new RumInitializer.InitializationEvent(
-                                        "anrMonitorInitialized", timingClock.now()));
-                    });
+            installAnrDetector(otelRumBuilder, mainLooper);
         }
-
         if (builder.networkMonitorEnabled) {
-            otelRumBuilder.addInstrumentation(
-                    instrumentedApplication -> {
-                        NetworkChangeMonitor.create(currentNetworkProvider)
-                                .installOn(instrumentedApplication);
-                        initializationEvents.add(
-                                new RumInitializer.InitializationEvent(
-                                        "networkMonitorInitialized", timingClock.now()));
-                    });
+            installNetworkMonitor(otelRumBuilder, currentNetworkProvider);
         }
-
-        otelRumBuilder.addInstrumentation(
-                instrumentedApplication -> {
-                    SlowRenderingDetector slowRenderingDetector =
-                            buildSlowRenderingDetector(
-                                    instrumentedApplication
-                                            .getOpenTelemetrySdk()
-                                            .getTracer(SplunkRum.RUM_TRACER_NAME));
-                    slowRenderingDetector.start(instrumentedApplication.getApplication());
-                });
+        if (builder.slowRenderingDetectionEnabled) {
+            installSlowRenderingDetector(otelRumBuilder);
+        }
+        if (builder.crashReportingEnabled) {
+            installCrashReporter(otelRumBuilder);
+        }
 
         otelRumBuilder.addInstrumentation(
                 instrumentedApplication -> {
@@ -224,25 +201,6 @@ class RumInitializer {
                                     "activityLifecycleCallbacksInitialized", timingClock.now()));
                 });
 
-        if (builder.crashReportingEnabled) {
-            otelRumBuilder.addInstrumentation(
-                    instrumentedApplication -> {
-                        CrashReporter.builder()
-                                .addAttributesExtractor(
-                                        RuntimeDetailsExtractor.create(
-                                                instrumentedApplication
-                                                        .getApplication()
-                                                        .getApplicationContext()))
-                                .addAttributesExtractor(new CrashComponentExtractor())
-                                .build()
-                                .installOn(instrumentedApplication);
-
-                        initializationEvents.add(
-                                new RumInitializer.InitializationEvent(
-                                        "crashReportingInitialized", timingClock.now()));
-                    });
-        }
-
         OpenTelemetryRum openTelemetryRum = otelRumBuilder.build(application);
 
         recordInitializationSpans(
@@ -253,21 +211,24 @@ class RumInitializer {
         return new SplunkRum(openTelemetryRum, globalAttributesSpanAppender);
     }
 
-    private SlowRenderingDetector buildSlowRenderingDetector(Tracer tracer) {
-        if (!builder.slowRenderingDetectionEnabled) {
-            Log.w(LOG_TAG, "Slow/frozen rendering detection has been disabled by user.");
-            return NoOpSlowRenderingDetector.INSTANCE;
+    private Resource createResource() {
+        // applicationName can't be null at this stage
+        String applicationName = requireNonNull(builder.applicationName);
+        ResourceBuilder resourceBuilder =
+                Resource.getDefault().toBuilder()
+                        .put(APP_NAME_KEY, applicationName)
+                        .put(SERVICE_NAME, applicationName);
+        if (builder.deploymentEnvironment != null) {
+            resourceBuilder.put(DEPLOYMENT_ENVIRONMENT, builder.deploymentEnvironment);
         }
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            Log.w(
-                    LOG_TAG,
-                    "Slow/frozen rendering detection is not supported on platforms older than Android N (SDK version 24).");
-            return NoOpSlowRenderingDetector.INSTANCE;
-        }
-        initializationEvents.add(
-                new RumInitializer.InitializationEvent(
-                        "slowRenderingDetectorInitialized", timingClock.now()));
-        return new SlowRenderingDetectorImpl(tracer, builder.slowRenderingDetectionPollInterval);
+        return resourceBuilder
+                .put(RUM_VERSION_KEY, detectRumVersion())
+                .put(DEVICE_MODEL_NAME, Build.MODEL)
+                .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)
+                .put(OS_NAME, "Android")
+                .put(OS_TYPE, "linux")
+                .put(OS_VERSION, Build.VERSION.RELEASE)
+                .build();
     }
 
     private String detectRumVersion() {
@@ -282,6 +243,65 @@ class RumInitializer {
             // ignore for now
         }
         return "unknown";
+    }
+
+    private void installAnrDetector(OpenTelemetryRumBuilder otelRumBuilder, Looper mainLooper) {
+        otelRumBuilder.addInstrumentation(
+                instrumentedApplication -> {
+                    AnrDetector.builder()
+                            .addAttributesExtractor(constant(COMPONENT_KEY, COMPONENT_ERROR))
+                            .setMainLooper(mainLooper)
+                            .build()
+                            .installOn(instrumentedApplication);
+
+                    initializationEvents.add(
+                            new InitializationEvent("anrMonitorInitialized", timingClock.now()));
+                });
+    }
+
+    private void installNetworkMonitor(
+            OpenTelemetryRumBuilder otelRumBuilder, CurrentNetworkProvider currentNetworkProvider) {
+        otelRumBuilder.addInstrumentation(
+                instrumentedApplication -> {
+                    NetworkChangeMonitor.create(currentNetworkProvider)
+                            .installOn(instrumentedApplication);
+                    initializationEvents.add(
+                            new InitializationEvent(
+                                    "networkMonitorInitialized", timingClock.now()));
+                });
+    }
+
+    private void installSlowRenderingDetector(OpenTelemetryRumBuilder otelRumBuilder) {
+        otelRumBuilder.addInstrumentation(
+                instrumentedApplication -> {
+                    SlowRenderingDetector.builder()
+                            .setSlowRenderingDetectionPollInterval(
+                                    builder.slowRenderingDetectionPollInterval)
+                            .build()
+                            .installOn(instrumentedApplication);
+                    initializationEvents.add(
+                            new InitializationEvent(
+                                    "slowRenderingDetectorInitialized", timingClock.now()));
+                });
+    }
+
+    private void installCrashReporter(OpenTelemetryRumBuilder otelRumBuilder) {
+        otelRumBuilder.addInstrumentation(
+                instrumentedApplication -> {
+                    CrashReporter.builder()
+                            .addAttributesExtractor(
+                                    RuntimeDetailsExtractor.create(
+                                            instrumentedApplication
+                                                    .getApplication()
+                                                    .getApplicationContext()))
+                            .addAttributesExtractor(new CrashComponentExtractor())
+                            .build()
+                            .installOn(instrumentedApplication);
+
+                    initializationEvents.add(
+                            new InitializationEvent(
+                                    "crashReportingInitialized", timingClock.now()));
+                });
     }
 
     private void recordInitializationSpans(
@@ -319,24 +339,6 @@ class RumInitializer {
         // we only want to create SplunkRum.initialize span when there is a AppStart span so we
         // register a callback that is called right before AppStart span is ended
         startupTimer.setCompletionCallback(() -> span.end(spanEndTime, TimeUnit.NANOSECONDS));
-    }
-
-    private Resource buildResource(String applicationName, String rumVersion) {
-        ResourceBuilder resourceBuilder =
-                Resource.getDefault().toBuilder()
-                        .put(APP_NAME_KEY, applicationName)
-                        .put(SERVICE_NAME, applicationName);
-        if (builder.deploymentEnvironment != null) {
-            resourceBuilder.put(DEPLOYMENT_ENVIRONMENT, builder.deploymentEnvironment);
-        }
-        return resourceBuilder
-                .put(RUM_VERSION_KEY, rumVersion)
-                .put(DEVICE_MODEL_NAME, Build.MODEL)
-                .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)
-                .put(OS_NAME, "Android")
-                .put(OS_TYPE, "linux")
-                .put(OS_VERSION, Build.VERSION.RELEASE)
-                .build();
     }
 
     // visible for testing

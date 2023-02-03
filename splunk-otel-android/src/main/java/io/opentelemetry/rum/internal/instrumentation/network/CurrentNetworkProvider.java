@@ -38,6 +38,8 @@ import java.util.function.Supplier;
  */
 public final class CurrentNetworkProvider {
 
+    private static final String OPEN_TELEMETRY_RUM_LOG_TAG = "OpenTelemetryRum";
+
     static final CurrentNetwork NO_NETWORK =
             CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build();
     static final CurrentNetwork UNKNOWN_NETWORK =
@@ -77,7 +79,7 @@ public final class CurrentNetworkProvider {
         } catch (Exception e) {
             // if this fails, we'll go without network change events.
             Log.w(
-                    "OpenTelemetryRum",
+                    OPEN_TELEMETRY_RUM_LOG_TAG,
                     "Failed to register network callbacks. Automatic network monitoring is disabled.",
                     e);
         }
@@ -136,7 +138,7 @@ public final class CurrentNetworkProvider {
         @Override
         public void onAvailable(@NonNull Network network) {
             CurrentNetwork activeNetwork = refreshNetworkStatus();
-            Log.d("OpenTelemetryRum", "  onAvailable: currentNetwork=" + activeNetwork);
+            Log.d(OPEN_TELEMETRY_RUM_LOG_TAG, "  onAvailable: currentNetwork=" + activeNetwork);
 
             notifyListeners(activeNetwork);
         }
@@ -149,7 +151,7 @@ public final class CurrentNetworkProvider {
             // state at the right time during this event.
             CurrentNetwork currentNetwork = NO_NETWORK;
             CurrentNetworkProvider.this.currentNetwork = currentNetwork;
-            Log.d("OpenTelemetryRum", "  onLost: currentNetwork=" + currentNetwork);
+            Log.d(OPEN_TELEMETRY_RUM_LOG_TAG, "  onLost: currentNetwork=" + currentNetwork);
 
             notifyListeners(currentNetwork);
         }

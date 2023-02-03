@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.slowrendering;
 
 import static android.view.FrameMetrics.DRAW_DURATION;
 import static android.view.FrameMetrics.FIRST_DRAW_FRAME;
-import static com.splunk.rum.SplunkRum.LOG_TAG;
+import static io.opentelemetry.rum.internal.instrumentation.slowrendering.SlowRenderingDetector.OPEN_TELEMETRY_RUM_LOG_TAG;
 
 import android.app.Activity;
 import android.app.Application;
@@ -46,8 +46,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
-class SlowRenderingDetectorImpl
-        implements SlowRenderingDetector, Application.ActivityLifecycleCallbacks {
+class SlowRenderListener implements Application.ActivityLifecycleCallbacks {
 
     static final int SLOW_THRESHOLD_MS = 16;
     static final int FROZEN_THRESHOLD_MS = 700;
@@ -67,7 +66,7 @@ class SlowRenderingDetectorImpl
     private final ConcurrentMap<Activity, PerActivityListener> activities =
             new ConcurrentHashMap<>();
 
-    SlowRenderingDetectorImpl(Tracer tracer, Duration pollInterval) {
+    SlowRenderListener(Tracer tracer, Duration pollInterval) {
         this(
                 tracer,
                 Executors.newScheduledThreadPool(1),
@@ -76,7 +75,7 @@ class SlowRenderingDetectorImpl
     }
 
     // Exists for testing
-    SlowRenderingDetectorImpl(
+    SlowRenderListener(
             Tracer tracer,
             ScheduledExecutorService executorService,
             Handler frameMetricsHandler,
@@ -98,10 +97,7 @@ class SlowRenderingDetectorImpl
 
     // the returned future is very unlikely to fail
     @SuppressWarnings("FutureReturnValueIgnored")
-    @Override
-    public void start(Application application) {
-        application.registerActivityLifecycleCallbacks(this);
-
+    void start() {
         executorService.scheduleAtFixedRate(
                 this::reportSlowRenders,
                 pollInterval.toMillis(),
@@ -194,7 +190,7 @@ class SlowRenderingDetectorImpl
         try {
             activities.forEach((activity, listener) -> reportSlow(listener));
         } catch (Exception e) {
-            Log.w(LOG_TAG, "Exception while processing frame metrics", e);
+            Log.w(OPEN_TELEMETRY_RUM_LOG_TAG, "Exception while processing frame metrics", e);
         }
     }
 
@@ -206,10 +202,14 @@ class SlowRenderingDetectorImpl
             int duration = durationToCountHistogram.keyAt(i);
             int count = durationToCountHistogram.get(duration);
             if (duration > FROZEN_THRESHOLD_MS) {
-                Log.d(LOG_TAG, "* FROZEN RENDER DETECTED: " + duration + " ms." + count + " times");
+                Log.d(
+                        OPEN_TELEMETRY_RUM_LOG_TAG,
+                        "* FROZEN RENDER DETECTED: " + duration + " ms." + count + " times");
                 frozenCount += count;
             } else if (duration > SLOW_THRESHOLD_MS) {
-                Log.d(LOG_TAG, "* Slow render detected: " + duration + " ms. " + count + " times");
+                Log.d(
+                        OPEN_TELEMETRY_RUM_LOG_TAG,
+                        "* Slow render detected: " + duration + " ms. " + count + " times");
                 slowCount += count;
             }
         }
