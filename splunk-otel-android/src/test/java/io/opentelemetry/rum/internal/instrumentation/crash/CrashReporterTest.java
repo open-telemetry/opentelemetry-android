@@ -57,7 +57,7 @@ class CrashReporterTest {
     }
 
     @Test
-    void integrationTest() {
+    void integrationTest() throws InterruptedException {
         InstrumentedApplication instrumentedApplication = mock(InstrumentedApplication.class);
         when(instrumentedApplication.getOpenTelemetrySdk())
                 .thenReturn((OpenTelemetrySdk) testing.getOpenTelemetry());
@@ -75,6 +75,7 @@ class CrashReporterTest {
                         });
         crashingThread.setDaemon(true);
         crashingThread.start();
+        crashingThread.join();
 
         Attributes expectedAttributes =
                 Attributes.builder()
