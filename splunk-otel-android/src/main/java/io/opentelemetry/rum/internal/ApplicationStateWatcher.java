@@ -17,27 +17,18 @@
 package io.opentelemetry.rum.internal;
 
 import android.app.Activity;
-import android.app.Application;
-import android.os.Bundle;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import io.opentelemetry.rum.internal.instrumentation.ApplicationStateListener;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-final class ApplicationStateWatcher implements Application.ActivityLifecycleCallbacks {
+final class ApplicationStateWatcher implements DefaultingActivityLifecycleCallbacks {
 
     private final List<ApplicationStateListener> applicationStateListeners =
             new CopyOnWriteArrayList<>();
     // we count the number of activities that have been "started" and not yet "stopped" here to
     // figure out when the app goes into the background.
     private int numberOfOpenActivities = 0;
-
-    public ApplicationStateWatcher() {}
-
-    @Override
-    public void onActivityCreated(
-            @NonNull Activity activity, @Nullable Bundle savedInstanceState) {}
 
     @Override
     public void onActivityStarted(@NonNull Activity activity) {
@@ -50,12 +41,6 @@ final class ApplicationStateWatcher implements Application.ActivityLifecycleCall
     }
 
     @Override
-    public void onActivityResumed(@NonNull Activity activity) {}
-
-    @Override
-    public void onActivityPaused(@NonNull Activity activity) {}
-
-    @Override
     public void onActivityStopped(@NonNull Activity activity) {
         if (--numberOfOpenActivities == 0) {
             for (ApplicationStateListener listener : applicationStateListeners) {
@@ -63,12 +48,6 @@ final class ApplicationStateWatcher implements Application.ActivityLifecycleCall
             }
         }
     }
-
-    @Override
-    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {}
-
-    @Override
-    public void onActivityDestroyed(@NonNull Activity activity) {}
 
     void registerListener(ApplicationStateListener listener) {
         applicationStateListeners.add(listener);

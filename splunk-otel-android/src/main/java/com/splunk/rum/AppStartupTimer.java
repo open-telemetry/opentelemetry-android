@@ -16,11 +16,16 @@
 
 package com.splunk.rum;
 
+import android.app.Activity;
+import android.app.Application;
+import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.rum.internal.DefaultingActivityLifecycleCallbacks;
 import io.opentelemetry.sdk.common.Clock;
 import java.util.concurrent.TimeUnit;
 
@@ -60,8 +65,19 @@ class AppStartupTimer {
         return appStart;
     }
 
+    /** Creates a lifecycle listener that starts the UI init when an activity is created. */
+    Application.ActivityLifecycleCallbacks createLifecycleCallback() {
+        return new DefaultingActivityLifecycleCallbacks() {
+            @Override
+            public void onActivityCreated(
+                    @NonNull Activity activity, @Nullable Bundle savedInstanceState) {
+                startUiInit();
+            }
+        };
+    }
+
     /** Called when Activity is created. */
-    void startUiInit() {
+    private void startUiInit() {
         if (uiInitStarted || isStartedFromBackground) {
             return;
         }

@@ -17,106 +17,54 @@
 package com.splunk.rum;
 
 import android.app.Activity;
-import android.app.Application;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import io.opentelemetry.api.trace.Tracer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+import io.opentelemetry.rum.internal.DefaultingActivityLifecycleCallbacks;
 
-class Pre29ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
-    private final Tracer tracer;
-    private final VisibleScreenTracker visibleScreenTracker;
-    private final Map<String, ActivityTracer> tracersByActivityClassName = new HashMap<>();
-    private final AtomicReference<String> initialAppActivity = new AtomicReference<>();
-    private final AppStartupTimer appStartupTimer;
+class Pre29ActivityCallbacks implements DefaultingActivityLifecycleCallbacks {
+    private final ActivityTracerCache tracers;
 
-    Pre29ActivityCallbacks(
-            Tracer tracer,
-            VisibleScreenTracker visibleScreenTracker,
-            AppStartupTimer appStartupTimer) {
-        this.tracer = tracer;
-        this.visibleScreenTracker = visibleScreenTracker;
-        this.appStartupTimer = appStartupTimer;
+    Pre29ActivityCallbacks(ActivityTracerCache tracers) {
+        this.tracers = tracers;
     }
 
     @Override
     public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
-        appStartupTimer.startUiInit();
-        getTracer(activity).startActivityCreation().addEvent("activityCreated");
-
-        if (activity instanceof FragmentActivity) {
-            FragmentManager fragmentManager =
-                    ((FragmentActivity) activity).getSupportFragmentManager();
-            fragmentManager.registerFragmentLifecycleCallbacks(
-                    new RumFragmentLifecycleCallbacks(tracer, visibleScreenTracker), true);
-        }
+        tracers.startActivityCreation(activity).addEvent("activityCreated");
     }
 
     @Override
     public void onActivityStarted(@NonNull Activity activity) {
-        getTracer(activity)
-                .initiateRestartSpanIfNecessary(tracersByActivityClassName.size() > 1)
-                .addEvent("activityStarted");
+        tracers.initiateRestartSpanIfNecessary(activity).addEvent("activityStarted");
     }
 
     @Override
     public void onActivityResumed(@NonNull Activity activity) {
-        getTracer(activity)
-                .startSpanIfNoneInProgress("Resumed")
+        tracers.startSpanIfNoneInProgress(activity, "Resumed")
                 .addEvent("activityResumed")
                 .addPreviousScreenAttribute()
                 .endSpanForActivityResumed();
-        visibleScreenTracker.activityResumed(activity);
     }
 
     @Override
     public void onActivityPaused(@NonNull Activity activity) {
-        getTracer(activity)
-                .startSpanIfNoneInProgress("Paused")
+        tracers.startSpanIfNoneInProgress(activity, "Paused")
                 .addEvent("activityPaused")
                 .endActiveSpan();
-        visibleScreenTracker.activityPaused(activity);
     }
 
     @Override
     public void onActivityStopped(@NonNull Activity activity) {
-        getTracer(activity)
-                .startSpanIfNoneInProgress("Stopped")
+        tracers.startSpanIfNoneInProgress(activity, "Stopped")
                 .addEvent("activityStopped")
                 .endActiveSpan();
     }
 
     @Override
-    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
-        // todo: add event
-    }
-
-    @Override
     public void onActivityDestroyed(@NonNull Activity activity) {
-        getTracer(activity)
-                .startSpanIfNoneInProgress("Destroyed")
+        tracers.startSpanIfNoneInProgress(activity, "Destroyed")
                 .addEvent("activityDestroyed")
                 .endActiveSpan();
-    }
-
-    private ActivityTracer getTracer(Activity activity) {
-        ActivityTracer activityTracer =
-                tracersByActivityClassName.get(activity.getClass().getName());
-        if (activityTracer == null) {
-            activityTracer =
-                    new ActivityTracer(
-                            activity,
-                            initialAppActivity,
-                            tracer,
-                            visibleScreenTracker,
-                            appStartupTimer);
-            tracersByActivityClassName.put(activity.getClass().getName(), activityTracer);
-        }
-        return activityTracer;
     }
 }

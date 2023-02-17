@@ -52,11 +52,11 @@ class ActivityTracer {
         this.activeSpan = new ActiveSpan(visibleScreenTracker);
     }
 
-    ActivityTracer startSpanIfNoneInProgress(String action) {
+    ActivityTracer startSpanIfNoneInProgress(String spanName) {
         if (activeSpan.spanInProgress()) {
             return this;
         }
-        activeSpan.startSpan(() -> createSpan(action));
+        activeSpan.startSpan(() -> createSpan(spanName));
         return this;
     }
 

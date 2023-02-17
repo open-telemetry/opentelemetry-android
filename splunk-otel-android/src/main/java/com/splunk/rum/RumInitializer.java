@@ -19,6 +19,7 @@ package com.splunk.rum;
 import static com.splunk.rum.SplunkRum.APP_NAME_KEY;
 import static com.splunk.rum.SplunkRum.COMPONENT_ERROR;
 import static com.splunk.rum.SplunkRum.COMPONENT_KEY;
+import static com.splunk.rum.SplunkRum.RUM_TRACER_NAME;
 import static com.splunk.rum.SplunkRum.RUM_VERSION_KEY;
 import static io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor.constant;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEPLOYMENT_ENVIRONMENT;
@@ -44,6 +45,8 @@ import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.rum.internal.GlobalAttributesSpanAppender;
 import io.opentelemetry.rum.internal.OpenTelemetryRum;
 import io.opentelemetry.rum.internal.OpenTelemetryRumBuilder;
+import io.opentelemetry.rum.internal.instrumentation.InstrumentedApplication;
+import io.opentelemetry.rum.internal.instrumentation.activity.RumFragmentActivityRegisterer;
 import io.opentelemetry.rum.internal.instrumentation.anr.AnrDetector;
 import io.opentelemetry.rum.internal.instrumentation.crash.CrashReporter;
 import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider;
@@ -178,37 +181,112 @@ class RumInitializer {
             installCrashReporter(otelRumBuilder);
         }
 
-        otelRumBuilder.addInstrumentation(
-                instrumentedApplication -> {
-                    Tracer tracer =
-                            instrumentedApplication
-                                    .getOpenTelemetrySdk()
-                                    .getTracer(SplunkRum.RUM_TRACER_NAME);
-                    Application.ActivityLifecycleCallbacks activityCallbacks;
-                    if (Build.VERSION.SDK_INT < 29) {
-                        activityCallbacks =
-                                new Pre29ActivityCallbacks(
-                                        tracer, visibleScreenTracker, startupTimer);
-                    } else {
-                        activityCallbacks =
-                                new ActivityCallbacks(tracer, visibleScreenTracker, startupTimer);
-                    }
-                    instrumentedApplication
-                            .getApplication()
-                            .registerActivityLifecycleCallbacks(activityCallbacks);
-                    initializationEvents.add(
-                            new RumInitializer.InitializationEvent(
-                                    "activityLifecycleCallbacksInitialized", timingClock.now()));
-                });
+        // Lifecycle events instrumentation are always installed.
+        installLifecycleInstrumentations(otelRumBuilder, visibleScreenTracker);
 
         OpenTelemetryRum openTelemetryRum = otelRumBuilder.build(application);
 
         recordInitializationSpans(
                 startTimeNanos,
                 initializationEvents,
-                openTelemetryRum.getOpenTelemetry().getTracer(SplunkRum.RUM_TRACER_NAME));
+                openTelemetryRum.getOpenTelemetry().getTracer(RUM_TRACER_NAME));
 
         return new SplunkRum(openTelemetryRum, globalAttributesSpanAppender);
+    }
+
+    private void installLifecycleInstrumentations(
+            OpenTelemetryRumBuilder otelRumBuilder, VisibleScreenTracker visibleScreenTracker) {
+
+        installStartupTimerInstrumentation(otelRumBuilder);
+        installActivityLifecycleEventsInstrumentation(otelRumBuilder, visibleScreenTracker);
+        installFragmentLifecycleInstrumentation(otelRumBuilder, visibleScreenTracker);
+        installScreenTrackingInstrumentation(otelRumBuilder, visibleScreenTracker);
+
+        otelRumBuilder.addInstrumentation(
+                instrumentedApp -> {
+                    initializationEvents.add(
+                            new InitializationEvent(
+                                    "activityLifecycleCallbacksInitialized", timingClock.now()));
+                });
+    }
+
+    private void installScreenTrackingInstrumentation(
+            OpenTelemetryRumBuilder otelRumBuilder, VisibleScreenTracker visibleScreenTracker) {
+        otelRumBuilder.addInstrumentation(
+                instrumentedApp -> {
+                    Application.ActivityLifecycleCallbacks screenTrackingBinding =
+                            buildScreenTrackingBinding(visibleScreenTracker);
+                    instrumentedApp
+                            .getApplication()
+                            .registerActivityLifecycleCallbacks(screenTrackingBinding);
+                });
+    }
+
+    @NonNull
+    private Application.ActivityLifecycleCallbacks buildScreenTrackingBinding(
+            VisibleScreenTracker visibleScreenTracker) {
+        if (Build.VERSION.SDK_INT < 29) {
+            return new Pre29VisibleScreenLifecycleBinding(visibleScreenTracker);
+        }
+        return new VisibleScreenLifecycleBinding(visibleScreenTracker);
+    }
+
+    private void installFragmentLifecycleInstrumentation(
+            OpenTelemetryRumBuilder otelRumBuilder, VisibleScreenTracker visibleScreenTracker) {
+        otelRumBuilder.addInstrumentation(
+                instrumentedApp -> {
+                    Application.ActivityLifecycleCallbacks fragmentRegisterer =
+                            buildFragmentRegisterer(visibleScreenTracker, instrumentedApp);
+                    instrumentedApp
+                            .getApplication()
+                            .registerActivityLifecycleCallbacks(fragmentRegisterer);
+                });
+    }
+
+    @NonNull
+    private Application.ActivityLifecycleCallbacks buildFragmentRegisterer(
+            VisibleScreenTracker visibleScreenTracker, InstrumentedApplication instrumentedApp) {
+        Tracer tracer = instrumentedApp.getOpenTelemetrySdk().getTracer(RUM_TRACER_NAME);
+        RumFragmentLifecycleCallbacks fragmentLifecycle =
+                new RumFragmentLifecycleCallbacks(tracer, visibleScreenTracker);
+        if (Build.VERSION.SDK_INT < 29) {
+            return RumFragmentActivityRegisterer.createPre29(fragmentLifecycle);
+        }
+        return RumFragmentActivityRegisterer.create(fragmentLifecycle);
+    }
+
+    private void installStartupTimerInstrumentation(OpenTelemetryRumBuilder otelRumBuilder) {
+        otelRumBuilder.addInstrumentation(
+                instrumentedApp -> {
+                    instrumentedApp
+                            .getApplication()
+                            .registerActivityLifecycleCallbacks(
+                                    startupTimer.createLifecycleCallback());
+                });
+    }
+
+    private void installActivityLifecycleEventsInstrumentation(
+            OpenTelemetryRumBuilder otelRumBuilder, VisibleScreenTracker visibleScreenTracker) {
+        otelRumBuilder.addInstrumentation(
+                instrumentedApp -> {
+                    Application.ActivityLifecycleCallbacks activityCallbacks =
+                            buildActivityEventsCallback(visibleScreenTracker, instrumentedApp);
+                    instrumentedApp
+                            .getApplication()
+                            .registerActivityLifecycleCallbacks(activityCallbacks);
+                });
+    }
+
+    @NonNull
+    private Application.ActivityLifecycleCallbacks buildActivityEventsCallback(
+            VisibleScreenTracker visibleScreenTracker, InstrumentedApplication instrumentedApp) {
+        Tracer tracer = instrumentedApp.getOpenTelemetrySdk().getTracer(RUM_TRACER_NAME);
+        ActivityTracerCache tracers =
+                new ActivityTracerCache(tracer, visibleScreenTracker, startupTimer);
+        if (Build.VERSION.SDK_INT < 29) {
+            return new Pre29ActivityCallbacks(tracers);
+        }
+        return new ActivityCallbacks(tracers);
     }
 
     private Resource createResource() {

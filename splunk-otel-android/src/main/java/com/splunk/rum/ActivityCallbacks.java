@@ -17,175 +17,110 @@
 package com.splunk.rum;
 
 import android.app.Activity;
-import android.app.Application;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import io.opentelemetry.api.trace.Tracer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+import io.opentelemetry.rum.internal.DefaultingActivityLifecycleCallbacks;
 
-class ActivityCallbacks implements Application.ActivityLifecycleCallbacks {
+class ActivityCallbacks implements DefaultingActivityLifecycleCallbacks {
 
-    private final Map<String, ActivityTracer> tracersByActivityClassName = new HashMap<>();
-    private final AtomicReference<String> initialAppActivity = new AtomicReference<>();
-    private final Tracer tracer;
-    private final VisibleScreenTracker visibleScreenTracker;
-    private final AppStartupTimer startupTimer;
+    private final ActivityTracerCache tracers;
 
-    ActivityCallbacks(
-            Tracer tracer,
-            VisibleScreenTracker visibleScreenTracker,
-            AppStartupTimer startupTimer) {
-        this.tracer = tracer;
-        this.visibleScreenTracker = visibleScreenTracker;
-        this.startupTimer = startupTimer;
+    ActivityCallbacks(ActivityTracerCache tracers) {
+        this.tracers = tracers;
     }
 
     @Override
     public void onActivityPreCreated(
             @NonNull Activity activity, @Nullable Bundle savedInstanceState) {
-        getTracer(activity).startActivityCreation().addEvent("activityPreCreated");
-
-        if (activity instanceof FragmentActivity) {
-            FragmentManager fragmentManager =
-                    ((FragmentActivity) activity).getSupportFragmentManager();
-            fragmentManager.registerFragmentLifecycleCallbacks(
-                    new RumFragmentLifecycleCallbacks(tracer, visibleScreenTracker), true);
-        }
+        tracers.startActivityCreation(activity).addEvent("activityPreCreated");
     }
 
     @Override
     public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
-        startupTimer.startUiInit();
-        addEvent(activity, "activityCreated");
+        tracers.addEvent(activity, "activityCreated");
     }
 
     @Override
     public void onActivityPostCreated(
             @NonNull Activity activity, @Nullable Bundle savedInstanceState) {
-        addEvent(activity, "activityPostCreated");
+        tracers.addEvent(activity, "activityPostCreated");
     }
 
     @Override
     public void onActivityPreStarted(@NonNull Activity activity) {
-        getTracer(activity)
-                .initiateRestartSpanIfNecessary(tracersByActivityClassName.size() > 1)
-                .addEvent("activityPreStarted");
+        tracers.initiateRestartSpanIfNecessary(activity).addEvent("activityPreStarted");
     }
 
     @Override
     public void onActivityStarted(@NonNull Activity activity) {
-        addEvent(activity, "activityStarted");
+        tracers.addEvent(activity, "activityStarted");
     }
 
     @Override
     public void onActivityPostStarted(@NonNull Activity activity) {
-        addEvent(activity, "activityPostStarted");
+        tracers.addEvent(activity, "activityPostStarted");
     }
 
     @Override
     public void onActivityPreResumed(@NonNull Activity activity) {
-        getTracer(activity).startSpanIfNoneInProgress("Resumed").addEvent("activityPreResumed");
+        tracers.startSpanIfNoneInProgress(activity, "Resumed").addEvent("activityPreResumed");
     }
 
     @Override
     public void onActivityResumed(@NonNull Activity activity) {
-        addEvent(activity, "activityResumed");
+        tracers.addEvent(activity, "activityResumed");
     }
 
     @Override
     public void onActivityPostResumed(@NonNull Activity activity) {
-        getTracer(activity)
-                .addEvent("activityPostResumed")
+        tracers.addEvent(activity, "activityPostResumed")
                 .addPreviousScreenAttribute()
                 .endSpanForActivityResumed();
-        visibleScreenTracker.activityResumed(activity);
     }
 
     @Override
     public void onActivityPrePaused(@NonNull Activity activity) {
-        getTracer(activity).startSpanIfNoneInProgress("Paused").addEvent("activityPrePaused");
-        visibleScreenTracker.activityPaused(activity);
+        tracers.startSpanIfNoneInProgress(activity, "Paused").addEvent("activityPrePaused");
     }
 
     @Override
     public void onActivityPaused(@NonNull Activity activity) {
-        addEvent(activity, "activityPaused");
+        tracers.addEvent(activity, "activityPaused");
     }
 
     @Override
     public void onActivityPostPaused(@NonNull Activity activity) {
-        getTracer(activity).addEvent("activityPostPaused").endActiveSpan();
+        tracers.addEvent(activity, "activityPostPaused").endActiveSpan();
     }
 
     @Override
     public void onActivityPreStopped(@NonNull Activity activity) {
-        getTracer(activity).startSpanIfNoneInProgress("Stopped").addEvent("activityPreStopped");
+        tracers.startSpanIfNoneInProgress(activity, "Stopped").addEvent("activityPreStopped");
     }
 
     @Override
     public void onActivityStopped(@NonNull Activity activity) {
-        addEvent(activity, "activityStopped");
+        tracers.addEvent(activity, "activityStopped");
     }
 
     @Override
     public void onActivityPostStopped(@NonNull Activity activity) {
-        getTracer(activity).addEvent("activityPostStopped").endActiveSpan();
-    }
-
-    @Override
-    public void onActivityPreSaveInstanceState(
-            @NonNull Activity activity, @NonNull Bundle outState) {
-        // todo: add event
-    }
-
-    @Override
-    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
-        // todo: add event
-    }
-
-    @Override
-    public void onActivityPostSaveInstanceState(
-            @NonNull Activity activity, @NonNull Bundle outState) {
-        // todo: add event
+        tracers.addEvent(activity, "activityPostStopped").endActiveSpan();
     }
 
     @Override
     public void onActivityPreDestroyed(@NonNull Activity activity) {
-        getTracer(activity).startSpanIfNoneInProgress("Destroyed").addEvent("activityPreDestroyed");
+        tracers.startSpanIfNoneInProgress(activity, "Destroyed").addEvent("activityPreDestroyed");
     }
 
     @Override
     public void onActivityDestroyed(@NonNull Activity activity) {
-        addEvent(activity, "activityDestroyed");
+        tracers.addEvent(activity, "activityDestroyed");
     }
 
     @Override
     public void onActivityPostDestroyed(@NonNull Activity activity) {
-        getTracer(activity).addEvent("activityPostDestroyed").endActiveSpan();
-    }
-
-    private void addEvent(@NonNull Activity activity, String eventName) {
-        getTracer(activity).addEvent(eventName);
-    }
-
-    private ActivityTracer getTracer(Activity activity) {
-        ActivityTracer activityTracer =
-                tracersByActivityClassName.get(activity.getClass().getName());
-        if (activityTracer == null) {
-            activityTracer =
-                    new ActivityTracer(
-                            activity,
-                            initialAppActivity,
-                            tracer,
-                            visibleScreenTracker,
-                            startupTimer);
-            tracersByActivityClassName.put(activity.getClass().getName(), activityTracer);
-        }
-        return activityTracer;
+        tracers.addEvent(activity, "activityPostDestroyed").endActiveSpan();
     }
 }
