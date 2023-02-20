@@ -44,8 +44,9 @@ android {
     }
 }
 
-val otelVersion = "1.22.0"
+val otelVersion = "1.23.1"
 val otelAlphaVersion = "$otelVersion-alpha"
+val otelInstrumentationAlphaVersion = "1.23.0-alpha"
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
@@ -61,7 +62,7 @@ dependencies {
     implementation(platform("io.opentelemetry:opentelemetry-bom-alpha:$otelAlphaVersion"))
     implementation("io.opentelemetry:opentelemetry-semconv")
 
-    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:$otelAlphaVersion"))
+    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:$otelInstrumentationAlphaVersion"))
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
 

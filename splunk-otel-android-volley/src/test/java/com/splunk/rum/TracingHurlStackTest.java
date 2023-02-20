@@ -161,7 +161,7 @@ public class TracingHurlStackTest {
         assertThat(spans).hasSize(1);
 
         SpanData span = spans.get(0);
-        assertThat(span.getName()).isEqualTo("HTTP GET");
+        assertThat(span.getName()).isEqualTo("GET");
 
         assertThat(span.getStatus()).isEqualTo(StatusData.error());
 
@@ -255,7 +255,7 @@ public class TracingHurlStackTest {
     }
 
     private void verifyAttributes(SpanData span, URL url, Long status, String responseBody) {
-        assertThat(span.getName()).isEqualTo("HTTP GET");
+        assertThat(span.getName()).isEqualTo("GET");
         assertThat(span.getKind()).isEqualTo(SpanKind.CLIENT);
 
         Attributes spanAttributes = span.getAttributes();

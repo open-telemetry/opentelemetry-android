@@ -51,8 +51,10 @@ android {
     }
 }
 
-val otelVersion = "1.22.0"
+val otelVersion = "1.23.1"
 val otelAlphaVersion = "$otelVersion-alpha"
+val otelInstrumentationVersion = "1.23.0"
+val otelInstrumentationAlphaVersion = "$otelInstrumentationVersion-alpha"
 
 dependencies {
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
@@ -68,8 +70,8 @@ dependencies {
     implementation(project(":splunk-otel-android"))
     implementation(project(":splunk-otel-android-volley"))
     implementation("com.android.volley:volley:1.2.1")
-    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:$otelVersion")
-    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:$otelAlphaVersion")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:$otelInstrumentationVersion")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:$otelInstrumentationAlphaVersion")
 
     testImplementation("junit:junit:4.13.2")
 }
