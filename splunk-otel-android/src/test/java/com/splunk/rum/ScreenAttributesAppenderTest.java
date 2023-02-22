@@ -16,6 +16,8 @@
 
 package com.splunk.rum;
 
+import static io.opentelemetry.rum.internal.RumConstants.LAST_SCREEN_NAME_KEY;
+import static io.opentelemetry.rum.internal.RumConstants.SCREEN_NAME_KEY;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.rum.internal.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,7 +61,7 @@ class ScreenAttributesAppenderTest {
                 new ScreenAttributesAppender(visibleScreenTracker);
 
         screenAttributesAppender.onStart(Context.current(), span);
-        verify(span).setAttribute(SplunkRum.SCREEN_NAME_KEY, "ScreenOne");
+        verify(span).setAttribute(SCREEN_NAME_KEY, "ScreenOne");
     }
 
     @Test
@@ -71,7 +74,7 @@ class ScreenAttributesAppenderTest {
                 new ScreenAttributesAppender(visibleScreenTracker);
 
         screenAttributesAppender.onStart(Context.current(), span);
-        verify(span).setAttribute(SplunkRum.SCREEN_NAME_KEY, "unknown");
-        verify(span, never()).setAttribute(eq(SplunkRum.LAST_SCREEN_NAME_KEY), any());
+        verify(span).setAttribute(SCREEN_NAME_KEY, "unknown");
+        verify(span, never()).setAttribute(eq(LAST_SCREEN_NAME_KEY), any());
     }
 }

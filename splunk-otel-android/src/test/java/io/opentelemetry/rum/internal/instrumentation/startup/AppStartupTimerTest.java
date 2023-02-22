@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.startup;
 
+import static io.opentelemetry.rum.internal.RumConstants.START_TYPE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -50,10 +51,7 @@ class AppStartupTimerTest {
         SpanData spanData = spans.get(0);
 
         assertEquals("AppStart", spanData.getName());
-        assertEquals(
-                SplunkRum.COMPONENT_APPSTART,
-                spanData.getAttributes().get(SplunkRum.COMPONENT_KEY));
-        assertEquals("cold", spanData.getAttributes().get(SplunkRum.START_TYPE_KEY));
+        assertEquals("cold", spanData.getAttributes().get(START_TYPE_KEY));
     }
 
     @Test

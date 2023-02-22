@@ -16,6 +16,7 @@
 
 package com.splunk.rum;
 
+import static com.splunk.rum.SplunkRum.COMPONENT_KEY;
 import static com.splunk.rum.SplunkRum.LINK_SPAN_ID_KEY;
 import static com.splunk.rum.SplunkRum.LINK_TRACE_ID_KEY;
 
@@ -38,7 +39,7 @@ class VolleyResponseAttributesExtractor
     @Override
     public void onStart(
             AttributesBuilder attributes, Context parentContext, RequestWrapper requestWrapper) {
-        attributes.put(SplunkRum.COMPONENT_KEY, "http");
+        attributes.put(COMPONENT_KEY, "http");
     }
 
     @Override

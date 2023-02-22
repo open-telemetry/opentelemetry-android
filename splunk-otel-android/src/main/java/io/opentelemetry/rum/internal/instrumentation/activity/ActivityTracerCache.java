@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.activity;
 
 import android.app.Activity;
 import androidx.annotation.VisibleForTesting;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.rum.internal.instrumentation.startup.AppStartupTimer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -28,7 +29,7 @@ import java.util.function.Function;
  * Encapsulates the fact that we have an ActivityTracer instance per Activity class, and provides
  * convenience methods for adding events and starting spans.
  */
-class ActivityTracerCache {
+public class ActivityTracerCache {
 
     private final Map<String, ActivityTracer> tracersByActivityClassName = new HashMap<>();
 
@@ -49,12 +50,12 @@ class ActivityTracerCache {
             AppStartupTimer startupTimer) {
         this(
                 activity ->
-                        new ActivityTracer(
-                                activity,
-                                initialAppActivity,
-                                tracer,
-                                visibleScreenTracker,
-                                startupTimer));
+                        ActivityTracer.builder(activity)
+                                .setInitialAppActivity(initialAppActivity)
+                                .setTracer(tracer)
+                                .setAppStartupTimer(startupTimer)
+                                .setVisibleScreenTracker(visibleScreenTracker)
+                                .build());
     }
 
     @VisibleForTesting
@@ -62,20 +63,20 @@ class ActivityTracerCache {
         this.tracerFactory = tracerFactory;
     }
 
-    ActivityTracer addEvent(Activity activity, String eventName) {
+    public ActivityTracer addEvent(Activity activity, String eventName) {
         return getTracer(activity).addEvent(eventName);
     }
 
-    ActivityTracer startSpanIfNoneInProgress(Activity activity, String spanName) {
+    public ActivityTracer startSpanIfNoneInProgress(Activity activity, String spanName) {
         return getTracer(activity).startSpanIfNoneInProgress(spanName);
     }
 
-    ActivityTracer initiateRestartSpanIfNecessary(Activity activity) {
+    public ActivityTracer initiateRestartSpanIfNecessary(Activity activity) {
         boolean isMultiActivityApp = tracersByActivityClassName.size() > 1;
         return getTracer(activity).initiateRestartSpanIfNecessary(isMultiActivityApp);
     }
 
-    ActivityTracer startActivityCreation(Activity activity) {
+    public ActivityTracer startActivityCreation(Activity activity) {
         return getTracer(activity).startActivityCreation();
     }
 

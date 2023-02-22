@@ -17,11 +17,14 @@
 package com.splunk.rum;
 
 import static com.splunk.rum.SplunkRum.APP_NAME_KEY;
+import static com.splunk.rum.SplunkRum.COMPONENT_APPSTART;
 import static com.splunk.rum.SplunkRum.COMPONENT_ERROR;
 import static com.splunk.rum.SplunkRum.COMPONENT_KEY;
+import static com.splunk.rum.SplunkRum.COMPONENT_UI;
 import static com.splunk.rum.SplunkRum.RUM_TRACER_NAME;
 import static com.splunk.rum.SplunkRum.RUM_VERSION_KEY;
 import static io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor.constant;
+import static io.opentelemetry.rum.internal.RumConstants.APP_START_SPAN_NAME;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEPLOYMENT_ENVIRONMENT;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_IDENTIFIER;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_NAME;
@@ -46,14 +49,21 @@ import io.opentelemetry.rum.internal.GlobalAttributesSpanAppender;
 import io.opentelemetry.rum.internal.OpenTelemetryRum;
 import io.opentelemetry.rum.internal.OpenTelemetryRumBuilder;
 import io.opentelemetry.rum.internal.instrumentation.InstrumentedApplication;
+import io.opentelemetry.rum.internal.instrumentation.activity.ActivityCallbacks;
+import io.opentelemetry.rum.internal.instrumentation.activity.ActivityTracerCache;
+import io.opentelemetry.rum.internal.instrumentation.activity.Pre29ActivityCallbacks;
+import io.opentelemetry.rum.internal.instrumentation.activity.Pre29VisibleScreenLifecycleBinding;
 import io.opentelemetry.rum.internal.instrumentation.activity.RumFragmentActivityRegisterer;
+import io.opentelemetry.rum.internal.instrumentation.activity.VisibleScreenLifecycleBinding;
+import io.opentelemetry.rum.internal.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.rum.internal.instrumentation.anr.AnrDetector;
 import io.opentelemetry.rum.internal.instrumentation.crash.CrashReporter;
+import io.opentelemetry.rum.internal.instrumentation.fragment.RumFragmentLifecycleCallbacks;
 import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.rum.internal.instrumentation.network.NetworkAttributesSpanAppender;
 import io.opentelemetry.rum.internal.instrumentation.network.NetworkChangeMonitor;
 import io.opentelemetry.rum.internal.instrumentation.slowrendering.SlowRenderingDetector;
-import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.rum.internal.instrumentation.startup.AppStartupTimer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
@@ -85,14 +95,12 @@ class RumInitializer {
     private final Application application;
     private final AppStartupTimer startupTimer;
     private final List<RumInitializer.InitializationEvent> initializationEvents = new ArrayList<>();
-    private final AnchoredClock timingClock;
 
     RumInitializer(
             SplunkRumBuilder builder, Application application, AppStartupTimer startupTimer) {
         this.builder = builder;
         this.application = application;
         this.startupTimer = startupTimer;
-        this.timingClock = startupTimer.startupClock;
     }
 
     SplunkRum initialize(
@@ -100,17 +108,18 @@ class RumInitializer {
             Looper mainLooper) {
         VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
 
-        long startTimeNanos = timingClock.now();
+        long startTimeNanos = startupTimer.clockNow();
         OpenTelemetryRumBuilder otelRumBuilder = OpenTelemetryRum.builder();
 
         otelRumBuilder.setResource(createResource());
         initializationEvents.add(
-                new RumInitializer.InitializationEvent("resourceInitialized", timingClock.now()));
+                new RumInitializer.InitializationEvent(
+                        "resourceInitialized", startupTimer.clockNow()));
 
         CurrentNetworkProvider currentNetworkProvider =
                 currentNetworkProviderFactory.apply(application);
         initializationEvents.add(
-                new InitializationEvent("connectionUtilInitialized", timingClock.now()));
+                new InitializationEvent("connectionUtilInitialized", startupTimer.clockNow()));
 
         GlobalAttributesSpanAppender globalAttributesSpanAppender =
                 GlobalAttributesSpanAppender.create(builder.globalAttributes);
@@ -122,18 +131,18 @@ class RumInitializer {
                             new ScreenAttributesAppender(visibleScreenTracker);
                     initializationEvents.add(
                             new RumInitializer.InitializationEvent(
-                                    "attributeAppenderInitialized", timingClock.now()));
+                                    "attributeAppenderInitialized", startupTimer.clockNow()));
 
                     SpanExporter zipkinExporter = buildFilteringExporter(currentNetworkProvider);
                     initializationEvents.add(
                             new RumInitializer.InitializationEvent(
-                                    "exporterInitialized", timingClock.now()));
+                                    "exporterInitialized", startupTimer.clockNow()));
 
                     BatchSpanProcessor batchSpanProcessor =
                             BatchSpanProcessor.builder(zipkinExporter).build();
                     initializationEvents.add(
                             new RumInitializer.InitializationEvent(
-                                    "batchSpanProcessorInitialized", timingClock.now()));
+                                    "batchSpanProcessorInitialized", startupTimer.clockNow()));
 
                     tracerProviderBuilder
                             .addSpanProcessor(globalAttributesSpanAppender)
@@ -159,12 +168,12 @@ class RumInitializer {
                                                 LoggingSpanExporter.create())));
                         initializationEvents.add(
                                 new RumInitializer.InitializationEvent(
-                                        "debugSpanExporterInitialized", timingClock.now()));
+                                        "debugSpanExporterInitialized", startupTimer.clockNow()));
                     }
 
                     initializationEvents.add(
                             new RumInitializer.InitializationEvent(
-                                    "tracerProviderInitialized", timingClock.now()));
+                                    "tracerProviderInitialized", startupTimer.clockNow()));
                     return tracerProviderBuilder;
                 });
 
@@ -206,7 +215,8 @@ class RumInitializer {
                 instrumentedApp -> {
                     initializationEvents.add(
                             new InitializationEvent(
-                                    "activityLifecycleCallbacksInitialized", timingClock.now()));
+                                    "activityLifecycleCallbacksInitialized",
+                                    startupTimer.clockNow()));
                 });
     }
 
@@ -246,7 +256,12 @@ class RumInitializer {
     @NonNull
     private Application.ActivityLifecycleCallbacks buildFragmentRegisterer(
             VisibleScreenTracker visibleScreenTracker, InstrumentedApplication instrumentedApp) {
-        Tracer tracer = instrumentedApp.getOpenTelemetrySdk().getTracer(RUM_TRACER_NAME);
+        Tracer delegateTracer = instrumentedApp.getOpenTelemetrySdk().getTracer(RUM_TRACER_NAME);
+        Tracer tracer =
+                spanName ->
+                        delegateTracer
+                                .spanBuilder(spanName)
+                                .setAttribute(COMPONENT_KEY, COMPONENT_UI);
         RumFragmentLifecycleCallbacks fragmentLifecycle =
                 new RumFragmentLifecycleCallbacks(tracer, visibleScreenTracker);
         if (Build.VERSION.SDK_INT < 29) {
@@ -280,7 +295,19 @@ class RumInitializer {
     @NonNull
     private Application.ActivityLifecycleCallbacks buildActivityEventsCallback(
             VisibleScreenTracker visibleScreenTracker, InstrumentedApplication instrumentedApp) {
-        Tracer tracer = instrumentedApp.getOpenTelemetrySdk().getTracer(RUM_TRACER_NAME);
+        Tracer delegateTracer = instrumentedApp.getOpenTelemetrySdk().getTracer(RUM_TRACER_NAME);
+        Tracer tracer =
+                spanName -> {
+                    // override the component to be appstart when appstart
+                    String component =
+                            spanName.equals(APP_START_SPAN_NAME)
+                                    ? COMPONENT_APPSTART
+                                    : COMPONENT_UI;
+                    return delegateTracer
+                            .spanBuilder(spanName)
+                            .setAttribute(COMPONENT_KEY, component);
+                };
+
         ActivityTracerCache tracers =
                 new ActivityTracerCache(tracer, visibleScreenTracker, startupTimer);
         if (Build.VERSION.SDK_INT < 29) {
@@ -333,7 +360,8 @@ class RumInitializer {
                             .installOn(instrumentedApplication);
 
                     initializationEvents.add(
-                            new InitializationEvent("anrMonitorInitialized", timingClock.now()));
+                            new InitializationEvent(
+                                    "anrMonitorInitialized", startupTimer.clockNow()));
                 });
     }
 
@@ -345,7 +373,7 @@ class RumInitializer {
                             .installOn(instrumentedApplication);
                     initializationEvents.add(
                             new InitializationEvent(
-                                    "networkMonitorInitialized", timingClock.now()));
+                                    "networkMonitorInitialized", startupTimer.clockNow()));
                 });
     }
 
@@ -359,7 +387,7 @@ class RumInitializer {
                             .installOn(instrumentedApplication);
                     initializationEvents.add(
                             new InitializationEvent(
-                                    "slowRenderingDetectorInitialized", timingClock.now()));
+                                    "slowRenderingDetectorInitialized", startupTimer.clockNow()));
                 });
     }
 
@@ -378,18 +406,27 @@ class RumInitializer {
 
                     initializationEvents.add(
                             new InitializationEvent(
-                                    "crashReportingInitialized", timingClock.now()));
+                                    "crashReportingInitialized", startupTimer.clockNow()));
                 });
     }
 
     private void recordInitializationSpans(
-            long startTimeNanos, List<InitializationEvent> initializationEvents, Tracer tracer) {
+            long startTimeNanos,
+            List<InitializationEvent> initializationEvents,
+            Tracer delegateTracer) {
+
+        Tracer tracer =
+                spanName ->
+                        delegateTracer
+                                .spanBuilder(spanName)
+                                .setAttribute(COMPONENT_KEY, COMPONENT_APPSTART);
+
         Span overallAppStart = startupTimer.start(tracer);
         Span span =
                 tracer.spanBuilder("SplunkRum.initialize")
                         .setParent(Context.current().with(overallAppStart))
                         .setStartTimestamp(startTimeNanos, TimeUnit.NANOSECONDS)
-                        .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_APPSTART)
+                        .setAttribute(COMPONENT_KEY, COMPONENT_APPSTART)
                         .startSpan();
 
         String configSettings =
@@ -413,7 +450,7 @@ class RumInitializer {
         for (RumInitializer.InitializationEvent initializationEvent : initializationEvents) {
             span.addEvent(initializationEvent.name, initializationEvent.time, TimeUnit.NANOSECONDS);
         }
-        long spanEndTime = timingClock.now();
+        long spanEndTime = startupTimer.clockNow();
         // we only want to create SplunkRum.initialize span when there is a AppStart span so we
         // register a callback that is called right before AppStart span is ended
         startupTimer.setCompletionCallback(() -> span.end(spanEndTime, TimeUnit.NANOSECONDS));
@@ -426,7 +463,7 @@ class RumInitializer {
                 new SplunkSpanDataModifier(exporter, builder.reactNativeSupportEnabled);
         SpanExporter filteredExporter = builder.decorateWithSpanFilter(splunkTranslatedExporter);
         initializationEvents.add(
-                new InitializationEvent("zipkin exporter initialized", timingClock.now()));
+                new InitializationEvent("zipkin exporter initialized", startupTimer.clockNow()));
         return filteredExporter;
     }
 
@@ -436,7 +473,7 @@ class RumInitializer {
             // we'll do our best to hang on to the spans with the wrapping BufferingExporter.
             ZipkinSpanExporter.baseLogger.setLevel(Level.SEVERE);
             initializationEvents.add(
-                    new InitializationEvent("logger setup complete", timingClock.now()));
+                    new InitializationEvent("logger setup complete", startupTimer.clockNow()));
         }
 
         if (builder.diskBufferingEnabled) {
@@ -477,7 +514,7 @@ class RumInitializer {
         SpanExporter zipkinSpanExporter = getCoreSpanExporter(endpoint);
         return ThrottlingExporter.newBuilder(
                         new MemoryBufferingExporter(currentNetworkProvider, zipkinSpanExporter))
-                .categorizeByAttribute(SplunkRum.COMPONENT_KEY)
+                .categorizeByAttribute(COMPONENT_KEY)
                 .maxSpansInWindow(100)
                 .windowSize(Duration.ofSeconds(30))
                 .build();
@@ -510,28 +547,6 @@ class RumInitializer {
         private InitializationEvent(String name, long time) {
             this.name = name;
             this.time = time;
-        }
-    }
-
-    // copied from otel-java
-    static final class AnchoredClock {
-        private final Clock clock;
-        private final long epochNanos;
-        private final long nanoTime;
-
-        private AnchoredClock(Clock clock, long epochNanos, long nanoTime) {
-            this.clock = clock;
-            this.epochNanos = epochNanos;
-            this.nanoTime = nanoTime;
-        }
-
-        public static AnchoredClock create(Clock clock) {
-            return new AnchoredClock(clock, clock.now(), clock.nanoTime());
-        }
-
-        long now() {
-            long deltaNanos = this.clock.nanoTime() - this.nanoTime;
-            return this.epochNanos + deltaNanos;
         }
     }
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.activity;
 
 import android.app.Activity;
 import androidx.annotation.NonNull;
@@ -22,23 +22,24 @@ import io.opentelemetry.rum.internal.DefaultingActivityLifecycleCallbacks;
 
 /**
  * An ActivityLifecycleCallbacks that is responsible for telling the VisibleScreenTracker when an
- * activity has been resumed and when an activity has been paused. It's just a glue class.
+ * activity has been resumed and when an activity has been paused. It's just a glue class designed
+ * for API level before 29.
  */
-class VisibleScreenLifecycleBinding implements DefaultingActivityLifecycleCallbacks {
+public class Pre29VisibleScreenLifecycleBinding implements DefaultingActivityLifecycleCallbacks {
 
     private final VisibleScreenTracker visibleScreenTracker;
 
-    VisibleScreenLifecycleBinding(VisibleScreenTracker visibleScreenTracker) {
+    public Pre29VisibleScreenLifecycleBinding(VisibleScreenTracker visibleScreenTracker) {
         this.visibleScreenTracker = visibleScreenTracker;
     }
 
     @Override
-    public void onActivityPostResumed(@NonNull Activity activity) {
+    public void onActivityResumed(@NonNull Activity activity) {
         visibleScreenTracker.activityResumed(activity);
     }
 
     @Override
-    public void onActivityPrePaused(@NonNull Activity activity) {
+    public void onActivityPaused(@NonNull Activity activity) {
         visibleScreenTracker.activityPaused(activity);
     }
 }

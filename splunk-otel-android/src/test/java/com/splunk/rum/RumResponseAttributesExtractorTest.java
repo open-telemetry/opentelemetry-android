@@ -16,6 +16,9 @@
 
 package com.splunk.rum;
 
+import static com.splunk.rum.SplunkRum.COMPONENT_KEY;
+import static com.splunk.rum.SplunkRum.LINK_SPAN_ID_KEY;
+import static com.splunk.rum.SplunkRum.LINK_TRACE_ID_KEY;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.mock;
@@ -56,9 +59,9 @@ class RumResponseAttributesExtractorTest {
 
         assertThat(attributes)
                 .containsOnly(
-                        entry(SplunkRum.COMPONENT_KEY, "http"),
-                        entry(SplunkRum.LINK_TRACE_ID_KEY, "9499195c502eb217c448a68bfe0f967c"),
-                        entry(SplunkRum.LINK_SPAN_ID_KEY, "fe16eca542cd5d86"));
+                        entry(COMPONENT_KEY, "http"),
+                        entry(LINK_TRACE_ID_KEY, "9499195c502eb217c448a68bfe0f967c"),
+                        entry(LINK_SPAN_ID_KEY, "fe16eca542cd5d86"));
     }
 
     @Test
@@ -82,6 +85,6 @@ class RumResponseAttributesExtractorTest {
         attributesExtractor.onStart(attributesBuilder, Context.root(), fakeRequest);
         Attributes attributes = attributesBuilder.build();
 
-        assertThat(attributes).containsOnly(entry(SplunkRum.COMPONENT_KEY, "http"));
+        assertThat(attributes).containsOnly(entry(COMPONENT_KEY, "http"));
     }
 }

@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.fragment;
 
+import static io.opentelemetry.rum.internal.RumConstants.LAST_SCREEN_NAME_KEY;
+import static io.opentelemetry.rum.internal.RumConstants.SCREEN_NAME_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import androidx.fragment.app.Fragment;
+import com.splunk.rum.RumScreenName;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.rum.internal.instrumentation.activity.VisibleScreenTracker;
+import io.opentelemetry.rum.internal.util.ActiveSpan;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
@@ -33,17 +38,22 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class FragmentTracerTest {
     @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
     private Tracer tracer;
-    private final VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
+    private ActiveSpan activeSpan;
 
     @BeforeEach
     void setup() {
         tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
+        VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
+        activeSpan = new ActiveSpan(visibleScreenTracker::getPreviouslyVisibleScreen);
     }
 
     @Test
     void create() {
         FragmentTracer trackableTracer =
-                new FragmentTracer(mock(Fragment.class), tracer, visibleScreenTracker);
+                FragmentTracer.builder(mock(Fragment.class))
+                        .setTracer(tracer)
+                        .setActiveSpan(activeSpan)
+                        .build();
         trackableTracer.startFragmentCreation();
         trackableTracer.endActiveSpan();
         SpanData span = getSingleSpan();
@@ -55,14 +65,17 @@ class FragmentTracerTest {
         VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
 
         FragmentTracer trackableTracer =
-                new FragmentTracer(mock(Fragment.class), tracer, visibleScreenTracker);
+                FragmentTracer.builder(mock(Fragment.class))
+                        .setTracer(tracer)
+                        .setActiveSpan(activeSpan)
+                        .build();
 
         trackableTracer.startSpanIfNoneInProgress("starting");
         trackableTracer.addPreviousScreenAttribute();
         trackableTracer.endActiveSpan();
 
         SpanData span = getSingleSpan();
-        assertNull(span.getAttributes().get(SplunkRum.LAST_SCREEN_NAME_KEY));
+        assertNull(span.getAttributes().get(LAST_SCREEN_NAME_KEY));
     }
 
     @Test
@@ -71,39 +84,53 @@ class FragmentTracerTest {
         when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("Fragment");
 
         FragmentTracer trackableTracer =
-                new FragmentTracer(mock(Fragment.class), tracer, visibleScreenTracker);
+                FragmentTracer.builder(mock(Fragment.class))
+                        .setTracer(tracer)
+                        .setActiveSpan(activeSpan)
+                        .build();
 
         trackableTracer.startSpanIfNoneInProgress("starting");
         trackableTracer.addPreviousScreenAttribute();
         trackableTracer.endActiveSpan();
 
         SpanData span = getSingleSpan();
-        assertNull(span.getAttributes().get(SplunkRum.LAST_SCREEN_NAME_KEY));
+        assertNull(span.getAttributes().get(LAST_SCREEN_NAME_KEY));
     }
 
     @Test
     void addPreviousScreen() {
+
+        VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
         when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
+        activeSpan = new ActiveSpan(visibleScreenTracker::getPreviouslyVisibleScreen);
 
         FragmentTracer fragmentTracer =
-                new FragmentTracer(mock(Fragment.class), tracer, visibleScreenTracker);
+                FragmentTracer.builder(mock(Fragment.class))
+                        .setTracer(tracer)
+                        .setActiveSpan(activeSpan)
+                        .build();
 
         fragmentTracer.startSpanIfNoneInProgress("starting");
         fragmentTracer.addPreviousScreenAttribute();
         fragmentTracer.endActiveSpan();
 
         SpanData span = getSingleSpan();
-        assertEquals("previousScreen", span.getAttributes().get(SplunkRum.LAST_SCREEN_NAME_KEY));
+        assertEquals("previousScreen", span.getAttributes().get(LAST_SCREEN_NAME_KEY));
     }
 
     @Test
     void testAnnotatedScreenName() {
         Fragment fragment = new AnnotatedFragment();
-        FragmentTracer fragmentTracer = new FragmentTracer(fragment, tracer, visibleScreenTracker);
+        FragmentTracer fragmentTracer =
+                FragmentTracer.builder(fragment)
+                        .setTracer(tracer)
+                        .setActiveSpan(activeSpan)
+                        .build();
+
         fragmentTracer.startFragmentCreation();
         fragmentTracer.endActiveSpan();
         SpanData span = getSingleSpan();
-        assertEquals("bumpity", span.getAttributes().get(SplunkRum.SCREEN_NAME_KEY));
+        assertEquals("bumpity", span.getAttributes().get(SCREEN_NAME_KEY));
     }
 
     @RumScreenName("bumpity")

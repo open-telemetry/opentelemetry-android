@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.fragment;
+
+import static io.opentelemetry.rum.internal.RumConstants.SCREEN_NAME_KEY;
 
 import androidx.fragment.app.Fragment;
+import com.splunk.rum.RumScreenName;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.rum.internal.util.ActiveSpan;
 
 class FragmentTracer {
     static final AttributeKey<String> FRAGMENT_NAME_KEY = AttributeKey.stringKey("fragmentName");
@@ -29,12 +33,12 @@ class FragmentTracer {
     private final Tracer tracer;
     private final ActiveSpan activeSpan;
 
-    FragmentTracer(Fragment fragment, Tracer tracer, VisibleScreenTracker visibleScreenTracker) {
-        this.tracer = tracer;
-        this.fragmentName = fragment.getClass().getSimpleName();
-        RumScreenName rumScreenName = fragment.getClass().getAnnotation(RumScreenName.class);
+    private FragmentTracer(Builder builder) {
+        this.tracer = builder.tracer;
+        this.fragmentName = builder.getFragmentName();
+        RumScreenName rumScreenName = builder.getRumScreenName();
         this.screenName = rumScreenName == null ? fragmentName : rumScreenName.value();
-        this.activeSpan = new ActiveSpan(visibleScreenTracker);
+        this.activeSpan = builder.activeSpan;
     }
 
     FragmentTracer startSpanIfNoneInProgress(String action) {
@@ -54,11 +58,10 @@ class FragmentTracer {
         Span span =
                 tracer.spanBuilder(spanName)
                         .setAttribute(FRAGMENT_NAME_KEY, fragmentName)
-                        .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_UI)
                         .startSpan();
         // do this after the span is started, so we can override the default screen.name set by the
         // RumAttributeAppender.
-        span.setAttribute(SplunkRum.SCREEN_NAME_KEY, screenName);
+        span.setAttribute(SCREEN_NAME_KEY, screenName);
         return span;
     }
 
@@ -74,5 +77,41 @@ class FragmentTracer {
     FragmentTracer addEvent(String eventName) {
         activeSpan.addEvent(eventName);
         return this;
+    }
+
+    static Builder builder(Fragment fragment) {
+        return new Builder(fragment);
+    }
+
+    static class Builder {
+        private final Fragment fragment;
+        private Tracer tracer;
+        private ActiveSpan activeSpan;
+
+        public Builder(Fragment fragment) {
+            this.fragment = fragment;
+        }
+
+        Builder setTracer(Tracer tracer) {
+            this.tracer = tracer;
+            return this;
+        }
+
+        Builder setActiveSpan(ActiveSpan activeSpan) {
+            this.activeSpan = activeSpan;
+            return this;
+        }
+
+        public String getFragmentName() {
+            return fragment.getClass().getSimpleName();
+        }
+
+        public RumScreenName getRumScreenName() {
+            return fragment.getClass().getAnnotation(RumScreenName.class);
+        }
+
+        FragmentTracer build() {
+            return new FragmentTracer(this);
+        }
     }
 }

@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.startup;
+
+import static io.opentelemetry.rum.internal.RumConstants.OTEL_RUM_LOG_TAG;
+import static io.opentelemetry.rum.internal.RumConstants.START_TYPE_KEY;
 
 import android.app.Activity;
 import android.app.Application;
@@ -26,18 +29,18 @@ import androidx.annotation.Nullable;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.rum.internal.DefaultingActivityLifecycleCallbacks;
+import io.opentelemetry.rum.internal.util.AnchoredClock;
 import io.opentelemetry.sdk.common.Clock;
 import java.util.concurrent.TimeUnit;
 
-class AppStartupTimer {
+public class AppStartupTimer {
     // Maximum time from app start to creation of the UI. If this time is exceeded we will not
     // create the app start span. Long app startup could indicate that the app was really started in
     // background, in which case the measured startup time is misleading.
     private static final long MAX_TIME_TO_UI_INIT = TimeUnit.MINUTES.toNanos(1);
 
     // exposed so it can be used for the rest of the startup sequence timing.
-    final RumInitializer.AnchoredClock startupClock =
-            RumInitializer.AnchoredClock.create(Clock.getDefault());
+    private final AnchoredClock startupClock = AnchoredClock.create(Clock.getDefault());
     private final long firstPossibleTimestamp = startupClock.now();
     @Nullable private volatile Span overallAppStartSpan = null;
     @Nullable private volatile Runnable completionCallback = null;
@@ -50,7 +53,7 @@ class AppStartupTimer {
     // accessed only from UI thread
     private boolean isStartedFromBackground = false;
 
-    Span start(Tracer tracer) {
+    public Span start(Tracer tracer) {
         // guard against a double-start and just return what's already in flight.
         if (overallAppStartSpan != null) {
             return overallAppStartSpan;
@@ -58,15 +61,25 @@ class AppStartupTimer {
         final Span appStart =
                 tracer.spanBuilder("AppStart")
                         .setStartTimestamp(firstPossibleTimestamp, TimeUnit.NANOSECONDS)
-                        .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_APPSTART)
-                        .setAttribute(SplunkRum.START_TYPE_KEY, "cold")
+                        .setAttribute(START_TYPE_KEY, "cold")
                         .startSpan();
         overallAppStartSpan = appStart;
         return appStart;
     }
 
-    /** Creates a lifecycle listener that starts the UI init when an activity is created. */
-    Application.ActivityLifecycleCallbacks createLifecycleCallback() {
+    /**
+     * @return epoch timestamp in nanos calculated by the startupClock.
+     */
+    public long clockNow() {
+        return startupClock.now();
+    }
+
+    /**
+     * Creates a lifecycle listener that starts the UI init when an activity is created.
+     *
+     * @return a new Application.ActivityLifecycleCallbacks instance
+     */
+    public Application.ActivityLifecycleCallbacks createLifecycleCallback() {
         return new DefaultingActivityLifecycleCallbacks() {
             @Override
             public void onActivityCreated(
@@ -83,17 +96,17 @@ class AppStartupTimer {
         }
         uiInitStarted = true;
         if (firstPossibleTimestamp + MAX_TIME_TO_UI_INIT < startupClock.now()) {
-            Log.d(SplunkRum.LOG_TAG, "Max time to UI init exceeded");
+            Log.d(OTEL_RUM_LOG_TAG, "Max time to UI init exceeded");
             uiInitTooLate = true;
             clear();
         }
     }
 
-    void setCompletionCallback(Runnable completionCallback) {
+    public void setCompletionCallback(Runnable completionCallback) {
         this.completionCallback = completionCallback;
     }
 
-    void end() {
+    public void end() {
         Span overallAppStartSpan = this.overallAppStartSpan;
         if (overallAppStartSpan != null && !uiInitTooLate && !isStartedFromBackground) {
             runCompletionCallback();
@@ -103,12 +116,12 @@ class AppStartupTimer {
     }
 
     @Nullable
-    Span getStartupSpan() {
+    public Span getStartupSpan() {
         return overallAppStartSpan;
     }
 
     // visibleForTesting
-    void runCompletionCallback() {
+    public void runCompletionCallback() {
         Runnable completionCallback = this.completionCallback;
         if (completionCallback != null) {
             completionCallback.run();
@@ -120,7 +133,7 @@ class AppStartupTimer {
         completionCallback = null;
     }
 
-    void detectBackgroundStart(Handler handler) {
+    public void detectBackgroundStart(Handler handler) {
         handler.post(new StartFromBackgroundRunnable(this));
     }
 
@@ -145,7 +158,7 @@ class AppStartupTimer {
         public void run() {
             // check whether an activity has been created
             if (!startupTimer.uiInitStarted) {
-                Log.d(SplunkRum.LOG_TAG, "Detected background app start");
+                Log.d(OTEL_RUM_LOG_TAG, "Detected background app start");
                 startupTimer.isStartedFromBackground = true;
             }
         }

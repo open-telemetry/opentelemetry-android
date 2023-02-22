@@ -16,6 +16,7 @@
 
 package com.splunk.rum;
 
+import static com.splunk.rum.SplunkRum.COMPONENT_KEY;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
@@ -33,7 +34,7 @@ class CrashComponentExtractorTest {
             extractor.onStart(builder, null, null);
             assertThat(builder.build())
                     .hasSize(1)
-                    .containsEntry(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_CRASH);
+                    .containsEntry(COMPONENT_KEY, SplunkRum.COMPONENT_CRASH);
         }
 
         {
@@ -41,7 +42,7 @@ class CrashComponentExtractorTest {
             extractor.onStart(builder, null, null);
             assertThat(builder.build())
                     .hasSize(1)
-                    .containsEntry(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_ERROR);
+                    .containsEntry(COMPONENT_KEY, SplunkRum.COMPONENT_ERROR);
         }
     }
 }

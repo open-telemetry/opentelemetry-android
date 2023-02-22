@@ -16,7 +16,10 @@
 
 package com.splunk.rum;
 
+import static io.opentelemetry.rum.internal.RumConstants.SCREEN_NAME_KEY;
+
 import io.opentelemetry.context.Context;
+import io.opentelemetry.rum.internal.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -32,7 +35,7 @@ class ScreenAttributesAppender implements SpanProcessor {
     @Override
     public void onStart(Context parentContext, ReadWriteSpan span) {
         String currentScreen = visibleScreenTracker.getCurrentlyVisibleScreen();
-        span.setAttribute(SplunkRum.SCREEN_NAME_KEY, currentScreen);
+        span.setAttribute(SCREEN_NAME_KEY, currentScreen);
     }
 
     @Override

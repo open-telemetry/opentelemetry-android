@@ -14,30 +14,32 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.util;
+
+import static io.opentelemetry.rum.internal.RumConstants.LAST_SCREEN_NAME_KEY;
 
 import androidx.annotation.Nullable;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import java.util.function.Supplier;
 
-class ActiveSpan {
-    private final VisibleScreenTracker visibleScreenTracker;
+public class ActiveSpan {
+    private final Supplier<String> lastVisibleScreen;
 
     @Nullable private Span span;
     @Nullable private Scope scope;
 
-    ActiveSpan(VisibleScreenTracker visibleScreenTracker) {
-        this.visibleScreenTracker = visibleScreenTracker;
+    public ActiveSpan(Supplier<String> lastVisibleScreen) {
+        this.lastVisibleScreen = lastVisibleScreen;
     }
 
-    boolean spanInProgress() {
+    public boolean spanInProgress() {
         return span != null;
     }
 
     // it's fine to not close the scope here, will be closed in endActiveSpan()
     @SuppressWarnings("MustBeClosedChecker")
-    void startSpan(Supplier<Span> spanCreator) {
+    public void startSpan(Supplier<Span> spanCreator) {
         // don't start one if there's already one in progress
         if (span != null) {
             return;
@@ -46,7 +48,7 @@ class ActiveSpan {
         scope = span.makeCurrent();
     }
 
-    void endActiveSpan() {
+    public void endActiveSpan() {
         if (scope != null) {
             scope.close();
             scope = null;
@@ -57,19 +59,19 @@ class ActiveSpan {
         }
     }
 
-    void addEvent(String eventName) {
+    public void addEvent(String eventName) {
         if (span != null) {
             span.addEvent(eventName);
         }
     }
 
-    void addPreviousScreenAttribute(String screenName) {
+    public void addPreviousScreenAttribute(String screenName) {
         if (span == null) {
             return;
         }
-        String previouslyVisibleScreen = visibleScreenTracker.getPreviouslyVisibleScreen();
+        String previouslyVisibleScreen = lastVisibleScreen.get();
         if (previouslyVisibleScreen != null && !screenName.equals(previouslyVisibleScreen)) {
-            span.setAttribute(SplunkRum.LAST_SCREEN_NAME_KEY, previouslyVisibleScreen);
+            span.setAttribute(LAST_SCREEN_NAME_KEY, previouslyVisibleScreen);
         }
     }
 }

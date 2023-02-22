@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -24,16 +24,18 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.rum.internal.instrumentation.activity.VisibleScreenTracker;
+import io.opentelemetry.rum.internal.util.ActiveSpan;
 import java.util.HashMap;
 import java.util.Map;
 
-class RumFragmentLifecycleCallbacks extends FragmentManager.FragmentLifecycleCallbacks {
+public class RumFragmentLifecycleCallbacks extends FragmentManager.FragmentLifecycleCallbacks {
     private final Map<String, FragmentTracer> tracersByFragmentClassName = new HashMap<>();
 
     private final Tracer tracer;
     private final VisibleScreenTracker visibleScreenTracker;
 
-    RumFragmentLifecycleCallbacks(Tracer tracer, VisibleScreenTracker visibleScreenTracker) {
+    public RumFragmentLifecycleCallbacks(Tracer tracer, VisibleScreenTracker visibleScreenTracker) {
         this.tracer = tracer;
         this.visibleScreenTracker = visibleScreenTracker;
     }
@@ -151,7 +153,13 @@ class RumFragmentLifecycleCallbacks extends FragmentManager.FragmentLifecycleCal
         FragmentTracer activityTracer =
                 tracersByFragmentClassName.get(fragment.getClass().getName());
         if (activityTracer == null) {
-            activityTracer = new FragmentTracer(fragment, tracer, visibleScreenTracker);
+            activityTracer =
+                    FragmentTracer.builder(fragment)
+                            .setTracer(tracer)
+                            .setActiveSpan(
+                                    new ActiveSpan(
+                                            visibleScreenTracker::getPreviouslyVisibleScreen))
+                            .build();
             tracersByFragmentClassName.put(fragment.getClass().getName(), activityTracer);
         }
         return activityTracer;

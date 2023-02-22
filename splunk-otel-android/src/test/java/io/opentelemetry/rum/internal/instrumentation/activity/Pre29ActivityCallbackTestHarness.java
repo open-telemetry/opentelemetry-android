@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.activity;
 
 import static org.mockito.Mockito.mock;
 
 import android.app.Activity;
 import android.os.Bundle;
 
-class ActivityCallbackTestHarness {
+class Pre29ActivityCallbackTestHarness {
 
-    private final ActivityCallbacks callbacks;
+    private final Pre29ActivityCallbacks callbacks;
 
-    ActivityCallbackTestHarness(ActivityCallbacks callbacks) {
+    Pre29ActivityCallbackTestHarness(Pre29ActivityCallbacks callbacks) {
         this.callbacks = callbacks;
     }
 
@@ -37,30 +37,22 @@ class ActivityCallbackTestHarness {
     void runActivityCreationLifecycle(Activity activity) {
         Bundle bundle = mock(Bundle.class);
 
-        callbacks.onActivityPreCreated(activity, bundle);
         callbacks.onActivityCreated(activity, bundle);
-        callbacks.onActivityPostCreated(activity, bundle);
 
         runActivityStartedLifecycle(activity);
         runActivityResumedLifecycle(activity);
     }
 
     void runActivityStartedLifecycle(Activity activity) {
-        callbacks.onActivityPreStarted(activity);
         callbacks.onActivityStarted(activity);
-        callbacks.onActivityPostStarted(activity);
     }
 
     void runActivityPausedLifecycle(Activity activity) {
-        callbacks.onActivityPrePaused(activity);
         callbacks.onActivityPaused(activity);
-        callbacks.onActivityPostPaused(activity);
     }
 
     void runActivityResumedLifecycle(Activity activity) {
-        callbacks.onActivityPreResumed(activity);
         callbacks.onActivityResumed(activity);
-        callbacks.onActivityPostResumed(activity);
     }
 
     void runActivityStoppedFromRunningLifecycle(Activity activity) {
@@ -69,15 +61,11 @@ class ActivityCallbackTestHarness {
     }
 
     void runActivityStoppedFromPausedLifecycle(Activity activity) {
-        callbacks.onActivityPreStopped(activity);
         callbacks.onActivityStopped(activity);
-        callbacks.onActivityPostStopped(activity);
     }
 
     void runActivityDestroyedFromStoppedLifecycle(Activity activity) {
-        callbacks.onActivityPreDestroyed(activity);
         callbacks.onActivityDestroyed(activity);
-        callbacks.onActivityPostDestroyed(activity);
     }
 
     void runActivityDestroyedFromPausedLifecycle(Activity activity) {

@@ -14,21 +14,27 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.activity;
+
+import static io.opentelemetry.rum.internal.RumConstants.APP_START_SPAN_NAME;
+import static io.opentelemetry.rum.internal.RumConstants.SCREEN_NAME_KEY;
+import static io.opentelemetry.rum.internal.RumConstants.START_TYPE_KEY;
 
 import android.app.Activity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.splunk.rum.RumScreenName;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.rum.internal.instrumentation.startup.AppStartupTimer;
+import io.opentelemetry.rum.internal.util.ActiveSpan;
 import java.util.concurrent.atomic.AtomicReference;
 
-class ActivityTracer {
+public class ActivityTracer {
     static final AttributeKey<String> ACTIVITY_NAME_KEY = AttributeKey.stringKey("activityName");
-    static final String APP_START_SPAN_NAME = "AppStart";
 
     private final AtomicReference<String> initialAppActivity;
     private final Tracer tracer;
@@ -37,19 +43,14 @@ class ActivityTracer {
     private final AppStartupTimer appStartupTimer;
     private final ActiveSpan activeSpan;
 
-    ActivityTracer(
-            Activity activity,
-            AtomicReference<String> initialAppActivity,
-            Tracer tracer,
-            VisibleScreenTracker visibleScreenTracker,
-            AppStartupTimer appStartupTimer) {
-        this.initialAppActivity = initialAppActivity;
-        this.tracer = tracer;
-        this.activityName = activity.getClass().getSimpleName();
-        RumScreenName rumScreenName = activity.getClass().getAnnotation(RumScreenName.class);
+    private ActivityTracer(Builder builder) {
+        this.initialAppActivity = builder.initialAppActivity;
+        this.tracer = builder.tracer;
+        this.activityName = builder.getActivityName();
+        RumScreenName rumScreenName = builder.getRumScreenName();
         this.screenName = rumScreenName == null ? activityName : rumScreenName.value();
-        this.appStartupTimer = appStartupTimer;
-        this.activeSpan = new ActiveSpan(visibleScreenTracker);
+        this.appStartupTimer = builder.appStartupTimer;
+        this.activeSpan = builder.activeSpan;
     }
 
     ActivityTracer startSpanIfNoneInProgress(String spanName) {
@@ -101,9 +102,7 @@ class ActivityTracer {
 
     private Span createAppStartSpan(String startType) {
         Span span = createSpan(APP_START_SPAN_NAME);
-        span.setAttribute(SplunkRum.START_TYPE_KEY, startType);
-        // override the component to be appstart
-        span.setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_APPSTART);
+        span.setAttribute(START_TYPE_KEY, startType);
         return span;
     }
 
@@ -113,40 +112,96 @@ class ActivityTracer {
 
     private Span createSpanWithParent(String spanName, @Nullable Span parentSpan) {
         final SpanBuilder spanBuilder =
-                tracer.spanBuilder(spanName)
-                        .setAttribute(ACTIVITY_NAME_KEY, activityName)
-                        .setAttribute(SplunkRum.COMPONENT_KEY, SplunkRum.COMPONENT_UI);
+                tracer.spanBuilder(spanName).setAttribute(ACTIVITY_NAME_KEY, activityName);
         if (parentSpan != null) {
             spanBuilder.setParent(parentSpan.storeInContext(Context.current()));
         }
         Span span = spanBuilder.startSpan();
         // do this after the span is started, so we can override the default screen.name set by the
         // RumAttributeAppender.
-        span.setAttribute(SplunkRum.SCREEN_NAME_KEY, screenName);
+        span.setAttribute(SCREEN_NAME_KEY, screenName);
         return span;
     }
 
-    void endSpanForActivityResumed() {
+    public void endSpanForActivityResumed() {
         if (initialAppActivity.get() == null) {
             initialAppActivity.set(activityName);
         }
         endActiveSpan();
     }
 
-    void endActiveSpan() {
+    public void endActiveSpan() {
         // If we happen to be in app startup, make sure this ends it. It's harmless if we're already
         // out of the startup phase.
         appStartupTimer.end();
         activeSpan.endActiveSpan();
     }
 
-    ActivityTracer addPreviousScreenAttribute() {
+    public ActivityTracer addPreviousScreenAttribute() {
         activeSpan.addPreviousScreenAttribute(activityName);
         return this;
     }
 
-    ActivityTracer addEvent(String eventName) {
+    public ActivityTracer addEvent(String eventName) {
         activeSpan.addEvent(eventName);
         return this;
+    }
+
+    public static Builder builder(Activity activity) {
+        return new Builder(activity);
+    }
+
+    static class Builder {
+        private final Activity activity;
+        private AtomicReference<String> initialAppActivity = new AtomicReference<>();
+        private Tracer tracer;
+        private AppStartupTimer appStartupTimer;
+        private ActiveSpan activeSpan;
+
+        public Builder(Activity activity) {
+            this.activity = activity;
+        }
+
+        public Builder setVisibleScreenTracker(VisibleScreenTracker visibleScreenTracker) {
+            this.activeSpan = new ActiveSpan(visibleScreenTracker::getPreviouslyVisibleScreen);
+            return this;
+        }
+
+        public Builder setInitialAppActivity(String activityName) {
+            initialAppActivity.set(activityName);
+            return this;
+        }
+
+        public Builder setInitialAppActivity(AtomicReference<String> initialAppActivity) {
+            this.initialAppActivity = initialAppActivity;
+            return this;
+        }
+
+        public Builder setTracer(Tracer tracer) {
+            this.tracer = tracer;
+            return this;
+        }
+
+        public Builder setAppStartupTimer(AppStartupTimer appStartupTimer) {
+            this.appStartupTimer = appStartupTimer;
+            return this;
+        }
+
+        public Builder setActiveSpan(ActiveSpan activeSpan) {
+            this.activeSpan = activeSpan;
+            return this;
+        }
+
+        private String getActivityName() {
+            return activity.getClass().getSimpleName();
+        }
+
+        private RumScreenName getRumScreenName() {
+            return activity.getClass().getAnnotation(RumScreenName.class);
+        }
+
+        public ActivityTracer build() {
+            return new ActivityTracer(this);
+        }
     }
 }

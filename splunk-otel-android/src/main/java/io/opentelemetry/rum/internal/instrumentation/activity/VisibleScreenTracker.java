@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.activity;
 
 import android.app.Activity;
 import androidx.annotation.Nullable;
@@ -35,14 +35,14 @@ import java.util.concurrent.atomic.AtomicReference;
  * <p>We have to treat DialogFragments slightly differently since they don't replace the launching
  * screen, and the launching screen never leaves visibility.
  */
-class VisibleScreenTracker {
+public class VisibleScreenTracker {
     private final AtomicReference<String> lastResumedActivity = new AtomicReference<>();
     private final AtomicReference<String> previouslyLastResumedActivity = new AtomicReference<>();
     private final AtomicReference<String> lastResumedFragment = new AtomicReference<>();
     private final AtomicReference<String> previouslyLastResumedFragment = new AtomicReference<>();
 
     @Nullable
-    String getPreviouslyVisibleScreen() {
+    public String getPreviouslyVisibleScreen() {
         String previouslyLastFragment = previouslyLastResumedFragment.get();
         if (previouslyLastFragment != null) {
             return previouslyLastFragment;
@@ -50,7 +50,7 @@ class VisibleScreenTracker {
         return previouslyLastResumedActivity.get();
     }
 
-    String getCurrentlyVisibleScreen() {
+    public String getCurrentlyVisibleScreen() {
         String lastFragment = lastResumedFragment.get();
         if (lastFragment != null) {
             return lastFragment;
@@ -62,16 +62,16 @@ class VisibleScreenTracker {
         return "unknown";
     }
 
-    void activityResumed(Activity activity) {
+    public void activityResumed(Activity activity) {
         lastResumedActivity.set(activity.getClass().getSimpleName());
     }
 
-    void activityPaused(Activity activity) {
+    public void activityPaused(Activity activity) {
         previouslyLastResumedActivity.set(activity.getClass().getSimpleName());
         lastResumedActivity.compareAndSet(activity.getClass().getSimpleName(), null);
     }
 
-    void fragmentResumed(Fragment fragment) {
+    public void fragmentResumed(Fragment fragment) {
         // skip the NavHostFragment since it's never really "visible" by itself.
         if (fragment instanceof NavHostFragment) {
             return;
@@ -83,7 +83,7 @@ class VisibleScreenTracker {
         lastResumedFragment.set(fragment.getClass().getSimpleName());
     }
 
-    void fragmentPaused(Fragment fragment) {
+    public void fragmentPaused(Fragment fragment) {
         // skip the NavHostFragment since it's never really "visible" by itself.
         if (fragment instanceof NavHostFragment) {
             return;

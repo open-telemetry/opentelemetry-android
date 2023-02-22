@@ -16,6 +16,7 @@
 
 package com.splunk.rum;
 
+import static com.splunk.rum.SplunkRum.COMPONENT_KEY;
 import static java.util.Arrays.asList;
 import static org.mockito.Mockito.verify;
 
@@ -108,7 +109,7 @@ class ThrottlingExporterTest {
         // given
         SpanExporter underTest =
                 ThrottlingExporter.newBuilder(delegate)
-                        .categorizeByAttribute(SplunkRum.COMPONENT_KEY)
+                        .categorizeByAttribute(COMPONENT_KEY)
                         .maxSpansInWindow(2)
                         .windowSize(Duration.ofSeconds(15))
                         .build();
@@ -155,7 +156,7 @@ class ThrottlingExporterTest {
         // given
         SpanExporter underTest =
                 ThrottlingExporter.newBuilder(delegate)
-                        .categorizeByAttribute(SplunkRum.COMPONENT_KEY)
+                        .categorizeByAttribute(COMPONENT_KEY)
                         .maxSpansInWindow(2)
                         .windowSize(Duration.ofSeconds(15))
                         .build();
@@ -228,7 +229,7 @@ class ThrottlingExporterTest {
                 .setStartEpochNanos(0)
                 .setEndEpochNanos(
                         TimeUnit.SECONDS.toNanos(endTime.getEpochSecond()) + endTime.getNano())
-                .setAttributes(Attributes.of(SplunkRum.COMPONENT_KEY, component))
+                .setAttributes(Attributes.of(COMPONENT_KEY, component))
                 .build();
     }
 }

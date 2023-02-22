@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal.instrumentation.activity;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -22,11 +22,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.opentelemetry.rum.internal.DefaultingActivityLifecycleCallbacks;
 
-class ActivityCallbacks implements DefaultingActivityLifecycleCallbacks {
+public class ActivityCallbacks implements DefaultingActivityLifecycleCallbacks {
 
     private final ActivityTracerCache tracers;
 
-    ActivityCallbacks(ActivityTracerCache tracers) {
+    public ActivityCallbacks(ActivityTracerCache tracers) {
         this.tracers = tracers;
     }
 
