@@ -48,17 +48,10 @@ import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.rum.internal.GlobalAttributesSpanAppender;
 import io.opentelemetry.rum.internal.OpenTelemetryRum;
 import io.opentelemetry.rum.internal.OpenTelemetryRumBuilder;
-import io.opentelemetry.rum.internal.instrumentation.InstrumentedApplication;
-import io.opentelemetry.rum.internal.instrumentation.activity.ActivityCallbacks;
-import io.opentelemetry.rum.internal.instrumentation.activity.ActivityTracerCache;
-import io.opentelemetry.rum.internal.instrumentation.activity.Pre29ActivityCallbacks;
-import io.opentelemetry.rum.internal.instrumentation.activity.Pre29VisibleScreenLifecycleBinding;
-import io.opentelemetry.rum.internal.instrumentation.activity.RumFragmentActivityRegisterer;
-import io.opentelemetry.rum.internal.instrumentation.activity.VisibleScreenLifecycleBinding;
 import io.opentelemetry.rum.internal.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.rum.internal.instrumentation.anr.AnrDetector;
 import io.opentelemetry.rum.internal.instrumentation.crash.CrashReporter;
-import io.opentelemetry.rum.internal.instrumentation.fragment.RumFragmentLifecycleCallbacks;
+import io.opentelemetry.rum.internal.instrumentation.lifecycle.AndroidLifecycleInstrumentation;
 import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.rum.internal.instrumentation.network.NetworkAttributesSpanAppender;
 import io.opentelemetry.rum.internal.instrumentation.network.NetworkChangeMonitor;
@@ -206,114 +199,31 @@ class RumInitializer {
     private void installLifecycleInstrumentations(
             OpenTelemetryRumBuilder otelRumBuilder, VisibleScreenTracker visibleScreenTracker) {
 
-        installStartupTimerInstrumentation(otelRumBuilder);
-        installActivityLifecycleEventsInstrumentation(otelRumBuilder, visibleScreenTracker);
-        installFragmentLifecycleInstrumentation(otelRumBuilder, visibleScreenTracker);
-        installScreenTrackingInstrumentation(otelRumBuilder, visibleScreenTracker);
-
         otelRumBuilder.addInstrumentation(
                 instrumentedApp -> {
+                    Function<Tracer, Tracer> tracerCustomizer =
+                            tracer ->
+                                    (Tracer)
+                                            spanName -> {
+                                                String component =
+                                                        spanName.equals(APP_START_SPAN_NAME)
+                                                                ? COMPONENT_APPSTART
+                                                                : COMPONENT_UI;
+                                                return tracer.spanBuilder(spanName)
+                                                        .setAttribute(COMPONENT_KEY, component);
+                                            };
+                    AndroidLifecycleInstrumentation instrumentation =
+                            AndroidLifecycleInstrumentation.builder()
+                                    .setVisibleScreenTracker(visibleScreenTracker)
+                                    .setStartupTimer(startupTimer)
+                                    .setTracerCustomizer(tracerCustomizer)
+                                    .build();
+                    instrumentation.installOn(instrumentedApp);
                     initializationEvents.add(
                             new InitializationEvent(
                                     "activityLifecycleCallbacksInitialized",
                                     startupTimer.clockNow()));
                 });
-    }
-
-    private void installScreenTrackingInstrumentation(
-            OpenTelemetryRumBuilder otelRumBuilder, VisibleScreenTracker visibleScreenTracker) {
-        otelRumBuilder.addInstrumentation(
-                instrumentedApp -> {
-                    Application.ActivityLifecycleCallbacks screenTrackingBinding =
-                            buildScreenTrackingBinding(visibleScreenTracker);
-                    instrumentedApp
-                            .getApplication()
-                            .registerActivityLifecycleCallbacks(screenTrackingBinding);
-                });
-    }
-
-    @NonNull
-    private Application.ActivityLifecycleCallbacks buildScreenTrackingBinding(
-            VisibleScreenTracker visibleScreenTracker) {
-        if (Build.VERSION.SDK_INT < 29) {
-            return new Pre29VisibleScreenLifecycleBinding(visibleScreenTracker);
-        }
-        return new VisibleScreenLifecycleBinding(visibleScreenTracker);
-    }
-
-    private void installFragmentLifecycleInstrumentation(
-            OpenTelemetryRumBuilder otelRumBuilder, VisibleScreenTracker visibleScreenTracker) {
-        otelRumBuilder.addInstrumentation(
-                instrumentedApp -> {
-                    Application.ActivityLifecycleCallbacks fragmentRegisterer =
-                            buildFragmentRegisterer(visibleScreenTracker, instrumentedApp);
-                    instrumentedApp
-                            .getApplication()
-                            .registerActivityLifecycleCallbacks(fragmentRegisterer);
-                });
-    }
-
-    @NonNull
-    private Application.ActivityLifecycleCallbacks buildFragmentRegisterer(
-            VisibleScreenTracker visibleScreenTracker, InstrumentedApplication instrumentedApp) {
-        Tracer delegateTracer = instrumentedApp.getOpenTelemetrySdk().getTracer(RUM_TRACER_NAME);
-        Tracer tracer =
-                spanName ->
-                        delegateTracer
-                                .spanBuilder(spanName)
-                                .setAttribute(COMPONENT_KEY, COMPONENT_UI);
-        RumFragmentLifecycleCallbacks fragmentLifecycle =
-                new RumFragmentLifecycleCallbacks(tracer, visibleScreenTracker);
-        if (Build.VERSION.SDK_INT < 29) {
-            return RumFragmentActivityRegisterer.createPre29(fragmentLifecycle);
-        }
-        return RumFragmentActivityRegisterer.create(fragmentLifecycle);
-    }
-
-    private void installStartupTimerInstrumentation(OpenTelemetryRumBuilder otelRumBuilder) {
-        otelRumBuilder.addInstrumentation(
-                instrumentedApp -> {
-                    instrumentedApp
-                            .getApplication()
-                            .registerActivityLifecycleCallbacks(
-                                    startupTimer.createLifecycleCallback());
-                });
-    }
-
-    private void installActivityLifecycleEventsInstrumentation(
-            OpenTelemetryRumBuilder otelRumBuilder, VisibleScreenTracker visibleScreenTracker) {
-        otelRumBuilder.addInstrumentation(
-                instrumentedApp -> {
-                    Application.ActivityLifecycleCallbacks activityCallbacks =
-                            buildActivityEventsCallback(visibleScreenTracker, instrumentedApp);
-                    instrumentedApp
-                            .getApplication()
-                            .registerActivityLifecycleCallbacks(activityCallbacks);
-                });
-    }
-
-    @NonNull
-    private Application.ActivityLifecycleCallbacks buildActivityEventsCallback(
-            VisibleScreenTracker visibleScreenTracker, InstrumentedApplication instrumentedApp) {
-        Tracer delegateTracer = instrumentedApp.getOpenTelemetrySdk().getTracer(RUM_TRACER_NAME);
-        Tracer tracer =
-                spanName -> {
-                    // override the component to be appstart when appstart
-                    String component =
-                            spanName.equals(APP_START_SPAN_NAME)
-                                    ? COMPONENT_APPSTART
-                                    : COMPONENT_UI;
-                    return delegateTracer
-                            .spanBuilder(spanName)
-                            .setAttribute(COMPONENT_KEY, component);
-                };
-
-        ActivityTracerCache tracers =
-                new ActivityTracerCache(tracer, visibleScreenTracker, startupTimer);
-        if (Build.VERSION.SDK_INT < 29) {
-            return new Pre29ActivityCallbacks(tracers);
-        }
-        return new ActivityCallbacks(tracers);
     }
 
     private Resource createResource() {
