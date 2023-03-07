@@ -26,7 +26,6 @@ import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttribut
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractorBuilder;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanStatusExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.net.NetClientAttributesExtractor;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +40,8 @@ public final class VolleyTracingBuilder {
     private final HttpClientAttributesExtractorBuilder<RequestWrapper, HttpResponse>
             httpClientAttributesExtractorBuilder =
                     HttpClientAttributesExtractor.builder(
-                            VolleyHttpClientAttributesGetter.INSTANCE);
+                            VolleyHttpClientAttributesGetter.INSTANCE,
+                            VolleyNetClientAttributesGetter.INSTANCE);
 
     VolleyTracingBuilder(OpenTelemetry openTelemetry) {
         this.openTelemetry = openTelemetry;
@@ -83,8 +83,6 @@ public final class VolleyTracingBuilder {
     public VolleyTracing build() {
         VolleyHttpClientAttributesGetter httpAttributesGetter =
                 VolleyHttpClientAttributesGetter.INSTANCE;
-        VolleyNetClientAttributesGetter netAttributesGetter =
-                VolleyNetClientAttributesGetter.INSTANCE;
         SpanStatusExtractor<RequestWrapper, HttpResponse> spanStatusExtractor =
                 HttpSpanStatusExtractor.create(httpAttributesGetter);
         SpanNameExtractor<RequestWrapper> spanNameExtractor =
@@ -95,8 +93,6 @@ public final class VolleyTracingBuilder {
                                 openTelemetry, INSTRUMENTATION_NAME, spanNameExtractor)
                         .setSpanStatusExtractor(spanStatusExtractor)
                         .addAttributesExtractor(httpClientAttributesExtractorBuilder.build())
-                        .addAttributesExtractor(
-                                NetClientAttributesExtractor.create(netAttributesGetter))
                         .addAttributesExtractor(
                                 new VolleyResponseAttributesExtractor(
                                         new ServerTimingHeaderParser()))

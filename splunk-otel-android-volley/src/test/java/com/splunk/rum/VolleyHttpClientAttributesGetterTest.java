@@ -57,12 +57,12 @@ public class VolleyHttpClientAttributesGetterTest {
 
         VolleyHttpClientAttributesGetter testClass = VolleyHttpClientAttributesGetter.INSTANCE;
 
-        List<String> values = testClass.requestHeader(requestWrapper, "content-type");
+        List<String> values = testClass.getRequestHeader(requestWrapper, "content-type");
         assertThat(values).containsExactly("application/json");
 
-        List<String> fooValues = testClass.requestHeader(requestWrapper, "FOO");
+        List<String> fooValues = testClass.getRequestHeader(requestWrapper, "FOO");
         assertThat(fooValues).containsExactly("bar", "baz", "beep");
-        List<String> ayeValues = testClass.requestHeader(requestWrapper, "aYe");
+        List<String> ayeValues = testClass.getRequestHeader(requestWrapper, "aYe");
         assertThat(ayeValues).contains("b", "beeee");
     }
 
@@ -81,17 +81,17 @@ public class VolleyHttpClientAttributesGetterTest {
 
         VolleyHttpClientAttributesGetter testClass = VolleyHttpClientAttributesGetter.INSTANCE;
 
-        List<String> values = testClass.responseHeader(request, response, "content-type");
+        List<String> values = testClass.getResponseHeader(request, response, "content-type");
         assertThat(values).containsExactly("application/json");
 
-        List<String> fooValues = testClass.responseHeader(request, response, "FOO");
+        List<String> fooValues = testClass.getResponseHeader(request, response, "FOO");
         assertThat(fooValues).containsExactly("bar", "baz");
     }
 
     @Test
     public void testNullResponse() {
         VolleyHttpClientAttributesGetter testClass = VolleyHttpClientAttributesGetter.INSTANCE;
-        List<String> values = testClass.responseHeader(null, null, "content-type");
+        List<String> values = testClass.getResponseHeader(null, null, "content-type");
         assertThat(values).isEmpty();
     }
 }

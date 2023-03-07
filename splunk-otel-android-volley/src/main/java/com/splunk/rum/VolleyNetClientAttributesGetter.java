@@ -26,19 +26,19 @@ enum VolleyNetClientAttributesGetter
     INSTANCE;
 
     @Override
-    public String transport(RequestWrapper requestWrapper, @Nullable HttpResponse httpResponse) {
+    public String getTransport(RequestWrapper requestWrapper, @Nullable HttpResponse httpResponse) {
         return SemanticAttributes.NetTransportValues.IP_TCP;
     }
 
     @Nullable
     @Override
-    public String peerName(RequestWrapper requestWrapper) {
+    public String getPeerName(RequestWrapper requestWrapper) {
         return UrlParser.getHost(requestWrapper.getRequest().getUrl());
     }
 
     @Nullable
     @Override
-    public Integer peerPort(RequestWrapper requestWrapper) {
+    public Integer getPeerPort(RequestWrapper requestWrapper) {
         return UrlParser.getPort(requestWrapper.getRequest().getUrl());
     }
 }
