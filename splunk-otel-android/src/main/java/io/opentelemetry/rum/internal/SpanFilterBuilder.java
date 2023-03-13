@@ -14,18 +14,26 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-/** Delegating wrapper around otel SpanFilterBuilder. */
+/**
+ * Allows modification of span data before it is sent to the exporter. Spans can be modified or
+ * entirely rejected from export.
+ */
 public final class SpanFilterBuilder {
 
-    private final io.opentelemetry.rum.internal.SpanFilterBuilder delegate =
-            new io.opentelemetry.rum.internal.SpanFilterBuilder();
+    private Predicate<String> rejectSpanNamesPredicate = spanName -> false;
+    private final Map<AttributeKey<?>, Predicate<?>> rejectSpanAttributesPredicates =
+            new HashMap<>();
+    private final Map<AttributeKey<?>, Function<?, ?>> spanAttributeReplacements = new HashMap<>();
+
     /**
      * Remove matching spans from the exporter pipeline.
      *
@@ -36,7 +44,7 @@ public final class SpanFilterBuilder {
      * @return {@code this}.
      */
     public SpanFilterBuilder rejectSpansByName(Predicate<String> spanNamePredicate) {
-        delegate.rejectSpansByName(spanNamePredicate);
+        rejectSpanNamesPredicate = rejectSpanNamesPredicate.or(spanNamePredicate);
         return this;
     }
 
@@ -53,7 +61,13 @@ public final class SpanFilterBuilder {
      */
     public <T> SpanFilterBuilder rejectSpansByAttributeValue(
             AttributeKey<T> attributeKey, Predicate<? super T> attributeValuePredicate) {
-        delegate.rejectSpansByAttributeValue(attributeKey, attributeValuePredicate);
+
+        rejectSpanAttributesPredicates.compute(
+                attributeKey,
+                (k, oldValue) ->
+                        oldValue == null
+                                ? attributeValuePredicate
+                                : ((Predicate<T>) oldValue).or(attributeValuePredicate));
         return this;
     }
 
@@ -67,8 +81,7 @@ public final class SpanFilterBuilder {
      * @return {@code this}.
      */
     public <T> SpanFilterBuilder removeSpanAttribute(AttributeKey<T> attributeKey) {
-        delegate.removeSpanAttribute(attributeKey);
-        return this;
+        return removeSpanAttribute(attributeKey, value -> true);
     }
 
     /**
@@ -84,8 +97,9 @@ public final class SpanFilterBuilder {
      */
     public <T> SpanFilterBuilder removeSpanAttribute(
             AttributeKey<T> attributeKey, Predicate<? super T> attributeValuePredicate) {
-        delegate.removeSpanAttribute(attributeKey, attributeValuePredicate);
-        return this;
+
+        return replaceSpanAttribute(
+                attributeKey, old -> attributeValuePredicate.test(old) ? null : old);
     }
 
     /**
@@ -103,15 +117,30 @@ public final class SpanFilterBuilder {
      */
     public <T> SpanFilterBuilder replaceSpanAttribute(
             AttributeKey<T> attributeKey, Function<? super T, ? extends T> attributeValueModifier) {
-        delegate.replaceSpanAttribute(attributeKey, attributeValueModifier);
+
+        spanAttributeReplacements.compute(
+                attributeKey,
+                (k, oldValue) ->
+                        oldValue == null
+                                ? attributeValueModifier
+                                : ((Function<T, T>) oldValue).andThen(attributeValueModifier));
         return this;
     }
 
-    io.opentelemetry.rum.internal.SpanFilterBuilder getDelegate() {
-        return delegate;
-    }
-
     public Function<SpanExporter, SpanExporter> build() {
-        return delegate.build();
+        // make a copy so that the references from the builder are not included in the returned
+        // function
+        Predicate<String> rejectSpanNamesPredicate = this.rejectSpanNamesPredicate;
+        Map<AttributeKey<?>, Predicate<?>> rejectSpanAttributesPredicates =
+                new HashMap<>(this.rejectSpanAttributesPredicates);
+        Map<AttributeKey<?>, Function<?, ?>> spanAttributeReplacements =
+                new HashMap<>(this.spanAttributeReplacements);
+
+        return exporter ->
+                new SpanDataModifier(
+                        exporter,
+                        rejectSpanNamesPredicate,
+                        rejectSpanAttributesPredicates,
+                        spanAttributeReplacements);
     }
 }
