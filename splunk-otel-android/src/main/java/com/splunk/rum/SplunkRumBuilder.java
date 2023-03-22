@@ -37,13 +37,9 @@ public final class SplunkRumBuilder {
     @Nullable String beaconEndpoint;
     @Nullable String rumAccessToken;
     @Nullable private String realm;
-    boolean debugEnabled = false;
-    boolean diskBufferingEnabled = false;
-    boolean reactNativeSupportEnabled = false;
-    boolean crashReportingEnabled = true;
-    boolean networkMonitorEnabled = true;
-    boolean anrDetectionEnabled = true;
-    boolean slowRenderingDetectionEnabled = true;
+
+    private final ConfigFlags configFlags = new ConfigFlags();
+
     Duration slowRenderingDetectionPollInterval = DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL;
     Attributes globalAttributes = Attributes.empty();
     @Nullable String deploymentEnvironment;
@@ -119,7 +115,7 @@ public final class SplunkRumBuilder {
      * @return {@code this}
      */
     public SplunkRumBuilder enableDebug() {
-        this.debugEnabled = true;
+        configFlags.enableDebug();
         return this;
     }
 
@@ -133,7 +129,7 @@ public final class SplunkRumBuilder {
      * @return {@code this}
      */
     public SplunkRumBuilder enableDiskBuffering() {
-        this.diskBufferingEnabled = true;
+        configFlags.enableDiskBuffering();
         return this;
     }
 
@@ -145,7 +141,7 @@ public final class SplunkRumBuilder {
      * @return {@code this}
      */
     public SplunkRumBuilder enableReactNativeSupport() {
-        this.reactNativeSupportEnabled = true;
+        configFlags.enableReactNativeSupport();
         return this;
     }
 
@@ -157,7 +153,7 @@ public final class SplunkRumBuilder {
      * @return {@code this}
      */
     public SplunkRumBuilder disableCrashReporting() {
-        this.crashReportingEnabled = false;
+        configFlags.disableCrashReporting();
         return this;
     }
 
@@ -169,7 +165,7 @@ public final class SplunkRumBuilder {
      * @return {@code this}
      */
     public SplunkRumBuilder disableNetworkMonitor() {
-        this.networkMonitorEnabled = false;
+        configFlags.disableNetworkMonitor();
         return this;
     }
 
@@ -183,7 +179,7 @@ public final class SplunkRumBuilder {
      * @return {@code this}
      */
     public SplunkRumBuilder disableAnrDetection() {
-        this.anrDetectionEnabled = false;
+        configFlags.disableAnrDetection();
         return this;
     }
 
@@ -195,7 +191,7 @@ public final class SplunkRumBuilder {
      * @return {@code this}
      */
     public SplunkRumBuilder disableSlowRenderingDetection() {
-        slowRenderingDetectionEnabled = false;
+        configFlags.disableSlowRenderingDetection();
         return this;
     }
 
@@ -318,7 +314,40 @@ public final class SplunkRumBuilder {
         return SplunkRum.initialize(this, application, CurrentNetworkProvider::createAndStart);
     }
 
+    // one day maybe these can use kotlin delegation
+    ConfigFlags getConfigFlags() {
+        return configFlags;
+    }
+
     SpanExporter decorateWithSpanFilter(SpanExporter exporter) {
         return spanFilterBuilder.build().apply(exporter);
+    }
+
+    boolean isDebugEnabled() {
+        return configFlags.isDebugEnabled();
+    }
+
+    boolean isAnrDetectionEnabled() {
+        return configFlags.isAnrDetectionEnabled();
+    }
+
+    boolean isNetworkMonitorEnabled() {
+        return configFlags.isNetworkMonitorEnabled();
+    }
+
+    boolean isSlowRenderingDetectionEnabled() {
+        return configFlags.isSlowRenderingDetectionEnabled();
+    }
+
+    boolean isCrashReportingEnabled() {
+        return configFlags.isCrashReportingEnabled();
+    }
+
+    boolean isDiskBufferingEnabled() {
+        return configFlags.isDiskBufferingEnabled();
+    }
+
+    boolean isReactNativeSupportEnabled() {
+        return configFlags.isReactNativeSupportEnabled();
     }
 }

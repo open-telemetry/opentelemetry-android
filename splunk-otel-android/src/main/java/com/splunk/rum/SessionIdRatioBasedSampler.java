@@ -34,10 +34,10 @@ import java.util.function.Supplier;
  */
 class SessionIdRatioBasedSampler implements Sampler {
     private final Sampler ratioBasedSampler;
-    private final Supplier<SplunkRum> splunkRumSupplier;
+    private final Supplier<String> sessionIdSupplier;
 
-    SessionIdRatioBasedSampler(double ratio, Supplier<SplunkRum> splunkRumSupplier) {
-        this.splunkRumSupplier = splunkRumSupplier;
+    SessionIdRatioBasedSampler(double ratio, Supplier<String> splunkRumSupplier) {
+        this.sessionIdSupplier = splunkRumSupplier;
         // SessionId uses the same format as TraceId, so we can reuse trace ID ratio sampler.
         this.ratioBasedSampler = Sampler.traceIdRatioBased(ratio);
     }
@@ -52,12 +52,7 @@ class SessionIdRatioBasedSampler implements Sampler {
             List<LinkData> parentLinks) {
         // Replace traceId with sessionId
         return ratioBasedSampler.shouldSample(
-                parentContext,
-                splunkRumSupplier.get().getRumSessionId(),
-                name,
-                spanKind,
-                attributes,
-                parentLinks);
+                parentContext, sessionIdSupplier.get(), name, spanKind, attributes, parentLinks);
     }
 
     @Override

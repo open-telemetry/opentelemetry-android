@@ -16,9 +16,9 @@
 
 package com.splunk.rum;
 
-import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -61,12 +61,12 @@ class SplunkRumBuilderTest {
     void defaultValues() {
         SplunkRumBuilder builder = SplunkRum.builder();
 
-        assertFalse(builder.debugEnabled);
-        assertFalse(builder.diskBufferingEnabled);
-        assertTrue(builder.crashReportingEnabled);
-        assertTrue(builder.networkMonitorEnabled);
-        assertTrue(builder.anrDetectionEnabled);
-        assertTrue(builder.slowRenderingDetectionEnabled);
+        assertFalse(builder.isDebugEnabled());
+        assertFalse(builder.isDiskBufferingEnabled());
+        assertTrue(builder.isCrashReportingEnabled());
+        assertTrue(builder.isNetworkMonitorEnabled());
+        assertTrue(builder.isAnrDetectionEnabled());
+        assertTrue(builder.isSlowRenderingDetectionEnabled());
         assertEquals(Attributes.empty(), builder.globalAttributes);
         assertNull(builder.deploymentEnvironment);
         assertFalse(builder.sessionBasedSamplerEnabled);

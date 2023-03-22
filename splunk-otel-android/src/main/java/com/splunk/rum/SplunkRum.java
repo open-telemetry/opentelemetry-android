@@ -109,7 +109,7 @@ public class SplunkRum {
                 new RumInitializer(builder, application, startupTimer)
                         .initialize(currentNetworkProviderFactory, Looper.getMainLooper());
 
-        if (builder.debugEnabled) {
+        if (builder.isDebugEnabled()) {
             Log.i(
                     LOG_TAG,
                     "Splunk RUM monitoring initialized with session ID: "
