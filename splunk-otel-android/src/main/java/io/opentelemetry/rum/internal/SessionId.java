@@ -54,6 +54,10 @@ class SessionId {
         return TraceId.fromLongs(random.nextLong(), random.nextLong());
     }
 
+    SessionIdTimeoutHandler getTimeoutHandler() {
+        return timeoutHandler;
+    }
+
     String getSessionId() {
         // value will never be null
         String oldValue = requireNonNull(value.get());
