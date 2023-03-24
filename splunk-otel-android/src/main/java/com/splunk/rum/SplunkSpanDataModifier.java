@@ -29,6 +29,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.rum.internal.RumConstants;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.DelegatingSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -80,6 +81,10 @@ final class SplunkSpanDataModifier implements SpanExporter {
     private SpanData modify(SpanData original) {
         List<EventData> modifiedEvents = new ArrayList<>(original.getEvents().size());
         AttributesBuilder modifiedAttributes = original.getAttributes().toBuilder();
+
+        // Copy the native session id name into the splunk name
+        String sessionId = original.getAttributes().get(RumConstants.SESSION_ID_KEY);
+        modifiedAttributes.put(StandardAttributes.SESSION_ID_KEY, sessionId);
 
         SpanContext spanContext;
         if (reactNativeEnabled) {

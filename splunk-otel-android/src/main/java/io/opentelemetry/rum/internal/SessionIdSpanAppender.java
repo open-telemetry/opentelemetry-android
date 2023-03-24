@@ -16,18 +16,14 @@
 
 package io.opentelemetry.rum.internal;
 
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.rum.internal.RumConstants.SESSION_ID_KEY;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 
 final class SessionIdSpanAppender implements SpanProcessor {
-
-    // TODO: rename to something that is not splunk specific
-    static final AttributeKey<String> SESSION_ID_KEY = stringKey("splunk.rumSessionId");
 
     private final SessionId sessionId;
 

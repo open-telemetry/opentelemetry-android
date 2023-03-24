@@ -16,6 +16,7 @@
 
 package io.opentelemetry.rum.internal;
 
+import static io.opentelemetry.rum.internal.RumConstants.SESSION_ID_KEY;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
@@ -43,7 +44,7 @@ class SessionIdSpanAppenderTest {
         assertTrue(underTest.isStartRequired());
         underTest.onStart(Context.root(), span);
 
-        verify(span).setAttribute(SessionIdSpanAppender.SESSION_ID_KEY, "42");
+        verify(span).setAttribute(SESSION_ID_KEY, "42");
 
         assertFalse(underTest.isEndRequired());
     }

@@ -16,6 +16,7 @@
 
 package io.opentelemetry.rum.internal;
 
+import static io.opentelemetry.rum.internal.RumConstants.SESSION_ID_KEY;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static org.mockito.ArgumentMatchers.isA;
@@ -80,8 +81,7 @@ class OpenTelemetryRumBuilderTest {
         assertThat(spans.get(0))
                 .hasName("test span")
                 .hasResource(resource)
-                .hasAttributesSatisfyingExactly(
-                        equalTo(SessionIdSpanAppender.SESSION_ID_KEY, sessionId));
+                .hasAttributesSatisfyingExactly(equalTo(SESSION_ID_KEY, sessionId));
     }
 
     @Test

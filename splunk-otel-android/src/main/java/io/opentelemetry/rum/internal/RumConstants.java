@@ -24,6 +24,8 @@ public class RumConstants {
 
     public static final String OTEL_RUM_LOG_TAG = "OpenTelemetryRum";
 
+    public static final AttributeKey<String> SESSION_ID_KEY = stringKey("rum.session.id");
+
     public static final AttributeKey<String> LAST_SCREEN_NAME_KEY =
             AttributeKey.stringKey("last.screen.name");
     public static final AttributeKey<String> SCREEN_NAME_KEY =
