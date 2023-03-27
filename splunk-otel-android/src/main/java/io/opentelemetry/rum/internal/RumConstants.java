@@ -32,6 +32,9 @@ public class RumConstants {
             AttributeKey.stringKey("screen.name");
     public static final AttributeKey<String> START_TYPE_KEY = stringKey("start.type");
 
+    public static final AttributeKey<String> PREVIOUS_SESSION_ID_KEY =
+            stringKey("rum.session.previous_id");
+
     public static final String APP_START_SPAN_NAME = "AppStart";
 
     private RumConstants() {}

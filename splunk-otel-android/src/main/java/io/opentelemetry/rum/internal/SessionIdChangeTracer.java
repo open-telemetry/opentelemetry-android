@@ -16,15 +16,11 @@
 
 package io.opentelemetry.rum.internal;
 
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.rum.internal.RumConstants.PREVIOUS_SESSION_ID_KEY;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Tracer;
 
 final class SessionIdChangeTracer implements SessionIdChangeListener {
-
-    static final AttributeKey<String> PREVIOUS_SESSION_ID_KEY =
-            stringKey("splunk.rum.previous_session_id");
 
     private final Tracer tracer;
 

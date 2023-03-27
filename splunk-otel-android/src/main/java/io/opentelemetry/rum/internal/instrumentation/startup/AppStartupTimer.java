@@ -143,9 +143,9 @@ public class AppStartupTimer {
      * When a runnable posted to main UI thread is executed before any activity's onCreate() method
      * then the app is started in background. If app is started from foreground, activity's
      * onCreate() method is executed before this runnable. Firebase does this check from a
-     * ContentProvider, we do it from whatever used SplunkRum first. If the first use of SplunkRum
-     * happens when the app is already started for us it will look the same as a background start,
-     * which is fine as it wouldn't report correct time anyway.
+     * ContentProvider, we do it from whatever used OpenTelemetryRum first. If the first use of
+     * OpenTelemetryRum happens when the app is already started for us it will look the same as a
+     * background start, which is fine as it wouldn't report correct time anyway.
      */
     private static class StartFromBackgroundRunnable implements Runnable {
         private final AppStartupTimer startupTimer;
