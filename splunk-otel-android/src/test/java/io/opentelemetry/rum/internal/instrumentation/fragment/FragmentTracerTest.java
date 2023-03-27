@@ -17,14 +17,12 @@
 package io.opentelemetry.rum.internal.instrumentation.fragment;
 
 import static io.opentelemetry.rum.internal.RumConstants.LAST_SCREEN_NAME_KEY;
-import static io.opentelemetry.rum.internal.RumConstants.SCREEN_NAME_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import androidx.fragment.app.Fragment;
-import com.splunk.rum.RumScreenName;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.rum.internal.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.rum.internal.util.ActiveSpan;
@@ -117,24 +115,6 @@ class FragmentTracerTest {
         SpanData span = getSingleSpan();
         assertEquals("previousScreen", span.getAttributes().get(LAST_SCREEN_NAME_KEY));
     }
-
-    @Test
-    void testAnnotatedScreenName() {
-        Fragment fragment = new AnnotatedFragment();
-        FragmentTracer fragmentTracer =
-                FragmentTracer.builder(fragment)
-                        .setTracer(tracer)
-                        .setActiveSpan(activeSpan)
-                        .build();
-
-        fragmentTracer.startFragmentCreation();
-        fragmentTracer.endActiveSpan();
-        SpanData span = getSingleSpan();
-        assertEquals("bumpity", span.getAttributes().get(SCREEN_NAME_KEY));
-    }
-
-    @RumScreenName("bumpity")
-    static class AnnotatedFragment extends Fragment {}
 
     private SpanData getSingleSpan() {
         List<SpanData> generatedSpans = otelTesting.getSpans();

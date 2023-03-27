@@ -22,11 +22,13 @@ import static io.opentelemetry.rum.internal.RumConstants.START_TYPE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.rum.internal.instrumentation.ScreenNameExtractor;
 import io.opentelemetry.rum.internal.instrumentation.startup.AppStartupTimer;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -48,7 +50,9 @@ class Pre29ActivityLifecycleCallbacksTest {
         AppStartupTimer appStartupTimer = new AppStartupTimer();
         Tracer tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
         visibleScreenTracker = mock(VisibleScreenTracker.class);
-        tracers = new ActivityTracerCache(tracer, visibleScreenTracker, appStartupTimer);
+        ScreenNameExtractor extractor = mock(ScreenNameExtractor.class);
+        when(extractor.extract(isA(Activity.class))).thenReturn("Activity");
+        tracers = new ActivityTracerCache(tracer, visibleScreenTracker, appStartupTimer, extractor);
     }
 
     @Test

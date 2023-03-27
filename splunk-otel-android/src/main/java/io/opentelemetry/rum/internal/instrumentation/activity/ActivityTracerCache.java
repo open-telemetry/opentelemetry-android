@@ -19,6 +19,7 @@ package io.opentelemetry.rum.internal.instrumentation.activity;
 import android.app.Activity;
 import androidx.annotation.VisibleForTesting;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.rum.internal.instrumentation.ScreenNameExtractor;
 import io.opentelemetry.rum.internal.instrumentation.startup.AppStartupTimer;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,8 +39,14 @@ public class ActivityTracerCache {
     public ActivityTracerCache(
             Tracer tracer,
             VisibleScreenTracker visibleScreenTracker,
-            AppStartupTimer startupTimer) {
-        this(tracer, visibleScreenTracker, new AtomicReference<>(), startupTimer);
+            AppStartupTimer startupTimer,
+            ScreenNameExtractor screenNameExtractor) {
+        this(
+                tracer,
+                visibleScreenTracker,
+                new AtomicReference<>(),
+                startupTimer,
+                screenNameExtractor);
     }
 
     @VisibleForTesting
@@ -47,10 +54,12 @@ public class ActivityTracerCache {
             Tracer tracer,
             VisibleScreenTracker visibleScreenTracker,
             AtomicReference<String> initialAppActivity,
-            AppStartupTimer startupTimer) {
+            AppStartupTimer startupTimer,
+            ScreenNameExtractor screenNameExtractor) {
         this(
                 activity ->
                         ActivityTracer.builder(activity)
+                                .setScreenName(screenNameExtractor.extract(activity))
                                 .setInitialAppActivity(initialAppActivity)
                                 .setTracer(tracer)
                                 .setAppStartupTimer(startupTimer)

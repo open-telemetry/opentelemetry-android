@@ -23,7 +23,6 @@ import static io.opentelemetry.rum.internal.RumConstants.START_TYPE_KEY;
 import android.app.Activity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.splunk.rum.RumScreenName;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
@@ -47,8 +46,7 @@ public class ActivityTracer {
         this.initialAppActivity = builder.initialAppActivity;
         this.tracer = builder.tracer;
         this.activityName = builder.getActivityName();
-        RumScreenName rumScreenName = builder.getRumScreenName();
-        this.screenName = rumScreenName == null ? activityName : rumScreenName.value();
+        this.screenName = builder.screenName;
         this.appStartupTimer = builder.appStartupTimer;
         this.activeSpan = builder.activeSpan;
     }
@@ -153,6 +151,7 @@ public class ActivityTracer {
 
     static class Builder {
         private final Activity activity;
+        public String screenName;
         private AtomicReference<String> initialAppActivity = new AtomicReference<>();
         private Tracer tracer;
         private AppStartupTimer appStartupTimer;
@@ -196,12 +195,13 @@ public class ActivityTracer {
             return activity.getClass().getSimpleName();
         }
 
-        private RumScreenName getRumScreenName() {
-            return activity.getClass().getAnnotation(RumScreenName.class);
-        }
-
         public ActivityTracer build() {
             return new ActivityTracer(this);
+        }
+
+        public Builder setScreenName(String screenName) {
+            this.screenName = screenName;
+            return this;
         }
     }
 }

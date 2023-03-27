@@ -17,11 +17,13 @@
 package io.opentelemetry.rum.internal.instrumentation.lifecycle;
 
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.rum.internal.instrumentation.ScreenNameExtractor;
 import io.opentelemetry.rum.internal.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.rum.internal.instrumentation.startup.AppStartupTimer;
 import java.util.function.Function;
 
 public class AndroidLifecycleInstrumentationBuilder {
+    ScreenNameExtractor screenNameExtractor = ScreenNameExtractor.DEFAULT;
     AppStartupTimer startupTimer;
     VisibleScreenTracker visibleScreenTracker;
     Function<Tracer, Tracer> tracerCustomizer = Function.identity();
@@ -40,6 +42,12 @@ public class AndroidLifecycleInstrumentationBuilder {
     public AndroidLifecycleInstrumentationBuilder setTracerCustomizer(
             Function<Tracer, Tracer> customizer) {
         this.tracerCustomizer = customizer;
+        return this;
+    }
+
+    public AndroidLifecycleInstrumentationBuilder setScreenNameExtractor(
+            ScreenNameExtractor screenNameExtractor) {
+        this.screenNameExtractor = screenNameExtractor;
         return this;
     }
 

@@ -19,7 +19,6 @@ package io.opentelemetry.rum.internal.instrumentation.fragment;
 import static io.opentelemetry.rum.internal.RumConstants.SCREEN_NAME_KEY;
 
 import androidx.fragment.app.Fragment;
-import com.splunk.rum.RumScreenName;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -36,8 +35,7 @@ class FragmentTracer {
     private FragmentTracer(Builder builder) {
         this.tracer = builder.tracer;
         this.fragmentName = builder.getFragmentName();
-        RumScreenName rumScreenName = builder.getRumScreenName();
-        this.screenName = rumScreenName == null ? fragmentName : rumScreenName.value();
+        this.screenName = builder.screenName;
         this.activeSpan = builder.activeSpan;
     }
 
@@ -85,6 +83,7 @@ class FragmentTracer {
 
     static class Builder {
         private final Fragment fragment;
+        public String screenName;
         private Tracer tracer;
         private ActiveSpan activeSpan;
 
@@ -97,6 +96,11 @@ class FragmentTracer {
             return this;
         }
 
+        public Builder setScreenName(String screenName) {
+            this.screenName = screenName;
+            return this;
+        }
+
         Builder setActiveSpan(ActiveSpan activeSpan) {
             this.activeSpan = activeSpan;
             return this;
@@ -104,10 +108,6 @@ class FragmentTracer {
 
         public String getFragmentName() {
             return fragment.getClass().getSimpleName();
-        }
-
-        public RumScreenName getRumScreenName() {
-            return fragment.getClass().getAnnotation(RumScreenName.class);
         }
 
         FragmentTracer build() {

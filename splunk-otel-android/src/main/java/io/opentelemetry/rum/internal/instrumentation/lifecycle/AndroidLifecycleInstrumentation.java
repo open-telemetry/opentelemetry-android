@@ -21,6 +21,7 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.rum.internal.instrumentation.InstrumentedApplication;
+import io.opentelemetry.rum.internal.instrumentation.ScreenNameExtractor;
 import io.opentelemetry.rum.internal.instrumentation.activity.ActivityCallbacks;
 import io.opentelemetry.rum.internal.instrumentation.activity.ActivityTracerCache;
 import io.opentelemetry.rum.internal.instrumentation.activity.Pre29ActivityCallbacks;
@@ -46,11 +47,13 @@ public class AndroidLifecycleInstrumentation {
     private final VisibleScreenTracker visibleScreenTracker;
 
     private final Function<Tracer, Tracer> tracerCustomizer;
+    private final ScreenNameExtractor screenNameExtractor;
 
     AndroidLifecycleInstrumentation(AndroidLifecycleInstrumentationBuilder builder) {
         this.startupTimer = builder.startupTimer;
         this.visibleScreenTracker = builder.visibleScreenTracker;
         this.tracerCustomizer = builder.tracerCustomizer;
+        this.screenNameExtractor = builder.screenNameExtractor;
     }
 
     public static AndroidLifecycleInstrumentationBuilder builder() {
@@ -82,7 +85,8 @@ public class AndroidLifecycleInstrumentation {
         Tracer tracer = tracerCustomizer.apply(delegateTracer);
 
         ActivityTracerCache tracers =
-                new ActivityTracerCache(tracer, visibleScreenTracker, startupTimer);
+                new ActivityTracerCache(
+                        tracer, visibleScreenTracker, startupTimer, screenNameExtractor);
         if (Build.VERSION.SDK_INT < 29) {
             return new Pre29ActivityCallbacks(tracers);
         }
@@ -101,7 +105,8 @@ public class AndroidLifecycleInstrumentation {
         Tracer delegateTracer = app.getOpenTelemetrySdk().getTracer(INSTRUMENTATION_SCOPE);
         Tracer tracer = tracerCustomizer.apply(delegateTracer);
         RumFragmentLifecycleCallbacks fragmentLifecycle =
-                new RumFragmentLifecycleCallbacks(tracer, visibleScreenTracker);
+                new RumFragmentLifecycleCallbacks(
+                        tracer, visibleScreenTracker, screenNameExtractor);
         if (Build.VERSION.SDK_INT < 29) {
             return RumFragmentActivityRegisterer.createPre29(fragmentLifecycle);
         }

@@ -24,6 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.rum.internal.instrumentation.ScreenNameExtractor;
 import io.opentelemetry.rum.internal.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.rum.internal.util.ActiveSpan;
 import java.util.HashMap;
@@ -34,10 +35,15 @@ public class RumFragmentLifecycleCallbacks extends FragmentManager.FragmentLifec
 
     private final Tracer tracer;
     private final VisibleScreenTracker visibleScreenTracker;
+    private final ScreenNameExtractor screenNameExtractor;
 
-    public RumFragmentLifecycleCallbacks(Tracer tracer, VisibleScreenTracker visibleScreenTracker) {
+    public RumFragmentLifecycleCallbacks(
+            Tracer tracer,
+            VisibleScreenTracker visibleScreenTracker,
+            ScreenNameExtractor screenNameExtractor) {
         this.tracer = tracer;
         this.visibleScreenTracker = visibleScreenTracker;
+        this.screenNameExtractor = screenNameExtractor;
     }
 
     @Override
@@ -156,6 +162,7 @@ public class RumFragmentLifecycleCallbacks extends FragmentManager.FragmentLifec
             activityTracer =
                     FragmentTracer.builder(fragment)
                             .setTracer(tracer)
+                            .setScreenName(screenNameExtractor.extract(fragment))
                             .setActiveSpan(
                                     new ActiveSpan(
                                             visibleScreenTracker::getPreviouslyVisibleScreen))
