@@ -17,10 +17,13 @@
 package io.opentelemetry.rum.internal.instrumentation.network;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+
 import static org.assertj.core.api.Assertions.entry;
 
 import android.os.Build;
+
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;

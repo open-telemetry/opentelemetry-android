@@ -22,9 +22,12 @@ import static org.mockito.Mockito.mock;
 
 import android.location.Location;
 import android.webkit.WebView;
+
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+
 import okhttp3.OkHttpClient;
+
 import org.junit.jupiter.api.Test;
 
 class NoOpSplunkRumTest {

@@ -17,6 +17,7 @@
 package io.opentelemetry.rum.internal.instrumentation.crash;
 
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
+
 import java.util.ArrayList;
 import java.util.List;
 

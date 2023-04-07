@@ -29,13 +29,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.testing.time.TestClock;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 @ExtendWith(MockitoExtension.class)
 class SessionIdTest {

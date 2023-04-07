@@ -21,6 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.telephony.TelephonyManager;
+
 import org.junit.jupiter.api.Test;
 
 class CarrierFinderTest {

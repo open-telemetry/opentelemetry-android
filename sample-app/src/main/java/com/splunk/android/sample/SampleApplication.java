@@ -19,9 +19,12 @@ package com.splunk.android.sample;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import android.app.Application;
+
 import com.splunk.rum.SplunkRum;
 import com.splunk.rum.StandardAttributes;
+
 import io.opentelemetry.api.common.Attributes;
+
 import java.time.Duration;
 import java.util.regex.Pattern;
 

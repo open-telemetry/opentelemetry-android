@@ -17,8 +17,10 @@
 package io.opentelemetry.rum.internal;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static java.util.Collections.emptyList;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import static java.util.Collections.emptyList;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
@@ -32,6 +34,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+
 import org.junit.jupiter.api.Test;
 
 class ModifiedSpanDataTest {

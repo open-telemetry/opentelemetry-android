@@ -19,6 +19,7 @@ package io.opentelemetry.rum.internal.instrumentation.slowrendering;
 import static io.opentelemetry.rum.internal.RumConstants.OTEL_RUM_LOG_TAG;
 
 import android.util.Log;
+
 import java.time.Duration;
 
 /**

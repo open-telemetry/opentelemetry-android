@@ -23,6 +23,7 @@ import static com.splunk.rum.SplunkRum.COMPONENT_KEY;
 import static com.splunk.rum.SplunkRum.COMPONENT_UI;
 import static com.splunk.rum.SplunkRum.RUM_TRACER_NAME;
 import static com.splunk.rum.SplunkRum.RUM_VERSION_KEY;
+
 import static io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor.constant;
 import static io.opentelemetry.rum.internal.RumConstants.APP_START_SPAN_NAME;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEPLOYMENT_ENVIRONMENT;
@@ -32,14 +33,18 @@ import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_TYPE;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_VERSION;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_NAME;
+
 import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
 import android.os.Build;
 import android.os.Looper;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.splunk.android.rum.R;
+
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
@@ -65,14 +70,16 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+
+import zipkin2.reporter.Sender;
+import zipkin2.reporter.okhttp3.OkHttpSender;
+
 import java.io.File;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
-import zipkin2.reporter.Sender;
-import zipkin2.reporter.okhttp3.OkHttpSender;
 
 class RumInitializer {
 

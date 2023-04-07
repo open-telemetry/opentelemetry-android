@@ -19,7 +19,9 @@ package com.splunk.rum;
 import static com.splunk.rum.SplunkRum.COMPONENT_KEY;
 import static com.splunk.rum.SplunkRum.LINK_SPAN_ID_KEY;
 import static com.splunk.rum.SplunkRum.LINK_TRACE_ID_KEY;
+
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+
 import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -27,9 +29,11 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
+
 import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
+
 import org.junit.jupiter.api.Test;
 
 class RumResponseAttributesExtractorTest {

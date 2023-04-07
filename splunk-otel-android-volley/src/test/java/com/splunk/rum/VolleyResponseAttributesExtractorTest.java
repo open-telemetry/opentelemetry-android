@@ -17,6 +17,7 @@
 package com.splunk.rum;
 
 import static com.splunk.rum.SplunkRum.COMPONENT_KEY;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
@@ -25,11 +26,14 @@ import static org.mockito.Mockito.when;
 import com.android.volley.Header;
 import com.android.volley.Request;
 import com.android.volley.toolbox.HttpResponse;
+
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+
+import org.junit.Test;
+
 import java.util.Collections;
 import java.util.List;
-import org.junit.Test;
 
 public class VolleyResponseAttributesExtractorTest {
 

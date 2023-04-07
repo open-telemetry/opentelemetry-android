@@ -20,11 +20,14 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.toolbox.HttpResponse;
 import com.android.volley.toolbox.HurlStack;
+
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
+
 import java.io.IOException;
 import java.util.Map;
+
 import javax.net.ssl.SSLSocketFactory;
 
 final class TracingHurlStack extends HurlStack {

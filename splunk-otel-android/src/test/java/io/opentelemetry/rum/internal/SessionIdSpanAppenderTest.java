@@ -17,6 +17,7 @@
 package io.opentelemetry.rum.internal;
 
 import static io.opentelemetry.rum.internal.RumConstants.SESSION_ID_KEY;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;

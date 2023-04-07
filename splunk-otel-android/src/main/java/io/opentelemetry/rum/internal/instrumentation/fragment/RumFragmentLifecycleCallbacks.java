@@ -19,14 +19,17 @@ package io.opentelemetry.rum.internal.instrumentation.fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.rum.internal.instrumentation.ScreenNameExtractor;
 import io.opentelemetry.rum.internal.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.rum.internal.util.ActiveSpan;
+
 import java.util.HashMap;
 import java.util.Map;
 

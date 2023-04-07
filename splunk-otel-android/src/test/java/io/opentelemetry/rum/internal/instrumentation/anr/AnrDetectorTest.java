@@ -18,20 +18,24 @@ package io.opentelemetry.rum.internal.instrumentation.anr;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor.constant;
+
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.os.Looper;
+
 import io.opentelemetry.rum.internal.instrumentation.InstrumentedApplication;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @ExtendWith(MockitoExtension.class)
 class AnrDetectorTest {

@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,10 +39,13 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+
 import com.splunk.android.sample.databinding.ActivityMainBinding;
 import com.splunk.rum.RumScreenName;
 import com.splunk.rum.SplunkRum;
+
 import io.opentelemetry.api.common.Attributes;
+
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 

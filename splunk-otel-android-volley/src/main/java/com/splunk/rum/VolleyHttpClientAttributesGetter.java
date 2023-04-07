@@ -19,11 +19,14 @@ package com.splunk.rum;
 import static java.util.Collections.emptyList;
 
 import androidx.annotation.Nullable;
+
 import com.android.volley.AuthFailureError;
 import com.android.volley.Header;
 import com.android.volley.Request;
 import com.android.volley.toolbox.HttpResponse;
+
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesGetter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

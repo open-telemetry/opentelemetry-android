@@ -17,7 +17,9 @@
 package io.opentelemetry.rum.internal.instrumentation.activity;
 
 import android.app.Activity;
+
 import androidx.annotation.NonNull;
+
 import io.opentelemetry.rum.internal.DefaultingActivityLifecycleCallbacks;
 
 /**

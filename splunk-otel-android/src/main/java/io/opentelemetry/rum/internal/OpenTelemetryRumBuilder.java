@@ -17,6 +17,7 @@
 package io.opentelemetry.rum.internal;
 
 import android.app.Application;
+
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.rum.internal.instrumentation.InstrumentedApplication;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -27,6 +28,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;

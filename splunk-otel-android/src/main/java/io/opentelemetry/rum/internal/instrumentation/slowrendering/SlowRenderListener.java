@@ -18,6 +18,7 @@ package io.opentelemetry.rum.internal.instrumentation.slowrendering;
 
 import static android.view.FrameMetrics.DRAW_DURATION;
 import static android.view.FrameMetrics.FIRST_DRAW_FRAME;
+
 import static io.opentelemetry.rum.internal.RumConstants.OTEL_RUM_LOG_TAG;
 
 import android.app.Activity;
@@ -29,12 +30,15 @@ import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.FrameMetrics;
 import android.view.Window;
+
 import androidx.annotation.GuardedBy;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.rum.internal.DefaultingActivityLifecycleCallbacks;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;

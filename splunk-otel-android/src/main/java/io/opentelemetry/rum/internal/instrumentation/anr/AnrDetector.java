@@ -18,11 +18,13 @@ package io.opentelemetry.rum.internal.instrumentation.anr;
 
 import android.os.Handler;
 import android.os.Looper;
+
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.rum.internal.instrumentation.InstrumentedApplication;
+
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 

@@ -17,10 +17,12 @@
 package io.opentelemetry.rum.internal.instrumentation.crash;
 
 import androidx.annotation.NonNull;
+
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+
 import java.util.concurrent.TimeUnit;
 
 final class CrashReportingExceptionHandler implements Thread.UncaughtExceptionHandler {

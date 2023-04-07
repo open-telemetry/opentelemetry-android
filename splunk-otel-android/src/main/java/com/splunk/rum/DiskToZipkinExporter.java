@@ -17,12 +17,16 @@
 package com.splunk.rum;
 
 import static com.splunk.rum.SplunkRum.LOG_TAG;
+
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 
 import android.util.Log;
+
 import androidx.annotation.Nullable;
+
 import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider;
+
 import java.io.File;
 import java.util.Comparator;
 import java.util.List;

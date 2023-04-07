@@ -17,7 +17,9 @@
 package com.splunk.rum;
 
 import androidx.annotation.Nullable;
+
 import com.android.volley.toolbox.HttpResponse;
+
 import io.opentelemetry.instrumentation.api.instrumenter.net.NetClientAttributesGetter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 

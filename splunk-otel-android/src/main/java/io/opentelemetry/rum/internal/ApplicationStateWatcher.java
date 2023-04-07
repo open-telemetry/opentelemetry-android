@@ -17,8 +17,11 @@
 package io.opentelemetry.rum.internal;
 
 import android.app.Activity;
+
 import androidx.annotation.NonNull;
+
 import io.opentelemetry.rum.internal.instrumentation.ApplicationStateListener;
+
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 

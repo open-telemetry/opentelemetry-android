@@ -17,7 +17,9 @@
 package io.opentelemetry.rum.internal.instrumentation.network;
 
 import android.os.Build;
+
 import androidx.annotation.Nullable;
+
 import java.util.Objects;
 
 /** A value class representing the current network that the device is connected to. */

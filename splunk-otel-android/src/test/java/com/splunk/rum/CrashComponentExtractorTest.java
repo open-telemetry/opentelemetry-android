@@ -17,10 +17,12 @@
 package com.splunk.rum;
 
 import static com.splunk.rum.SplunkRum.COMPONENT_KEY;
+
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+
 import org.junit.jupiter.api.Test;
 
 class CrashComponentExtractorTest {

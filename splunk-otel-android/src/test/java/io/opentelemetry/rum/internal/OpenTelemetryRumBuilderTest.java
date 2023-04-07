@@ -19,23 +19,27 @@ package io.opentelemetry.rum.internal;
 import static io.opentelemetry.rum.internal.RumConstants.SESSION_ID_KEY;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
 import android.app.Application;
+
 import io.opentelemetry.rum.internal.instrumentation.ApplicationStateListener;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class OpenTelemetryRumBuilderTest {

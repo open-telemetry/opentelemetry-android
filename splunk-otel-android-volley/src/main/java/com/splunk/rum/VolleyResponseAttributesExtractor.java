@@ -21,8 +21,10 @@ import static com.splunk.rum.SplunkRum.LINK_SPAN_ID_KEY;
 import static com.splunk.rum.SplunkRum.LINK_TRACE_ID_KEY;
 
 import androidx.annotation.Nullable;
+
 import com.android.volley.Header;
 import com.android.volley.toolbox.HttpResponse;
+
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;

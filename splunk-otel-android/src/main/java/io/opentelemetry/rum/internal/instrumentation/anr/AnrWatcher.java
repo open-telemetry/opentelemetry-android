@@ -17,8 +17,10 @@
 package io.opentelemetry.rum.internal.instrumentation.anr;
 
 import android.os.Handler;
+
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;

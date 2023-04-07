@@ -17,10 +17,12 @@
 package com.splunk.rum;
 
 import android.util.Log;
+
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+
 import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;

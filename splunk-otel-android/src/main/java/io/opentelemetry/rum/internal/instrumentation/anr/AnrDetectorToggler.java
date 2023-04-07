@@ -17,7 +17,9 @@
 package io.opentelemetry.rum.internal.instrumentation.anr;
 
 import androidx.annotation.Nullable;
+
 import io.opentelemetry.rum.internal.instrumentation.ApplicationStateListener;
+
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;

@@ -17,11 +17,14 @@
 package com.splunk.rum;
 
 import static com.splunk.rum.SplunkRum.LOG_TAG;
+
 import static java.util.Comparator.comparingLong;
 import static java.util.Objects.requireNonNull;
 
 import android.util.Log;
+
 import androidx.annotation.Nullable;
+
 import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;

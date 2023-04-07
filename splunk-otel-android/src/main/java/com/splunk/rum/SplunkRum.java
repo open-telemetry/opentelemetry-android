@@ -26,7 +26,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.webkit.WebView;
+
 import androidx.annotation.Nullable;
+
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -39,11 +41,13 @@ import io.opentelemetry.rum.internal.OpenTelemetryRum;
 import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.rum.internal.instrumentation.startup.AppStartupTimer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
+
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import okhttp3.Call;
-import okhttp3.OkHttpClient;
 
 /** Entrypoint for the Splunk OpenTelemetry Instrumentation for Android. */
 public class SplunkRum {

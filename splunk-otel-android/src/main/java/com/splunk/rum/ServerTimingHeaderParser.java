@@ -17,6 +17,7 @@
 package com.splunk.rum;
 
 import androidx.annotation.Nullable;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

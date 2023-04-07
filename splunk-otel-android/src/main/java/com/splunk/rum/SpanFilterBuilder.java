@@ -18,6 +18,7 @@ package com.splunk.rum;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+
 import java.util.function.Function;
 import java.util.function.Predicate;
 

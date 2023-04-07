@@ -20,7 +20,9 @@ import static io.opentelemetry.rum.internal.RumConstants.OTEL_RUM_LOG_TAG;
 
 import android.os.Build;
 import android.util.Log;
+
 import io.opentelemetry.rum.internal.instrumentation.InstrumentedApplication;
+
 import java.time.Duration;
 
 /**
