@@ -44,7 +44,7 @@ android {
 
 val otelVersion = "1.25.0"
 val otelAlphaVersion = "$otelVersion-alpha"
-val otelInstrumentationAlphaVersion = "1.25.0-alpha-SNAPSHOT"
+val otelInstrumentationAlphaVersion = "1.26.0-alpha-SNAPSHOT"
 
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.20"))
