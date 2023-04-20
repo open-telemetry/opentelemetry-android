@@ -19,8 +19,8 @@ jobs:
       - name: Set up JDK 11 for running Gradle
         uses: actions/setup-java@v3.11.0
         with:
-          distribution: adopt
-          java-version: 11
+          distribution: temurin
+          java-version: 17
 
       - name: Build and test
         run: touch ./local.properties; ./gradlew build javadoc --no-daemon

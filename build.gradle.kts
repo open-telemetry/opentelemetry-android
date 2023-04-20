@@ -6,7 +6,7 @@ buildscript {
     }
     dependencies {
         // keep this version in sync with /buildSrc/build.gradle.kts
-        classpath("com.android.tools.build:gradle:7.4.2")
+        classpath("com.android.tools.build:gradle:8.0.0")
     }
 }
 
