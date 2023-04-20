@@ -32,6 +32,8 @@ public class RumConstants {
             AttributeKey.stringKey("screen.name");
     public static final AttributeKey<String> START_TYPE_KEY = stringKey("start.type");
 
+    public static final AttributeKey<String> RUM_SDK_VERSION = stringKey("rum.sdk.version");
+
     public static final AttributeKey<String> PREVIOUS_SESSION_ID_KEY =
             stringKey("rum.session.previous_id");
 

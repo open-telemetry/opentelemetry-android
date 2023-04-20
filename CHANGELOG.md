@@ -7,7 +7,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
-* TBD
+* `splunk.rum.version` attribute has been renamed to `rum.sdk.version`
 
 ## Version 1.0.0
 

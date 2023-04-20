@@ -22,22 +22,15 @@ import static com.splunk.rum.SplunkRum.COMPONENT_ERROR;
 import static com.splunk.rum.SplunkRum.COMPONENT_KEY;
 import static com.splunk.rum.SplunkRum.COMPONENT_UI;
 import static com.splunk.rum.SplunkRum.RUM_TRACER_NAME;
-import static com.splunk.rum.SplunkRum.RUM_VERSION_KEY;
 
 import static io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor.constant;
 import static io.opentelemetry.rum.internal.RumConstants.APP_START_SPAN_NAME;
+import static io.opentelemetry.rum.internal.RumConstants.RUM_SDK_VERSION;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEPLOYMENT_ENVIRONMENT;
-import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_IDENTIFIER;
-import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_NAME;
-import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_NAME;
-import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_TYPE;
-import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_VERSION;
-import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_NAME;
 
 import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
-import android.os.Build;
 import android.os.Looper;
 
 import androidx.annotation.NonNull;
@@ -106,9 +99,9 @@ class RumInitializer {
         VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
 
         initializationEvents.begin();
-        OpenTelemetryRumBuilder otelRumBuilder = OpenTelemetryRum.builder();
+        OpenTelemetryRumBuilder otelRumBuilder = OpenTelemetryRum.builder(application);
 
-        otelRumBuilder.setResource(createResource());
+        otelRumBuilder.mergeResource(createSplunkResource());
         initializationEvents.emit("resourceInitialized");
 
         CurrentNetworkProvider currentNetworkProvider =
@@ -211,7 +204,7 @@ class RumInitializer {
         // Lifecycle events instrumentation are always installed.
         installLifecycleInstrumentations(otelRumBuilder, visibleScreenTracker);
 
-        OpenTelemetryRum openTelemetryRum = otelRumBuilder.build(application);
+        OpenTelemetryRum openTelemetryRum = otelRumBuilder.build();
 
         initializationEvents.recordInitializationSpans(
                 builder.getConfigFlags(),
@@ -248,30 +241,20 @@ class RumInitializer {
                 });
     }
 
-    private Resource createResource() {
+    private Resource createSplunkResource() {
         // applicationName can't be null at this stage
         String applicationName = requireNonNull(builder.applicationName);
         ResourceBuilder resourceBuilder =
-                Resource.getDefault().toBuilder()
-                        .put(APP_NAME_KEY, applicationName)
-                        .put(SERVICE_NAME, applicationName);
+                Resource.getDefault().toBuilder().put(APP_NAME_KEY, applicationName);
         if (builder.deploymentEnvironment != null) {
             resourceBuilder.put(DEPLOYMENT_ENVIRONMENT, builder.deploymentEnvironment);
         }
-        return resourceBuilder
-                .put(RUM_VERSION_KEY, detectRumVersion())
-                .put(DEVICE_MODEL_NAME, Build.MODEL)
-                .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)
-                .put(OS_NAME, "Android")
-                .put(OS_TYPE, "linux")
-                .put(OS_VERSION, Build.VERSION.RELEASE)
-                .build();
+        return resourceBuilder.put(RUM_SDK_VERSION, detectRumVersion()).build();
     }
 
+    // TODO: Remove this method that is duplicated from upstream AndroidResource
     private String detectRumVersion() {
         try {
-            // todo: figure out if there's a way to get access to resources from pure non-UI library
-            // code.
             return application
                     .getApplicationContext()
                     .getResources()

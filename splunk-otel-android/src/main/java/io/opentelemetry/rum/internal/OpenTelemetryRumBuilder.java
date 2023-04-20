@@ -44,7 +44,7 @@ import java.util.function.Consumer;
 public final class OpenTelemetryRumBuilder {
 
     private final SessionId sessionId;
-    private Resource resource = Resource.getDefault();
+    private final Application application;
     private final List<BiFunction<SdkTracerProviderBuilder, Application, SdkTracerProviderBuilder>>
             tracerProviderCustomizers = new ArrayList<>();
     private final List<BiFunction<SdkMeterProviderBuilder, Application, SdkMeterProviderBuilder>>
@@ -53,20 +53,35 @@ public final class OpenTelemetryRumBuilder {
             loggerProviderCustomizers = new ArrayList<>();
     private final List<Consumer<InstrumentedApplication>> instrumentationInstallers =
             new ArrayList<>();
+    private Resource resource;
 
-    OpenTelemetryRumBuilder() {
+    OpenTelemetryRumBuilder(Application application) {
         SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler();
+        this.application = application;
         this.sessionId = new SessionId(timeoutHandler);
+        this.resource = AndroidResource.createDefault(application);
     }
 
     /**
      * Assign a {@link Resource} to be attached to all telemetry emitted by the {@link
-     * OpenTelemetryRum} created by this builder.
+     * OpenTelemetryRum} created by this builder. This replaces any existing resource.
      *
      * @return {@code this}
      */
     public OpenTelemetryRumBuilder setResource(Resource resource) {
         this.resource = resource;
+        return this;
+    }
+
+    /**
+     * Merges a new {@link Resource} with any existing {@link Resource} in this builder. The
+     * resulting {@link Resource} will be attached to all telemetry emitted by the {@link
+     * OpenTelemetryRum} created by this builder.
+     *
+     * @return {@code this}
+     */
+    public OpenTelemetryRumBuilder mergeResource(Resource resource) {
+        this.resource = this.resource.merge(resource);
         return this;
     }
 
@@ -131,7 +146,7 @@ public final class OpenTelemetryRumBuilder {
 
     /**
      * Adds an instrumentation installer function that will be run on an {@link
-     * InstrumentedApplication} instance as a part of the {@link #build(Application)} method call.
+     * InstrumentedApplication} instance as a part of the {@link #build()} method call.
      *
      * @return {@code this}
      */
@@ -152,10 +167,9 @@ public final class OpenTelemetryRumBuilder {
      * <p>This method will initialize the OpenTelemetry SDK and install built-in system
      * instrumentations in the passed Android {@link Application}.
      *
-     * @param application The {@link Application} that is being instrumented.
      * @return A new {@link OpenTelemetryRum} instance.
      */
-    public OpenTelemetryRum build(Application application) {
+    public OpenTelemetryRum build() {
         // the app state listeners need to be run in the first ActivityLifecycleCallbacks since they
         // might turn off/on additional telemetry depending on whether the app is active or not
         ApplicationStateWatcher applicationStateWatcher = new ApplicationStateWatcher();

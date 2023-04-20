@@ -56,7 +56,7 @@ class OpenTelemetryRumBuilderTest {
 
     @Test
     void shouldRegisterApplicationStateWatcher() {
-        OpenTelemetryRum.builder().build(application);
+        OpenTelemetryRum.builder(application).build();
 
         verify(application).registerActivityLifecycleCallbacks(isA(ApplicationStateWatcher.class));
     }
@@ -64,13 +64,13 @@ class OpenTelemetryRumBuilderTest {
     @Test
     void shouldBuildTracerProvider() {
         OpenTelemetryRum openTelemetryRum =
-                OpenTelemetryRum.builder()
+                OpenTelemetryRum.builder(application)
                         .setResource(resource)
                         .addTracerProviderCustomizer(
                                 (tracerProviderBuilder, app) ->
                                         tracerProviderBuilder.addSpanProcessor(
                                                 SimpleSpanProcessor.create(spanExporter)))
-                        .build(application);
+                        .build();
 
         String sessionId = openTelemetryRum.getRumSessionId();
         openTelemetryRum
@@ -90,14 +90,14 @@ class OpenTelemetryRumBuilderTest {
 
     @Test
     void shouldInstallInstrumentation() {
-        OpenTelemetryRum.builder()
+        OpenTelemetryRum.builder(application)
                 .addInstrumentation(
                         instrumentedApplication -> {
                             assertThat(instrumentedApplication.getApplication())
                                     .isSameAs(application);
                             instrumentedApplication.registerApplicationStateListener(listener);
                         })
-                .build(application);
+                .build();
 
         verify(application).registerActivityLifecycleCallbacks(activityCallbacksCaptor.capture());
 

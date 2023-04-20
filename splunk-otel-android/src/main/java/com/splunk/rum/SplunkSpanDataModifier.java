@@ -65,6 +65,7 @@ final class SplunkSpanDataModifier implements SpanExporter {
                                     ResourceAttributes.OS_NAME,
                                     ResourceAttributes.OS_TYPE,
                                     ResourceAttributes.OS_VERSION,
+                                    RumConstants.RUM_SDK_VERSION,
                                     SplunkRum.APP_NAME_KEY,
                                     SplunkRum.RUM_VERSION_KEY)));
 
