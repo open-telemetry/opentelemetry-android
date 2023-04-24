@@ -7,7 +7,7 @@ include:
     file: '/prodsec/.oss-scan.yml'
 
 image:
-  name: "docker-hub.repo.splunkdev.net/openjdk:11.0.11-9-jdk"
+  name: "docker-hub.repo.splunkdev.net/eclipse-temurin:17.0.6_10-jdk"
 
 variables:
   ANDROID_COMPILE_SDK: "30"
