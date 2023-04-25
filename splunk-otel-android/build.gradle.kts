@@ -47,7 +47,7 @@ val otelAlphaVersion = "$otelVersion-alpha"
 val otelInstrumentationAlphaVersion = "1.26.0-alpha-SNAPSHOT"
 
 dependencies {
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.20"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.21"))
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.core:core:1.10.0")
     implementation("androidx.navigation:navigation-fragment:2.5.3")
