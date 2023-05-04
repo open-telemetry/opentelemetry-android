@@ -188,6 +188,18 @@ class RumInitializer {
                     return tracerProviderBuilder;
                 });
 
+        // install the log->span bridge
+        LogToSpanBridge logBridge = new LogToSpanBridge();
+        otelRumBuilder.addLoggerProviderCustomizer(
+                (loggerProviderBuilder, app) ->
+                        loggerProviderBuilder.addLogRecordProcessor(logBridge));
+        // make sure the TracerProvider gets set as the very first thing, before any other
+        // instrumentations
+        otelRumBuilder.addInstrumentation(
+                instrumentedApplication ->
+                        logBridge.setTracerProvider(
+                                instrumentedApplication.getOpenTelemetrySdk().getTracerProvider()));
+
         if (builder.isAnrDetectionEnabled()) {
             installAnrDetector(otelRumBuilder, mainLooper);
         }

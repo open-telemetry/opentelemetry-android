@@ -34,9 +34,13 @@ import com.splunk.rum.RumScreenName;
 import com.splunk.rum.SplunkRum;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.events.EventEmitter;
+import io.opentelemetry.api.events.EventEmitterProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.logs.SdkEventEmitterProvider;
 
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -104,6 +108,7 @@ public class SecondFragment extends Fragment {
                 v -> {
                     SplunkRum.getInstance()
                             .addRumEvent("this span will be ignored", Attributes.empty());
+                    emitEvent(SplunkRum.getInstance(), "SecondFragment", "toWebViewClick");
 
                     NavHostFragment.findNavController(SecondFragment.this)
                             .navigate(R.id.action_SecondFragment_to_webViewFragment);
@@ -214,5 +219,17 @@ public class SecondFragment extends Fragment {
                 .startSpan()
                 .end();
         updateLabel();
+    }
+
+    public static void emitEvent(SplunkRum splunkRum, String eventDomain, String eventName) {
+        EventEmitterProvider eventEmitterProvider =
+                SdkEventEmitterProvider.create(
+                        ((OpenTelemetrySdk) splunkRum.getOpenTelemetry()).getSdkLoggerProvider());
+        EventEmitter eventEmitter =
+                eventEmitterProvider
+                        .eventEmitterBuilder("test")
+                        .setEventDomain(eventDomain)
+                        .build();
+        eventEmitter.emit(eventName, Attributes.empty());
     }
 }
