@@ -40,7 +40,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.logs.SdkEventEmitterProvider;
+import io.opentelemetry.sdk.logs.internal.SdkEventEmitterProvider;
 
 import java.util.Random;
 import java.util.concurrent.Executors;

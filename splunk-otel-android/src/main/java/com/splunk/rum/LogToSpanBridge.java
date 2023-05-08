@@ -66,9 +66,9 @@ final class LogToSpanBridge implements LogRecordProcessor {
         setLogAttributes(spanBuilder, log);
         Span span =
                 spanBuilder
-                        .setStartTimestamp(log.getEpochNanos(), TimeUnit.NANOSECONDS)
+                        .setStartTimestamp(log.getTimestampEpochNanos(), TimeUnit.NANOSECONDS)
                         .startSpan();
-        span.end(log.getEpochNanos(), TimeUnit.NANOSECONDS);
+        span.end(log.getTimestampEpochNanos(), TimeUnit.NANOSECONDS);
     }
 
     private static Tracer getTracer(TracerProvider tracerProvider, InstrumentationScopeInfo scope) {

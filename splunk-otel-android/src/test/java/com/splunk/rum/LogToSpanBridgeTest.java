@@ -67,7 +67,7 @@ class LogToSpanBridgeTest {
         when(log.getInstrumentationScopeInfo()).thenReturn(scope);
         when(log.getAttributes())
                 .thenReturn(Attributes.builder().put("attr1", "12").put("attr2", "42").build());
-        when(log.getEpochNanos()).thenReturn(epochNanos);
+        when(log.getTimestampEpochNanos()).thenReturn(epochNanos);
         when(log.getSeverity()).thenReturn(Severity.DEBUG);
         when(log.getSeverityText()).thenReturn("just testing");
         when(log.getBody()).thenReturn(Body.string("hasta la vista"));
@@ -106,7 +106,7 @@ class LogToSpanBridgeTest {
                                 .put(SemanticAttributes.EVENT_NAME, "buttonClick")
                                 .put("attr", "value")
                                 .build());
-        when(log.getEpochNanos()).thenReturn(epochNanos);
+        when(log.getTimestampEpochNanos()).thenReturn(epochNanos);
         when(log.getSeverity()).thenReturn(Severity.UNDEFINED_SEVERITY_NUMBER);
         when(log.getBody()).thenReturn(Body.empty());
         when(logRecord.toLogRecordData()).thenReturn(log);
@@ -140,7 +140,7 @@ class LogToSpanBridgeTest {
                                 .put("attr2", "42")
                                 .put(LogToSpanBridge.OPERATION_NAME, "span name")
                                 .build());
-        when(log.getEpochNanos()).thenReturn(epochNanos);
+        when(log.getTimestampEpochNanos()).thenReturn(epochNanos);
         when(log.getSeverity()).thenReturn(Severity.INFO);
         when(log.getBody()).thenReturn(Body.string("message"));
         when(logRecord.toLogRecordData()).thenReturn(log);
