@@ -42,12 +42,6 @@ enum VolleyHttpClientAttributesGetter
 
     @Nullable
     @Override
-    public String getFlavor(RequestWrapper requestWrapper, @Nullable HttpResponse response) {
-        return null;
-    }
-
-    @Nullable
-    @Override
     public String getMethod(RequestWrapper requestWrapper) {
         Request<?> request = requestWrapper.getRequest();
         switch (request.getMethod()) {
