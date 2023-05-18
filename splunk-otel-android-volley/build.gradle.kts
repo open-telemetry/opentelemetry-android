@@ -69,7 +69,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
-    testImplementation("org.robolectric:robolectric:4.10.2")
+    testImplementation("org.robolectric:robolectric:4.10.3")
     testImplementation("org.mockito:mockito-core:5.3.1")
     testImplementation("androidx.test:core:1.5.0")
     testImplementation("com.google.mockwebserver:mockwebserver:20130706")
