@@ -5,6 +5,8 @@
     <a href="#getting-started">Getting Started</a>
     &nbsp;&nbsp;&bull;&nbsp;&nbsp;
     <a href="CONTRIBUTING.md">Getting Involved</a>
+    &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+    <a href="SECURITY.md">Security</a>
   </strong>
 </p>
 
@@ -27,14 +29,6 @@
   </a>
 </p>
 
-<p align="center">
-  <strong>
-    <a href="docs/faq.md">FAQ</a>
-    &nbsp;&nbsp;&bull;&nbsp;&nbsp;
-    <a href="SECURITY.md">Security</a>
-  </strong>
-</p>
-
 ---
 
 # Splunk OpenTelemetry Instrumentation for Android
@@ -54,33 +48,22 @@ For official documentation on the Splunk OTel Instrumentation for Android, see [
 * Slow / frozen render detection
 * Offline buffering of telemetry via storage
 
-## Troubleshooting
-
-- If you see runtime errors related to Java 8 interfaces and classes, make sure you have
-  enabled `coreLibraryDesugaring` per the official Android [documentation][desugar].
-- Report any bugs either here as a Github issue, or with official Splunk support channels.
-
 ## Sample Application
 
-This repository includes a sample application that can show off a few features of our mobile RUM
-product.
+This repository includes a sample application that demonstrates some features of the Android RUM agent.
 
-In order to build and run the sample application, you will need to configure a `local.properties`
-file in the root of the project. It will need to have two properties configured:
+To build and run the sample application, configure a `local.properties` file in the root of the project. The project requires the following properties:
 
 ```properties
 rum.realm=<realm>
 rum.access.token=<a valid Splunk RUM access token for the realm>
 ```
 
+## Troubleshooting
+
+For troubleshooting issues with the Splunk OpenTelemetry instrumentation of Android, see [Troubleshoot Android instrumentation for Splunk Observability Cloud](https://quickdraw.splunk.com/redirect/?product=Observability&version=current&location=rum.android.troubleshooting) in the official documentation.
+
 # License
 
 The Splunk Android RUM Instrumentation is licensed under the terms of the Apache Software License
-version 2.0. See
-[the license file](./LICENSE) for more details.
-
->ℹ️&nbsp;&nbsp;SignalFx was acquired by Splunk in October 2019. See [Splunk SignalFx](https://www.splunk.com/en_us/investor-relations/acquisitions/signalfx.html) for more information.
-
-[desugar]: https://developer.android.com/studio/write/java8-support#library-desugaring
-
-[javadoc-url]: https://www.javadoc.io/doc/com.splunk/splunk-otel-android/latest/com/splunk/rum/SplunkRum.html
+version 2.0. See [the license file](./LICENSE) for more details.
