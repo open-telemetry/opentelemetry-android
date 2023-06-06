@@ -16,8 +16,6 @@
 
 package io.opentelemetry.rum.internal;
 
-import static io.opentelemetry.rum.internal.RumConstants.SESSION_ID_KEY;
-
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -33,7 +31,7 @@ final class SessionIdSpanAppender implements SpanProcessor {
 
     @Override
     public void onStart(Context parentContext, ReadWriteSpan span) {
-        span.setAttribute(SESSION_ID_KEY, sessionId.getSessionId());
+        span.setAttribute(RumConstants.SESSION_ID_KEY, sessionId.getSessionId());
     }
 
     @Override

@@ -16,9 +16,6 @@
 
 package io.opentelemetry.rum.internal.instrumentation.startup;
 
-import static io.opentelemetry.rum.internal.RumConstants.OTEL_RUM_LOG_TAG;
-import static io.opentelemetry.rum.internal.RumConstants.START_TYPE_KEY;
-
 import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
@@ -31,6 +28,7 @@ import androidx.annotation.Nullable;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.rum.internal.DefaultingActivityLifecycleCallbacks;
+import io.opentelemetry.rum.internal.RumConstants;
 import io.opentelemetry.rum.internal.util.AnchoredClock;
 import io.opentelemetry.sdk.common.Clock;
 
@@ -64,7 +62,7 @@ public class AppStartupTimer {
         final Span appStart =
                 tracer.spanBuilder("AppStart")
                         .setStartTimestamp(firstPossibleTimestamp, TimeUnit.NANOSECONDS)
-                        .setAttribute(START_TYPE_KEY, "cold")
+                        .setAttribute(RumConstants.START_TYPE_KEY, "cold")
                         .startSpan();
         overallAppStartSpan = appStart;
         return appStart;
@@ -99,7 +97,7 @@ public class AppStartupTimer {
         }
         uiInitStarted = true;
         if (firstPossibleTimestamp + MAX_TIME_TO_UI_INIT < startupClock.now()) {
-            Log.d(OTEL_RUM_LOG_TAG, "Max time to UI init exceeded");
+            Log.d(RumConstants.OTEL_RUM_LOG_TAG, "Max time to UI init exceeded");
             uiInitTooLate = true;
             clear();
         }
@@ -161,7 +159,7 @@ public class AppStartupTimer {
         public void run() {
             // check whether an activity has been created
             if (!startupTimer.uiInitStarted) {
-                Log.d(OTEL_RUM_LOG_TAG, "Detected background app start");
+                Log.d(RumConstants.OTEL_RUM_LOG_TAG, "Detected background app start");
                 startupTimer.isStartedFromBackground = true;
             }
         }

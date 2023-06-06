@@ -16,8 +16,6 @@
 
 package io.opentelemetry.rum.internal;
 
-import static io.opentelemetry.rum.internal.RumConstants.PREVIOUS_SESSION_ID_KEY;
-
 import io.opentelemetry.api.trace.Tracer;
 
 final class SessionIdChangeTracer implements SessionIdChangeListener {
@@ -31,7 +29,7 @@ final class SessionIdChangeTracer implements SessionIdChangeListener {
     @Override
     public void onChange(String oldSessionId, String newSessionId) {
         tracer.spanBuilder("sessionId.change")
-                .setAttribute(PREVIOUS_SESSION_ID_KEY, oldSessionId)
+                .setAttribute(RumConstants.PREVIOUS_SESSION_ID_KEY, oldSessionId)
                 .startSpan()
                 .end();
     }

@@ -27,10 +27,10 @@ import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SE
 import android.app.Application;
 import android.os.Build;
 
-import com.splunk.android.rum.R;
-
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
+
+import opentelemetry.rum.instrumentation.R;
 
 import java.util.function.Supplier;
 

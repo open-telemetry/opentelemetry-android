@@ -16,11 +16,10 @@
 
 package io.opentelemetry.rum.internal.instrumentation.slowrendering;
 
-import static io.opentelemetry.rum.internal.RumConstants.OTEL_RUM_LOG_TAG;
-
 import android.os.Build;
 import android.util.Log;
 
+import io.opentelemetry.rum.internal.RumConstants;
 import io.opentelemetry.rum.internal.instrumentation.InstrumentedApplication;
 
 import java.time.Duration;
@@ -54,7 +53,7 @@ public final class SlowRenderingDetector {
     public void installOn(InstrumentedApplication instrumentedApplication) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             Log.w(
-                    OTEL_RUM_LOG_TAG,
+                    RumConstants.OTEL_RUM_LOG_TAG,
                     "Slow/frozen rendering detection is not supported on platforms older than Android N (SDK version 24).");
             return;
         }

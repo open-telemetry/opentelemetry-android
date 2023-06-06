@@ -261,6 +261,7 @@ class RumInitializer {
         if (builder.deploymentEnvironment != null) {
             resourceBuilder.put(DEPLOYMENT_ENVIRONMENT, builder.deploymentEnvironment);
         }
+        // TODO: Use the splunk-specific version key and not the upstream one
         return resourceBuilder.put(RUM_SDK_VERSION, detectRumVersion()).build();
     }
 

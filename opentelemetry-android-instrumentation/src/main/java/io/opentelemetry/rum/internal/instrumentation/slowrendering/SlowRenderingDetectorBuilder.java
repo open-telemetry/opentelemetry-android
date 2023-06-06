@@ -16,9 +16,9 @@
 
 package io.opentelemetry.rum.internal.instrumentation.slowrendering;
 
-import static io.opentelemetry.rum.internal.RumConstants.OTEL_RUM_LOG_TAG;
-
 import android.util.Log;
+
+import io.opentelemetry.rum.internal.RumConstants;
 
 import java.time.Duration;
 
@@ -43,7 +43,7 @@ public final class SlowRenderingDetectorBuilder {
     public SlowRenderingDetectorBuilder setSlowRenderingDetectionPollInterval(Duration interval) {
         if (interval.toMillis() <= 0) {
             Log.e(
-                    OTEL_RUM_LOG_TAG,
+                    RumConstants.OTEL_RUM_LOG_TAG,
                     "Invalid slowRenderingDetectionPollInterval: "
                             + interval
                             + "; must be positive");

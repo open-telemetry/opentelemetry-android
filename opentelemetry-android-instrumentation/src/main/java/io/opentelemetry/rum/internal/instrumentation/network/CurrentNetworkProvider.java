@@ -16,8 +16,6 @@
 
 package io.opentelemetry.rum.internal.instrumentation.network;
 
-import static io.opentelemetry.rum.internal.RumConstants.OTEL_RUM_LOG_TAG;
-
 import android.app.Application;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -28,6 +26,8 @@ import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+
+import io.opentelemetry.rum.internal.RumConstants;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -81,7 +81,7 @@ public final class CurrentNetworkProvider {
         } catch (Exception e) {
             // if this fails, we'll go without network change events.
             Log.w(
-                    OTEL_RUM_LOG_TAG,
+                    RumConstants.OTEL_RUM_LOG_TAG,
                     "Failed to register network callbacks. Automatic network monitoring is disabled.",
                     e);
         }
@@ -140,7 +140,7 @@ public final class CurrentNetworkProvider {
         @Override
         public void onAvailable(@NonNull Network network) {
             CurrentNetwork activeNetwork = refreshNetworkStatus();
-            Log.d(OTEL_RUM_LOG_TAG, "  onAvailable: currentNetwork=" + activeNetwork);
+            Log.d(RumConstants.OTEL_RUM_LOG_TAG, "  onAvailable: currentNetwork=" + activeNetwork);
 
             notifyListeners(activeNetwork);
         }
@@ -153,7 +153,7 @@ public final class CurrentNetworkProvider {
             // state at the right time during this event.
             CurrentNetwork currentNetwork = NO_NETWORK;
             CurrentNetworkProvider.this.currentNetwork = currentNetwork;
-            Log.d(OTEL_RUM_LOG_TAG, "  onLost: currentNetwork=" + currentNetwork);
+            Log.d(RumConstants.OTEL_RUM_LOG_TAG, "  onLost: currentNetwork=" + currentNetwork);
 
             notifyListeners(currentNetwork);
         }

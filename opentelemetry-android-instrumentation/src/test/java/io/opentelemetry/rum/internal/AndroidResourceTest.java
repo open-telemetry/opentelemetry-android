@@ -31,9 +31,9 @@ import android.app.Application;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
 
-import com.splunk.android.rum.R;
-
 import io.opentelemetry.sdk.resources.Resource;
+
+import opentelemetry.rum.instrumentation.R;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -16,13 +16,12 @@
 
 package io.opentelemetry.rum.internal.instrumentation.fragment;
 
-import static io.opentelemetry.rum.internal.RumConstants.SCREEN_NAME_KEY;
-
 import androidx.fragment.app.Fragment;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.rum.internal.RumConstants;
 import io.opentelemetry.rum.internal.util.ActiveSpan;
 
 class FragmentTracer {
@@ -60,7 +59,7 @@ class FragmentTracer {
                         .startSpan();
         // do this after the span is started, so we can override the default screen.name set by the
         // RumAttributeAppender.
-        span.setAttribute(SCREEN_NAME_KEY, screenName);
+        span.setAttribute(RumConstants.SCREEN_NAME_KEY, screenName);
         return span;
     }
 
