@@ -46,7 +46,7 @@ val otelInstrumentationAlphaVersion = "1.25.0-alpha-SNAPSHOT"
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.core:core:1.9.0")
+    implementation("androidx.core:core:1.10.1")
     implementation("androidx.navigation:navigation-fragment:2.5.3")
 
     api(platform("io.opentelemetry:opentelemetry-bom:$otelVersion"))
