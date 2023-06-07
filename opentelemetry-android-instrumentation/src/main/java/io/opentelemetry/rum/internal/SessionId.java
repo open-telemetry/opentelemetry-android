@@ -19,10 +19,8 @@ package io.opentelemetry.rum.internal;
 import static java.util.Objects.requireNonNull;
 
 import androidx.annotation.Nullable;
-
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.Clock;
-
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;

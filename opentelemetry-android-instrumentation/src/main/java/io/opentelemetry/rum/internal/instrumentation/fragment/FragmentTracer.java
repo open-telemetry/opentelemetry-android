@@ -17,7 +17,6 @@
 package io.opentelemetry.rum.internal.instrumentation.fragment;
 
 import androidx.fragment.app.Fragment;
-
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;

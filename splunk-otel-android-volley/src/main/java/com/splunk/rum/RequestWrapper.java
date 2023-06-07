@@ -17,7 +17,6 @@
 package com.splunk.rum;
 
 import com.android.volley.Request;
-
 import java.util.HashMap;
 import java.util.Map;
 

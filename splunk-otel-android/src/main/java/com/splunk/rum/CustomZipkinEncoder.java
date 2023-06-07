@@ -16,15 +16,14 @@
 
 package com.splunk.rum;
 
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
 import zipkin2.codec.Encoding;
 import zipkin2.internal.JsonCodec;
 import zipkin2.internal.V2SpanWriter;
 import zipkin2.internal.WriteBuffer;
-
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 /**
  * We need a custom encoder to correct for the fact that the zipkin Span.Builder lowercases all Span

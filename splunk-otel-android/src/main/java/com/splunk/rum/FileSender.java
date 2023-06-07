@@ -17,17 +17,11 @@
 package com.splunk.rum;
 
 import static com.splunk.rum.SplunkRum.LOG_TAG;
-
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 
 import android.util.Log;
-
 import androidx.annotation.Nullable;
-
-import zipkin2.Call;
-import zipkin2.reporter.Sender;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -35,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import zipkin2.Call;
+import zipkin2.reporter.Sender;
 
 class FileSender {
 

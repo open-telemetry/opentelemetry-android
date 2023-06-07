@@ -26,16 +26,13 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.webkit.WebViewAssetLoader;
 import androidx.webkit.WebViewClientCompat;
-
 import com.splunk.android.sample.databinding.FragmentWebViewBinding;
 import com.splunk.rum.SplunkRum;
-
 import io.opentelemetry.api.common.Attributes;
 
 /** A simple {@link Fragment} subclass with a WebView in it. */

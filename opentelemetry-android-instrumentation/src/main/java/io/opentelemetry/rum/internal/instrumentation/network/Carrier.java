@@ -18,10 +18,8 @@ package io.opentelemetry.rum.internal.instrumentation.network;
 
 import android.os.Build;
 import android.telephony.TelephonyManager;
-
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-
 import java.util.Objects;
 
 @RequiresApi(api = Build.VERSION_CODES.P)

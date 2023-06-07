@@ -17,7 +17,6 @@
 package io.opentelemetry.rum.internal.instrumentation;
 
 import android.app.Activity;
-
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 

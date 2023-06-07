@@ -33,7 +33,6 @@ import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-
 import java.util.concurrent.TimeUnit;
 
 final class LogToSpanBridge implements LogRecordProcessor {

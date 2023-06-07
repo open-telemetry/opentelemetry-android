@@ -19,9 +19,7 @@ package io.opentelemetry.rum.internal;
 import static org.mockito.Mockito.inOrder;
 
 import android.app.Activity;
-
 import io.opentelemetry.rum.internal.instrumentation.ApplicationStateListener;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

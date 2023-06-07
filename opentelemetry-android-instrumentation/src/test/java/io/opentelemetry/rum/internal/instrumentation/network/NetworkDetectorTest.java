@@ -20,9 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
 import android.os.Build;
-
 import androidx.test.core.app.ApplicationProvider;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;

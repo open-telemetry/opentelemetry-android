@@ -21,17 +21,14 @@ import android.app.Application;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.rum.internal.DefaultingActivityLifecycleCallbacks;
 import io.opentelemetry.rum.internal.RumConstants;
 import io.opentelemetry.rum.internal.util.AnchoredClock;
 import io.opentelemetry.sdk.common.Clock;
-
 import java.util.concurrent.TimeUnit;
 
 public class AppStartupTimer {

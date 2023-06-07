@@ -18,7 +18,6 @@ package io.opentelemetry.rum.internal;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;

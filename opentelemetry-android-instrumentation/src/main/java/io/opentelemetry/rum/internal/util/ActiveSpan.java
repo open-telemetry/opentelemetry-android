@@ -19,10 +19,8 @@ package io.opentelemetry.rum.internal.util;
 import static io.opentelemetry.rum.internal.RumConstants.LAST_SCREEN_NAME_KEY;
 
 import androidx.annotation.Nullable;
-
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
-
 import java.util.function.Supplier;
 
 public class ActiveSpan {

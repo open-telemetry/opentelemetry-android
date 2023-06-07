@@ -18,7 +18,6 @@ package com.splunk.rum;
 
 import static io.opentelemetry.rum.internal.RumConstants.LAST_SCREEN_NAME_KEY;
 import static io.opentelemetry.rum.internal.RumConstants.SCREEN_NAME_KEY;
-
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,7 +30,6 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.rum.internal.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

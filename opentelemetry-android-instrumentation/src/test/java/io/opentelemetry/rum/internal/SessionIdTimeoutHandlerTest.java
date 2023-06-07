@@ -20,11 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.sdk.testing.time.TestClock;
-
-import org.junit.jupiter.api.Test;
-
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.Test;
 
 class SessionIdTimeoutHandlerTest {
 

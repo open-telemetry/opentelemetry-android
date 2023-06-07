@@ -20,13 +20,10 @@ import static com.splunk.rum.DeviceSpanStorageLimiter.DEFAULT_MAX_STORAGE_USE_MB
 
 import android.app.Application;
 import android.util.Log;
-
 import androidx.annotation.Nullable;
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.rum.internal.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-
 import java.time.Duration;
 import java.util.function.Consumer;
 

@@ -23,7 +23,6 @@ import static com.splunk.rum.SplunkRum.LINK_TRACE_ID_KEY;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
-
 import okhttp3.Request;
 import okhttp3.Response;
 

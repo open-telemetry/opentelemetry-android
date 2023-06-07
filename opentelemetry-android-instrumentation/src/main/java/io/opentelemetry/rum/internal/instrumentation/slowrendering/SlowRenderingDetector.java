@@ -18,10 +18,8 @@ package io.opentelemetry.rum.internal.instrumentation.slowrendering;
 
 import android.os.Build;
 import android.util.Log;
-
 import io.opentelemetry.rum.internal.RumConstants;
 import io.opentelemetry.rum.internal.instrumentation.InstrumentedApplication;
-
 import java.time.Duration;
 
 /**

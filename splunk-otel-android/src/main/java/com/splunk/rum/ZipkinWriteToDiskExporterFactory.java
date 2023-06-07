@@ -18,12 +18,9 @@ package com.splunk.rum;
 
 import android.app.Application;
 import android.util.Log;
-
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
-
-import zipkin2.reporter.Sender;
-
 import java.io.File;
+import zipkin2.reporter.Sender;
 
 /**
  * Creates a ZipkinSpanExporter that is configured with an instance of a ZipkinToDiskSender that

@@ -18,7 +18,6 @@ package io.opentelemetry.rum.internal;
 
 import io.opentelemetry.rum.internal.instrumentation.ApplicationStateListener;
 import io.opentelemetry.sdk.common.Clock;
-
 import java.util.concurrent.TimeUnit;
 
 /**

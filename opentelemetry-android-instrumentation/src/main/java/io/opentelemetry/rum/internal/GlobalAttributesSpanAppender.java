@@ -24,7 +24,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 

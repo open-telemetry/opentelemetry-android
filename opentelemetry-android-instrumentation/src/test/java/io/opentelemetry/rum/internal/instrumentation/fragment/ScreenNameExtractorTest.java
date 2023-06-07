@@ -19,12 +19,9 @@ package io.opentelemetry.rum.internal.instrumentation.fragment;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import android.app.Activity;
-
 import androidx.fragment.app.Fragment;
-
 import io.opentelemetry.rum.internal.instrumentation.RumScreenName;
 import io.opentelemetry.rum.internal.instrumentation.ScreenNameExtractor;
-
 import org.junit.jupiter.api.Test;
 
 class ScreenNameExtractorTest {

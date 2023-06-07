@@ -21,10 +21,8 @@ import static io.opentelemetry.rum.internal.RumConstants.SCREEN_NAME_KEY;
 import static io.opentelemetry.rum.internal.RumConstants.START_TYPE_KEY;
 
 import android.app.Activity;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
@@ -32,7 +30,6 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.rum.internal.instrumentation.startup.AppStartupTimer;
 import io.opentelemetry.rum.internal.util.ActiveSpan;
-
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ActivityTracer {

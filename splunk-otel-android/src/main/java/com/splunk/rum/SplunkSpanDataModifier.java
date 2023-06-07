@@ -18,12 +18,10 @@ package com.splunk.rum;
 
 import static com.splunk.rum.SplunkRum.ERROR_MESSAGE_KEY;
 import static com.splunk.rum.SplunkRum.ERROR_TYPE_KEY;
-
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.EXCEPTION_MESSAGE;
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.EXCEPTION_STACKTRACE;
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.EXCEPTION_TYPE;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 
@@ -39,7 +37,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;

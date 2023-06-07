@@ -17,7 +17,6 @@
 package io.opentelemetry.rum.internal.instrumentation;
 
 import android.app.Application;
-
 import io.opentelemetry.rum.internal.OpenTelemetryRum;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 

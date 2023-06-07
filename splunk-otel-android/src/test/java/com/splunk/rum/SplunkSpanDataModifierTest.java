@@ -19,15 +19,12 @@ package com.splunk.rum;
 import static com.splunk.rum.SplunkSpanDataModifier.REACT_NATIVE_SPAN_ID_KEY;
 import static com.splunk.rum.SplunkSpanDataModifier.REACT_NATIVE_TRACE_ID_KEY;
 import static com.splunk.rum.SplunkSpanDataModifier.SPLUNK_OPERATION_KEY;
-
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
-
-import static org.mockito.Mockito.when;
-
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
@@ -44,16 +41,14 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-
+import java.util.Arrays;
+import java.util.Collection;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Arrays;
-import java.util.Collection;
 
 @ExtendWith(MockitoExtension.class)
 class SplunkSpanDataModifierTest {

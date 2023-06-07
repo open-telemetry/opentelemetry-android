@@ -24,9 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import android.app.Application;
-
 import io.opentelemetry.api.common.Attributes;
-
 import org.junit.jupiter.api.Test;
 
 class SplunkRumBuilderTest {

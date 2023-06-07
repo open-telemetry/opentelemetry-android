@@ -24,7 +24,6 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.BasicNetwork;
 import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.NoCache;
-
 import java.util.concurrent.Executors;
 
 class TestRequestQueue {

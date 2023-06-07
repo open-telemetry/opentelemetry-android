@@ -18,10 +18,8 @@ package com.splunk.rum;
 
 import com.android.volley.toolbox.HttpResponse;
 import com.android.volley.toolbox.HurlStack;
-
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
-
 import javax.net.ssl.SSLSocketFactory;
 
 /** Entrypoint for tracing Volley clients. */

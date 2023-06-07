@@ -21,12 +21,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
-
 import androidx.annotation.Nullable;
-
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
-
 import java.io.File;
 
 /** Represents details about the runtime environment at a time */

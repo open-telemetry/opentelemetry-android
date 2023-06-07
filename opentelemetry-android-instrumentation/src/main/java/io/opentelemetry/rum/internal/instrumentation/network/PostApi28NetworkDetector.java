@@ -27,7 +27,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.os.Build;
 import android.telephony.TelephonyManager;
-
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 

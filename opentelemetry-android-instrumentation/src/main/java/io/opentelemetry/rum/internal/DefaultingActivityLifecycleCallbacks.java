@@ -19,7 +19,6 @@ package io.opentelemetry.rum.internal;
 import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 

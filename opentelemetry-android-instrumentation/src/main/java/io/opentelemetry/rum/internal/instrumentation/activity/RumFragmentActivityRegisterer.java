@@ -19,12 +19,10 @@ package io.opentelemetry.rum.internal.instrumentation.activity;
 import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
-
 import io.opentelemetry.rum.internal.DefaultingActivityLifecycleCallbacks;
 
 /**

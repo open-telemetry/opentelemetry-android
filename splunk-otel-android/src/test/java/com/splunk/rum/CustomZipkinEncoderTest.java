@@ -20,9 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
-
 import org.junit.jupiter.api.Test;
-
 import zipkin2.Span;
 
 class CustomZipkinEncoderTest {

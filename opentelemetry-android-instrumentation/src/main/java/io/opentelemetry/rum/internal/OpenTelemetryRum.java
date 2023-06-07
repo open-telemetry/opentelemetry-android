@@ -17,7 +17,6 @@
 package io.opentelemetry.rum.internal;
 
 import android.app.Application;
-
 import io.opentelemetry.api.OpenTelemetry;
 
 /**

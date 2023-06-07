@@ -17,9 +17,7 @@
 package io.opentelemetry.rum.internal.instrumentation.anr;
 
 import android.os.Looper;
-
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;

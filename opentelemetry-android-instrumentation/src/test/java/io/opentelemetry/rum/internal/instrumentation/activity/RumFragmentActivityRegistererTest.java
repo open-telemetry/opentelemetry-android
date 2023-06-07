@@ -22,10 +22,8 @@ import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import android.app.Application;
-
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;

@@ -19,18 +19,14 @@ package com.splunk.rum;
 import static java.util.Objects.requireNonNull;
 
 import android.util.Log;
-
 import androidx.annotation.Nullable;
-
 import io.opentelemetry.sdk.common.Clock;
-
-import zipkin2.Call;
-import zipkin2.codec.Encoding;
-import zipkin2.reporter.Sender;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import zipkin2.Call;
+import zipkin2.codec.Encoding;
+import zipkin2.reporter.Sender;
 
 class ZipkinToDiskSender extends Sender {
 
