@@ -155,9 +155,9 @@ public class SecondFragment extends Fragment {
                 v -> {
                     boolean slowlyNow = binding.animatedView.toggleSlowly();
                     if (slowlyNow) {
-                        binding.drawSlowly.setText("Draw Normally");
+                        binding.drawSlowly.setText(R.string.draw_speed_normally);
                     } else {
-                        binding.drawSlowly.setText("Draw Slowly");
+                        binding.drawSlowly.setText(R.string.draw_speed_slowly);
                     }
                 });
         binding.buttonWork.setOnClickListener(
@@ -205,7 +205,9 @@ public class SecondFragment extends Fragment {
     }
 
     private void updateLabel() {
-        spanCountLabel.postValue(getString(R.string.spam_status, spans.get()));
+        int count = (int) spans.get();
+        spanCountLabel.postValue(
+                getResources().getQuantityString(R.plurals.spam_status, count, count));
     }
 
     private void createSpamSpan() {

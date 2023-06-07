@@ -17,6 +17,7 @@
 package com.splunk.android.sample;
 
 import android.animation.TimeAnimator;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -52,6 +53,7 @@ public class DemoAnimatedView extends androidx.appcompat.widget.AppCompatImageVi
         super(context, attrs);
     }
 
+    @SuppressLint("DrawAllocation")
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);

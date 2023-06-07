@@ -20,7 +20,7 @@
             android:id="@+id/textview_second"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="second fragment"
+            android:text="@string/second_fragment"
             app:layout_constraintBottom_toTopOf="@id/animatedView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -34,7 +34,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-        />
 
         <LinearLayout
             android:id="@+id/button_box"
@@ -108,7 +107,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Draw Slowly" />
+                android:text="@string/draw_slowly" />
 
             <Button
                 android:id="@+id/button_spam"

@@ -19,6 +19,7 @@ package com.splunk.android.sample;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static org.apache.http.conn.ssl.SSLSocketFactory.SSL;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -186,6 +187,7 @@ public class FirstFragment extends Fragment {
         sessionId.postValue(splunkRum.getRumSessionId());
     }
 
+    @SuppressLint("AllowAllHostnameVerifier")
     private Call.Factory buildOkHttpClient(SplunkRum splunkRum) {
         // grab the default executor service that okhttp uses, and wrap it with one that will
         // propagate the otel context.
@@ -206,14 +208,17 @@ public class FirstFragment extends Fragment {
         }
     }
 
+    @SuppressLint("CustomX509TrustManager")
     private static final TrustManager[] trustAllCerts =
             new TrustManager[] {
                 new X509TrustManager() {
 
+                    @SuppressLint("TrustAllX509TrustManager")
                     @Override
                     public void checkClientTrusted(
                             java.security.cert.X509Certificate[] chain, String authType) {}
 
+                    @SuppressLint("TrustAllX509TrustManager")
                     @Override
                     public void checkServerTrusted(
                             java.security.cert.X509Certificate[] chain, String authType) {}

@@ -17,7 +17,6 @@
         android:theme="@style/Theme.SplunkRUMSampleApp">
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name"
             android:theme="@style/Theme.SplunkRUMSampleApp.NoActionBar"
             android:exported="true">
             <intent-filter>

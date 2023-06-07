@@ -38,7 +38,7 @@ public class MailDialogFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        LayoutInflater inflater = LayoutInflater.from(activity);
+        LayoutInflater inflater = getLayoutInflater();
         View alertView = inflater.inflate(R.layout.sample_mail_dialog, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setView(alertView)

@@ -22,8 +22,16 @@
     <string name="web_view">WebView</string>
     <string name="start_spam">Spam start!</string>
     <string name="stop_spam">Spam stop</string>
-    <string name="spam_status">Created %d spans</string>
+    <plurals name="spam_status">
+        <item quantity="one">Created %d span</item>
+        <item quantity="other">Created %d spans</item>
+    </plurals>
     <string name="freeze">Freeze!</string>
     <string name="work_it">Work it!</string>
     <string name="custom_tab">Chrome</string>
+    <string name="second_fragment">second fragment</string>
+    <string name="draw_slowly">Draw Slowly</string>
+    <string name="draw_speed_normally">Draw Normally</string>
+    <string name="draw_speed_slowly">Draw Slowly</string>
+    <string name="send_email">send email</string>
 </resources>
