@@ -4,6 +4,9 @@ plugins {
     id("splunk.errorprone-conventions")
 }
 
+// This submodule is alpha and is not yet intended to be used by itself
+version = "${project.version}-alpha"
+
 android {
     namespace = "opentelemetry.rum.instrumentation"
 
