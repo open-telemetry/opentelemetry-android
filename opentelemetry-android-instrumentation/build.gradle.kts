@@ -66,7 +66,7 @@ dependencies {
 
     testImplementation("org.mockito:mockito-core:5.3.1")
     testImplementation("org.mockito:mockito-junit-jupiter:5.3.1")
-    testImplementation(platform("org.junit:junit-bom:5.9.2"))
+    testImplementation(platform("org.junit:junit-bom:5.9.3"))
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.junit.jupiter:junit-jupiter-engine")
     testImplementation("org.junit.vintage:junit-vintage-engine")
