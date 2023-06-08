@@ -50,7 +50,7 @@ val otelInstrumentationAlphaVersion = "1.27.0-alpha-SNAPSHOT"
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.navigation:navigation-fragment:2.5.3")
+    implementation("androidx.navigation:navigation-fragment:2.6.0")
     compileOnly("com.android.volley:volley:1.2.1")
 
     implementation(project(":splunk-otel-android"))
