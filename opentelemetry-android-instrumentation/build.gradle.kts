@@ -5,7 +5,7 @@ plugins {
 }
 
 // This submodule is alpha and is not yet intended to be used by itself
-version = "${project.version}-alpha"
+version = project.version.toString().replaceFirst("(-SNAPSHOT)?$".toRegex(), "-alpha$1")
 
 android {
     namespace = "opentelemetry.rum.instrumentation"
@@ -42,10 +42,9 @@ android {
     }
 }
 
-val otelVersion = "1.25.0"
+val otelVersion = "1.26.0"
 val otelAlphaVersion = "$otelVersion-alpha"
-val otelInstrumentationVersion = "1.25.0-SNAPSHOT"
-val otelInstrumentationAlphaVersion = "1.25.0-alpha-SNAPSHOT"
+val otelInstrumentationVersion = "1.26.0"
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
