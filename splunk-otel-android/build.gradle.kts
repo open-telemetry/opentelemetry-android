@@ -76,7 +76,7 @@ dependencies {
     testImplementation("org.robolectric:robolectric:4.10.3")
     testImplementation("androidx.test:core:1.5.0")
     testImplementation("org.assertj:assertj-core:3.24.2")
-    testImplementation("com.google.guava:guava:32.0.0-jre")
+    testImplementation("com.google.guava:guava:32.0.1-jre")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 }
