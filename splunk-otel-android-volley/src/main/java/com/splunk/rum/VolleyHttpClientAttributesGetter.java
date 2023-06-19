@@ -33,13 +33,13 @@ enum VolleyHttpClientAttributesGetter
     INSTANCE;
 
     @Override
-    public String getUrl(RequestWrapper requestWrapper) {
+    public String getUrlFull(RequestWrapper requestWrapper) {
         return requestWrapper.getRequest().getUrl();
     }
 
     @Nullable
     @Override
-    public String getMethod(RequestWrapper requestWrapper) {
+    public String getHttpRequestMethod(RequestWrapper requestWrapper) {
         Request<?> request = requestWrapper.getRequest();
         switch (request.getMethod()) {
             case Request.Method.GET:
@@ -64,7 +64,7 @@ enum VolleyHttpClientAttributesGetter
     }
 
     @Override
-    public List<String> getRequestHeader(RequestWrapper requestWrapper, String name) {
+    public List<String> getHttpRequestHeader(RequestWrapper requestWrapper, String name) {
         Request<?> request = requestWrapper.getRequest();
         try {
             Map<String, String> headers = request.getHeaders();
@@ -89,13 +89,13 @@ enum VolleyHttpClientAttributesGetter
     }
 
     @Override
-    public Integer getStatusCode(
+    public Integer getHttpResponseStatusCode(
             RequestWrapper requestWrapper, HttpResponse response, @Nullable Throwable error) {
         return response.getStatusCode();
     }
 
     @Override
-    public List<String> getResponseHeader(
+    public List<String> getHttpResponseHeader(
             RequestWrapper requestWrapper, @Nullable HttpResponse response, String name) {
         if (response == null) {
             return emptyList();
