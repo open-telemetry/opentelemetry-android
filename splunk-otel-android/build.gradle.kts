@@ -66,7 +66,7 @@ dependencies {
     api("com.squareup.okhttp3:okhttp:4.11.0")
 
     testImplementation("org.mockito:mockito-core:5.3.1")
-    testImplementation("org.mockito:mockito-junit-jupiter:5.3.1")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.4.0")
     testImplementation(platform("org.junit:junit-bom:5.9.3"))
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.junit.jupiter:junit-jupiter-engine")
