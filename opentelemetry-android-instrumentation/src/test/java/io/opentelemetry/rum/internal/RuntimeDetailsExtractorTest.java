@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal;
 
 import static io.opentelemetry.context.Context.root;
+import static io.opentelemetry.rum.internal.RumConstants.BATTERY_PERCENT_KEY;
+import static io.opentelemetry.rum.internal.RumConstants.HEAP_FREE_KEY;
+import static io.opentelemetry.rum.internal.RumConstants.STORAGE_SPACE_FREE_KEY;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -54,8 +57,8 @@ class RuntimeDetailsExtractorTest {
         details.onStart(attributes, root(), null);
         assertThat(attributes.build())
                 .hasSize(3)
-                .containsEntry(SplunkRum.STORAGE_SPACE_FREE_KEY, 4200L)
-                .containsKey(SplunkRum.HEAP_FREE_KEY)
-                .containsEntry(SplunkRum.BATTERY_PERCENT_KEY, 69.0);
+                .containsEntry(STORAGE_SPACE_FREE_KEY, 4200L)
+                .containsKey(HEAP_FREE_KEY)
+                .containsEntry(BATTERY_PERCENT_KEY, 69.0);
     }
 }

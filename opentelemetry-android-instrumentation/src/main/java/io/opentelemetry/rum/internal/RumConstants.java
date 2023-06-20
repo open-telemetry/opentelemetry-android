@@ -16,6 +16,8 @@
 
 package io.opentelemetry.rum.internal;
 
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -33,6 +35,10 @@ public class RumConstants {
     public static final AttributeKey<String> START_TYPE_KEY = stringKey("start.type");
 
     public static final AttributeKey<String> RUM_SDK_VERSION = stringKey("rum.sdk.version");
+
+    public static final AttributeKey<Long> STORAGE_SPACE_FREE_KEY = longKey("storage.free");
+    public static final AttributeKey<Long> HEAP_FREE_KEY = longKey("heap.free");
+    public static final AttributeKey<Double> BATTERY_PERCENT_KEY = doubleKey("battery.percent");
 
     public static final AttributeKey<String> PREVIOUS_SESSION_ID_KEY =
             stringKey("rum.session.previous_id");

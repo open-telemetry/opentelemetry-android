@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-package com.splunk.rum;
+package io.opentelemetry.rum.internal;
+
+import static io.opentelemetry.rum.internal.RumConstants.BATTERY_PERCENT_KEY;
+import static io.opentelemetry.rum.internal.RumConstants.HEAP_FREE_KEY;
+import static io.opentelemetry.rum.internal.RumConstants.STORAGE_SPACE_FREE_KEY;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -27,13 +31,13 @@ import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import java.io.File;
 
 /** Represents details about the runtime environment at a time */
-final class RuntimeDetailsExtractor<RQ, RS> extends BroadcastReceiver
+public final class RuntimeDetailsExtractor<RQ, RS> extends BroadcastReceiver
         implements AttributesExtractor<RQ, RS> {
 
     private @Nullable volatile Double batteryPercent = null;
     private final File filesDir;
 
-    static <RQ, RS> RuntimeDetailsExtractor<RQ, RS> create(Context context) {
+    public static <RQ, RS> RuntimeDetailsExtractor<RQ, RS> create(Context context) {
         IntentFilter batteryChangedFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         File filesDir = context.getFilesDir();
         RuntimeDetailsExtractor<RQ, RS> runtimeDetails = new RuntimeDetailsExtractor<>(filesDir);
@@ -57,12 +61,12 @@ final class RuntimeDetailsExtractor<RQ, RS> extends BroadcastReceiver
             AttributesBuilder attributes,
             io.opentelemetry.context.Context parentContext,
             RQ request) {
-        attributes.put(SplunkRum.STORAGE_SPACE_FREE_KEY, getCurrentStorageFreeSpaceInBytes());
-        attributes.put(SplunkRum.HEAP_FREE_KEY, getCurrentFreeHeapInBytes());
+        attributes.put(STORAGE_SPACE_FREE_KEY, getCurrentStorageFreeSpaceInBytes());
+        attributes.put(HEAP_FREE_KEY, getCurrentFreeHeapInBytes());
 
         Double currentBatteryPercent = getCurrentBatteryPercent();
         if (currentBatteryPercent != null) {
-            attributes.put(SplunkRum.BATTERY_PERCENT_KEY, currentBatteryPercent);
+            attributes.put(BATTERY_PERCENT_KEY, currentBatteryPercent);
         }
     }
 

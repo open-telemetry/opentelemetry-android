@@ -17,7 +17,6 @@
 package com.splunk.rum;
 
 import static io.opentelemetry.api.common.AttributeKey.doubleKey;
-import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import android.app.Application;
@@ -57,10 +56,6 @@ public class SplunkRum {
     static final AttributeKey<String> WORKFLOW_NAME_KEY = stringKey("workflow.name");
     static final AttributeKey<Double> LOCATION_LATITUDE_KEY = doubleKey("location.lat");
     static final AttributeKey<Double> LOCATION_LONGITUDE_KEY = doubleKey("location.long");
-
-    static final AttributeKey<Long> STORAGE_SPACE_FREE_KEY = longKey("storage.free");
-    static final AttributeKey<Long> HEAP_FREE_KEY = longKey("heap.free");
-    static final AttributeKey<Double> BATTERY_PERCENT_KEY = doubleKey("battery.percent");
 
     static final String COMPONENT_APPSTART = "appstart";
     static final String COMPONENT_UI = "ui";
