@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.rum.internal;
+package io.opentelemetry.rum.internal.export;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.emptyList;

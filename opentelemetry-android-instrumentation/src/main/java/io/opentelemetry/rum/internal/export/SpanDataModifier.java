@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.rum.internal;
+package io.opentelemetry.rum.internal.export;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -24,15 +24,26 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
- * Allows modification of span data before it is sent to the exporter. Spans can be modified or
- * entirely rejected from export.
+ * A utility that can be used to create a SpanExporter that allows filtering and modification of
+ * span data before it is sent to Allows modification of span data before it is sent to a delegate
+ * exporter. Spans can be rejected entirely based on their name or attribute content, or their
+ * attributes may be modified.
  */
-public final class SpanFilterBuilder {
+public final class SpanDataModifier {
 
+    private final SpanExporter delegate;
     private Predicate<String> rejectSpanNamesPredicate = spanName -> false;
     private final Map<AttributeKey<?>, Predicate<?>> rejectSpanAttributesPredicates =
             new HashMap<>();
     private final Map<AttributeKey<?>, Function<?, ?>> spanAttributeReplacements = new HashMap<>();
+
+    public static SpanDataModifier builder(SpanExporter delegate) {
+        return new SpanDataModifier(delegate);
+    }
+
+    private SpanDataModifier(SpanExporter delegate) {
+        this.delegate = delegate;
+    }
 
     /**
      * Remove matching spans from the exporter pipeline.
@@ -43,7 +54,7 @@ public final class SpanFilterBuilder {
      *     rejected.
      * @return {@code this}.
      */
-    public SpanFilterBuilder rejectSpansByName(Predicate<String> spanNamePredicate) {
+    public SpanDataModifier rejectSpansByName(Predicate<String> spanNamePredicate) {
         rejectSpanNamesPredicate = rejectSpanNamesPredicate.or(spanNamePredicate);
         return this;
     }
@@ -59,7 +70,7 @@ public final class SpanFilterBuilder {
      *     with matching value should be rejected.
      * @return {@code this}.
      */
-    public <T> SpanFilterBuilder rejectSpansByAttributeValue(
+    public <T> SpanDataModifier rejectSpansByAttributeValue(
             AttributeKey<T> attributeKey, Predicate<? super T> attributeValuePredicate) {
 
         rejectSpanAttributesPredicates.compute(
@@ -80,7 +91,7 @@ public final class SpanFilterBuilder {
      * @param attributeKey An attribute key to match.
      * @return {@code this}.
      */
-    public <T> SpanFilterBuilder removeSpanAttribute(AttributeKey<T> attributeKey) {
+    public <T> SpanDataModifier removeSpanAttribute(AttributeKey<T> attributeKey) {
         return removeSpanAttribute(attributeKey, value -> true);
     }
 
@@ -95,7 +106,7 @@ public final class SpanFilterBuilder {
      *     value should be removed from the span.
      * @return {@code this}.
      */
-    public <T> SpanFilterBuilder removeSpanAttribute(
+    public <T> SpanDataModifier removeSpanAttribute(
             AttributeKey<T> attributeKey, Predicate<? super T> attributeValuePredicate) {
 
         return replaceSpanAttribute(
@@ -115,7 +126,7 @@ public final class SpanFilterBuilder {
      *     the new one.
      * @return {@code this}.
      */
-    public <T> SpanFilterBuilder replaceSpanAttribute(
+    public <T> SpanDataModifier replaceSpanAttribute(
             AttributeKey<T> attributeKey, Function<? super T, ? extends T> attributeValueModifier) {
 
         spanAttributeReplacements.compute(
@@ -127,20 +138,16 @@ public final class SpanFilterBuilder {
         return this;
     }
 
-    public Function<SpanExporter, SpanExporter> build() {
-        // make a copy so that the references from the builder are not included in the returned
-        // function
-        Predicate<String> rejectSpanNamesPredicate = this.rejectSpanNamesPredicate;
-        Map<AttributeKey<?>, Predicate<?>> rejectSpanAttributesPredicates =
-                new HashMap<>(this.rejectSpanAttributesPredicates);
-        Map<AttributeKey<?>, Function<?, ?>> spanAttributeReplacements =
-                new HashMap<>(this.spanAttributeReplacements);
-
-        return exporter ->
-                new SpanDataModifier(
-                        exporter,
-                        rejectSpanNamesPredicate,
-                        rejectSpanAttributesPredicates,
-                        spanAttributeReplacements);
+    public SpanExporter build() {
+        SpanExporter modifier = delegate;
+        if (!spanAttributeReplacements.isEmpty()) {
+            modifier =
+                    new AttributeModifyingSpanExporter(
+                            delegate, new HashMap<>(spanAttributeReplacements));
+        }
+        return FilteringSpanExporter.builder(modifier)
+                .rejectSpansWithAttributesMatching(new HashMap<>(rejectSpanAttributesPredicates))
+                .rejectSpansNamed(rejectSpanNamesPredicate)
+                .build();
     }
 }

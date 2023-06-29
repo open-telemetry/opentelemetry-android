@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.rum.internal;
+package io.opentelemetry.rum.internal.export;
 
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.rum.internal.export.TestSpanHelper.span;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -28,11 +29,8 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,11 +56,10 @@ class SpanDataModifierTest {
     void shouldRejectSpansByName() {
         // given
         SpanExporter underTest =
-                new SpanFilterBuilder()
+                SpanDataModifier.builder(delegate)
                         .rejectSpansByName(spanName -> spanName.equals("span2"))
                         .rejectSpansByName(spanName -> spanName.equals("span4"))
-                        .build()
-                        .apply(delegate);
+                        .build();
 
         SpanData span1 = span("span1");
         SpanData span2 = span("span2");
@@ -88,12 +85,11 @@ class SpanDataModifierTest {
     void shouldRejectSpansByAttributeValue() {
         // given
         SpanExporter underTest =
-                new SpanFilterBuilder()
+                SpanDataModifier.builder(delegate)
                         .rejectSpansByAttributeValue(ATTRIBUTE, value -> value.equals("test"))
                         .rejectSpansByAttributeValue(ATTRIBUTE, value -> value.equals("rejected!"))
                         .rejectSpansByAttributeValue(LONG_ATTRIBUTE, value -> value > 100)
-                        .build()
-                        .apply(delegate);
+                        .build();
 
         SpanData rejected = span("span", Attributes.of(ATTRIBUTE, "test"));
         SpanData differentKey =
@@ -135,12 +131,11 @@ class SpanDataModifierTest {
     void shouldRemoveSpanAttributes() {
         // given
         SpanExporter underTest =
-                new SpanFilterBuilder()
+                SpanDataModifier.builder(delegate)
                         .removeSpanAttribute(ATTRIBUTE, value -> value.equals("test"))
                         // make sure that attribute types are taken into account
                         .removeSpanAttribute(stringKey("long_attribute"))
-                        .build()
-                        .apply(delegate);
+                        .build();
 
         SpanData span1 = span("first", Attributes.of(ATTRIBUTE, "test", LONG_ATTRIBUTE, 42L));
         SpanData span2 =
@@ -169,14 +164,13 @@ class SpanDataModifierTest {
     void shouldReplaceSpanAttributes() {
         // given
         SpanExporter underTest =
-                new SpanFilterBuilder()
+                SpanDataModifier.builder(delegate)
                         .replaceSpanAttribute(ATTRIBUTE, value -> value + "!!!")
                         .replaceSpanAttribute(ATTRIBUTE, value -> value + "1")
                         .replaceSpanAttribute(LONG_ATTRIBUTE, value -> value + 1)
                         // make sure that attribute types are taken into account
                         .replaceSpanAttribute(stringKey("long_attribute"), value -> "abc")
-                        .build()
-                        .apply(delegate);
+                        .build();
 
         SpanData span1 = span("first", Attributes.of(ATTRIBUTE, "test", LONG_ATTRIBUTE, 42L));
         SpanData span2 = span("second", Attributes.of(OTHER_ATTRIBUTE, "test"));
@@ -204,10 +198,9 @@ class SpanDataModifierTest {
     void shouldReplaceSpanAttributes_removeAttributeByReturningNull() {
         // given
         SpanExporter underTest =
-                new SpanFilterBuilder()
+                SpanDataModifier.builder(delegate)
                         .replaceSpanAttribute(ATTRIBUTE, value -> null)
-                        .build()
-                        .apply(delegate);
+                        .build();
 
         SpanData span = span("first", Attributes.of(ATTRIBUTE, "test", LONG_ATTRIBUTE, 42L));
 
@@ -229,8 +222,8 @@ class SpanDataModifierTest {
     @Test
     void builderChangesShouldNotApplyToAlreadyDecoratedExporter() {
         // given
-        SpanFilterBuilder builder = new SpanFilterBuilder();
-        SpanExporter underTest = builder.build().apply(delegate);
+        SpanDataModifier builder = SpanDataModifier.builder(delegate);
+        SpanExporter underTest = builder.build();
 
         builder.rejectSpansByName(spanName -> spanName.equals("span"))
                 .rejectSpansByAttributeValue(ATTRIBUTE, value -> true)
@@ -258,28 +251,12 @@ class SpanDataModifierTest {
 
     @Test
     void shouldDelegateCalls() {
-        SpanExporter underTest = new SpanFilterBuilder().build().apply(delegate);
+        SpanExporter underTest = SpanDataModifier.builder(delegate).build();
 
         underTest.flush();
         verify(delegate).flush();
 
         underTest.shutdown();
         verify(delegate).shutdown();
-    }
-
-    private static SpanData span(String name) {
-        return span(name, Attributes.empty());
-    }
-
-    private static SpanData span(String name, Attributes attributes) {
-        return TestSpanData.builder()
-                .setName(name)
-                .setKind(SpanKind.INTERNAL)
-                .setStatus(StatusData.unset())
-                .setHasEnded(true)
-                .setStartEpochNanos(0)
-                .setEndEpochNanos(123)
-                .setAttributes(attributes)
-                .build();
     }
 }

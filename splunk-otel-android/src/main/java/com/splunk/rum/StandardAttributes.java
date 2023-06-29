@@ -20,7 +20,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.rum.internal.SpanFilterBuilder;
+import io.opentelemetry.rum.internal.export.SpanDataModifier;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 /**
@@ -45,7 +45,7 @@ public final class StandardAttributes {
 
     /**
      * Full HTTP client request URL in the form {@code scheme://host[:port]/path?query[#fragment]}.
-     * Useful for span data filtering with the {@link SpanFilterBuilder}.
+     * Useful for span data filtering with the {@link SpanDataModifier}.
      *
      * @see SemanticAttributes#HTTP_URL
      */

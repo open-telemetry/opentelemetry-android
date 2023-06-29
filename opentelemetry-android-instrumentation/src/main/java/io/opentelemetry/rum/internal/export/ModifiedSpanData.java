@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.rum.internal;
+package io.opentelemetry.rum.internal.export;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.trace.data.DelegatingSpanData;
