@@ -31,7 +31,6 @@ import static org.mockito.Mockito.when;
 import android.app.Application;
 import android.content.Context;
 import android.os.Looper;
-import com.google.common.base.Strings;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
@@ -47,6 +46,7 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -145,7 +145,7 @@ class RumInitializerTest {
                 "testEvent",
                 Attributes.of(
                         longAttributeKey,
-                        Strings.repeat("a", RumInitializer.MAX_ATTRIBUTE_LENGTH + 1)));
+                        makeString('a', RumInitializer.MAX_ATTRIBUTE_LENGTH + 1)));
 
         splunkRum.flushSpans();
         List<SpanData> spans = testExporter.getFinishedSpanItems();
@@ -154,7 +154,7 @@ class RumInitializerTest {
         SpanData eventSpan = spans.get(0);
         assertEquals("testEvent", eventSpan.getName());
         String truncatedValue = eventSpan.getAttributes().get(longAttributeKey);
-        assertEquals(Strings.repeat("a", RumInitializer.MAX_ATTRIBUTE_LENGTH), truncatedValue);
+        assertEquals(makeString('a', RumInitializer.MAX_ATTRIBUTE_LENGTH), truncatedValue);
     }
 
     /** Verify that we have buffering in place in our exporter implementation. */
@@ -282,5 +282,11 @@ class RumInitializerTest {
                                                                         SemanticAttributes
                                                                                 .EXCEPTION_STACKTRACE))
                                         .hasEvents(emptyList()));
+    }
+
+    private String makeString(char c, int count) {
+        char[] buf = new char[count];
+        Arrays.fill(buf, c);
+        return new String(buf);
     }
 }
