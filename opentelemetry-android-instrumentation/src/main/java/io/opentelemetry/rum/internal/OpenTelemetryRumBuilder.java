@@ -17,7 +17,6 @@
 package io.opentelemetry.rum.internal;
 
 import android.app.Application;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.rum.internal.instrumentation.InstrumentedApplication;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -54,8 +53,8 @@ public final class OpenTelemetryRumBuilder {
     private Resource resource;
 
     OpenTelemetryRumBuilder(Application application) {
-        SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler();
         this.application = application;
+        SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler();
         this.sessionId = new SessionId(timeoutHandler);
         this.resource = AndroidResource.createDefault(application);
     }
@@ -168,31 +167,17 @@ public final class OpenTelemetryRumBuilder {
      * @return A new {@link OpenTelemetryRum} instance.
      */
     public OpenTelemetryRum build() {
-        // the app state listeners need to be run in the first ActivityLifecycleCallbacks since they
-        // might turn off/on additional telemetry depending on whether the app is active or not
-        ApplicationStateWatcher applicationStateWatcher = new ApplicationStateWatcher();
-        application.registerActivityLifecycleCallbacks(applicationStateWatcher);
-
-        applicationStateWatcher.registerListener(sessionId.getTimeoutHandler());
-
-        OpenTelemetrySdk openTelemetrySdk =
+        OpenTelemetrySdk sdk =
                 OpenTelemetrySdk.builder()
                         .setTracerProvider(buildTracerProvider(sessionId, application))
                         .setMeterProvider(buildMeterProvider(application))
                         .setLoggerProvider(buildLoggerProvider(application))
                         .build();
 
-        Tracer tracer = openTelemetrySdk.getTracer(OpenTelemetryRum.class.getSimpleName());
-        sessionId.setSessionIdChangeListener(new SessionIdChangeTracer(tracer));
-
-        InstrumentedApplication instrumentedApplication =
-                new InstrumentedApplicationImpl(
-                        application, openTelemetrySdk, applicationStateWatcher);
-        for (Consumer<InstrumentedApplication> installer : instrumentationInstallers) {
-            installer.accept(instrumentedApplication);
-        }
-
-        return new OpenTelemetryRumImpl(openTelemetrySdk, sessionId);
+        SdkPreconfiguredRumBuilder delegate =
+                new SdkPreconfiguredRumBuilder(application, sdk, sessionId);
+        instrumentationInstallers.forEach(delegate::addInstrumentation);
+        return delegate.build();
     }
 
     private SdkTracerProvider buildTracerProvider(SessionId sessionId, Application application) {
