@@ -47,7 +47,7 @@ val otelInstrumentationAlphaVersion = "1.28.0-alpha-SNAPSHOT"
 
 dependencies {
     implementation(project(":opentelemetry-android-instrumentation"))
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.22"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.0"))
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.core:core:1.10.1")
     implementation("androidx.navigation:navigation-fragment:2.6.0")
