@@ -44,7 +44,7 @@ android {
 
 val otelVersion = "1.28.0"
 val otelAlphaVersion = "$otelVersion-alpha"
-val otelInstrumentationVersion = "1.27.0"
+val otelInstrumentationVersion = "1.28.0"
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
