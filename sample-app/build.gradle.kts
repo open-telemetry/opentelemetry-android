@@ -57,6 +57,7 @@ val otelInstrumentationVersion = "1.28.0"
 val otelInstrumentationAlphaVersion = "$otelInstrumentationVersion-alpha"
 
 dependencies {
+    implementation(project(":opentelemetry-android-instrumentation"))
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 

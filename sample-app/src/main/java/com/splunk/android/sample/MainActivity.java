@@ -39,9 +39,9 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import com.splunk.android.sample.databinding.ActivityMainBinding;
-import com.splunk.rum.RumScreenName;
 import com.splunk.rum.SplunkRum;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.rum.internal.instrumentation.RumScreenName;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
