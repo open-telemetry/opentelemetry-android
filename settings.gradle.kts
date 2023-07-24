@@ -1,6 +1,3 @@
-rootProject.name = "Splunk Android RUM"
+rootProject.name = "opentelemetry-android"
 
-include(":opentelemetry-android-instrumentation")
-include(":splunk-otel-android")
-include(":splunk-otel-android-volley")
-include(":sample-app")
+include(":instrumentation")

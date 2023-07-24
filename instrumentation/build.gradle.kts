@@ -8,7 +8,7 @@ plugins {
 version = project.version.toString().replaceFirst("(-SNAPSHOT)?$".toRegex(), "-alpha$1")
 
 android {
-    namespace = "opentelemetry.rum.instrumentation"
+    namespace = "io.opentelemetry.android"
 
     compileSdk = 33
     buildToolsVersion = "30.0.3"
