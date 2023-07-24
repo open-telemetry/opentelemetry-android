@@ -11,7 +11,7 @@ buildscript {
 }
 
 plugins {
-    id("splunk.spotless-conventions")
+    id("otel.spotless-conventions")
 }
 
 allprojects {
@@ -28,5 +28,5 @@ allprojects {
 }
 
 subprojects {
-    apply(plugin = "splunk.spotless-conventions")
+    apply(plugin = "otel.spotless-conventions")
 }

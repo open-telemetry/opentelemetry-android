@@ -1,7 +1,7 @@
 plugins {
     id("com.android.library")
-    id("splunk.android-library-conventions")
-    id("splunk.errorprone-conventions")
+    id("otel.android-library-conventions")
+    id("otel.errorprone-conventions")
 }
 
 // This submodule is alpha and is not yet intended to be used by itself
