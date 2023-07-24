@@ -16,9 +16,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.android.instrumentation.ScreenNameExtractor;
 import io.opentelemetry.android.instrumentation.startup.AppStartupTimer;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;

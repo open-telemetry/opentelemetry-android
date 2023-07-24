@@ -18,8 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class VisibleScreenLifecycleBindingTest {
 
     @Mock Activity activity;
-    @Mock
-    VisibleScreenTracker tracker;
+    @Mock VisibleScreenTracker tracker;
 
     @Test
     void postResumed() {

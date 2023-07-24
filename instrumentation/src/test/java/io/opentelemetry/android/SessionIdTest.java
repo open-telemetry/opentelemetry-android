@@ -17,9 +17,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.android.SessionId;
-import io.opentelemetry.android.SessionIdChangeListener;
-import io.opentelemetry.android.SessionIdTimeoutHandler;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -32,8 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class SessionIdTest {
 
-    @Mock
-    SessionIdTimeoutHandler timeoutHandler;
+    @Mock SessionIdTimeoutHandler timeoutHandler;
 
     @Test
     void valueValid() {

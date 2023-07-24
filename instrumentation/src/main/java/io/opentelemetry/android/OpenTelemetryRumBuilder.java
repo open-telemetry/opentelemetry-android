@@ -6,7 +6,6 @@
 package io.opentelemetry.android;
 
 import android.app.Application;
-
 import io.opentelemetry.android.instrumentation.InstrumentedApplication;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;

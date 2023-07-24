@@ -5,9 +5,9 @@
 
 package io.opentelemetry.android.export;
 
+import static io.opentelemetry.android.export.TestSpanHelper.span;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.android.export.TestSpanHelper.span;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -82,9 +82,12 @@ class SpanDataModifierTest {
 
         SpanData rejected = TestSpanHelper.span("span", Attributes.of(ATTRIBUTE, "test"));
         SpanData differentKey =
-                TestSpanHelper.span("span", Attributes.of(OTHER_ATTRIBUTE, "test", LONG_ATTRIBUTE, 42L));
-        SpanData anotherRejected = TestSpanHelper.span("span", Attributes.of(ATTRIBUTE, "rejected!"));
-        SpanData differentValue = TestSpanHelper.span("span", Attributes.of(ATTRIBUTE, "not really test"));
+                TestSpanHelper.span(
+                        "span", Attributes.of(OTHER_ATTRIBUTE, "test", LONG_ATTRIBUTE, 42L));
+        SpanData anotherRejected =
+                TestSpanHelper.span("span", Attributes.of(ATTRIBUTE, "rejected!"));
+        SpanData differentValue =
+                TestSpanHelper.span("span", Attributes.of(ATTRIBUTE, "not really test"));
         SpanData yetAnotherRejected =
                 TestSpanHelper.span("span", Attributes.of(ATTRIBUTE, "pass", LONG_ATTRIBUTE, 123L));
 
@@ -126,9 +129,11 @@ class SpanDataModifierTest {
                         .removeSpanAttribute(stringKey("long_attribute"))
                         .build();
 
-        SpanData span1 = TestSpanHelper.span("first", Attributes.of(ATTRIBUTE, "test", LONG_ATTRIBUTE, 42L));
+        SpanData span1 =
+                TestSpanHelper.span("first", Attributes.of(ATTRIBUTE, "test", LONG_ATTRIBUTE, 42L));
         SpanData span2 =
-                TestSpanHelper.span("second", Attributes.of(ATTRIBUTE, "not test", OTHER_ATTRIBUTE, "test"));
+                TestSpanHelper.span(
+                        "second", Attributes.of(ATTRIBUTE, "not test", OTHER_ATTRIBUTE, "test"));
 
         CompletableResultCode expectedResult = new CompletableResultCode();
         when(delegate.export(spansCaptor.capture())).thenReturn(expectedResult);
@@ -161,7 +166,8 @@ class SpanDataModifierTest {
                         .replaceSpanAttribute(stringKey("long_attribute"), value -> "abc")
                         .build();
 
-        SpanData span1 = TestSpanHelper.span("first", Attributes.of(ATTRIBUTE, "test", LONG_ATTRIBUTE, 42L));
+        SpanData span1 =
+                TestSpanHelper.span("first", Attributes.of(ATTRIBUTE, "test", LONG_ATTRIBUTE, 42L));
         SpanData span2 = TestSpanHelper.span("second", Attributes.of(OTHER_ATTRIBUTE, "test"));
 
         CompletableResultCode expectedResult = new CompletableResultCode();
@@ -191,7 +197,8 @@ class SpanDataModifierTest {
                         .replaceSpanAttribute(ATTRIBUTE, value -> null)
                         .build();
 
-        SpanData span = TestSpanHelper.span("first", Attributes.of(ATTRIBUTE, "test", LONG_ATTRIBUTE, 42L));
+        SpanData span =
+                TestSpanHelper.span("first", Attributes.of(ATTRIBUTE, "test", LONG_ATTRIBUTE, 42L));
 
         CompletableResultCode expectedResult = new CompletableResultCode();
         when(delegate.export(spansCaptor.capture())).thenReturn(expectedResult);

@@ -13,7 +13,6 @@ import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
 import android.app.Application;
-
 import io.opentelemetry.android.instrumentation.ApplicationStateListener;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;

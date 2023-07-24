@@ -8,7 +8,6 @@ package io.opentelemetry.android;
 import static org.mockito.Mockito.inOrder;
 
 import android.app.Activity;
-
 import io.opentelemetry.android.instrumentation.ApplicationStateListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

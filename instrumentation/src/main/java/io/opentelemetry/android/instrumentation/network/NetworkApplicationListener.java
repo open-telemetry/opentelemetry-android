@@ -7,10 +7,10 @@ package io.opentelemetry.android.instrumentation.network;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import io.opentelemetry.android.instrumentation.ApplicationStateListener;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
-import io.opentelemetry.android.instrumentation.ApplicationStateListener;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 class NetworkApplicationListener implements ApplicationStateListener {

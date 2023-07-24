@@ -8,7 +8,6 @@ package io.opentelemetry.android;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.opentelemetry.android.SessionIdTimeoutHandler;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;

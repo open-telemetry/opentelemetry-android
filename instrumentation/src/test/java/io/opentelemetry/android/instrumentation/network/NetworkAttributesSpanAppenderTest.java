@@ -23,12 +23,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class NetworkAttributesSpanAppenderTest {
 
-    @Mock
-    CurrentNetworkProvider currentNetworkProvider;
+    @Mock CurrentNetworkProvider currentNetworkProvider;
     @Mock ReadWriteSpan span;
 
-    @InjectMocks
-    NetworkAttributesSpanAppender underTest;
+    @InjectMocks NetworkAttributesSpanAppender underTest;
 
     @Test
     void shouldAppendNetworkAttributes() {

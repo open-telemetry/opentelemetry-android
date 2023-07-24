@@ -18,7 +18,6 @@ import static org.mockito.Mockito.when;
 import android.app.Application;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
-
 import io.opentelemetry.rum.internal.AndroidResource;
 import io.opentelemetry.sdk.resources.Resource;
 import opentelemetry.rum.instrumentation.R;

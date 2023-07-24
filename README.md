@@ -1,6 +1,6 @@
 # OpenTelemetry Android
 
-:warning: This is a brand new repository that is in the process of being spun up. 
+:warning: This is a brand new repository that is in the process of being spun up.
 
 ## Status: Experimental
 

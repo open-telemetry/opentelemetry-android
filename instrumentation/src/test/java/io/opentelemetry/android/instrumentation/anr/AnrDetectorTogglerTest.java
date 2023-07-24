@@ -25,8 +25,7 @@ class AnrDetectorTogglerTest {
     @Mock ScheduledExecutorService scheduler;
     @Mock ScheduledFuture<?> future;
 
-    @InjectMocks
-    AnrDetectorToggler underTest;
+    @InjectMocks AnrDetectorToggler underTest;
 
     @Test
     void testOnApplicationForegrounded() {

@@ -8,8 +8,6 @@ package io.opentelemetry.android;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.android.SessionId;
-import io.opentelemetry.android.SessionIdRatioBasedSampler;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -32,8 +30,7 @@ class SessionIdRatioBasedSamplerTest {
     private static final String LOW_ID = "00000000000000000000000000000000";
     private static final IdGenerator idsGenerator = IdGenerator.random();
 
-    @Mock
-    SessionId sessionId;
+    @Mock SessionId sessionId;
     private final String traceId = idsGenerator.generateTraceId();
     private final Context parentContext = Context.root().with(Span.getInvalid());
     private final List<LinkData> parentLinks =

@@ -5,10 +5,10 @@
 
 package io.opentelemetry.android.instrumentation.network;
 
+import io.opentelemetry.android.instrumentation.InstrumentedApplication;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
-import io.opentelemetry.android.instrumentation.InstrumentedApplication;
 import java.util.ArrayList;
 import java.util.List;
 

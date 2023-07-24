@@ -11,8 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.android.SessionId;
-import io.opentelemetry.android.SessionIdSpanAppender;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import org.junit.jupiter.api.Test;
@@ -23,8 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class SessionIdSpanAppenderTest {
 
-    @Mock
-    SessionId sessionId;
+    @Mock SessionId sessionId;
     @Mock ReadWriteSpan span;
 
     @Test

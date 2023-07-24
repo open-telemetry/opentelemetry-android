@@ -26,8 +26,7 @@ class ActivityTracerCacheTest {
 
     @Mock Activity activity;
 
-    @Mock
-    ActivityTracer activityTracer;
+    @Mock ActivityTracer activityTracer;
     @Mock Function<Activity, ActivityTracer> tracerCreator;
     AtomicReference<String> initialActivity;
 

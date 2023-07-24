@@ -41,8 +41,7 @@ public class NetworkChangeMonitorTest {
     @Captor ArgumentCaptor<ApplicationStateListener> applicationStateListenerCaptor;
     @Captor ArgumentCaptor<NetworkChangeListener> networkChangeListenerCaptor;
 
-    @Mock
-    CurrentNetworkProvider currentNetworkProvider;
+    @Mock CurrentNetworkProvider currentNetworkProvider;
     @Mock InstrumentedApplication instrumentedApplication;
 
     AutoCloseable mocks;

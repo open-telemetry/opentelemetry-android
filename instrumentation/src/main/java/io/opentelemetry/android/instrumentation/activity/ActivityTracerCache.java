@@ -7,9 +7,9 @@ package io.opentelemetry.android.instrumentation.activity;
 
 import android.app.Activity;
 import androidx.annotation.VisibleForTesting;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.android.instrumentation.ScreenNameExtractor;
 import io.opentelemetry.android.instrumentation.startup.AppStartupTimer;
+import io.opentelemetry.api.trace.Tracer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;

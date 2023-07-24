@@ -8,8 +8,6 @@ package io.opentelemetry.android;
 import static io.opentelemetry.android.RumConstants.PREVIOUS_SESSION_ID_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.opentelemetry.android.SessionIdChangeListener;
-import io.opentelemetry.android.SessionIdChangeTracer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
