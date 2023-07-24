@@ -47,11 +47,6 @@ project.afterEvaluate {
     val component = project.components.findByName("release")
     publishing {
         publications {
-            named<MavenPublication>("maven") {
-                from(component)
-                artifact(tasks.named<Jar>("sourcesJar"))
-                artifact(javadocJar)
-            }
         }
     }
 }
