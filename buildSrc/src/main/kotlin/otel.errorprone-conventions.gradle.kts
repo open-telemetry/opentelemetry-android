@@ -1,6 +1,7 @@
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
 import net.ltgt.gradle.nullaway.nullaway
+import java.util.Locale
 
 plugins {
     id("net.ltgt.errorprone")
@@ -20,7 +21,7 @@ nullaway {
 tasks {
     withType<JavaCompile>().configureEach {
         options.errorprone {
-            if (name.toLowerCase().contains("test")) {
+            if (name.lowercase(Locale.getDefault()).contains("test")) {
                 // just disable all error prone checks for test
                 isEnabled.set(false);
             }
