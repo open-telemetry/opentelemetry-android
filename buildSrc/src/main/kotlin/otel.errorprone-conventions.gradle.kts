@@ -14,7 +14,7 @@ dependencies {
 }
 
 nullaway {
-    annotatedPackages.add("com.splunk.rum")
+    annotatedPackages.add("io.opentelemetry.android")
 }
 
 tasks {

@@ -30,7 +30,7 @@ publishing {
     }
     publications {
         register<MavenPublication>("maven") {
-            groupId = "com.splunk"
+            groupId = "io.opentelemetry.android"
             artifactId = base.archivesName.get()
 
             afterEvaluate {
@@ -39,7 +39,7 @@ publishing {
             }
 
             pom {
-                url.set("https://github.com/signalfx/splunk-otel-android")
+                url.set("https://github.com/open-telemetry/opentelemetry-android")
                 licenses {
                     license {
                         name.set("The Apache License, Version 2.0")
@@ -48,17 +48,17 @@ publishing {
                 }
                 developers {
                     developer {
-                        id.set("splunk")
-                        name.set("Splunk Instrumentation Authors")
-                        email.set("support+java@signalfx.com")
-                        organization.set("Splunk")
-                        organizationUrl.set("https://www.splunk.com")
+                        id.set("opentelemetry")
+                        name.set("OpenTelemetry Authors")
+                        email.set("support+java@opentelemetry.io")
+                        organization.set("OpenTelemetry")
+                        organizationUrl.set("https://opentelemetry.io")
                     }
                 }
                 scm {
-                    connection.set("https://github.com/signalfx/splunk-otel-android.git")
-                    developerConnection.set("https://github.com/signalfx/splunk-otel-android.git")
-                    url.set("https://github.com/signalfx/splunk-otel-android")
+                    connection.set("https://github.com/open-telemetry/opentelemetry-android.git")
+                    developerConnection.set("https://github.com/open-telemetry/opentelemetry-android.git")
+                    url.set("https://github.com/open-telemetry/opentelemetry-android")
                 }
             }
         }
