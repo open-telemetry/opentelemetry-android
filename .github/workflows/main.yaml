@@ -1,0 +1,26 @@
+name: "Continuous Build"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ci
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3.5.3
+
+      - name: Set up JDK 11 for running Gradle
+        uses: actions/setup-java@v3.12.0
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Build and test
+        run: touch ./local.properties; ./gradlew build javadoc --no-daemon
