@@ -24,9 +24,9 @@ git clone https://github.com/open-telemetry/opentelemetry-android.git
 cd opentelemetry-android
 ```
 
-2. To build the android artifact, run the gradle wrapper with `assemble`:
+2. To build the android artifact, run the gradle wrapper with `createReleaseBuild`:
 ```
-./gradlew assemble
+./gradlew createReleaseBuild
 ```
 
 The output artifacts will be in `instrumentation/build/outputs/`.

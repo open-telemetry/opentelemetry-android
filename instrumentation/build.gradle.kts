@@ -28,18 +28,16 @@ android {
         }
     }
 
-    libraryVariants.all {
-        outputs
-            .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
-            .all { variant ->
-                variant.outputs.all {
-                    if (variant.outputFileName.endsWith(".aar")) {
-                        variant.outputFileName = "opentelemetry-android-${variant.name}.aar"
-                    }
-                    false
+    androidComponents {
+        onVariants {
+            if (it.buildType == "release") { // The one we choose to release
+                project.tasks.register("createReleaseBuild", Copy::class) {
+                    from(it.artifacts.get(com.android.build.api.artifact.SingleArtifact.AAR))
+                    into(project.layout.buildDirectory.dir("outputs/aar"))
+                    rename(".+", "opentelemetry-android.aar")
                 }
-                false
             }
+        }
     }
 
     compileOptions {
