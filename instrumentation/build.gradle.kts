@@ -1,5 +1,4 @@
 plugins {
-    id("com.android.library")
     id("otel.android-library-conventions")
     id("otel.errorprone-conventions")
 }
@@ -11,7 +10,7 @@ android {
     namespace = "io.opentelemetry.android"
 
     compileSdk = 33
-    buildToolsVersion = "30.0.3"
+    buildToolsVersion = "33.0.1"
 
     defaultConfig {
         minSdk = 21
@@ -26,6 +25,24 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+
+    androidComponents {
+        onVariants {
+            if (it.buildType == "release") { // The one we choose to release
+                project.tasks.register("createReleaseBuild", Copy::class) {
+                    from(it.artifacts.get(com.android.build.api.artifact.SingleArtifact.AAR))
+                    into(project.layout.buildDirectory.dir("outputs/aar"))
+                    rename(".+", "opentelemetry-android.aar")
+                }
+            }
+        }
+    }
+
+    project.afterEvaluate {
+        tasks.named("assembleRelease") {
+            finalizedBy("createReleaseBuild")
         }
     }
 
