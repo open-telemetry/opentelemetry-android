@@ -40,6 +40,12 @@ android {
         }
     }
 
+    project.afterEvaluate {
+        tasks.named("assembleRelease") {
+            finalizedBy("createReleaseBuild")
+        }
+    }
+
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
 
