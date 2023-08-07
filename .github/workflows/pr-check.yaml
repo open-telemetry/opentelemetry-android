@@ -1,4 +1,4 @@
-name: PR build Play images for smoke tests
+name: PR build
 
 on: pull_request
 
