@@ -1,0 +1,17 @@
+name: PR build
+
+on: pull_request
+
+jobs:
+  pr-checks:
+    name: "pr-checks"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK for running Gradle
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17.0.6
+      - name: run gradle
+        run: ./gradlew check
