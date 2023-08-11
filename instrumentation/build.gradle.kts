@@ -1,5 +1,5 @@
 plugins {
-    id("otel.android-library-conventions")
+    id("com.android.library")
     id("otel.errorprone-conventions")
 }
 
@@ -16,6 +16,13 @@ android {
         minSdk = 21
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+    }
+
+    lint {
+        warningsAsErrors = true
+        // A newer version of androidx.appcompat:appcompat than 1.3.1 is available: 1.4.1 [GradleDependency]
+        // we rely on dependabot for dependency updates
+        disable.add("GradleDependency")
     }
 
     buildTypes {
