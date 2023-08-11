@@ -1,0 +1,52 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+      - release/*
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: "build"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK for running Gradle
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17.0.6
+        # TODO: Build and publish a snapshot instead!
+      - name: run gradle
+        run: ./gradlew check
+
+  issue:
+    name: Open issue on failure
+    needs: [ build ]
+    runs-on: ubuntu-20.04
+    permissions:
+      issues: write
+    if: always()
+    steps:
+      # run this action to get workflow conclusion
+      # You can get conclusion by env (env.WORKFLOW_CONCLUSION)
+      - uses: technote-space/workflow-conclusion-action@v3.0.3
+      - uses: actions/checkout@v3
+      - name: Create issue
+        if: env.WORKFLOW_CONCLUSION == 'failure' # notify only if failure
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat > body.txt << EOF
+          [Android build #$GITHUB_RUN_NUMBER](https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID) failed.
+          Please take a look and fix it ASAP.
+          EOF
+
+          gh issue create \
+            --title "Android build #$GITHUB_RUN_NUMBER failed" \
+            --label bug \
+            --label automated \
+            --assignee "@open-telemetry/android-maintainers" \
+            --body-file body.txt
