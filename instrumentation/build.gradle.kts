@@ -1,6 +1,7 @@
 plugins {
     id("com.android.library")
     id("otel.errorprone-conventions")
+    id("otel.android.publishing")
 }
 
 // This submodule is alpha and is not yet intended to be used by itself
