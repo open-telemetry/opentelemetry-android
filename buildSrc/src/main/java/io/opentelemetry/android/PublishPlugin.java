@@ -52,7 +52,7 @@ public class PublishPlugin implements Plugin<Project> {
 
     private void addMavenPublication(String componentName) {
         PublishingExtension mavenPublishExtension = project.getExtensions().getByType(PublishingExtension.class);
-        mavenPublishExtension.getPublications().create(componentName, MavenPublication.class, publication -> {
+        mavenPublishExtension.getPublications().create("maven", MavenPublication.class, publication -> {
             publication.from(project.getComponents().findByName(componentName));
             configurePom(publication);
             if (isARelease()) {
