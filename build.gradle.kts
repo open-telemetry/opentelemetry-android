@@ -12,6 +12,7 @@ buildscript {
 
 plugins {
     id("otel.spotless-conventions")
+    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
 }
 
 allprojects {
@@ -29,4 +30,11 @@ allprojects {
 
 subprojects {
     apply(plugin = "otel.spotless-conventions")
+}
+
+nexusPublishing.repositories {
+    sonatype {
+        username.set(System.getenv("SONATYPE_USER"))
+        password.set(System.getenv("SONATYPE_KEY"))
+    }
 }
