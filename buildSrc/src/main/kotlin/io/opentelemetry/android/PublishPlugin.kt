@@ -65,7 +65,7 @@ class PublishPlugin : Plugin<Project> {
     private fun configurePom(publication: MavenPublication) {
         publication.pom {
             val repoUrl = "https://github.com/open-telemetry/opentelemetry-android"
-            name.set(project.group.toString() + ":" + project.name)
+            name.set("OpenTelemetry Android")
             description.set(project.description)
             url.set(repoUrl)
             licenses {
