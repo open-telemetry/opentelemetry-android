@@ -1,18 +1,10 @@
 package io.opentelemetry.android
 
 import com.android.build.api.dsl.LibraryExtension
-import com.android.build.api.dsl.LibrarySingleVariant
-import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.PluginContainer
 import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.MavenPom
-import org.gradle.api.publish.maven.MavenPomDeveloper
-import org.gradle.api.publish.maven.MavenPomDeveloperSpec
-import org.gradle.api.publish.maven.MavenPomLicense
-import org.gradle.api.publish.maven.MavenPomLicenseSpec
-import org.gradle.api.publish.maven.MavenPomScm
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.plugins.signing.SigningExtension
 
