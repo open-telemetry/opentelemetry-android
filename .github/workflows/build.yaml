@@ -22,31 +22,10 @@ jobs:
       - name: run gradle
         run: ./gradlew check
 
-  issue:
-    name: Open issue on failure
-    needs: [ build ]
-    runs-on: ubuntu-20.04
-    permissions:
-      issues: write
+  workflow-notification:
+    needs:
+      - analyze
     if: always()
-    steps:
-      # run this action to get workflow conclusion
-      # You can get conclusion by env (env.WORKFLOW_CONCLUSION)
-      - uses: technote-space/workflow-conclusion-action@v3.0.3
-      - uses: actions/checkout@v3
-      - name: Create issue
-        if: env.WORKFLOW_CONCLUSION == 'failure' # notify only if failure
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cat > body.txt << EOF
-          [Android build #$GITHUB_RUN_NUMBER](https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID) failed.
-          Please take a look and fix it ASAP.
-          EOF
-
-          gh issue create \
-            --title "Android build #$GITHUB_RUN_NUMBER failed" \
-            --label bug \
-            --label automated \
-            --assignee "@open-telemetry/android-maintainers" \
-            --body-file body.txt
+    uses: ./.github/workflows/reusable-workflow-notification.yml
+    with:
+      success: ${{ needs.build.result == 'success' }}
