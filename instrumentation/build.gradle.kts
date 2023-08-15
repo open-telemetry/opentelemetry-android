@@ -60,25 +60,22 @@ android {
 }
 
 val otelVersion = "1.28.0"
-val otelAlphaVersion = "$otelVersion-alpha"
-val otelInstrumentationVersion = "1.28.0"
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.core:core:1.10.1")
     implementation("androidx.navigation:navigation-fragment:2.6.0")
 
-    api(platform("io.opentelemetry:opentelemetry-bom:$otelVersion"))
+    api(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:$otelVersion-alpha"))
+    api("io.opentelemetry:opentelemetry-api")
     implementation("io.opentelemetry:opentelemetry-sdk")
     implementation("io.opentelemetry:opentelemetry-exporter-zipkin")
     implementation("io.zipkin.reporter2:zipkin-sender-okhttp3")
     implementation("io.opentelemetry:opentelemetry-exporter-logging")
-    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:$otelInstrumentationVersion")
-
-    implementation(platform("io.opentelemetry:opentelemetry-bom-alpha:$otelAlphaVersion"))
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
+    implementation(platform("io.opentelemetry:opentelemetry-bom-alpha"))
     implementation("io.opentelemetry:opentelemetry-semconv")
 
-    api("io.opentelemetry:opentelemetry-api")
 
     testImplementation("org.mockito:mockito-core:5.4.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.4.0")
