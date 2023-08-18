@@ -31,7 +31,7 @@ final class AndroidResource {
                 .put(RUM_SDK_VERSION, detectRumVersion(application))
                 .put(DEVICE_MODEL_NAME, Build.MODEL)
                 .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)
-                .put(DEVICE_MANUFACTURER,Build.MANUFACTURER)
+                .put(DEVICE_MANUFACTURER, Build.MANUFACTURER)
                 .put(OS_NAME, "Android")
                 .put(OS_TYPE, "linux")
                 .put(OS_VERSION, Build.VERSION.RELEASE)
