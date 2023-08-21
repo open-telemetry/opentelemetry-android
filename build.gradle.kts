@@ -23,7 +23,7 @@ allprojects {
             url = uri("https://oss.sonatype.org/content/repositories/snapshots")
         }
     }
-    if (findProperty("release") != "true") {
+    if (findProperty("final") != "true") {
         version = "$version-SNAPSHOT"
     }
 }
