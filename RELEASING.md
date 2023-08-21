@@ -3,35 +3,24 @@
 This documents describes how to publish a release to maven central, either to the release path or
 the snapshot one.
 
-## Credentials
+These are the steps to follow:
 
-The following environment variables are required for publishing:
+- Make sure that the `gradle.properties` version property is set to the value you want to release.
+- Go to
+  the [release action](https://github.com/open-telemetry/opentelemetry-android/actions/workflows/release.yml)
+  in Github and click on "Run workflow".
+- You can choose the branch where you want to create a release from, as well as whether the release
+  is "final" or a "snapshot" one.
+- Run the release workflow with your chosen parameters.
 
-* `GPG_PRIVATE_KEY` and `GPG_PASSWORD`: GPG private key and password for signing.
-* `SONATYPE_USER` and `SONATYPE_KEY`: Sonatype username and password.
+If the version released was `final`:
 
-## Publishing a final release
+- Create a PR to update the version in the `gradle.properties` file to
+  the next development version. This PR can and probably should also include updating any
+  documentation (CHANGELOG.md, README.md, etc) that mentions the previous version.
+- Once this PR is merged, create a release in Github that points at the newly created version, and
+  make sure to provide release notes that at least mirror the contents of the CHANGELOG.md
 
-In order to publish a final release, you must pass the `-Prelease=true` parameter to the gradle
-command like so:
-
-```sh
-./gradlew assemble publishToSonatype closeAndReleaseSonatypeStagingRepository -Prelease=true
-```
-
-The `-Prelease=true` parameter will ensure that the project version doesn't get the "-SNAPSHOT"
-suffix added which is what the [Nexus publish](https://github.com/gradle-nexus/publish-plugin)
-plugin takes into account when deciding which path to send the artifacts to.
-
-## Publishing a snapshot release
-
-The version of the project will get the "-SNAPSHOT" suffix added by default, which is what's needed
-to send the publication over to maven central's snapshot path. Therefore, the command to publish
-a snapshot artifact will look like so:
-
-```sh
-./gradlew assemble publishToSonatype closeAndReleaseSonatypeStagingRepository
-```
-
-Unlike when publishing a final artifact, the snapshot publishing command doesn't need
-the `-Prelease=true` parameter.
+> Please note that the artifacts are published into maven central, which tends to have a delay of
+> roughly half an hour, more or less, before making the newly published artifacts actually available
+> for fetching them.
