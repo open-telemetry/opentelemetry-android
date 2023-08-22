@@ -45,7 +45,7 @@ Note: Use of these features is not yet well documented.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Approvers ([@open-telemetry/java-instrumentation-approvers](https://github.com/orgs/open-telemetry/teams/java-instrumentation-approvers)):
+## Approvers ([@open-telemetry/android-approvers](https://github.com/orgs/open-telemetry/teams/android-approvers)):
 
 - [Jack Berg](https://github.com/jack-berg), New Relic
 - [Trask Stalnaker](https://github.com/trask), Microsoft
