@@ -26,7 +26,20 @@ channel in the [CNCF slack](https://slack.cncf.io/). Please join us there for fu
 
 # Features
 
-*
+This android library builds on top of the [OpenTelemetry Java SDK](https://github.com/open-telemetry/opentelemetry-java).
+Some of the additional features provided include:
+
+* Crash reporting
+* ANR detection
+* Network change detection
+* Full Android Activity and Fragment lifecycle monitoring
+* Access to the OpenTelemetry APIs for manual instrumentation
+* SplunkRum APIs for creating custom RUM events and reporting exceptions
+* Helpers to redact any span from export, or change span attributes before export
+* Slow / frozen render detection
+* Offline buffering of telemetry via storage
+
+Note: Use of these features is not yet well documented.
 
 # Contributing
 
