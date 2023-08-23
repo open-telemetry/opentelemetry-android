@@ -9,6 +9,7 @@ import static io.opentelemetry.android.RumConstants.RUM_SDK_VERSION;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MANUFACTURER;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_IDENTIFIER;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_NAME;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_DESCRIPTION;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_NAME;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_TYPE;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_VERSION;
@@ -35,6 +36,7 @@ final class AndroidResource {
                 .put(OS_NAME, "Android")
                 .put(OS_TYPE, "linux")
                 .put(OS_VERSION, Build.VERSION.RELEASE)
+                .put(OS_DESCRIPTION, getOSDescription())
                 .build();
     }
 
@@ -67,5 +69,15 @@ final class AndroidResource {
         } catch (Exception e) {
             return defaultValue;
         }
+    }
+
+    private static String getOSDescription() {
+        StringBuilder OSDescriptionBuilder = new StringBuilder();
+        return OSDescriptionBuilder.append("Android Version ")
+                .append(Build.VERSION.RELEASE)
+                .append(" (Build ")
+                .append(Build.ID)
+                .append(")")
+                .toString();
     }
 }

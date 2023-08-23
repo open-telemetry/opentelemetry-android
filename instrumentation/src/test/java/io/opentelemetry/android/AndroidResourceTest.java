@@ -6,8 +6,10 @@
 package io.opentelemetry.android;
 
 import static io.opentelemetry.android.RumConstants.RUM_SDK_VERSION;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MANUFACTURER;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_IDENTIFIER;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_NAME;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_DESCRIPTION;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_NAME;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_TYPE;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_VERSION;
@@ -30,6 +32,14 @@ class AndroidResourceTest {
 
     String appName = "robotron";
     String rumSdkVersion = "1.2.3";
+    String osDescription =
+            new StringBuilder()
+                    .append("Android Version ")
+                    .append(Build.VERSION.RELEASE)
+                    .append(" (Build ")
+                    .append(Build.ID)
+                    .append(")")
+                    .toString();
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     Application app;
@@ -38,6 +48,7 @@ class AndroidResourceTest {
     void testFullResource() {
         ApplicationInfo appInfo = new ApplicationInfo();
         appInfo.labelRes = 12345;
+
         when(app.getApplicationContext().getApplicationInfo()).thenReturn(appInfo);
         when(app.getApplicationContext().getString(appInfo.labelRes)).thenReturn(appName);
         when(app.getApplicationContext().getResources().getString(R.string.rum_version))
@@ -51,9 +62,11 @@ class AndroidResourceTest {
                                         .put(RUM_SDK_VERSION, rumSdkVersion)
                                         .put(DEVICE_MODEL_NAME, Build.MODEL)
                                         .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)
+                                        .put(DEVICE_MANUFACTURER, Build.MANUFACTURER)
                                         .put(OS_NAME, "Android")
                                         .put(OS_TYPE, "linux")
                                         .put(OS_VERSION, Build.VERSION.RELEASE)
+                                        .put(OS_DESCRIPTION, osDescription)
                                         .build());
 
         Resource result = AndroidResource.createDefault(app);
@@ -74,9 +87,11 @@ class AndroidResourceTest {
                                         .put(RUM_SDK_VERSION, "unknown")
                                         .put(DEVICE_MODEL_NAME, Build.MODEL)
                                         .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)
+                                        .put(DEVICE_MANUFACTURER, Build.MANUFACTURER)
                                         .put(OS_NAME, "Android")
                                         .put(OS_TYPE, "linux")
                                         .put(OS_VERSION, Build.VERSION.RELEASE)
+                                        .put(OS_DESCRIPTION, osDescription)
                                         .build());
 
         Resource result = AndroidResource.createDefault(app);
