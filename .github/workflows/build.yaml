@@ -24,8 +24,8 @@ jobs:
 
   workflow-notification:
     needs:
-      - analyze
-    if: always()
+      - build
+    if: failure() && github.run_attempt == 1
     uses: ./.github/workflows/reusable-workflow-notification.yml
     with:
       success: ${{ needs.build.result == 'success' }}
