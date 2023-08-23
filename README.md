@@ -50,7 +50,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 - [Jack Berg](https://github.com/jack-berg), New Relic
 - [Trask Stalnaker](https://github.com/trask), Microsoft
 -
-## Maintainers ([@open-telemetry/java-instrumentation-maintainers](https://github.com/orgs/open-telemetry/teams/java-instrumentation-maintainers)):
+## Maintainers ([@open-telemetry/android-maintainers](https://github.com/orgs/open-telemetry/teams/android-maintainers)):
 
 - [Jason Plumb](https://github.com/breedx-splk), Splunk
 - [Cesar Munoz](https://github.com/likethesalad), Elastic
