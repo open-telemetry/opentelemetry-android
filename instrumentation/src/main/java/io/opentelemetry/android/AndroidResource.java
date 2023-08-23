@@ -6,6 +6,7 @@
 package io.opentelemetry.android;
 
 import static io.opentelemetry.android.RumConstants.RUM_SDK_VERSION;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MANUFACTURER;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_IDENTIFIER;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.DEVICE_MODEL_NAME;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_NAME;
@@ -30,6 +31,7 @@ final class AndroidResource {
                 .put(RUM_SDK_VERSION, detectRumVersion(application))
                 .put(DEVICE_MODEL_NAME, Build.MODEL)
                 .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)
+                .put(DEVICE_MANUFACTURER, Build.MANUFACTURER)
                 .put(OS_NAME, "Android")
                 .put(OS_TYPE, "linux")
                 .put(OS_VERSION, Build.VERSION.RELEASE)
