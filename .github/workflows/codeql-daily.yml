@@ -40,6 +40,6 @@ jobs:
     needs:
       - analyze
     if: always()
-    uses: ./.github/workflows/reusable-open-issue-on-failure.yml
+    uses: ./.github/workflows/reusable-workflow-notification.yml
     with:
       success: ${{ needs.analyze.result == 'success' }}
