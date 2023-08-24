@@ -72,8 +72,9 @@ final class AndroidResource {
     }
 
     private static String getOSDescription() {
-        StringBuilder OSDescriptionBuilder = new StringBuilder();
-        return OSDescriptionBuilder.append("Android Version ")
+        StringBuilder osDescriptionBuilder = new StringBuilder();
+        return osDescriptionBuilder
+                .append("Android Version ")
                 .append(Build.VERSION.RELEASE)
                 .append(" (Build ")
                 .append(Build.ID)
