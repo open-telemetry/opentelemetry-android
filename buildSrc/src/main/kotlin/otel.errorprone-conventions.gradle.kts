@@ -1,4 +1,4 @@
-import gradle.kotlin.dsl.accessors._bcc1e1528033810a0cd4f503040f455f.androidComponents
+import com.android.build.api.variant.AndroidComponentsExtension
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.ErrorPronePlugin
 import net.ltgt.gradle.errorprone.errorprone
@@ -15,7 +15,7 @@ val isAndroidProject = extensions.findByName("android") != null
 
 if (isAndroidProject) {
     val errorProneConfig = configurations.getByName(ErrorPronePlugin.CONFIGURATION_NAME)
-    androidComponents.onVariants {
+    extensions.getByType(AndroidComponentsExtension::class.java).onVariants {
         it.annotationProcessorConfiguration.extendsFrom(errorProneConfig)
     }
 }
