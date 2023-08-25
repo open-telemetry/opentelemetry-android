@@ -13,7 +13,7 @@ automatic check once you submit a PR, but you can also sign it after opening you
 ## Requirements
 
 Java 17 or higher is required to build the projects in this repository.
-The built artifacts can be Android API Level 21 and higher.
+The built artifacts can be used with Android API Level 21 and higher.
 API levels 21 to 25 require desugaring of the core library.
 
 ## Building opentelemetry-android

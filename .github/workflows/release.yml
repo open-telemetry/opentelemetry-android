@@ -1,0 +1,42 @@
+---
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch_specifier:
+        description: The branch to release e.g. main or release/0.1.0
+        required: true
+        default: "main"
+        type: string
+
+      release_type:
+        description: Specify the type of the release, final by default.
+        required: true
+        default: "final"
+        type: choice
+        options:
+          - "final"
+          - "snapshot"
+
+jobs:
+  release:
+    name: "release"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.branch_specifier || 'main' }}
+      - name: Set up JDK for running Gradle
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17.0.6
+      - name: Build and publish artifacts
+        run: ./gradlew publishMavenPublicationToSonatypeRepository closeAndReleaseSonatypeStagingRepository -Prelease=true -Pfinal=${{ inputs.release_type == 'final' && 'true' || 'false' }}
+        env:
+          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
+          SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
+
