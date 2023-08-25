@@ -11,7 +11,10 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Session ID ratio based sampler. Uses {@link Sampler#traceIdRatioBased(double)} sampler
@@ -22,10 +25,10 @@ import java.util.List;
  */
 public class SessionIdRatioBasedSampler implements Sampler {
     private final Sampler ratioBasedSampler;
-    private final SessionId sessionid;
+    private final SessionId sessionId;
 
     public SessionIdRatioBasedSampler(double ratio, SessionId sessionId) {
-        this.sessionid = sessionId;
+        this.sessionId = sessionId;
         // SessionId uses the same format as TraceId, so we can reuse trace ID ratio sampler.
         this.ratioBasedSampler = Sampler.traceIdRatioBased(ratio);
     }
@@ -40,7 +43,7 @@ public class SessionIdRatioBasedSampler implements Sampler {
             List<LinkData> parentLinks) {
         // Replace traceId with sessionId
         return ratioBasedSampler.shouldSample(
-                parentContext, sessionid.getSessionId(), name, spanKind, attributes, parentLinks);
+                parentContext, sessionId.getSessionId(), name, spanKind, attributes, parentLinks);
     }
 
     @Override
