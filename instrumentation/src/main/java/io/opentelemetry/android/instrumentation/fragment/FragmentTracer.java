@@ -70,10 +70,12 @@ class FragmentTracer {
     }
 
     static class Builder {
+        private static final ActiveSpan INVALID_ACTIVE_SPAN = new ActiveSpan(() -> null);
+        private static final Tracer INVALID_TRACER = spanName -> null;
         private final Fragment fragment;
-        public String screenName;
-        private Tracer tracer;
-        private ActiveSpan activeSpan;
+        public String screenName = "";
+        private Tracer tracer = INVALID_TRACER;
+        private ActiveSpan activeSpan = INVALID_ACTIVE_SPAN;
 
         public Builder(Fragment fragment) {
             this.fragment = fragment;
@@ -99,6 +101,12 @@ class FragmentTracer {
         }
 
         FragmentTracer build() {
+            if (activeSpan == INVALID_ACTIVE_SPAN) {
+                throw new IllegalStateException("activeSpan must be configured.");
+            }
+            if (tracer == INVALID_TRACER) {
+                throw new IllegalStateException("tracer must be configured.");
+            }
             return new FragmentTracer(this);
         }
     }

@@ -54,9 +54,7 @@ public class AppStartupTimer {
         return appStart;
     }
 
-    /**
-     * @return epoch timestamp in nanos calculated by the startupClock.
-     */
+    /** Returns the epoch timestamp in nanos calculated by the startupClock. */
     public long clockNow() {
         return startupClock.now();
     }

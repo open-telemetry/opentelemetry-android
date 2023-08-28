@@ -139,12 +139,15 @@ public class ActivityTracer {
     }
 
     static class Builder {
+        private static final ActiveSpan INVALID_ACTIVE_SPAN = new ActiveSpan(() -> null);
+        private static final Tracer INVALID_TRACER = spanName -> null;
+        private static final AppStartupTimer INVALID_TIMER = new AppStartupTimer();
         private final Activity activity;
-        public String screenName;
+        public String screenName = "unknown_screen";
         private AtomicReference<String> initialAppActivity = new AtomicReference<>();
-        private Tracer tracer;
-        private AppStartupTimer appStartupTimer;
-        private ActiveSpan activeSpan;
+        private Tracer tracer = INVALID_TRACER;
+        private AppStartupTimer appStartupTimer = INVALID_TIMER;
+        private ActiveSpan activeSpan = INVALID_ACTIVE_SPAN;
 
         public Builder(Activity activity) {
             this.activity = activity;
@@ -184,13 +187,22 @@ public class ActivityTracer {
             return activity.getClass().getSimpleName();
         }
 
-        public ActivityTracer build() {
-            return new ActivityTracer(this);
-        }
-
         public Builder setScreenName(String screenName) {
             this.screenName = screenName;
             return this;
+        }
+
+        public ActivityTracer build() {
+            if (activeSpan == INVALID_ACTIVE_SPAN) {
+                throw new IllegalStateException("activeSpan must be configured.");
+            }
+            if (tracer == INVALID_TRACER) {
+                throw new IllegalStateException("tracer must be configured.");
+            }
+            if (appStartupTimer == INVALID_TIMER) {
+                throw new IllegalStateException("appStartupTimer must be configured.");
+            }
+            return new ActivityTracer(this);
         }
     }
 }
