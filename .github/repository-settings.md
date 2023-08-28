@@ -6,5 +6,7 @@ settings](https://github.com/open-telemetry/community/blob/main/docs/how-to-conf
 
 ## Secrets and variables > Actions
 
+* `GPG_PASSWORD` - stored in OpenTelemetry-Java 1Password
+* `GPG_PRIVATE_KEY` - stored in OpenTelemetry-Java 1Password
 * `SONATYPE_KEY` - owned by [@breedx-splk](https://github.com/breedx-splk)
 * `SONATYPE_USER` - owned by [@breedx-splk](https://github.com/breedx-splk)
