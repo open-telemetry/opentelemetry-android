@@ -17,6 +17,12 @@
       "matchPackageNames": ["androidx.browser:browser"],
       "matchUpdateTypes": ["major", "minor"],
       "enabled": false
+    },
+    {
+      // somehow renovate gets confused by the android property in gradle.properties,
+      // so let's just exclude it and hopefully clean up the dashboard
+      "matchPackageNames": ["string:rum.version"],
+      "enabled": false
     }
   ]
 }
