@@ -1,4 +1,6 @@
+import com.android.build.api.variant.AndroidComponentsExtension
 import net.ltgt.gradle.errorprone.CheckSeverity
+import net.ltgt.gradle.errorprone.ErrorPronePlugin
 import net.ltgt.gradle.errorprone.errorprone
 import net.ltgt.gradle.nullaway.nullaway
 import java.util.Locale
@@ -6,6 +8,16 @@ import java.util.Locale
 plugins {
     id("net.ltgt.errorprone")
     id("net.ltgt.nullaway")
+}
+
+
+val isAndroidProject = extensions.findByName("android") != null
+
+if (isAndroidProject) {
+    val errorProneConfig = configurations.getByName(ErrorPronePlugin.CONFIGURATION_NAME)
+    extensions.getByType(AndroidComponentsExtension::class.java).onVariants {
+        it.annotationProcessorConfiguration.extendsFrom(errorProneConfig)
+    }
 }
 
 dependencies {
@@ -24,6 +36,12 @@ tasks {
             if (name.lowercase(Locale.getDefault()).contains("test")) {
                 // just disable all error prone checks for test
                 isEnabled.set(false);
+                isCompilingTestOnlyCode.set(true)
+            } else {
+                if (isAndroidProject) {
+                    isEnabled.set(true)
+                    isCompilingTestOnlyCode.set(false)
+                }
             }
 
             nullaway {
