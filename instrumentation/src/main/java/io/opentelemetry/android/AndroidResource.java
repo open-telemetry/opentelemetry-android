@@ -78,6 +78,8 @@ final class AndroidResource {
                 .append(Build.VERSION.RELEASE)
                 .append(" (Build ")
                 .append(Build.ID)
+                .append(" API level ")
+                .append(Build.VERSION.SDK_INT)
                 .append(")")
                 .toString();
     }
