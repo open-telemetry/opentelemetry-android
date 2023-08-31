@@ -18,9 +18,16 @@ jobs:
         with:
           distribution: temurin
           java-version: 17.0.6
-        # TODO: Build and publish a snapshot instead!
-      - name: run gradle
+      - name: run gradle check
         run: ./gradlew check
+      - name: publish snapshot
+        # final=false here means SNAPSHOT
+        run: ./gradlew publishMavenPublicationToSonatypeRepository -Prelease=true -Pfinal=false
+        env:
+          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
+          SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
 
   workflow-notification:
     needs:
