@@ -1,6 +1,6 @@
 # <img src="https://opentelemetry.io/img/logos/opentelemetry-logo-nav.png" alt="OpenTelemetry Icon" width="45" height=""> OpenTelemetry Android
 
-:warning: This is a brand new repository that is in the process of being spun up.
+[![Continuous Build][ci-image]][ci-url]
 
 ## Status: Experimental
 
@@ -54,3 +54,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 - [Jason Plumb](https://github.com/breedx-splk), Splunk
 - [Cesar Munoz](https://github.com/likethesalad), Elastic
+
+[ci-image]: https://github.com/open-telemetry/opentelemetry-android/actions/workflows/build.yaml/badge.svg
+[ci-url]: https://github.com/open-telemetry/opentelemetry-android/actions?query=workflow%3Abuild+branch%3Amain
