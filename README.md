@@ -34,7 +34,6 @@ Some of the additional features provided include:
 * Network change detection
 * Full Android Activity and Fragment lifecycle monitoring
 * Access to the OpenTelemetry APIs for manual instrumentation
-* SplunkRum APIs for creating custom RUM events and reporting exceptions
 * Helpers to redact any span from export, or change span attributes before export
 * Slow / frozen render detection
 * Offline buffering of telemetry via storage
