@@ -8,7 +8,7 @@ plugins {
 
 android {
     defaultConfig {
-        minSdk = (property("android.minSdk") as String).toInt()
+        minSdk = (project.property("android.minSdk") as String).toInt()
     }
 
     lint {
