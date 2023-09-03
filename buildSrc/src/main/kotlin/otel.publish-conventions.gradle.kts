@@ -33,6 +33,7 @@ if (android != null) {
 afterEvaluate {
     publishing.publications {
         val maven = create<MavenPublication>("maven") {
+            artifactId = project.extra.properties.get("artifactId") as? String ?: project.name
             if (android != null) {
                 from(components.findByName(androidVariantToRelease))
             } else {
