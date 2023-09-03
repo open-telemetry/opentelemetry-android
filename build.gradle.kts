@@ -15,6 +15,8 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
 }
 
+extra["java_version"] = JavaVersion.VERSION_1_8
+
 allprojects {
     repositories {
         google()
