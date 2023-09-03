@@ -1,8 +1,12 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.instrumentation.agent.okhttp.v3_0;
 
-import net.bytebuddy.asm.Advice;
-
 import io.opentelemetry.instrumentation.library.okhttp.v3_0.OkHttp3Singletons;
+import net.bytebuddy.asm.Advice;
 import okhttp3.OkHttpClient;
 
 public class OkHttpClientAdvice {

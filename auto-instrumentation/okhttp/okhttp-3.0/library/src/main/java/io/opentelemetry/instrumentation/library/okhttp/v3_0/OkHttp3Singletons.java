@@ -22,22 +22,23 @@ import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 
-/**
- * Holder of singleton interceptors for adding to instrumented clients.
- */
+/** Holder of singleton interceptors for adding to instrumented clients. */
 public final class OkHttp3Singletons {
 
     private static final Instrumenter<Request, Response> INSTRUMENTER =
             OkHttpInstrumenterFactory.create(
                     GlobalOpenTelemetry.get(),
                     builder ->
-                            builder
-                                    .setCapturedRequestHeaders(CommonConfig.get().getClientRequestHeaders())
-                                    .setCapturedResponseHeaders(CommonConfig.get().getClientResponseHeaders())
-                                    .setKnownMethods(CommonConfig.get().getKnownHttpRequestMethods()),
+                            builder.setCapturedRequestHeaders(
+                                            CommonConfig.get().getClientRequestHeaders())
+                                    .setCapturedResponseHeaders(
+                                            CommonConfig.get().getClientResponseHeaders())
+                                    .setKnownMethods(
+                                            CommonConfig.get().getKnownHttpRequestMethods()),
                     singletonList(
                             PeerServiceAttributesExtractor.create(
-                                    OkHttpAttributesGetter.INSTANCE, CommonConfig.get().getPeerServiceMapping())),
+                                    OkHttpAttributesGetter.INSTANCE,
+                                    CommonConfig.get().getPeerServiceMapping())),
                     CommonConfig.get().shouldEmitExperimentalHttpClientMetrics());
 
     public static final Interceptor CONTEXT_INTERCEPTOR =
@@ -53,6 +54,5 @@ public final class OkHttp3Singletons {
     public static final Interceptor TRACING_INTERCEPTOR =
             new TracingInterceptor(INSTRUMENTER, GlobalOpenTelemetry.getPropagators());
 
-    private OkHttp3Singletons() {
-    }
+    private OkHttp3Singletons() {}
 }
