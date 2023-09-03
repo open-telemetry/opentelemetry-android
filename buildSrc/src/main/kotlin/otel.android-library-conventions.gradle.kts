@@ -7,6 +7,10 @@ plugins {
 }
 
 android {
+    defaultConfig {
+        minSdk = (property("android.minSdk") as String).toInt()
+    }
+
     lint {
         warningsAsErrors = true
         // A newer version of androidx.appcompat:appcompat than 1.3.1 is available: 1.4.1 [GradleDependency]
