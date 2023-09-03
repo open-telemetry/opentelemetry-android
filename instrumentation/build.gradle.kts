@@ -58,7 +58,7 @@ android {
     }
 }
 
-val otelVersion = "1.28.0"
+val otelVersion = project.property("otel.sdk.version")
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")

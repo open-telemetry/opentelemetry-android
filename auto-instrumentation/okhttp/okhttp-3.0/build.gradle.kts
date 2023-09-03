@@ -1,9 +1,9 @@
 plugins {
-    id("java-library")
+    id("otel.java-library-conventions")
+    id("otel.publish-conventions")
 }
 
-java {
-    val javaVersion = rootProject.extra["java_version"] as JavaVersion
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
+val otelVersion = project.property("otel.sdk.version")
+dependencies {
+    implementation("io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0:$otelVersion-alpha")
 }
