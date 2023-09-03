@@ -6,6 +6,12 @@ plugins {
     id("ru.vyarus.animalsniffer")
 }
 
+java {
+    val javaVersion = rootProject.extra["java_version"] as JavaVersion
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+}
+
 dependencies {
     signature("com.toasttab.android:gummy-bears-api-${project.property("android.minSdk")}:0.5.1@signature")
 }

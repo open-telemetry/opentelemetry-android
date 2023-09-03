@@ -17,4 +17,10 @@ android {
         // we rely on dependabot for dependency updates
         disable.add("GradleDependency")
     }
+
+    compileOptions {
+        val javaVersion = rootProject.extra["java_version"] as JavaVersion
+        sourceCompatibility(javaVersion)
+        targetCompatibility(javaVersion)
+    }
 }

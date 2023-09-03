@@ -50,10 +50,6 @@ android {
 
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
-
-        val javaVersion = rootProject.extra["java_version"] as JavaVersion
-        sourceCompatibility(javaVersion)
-        targetCompatibility(javaVersion)
     }
 
     testOptions {
