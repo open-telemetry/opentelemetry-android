@@ -1,6 +1,6 @@
 plugins {
     id("otel.android-library-conventions")
-    id("otel.errorprone-conventions")
+    id("otel.publish-conventions")
 }
 
 // This submodule is alpha and is not yet intended to be used by itself
@@ -13,7 +13,6 @@ android {
     buildToolsVersion = "33.0.1"
 
     defaultConfig {
-        minSdk = 21
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -24,7 +23,10 @@ android {
         }
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
 
@@ -48,9 +50,6 @@ android {
 
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
-
-        sourceCompatibility(JavaVersion.VERSION_1_8)
-        targetCompatibility(JavaVersion.VERSION_1_8)
     }
 
     testOptions {
@@ -59,7 +58,7 @@ android {
     }
 }
 
-val otelVersion = "1.28.0"
+val otelVersion = project.property("otel.sdk.version")
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")

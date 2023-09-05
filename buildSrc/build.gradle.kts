@@ -25,4 +25,5 @@ dependencies {
     implementation("com.diffplug.spotless:spotless-plugin-gradle:6.21.0")
     implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.1.0")
     implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.6.0")
+    implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.1")
 }
