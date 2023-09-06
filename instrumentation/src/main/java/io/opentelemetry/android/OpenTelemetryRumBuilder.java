@@ -7,6 +7,10 @@ package io.opentelemetry.android;
 
 import android.app.Application;
 import io.opentelemetry.android.instrumentation.InstrumentedApplication;
+import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -16,7 +20,9 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
@@ -39,7 +45,25 @@ public final class OpenTelemetryRumBuilder {
             loggerProviderCustomizers = new ArrayList<>();
     private final List<Consumer<InstrumentedApplication>> instrumentationInstallers =
             new ArrayList<>();
+
+    private final Map<Class<? extends TextMapPropagator>, TextMapPropagator> propagators =
+            buildDefaultPropagators();
+
     private Resource resource;
+
+    private static Map<Class<? extends TextMapPropagator>, TextMapPropagator>
+            buildDefaultPropagators() {
+        Map<Class<? extends TextMapPropagator>, TextMapPropagator> result = new HashMap<>();
+        putPropagator(result, W3CTraceContextPropagator.getInstance());
+        putPropagator(result, W3CBaggagePropagator.getInstance());
+        return result;
+    }
+
+    private static void putPropagator(
+            Map<Class<? extends TextMapPropagator>, TextMapPropagator> propagators,
+            TextMapPropagator propagator) {
+        propagators.put(propagator.getClass(), propagator);
+    }
 
     OpenTelemetryRumBuilder(Application application) {
         this.application = application;
@@ -142,6 +166,33 @@ public final class OpenTelemetryRumBuilder {
         return this;
     }
 
+    /**
+     * Adds a new propagator to be used by the OpenTelemetry SDK. Calling this method will not
+     * remove any existing propagators, including the defaults: W3CTraceContextPropagator and
+     * W3CBaggagePropagator. For complete control over which propagators are used, call {@code
+     * setPropagator(TextMapPropagator propagator)}.
+     *
+     * @return {@code this}
+     */
+    public OpenTelemetryRumBuilder addPropagator(TextMapPropagator propagator) {
+        putPropagator(propagators, propagator);
+        return this;
+    }
+
+    /**
+     * This removes any existing propagators and configures a new one to by used by the
+     * OpenTelemetry SDK. If you need to configure more than one propagator, you should use {@code
+     * TextMapPropagator.composite()} and pass the composite propagator to this method.
+     *
+     * @param propagator The new TextMapPropagator to use when configuring the otel SDK.
+     * @return {@code this}
+     */
+    public OpenTelemetryRumBuilder setPropagator(TextMapPropagator propagator) {
+        propagators.clear();
+        putPropagator(propagators, propagator);
+        return this;
+    }
+
     public SessionId getSessionId() {
         return sessionId;
     }
@@ -161,6 +212,7 @@ public final class OpenTelemetryRumBuilder {
                         .setTracerProvider(buildTracerProvider(sessionId, application))
                         .setMeterProvider(buildMeterProvider(application))
                         .setLoggerProvider(buildLoggerProvider(application))
+                        .setPropagators(buildFinalPropagators())
                         .build();
 
         SdkPreconfiguredRumBuilder delegate =
@@ -199,5 +251,9 @@ public final class OpenTelemetryRumBuilder {
             loggerProviderBuilder = customizer.apply(loggerProviderBuilder, application);
         }
         return loggerProviderBuilder.build();
+    }
+
+    private ContextPropagators buildFinalPropagators() {
+        return ContextPropagators.create(TextMapPropagator.composite(propagators.values()));
     }
 }

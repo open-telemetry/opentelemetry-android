@@ -8,12 +8,18 @@ package io.opentelemetry.android;
 import static io.opentelemetry.android.RumConstants.SESSION_ID_KEY;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static java.util.Collections.singletonList;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import android.app.Application;
 import io.opentelemetry.android.instrumentation.ApplicationStateListener;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -91,5 +97,37 @@ class OpenTelemetryRumBuilderTest {
 
         activityCallbacksCaptor.getValue().onActivityStopped(activity);
         verify(listener).onApplicationBackgrounded();
+    }
+
+    @Test
+    void canAddPropagator() {
+        Context context = Context.root();
+        Object carrier = new Object();
+
+        Context expected = mock(Context.class);
+        TextMapGetter<? super Object> getter = mock(TextMapGetter.class);
+        TextMapPropagator customPropagator = mock(TextMapPropagator.class);
+
+        when(customPropagator.fields()).thenReturn(singletonList("beep"));
+        when(customPropagator.extract(context, carrier, getter)).thenReturn(expected);
+
+        OpenTelemetryRum rum =
+                OpenTelemetryRum.builder(application).addPropagator(customPropagator).build();
+        Context result =
+                rum.getOpenTelemetry()
+                        .getPropagators()
+                        .getTextMapPropagator()
+                        .extract(context, carrier, getter);
+        assertThat(result).isSameAs(expected);
+    }
+
+    @Test
+    void canSetPropagator() {
+        TextMapPropagator customPropagator = mock(TextMapPropagator.class);
+
+        OpenTelemetryRum rum =
+                OpenTelemetryRum.builder(application).setPropagator(customPropagator).build();
+        TextMapPropagator result = rum.getOpenTelemetry().getPropagators().getTextMapPropagator();
+        assertThat(result).isSameAs(customPropagator);
     }
 }
