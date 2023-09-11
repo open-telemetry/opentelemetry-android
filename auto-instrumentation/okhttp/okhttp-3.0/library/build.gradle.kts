@@ -3,8 +3,6 @@ plugins {
     id("otel.publish-conventions")
 }
 
-extra["artifactId"] = "okhttp-3.0-library"
-
 val otelVersion = project.property("otel.sdk.version")
 dependencies {
     api("com.squareup.okhttp3:okhttp:3.0.0")

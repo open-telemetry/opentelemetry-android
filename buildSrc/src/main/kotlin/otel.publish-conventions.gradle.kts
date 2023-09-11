@@ -33,7 +33,7 @@ if (android != null) {
 afterEvaluate {
     publishing.publications {
         val maven = create<MavenPublication>("maven") {
-            artifactId = project.extra.properties.get("artifactId") as? String ?: project.name
+            artifactId = computeArtifactId()
             if (android != null) {
                 from(components.findByName(androidVariantToRelease))
             } else {
@@ -75,4 +75,20 @@ afterEvaluate {
             }
         }
     }
+}
+
+fun computeArtifactId(): String {
+    val path = project.path
+    if (!path.contains("auto-instrumentation")) {
+        // Return default artifacId for non auto-instrumentation publications.
+        return project.name
+    }
+
+    // Adding library name to its related auto-instrumentation subprojects.
+    // For example, prepending "okhttp-3.0-" to both the "library" and "agent" subprojects inside the "okhttp-3.0" folder.
+    val match = Regex("[^:]+:[^:]+\$").find(path)
+    val artifactId = match!!.value.replace(":", "-")
+
+    logger.debug("Using artifact id: '{}' for subproject: '{}'", artifactId, path)
+    return artifactId
 }
