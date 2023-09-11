@@ -17,6 +17,10 @@ of the [OpenTelemetry Java SDK](https://github.com/open-telemetry/opentelemetry-
 
 # Getting Started
 
+> If your project's minSdk is lower than 26, then you must enable
+> [corelib desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring).
+> See #73 for more information.
+
 This project is still in its infancy.
 
 For an overview of how to contribute, see the contributing guide in [CONTRIBUTING.md](CONTRIBUTING.md).
