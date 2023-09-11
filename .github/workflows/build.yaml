@@ -12,7 +12,7 @@ jobs:
     name: "build"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up JDK for running Gradle
         uses: actions/setup-java@v3
         with:
@@ -28,6 +28,11 @@ jobs:
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
+
+  markdown-link-check:
+    # release branches are excluded to avoid unnecessary maintenance
+    if: ${{ !startsWith(github.ref_name, 'release/') }}
+    uses: ./.github/workflows/reusable-markdown-link-check.yml
 
   workflow-notification:
     needs:
