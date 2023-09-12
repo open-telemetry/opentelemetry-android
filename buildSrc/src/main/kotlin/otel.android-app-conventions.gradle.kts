@@ -13,7 +13,7 @@ android {
     defaultConfig {
         minSdk = (project.property("android.minSdk") as String).toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        testInstrumentationRunnerArguments.set(
+        testInstrumentationRunnerArguments.put(
             "runnerBuilder",
             "de.mannodermaus.junit5.AndroidJUnit5Builder"
         )
