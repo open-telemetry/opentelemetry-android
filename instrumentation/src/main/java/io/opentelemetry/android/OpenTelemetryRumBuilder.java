@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android;
 
+import static java.util.Objects.requireNonNull;
+
 import android.app.Application;
 import io.opentelemetry.android.instrumentation.InstrumentedApplication;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * A builder of {@link OpenTelemetryRum}. It enabled configuring the OpenTelemetry SDK and disabling
@@ -46,23 +49,13 @@ public final class OpenTelemetryRumBuilder {
     private final List<Consumer<InstrumentedApplication>> instrumentationInstallers =
             new ArrayList<>();
 
-    private final Map<Class<? extends TextMapPropagator>, TextMapPropagator> propagators =
-            buildDefaultPropagators();
+    private Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer = (a) -> a;
 
     private Resource resource;
 
-    private static Map<Class<? extends TextMapPropagator>, TextMapPropagator>
-            buildDefaultPropagators() {
+    private static TextMapPropagator buildDefaultPropagator() {
         Map<Class<? extends TextMapPropagator>, TextMapPropagator> result = new HashMap<>();
-        putPropagator(result, W3CTraceContextPropagator.getInstance());
-        putPropagator(result, W3CBaggagePropagator.getInstance());
-        return result;
-    }
-
-    private static void putPropagator(
-            Map<Class<? extends TextMapPropagator>, TextMapPropagator> propagators,
-            TextMapPropagator propagator) {
-        propagators.put(propagator.getClass(), propagator);
+        return TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance());
     }
 
     OpenTelemetryRumBuilder(Application application) {
@@ -167,29 +160,20 @@ public final class OpenTelemetryRumBuilder {
     }
 
     /**
-     * Adds a new propagator to be used by the OpenTelemetry SDK. Calling this method will not
-     * remove any existing propagators, including the defaults: W3CTraceContextPropagator and
-     * W3CBaggagePropagator. For complete control over which propagators are used, call {@code
-     * setPropagator(TextMapPropagator propagator)}.
+     * Adds a {@link Function} to invoke with the default {@link TextMapPropagator}
+     * to allow customization. The return value of the {@link BiFunction} will replace
+     * the passed-in argument. To add new propagators, use {@code TextMapPropagator.composite()}
+     * with the existing propagator passed to your function.
      *
-     * @return {@code this}
+     * <p>Multiple calls will execute the customizers in order.
      */
-    public OpenTelemetryRumBuilder addPropagator(TextMapPropagator propagator) {
-        putPropagator(propagators, propagator);
-        return this;
-    }
-
-    /**
-     * This removes any existing propagators and configures a new one to by used by the
-     * OpenTelemetry SDK. If you need to configure more than one propagator, you should use {@code
-     * TextMapPropagator.composite()} and pass the composite propagator to this method.
-     *
-     * @param propagator The new TextMapPropagator to use when configuring the otel SDK.
-     * @return {@code this}
-     */
-    public OpenTelemetryRumBuilder setPropagator(TextMapPropagator propagator) {
-        propagators.clear();
-        putPropagator(propagators, propagator);
+    public OpenTelemetryRumBuilder addPropagatorCustomizer(
+            Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer) {
+        requireNonNull(propagatorCustomizer, "propagatorCustomizer");
+        this.propagatorCustomizer = propagator -> {
+            TextMapPropagator result = this.propagatorCustomizer.apply(propagator);
+            return propagatorCustomizer.apply(result);
+        };
         return this;
     }
 
@@ -254,6 +238,7 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private ContextPropagators buildFinalPropagators() {
-        return ContextPropagators.create(TextMapPropagator.composite(propagators.values()));
+        TextMapPropagator defaultPropagator = buildDefaultPropagator();
+        return ContextPropagators.create(propagatorCustomizer.apply(defaultPropagator));
     }
 }
