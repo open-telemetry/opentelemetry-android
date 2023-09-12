@@ -49,13 +49,15 @@ public final class OpenTelemetryRumBuilder {
     private final List<Consumer<InstrumentedApplication>> instrumentationInstallers =
             new ArrayList<>();
 
-    private Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer = (a) -> a;
+    private Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer =
+            (a) -> a;
 
     private Resource resource;
 
     private static TextMapPropagator buildDefaultPropagator() {
         Map<Class<? extends TextMapPropagator>, TextMapPropagator> result = new HashMap<>();
-        return TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance());
+        return TextMapPropagator.composite(
+                W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance());
     }
 
     OpenTelemetryRumBuilder(Application application) {
@@ -160,20 +162,21 @@ public final class OpenTelemetryRumBuilder {
     }
 
     /**
-     * Adds a {@link Function} to invoke with the default {@link TextMapPropagator}
-     * to allow customization. The return value of the {@link BiFunction} will replace
-     * the passed-in argument. To add new propagators, use {@code TextMapPropagator.composite()}
-     * with the existing propagator passed to your function.
+     * Adds a {@link Function} to invoke with the default {@link TextMapPropagator} to allow
+     * customization. The return value of the {@link BiFunction} will replace the passed-in
+     * argument. To add new propagators, use {@code TextMapPropagator.composite()} with the existing
+     * propagator passed to your function.
      *
      * <p>Multiple calls will execute the customizers in order.
      */
     public OpenTelemetryRumBuilder addPropagatorCustomizer(
             Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer) {
         requireNonNull(propagatorCustomizer, "propagatorCustomizer");
-        this.propagatorCustomizer = propagator -> {
-            TextMapPropagator result = this.propagatorCustomizer.apply(propagator);
-            return propagatorCustomizer.apply(result);
-        };
+        this.propagatorCustomizer =
+                propagator -> {
+                    TextMapPropagator result = this.propagatorCustomizer.apply(propagator);
+                    return propagatorCustomizer.apply(result);
+                };
         return this;
     }
 
