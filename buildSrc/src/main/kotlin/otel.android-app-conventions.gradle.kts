@@ -13,10 +13,6 @@ android {
     defaultConfig {
         minSdk = (project.property("android.minSdk") as String).toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        testInstrumentationRunnerArguments.put(
-            "runnerBuilder",
-            "de.mannodermaus.junit5.AndroidJUnit5Builder"
-        )
     }
 
     compileOptions {
@@ -30,11 +26,8 @@ android {
     }
 }
 
-val androidXTestVersion = "1.5.0"
+val otelVersion = rootProject.property("otel.sdk.version")
 dependencies {
-    androidTestImplementation("androidx.test:runner:1.4.0")
-    androidTestImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
-
-    androidTestImplementation("de.mannodermaus.junit5:android-test-core:1.2.2")
-    androidTestRuntimeOnly("de.mannodermaus.junit5:android-test-runner:1.2.2")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("io.opentelemetry:opentelemetry-sdk-testing:$otelVersion")
 }
