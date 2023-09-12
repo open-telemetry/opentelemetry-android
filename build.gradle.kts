@@ -1,12 +1,14 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
     }
     dependencies {
         // keep this version in sync with /buildSrc/build.gradle.kts
         classpath("com.android.tools.build:gradle:8.1.1")
+        classpath("net.bytebuddy:byte-buddy-gradle-plugin:${property("bytebuddy.version")}")
     }
 }
 
@@ -19,6 +21,7 @@ extra["java_version"] = JavaVersion.VERSION_1_8
 
 allprojects {
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
         maven {
