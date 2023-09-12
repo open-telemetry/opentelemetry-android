@@ -8,7 +8,6 @@ package io.opentelemetry.android;
 import static io.opentelemetry.android.RumConstants.SESSION_ID_KEY;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
-import static java.util.Collections.singletonList;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -108,11 +107,12 @@ class OpenTelemetryRumBuilderTest {
         TextMapGetter<? super Object> getter = mock(TextMapGetter.class);
         TextMapPropagator customPropagator = mock(TextMapPropagator.class);
 
-        when(customPropagator.fields()).thenReturn(singletonList("beep"));
         when(customPropagator.extract(context, carrier, getter)).thenReturn(expected);
 
         OpenTelemetryRum rum =
-                OpenTelemetryRum.builder(application).addPropagator(customPropagator).build();
+                OpenTelemetryRum.builder(application)
+                        .addPropagatorCustomizer(x -> customPropagator)
+                        .build();
         Context result =
                 rum.getOpenTelemetry()
                         .getPropagators()
@@ -126,7 +126,9 @@ class OpenTelemetryRumBuilderTest {
         TextMapPropagator customPropagator = mock(TextMapPropagator.class);
 
         OpenTelemetryRum rum =
-                OpenTelemetryRum.builder(application).setPropagator(customPropagator).build();
+                OpenTelemetryRum.builder(application)
+                        .addPropagatorCustomizer(x -> customPropagator)
+                        .build();
         TextMapPropagator result = rum.getOpenTelemetry().getPropagators().getTextMapPropagator();
         assertThat(result).isSameAs(customPropagator);
     }

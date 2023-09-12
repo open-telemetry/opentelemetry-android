@@ -172,9 +172,11 @@ public final class OpenTelemetryRumBuilder {
     public OpenTelemetryRumBuilder addPropagatorCustomizer(
             Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer) {
         requireNonNull(propagatorCustomizer, "propagatorCustomizer");
+        Function<? super TextMapPropagator, ? extends TextMapPropagator> existing =
+                this.propagatorCustomizer;
         this.propagatorCustomizer =
                 propagator -> {
-                    TextMapPropagator result = this.propagatorCustomizer.apply(propagator);
+                    TextMapPropagator result = existing.apply(propagator);
                     return propagatorCustomizer.apply(result);
                 };
         return this;
