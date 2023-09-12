@@ -12,6 +12,11 @@ android {
 
     defaultConfig {
         minSdk = (project.property("android.minSdk") as String).toInt()
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunnerArguments.set(
+            "runnerBuilder",
+            "de.mannodermaus.junit5.AndroidJUnit5Builder"
+        )
     }
 
     compileOptions {
@@ -19,4 +24,17 @@ android {
         sourceCompatibility(javaVersion)
         targetCompatibility(javaVersion)
     }
+
+    packaging {
+        resources.excludes += "META-INF/LICENSE*.md"
+    }
+}
+
+val androidXTestVersion = "1.5.0"
+dependencies {
+    androidTestImplementation("androidx.test:runner:1.4.0")
+    androidTestImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
+
+    androidTestImplementation("de.mannodermaus.junit5:android-test-core:1.2.2")
+    androidTestRuntimeOnly("de.mannodermaus.junit5:android-test-runner:1.2.2")
 }
