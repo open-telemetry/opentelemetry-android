@@ -13,7 +13,7 @@ java {
 }
 
 dependencies {
-    signature("com.toasttab.android:gummy-bears-api-${project.property("android.minSdk")}:0.5.1@signature")
+    signature("com.toasttab.android:gummy-bears-api-${project.property("android.minSdk")}:0.5.1:coreLib@signature")
 }
 
 animalsniffer {
