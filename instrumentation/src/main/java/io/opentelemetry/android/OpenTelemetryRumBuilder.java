@@ -5,8 +5,14 @@
 
 package io.opentelemetry.android;
 
+import static java.util.Objects.requireNonNull;
+
 import android.app.Application;
 import io.opentelemetry.android.instrumentation.InstrumentedApplication;
+import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -16,9 +22,12 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * A builder of {@link OpenTelemetryRum}. It enabled configuring the OpenTelemetry SDK and disabling
@@ -39,7 +48,17 @@ public final class OpenTelemetryRumBuilder {
             loggerProviderCustomizers = new ArrayList<>();
     private final List<Consumer<InstrumentedApplication>> instrumentationInstallers =
             new ArrayList<>();
+
+    private Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer =
+            (a) -> a;
+
     private Resource resource;
+
+    private static TextMapPropagator buildDefaultPropagator() {
+        Map<Class<? extends TextMapPropagator>, TextMapPropagator> result = new HashMap<>();
+        return TextMapPropagator.composite(
+                W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance());
+    }
 
     OpenTelemetryRumBuilder(Application application) {
         this.application = application;
@@ -142,6 +161,27 @@ public final class OpenTelemetryRumBuilder {
         return this;
     }
 
+    /**
+     * Adds a {@link Function} to invoke with the default {@link TextMapPropagator} to allow
+     * customization. The return value of the {@link BiFunction} will replace the passed-in
+     * argument. To add new propagators, use {@code TextMapPropagator.composite()} with the existing
+     * propagator passed to your function.
+     *
+     * <p>Multiple calls will execute the customizers in order.
+     */
+    public OpenTelemetryRumBuilder addPropagatorCustomizer(
+            Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer) {
+        requireNonNull(propagatorCustomizer, "propagatorCustomizer");
+        Function<? super TextMapPropagator, ? extends TextMapPropagator> existing =
+                this.propagatorCustomizer;
+        this.propagatorCustomizer =
+                propagator -> {
+                    TextMapPropagator result = existing.apply(propagator);
+                    return propagatorCustomizer.apply(result);
+                };
+        return this;
+    }
+
     public SessionId getSessionId() {
         return sessionId;
     }
@@ -161,6 +201,7 @@ public final class OpenTelemetryRumBuilder {
                         .setTracerProvider(buildTracerProvider(sessionId, application))
                         .setMeterProvider(buildMeterProvider(application))
                         .setLoggerProvider(buildLoggerProvider(application))
+                        .setPropagators(buildFinalPropagators())
                         .build();
 
         SdkPreconfiguredRumBuilder delegate =
@@ -199,5 +240,10 @@ public final class OpenTelemetryRumBuilder {
             loggerProviderBuilder = customizer.apply(loggerProviderBuilder, application);
         }
         return loggerProviderBuilder.build();
+    }
+
+    private ContextPropagators buildFinalPropagators() {
+        TextMapPropagator defaultPropagator = buildDefaultPropagator();
+        return ContextPropagators.create(propagatorCustomizer.apply(defaultPropagator));
     }
 }
