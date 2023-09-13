@@ -28,7 +28,7 @@ channel in the [CNCF slack](https://slack.cncf.io/). Please join us there for fu
 
 ## Gradle
 
-To use this android instrumentation library in your application, first add a dependency 
+To use this android instrumentation library in your application, first add a dependency
 in your gradle build script:
 
 ```kotlin

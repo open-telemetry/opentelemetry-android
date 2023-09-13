@@ -7,7 +7,7 @@
 ## Version 0.1.0 (2023-09-13)
 
 This version marks the first baseline release of `opentelemetry-android` instrumentation.
-This project is classified as experimental. 
+This project is classified as experimental.
 
 ### 📈 Enhancements
 
