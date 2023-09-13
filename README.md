@@ -21,12 +21,24 @@ of the [OpenTelemetry Java SDK](https://github.com/open-telemetry/opentelemetry-
 > [corelib desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring).
 > See #73 for more information.
 
-This project is still in its infancy.
-
 For an overview of how to contribute, see the contributing guide in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 We are also available in the [#otel-android](https://cloud-native.slack.com/archives/C05J0T9K27Q)
 channel in the [CNCF slack](https://slack.cncf.io/). Please join us there for further discussions.
+
+## Gradle
+
+To use this android instrumentation library in your application, first add a dependency 
+in your gradle build script:
+
+```kotlin
+dependencies {
+    //...
+    implementation("io.opentelemetry.android:instrumentation:0.1.0-alpha")
+    //...
+}
+```
+
 
 # Features
 
