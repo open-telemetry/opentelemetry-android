@@ -1,6 +1,7 @@
 # <img src="https://opentelemetry.io/img/logos/opentelemetry-logo-nav.png" alt="OpenTelemetry Icon" width="45" height=""> OpenTelemetry Android
 
 [![Continuous Build][ci-image]][ci-url]
+[![Maven Central][maven-image]][maven-url]
 
 ## Status: Experimental
 
@@ -72,3 +73,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 [ci-image]: https://github.com/open-telemetry/opentelemetry-android/actions/workflows/build.yaml/badge.svg
 [ci-url]: https://github.com/open-telemetry/opentelemetry-android/actions?query=workflow%3Abuild+branch%3Amain
+[maven-image]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry.android/instrumentation/badge.svg
+[maven-url]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry.android/instrumentation
