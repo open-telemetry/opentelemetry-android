@@ -22,9 +22,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -55,7 +53,6 @@ public final class OpenTelemetryRumBuilder {
     private Resource resource;
 
     private static TextMapPropagator buildDefaultPropagator() {
-        Map<Class<? extends TextMapPropagator>, TextMapPropagator> result = new HashMap<>();
         return TextMapPropagator.composite(
                 W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance());
     }
