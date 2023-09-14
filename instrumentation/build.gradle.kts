@@ -58,14 +58,13 @@ android {
     }
 }
 
-val otelVersion = project.property("otel.sdk.version")
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.core:core:1.10.1")
     implementation("androidx.navigation:navigation-fragment:2.6.0")
 
-    api(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:$otelVersion-alpha"))
+    api(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${property("otel.sdk.version")}-alpha"))
     api("io.opentelemetry:opentelemetry-api")
     implementation("io.opentelemetry:opentelemetry-sdk")
     implementation("io.opentelemetry:opentelemetry-exporter-zipkin")
