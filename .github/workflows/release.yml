@@ -33,7 +33,7 @@ jobs:
           distribution: temurin
           java-version: 17.0.6
       - name: Build and publish artifacts
-        run: ./gradlew publishMavenPublicationToSonatypeRepository closeAndReleaseSonatypeStagingRepository -Pfinal=${{ inputs.release_type == 'final' && 'true' || 'false' }}
+        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository -Pfinal=${{ inputs.release_type == 'final' && 'true' || 'false' }}
         env:
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
