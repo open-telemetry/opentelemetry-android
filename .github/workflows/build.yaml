@@ -21,7 +21,6 @@ jobs:
       - name: run gradle check
         run: ./gradlew check
       - name: publish snapshot
-        # final=false here means SNAPSHOT
         run: ./gradlew publishToSonatype
         env:
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
