@@ -55,7 +55,6 @@ public final class OpenTelemetryRumBuilder {
     private Resource resource;
 
     private static TextMapPropagator buildDefaultPropagator() {
-        Map<Class<? extends TextMapPropagator>, TextMapPropagator> result = new HashMap<>();
         return TextMapPropagator.composite(
                 W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance());
     }
