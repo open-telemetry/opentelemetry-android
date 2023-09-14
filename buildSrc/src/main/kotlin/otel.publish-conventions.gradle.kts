@@ -5,7 +5,7 @@ plugins {
     id("signing")
 }
 
-val isARelease = project.hasProperty("release") && project.property("release") == "true"
+val isARelease = System.getenv("CI") != null
 
 val android = extensions.findByType(LibraryExtension::class.java)
 
