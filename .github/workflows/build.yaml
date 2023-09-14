@@ -22,7 +22,7 @@ jobs:
         run: ./gradlew check
       - name: publish snapshot
         # final=false here means SNAPSHOT
-        run: ./gradlew publishToSonatype -Pfinal=false
+        run: ./gradlew publishToSonatype
         env:
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
