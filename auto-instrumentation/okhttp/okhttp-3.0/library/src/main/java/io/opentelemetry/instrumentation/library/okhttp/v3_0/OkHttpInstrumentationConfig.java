@@ -1,19 +1,20 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.instrumentation.library.okhttp.v3_0;
 
+import io.opentelemetry.instrumentation.api.internal.HttpConstants;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nonnull;
 
-import io.opentelemetry.instrumentation.api.internal.HttpConstants;
-
-/**
- * Configuration for automatic instrumentation of okhttp requests.
- */
+/** Configuration for automatic instrumentation of okhttp requests. */
 public class OkHttpInstrumentationConfig {
     private static List<String> capturedRequestHeaders = new ArrayList<>();
     private static List<String> capturedResponseHeaders = new ArrayList<>();
@@ -22,13 +23,14 @@ public class OkHttpInstrumentationConfig {
     private static boolean emitExperimentalHttpClientMetrics;
 
     /**
-     * Configures the HTTP request headers that will be captured as span attributes as described in <a
+     * Configures the HTTP request headers that will be captured as span attributes as described in
+     * <a
      * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/http.md#http-request-and-response-headers">HTTP
      * semantic conventions</a>.
      *
-     * <p>The HTTP request header values will be captured under the {@code http.request.header.<name>}
-     * attribute key. The {@code <name>} part in the attribute key is the normalized header name:
-     * lowercase, with dashes replaced by underscores.
+     * <p>The HTTP request header values will be captured under the {@code
+     * http.request.header.<name>} attribute key. The {@code <name>} part in the attribute key is
+     * the normalized header name: lowercase, with dashes replaced by underscores.
      *
      * @param requestHeaders A list of HTTP header names.
      */
@@ -47,8 +49,8 @@ public class OkHttpInstrumentationConfig {
      * semantic conventions</a>.
      *
      * <p>The HTTP response header values will be captured under the {@code
-     * http.response.header.<name>} attribute key. The {@code <name>} part in the attribute key is the
-     * normalized header name: lowercase, with dashes replaced by underscores.
+     * http.response.header.<name>} attribute key. The {@code <name>} part in the attribute key is
+     * the normalized header name: lowercase, with dashes replaced by underscores.
      *
      * @param responseHeaders A list of HTTP header names.
      */
@@ -70,8 +72,8 @@ public class OkHttpInstrumentationConfig {
      * instead of it and put the original value in an extra {@code http.request.method_original}
      * attribute.
      *
-     * <p>Note: calling this method <b>overrides</b> the default known method sets completely; it does
-     * not supplement it.
+     * <p>Note: calling this method <b>overrides</b> the default known method sets completely; it
+     * does not supplement it.
      *
      * @param knownMethods A set of recognized HTTP request methods.
      */
@@ -105,8 +107,10 @@ public class OkHttpInstrumentationConfig {
      * href="https://github.com/open-telemetry/semantic-conventions/blob/main/specification/metrics/semantic_conventions/http-metrics.md#metric-httpclientresponsesize">
      * the response size</a>.
      */
-    public static void setEmitExperimentalHttpClientMetrics(boolean emitExperimentalHttpClientMetrics) {
-        OkHttpInstrumentationConfig.emitExperimentalHttpClientMetrics = emitExperimentalHttpClientMetrics;
+    public static void setEmitExperimentalHttpClientMetrics(
+            boolean emitExperimentalHttpClientMetrics) {
+        OkHttpInstrumentationConfig.emitExperimentalHttpClientMetrics =
+                emitExperimentalHttpClientMetrics;
     }
 
     public static boolean emitExperimentalHttpClientMetrics() {

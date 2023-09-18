@@ -22,9 +22,7 @@ import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 
-/**
- * Holder of singleton interceptors for adding to instrumented clients.
- */
+/** Holder of singleton interceptors for adding to instrumented clients. */
 public final class OkHttp3Singletons {
 
     private static final Instrumenter<Request, Response> INSTRUMENTER =
@@ -34,9 +32,9 @@ public final class OkHttp3Singletons {
                             builder.setCapturedRequestHeaders(
                                             OkHttpInstrumentationConfig.getCapturedRequestHeaders())
                                     .setCapturedResponseHeaders(
-                                            OkHttpInstrumentationConfig.getCapturedResponseHeaders())
-                                    .setKnownMethods(
-                                            OkHttpInstrumentationConfig.getKnownMethods()),
+                                            OkHttpInstrumentationConfig
+                                                    .getCapturedResponseHeaders())
+                                    .setKnownMethods(OkHttpInstrumentationConfig.getKnownMethods()),
                     singletonList(
                             PeerServiceAttributesExtractor.create(
                                     OkHttpAttributesGetter.INSTANCE,
@@ -56,6 +54,5 @@ public final class OkHttp3Singletons {
     public static final Interceptor TRACING_INTERCEPTOR =
             new TracingInterceptor(INSTRUMENTER, GlobalOpenTelemetry.getPropagators());
 
-    private OkHttp3Singletons() {
-    }
+    private OkHttp3Singletons() {}
 }
