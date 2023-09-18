@@ -3,16 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.instrumentation.library.okhttp.v3_0;
+package io.opentelemetry.instrumentation.library.okhttp.v3_0.internal;
 
-import java.util.Collections;
+import static java.util.Collections.singletonList;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientResend;
+import io.opentelemetry.instrumentation.api.instrumenter.net.PeerServiceAttributesExtractor;
+import io.opentelemetry.instrumentation.library.okhttp.v3_0.OkHttpInstrumentationConfig;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.ConnectionErrorSpanInterceptor;
+import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpAttributesGetter;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpInstrumenterFactory;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.TracingInterceptor;
 import okhttp3.Interceptor;
@@ -25,22 +28,20 @@ import okhttp3.Response;
 public final class OkHttp3Singletons {
 
     private static final Instrumenter<Request, Response> INSTRUMENTER =
-            OkHttpInstrumenterFactory.create(GlobalOpenTelemetry.get(), requestResponseHttpClientAttributesExtractorBuilder -> {
-            }, Collections.emptyList(), false);
-//            OkHttpInstrumenterFactory.create(
-//                    GlobalOpenTelemetry.get(),
-//                    builder ->
-//                            builder.setCapturedRequestHeaders(
-//                                            CommonConfig.get().getClientRequestHeaders())
-//                                    .setCapturedResponseHeaders(
-//                                            CommonConfig.get().getClientResponseHeaders())
-//                                    .setKnownMethods(
-//                                            CommonConfig.get().getKnownHttpRequestMethods()),
-//                    singletonList(
-//                            PeerServiceAttributesExtractor.create(
-//                                    OkHttpAttributesGetter.INSTANCE,
-//                                    CommonConfig.get().getPeerServiceMapping())),
-//                    CommonConfig.get().shouldEmitExperimentalHttpClientMetrics());
+            OkHttpInstrumenterFactory.create(
+                    GlobalOpenTelemetry.get(),
+                    builder ->
+                            builder.setCapturedRequestHeaders(
+                                            OkHttpInstrumentationConfig.getCapturedRequestHeaders())
+                                    .setCapturedResponseHeaders(
+                                            OkHttpInstrumentationConfig.getCapturedResponseHeaders())
+                                    .setKnownMethods(
+                                            OkHttpInstrumentationConfig.getKnownMethods()),
+                    singletonList(
+                            PeerServiceAttributesExtractor.create(
+                                    OkHttpAttributesGetter.INSTANCE,
+                                    OkHttpInstrumentationConfig.getPeerServiceMapping())),
+                    OkHttpInstrumentationConfig.emitExperimentalHttpClientMetrics());
 
     public static final Interceptor CONTEXT_INTERCEPTOR =
             chain -> {
