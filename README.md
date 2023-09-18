@@ -1,6 +1,7 @@
 # <img src="https://opentelemetry.io/img/logos/opentelemetry-logo-nav.png" alt="OpenTelemetry Icon" width="45" height=""> OpenTelemetry Android
 
 [![Continuous Build][ci-image]][ci-url]
+[![Maven Central][maven-image]][maven-url]
 
 ## Status: Experimental
 
@@ -17,12 +18,28 @@ of the [OpenTelemetry Java SDK](https://github.com/open-telemetry/opentelemetry-
 
 # Getting Started
 
-This project is still in its infancy.
+> If your project's minSdk is lower than 26, then you must enable
+> [corelib desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring).
+> See #73 for more information.
 
 For an overview of how to contribute, see the contributing guide in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 We are also available in the [#otel-android](https://cloud-native.slack.com/archives/C05J0T9K27Q)
 channel in the [CNCF slack](https://slack.cncf.io/). Please join us there for further discussions.
+
+## Gradle
+
+To use this android instrumentation library in your application, first add a dependency
+in your gradle build script:
+
+```kotlin
+dependencies {
+    //...
+    implementation("io.opentelemetry.android:instrumentation:0.1.0-alpha")
+    //...
+}
+```
+
 
 # Features
 
@@ -56,3 +73,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 [ci-image]: https://github.com/open-telemetry/opentelemetry-android/actions/workflows/build.yaml/badge.svg
 [ci-url]: https://github.com/open-telemetry/opentelemetry-android/actions?query=workflow%3Abuild+branch%3Amain
+[maven-image]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry.android/instrumentation/badge.svg
+[maven-url]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry.android/instrumentation
