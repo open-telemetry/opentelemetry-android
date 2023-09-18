@@ -37,4 +37,5 @@ requests traced.
 
 ### Configuration
 
-You can configure the automatic instrumentation by...
+You can configure the automatic instrumentation by using the setters
+in [OkHttpInstrumentationConfig](library/src/main/java/io/opentelemetry/instrumentation/library/okhttp/v3_0/OkHttpInstrumentationConfig.java)).
