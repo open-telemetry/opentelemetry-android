@@ -5,20 +5,16 @@
 
 package io.opentelemetry.instrumentation.library.okhttp.v3_0;
 
+import io.opentelemetry.instrumentation.api.internal.HttpConstants;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nonnull;
 
-import io.opentelemetry.instrumentation.api.internal.HttpConstants;
-
-/**
- * Configuration for automatic instrumentation of okhttp requests.
- */
+/** Configuration for automatic instrumentation of okhttp requests. */
 public final class OkHttpInstrumentationConfig {
     private static List<String> capturedRequestHeaders = new ArrayList<>();
     private static List<String> capturedResponseHeaders = new ArrayList<>();
@@ -26,8 +22,7 @@ public final class OkHttpInstrumentationConfig {
     private static Map<String, String> peerServiceMapping = new HashMap<>();
     private static boolean emitExperimentalHttpClientMetrics;
 
-    private OkHttpInstrumentationConfig() {
-    }
+    private OkHttpInstrumentationConfig() {}
 
     /**
      * Configures the HTTP request headers that will be captured as span attributes as described in
