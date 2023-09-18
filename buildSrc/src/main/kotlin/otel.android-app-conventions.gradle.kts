@@ -20,10 +20,6 @@ android {
         sourceCompatibility(javaVersion)
         targetCompatibility(javaVersion)
     }
-
-    packaging {
-        resources.excludes += "META-INF/LICENSE*.md"
-    }
 }
 
 val otelVersion = rootProject.property("otel.sdk.version")

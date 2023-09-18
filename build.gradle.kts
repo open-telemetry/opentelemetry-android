@@ -1,7 +1,6 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
-        mavenLocal()
         google()
         mavenCentral()
     }
@@ -21,7 +20,6 @@ extra["java_version"] = JavaVersion.VERSION_1_8
 
 allprojects {
     repositories {
-        mavenLocal()
         google()
         mavenCentral()
         maven {
