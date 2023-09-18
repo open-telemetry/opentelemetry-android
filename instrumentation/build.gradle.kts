@@ -9,8 +9,8 @@ version = project.version.toString().replaceFirst("(-SNAPSHOT)?$".toRegex(), "-a
 android {
     namespace = "io.opentelemetry.android"
 
-    compileSdk = 33
-    buildToolsVersion = "33.0.1"
+    compileSdk = 34
+    buildToolsVersion = "34.0.0"
 
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -58,14 +58,12 @@ android {
     }
 }
 
-val otelVersion = project.property("otel.sdk.version")
-
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.core:core:1.10.1")
-    implementation("androidx.navigation:navigation-fragment:2.6.0")
+    implementation("androidx.core:core:1.12.0")
+    implementation("androidx.navigation:navigation-fragment:2.7.2")
 
-    api(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:$otelVersion-alpha"))
+    api(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${property("otel.sdk.version")}-alpha"))
     api("io.opentelemetry:opentelemetry-api")
     implementation("io.opentelemetry:opentelemetry-sdk")
     implementation("io.opentelemetry:opentelemetry-exporter-zipkin")

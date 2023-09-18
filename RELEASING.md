@@ -5,6 +5,8 @@ the snapshot one.
 
 These are the steps to follow:
 
+- Review the recent [list of open PRs](https://github.com/open-telemetry/opentelemetry-android/pulls) to
+  determine if any need to be merged before cutting a release.
 - Make sure that the `gradle.properties` version property is set to the value you want to release.
 - Go to
   the [release action](https://github.com/open-telemetry/opentelemetry-android/actions/workflows/release.yml)
