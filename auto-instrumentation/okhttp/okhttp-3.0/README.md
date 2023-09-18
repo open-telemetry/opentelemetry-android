@@ -10,7 +10,7 @@ Replace `OPENTELEMETRY_VERSION` with the [latest
 release](https://search.maven.org/search?q=g:io.opentelemetry.instrumentation%20AND%20a:opentelemetry-okhttp-3.0).
 
 Replace `BYTEBUDDY_VERSION` with the [latest
-release](https://search.maven.org/search?q=g:io.opentelemetry.instrumentation%20AND%20a:opentelemetry-okhttp-3.0).
+release](https://search.maven.org/search?q=g:net.bytebuddy%20AND%20a:byte-buddy).
 
 #### Byte buddy compilation plugin
 
