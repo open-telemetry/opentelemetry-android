@@ -22,7 +22,7 @@ if (isAndroidProject) {
 
 dependencies {
     errorprone("com.uber.nullaway:nullaway:0.10.14")
-    errorprone("com.google.errorprone:error_prone_core:2.21.1")
+    errorprone("com.google.errorprone:error_prone_core:2.22.0")
     errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
 }
 
