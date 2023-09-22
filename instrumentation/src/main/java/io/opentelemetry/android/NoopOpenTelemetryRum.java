@@ -18,7 +18,7 @@ enum NoopOpenTelemetryRum implements OpenTelemetryRum {
 
     @Override
     public String getRumSessionId() {
-        // RUM sessionId has the same format as traceId
+        // RUM session.id has the same format as traceId
         return TraceId.getInvalid();
     }
 }
