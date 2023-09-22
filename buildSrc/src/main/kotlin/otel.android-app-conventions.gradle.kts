@@ -8,10 +8,10 @@ plugins {
 
 android {
     namespace = "io.opentelemetry.android"
-    compileSdk = 33
+    compileSdk = (property("android.compileSdk") as String).toInt()
 
     defaultConfig {
-        minSdk = (project.property("android.minSdk") as String).toInt()
+        minSdk = (property("android.minSdk") as String).toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
