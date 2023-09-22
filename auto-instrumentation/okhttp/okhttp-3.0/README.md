@@ -7,7 +7,7 @@ Provides OpenTelemetry instrumentation for [okhttp3](https://square.github.io/ok
 ### Add these dependencies to your project
 
 Replace `OPENTELEMETRY_VERSION` with the [latest
-release](https://search.maven.org/search?q=g:io.opentelemetry.instrumentation%20AND%20a:opentelemetry-okhttp-3.0).
+release](https://search.maven.org/search?q=g:io.opentelemetry.android%20AND%20a:okhttp-3.0-library).
 
 Replace `BYTEBUDDY_VERSION` with the [latest
 release](https://search.maven.org/search?q=g:net.bytebuddy%20AND%20a:byte-buddy).
