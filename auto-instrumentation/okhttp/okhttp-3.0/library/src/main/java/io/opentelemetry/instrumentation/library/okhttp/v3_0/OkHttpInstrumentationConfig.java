@@ -37,7 +37,7 @@ public final class OkHttpInstrumentationConfig {
      * @param requestHeaders A list of HTTP header names.
      */
     public static void setCapturedRequestHeaders(@Nonnull List<String> requestHeaders) {
-        OkHttpInstrumentationConfig.capturedRequestHeaders = requestHeaders;
+        OkHttpInstrumentationConfig.capturedRequestHeaders = new ArrayList<>(requestHeaders);
     }
 
     public static List<String> getCapturedRequestHeaders() {
@@ -57,7 +57,7 @@ public final class OkHttpInstrumentationConfig {
      * @param responseHeaders A list of HTTP header names.
      */
     public static void setCapturedResponseHeaders(@Nonnull List<String> responseHeaders) {
-        OkHttpInstrumentationConfig.capturedResponseHeaders = responseHeaders;
+        OkHttpInstrumentationConfig.capturedResponseHeaders = new ArrayList<>(responseHeaders);
     }
 
     public static List<String> getCapturedResponseHeaders() {
@@ -80,7 +80,7 @@ public final class OkHttpInstrumentationConfig {
      * @param knownMethods A set of recognized HTTP request methods.
      */
     public static void setKnownMethods(@Nonnull Set<String> knownMethods) {
-        OkHttpInstrumentationConfig.knownMethods = knownMethods;
+        OkHttpInstrumentationConfig.knownMethods = new HashSet<>(knownMethods);
     }
 
     public static Set<String> getKnownMethods() {
@@ -93,7 +93,7 @@ public final class OkHttpInstrumentationConfig {
      * specification</a>.
      */
     public static void setPeerServiceMapping(@Nonnull Map<String, String> peerServiceMapping) {
-        OkHttpInstrumentationConfig.peerServiceMapping = peerServiceMapping;
+        OkHttpInstrumentationConfig.peerServiceMapping = new HashMap<>(peerServiceMapping);
     }
 
     public static Map<String, String> getPeerServiceMapping() {
