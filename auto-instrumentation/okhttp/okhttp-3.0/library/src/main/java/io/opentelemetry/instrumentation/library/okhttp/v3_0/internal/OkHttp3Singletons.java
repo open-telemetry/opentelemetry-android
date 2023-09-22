@@ -22,7 +22,10 @@ import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 
-/** Holder of singleton interceptors for adding to instrumented clients. */
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
+ */
 public final class OkHttp3Singletons {
 
     private static final Instrumenter<Request, Response> INSTRUMENTER =
