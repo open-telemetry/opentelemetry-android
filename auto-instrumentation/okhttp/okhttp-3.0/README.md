@@ -31,8 +31,7 @@ plugins {
 implementation("io.opentelemetry.android:okhttp-3.0-library:OPENTELEMETRY_VERSION")
 byteBuddy("io.opentelemetry.android:okhttp-3.0-agent:OPENTELEMETRY_VERSION")
 
-After adding the plugin and the dependencies in your project, you'll automatically get your OkHttp
-requests traced.
+After adding the plugin and the dependencies to your project, your OkHttp requests will be traced automatically.
 
 ### Configuration
 
