@@ -93,7 +93,7 @@ public final class OkHttpInstrumentationConfig {
      * specification</a>.
      */
     public static void setPeerServiceMapping(@Nonnull Map<String, String> peerServiceMapping) {
-        OkHttpInstrumentationConfig.peerServiceMapping = peerServiceMapping;
+        OkHttpInstrumentationConfig.peerServiceMapping = new HashMap<>(peerServiceMapping);
     }
 
     public static Map<String, String> getPeerServiceMapping() {
