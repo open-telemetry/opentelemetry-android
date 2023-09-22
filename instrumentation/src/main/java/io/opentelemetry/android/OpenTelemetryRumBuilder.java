@@ -21,6 +21,8 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -44,6 +46,8 @@ public final class OpenTelemetryRumBuilder {
             meterProviderCustomizers = new ArrayList<>();
     private final List<BiFunction<SdkLoggerProviderBuilder, Application, SdkLoggerProviderBuilder>>
             loggerProviderCustomizers = new ArrayList<>();
+
+    private final List<SpanExporter> spanExporters = new ArrayList<>();
     private final List<Consumer<InstrumentedApplication>> instrumentationInstallers =
             new ArrayList<>();
 
@@ -179,6 +183,19 @@ public final class OpenTelemetryRumBuilder {
         return this;
     }
 
+    /**
+     * This is a convenience method for adding SpanExporters to the underlying OpenTelemetry SDK
+     * instance that is built when the OpenTelemetryRum instance is also built. This may be used as
+     * a simpler alternative to adding a TracerProviderCustomizer via addTracerProviderCustomizer().
+     *
+     * @param exporter An exporter to use when exporting span telemetry
+     * @return this
+     */
+    public OpenTelemetryRumBuilder addSpanExporter(SpanExporter exporter) {
+        spanExporters.add(exporter);
+        return this;
+    }
+
     public SessionId getSessionId() {
         return sessionId;
     }
@@ -212,6 +229,12 @@ public final class OpenTelemetryRumBuilder {
                 SdkTracerProvider.builder()
                         .setResource(resource)
                         .addSpanProcessor(new SessionIdSpanAppender(sessionId));
+        if (!spanExporters.isEmpty()) {
+            SpanExporter groupExporter = SpanExporter.composite(spanExporters);
+            BatchSpanProcessor batchSpanProcessor =
+                    BatchSpanProcessor.builder(groupExporter).build();
+            tracerProviderBuilder.addSpanProcessor(batchSpanProcessor);
+        }
         for (BiFunction<SdkTracerProviderBuilder, Application, SdkTracerProviderBuilder>
                 customizer : tracerProviderCustomizers) {
             tracerProviderBuilder = customizer.apply(tracerProviderBuilder, application);
