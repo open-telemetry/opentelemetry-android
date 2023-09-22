@@ -37,7 +37,7 @@ public final class OkHttpInstrumentationConfig {
      * @param requestHeaders A list of HTTP header names.
      */
     public static void setCapturedRequestHeaders(@Nonnull List<String> requestHeaders) {
-        OkHttpInstrumentationConfig.capturedRequestHeaders = requestHeaders;
+        OkHttpInstrumentationConfig.capturedRequestHeaders = new ArrayList<>(requestHeaders);
     }
 
     public static List<String> getCapturedRequestHeaders() {
