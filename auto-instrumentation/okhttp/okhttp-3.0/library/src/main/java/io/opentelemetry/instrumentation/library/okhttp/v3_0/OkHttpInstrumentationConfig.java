@@ -80,7 +80,7 @@ public final class OkHttpInstrumentationConfig {
      * @param knownMethods A set of recognized HTTP request methods.
      */
     public static void setKnownMethods(@Nonnull Set<String> knownMethods) {
-        OkHttpInstrumentationConfig.knownMethods = knownMethods;
+        OkHttpInstrumentationConfig.knownMethods = new HashSet<>(knownMethods);
     }
 
     public static Set<String> getKnownMethods() {
