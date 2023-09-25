@@ -5,16 +5,18 @@
 
 package io.opentelemetry.instrumentation.library.okhttp.v3_0;
 
-import io.opentelemetry.instrumentation.api.internal.HttpConstants;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.Nonnull;
 
-/** Configuration for automatic instrumentation of okhttp requests. */
+import io.opentelemetry.instrumentation.api.internal.HttpConstants;
+
+/**
+ * Configuration for automatic instrumentation of okhttp requests.
+ */
 public final class OkHttpInstrumentationConfig {
     private static List<String> capturedRequestHeaders = new ArrayList<>();
     private static List<String> capturedResponseHeaders = new ArrayList<>();
@@ -22,7 +24,8 @@ public final class OkHttpInstrumentationConfig {
     private static Map<String, String> peerServiceMapping = new HashMap<>();
     private static boolean emitExperimentalHttpClientMetrics;
 
-    private OkHttpInstrumentationConfig() {}
+    private OkHttpInstrumentationConfig() {
+    }
 
     /**
      * Configures the HTTP request headers that will be captured as span attributes as described in
@@ -36,7 +39,7 @@ public final class OkHttpInstrumentationConfig {
      *
      * @param requestHeaders A list of HTTP header names.
      */
-    public static void setCapturedRequestHeaders(@Nonnull List<String> requestHeaders) {
+    public static void setCapturedRequestHeaders(List<String> requestHeaders) {
         OkHttpInstrumentationConfig.capturedRequestHeaders = new ArrayList<>(requestHeaders);
     }
 
@@ -56,7 +59,7 @@ public final class OkHttpInstrumentationConfig {
      *
      * @param responseHeaders A list of HTTP header names.
      */
-    public static void setCapturedResponseHeaders(@Nonnull List<String> responseHeaders) {
+    public static void setCapturedResponseHeaders(List<String> responseHeaders) {
         OkHttpInstrumentationConfig.capturedResponseHeaders = new ArrayList<>(responseHeaders);
     }
 
@@ -79,7 +82,7 @@ public final class OkHttpInstrumentationConfig {
      *
      * @param knownMethods A set of recognized HTTP request methods.
      */
-    public static void setKnownMethods(@Nonnull Set<String> knownMethods) {
+    public static void setKnownMethods(Set<String> knownMethods) {
         OkHttpInstrumentationConfig.knownMethods = new HashSet<>(knownMethods);
     }
 
@@ -92,7 +95,7 @@ public final class OkHttpInstrumentationConfig {
      * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/span-general.md#general-remote-service-attributes">the
      * specification</a>.
      */
-    public static void setPeerServiceMapping(@Nonnull Map<String, String> peerServiceMapping) {
+    public static void setPeerServiceMapping(Map<String, String> peerServiceMapping) {
         OkHttpInstrumentationConfig.peerServiceMapping = new HashMap<>(peerServiceMapping);
     }
 
