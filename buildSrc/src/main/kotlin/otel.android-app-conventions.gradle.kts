@@ -2,22 +2,17 @@ import com.android.build.api.dsl.LibraryExtension
 import org.gradle.api.publish.maven.MavenPublication
 
 plugins {
-    id("com.android.library")
+    id("com.android.application")
     id("otel.errorprone-conventions")
 }
 
 android {
+    namespace = "io.opentelemetry.android"
     compileSdk = (property("android.compileSdk") as String).toInt()
 
     defaultConfig {
         minSdk = (property("android.minSdk") as String).toInt()
-    }
-
-    lint {
-        warningsAsErrors = true
-        // A newer version of androidx.appcompat:appcompat than 1.3.1 is available: 1.4.1 [GradleDependency]
-        // we rely on dependabot for dependency updates
-        disable.add("GradleDependency")
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     compileOptions {
@@ -25,4 +20,10 @@ android {
         sourceCompatibility(javaVersion)
         targetCompatibility(javaVersion)
     }
+}
+
+val otelVersion = rootProject.property("otel.sdk.version")
+dependencies {
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("io.opentelemetry:opentelemetry-sdk-testing:$otelVersion")
 }

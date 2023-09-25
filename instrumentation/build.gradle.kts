@@ -9,7 +9,6 @@ version = project.version.toString().replaceFirst("(-SNAPSHOT)?$".toRegex(), "-a
 android {
     namespace = "io.opentelemetry.android"
 
-    compileSdk = 34
     buildToolsVersion = "34.0.0"
 
     defaultConfig {
