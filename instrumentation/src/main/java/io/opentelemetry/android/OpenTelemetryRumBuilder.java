@@ -13,6 +13,7 @@ import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -47,7 +48,7 @@ public final class OpenTelemetryRumBuilder {
     private final List<BiFunction<SdkLoggerProviderBuilder, Application, SdkLoggerProviderBuilder>>
             loggerProviderCustomizers = new ArrayList<>();
 
-    private final List<SpanExporter> spanExporters = new ArrayList<>();
+    private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
     private final List<Consumer<InstrumentedApplication>> instrumentationInstallers =
             new ArrayList<>();
 
@@ -184,15 +185,20 @@ public final class OpenTelemetryRumBuilder {
     }
 
     /**
-     * This is a convenience method for adding SpanExporters to the underlying OpenTelemetry SDK
-     * instance that is built when the OpenTelemetryRum instance is also built. This may be used as
-     * a simpler alternative to adding a TracerProviderCustomizer via addTracerProviderCustomizer().
+     * Adds a {@link Function} to invoke with the default {@link SpanExporter} to allow
+     * customization. The return value of the {@link Function} will replace the passed-in argument.
      *
-     * @param exporter An exporter to use when exporting span telemetry
-     * @return this
+     * <p>Multiple calls will execute the customizers in order.
      */
-    public OpenTelemetryRumBuilder addSpanExporter(SpanExporter exporter) {
-        spanExporters.add(exporter);
+    public OpenTelemetryRumBuilder addSpanExporterCustomizer(
+            Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer) {
+        requireNonNull(spanExporterCustomizer, "spanExporterCustomizer");
+        Function<? super SpanExporter, ? extends SpanExporter> existing = spanExporterCustomizer;
+        this.spanExporterCustomizer =
+                exporter -> {
+                    SpanExporter intermediate = existing.apply(exporter);
+                    return spanExporterCustomizer.apply(intermediate);
+                };
         return this;
     }
 
@@ -229,17 +235,22 @@ public final class OpenTelemetryRumBuilder {
                 SdkTracerProvider.builder()
                         .setResource(resource)
                         .addSpanProcessor(new SessionIdSpanAppender(sessionId));
-        if (!spanExporters.isEmpty()) {
-            SpanExporter groupExporter = SpanExporter.composite(spanExporters);
-            BatchSpanProcessor batchSpanProcessor =
-                    BatchSpanProcessor.builder(groupExporter).build();
-            tracerProviderBuilder.addSpanProcessor(batchSpanProcessor);
-        }
+
+        SpanExporter spanExporter = buildSpanExporter();
+        BatchSpanProcessor batchSpanProcessor = BatchSpanProcessor.builder(spanExporter).build();
+        tracerProviderBuilder.addSpanProcessor(batchSpanProcessor);
+
         for (BiFunction<SdkTracerProviderBuilder, Application, SdkTracerProviderBuilder>
                 customizer : tracerProviderCustomizers) {
             tracerProviderBuilder = customizer.apply(tracerProviderBuilder, application);
         }
         return tracerProviderBuilder.build();
+    }
+
+    private SpanExporter buildSpanExporter() {
+        // TODO: Default to otlp...but how can we make endpoint and auth mandatory?
+        SpanExporter defaultExporter = LoggingSpanExporter.create();
+        return spanExporterCustomizer.apply(defaultExporter);
     }
 
     private SdkMeterProvider buildMeterProvider(Application application) {

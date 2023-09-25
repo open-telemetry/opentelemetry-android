@@ -30,6 +30,7 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 import java.util.List;
+import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -140,10 +141,11 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    void setSpanExporter() {
+    void setSpanExporterCustomizer() {
         SpanExporter exporter = mock(SpanExporter.class);
+        Function<SpanExporter, SpanExporter> customizer = x -> exporter;
         OpenTelemetryRum rum =
-                OpenTelemetryRum.builder(application).addSpanExporter(exporter).build();
+                OpenTelemetryRum.builder(application).addSpanExporterCustomizer(customizer).build();
         Span span = rum.getOpenTelemetry().getTracer("test").spanBuilder("foo").startSpan();
         try (Scope scope = span.makeCurrent()) {
             // no-op
