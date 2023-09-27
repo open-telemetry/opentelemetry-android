@@ -58,7 +58,6 @@ android {
 }
 
 dependencies {
-    implementation(platform(project(":dependencyManagement")))
 
     implementation("androidx.appcompat:appcompat")
     implementation("androidx.core:core")

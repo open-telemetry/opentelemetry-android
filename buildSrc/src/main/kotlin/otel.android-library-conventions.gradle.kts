@@ -25,4 +25,8 @@ android {
         sourceCompatibility(javaVersion)
         targetCompatibility(javaVersion)
     }
+
+    dependencies {
+        implementation(platform(project(":dependencyManagement")))
+    }
 }
