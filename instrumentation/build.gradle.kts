@@ -70,6 +70,7 @@ dependencies {
     implementation("io.opentelemetry:opentelemetry-exporter-logging")
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
     implementation("io.opentelemetry:opentelemetry-semconv")
+    implementation("io.opentelemetry:opentelemetry-api-events")
 
     testImplementation("org.mockito:mockito-core:5.5.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.5.0")
