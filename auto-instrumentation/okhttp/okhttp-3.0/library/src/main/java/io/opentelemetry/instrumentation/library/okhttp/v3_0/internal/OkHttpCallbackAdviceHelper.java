@@ -11,13 +11,16 @@ import okhttp3.Request;
  */
 public final class OkHttpCallbackAdviceHelper {
 
-    public static void onEnterDispatcherEnqueue(Call call) {
+    public static boolean propagateContext(Call call) {
         Context context = Context.current();
         if (shouldPropagateContext(context)) {
             VirtualField<Request, Context> virtualField =
                     VirtualField.find(Request.class, Context.class);
             virtualField.set(call.request(), context);
+            return true;
         }
+
+        return false;
     }
 
     public static Context tryRecoverPropagatedContextFromCallback(Request request) {

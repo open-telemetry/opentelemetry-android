@@ -97,7 +97,7 @@ public class InstrumentationTest {
 
                 @Override
                 public void onResponse(@NonNull Call call, @NonNull Response response) {
-                    assertEquals(Context.root().with(span), Context.current());
+                    assertEquals(span, Span.current());
                     lock.countDown();
                 }
             });
@@ -105,6 +105,7 @@ public class InstrumentationTest {
         }
 
         lock.await();
+        span.end();
 
         assertEquals(2, spanExporter.getFinishedSpanItems().size());
     }
