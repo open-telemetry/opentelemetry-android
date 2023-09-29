@@ -87,6 +87,7 @@ public class InstrumentationTest {
             OkHttpClient client = new OkHttpClient.Builder()
                     .addInterceptor(chain -> {
                         SpanContext currentSpan = Span.current().getSpanContext();
+                        // Verify context propagation.
                         assertEquals(span.getSpanContext().getTraceId(), currentSpan.getTraceId());
                         return chain.proceed(chain.request());
                     })
@@ -98,6 +99,7 @@ public class InstrumentationTest {
 
                 @Override
                 public void onResponse(@NonNull Call call, @NonNull Response response) {
+                    // Verify that the original caller's context is the current one here.
                     assertEquals(span, Span.current());
                     lock.countDown();
                 }
