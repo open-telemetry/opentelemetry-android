@@ -8,6 +8,8 @@ package io.opentelemetry.android;
 import static io.opentelemetry.android.RumConstants.SESSION_ID_KEY;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static org.awaitility.Awaitility.await;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -16,14 +18,19 @@ import static org.mockito.Mockito.when;
 import android.app.Activity;
 import android.app.Application;
 import io.opentelemetry.android.instrumentation.ApplicationStateListener;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.time.Duration;
 import java.util.List;
+import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -131,5 +138,22 @@ class OpenTelemetryRumBuilderTest {
                         .build();
         TextMapPropagator result = rum.getOpenTelemetry().getPropagators().getTextMapPropagator();
         assertThat(result).isSameAs(customPropagator);
+    }
+
+    @Test
+    void setSpanExporterCustomizer() {
+        SpanExporter exporter = mock(SpanExporter.class);
+        Function<SpanExporter, SpanExporter> customizer = x -> exporter;
+        OpenTelemetryRum rum =
+                OpenTelemetryRum.builder(application).addSpanExporterCustomizer(customizer).build();
+        Span span = rum.getOpenTelemetry().getTracer("test").spanBuilder("foo").startSpan();
+        try (Scope scope = span.makeCurrent()) {
+            // no-op
+        } finally {
+            span.end();
+        }
+        // 5 sec is default
+        await().atMost(Duration.ofSeconds(30))
+                .untilAsserted(() -> verify(exporter).export(anyCollection()));
     }
 }
