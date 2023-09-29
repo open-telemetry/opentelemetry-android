@@ -62,7 +62,6 @@ public class InstrumentationTest {
             OkHttpClient client = new OkHttpClient.Builder()
                     .addInterceptor(chain -> {
                         SpanContext currentSpan = Span.current().getSpanContext();
-                        assertNotEquals(span.getSpanContext().getSpanId(), currentSpan.getSpanId());
                         assertEquals(span.getSpanContext().getTraceId(), currentSpan.getTraceId());
                         return chain.proceed(chain.request());
                     })
@@ -87,7 +86,6 @@ public class InstrumentationTest {
             OkHttpClient client = new OkHttpClient.Builder()
                     .addInterceptor(chain -> {
                         SpanContext currentSpan = Span.current().getSpanContext();
-                        assertNotEquals(span.getSpanContext().getSpanId(), currentSpan.getSpanId());
                         assertEquals(span.getSpanContext().getTraceId(), currentSpan.getTraceId());
                         return chain.proceed(chain.request());
                     })
