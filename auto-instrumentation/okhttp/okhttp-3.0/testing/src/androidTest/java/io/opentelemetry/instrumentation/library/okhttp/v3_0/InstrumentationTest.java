@@ -6,6 +6,7 @@
 package io.opentelemetry.instrumentation.library.okhttp.v3_0;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import androidx.annotation.NonNull;
 
@@ -18,6 +19,7 @@ import java.util.concurrent.CountDownLatch;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -26,6 +28,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -53,22 +56,42 @@ public class InstrumentationTest {
 
         server.enqueue(new MockResponse().setResponseCode(200));
 
-        OkHttpClient client = new OkHttpClient();
-        createCall(client, "/test/").execute();
+        Span span = getSpan();
 
-        assertEquals(1, spanExporter.getFinishedSpanItems().size());
+        try (Scope ignored = span.makeCurrent()) {
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .addInterceptor(chain -> {
+                        SpanContext currentSpan = Span.current().getSpanContext();
+                        assertNotEquals(span.getSpanContext().getSpanId(), currentSpan.getSpanId());
+                        assertEquals(span.getSpanContext().getTraceId(), currentSpan.getTraceId());
+                        return chain.proceed(chain.request());
+                    })
+                    .build();
+            createCall(client, "/test/").execute();
+        }
+
+        span.end();
+
+        assertEquals(2, spanExporter.getFinishedSpanItems().size());
     }
 
     @Test
     public void okhttpTraces_with_callback() throws InterruptedException {
         CountDownLatch lock = new CountDownLatch(1);
         InMemorySpanExporter spanExporter = getInMemorySpanExporter();
-        Span span = GlobalOpenTelemetry.getTracer("TestTracer").spanBuilder("A Span").startSpan();
+        Span span = getSpan();
 
         try (Scope ignored = span.makeCurrent()) {
             server.enqueue(new MockResponse().setResponseCode(200));
 
-            OkHttpClient client = new OkHttpClient();
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .addInterceptor(chain -> {
+                        SpanContext currentSpan = Span.current().getSpanContext();
+                        assertNotEquals(span.getSpanContext().getSpanId(), currentSpan.getSpanId());
+                        assertEquals(span.getSpanContext().getTraceId(), currentSpan.getTraceId());
+                        return chain.proceed(chain.request());
+                    })
+                    .build();
             createCall(client, "/test/").enqueue(new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
@@ -85,7 +108,11 @@ public class InstrumentationTest {
 
         lock.await();
 
-        assertEquals(1, spanExporter.getFinishedSpanItems().size());
+        assertEquals(2, spanExporter.getFinishedSpanItems().size());
+    }
+
+    private static Span getSpan() {
+        return GlobalOpenTelemetry.getTracer("TestTracer").spanBuilder("A Span").startSpan();
     }
 
     @NonNull
