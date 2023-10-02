@@ -3,9 +3,9 @@ plugins {
     id("otel.publish-conventions")
 }
 
-val otelVersion = project.property("otel.sdk.version")
 dependencies {
+    // Pin at 3.0.0 for api compatibility
     api("com.squareup.okhttp3:okhttp:3.0.0")
-    api("io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0:$otelVersion-alpha")
-    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:$otelVersion-alpha")
+    api("io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
 }

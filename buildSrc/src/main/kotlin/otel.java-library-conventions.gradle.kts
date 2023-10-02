@@ -1,3 +1,4 @@
+import gradle.kotlin.dsl.accessors._98848321c7233c2f7fb697478033dcb2.implementation
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
 
 plugins {
@@ -13,6 +14,7 @@ java {
 }
 
 dependencies {
+    implementation(platform(project(":dependencyManagement")))
     signature("com.toasttab.android:gummy-bears-api-${project.property("android.minSdk")}:0.5.1:coreLib@signature")
     implementation("com.google.code.findbugs:jsr305:3.0.2")
 }
