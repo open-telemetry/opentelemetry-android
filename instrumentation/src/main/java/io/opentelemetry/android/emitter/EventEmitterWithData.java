@@ -30,7 +30,6 @@ class EventEmitterWithData {
 
     private Attributes convertRichDataObjectIntoAttributes(Map<String, Object> data) {
         AttributesBuilder builder = Attributes.builder();
-
         for (String key : data.keySet()) {
             Object val = data.get(key);
             if (val != null) {
