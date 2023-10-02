@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.emitter;
 
 import io.opentelemetry.api.common.Attributes;
@@ -47,4 +52,3 @@ class EventEmitterWithData {
         return builder.build();
     }
 }
-
