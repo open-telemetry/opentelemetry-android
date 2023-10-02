@@ -4,6 +4,8 @@ plugins {
 }
 
 dependencies {
+    implementation(platform(project(":dependencyManagement")))
+
     byteBuddy(project(":auto-instrumentation:okhttp:okhttp-3.0:agent"))
     implementation(project(":auto-instrumentation:okhttp:okhttp-3.0:library"))
     implementation("com.squareup.okhttp3:okhttp")

@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    implementation(platform(project(":dependencyManagement")))
     // Pin at 3.0.0 for api compatibility
     api("com.squareup.okhttp3:okhttp:3.0.0")
     api("io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0")

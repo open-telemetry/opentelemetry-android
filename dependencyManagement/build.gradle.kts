@@ -40,7 +40,7 @@ dependencies {
     api(enforcedPlatform("org.junit:junit-bom:$junitVersion"))
     api(enforcedPlatform("io.opentelemetry:opentelemetry-bom-alpha:$otelSdkAlphaVersion"))
     api(enforcedPlatform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:$otelInstrumentationAlphaVersion"))
-    api(platform("com.squareup.okhttp3:okhttp-bom:$okhttpVersion"))
+    api(enforcedPlatform("com.squareup.okhttp3:okhttp-bom:$okhttpVersion"))
 
     constraints {
         api("androidx.appcompat:appcompat:$appCompatVersion")

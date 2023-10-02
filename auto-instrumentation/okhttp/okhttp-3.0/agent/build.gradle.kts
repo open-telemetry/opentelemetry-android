@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    implementation(platform(project(":dependencyManagement")))
     implementation(project(":auto-instrumentation:okhttp:okhttp-3.0:library"))
     implementation("net.bytebuddy:byte-buddy:${property("bytebuddy.version")}")
 }
