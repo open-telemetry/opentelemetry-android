@@ -23,9 +23,8 @@ android {
     }
 }
 
+val otelVersion = rootProject.property("otel.sdk.version")
 dependencies {
-    implementation(platform(project(":dependencyManagement")))
-
-    androidTestImplementation("androidx.test:runner:${rootProject.extra["androidTestRunnerVersion"]}")
-    androidTestImplementation("io.opentelemetry:opentelemetry-sdk-testing:${rootProject.extra["otelSdkVersion"]}")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("io.opentelemetry:opentelemetry-sdk-testing:$otelVersion")
 }
