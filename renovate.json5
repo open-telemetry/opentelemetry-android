@@ -19,12 +19,6 @@
       "enabled": false
     },
     {
-      // pin okhttp at 3.0.0 for api compatibility
-      "matchPackageNames": ["com.squareup.okhttp3:okhttp"],
-      "matchUpdateTypes": ["major", "minor"],
-      "enabled": false
-    },
-    {
       // somehow renovate gets confused by the android property in gradle.properties,
       // so let's just exclude it and hopefully clean up the dashboard
       "matchPackageNames": ["string:rum.version"],
