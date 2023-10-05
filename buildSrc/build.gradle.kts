@@ -19,7 +19,6 @@ repositories {
 }
 
 dependencies {
-    // keep this version in sync with /build.gradle.kts
     implementation(libs.androd.plugin)
     implementation(libs.spotless.plugin)
     implementation(libs.errorprone.plugin)
