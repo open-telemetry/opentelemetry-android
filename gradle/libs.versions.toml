@@ -8,6 +8,7 @@ opentelemetry-platform = { module = "io.opentelemetry.instrumentation:openteleme
 androidx-appcompat = "androidx.appcompat:appcompat:1.6.1"
 androidx-navigation-fragment = "androidx.navigation:navigation-fragment:2.7.4"
 androidx-core = "androidx.core:core:1.12.0"
+findbugs-jsr305 = "com.google.code.findbugs:jsr305:3.0.2"
 
 #Testing
 opentelemetry-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-testing", version.ref = "opentelemetry" }
@@ -27,7 +28,6 @@ desugarJdkLibs = "com.android.tools:desugar_jdk_libs:2.0.3"
 nullaway = "com.uber.nullaway:nullaway:0.10.14"
 errorprone-core = "com.google.errorprone:error_prone_core:2.22.0"
 errorprone-javac = "com.google.errorprone:javac:9+181-r4173-1"
-findbugs-jsr305 = "com.google.code.findbugs:jsr305:3.0.2"
 spotless-plugin = "com.diffplug.spotless:spotless-plugin-gradle:6.22.0"
 errorprone-plugin = "net.ltgt.gradle:gradle-errorprone-plugin:3.1.0"
 nullaway-plugin = "net.ltgt.gradle:gradle-nullaway-plugin:1.6.0"
