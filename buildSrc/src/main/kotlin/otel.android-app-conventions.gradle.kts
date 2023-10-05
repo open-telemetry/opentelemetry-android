@@ -23,8 +23,8 @@ android {
     }
 }
 
-val otelVersion = rootProject.property("otel.sdk.version")
+val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 dependencies {
-    androidTestImplementation("androidx.test:runner:1.5.2")
-    androidTestImplementation("io.opentelemetry:opentelemetry-sdk-testing:$otelVersion")
+    androidTestImplementation(libs.findLibrary("androidx-test-runner").get())
+    androidTestImplementation(libs.findLibrary("opentelemetry-sdk-testing").get())
 }

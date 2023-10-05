@@ -20,10 +20,9 @@ repositories {
 
 dependencies {
     // keep this version in sync with /build.gradle.kts
-    implementation("com.android.tools.build:gradle:8.1.2")
-
-    implementation("com.diffplug.spotless:spotless-plugin-gradle:6.22.0")
-    implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.1.0")
-    implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.6.0")
-    implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.1")
+    implementation(libs.androd.plugin)
+    implementation(libs.spotless.plugin)
+    implementation(libs.errorprone.plugin)
+    implementation(libs.nullaway.plugin)
+    implementation(libs.animalsniffer.plugin)
 }
