@@ -1,9 +1,9 @@
 [versions]
 opentelemetry = "1.29.0"
 opentelemetry-alpha = "1.29.0-alpha"
-mockito = "5.5.0"
+mockito = "5.6.0"
 junit = "5.10.0"
-byteBuddy = "1.14.8"
+byteBuddy = "1.14.9"
 okhttp = "4.11.0"
 spotless = "6.22.0"
 
