@@ -60,7 +60,7 @@ android {
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.core:core:1.12.0")
-    implementation("androidx.navigation:navigation-fragment:2.7.3")
+    implementation("androidx.navigation:navigation-fragment:2.7.4")
 
     api(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${property("otel.sdk.version")}-alpha"))
     api("io.opentelemetry:opentelemetry-api")
@@ -71,8 +71,8 @@ dependencies {
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
     implementation("io.opentelemetry:opentelemetry-semconv")
 
-    testImplementation("org.mockito:mockito-core:5.5.0")
-    testImplementation("org.mockito:mockito-junit-jupiter:5.5.0")
+    testImplementation("org.mockito:mockito-core:5.6.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.6.0")
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.junit.jupiter:junit-jupiter-engine")
