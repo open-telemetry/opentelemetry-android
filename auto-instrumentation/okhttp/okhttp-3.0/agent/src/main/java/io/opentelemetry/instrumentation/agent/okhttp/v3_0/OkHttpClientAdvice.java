@@ -6,9 +6,7 @@
 package io.opentelemetry.instrumentation.agent.okhttp.v3_0;
 
 import io.opentelemetry.instrumentation.library.okhttp.v3_0.internal.OkHttp3Singletons;
-
 import net.bytebuddy.asm.Advice;
-
 import okhttp3.OkHttpClient;
 
 public class OkHttpClientAdvice {

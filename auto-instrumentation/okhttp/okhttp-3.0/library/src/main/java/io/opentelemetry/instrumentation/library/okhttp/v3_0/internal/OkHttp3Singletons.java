@@ -47,7 +47,8 @@ public final class OkHttp3Singletons {
     public static final Interceptor CALLBACK_CONTEXT_INTERCEPTOR =
             chain -> {
                 Request request = chain.request();
-                Context context = OkHttpCallbackAdviceHelper.tryRecoverPropagatedContextFromCallback(request);
+                Context context =
+                        OkHttpCallbackAdviceHelper.tryRecoverPropagatedContextFromCallback(request);
                 if (context != null) {
                     try (Scope ignored = context.makeCurrent()) {
                         return chain.proceed(request);
@@ -70,6 +71,5 @@ public final class OkHttp3Singletons {
     public static final Interceptor TRACING_INTERCEPTOR =
             new TracingInterceptor(INSTRUMENTER, GlobalOpenTelemetry.getPropagators());
 
-    private OkHttp3Singletons() {
-    }
+    private OkHttp3Singletons() {}
 }

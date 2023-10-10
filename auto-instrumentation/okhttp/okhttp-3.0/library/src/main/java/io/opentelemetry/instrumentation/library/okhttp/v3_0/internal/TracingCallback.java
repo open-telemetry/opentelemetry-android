@@ -1,9 +1,13 @@
-package io.opentelemetry.instrumentation.library.okhttp.v3_0.internal;
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-import java.io.IOException;
+package io.opentelemetry.instrumentation.library.okhttp.v3_0.internal;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import java.io.IOException;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;

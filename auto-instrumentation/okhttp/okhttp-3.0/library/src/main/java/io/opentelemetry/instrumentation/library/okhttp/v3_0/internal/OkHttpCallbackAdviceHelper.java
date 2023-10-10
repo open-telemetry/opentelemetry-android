@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.instrumentation.library.okhttp.v3_0.internal;
 
 import io.opentelemetry.context.Context;
@@ -24,7 +29,8 @@ public final class OkHttpCallbackAdviceHelper {
     }
 
     public static Context tryRecoverPropagatedContextFromCallback(Request request) {
-        VirtualField<Request, Context> virtualField = VirtualField.find(Request.class, Context.class);
+        VirtualField<Request, Context> virtualField =
+                VirtualField.find(Request.class, Context.class);
         return virtualField.get(request);
     }
 
