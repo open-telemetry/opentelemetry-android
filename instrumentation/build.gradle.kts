@@ -58,11 +58,11 @@ android {
 }
 
 dependencies {
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.core:core:1.12.0")
-    implementation("androidx.navigation:navigation-fragment:2.7.4")
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.core)
+    implementation(libs.androidx.navigation.fragment)
 
-    api(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${property("otel.sdk.version")}-alpha"))
+    api(platform(libs.opentelemetry.platform))
     api("io.opentelemetry:opentelemetry-api")
     implementation("io.opentelemetry:opentelemetry-sdk")
     implementation("io.opentelemetry:opentelemetry-exporter-zipkin")
@@ -71,19 +71,15 @@ dependencies {
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
     implementation("io.opentelemetry:opentelemetry-semconv")
 
-    testImplementation("org.mockito:mockito-core:5.6.0")
-    testImplementation("org.mockito:mockito-junit-jupiter:5.6.0")
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine")
-    testImplementation("org.junit.vintage:junit-vintage-engine")
+    testImplementation(libs.bundles.mockito)
+    testImplementation(libs.bundles.junit)
     testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
-    testImplementation("org.robolectric:robolectric:4.10.3")
-    testImplementation("androidx.test:core:1.5.0")
-    testImplementation("org.assertj:assertj-core:3.24.2")
-    testImplementation("org.awaitility:awaitility:4.2.0")
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.assertj.core)
+    testImplementation(libs.awaitility)
 
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+    coreLibraryDesugaring(libs.desugarJdkLibs)
 }
 
 tasks.withType<Test> {

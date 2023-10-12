@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation(project(":auto-instrumentation:okhttp:okhttp-3.0:library"))
-    implementation("net.bytebuddy:byte-buddy:${property("bytebuddy.version")}")
+    implementation(libs.okhttp)
+    implementation(libs.byteBuddy)
 }
