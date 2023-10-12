@@ -1,6 +1,6 @@
 [versions]
 opentelemetry = "1.31.0"
-opentelemetry-alpha = "1.29.0-alpha"
+opentelemetry-alpha = "1.31.0-alpha"
 mockito = "5.6.0"
 junit = "5.10.0"
 byteBuddy = "1.14.9"
