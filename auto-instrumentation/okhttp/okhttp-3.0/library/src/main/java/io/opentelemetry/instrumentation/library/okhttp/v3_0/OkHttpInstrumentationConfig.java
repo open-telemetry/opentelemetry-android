@@ -5,6 +5,7 @@
 
 package io.opentelemetry.instrumentation.library.okhttp.v3_0;
 
+import io.opentelemetry.instrumentation.api.instrumenter.net.PeerServiceResolver;
 import io.opentelemetry.instrumentation.api.internal.HttpConstants;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -95,8 +96,8 @@ public final class OkHttpInstrumentationConfig {
         OkHttpInstrumentationConfig.peerServiceMapping = new HashMap<>(peerServiceMapping);
     }
 
-    public static Map<String, String> getPeerServiceMapping() {
-        return peerServiceMapping;
+    public static PeerServiceResolver newPeerServiceResolver(){
+        return PeerServiceResolver.create(peerServiceMapping);
     }
 
     /**

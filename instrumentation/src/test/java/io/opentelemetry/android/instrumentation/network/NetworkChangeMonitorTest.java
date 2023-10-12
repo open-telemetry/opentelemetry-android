@@ -18,7 +18,7 @@ import io.opentelemetry.android.instrumentation.InstrumentedApplication;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.SemanticAttributes;
 import java.util.List;
 import org.junit.After;
 import org.junit.Before;

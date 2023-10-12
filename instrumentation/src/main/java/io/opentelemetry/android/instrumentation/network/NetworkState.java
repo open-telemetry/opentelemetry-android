@@ -5,13 +5,13 @@
 
 package io.opentelemetry.android.instrumentation.network;
 
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.SemanticAttributes;
 
 enum NetworkState {
-    NO_NETWORK_AVAILABLE(SemanticAttributes.NetHostConnectionTypeValues.UNAVAILABLE),
-    TRANSPORT_CELLULAR(SemanticAttributes.NetHostConnectionTypeValues.CELL),
-    TRANSPORT_WIFI(SemanticAttributes.NetHostConnectionTypeValues.WIFI),
-    TRANSPORT_UNKNOWN(SemanticAttributes.NetHostConnectionTypeValues.UNKNOWN),
+    NO_NETWORK_AVAILABLE(SemanticAttributes.NetworkConnectionTypeValues.UNAVAILABLE),
+    TRANSPORT_CELLULAR(SemanticAttributes.NetworkConnectionTypeValues.CELL),
+    TRANSPORT_WIFI(SemanticAttributes.NetworkConnectionTypeValues.WIFI),
+    TRANSPORT_UNKNOWN(SemanticAttributes.NetworkConnectionTypeValues.UNKNOWN),
     // this one doesn't seem to have an otel value at this point.
     TRANSPORT_VPN("vpn");
 

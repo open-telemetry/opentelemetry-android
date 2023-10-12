@@ -2,7 +2,16 @@
 
 ## Unreleased
 
-- tbd
+- Update to java instrumentation 1.31.0
+- Update to java sdk 1.31.0
+- BREAKING - Update to latest java semantic conventions
+ - `net.host.connection.type` -> `network.connection.type`
+ - `net.host.carrier.icc` -> `network.carrier.icc`
+ - `net.host.carrier.mcc` -> `network.carrier.mcc`
+ - `net.host.carrier.mnc` -> `network.carrier.mnc`
+ - `net.host.carrier.name` -> `network.carrier.name`
+ - `net.host.connection.type` -> `network.connection.type`
+ - `net.host.connection.subtype` -> `network.connection.subtype`
 
 ## Version 0.1.0 (2023-09-13)
 

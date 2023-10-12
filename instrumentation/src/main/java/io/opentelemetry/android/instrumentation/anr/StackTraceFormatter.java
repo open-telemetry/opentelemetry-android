@@ -5,10 +5,11 @@
 
 package io.opentelemetry.android.instrumentation.anr;
 
+import static io.opentelemetry.semconv.SemanticAttributes.EXCEPTION_STACKTRACE;
+
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 final class StackTraceFormatter implements AttributesExtractor<StackTraceElement[], Void> {
 
@@ -19,7 +20,7 @@ final class StackTraceFormatter implements AttributesExtractor<StackTraceElement
         for (StackTraceElement stackTraceElement : stackTrace) {
             stackTraceString.append(stackTraceElement).append("\n");
         }
-        attributes.put(SemanticAttributes.EXCEPTION_STACKTRACE, stackTraceString.toString());
+        attributes.put(EXCEPTION_STACKTRACE, stackTraceString.toString());
     }
 
     @Override

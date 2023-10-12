@@ -69,7 +69,7 @@ dependencies {
     implementation("io.zipkin.reporter2:zipkin-sender-okhttp3")
     implementation("io.opentelemetry:opentelemetry-exporter-logging")
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
-    implementation("io.opentelemetry:opentelemetry-semconv")
+    implementation("io.opentelemetry.semconv:opentelemetry-semconv")
 
     testImplementation(libs.bundles.mockito)
     testImplementation(libs.bundles.junit)
