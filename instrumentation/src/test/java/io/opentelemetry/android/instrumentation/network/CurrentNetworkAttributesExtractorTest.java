@@ -38,12 +38,12 @@ public class CurrentNetworkAttributesExtractorTest {
 
         assertThat(underTest.extract(currentNetwork))
                 .containsOnly(
-                        entry(SemanticAttributes.NET_HOST_CONNECTION_TYPE, "cell"),
-                        entry(SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE, "aaa"),
-                        entry(SemanticAttributes.NET_HOST_CARRIER_NAME, "ShadyTel"),
-                        entry(SemanticAttributes.NET_HOST_CARRIER_ICC, "US"),
-                        entry(SemanticAttributes.NET_HOST_CARRIER_MCC, "usa"),
-                        entry(SemanticAttributes.NET_HOST_CARRIER_MNC, "omg"));
+                        entry(SemanticAttributes.NETWORK_CONNECTION_TYPE, "cell"),
+                        entry(SemanticAttributes.NETWORK_CONNECTION_SUBTYPE, "aaa"),
+                        entry(SemanticAttributes.NETWORK_CARRIER_NAME, "ShadyTel"),
+                        entry(SemanticAttributes.NETWORK_CARRIER_ICC, "US"),
+                        entry(SemanticAttributes.NETWORK_CARRIER_MCC, "usa"),
+                        entry(SemanticAttributes.NETWORK_CARRIER_MNC, "omg"));
     }
 
     @Config(sdk = Build.VERSION_CODES.O)
@@ -57,7 +57,7 @@ public class CurrentNetworkAttributesExtractorTest {
 
         assertThat(underTest.extract(currentNetwork))
                 .containsOnly(
-                        entry(SemanticAttributes.NET_HOST_CONNECTION_TYPE, "cell"),
-                        entry(SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE, "aaa"));
+                        entry(SemanticAttributes.NETWORK_CONNECTION_TYPE, "cell"),
+                        entry(SemanticAttributes.NETWORK_CONNECTION_SUBTYPE, "aaa"));
     }
 }

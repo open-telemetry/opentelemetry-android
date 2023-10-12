@@ -42,8 +42,8 @@ class NetworkAttributesSpanAppenderTest {
         verify(span)
                 .setAllAttributes(
                         Attributes.of(
-                                SemanticAttributes.NET_HOST_CONNECTION_TYPE, "cell",
-                                SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE, "LTE"));
+                                SemanticAttributes.NETWORK_CONNECTION_TYPE, "cell",
+                                SemanticAttributes.NETWORK_CONNECTION_SUBTYPE, "LTE"));
 
         assertFalse(underTest.isEndRequired());
     }
