@@ -96,7 +96,7 @@ public final class OkHttpInstrumentationConfig {
         OkHttpInstrumentationConfig.peerServiceMapping = new HashMap<>(peerServiceMapping);
     }
 
-    public static PeerServiceResolver newPeerServiceResolver(){
+    public static PeerServiceResolver newPeerServiceResolver() {
         return PeerServiceResolver.create(peerServiceMapping);
     }
 

@@ -39,17 +39,18 @@ public final class OkHttp3Singletons {
                                                     .getCapturedResponseHeaders())
                                     .setKnownMethods(OkHttpInstrumentationConfig.getKnownMethods()),
                     spanNameExtractorConfigurer -> {
-                        //nop?
+                        // nop?
                     },
                     singletonList(
-                                    PeerServiceAttributesExtractor.create(
-                                            OkHttpAttributesGetter.INSTANCE,
-                                            OkHttpInstrumentationConfig.newPeerServiceResolver())),
+                            PeerServiceAttributesExtractor.create(
+                                    OkHttpAttributesGetter.INSTANCE,
+                                    OkHttpInstrumentationConfig.newPeerServiceResolver())),
                     OkHttpInstrumentationConfig.emitExperimentalHttpClientMetrics());
 
     public static final Interceptor CONTEXT_INTERCEPTOR =
             chain -> {
-                try (Scope ignored = HttpClientResendCount.initialize(Context.current()).makeCurrent()) {
+                try (Scope ignored =
+                        HttpClientResendCount.initialize(Context.current()).makeCurrent()) {
                     return chain.proceed(chain.request());
                 }
             };

@@ -6,7 +6,6 @@
 package io.opentelemetry.android;
 
 import static io.opentelemetry.android.RumConstants.RUM_SDK_VERSION;
-import static io.opentelemetry.semconv.ResourceAttributes.SERVICE_NAME;
 import static io.opentelemetry.semconv.ResourceAttributes.DEVICE_MANUFACTURER;
 import static io.opentelemetry.semconv.ResourceAttributes.DEVICE_MODEL_IDENTIFIER;
 import static io.opentelemetry.semconv.ResourceAttributes.DEVICE_MODEL_NAME;
@@ -14,6 +13,7 @@ import static io.opentelemetry.semconv.ResourceAttributes.OS_DESCRIPTION;
 import static io.opentelemetry.semconv.ResourceAttributes.OS_NAME;
 import static io.opentelemetry.semconv.ResourceAttributes.OS_TYPE;
 import static io.opentelemetry.semconv.ResourceAttributes.OS_VERSION;
+import static io.opentelemetry.semconv.ResourceAttributes.SERVICE_NAME;
 
 import android.app.Application;
 import android.os.Build;
