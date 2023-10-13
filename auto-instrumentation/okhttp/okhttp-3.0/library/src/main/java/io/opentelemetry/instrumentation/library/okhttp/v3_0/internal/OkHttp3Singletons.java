@@ -38,9 +38,9 @@ public final class OkHttp3Singletons {
                                             OkHttpInstrumentationConfig
                                                     .getCapturedResponseHeaders())
                                     .setKnownMethods(OkHttpInstrumentationConfig.getKnownMethods()),
-                    spanNameExtractorConfigurer -> {
-                        // nop?
-                    },
+                    spanNameExtractorConfigurer ->
+                            spanNameExtractorConfigurer.setKnownMethods(
+                                    OkHttpInstrumentationConfig.getKnownMethods()),
                     singletonList(
                             PeerServiceAttributesExtractor.create(
                                     OkHttpAttributesGetter.INSTANCE,
