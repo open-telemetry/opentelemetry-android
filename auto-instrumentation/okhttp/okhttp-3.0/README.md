@@ -1,5 +1,7 @@
 # Android Instrumentation for OkHttp version 3.0 and higher
 
+# 🚧Work in progress 🚧
+
 Provides OpenTelemetry instrumentation for [okhttp3](https://square.github.io/okhttp/).
 
 ## Quickstart
@@ -15,7 +17,7 @@ release](https://search.maven.org/search?q=g:net.bytebuddy%20AND%20a:byte-buddy)
 #### Byte buddy compilation plugin
 
 This plugin leverages
-Android's [ASM API](https://developer.android.com/reference/tools/gradle-api/8.0/com/android/build/api/instrumentation/AsmClassVisitorFactory)
+Android's [Transform API](https://developer.android.com/reference/tools/gradle-api/current/com/android/build/api/variant/ScopedArtifactsOperation#toTransform(com.android.build.api.artifact.ScopedArtifact,kotlin.Function1,kotlin.Function1,kotlin.Function1))
 to instrument bytecode at compile time. You can find more info on
 its [repo page](https://github.com/raphw/byte-buddy/tree/master/byte-buddy-gradle-plugin/android-plugin.
 
@@ -30,8 +32,10 @@ plugins {
 ```kotlin
 implementation("io.opentelemetry.android:okhttp-3.0-library:OPENTELEMETRY_VERSION")
 byteBuddy("io.opentelemetry.android:okhttp-3.0-agent:OPENTELEMETRY_VERSION")
+```
 
-After adding the plugin and the dependencies to your project, your OkHttp requests will be traced automatically.
+After adding the plugin and the dependencies to your project, your OkHttp requests will be traced
+automatically.
 
 ### Configuration
 
