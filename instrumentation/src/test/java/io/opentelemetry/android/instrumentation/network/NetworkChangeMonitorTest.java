@@ -18,7 +18,7 @@ import io.opentelemetry.android.instrumentation.InstrumentedApplication;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.SemanticAttributes;
 import java.util.List;
 import org.junit.After;
 import org.junit.Before;
@@ -74,7 +74,7 @@ public class NetworkChangeMonitorTest {
                 .hasName("network.change")
                 .hasAttributesSatisfyingExactly(
                         equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "available"),
-                        equalTo(SemanticAttributes.NET_HOST_CONNECTION_TYPE, "wifi"));
+                        equalTo(SemanticAttributes.NETWORK_CONNECTION_TYPE, "wifi"));
     }
 
     @Test
@@ -106,12 +106,12 @@ public class NetworkChangeMonitorTest {
                 .hasName("network.change")
                 .hasAttributesSatisfyingExactly(
                         equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "available"),
-                        equalTo(SemanticAttributes.NET_HOST_CONNECTION_TYPE, "cell"),
-                        equalTo(SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE, "LTE"),
-                        equalTo(SemanticAttributes.NET_HOST_CARRIER_NAME, "ShadyTel"),
-                        equalTo(SemanticAttributes.NET_HOST_CARRIER_ICC, "US"),
-                        equalTo(SemanticAttributes.NET_HOST_CARRIER_MCC, "usa"),
-                        equalTo(SemanticAttributes.NET_HOST_CARRIER_MNC, "omg"));
+                        equalTo(SemanticAttributes.NETWORK_CONNECTION_TYPE, "cell"),
+                        equalTo(SemanticAttributes.NETWORK_CONNECTION_SUBTYPE, "LTE"),
+                        equalTo(SemanticAttributes.NETWORK_CARRIER_NAME, "ShadyTel"),
+                        equalTo(SemanticAttributes.NETWORK_CARRIER_ICC, "US"),
+                        equalTo(SemanticAttributes.NETWORK_CARRIER_MCC, "usa"),
+                        equalTo(SemanticAttributes.NETWORK_CARRIER_MNC, "omg"));
     }
 
     @Test
@@ -130,7 +130,7 @@ public class NetworkChangeMonitorTest {
                 .hasName("network.change")
                 .hasAttributesSatisfyingExactly(
                         equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "lost"),
-                        equalTo(SemanticAttributes.NET_HOST_CONNECTION_TYPE, "unavailable"));
+                        equalTo(SemanticAttributes.NETWORK_CONNECTION_TYPE, "unavailable"));
     }
 
     @Test

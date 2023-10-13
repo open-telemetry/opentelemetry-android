@@ -8,7 +8,7 @@ package io.opentelemetry.android.instrumentation.crash;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.SemanticAttributes;
 
 final class CrashDetailsAttributesExtractor implements AttributesExtractor<CrashDetails, Void> {
 
