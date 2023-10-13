@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.androd.plugin)
+    implementation(libs.android.plugin)
     implementation(libs.spotless.plugin)
     implementation(libs.errorprone.plugin)
     implementation(libs.nullaway.plugin)
