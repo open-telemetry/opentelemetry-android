@@ -34,18 +34,18 @@ class EventEmitterWithData {
             Object val = data.get(key);
             if (val != null) {
                 if (val instanceof String) {
-                    builder.put(key, (String) Objects.requireNonNull(data.get(key)));
+                    builder.put(key, (String) val);
                 }
                 if (val instanceof Long) {
-                    builder.put(key, (Long) Objects.requireNonNull(data.get(key)));
+                    builder.put(key, (Long) val);
                 }
                 if (val instanceof Double) {
-                    builder.put(key, (Double) Objects.requireNonNull(data.get(key)));
+                    builder.put(key, (Double) val);
                 }
                 if (val instanceof Boolean) {
-                    builder.put(key, (Boolean) Objects.requireNonNull(data.get(key)));
+                    builder.put(key, (Boolean) val);
                 } else {
-                    builder.put(key, (String) Objects.requireNonNull(data.get(key)).toString());
+                    builder.put(key, val.toString());
                 }
             }
         }
