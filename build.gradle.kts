@@ -5,7 +5,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath(libs.androd.plugin)
+        classpath(libs.android.plugin)
         classpath(libs.byteBuddy.plugin)
     }
 }
