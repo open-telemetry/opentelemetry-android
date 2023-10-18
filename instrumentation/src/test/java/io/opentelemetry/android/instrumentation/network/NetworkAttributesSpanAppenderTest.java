@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.SemanticAttributes;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -42,8 +42,8 @@ class NetworkAttributesSpanAppenderTest {
         verify(span)
                 .setAllAttributes(
                         Attributes.of(
-                                SemanticAttributes.NET_HOST_CONNECTION_TYPE, "cell",
-                                SemanticAttributes.NET_HOST_CONNECTION_SUBTYPE, "LTE"));
+                                SemanticAttributes.NETWORK_CONNECTION_TYPE, "cell",
+                                SemanticAttributes.NETWORK_CONNECTION_SUBTYPE, "LTE"));
 
         assertFalse(underTest.isEndRequired());
     }

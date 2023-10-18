@@ -6,7 +6,7 @@
 package io.opentelemetry.android.instrumentation.network;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_HOST_CONNECTION_TYPE;
+import static io.opentelemetry.semconv.SemanticAttributes.NETWORK_CONNECTION_TYPE;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -40,7 +40,7 @@ final class NetworkChangeAttributesExtractor implements AttributesExtractor<Curr
         // put these after span start to override what might be set in the
         // NetworkAttributesSpanAppender.
         if (currentNetwork.getState() == NetworkState.NO_NETWORK_AVAILABLE) {
-            attributes.put(NET_HOST_CONNECTION_TYPE, currentNetwork.getState().getHumanName());
+            attributes.put(NETWORK_CONNECTION_TYPE, currentNetwork.getState().getHumanName());
         } else {
             attributes.putAll(networkAttributesExtractor.extract(currentNetwork));
         }

@@ -1,8 +1,6 @@
 plugins {
     `kotlin-dsl`
-
-    // When updating, update below in dependencies too
-    id("com.diffplug.spotless") version "6.21.0"
+    alias(libs.plugins.spotless)
 }
 
 spotless {
@@ -19,11 +17,9 @@ repositories {
 }
 
 dependencies {
-    // keep this version in sync with /build.gradle.kts
-    implementation("com.android.tools.build:gradle:8.1.1")
-
-    implementation("com.diffplug.spotless:spotless-plugin-gradle:6.21.0")
-    implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.1.0")
-    implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.6.0")
-    implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.1")
+    implementation(libs.android.plugin)
+    implementation(libs.spotless.plugin)
+    implementation(libs.errorprone.plugin)
+    implementation(libs.nullaway.plugin)
+    implementation(libs.animalsniffer.plugin)
 }

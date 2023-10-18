@@ -20,10 +20,11 @@ if (isAndroidProject) {
     }
 }
 
+val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 dependencies {
-    errorprone("com.uber.nullaway:nullaway:0.10.14")
-    errorprone("com.google.errorprone:error_prone_core:2.22.0")
-    errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
+    errorprone(libs.findLibrary("nullaway").get())
+    errorprone(libs.findLibrary("errorprone-core").get())
+    errorproneJavac(libs.findLibrary("errorprone-javac").get())
 }
 
 nullaway {

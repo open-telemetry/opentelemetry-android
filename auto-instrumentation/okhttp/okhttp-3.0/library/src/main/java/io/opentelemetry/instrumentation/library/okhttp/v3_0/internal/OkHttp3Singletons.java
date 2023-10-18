@@ -11,7 +11,7 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientResend;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientResendCount;
 import io.opentelemetry.instrumentation.api.instrumenter.net.PeerServiceAttributesExtractor;
 import io.opentelemetry.instrumentation.library.okhttp.v3_0.OkHttpInstrumentationConfig;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.ConnectionErrorSpanInterceptor;
@@ -38,15 +38,33 @@ public final class OkHttp3Singletons {
                                             OkHttpInstrumentationConfig
                                                     .getCapturedResponseHeaders())
                                     .setKnownMethods(OkHttpInstrumentationConfig.getKnownMethods()),
+                    spanNameExtractorConfigurer ->
+                            spanNameExtractorConfigurer.setKnownMethods(
+                                    OkHttpInstrumentationConfig.getKnownMethods()),
                     singletonList(
                             PeerServiceAttributesExtractor.create(
                                     OkHttpAttributesGetter.INSTANCE,
-                                    OkHttpInstrumentationConfig.getPeerServiceMapping())),
+                                    OkHttpInstrumentationConfig.newPeerServiceResolver())),
                     OkHttpInstrumentationConfig.emitExperimentalHttpClientMetrics());
 
-    public static final Interceptor CONTEXT_INTERCEPTOR =
+    public static final Interceptor CALLBACK_CONTEXT_INTERCEPTOR =
             chain -> {
-                try (Scope ignored = HttpClientResend.initialize(Context.current()).makeCurrent()) {
+                Request request = chain.request();
+                Context context =
+                        OkHttpCallbackAdviceHelper.tryRecoverPropagatedContextFromCallback(request);
+                if (context != null) {
+                    try (Scope ignored = context.makeCurrent()) {
+                        return chain.proceed(request);
+                    }
+                }
+
+                return chain.proceed(request);
+            };
+
+    public static final Interceptor RESEND_COUNT_CONTEXT_INTERCEPTOR =
+            chain -> {
+                try (Scope ignored =
+                        HttpClientResendCount.initialize(Context.current()).makeCurrent()) {
                     return chain.proceed(chain.request());
                 }
             };

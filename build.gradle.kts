@@ -5,15 +5,14 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        // keep this version in sync with /buildSrc/build.gradle.kts
-        classpath("com.android.tools.build:gradle:8.1.1")
-        classpath("net.bytebuddy:byte-buddy-gradle-plugin:${property("bytebuddy.version")}")
+        classpath(libs.android.plugin)
+        classpath(libs.byteBuddy.plugin)
     }
 }
 
 plugins {
     id("otel.spotless-conventions")
-    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
+    alias(libs.plugins.publishPlugin)
 }
 
 extra["java_version"] = JavaVersion.VERSION_1_8

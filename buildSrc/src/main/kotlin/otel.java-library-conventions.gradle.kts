@@ -12,9 +12,10 @@ java {
     targetCompatibility = javaVersion
 }
 
+val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 dependencies {
     signature("com.toasttab.android:gummy-bears-api-${project.property("android.minSdk")}:0.5.1:coreLib@signature")
-    implementation("com.google.code.findbugs:jsr305:3.0.2")
+    implementation(libs.findLibrary("findbugs-jsr305").get())
 }
 
 animalsniffer {
