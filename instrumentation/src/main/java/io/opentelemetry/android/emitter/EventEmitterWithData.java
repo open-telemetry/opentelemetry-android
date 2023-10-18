@@ -5,11 +5,11 @@
 
 package io.opentelemetry.android.emitter;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.events.EventEmitter;
 import java.util.Map;
-import java.util.Objects;
 
 class EventEmitterWithData {
 
@@ -28,24 +28,21 @@ class EventEmitterWithData {
         delegate.emit(eventName, eventAttrs);
     }
 
-    private Attributes convertRichDataObjectIntoAttributes(Map<String, Object> data) {
+    public Attributes convertRichDataObjectIntoAttributes(Map<String, Object> data) {
         AttributesBuilder builder = Attributes.builder();
         for (String key : data.keySet()) {
             Object val = data.get(key);
             if (val != null) {
                 if (val instanceof String) {
-                    builder.put(key, (String) val);
-                }
-                if (val instanceof Long) {
-                    builder.put(key, (Long) val);
-                }
-                if (val instanceof Double) {
-                    builder.put(key, (Double) val);
-                }
-                if (val instanceof Boolean) {
-                    builder.put(key, (Boolean) val);
+                    builder.put(AttributeKey.stringKey(key), (String) val);
+                } else if (val instanceof Long) {
+                    builder.put(AttributeKey.longKey(key), (Long) val);
+                } else if (val instanceof Double) {
+                    builder.put(AttributeKey.doubleKey(key), (Double) val);
+                } else if (val instanceof Boolean) {
+                    builder.put(AttributeKey.booleanKey(key), (Boolean) val);
                 } else {
-                    builder.put(key, val.toString());
+                    builder.put(AttributeKey.stringKey(key), val.toString());
                 }
             }
         }
