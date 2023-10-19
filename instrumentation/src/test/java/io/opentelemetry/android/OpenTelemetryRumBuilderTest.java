@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android;
 
+import static io.opentelemetry.android.RumConstants.SCREEN_NAME_KEY;
 import static io.opentelemetry.android.RumConstants.SESSION_ID_KEY;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
@@ -17,6 +18,7 @@ import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import android.app.Application;
+import androidx.annotation.NonNull;
 import io.opentelemetry.android.instrumentation.ApplicationStateListener;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
@@ -53,7 +55,7 @@ class OpenTelemetryRumBuilderTest {
 
     @Test
     void shouldRegisterApplicationStateWatcher() {
-        OpenTelemetryRum.builder(application).build();
+        makeBuilder().build();
 
         verify(application).registerActivityLifecycleCallbacks(isA(ApplicationStateWatcher.class));
     }
@@ -61,7 +63,7 @@ class OpenTelemetryRumBuilderTest {
     @Test
     void shouldBuildTracerProvider() {
         OpenTelemetryRum openTelemetryRum =
-                OpenTelemetryRum.builder(application)
+                makeBuilder()
                         .setResource(resource)
                         .addTracerProviderCustomizer(
                                 (tracerProviderBuilder, app) ->
@@ -82,12 +84,13 @@ class OpenTelemetryRumBuilderTest {
         assertThat(spans.get(0))
                 .hasName("test span")
                 .hasResource(resource)
-                .hasAttributesSatisfyingExactly(equalTo(SESSION_ID_KEY, sessionId));
+                .hasAttributesSatisfyingExactly(
+                        equalTo(SESSION_ID_KEY, sessionId), equalTo(SCREEN_NAME_KEY, "unknown"));
     }
 
     @Test
     void shouldInstallInstrumentation() {
-        OpenTelemetryRum.builder(application)
+        OpenTelemetryRum.builder(application, buildConfig())
                 .addInstrumentation(
                         instrumentedApplication -> {
                             assertThat(instrumentedApplication.getApplication())
@@ -105,6 +108,10 @@ class OpenTelemetryRumBuilderTest {
         verify(listener).onApplicationBackgrounded();
     }
 
+    private OtelAndroidConfig buildConfig() {
+        return new OtelAndroidConfig().disableNetworkAttributes();
+    }
+
     @Test
     void canAddPropagator() {
         Context context = Context.root();
@@ -116,10 +123,7 @@ class OpenTelemetryRumBuilderTest {
 
         when(customPropagator.extract(context, carrier, getter)).thenReturn(expected);
 
-        OpenTelemetryRum rum =
-                OpenTelemetryRum.builder(application)
-                        .addPropagatorCustomizer(x -> customPropagator)
-                        .build();
+        OpenTelemetryRum rum = makeBuilder().addPropagatorCustomizer(x -> customPropagator).build();
         Context result =
                 rum.getOpenTelemetry()
                         .getPropagators()
@@ -132,10 +136,7 @@ class OpenTelemetryRumBuilderTest {
     void canSetPropagator() {
         TextMapPropagator customPropagator = mock(TextMapPropagator.class);
 
-        OpenTelemetryRum rum =
-                OpenTelemetryRum.builder(application)
-                        .addPropagatorCustomizer(x -> customPropagator)
-                        .build();
+        OpenTelemetryRum rum = makeBuilder().addPropagatorCustomizer(x -> customPropagator).build();
         TextMapPropagator result = rum.getOpenTelemetry().getPropagators().getTextMapPropagator();
         assertThat(result).isSameAs(customPropagator);
     }
@@ -144,8 +145,7 @@ class OpenTelemetryRumBuilderTest {
     void setSpanExporterCustomizer() {
         SpanExporter exporter = mock(SpanExporter.class);
         Function<SpanExporter, SpanExporter> customizer = x -> exporter;
-        OpenTelemetryRum rum =
-                OpenTelemetryRum.builder(application).addSpanExporterCustomizer(customizer).build();
+        OpenTelemetryRum rum = makeBuilder().addSpanExporterCustomizer(customizer).build();
         Span span = rum.getOpenTelemetry().getTracer("test").spanBuilder("foo").startSpan();
         try (Scope scope = span.makeCurrent()) {
             // no-op
@@ -155,5 +155,10 @@ class OpenTelemetryRumBuilderTest {
         // 5 sec is default
         await().atMost(Duration.ofSeconds(30))
                 .untilAsserted(() -> verify(exporter).export(anyCollection()));
+    }
+
+    @NonNull
+    private OpenTelemetryRumBuilder makeBuilder() {
+        return OpenTelemetryRum.builder(application, buildConfig());
     }
 }
