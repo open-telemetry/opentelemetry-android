@@ -21,15 +21,32 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 public interface OpenTelemetryRum {
 
     /**
-     * Returns a new {@link OpenTelemetryRumBuilder} for {@link OpenTelemetryRum}. Use this version
-     * if you would like to configure individual aspects of the OpenTelemetry SDK but would still
-     * prefer to allow OpenTelemetry RUM to create the SDK for you. If you would like to "bring your
-     * own" SDK, call the two-argument version.
+     * Returns a new {@link OpenTelemetryRumBuilder} for {@link OpenTelemetryRum} with a default
+     * configuration. Use this version if you would like to configure individual aspects of the
+     * OpenTelemetry SDK but would still prefer to allow OpenTelemetry RUM to create the SDK for
+     * you. For additional configuration, call the two-argument version of build and pass it your
+     * {@link OtelAndroidConfig} instance. If you would like to "bring your own" SDK, call the
+     * two-argument version that takes the SDK as a parameter.
      *
      * @param application The {@link Application} that is being instrumented.
      */
     static OpenTelemetryRumBuilder builder(Application application) {
-        return new OpenTelemetryRumBuilder(application);
+        return builder(application, new OtelAndroidConfig());
+    }
+
+    /**
+     * Returns a new {@link OpenTelemetryRumBuilder} for {@link OpenTelemetryRum} with the given
+     * configuration. Use this version if you would like to configure individual aspects of the
+     * OpenTelemetry SDK but would still prefer to allow OpenTelemetry RUM to create the SDK for
+     * you. If you would like to "bring your own" SDK, call the two-argument version that takes the
+     * SDK as a parameter.
+     *
+     * @param application
+     * @param config
+     * @return
+     */
+    static OpenTelemetryRumBuilder builder(Application application, OtelAndroidConfig config) {
+        return new OpenTelemetryRumBuilder(application, config);
     }
 
     /**
