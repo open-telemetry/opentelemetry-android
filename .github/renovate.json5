@@ -1,0 +1,40 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": [
+        "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha",
+        "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv",
+        "io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0"
+      ],
+      // Renovate's default behavior is only to update from unstable -> unstable if it's for the
+      // major.minor.patch, under the assumption that you would want to update to the stable version
+      // of that release instead of the unstable version for a future release (but there's never any
+      // stable version of opentelemetry-instrumentation-bom-alpha so this logic doesn't apply
+      "ignoreUnstable": false
+    },
+    {
+      // navigation-fragment 2.7.0 and above require android api 34+, which we are not ready for
+      // yet due to android gradle plugin only supporting min 33.
+      "matchPackagePrefixes": ["androidx.navigation"],
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
+    },
+    {
+      // navigation-fragment 2.7.0 and above require android api 34+, which we are not ready for
+      // yet due to android gradle plugin only supporting min 33.
+      "matchPackageNames": ["androidx.browser:browser"],
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
+    },
+    {
+      // somehow renovate gets confused by the android property in gradle.properties,
+      // so let's just exclude it and hopefully clean up the dashboard
+      "matchPackageNames": ["string:rum.version"],
+      "enabled": false
+    }
+  ]
+}
