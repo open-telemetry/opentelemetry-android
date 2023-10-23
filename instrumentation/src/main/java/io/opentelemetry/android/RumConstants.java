@@ -30,7 +30,7 @@ public class RumConstants {
     public static final AttributeKey<Double> BATTERY_PERCENT_KEY = doubleKey("battery.percent");
 
     public static final AttributeKey<String> PREVIOUS_SESSION_ID_KEY =
-            stringKey("rum.session.previous_id");
+            stringKey("session.previous_id");
 
     public static final String APP_START_SPAN_NAME = "AppStart";
 
