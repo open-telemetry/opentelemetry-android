@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
