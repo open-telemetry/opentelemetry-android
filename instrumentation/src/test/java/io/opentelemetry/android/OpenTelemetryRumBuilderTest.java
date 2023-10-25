@@ -108,8 +108,8 @@ class OpenTelemetryRumBuilderTest {
         verify(listener).onApplicationBackgrounded();
     }
 
-    private OtelAndroidConfig buildConfig() {
-        return new OtelAndroidConfig().disableNetworkAttributes();
+    private OtelRumConfig buildConfig() {
+        return new OtelRumConfig().disableNetworkAttributes();
     }
 
     @Test

@@ -25,13 +25,13 @@ public interface OpenTelemetryRum {
      * configuration. Use this version if you would like to configure individual aspects of the
      * OpenTelemetry SDK but would still prefer to allow OpenTelemetry RUM to create the SDK for
      * you. For additional configuration, call the two-argument version of build and pass it your
-     * {@link OtelAndroidConfig} instance. If you would like to "bring your own" SDK, call the
+     * {@link OtelRumConfig} instance. If you would like to "bring your own" SDK, call the
      * two-argument version that takes the SDK as a parameter.
      *
      * @param application The {@link Application} that is being instrumented.
      */
     static OpenTelemetryRumBuilder builder(Application application) {
-        return builder(application, new OtelAndroidConfig());
+        return builder(application, new OtelRumConfig());
     }
 
     /**
@@ -45,7 +45,7 @@ public interface OpenTelemetryRum {
      * @param config
      * @return
      */
-    static OpenTelemetryRumBuilder builder(Application application, OtelAndroidConfig config) {
+    static OpenTelemetryRumBuilder builder(Application application, OtelRumConfig config) {
         return new OpenTelemetryRumBuilder(application, config);
     }
 

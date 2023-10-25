@@ -14,7 +14,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
  * used in the OpenTelemetryRumBuilder to wire up and enable/disable various mobile instrumentation
  * components.
  */
-public class OtelAndroidConfig {
+public class OtelRumConfig {
 
     private AttributesBuilder globalAttributes = Attributes.builder();
     private boolean includeNetworkAttributes = true;
@@ -25,7 +25,7 @@ public class OtelAndroidConfig {
      * Configures the set of global attributes to emit with every span and event. Any existing
      * configured attributes will be dropped. Default = none.
      */
-    public OtelAndroidConfig setGlobalAttributes(Attributes attributes) {
+    public OtelRumConfig setGlobalAttributes(Attributes attributes) {
         globalAttributes = attributes.toBuilder();
         return this;
     }
@@ -44,7 +44,7 @@ public class OtelAndroidConfig {
      *
      * @return this
      */
-    public OtelAndroidConfig disableNetworkAttributes() {
+    public OtelRumConfig disableNetworkAttributes() {
         includeNetworkAttributes = false;
         return this;
     }
@@ -60,7 +60,7 @@ public class OtelAndroidConfig {
      *
      * @return this
      */
-    public OtelAndroidConfig disableSdkInitializationEvents() {
+    public OtelRumConfig disableSdkInitializationEvents() {
         this.generateSdkInitializationEvents = false;
         return this;
     }
@@ -76,7 +76,7 @@ public class OtelAndroidConfig {
      *
      * @return this
      */
-    public OtelAndroidConfig disableScreenAttributes() {
+    public OtelRumConfig disableScreenAttributes() {
         this.includeScreenAttributes = false;
         return this;
     }

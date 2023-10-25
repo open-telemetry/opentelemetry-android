@@ -53,7 +53,7 @@ public final class OpenTelemetryRumBuilder {
             meterProviderCustomizers = new ArrayList<>();
     private final List<BiFunction<SdkLoggerProviderBuilder, Application, SdkLoggerProviderBuilder>>
             loggerProviderCustomizers = new ArrayList<>();
-    private final OtelAndroidConfig config;
+    private final OtelRumConfig config;
     private final VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
 
     private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
@@ -71,7 +71,7 @@ public final class OpenTelemetryRumBuilder {
                 W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance());
     }
 
-    OpenTelemetryRumBuilder(Application application, OtelAndroidConfig config) {
+    OpenTelemetryRumBuilder(Application application, OtelRumConfig config) {
         this.application = application;
         SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler();
         this.sessionId = new SessionId(timeoutHandler);
