@@ -45,7 +45,9 @@ public class EventEmitterWithDataTest {
         assertEquals(attributes.size(), data.size());
         assertEquals(data.get("stacktrace"), attributes.get(AttributeKey.stringKey("stacktrace")));
         assertEquals(data.get("thread"), attributes.get(AttributeKey.stringKey("thread")));
-        assertEquals(data.get("throwableMessage"), attributes.get(AttributeKey.stringKey("throwableMessage")));
+        assertEquals(
+                data.get("throwableMessage"),
+                attributes.get(AttributeKey.stringKey("throwableMessage")));
         assertEquals(data.get("stringKey"), attributes.get(AttributeKey.stringKey("stringKey")));
         assertEquals(data.get("longKey"), attributes.get(AttributeKey.longKey("longKey")));
         assertEquals(data.get("doubleKey"), attributes.get(AttributeKey.doubleKey("doubleKey")));
