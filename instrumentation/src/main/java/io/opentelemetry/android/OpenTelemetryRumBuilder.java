@@ -9,6 +9,11 @@ import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
 import io.opentelemetry.android.instrumentation.InstrumentedApplication;
+import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
+import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
+import io.opentelemetry.android.instrumentation.network.NetworkAttributesSpanAppender;
+import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
+import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -22,6 +27,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
@@ -47,6 +53,8 @@ public final class OpenTelemetryRumBuilder {
             meterProviderCustomizers = new ArrayList<>();
     private final List<BiFunction<SdkLoggerProviderBuilder, Application, SdkLoggerProviderBuilder>>
             loggerProviderCustomizers = new ArrayList<>();
+    private final OtelRumConfig config;
+    private final VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
 
     private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
     private final List<Consumer<InstrumentedApplication>> instrumentationInstallers =
@@ -56,17 +64,19 @@ public final class OpenTelemetryRumBuilder {
             (a) -> a;
 
     private Resource resource;
+    private InitializationEvents initializationEvents = InitializationEvents.NO_OP;
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
                 W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance());
     }
 
-    OpenTelemetryRumBuilder(Application application) {
+    OpenTelemetryRumBuilder(Application application, OtelRumConfig config) {
         this.application = application;
         SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler();
         this.sessionId = new SessionId(timeoutHandler);
         this.resource = AndroidResource.createDefault(application);
+        this.config = config;
     }
 
     /**
@@ -216,6 +226,9 @@ public final class OpenTelemetryRumBuilder {
      * @return A new {@link OpenTelemetryRum} instance.
      */
     public OpenTelemetryRum build() {
+
+        applyConfiguration();
+
         OpenTelemetrySdk sdk =
                 OpenTelemetrySdk.builder()
                         .setTracerProvider(buildTracerProvider(sessionId, application))
@@ -228,6 +241,50 @@ public final class OpenTelemetryRumBuilder {
                 new SdkPreconfiguredRumBuilder(application, sdk, sessionId);
         instrumentationInstallers.forEach(delegate::addInstrumentation);
         return delegate.build();
+    }
+
+    /** Leverage the configuration to wire up various instrumentation components. */
+    private void applyConfiguration() {
+        if (config.shouldGenerateSdkInitializationEvents()) {
+            initializationEvents = new SdkInitializationEvents();
+            initializationEvents.recordConfiguration(config);
+        }
+        initializationEvents.sdkInitializationStarted();
+
+        // Global attributes
+        if (config.hasGlobalAttributes()) {
+            // Add span processor that appends global attributes.
+            GlobalAttributesSpanAppender appender =
+                    GlobalAttributesSpanAppender.create(config.getGlobalAttributes());
+            addTracerProviderCustomizer(
+                    (tracerProviderBuilder, app) ->
+                            tracerProviderBuilder.addSpanProcessor(appender));
+        }
+
+        // Network specific attributes
+        if (config.shouldIncludeNetworkAttributes()) {
+            // Add span processor that appends network attributes.
+            CurrentNetworkProvider currentNetworkProvider =
+                    CurrentNetworkProvider.createAndStart(application);
+            addTracerProviderCustomizer(
+                    (tracerProviderBuilder, app) -> {
+                        SpanProcessor networkAttributesSpanAppender =
+                                NetworkAttributesSpanAppender.create(currentNetworkProvider);
+                        return tracerProviderBuilder.addSpanProcessor(
+                                networkAttributesSpanAppender);
+                    });
+            initializationEvents.currentNetworkProviderInitialized();
+        }
+
+        // Add span processor that appends screen attribute(s)
+        if (config.shouldIncludeScreenAttributes()) {
+            addTracerProviderCustomizer(
+                    (tracerProviderBuilder, app) -> {
+                        SpanProcessor screenAttributesAppender =
+                                new ScreenAttributesSpanProcessor(visibleScreenTracker);
+                        return tracerProviderBuilder.addSpanProcessor(screenAttributesAppender);
+                    });
+        }
     }
 
     private SdkTracerProvider buildTracerProvider(SessionId sessionId, Application application) {

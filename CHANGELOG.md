@@ -2,9 +2,16 @@
 
 ## Unreleased
 
-- Update to java instrumentation 1.31.0
-- Update to java sdk 1.31.0
-- BREAKING - Update to latest java semantic conventions
+- tbd
+
+### Version 0.2.0 (2023-10-20)
+
+This is a regular monthly cadence release, which follows the releases of
+opentelemetry-java-instrumentation and opentelemetry-java (core/sdk).
+
+- Update to [opentelemetry-java-instrumentation 1.31.0](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.31.0)
+- Update to [opentelemetry-java sdk 1.31.0](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.31.0)
+- BREAKING - Update to latest java semantic conventions (#114)
     - `net.host.connection.type` -> `network.connection.type`
     - `net.host.carrier.icc` -> `network.carrier.icc`
     - `net.host.carrier.mcc` -> `network.carrier.mcc`
@@ -12,6 +19,7 @@
     - `net.host.carrier.name` -> `network.carrier.name`
     - `net.host.connection.type` -> `network.connection.type`
     - `net.host.connection.subtype` -> `network.connection.subtype`
+- Add experimental support for okhttp automatic build-time instrumentation (#64, #110)
 
 ## Version 0.1.0 (2023-09-13)
 
