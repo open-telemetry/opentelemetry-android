@@ -5,10 +5,9 @@
 
 package io.opentelemetry.android;
 
-import java.util.function.Supplier;
-
 import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.api.common.Attributes;
+import java.util.function.Supplier;
 
 /**
  * Configuration object for OpenTelemetry Android. The configuration items in this class will be
