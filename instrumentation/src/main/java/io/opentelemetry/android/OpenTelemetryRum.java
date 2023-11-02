@@ -40,10 +40,6 @@ public interface OpenTelemetryRum {
      * OpenTelemetry SDK but would still prefer to allow OpenTelemetry RUM to create the SDK for
      * you. If you would like to "bring your own" SDK, call the two-argument version that takes the
      * SDK as a parameter.
-     *
-     * @param application
-     * @param config
-     * @return
      */
     static OpenTelemetryRumBuilder builder(Application application, OtelRumConfig config) {
         return new OpenTelemetryRumBuilder(application, config);
