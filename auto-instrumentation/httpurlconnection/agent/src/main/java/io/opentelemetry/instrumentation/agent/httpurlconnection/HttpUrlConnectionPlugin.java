@@ -8,18 +8,16 @@ package io.opentelemetry.instrumentation.agent.httpurlconnection;
 import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 
+import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlReplacements;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
 import net.bytebuddy.asm.MemberSubstitution;
 import net.bytebuddy.build.AndroidDescriptor;
 import net.bytebuddy.build.Plugin;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.ClassFileLocator;
 import net.bytebuddy.dynamic.DynamicType;
-
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URLConnection;
-
-import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlReplacements;
 
 public class HttpUrlConnectionPlugin implements Plugin {
 
@@ -67,7 +65,10 @@ public class HttpUrlConnectionPlugin implements Plugin {
                             .replaceWith(
                                     HttpUrlReplacements.class.getDeclaredMethod(
                                             "replacementForContentLength", URLConnection.class))
-                            .method(is(URLConnection.class.getDeclaredMethod("getContentLengthLong")))
+                            .method(
+                                    is(
+                                            URLConnection.class.getDeclaredMethod(
+                                                    "getContentLengthLong")))
                             .replaceWith(
                                     HttpUrlReplacements.class.getDeclaredMethod(
                                             "replacementForContentLengthLong", URLConnection.class))
@@ -111,9 +112,7 @@ public class HttpUrlConnectionPlugin implements Plugin {
                             .method(
                                     is(
                                             URLConnection.class.getDeclaredMethod(
-                                                    "getHeaderFieldLong",
-                                                    String.class,
-                                                    Long.TYPE)))
+                                                    "getHeaderFieldLong", String.class, Long.TYPE)))
                             .replaceWith(
                                     HttpUrlReplacements.class.getDeclaredMethod(
                                             "replacementForHeaderFieldLong",

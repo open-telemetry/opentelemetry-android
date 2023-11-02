@@ -115,7 +115,7 @@ public class HttpUrlReplacements {
         return contentLength;
     }
 
-    //TODO: uncomment and correct return value when animal sniffer is disabled
+    // TODO: uncomment and correct return value when animal sniffer is disabled
     public static synchronized long replacementForContentLengthLong(URLConnection c) {
         addTraceContextBeforeFirstConnection(c);
 
@@ -124,7 +124,7 @@ public class HttpUrlReplacements {
         updateLastSeenTime(c);
         markHarvestable(c);
 
-        //return contentLengthLong;
+        // return contentLengthLong;
         return 1L;
     }
 
@@ -196,17 +196,17 @@ public class HttpUrlReplacements {
         return headerFieldInt;
     }
 
-    //TODO: uncomment and correct return value when animal sniffer is disabled
+    // TODO: uncomment and correct return value when animal sniffer is disabled
     public static synchronized long replacementForHeaderFieldLong(
             URLConnection c, String name, long Default) {
         addTraceContextBeforeFirstConnection(c);
 
-        //long headerFieldLong = c.getHeaderFieldLong(name, Default);
+        // long headerFieldLong = c.getHeaderFieldLong(name, Default);
 
         updateLastSeenTime(c);
         markHarvestable(c);
 
-        //return headerFieldLong;
+        // return headerFieldLong;
         return 1L;
     }
 
