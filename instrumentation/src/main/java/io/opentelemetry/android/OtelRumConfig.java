@@ -7,7 +7,7 @@ package io.opentelemetry.android;
 
 import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
+import java.util.function.Supplier;
 
 /**
  * Configuration object for OpenTelemetry Android. The configuration items in this class will be
@@ -16,7 +16,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
  */
 public class OtelRumConfig {
 
-    private AttributesBuilder globalAttributes = Attributes.builder();
+    private Supplier<Attributes> globalAttributesSupplier = Attributes::empty;
     private boolean includeNetworkAttributes = true;
     private boolean generateSdkInitializationEvents = true;
     private boolean includeScreenAttributes = true;
@@ -26,16 +26,21 @@ public class OtelRumConfig {
      * configured attributes will be dropped. Default = none.
      */
     public OtelRumConfig setGlobalAttributes(Attributes attributes) {
-        globalAttributes = attributes.toBuilder();
+        return setGlobalAttributes(() -> attributes);
+    }
+
+    public OtelRumConfig setGlobalAttributes(Supplier<Attributes> globalAttributesSupplier) {
+        this.globalAttributesSupplier = globalAttributesSupplier;
         return this;
     }
 
     boolean hasGlobalAttributes() {
-        return !globalAttributes.build().isEmpty();
+        Attributes attributes = globalAttributesSupplier.get();
+        return attributes != null && !attributes.isEmpty();
     }
 
-    Attributes getGlobalAttributes() {
-        return globalAttributes.build();
+    Supplier<Attributes> getGlobalAttributesSupplier() {
+        return globalAttributesSupplier;
     }
 
     /**
