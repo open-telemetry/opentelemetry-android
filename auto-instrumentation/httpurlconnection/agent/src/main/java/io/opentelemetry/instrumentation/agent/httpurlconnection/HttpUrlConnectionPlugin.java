@@ -8,18 +8,26 @@ package io.opentelemetry.instrumentation.agent.httpurlconnection;
 import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 
-import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlReplacements;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URLConnection;
 import net.bytebuddy.asm.MemberSubstitution;
+import net.bytebuddy.build.AndroidDescriptor;
 import net.bytebuddy.build.Plugin;
-import net.bytebuddy.description.type.PackageDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.ClassFileLocator;
 import net.bytebuddy.dynamic.DynamicType;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
+
+import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlReplacements;
+
 public class HttpUrlConnectionPlugin implements Plugin {
+
+    private final AndroidDescriptor androidDescriptor;
+
+    public HttpUrlConnectionPlugin(AndroidDescriptor androidDescriptor) {
+        this.androidDescriptor = androidDescriptor;
+    }
 
     @Override
     public DynamicType.Builder<?> apply(
@@ -55,6 +63,14 @@ public class HttpUrlConnectionPlugin implements Plugin {
                             .replaceWith(
                                     HttpUrlReplacements.class.getDeclaredMethod(
                                             "replacementForContentEncoding", URLConnection.class))
+                            .method(is(URLConnection.class.getDeclaredMethod("getContentLength")))
+                            .replaceWith(
+                                    HttpUrlReplacements.class.getDeclaredMethod(
+                                            "replacementForContentLength", URLConnection.class))
+                            .method(is(URLConnection.class.getDeclaredMethod("getContentLengthLong")))
+                            .replaceWith(
+                                    HttpUrlReplacements.class.getDeclaredMethod(
+                                            "replacementForContentLengthLong", URLConnection.class))
                             .method(is(URLConnection.class.getDeclaredMethod("getExpiration")))
                             .replaceWith(
                                     HttpUrlReplacements.class.getDeclaredMethod(
@@ -92,6 +108,18 @@ public class HttpUrlConnectionPlugin implements Plugin {
                                             URLConnection.class,
                                             String.class,
                                             Integer.TYPE))
+                            .method(
+                                    is(
+                                            URLConnection.class.getDeclaredMethod(
+                                                    "getHeaderFieldLong",
+                                                    String.class,
+                                                    Long.TYPE)))
+                            .replaceWith(
+                                    HttpUrlReplacements.class.getDeclaredMethod(
+                                            "replacementForHeaderFieldLong",
+                                            URLConnection.class,
+                                            String.class,
+                                            Long.TYPE))
                             .method(
                                     is(
                                             URLConnection.class.getDeclaredMethod(
@@ -187,9 +215,9 @@ public class HttpUrlConnectionPlugin implements Plugin {
 
     @Override
     public boolean matches(TypeDescription target) {
-        // TODO: Add configuration for package name
-        return target.isSamePackage(
-                new TypeDescription.ForPackageDescription(
-                        new PackageDescription.Simple("com.example.httpurlconnection")));
+        if (androidDescriptor.getTypeScope(target) == AndroidDescriptor.TypeScope.EXTERNAL) {
+            return false;
+        }
+        return true;
     }
 }

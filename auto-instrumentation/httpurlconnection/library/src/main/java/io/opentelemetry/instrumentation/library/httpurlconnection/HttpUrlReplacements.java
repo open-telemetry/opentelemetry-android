@@ -30,7 +30,7 @@ public class HttpUrlReplacements {
         activeURLConnections = new WeakHashMap<>();
     }
 
-    public static void replacementForConnect(URLConnection c) throws IOException {
+    public static synchronized void replacementForConnect(URLConnection c) throws IOException {
         addTraceContextBeforeFirstConnection(c);
 
         try {
@@ -104,6 +104,30 @@ public class HttpUrlReplacements {
         return contentEncoding;
     }
 
+    public static synchronized int replacementForContentLength(URLConnection c) {
+        addTraceContextBeforeFirstConnection(c);
+
+        int contentLength = c.getContentLength();
+
+        updateLastSeenTime(c);
+        markHarvestable(c);
+
+        return contentLength;
+    }
+
+    //TODO: uncomment and correct return value when animal sniffer is disabled
+    public static synchronized long replacementForContentLengthLong(URLConnection c) {
+        addTraceContextBeforeFirstConnection(c);
+
+        // long contentLengthLong = c.getContentLengthLong();
+
+        updateLastSeenTime(c);
+        markHarvestable(c);
+
+        //return contentLengthLong;
+        return 1L;
+    }
+
     public static synchronized long replacementForExpiration(URLConnection c) {
         addTraceContextBeforeFirstConnection(c);
 
@@ -170,6 +194,20 @@ public class HttpUrlReplacements {
         markHarvestable(c);
 
         return headerFieldInt;
+    }
+
+    //TODO: uncomment and correct return value when animal sniffer is disabled
+    public static synchronized long replacementForHeaderFieldLong(
+            URLConnection c, String name, long Default) {
+        addTraceContextBeforeFirstConnection(c);
+
+        //long headerFieldLong = c.getHeaderFieldLong(name, Default);
+
+        updateLastSeenTime(c);
+        markHarvestable(c);
+
+        //return headerFieldLong;
+        return 1L;
     }
 
     public static synchronized long replacementForHeaderFieldDate(
