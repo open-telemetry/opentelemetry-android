@@ -42,7 +42,7 @@ awaitility = "org.awaitility:awaitility:4.2.0"
 okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp" }
 
 #Compilation tools
-desugarJdkLibs = "com.android.tools:desugar_jdk_libs:2.0.3"
+desugarJdkLibs = "com.android.tools:desugar_jdk_libs:2.0.4"
 nullaway = "com.uber.nullaway:nullaway:0.10.16"
 errorprone-core = "com.google.errorprone:error_prone_core:2.23.0"
 errorprone-javac = "com.google.errorprone:javac:9+181-r4173-1"
