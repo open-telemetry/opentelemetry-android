@@ -5,6 +5,12 @@
 
 package io.opentelemetry.instrumentation.library.httpurlconnection;
 
+import static io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons.instrumenter;
+
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.library.httpurlconnection.internal.RequestPropertySetter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -20,40 +26,39 @@ public class HttpUrlReplacements {
     // the entry is effectively removed from the map. This means that we never have to
     // remove entries from the map.
     private static final WeakHashMap<URLConnection, HttpURLConnectionInfo> activeURLConnections;
+    public static final int UNKNOWN_RESPONSE_CODE = -1;
 
     // Time (ms) to wait before assuming that an idle connection is no longer
     // in use and should be reported.
-    // TODO: Convert to a configuration
-    public static final long CONNECTION_KEEP_ALIVE_INTERVAL = 10000;
+    public static final long CONNECTION_INACTIVITY_TIMEOUT = 10000;
 
     static {
         activeURLConnections = new WeakHashMap<>();
     }
 
     public static synchronized void replacementForConnect(URLConnection c) throws IOException {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         try {
             c.connect();
         } catch (IOException e) {
-            // TODO: Report this request with a http span;
-            markReported(c);
+            reportWithThrowable(c, e);
             throw e;
         }
 
         updateLastSeenTime(c);
-        // connect() does not read anything from connection so request not harvestable yet.
+        // connect() does not read anything from connection so request not harvestable yet (to be
+        // reported if left idle).
     }
 
     public static synchronized Object replacementForContent(URLConnection c) throws IOException {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         Object content;
         try {
             content = c.getContent();
         } catch (IOException e) {
-            // TODO: Report this request with a http span;
-            markReported(c);
+            reportWithThrowable(c, e);
             throw e;
         }
 
@@ -65,14 +70,13 @@ public class HttpUrlReplacements {
 
     public static synchronized Object replacementForContent(URLConnection c, Class<?>[] classes)
             throws IOException {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         Object content;
         try {
             content = c.getContent(classes);
         } catch (IOException e) {
-            // TODO: Report this request with a http span;
-            markReported(c);
+            reportWithThrowable(c, e);
             throw e;
         }
 
@@ -83,7 +87,7 @@ public class HttpUrlReplacements {
     }
 
     public static synchronized String replacementForContentType(URLConnection c) {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         String contentType = c.getContentType();
 
@@ -94,7 +98,7 @@ public class HttpUrlReplacements {
     }
 
     public static synchronized String replacementForContentEncoding(URLConnection c) {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         String contentEncoding = c.getContentEncoding();
 
@@ -105,7 +109,7 @@ public class HttpUrlReplacements {
     }
 
     public static synchronized int replacementForContentLength(URLConnection c) {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         int contentLength = c.getContentLength();
 
@@ -117,7 +121,7 @@ public class HttpUrlReplacements {
 
     // TODO: uncomment and correct return value when animal sniffer is disabled
     public static synchronized long replacementForContentLengthLong(URLConnection c) {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         // long contentLengthLong = c.getContentLengthLong();
 
@@ -129,7 +133,7 @@ public class HttpUrlReplacements {
     }
 
     public static synchronized long replacementForExpiration(URLConnection c) {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         long expiration = c.getExpiration();
 
@@ -140,7 +144,7 @@ public class HttpUrlReplacements {
     }
 
     public static synchronized long replacementForDate(URLConnection c) {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         long date = c.getDate();
 
@@ -151,7 +155,7 @@ public class HttpUrlReplacements {
     }
 
     public static synchronized long replacementForLastModified(URLConnection c) {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         long lastModified = c.getLastModified();
 
@@ -162,7 +166,7 @@ public class HttpUrlReplacements {
     }
 
     public static synchronized String replacementForHeaderField(URLConnection c, String name) {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         String headerField = c.getHeaderField(name);
 
@@ -174,7 +178,7 @@ public class HttpUrlReplacements {
 
     public static synchronized Map<String, List<String>> replacementForHeaderFields(
             URLConnection c) {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         Map<String, List<String>> headerFields = c.getHeaderFields();
 
@@ -186,7 +190,7 @@ public class HttpUrlReplacements {
 
     public static synchronized int replacementForHeaderFieldInt(
             URLConnection c, String name, int Default) {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         int headerFieldInt = c.getHeaderFieldInt(name, Default);
 
@@ -199,7 +203,7 @@ public class HttpUrlReplacements {
     // TODO: uncomment and correct return value when animal sniffer is disabled
     public static synchronized long replacementForHeaderFieldLong(
             URLConnection c, String name, long Default) {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         // long headerFieldLong = c.getHeaderFieldLong(name, Default);
 
@@ -214,7 +218,7 @@ public class HttpUrlReplacements {
             URLConnection c, String name, long Default) {
         // HttpURLConnection also overrides this and that is covered in
         // replacementForHttpHeaderFieldDate method.
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         long headerFieldDate = c.getHeaderFieldDate(name, Default);
 
@@ -228,7 +232,7 @@ public class HttpUrlReplacements {
             HttpURLConnection c, String name, long Default) {
         // URLConnection also overrides this and that is covered in replacementForHeaderFieldDate
         // method.
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         long headerFieldDate = c.getHeaderFieldDate(name, Default);
 
@@ -241,7 +245,7 @@ public class HttpUrlReplacements {
     public static synchronized String replacementForHeaderFieldKey(URLConnection c, int n) {
         // HttpURLConnection also overrides this and that is covered in
         // replacementForHttpHeaderFieldKey method.
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         String headerFieldKey = c.getHeaderFieldKey(n);
 
@@ -254,7 +258,7 @@ public class HttpUrlReplacements {
     public static synchronized String replacementForHttpHeaderFieldKey(HttpURLConnection c, int n) {
         // URLConnection also overrides this and that is covered in replacementForHeaderFieldKey
         // method.
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         String headerFieldKey = c.getHeaderFieldKey(n);
 
@@ -267,7 +271,7 @@ public class HttpUrlReplacements {
     public static synchronized String replacementForHeaderField(URLConnection c, int n) {
         // HttpURLConnection also overrides this and that is covered in
         // replacementForHttpHeaderField method.
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         String headerField = c.getHeaderField(n);
 
@@ -280,7 +284,7 @@ public class HttpUrlReplacements {
     public static synchronized String replacementForHttpHeaderField(HttpURLConnection c, int n) {
         // URLConnection also overrides this and that is covered in replacementForHeaderField
         // method.
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         String headerField = c.getHeaderField(n);
 
@@ -291,15 +295,14 @@ public class HttpUrlReplacements {
     }
 
     public static synchronized int replacementForResponseCode(URLConnection c) throws IOException {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         int responseCode;
         HttpURLConnection con = (HttpURLConnection) c;
         try {
             responseCode = con.getResponseCode();
         } catch (IOException e) {
-            // TODO: Report this request with a http span;
-            markReported(c);
+            reportWithThrowable(c, e);
             throw e;
         }
 
@@ -311,15 +314,14 @@ public class HttpUrlReplacements {
 
     public static synchronized String replacementForResponseMessage(URLConnection c)
             throws IOException {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         String responseMessage;
         HttpURLConnection httpURLConnection = (HttpURLConnection) c;
         try {
             responseMessage = httpURLConnection.getResponseMessage();
         } catch (IOException e) {
-            // TODO: Report this request with a http span;
-            markReported(c);
+            reportWithThrowable(c, e);
             throw e;
         }
 
@@ -331,128 +333,165 @@ public class HttpUrlReplacements {
 
     public static synchronized OutputStream replacementForOutputStream(URLConnection c)
             throws IOException {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         OutputStream outputStream;
         try {
             outputStream = c.getOutputStream();
         } catch (IOException e) {
-            // TODO: Report this request with a http span;
-            markReported(c);
+            reportWithThrowable(c, e);
             throw e;
         }
 
         updateLastSeenTime(c);
-        // getOutputStream() does not read anything from connection so request not harvestable yet.
+        // getOutputStream() does not read anything from connection so request not harvestable yet
+        // (not reportable if left idle).
 
         return outputStream;
     }
 
     public static synchronized InputStream replacementForInputStream(URLConnection c)
             throws IOException {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         InputStream inputStream;
         try {
             inputStream = c.getInputStream();
         } catch (IOException e) {
-            // TODO: Report this request with a http span;
-            markReported(c);
+            reportWithThrowable(c, e);
             throw e;
         }
 
-        // TODO: Report this request with a http span;
-        markReported(c);
+        HttpURLConnection httpURLConnection = (HttpURLConnection) c;
+        reportWithResponseCode(httpURLConnection);
 
         return inputStream;
     }
 
     public static synchronized InputStream replacementForErrorStream(HttpURLConnection c) {
-        addTraceContextBeforeFirstConnection(c);
+        startTracingAtFirstConnection(c);
 
         InputStream errorStream = c.getErrorStream();
 
-        // TODO: Report this request with a http span;
-        markReported(c);
+        reportWithResponseCode(c);
 
         return errorStream;
     }
 
-    private static synchronized void addTraceContextBeforeFirstConnection(URLConnection c) {
+    private static synchronized void reportWithThrowable(URLConnection c, IOException e) {
+        endTracing(c, UNKNOWN_RESPONSE_CODE, e);
+    }
+
+    private static synchronized void reportWithResponseCode(HttpURLConnection c) {
+        try {
+            endTracing(c, c.getResponseCode(), null);
+        } catch (IOException e) {
+            // TODO: Log instrumentation error in getting response code
+        }
+    }
+
+    private static synchronized void endTracing(
+            URLConnection c, int responseCode, Throwable error) {
+        HttpURLConnectionInfo info = activeURLConnections.get(c);
+        if (info != null && !info.reported) {
+            Context context = info.context;
+            Scope scope = info.scope;
+            if (scope == null) {
+                return;
+            }
+            scope.close();
+            instrumenter().end(context, c, responseCode, error);
+            info.reported = true;
+        }
+    }
+
+    @SuppressWarnings("MustBeClosedChecker")
+    private static synchronized void startTracingAtFirstConnection(URLConnection c) {
+        Context parentContext = Context.current();
+        if (!instrumenter().shouldStart(parentContext, c)) {
+            return;
+        }
+
         if (activeURLConnections.get(c) == null) {
-            activeURLConnections.put(c, new HttpURLConnectionInfo());
+            Context context = instrumenter().start(parentContext, c);
+            activeURLConnections.put(c, new HttpURLConnectionInfo(context));
             try {
-                // TODO: Start span and add trace context using
-                // c.setRequestProperty("propertyKey","propertyValue");
+                injectContextToRequest(c, context);
             } catch (Exception e) {
                 // If connection was already made prior to setting this request property,
                 // (which should not happen as we've instrumented all methods that connect)
-                // above call would throw IllegalStateException. Capture and report this
-                // as we need to know if tracing was not set for any request.
-                // TODO: Report this request with a http span;
-                markReported(c);
+                // above call would throw IllegalStateException.
+                // TODO: Log instrumentation error in trying to add request header for tracing
             }
         }
+
+        HttpURLConnectionInfo httpURLConnectionInfo = activeURLConnections.get(c);
+        if (!httpURLConnectionInfo.reported) {
+            httpURLConnectionInfo.scope = httpURLConnectionInfo.context.makeCurrent();
+        }
+    }
+
+    private static synchronized void injectContextToRequest(
+            URLConnection connection, Context context) {
+        GlobalOpenTelemetry.getPropagators()
+                .getTextMapPropagator()
+                .inject(context, connection, RequestPropertySetter.INSTANCE);
     }
 
     private static synchronized void updateLastSeenTime(URLConnection c) {
         final HttpURLConnectionInfo info = activeURLConnections.get(c);
-        if (info != null) {
+        if (info != null && !info.reported) {
             info.lastSeenTime = System.currentTimeMillis();
         }
     }
 
     private static synchronized void markHarvestable(URLConnection c) {
         final HttpURLConnectionInfo info = activeURLConnections.get(c);
-        if (info != null) {
+        if (info != null && !info.reported) {
             info.harvestable = true;
         }
     }
 
-    private static synchronized void markReported(URLConnection c) {
-        final HttpURLConnectionInfo info = activeURLConnections.get(c);
-        if (info != null) {
-            info.reported = true;
-        }
-    }
-
-    // TODO: Move scheduleConnectionKiller in a different class as it's the only client callable API
+    // TODO: Move scheduleIdleConnectionReporter in a different class as it's the only client
+    // callable API
     // in this class
-    public Runnable scheduleConnectionKiller() {
+    public static Runnable scheduleIdleConnectionReporter() {
         return new Runnable() {
             @Override
             public void run() {
-                endOngoingConnectionsOlderThan(CONNECTION_KEEP_ALIVE_INTERVAL);
+                reportIdleConnectionsOlderThan(CONNECTION_INACTIVITY_TIMEOUT);
             }
 
             @Override
             public String toString() {
-                return "EndOngoingConnectionsRunnable";
+                return "ReportIdleConnectionsRunnable";
             }
         };
     }
 
-    synchronized void endOngoingConnectionsOlderThan(long time) {
+    static synchronized void reportIdleConnectionsOlderThan(long time) {
         final long timeNow = System.currentTimeMillis();
         for (URLConnection c : activeURLConnections.keySet()) {
             final HttpURLConnectionInfo info = activeURLConnections.get(c);
-
             if (info != null
                     && info.harvestable
                     && !info.reported
                     && (info.lastSeenTime + time) < timeNow) {
-                // TODO: Report this request with a http span;
-                markReported(c);
+                HttpURLConnection httpURLConnection = (HttpURLConnection) c;
+                reportWithResponseCode(httpURLConnection);
             }
         }
     }
 
     private static class HttpURLConnectionInfo {
+        private Scope scope;
         private long lastSeenTime;
         private boolean reported;
         private boolean harvestable;
+        private Context context;
 
-        private HttpURLConnectionInfo() {
+        private HttpURLConnectionInfo(Context context) {
+            this.context = context;
             lastSeenTime = System.currentTimeMillis();
         }
     }
