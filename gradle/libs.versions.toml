@@ -1,5 +1,5 @@
 [versions]
-opentelemetry = "1.31.0"
+opentelemetry = "1.32.0"
 opentelemetry-alpha = "1.31.0-alpha"
 opentelemetry-semconv = "1.21.0-alpha"
 mockito = "5.7.0"
