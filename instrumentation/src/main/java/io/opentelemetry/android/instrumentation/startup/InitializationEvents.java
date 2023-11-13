@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.instrumentation.startup;
 
+import io.opentelemetry.android.config.OtelRumConfig;
+
 public interface InitializationEvents {
 
     void sdkInitializationStarted();
@@ -16,12 +18,15 @@ public interface InitializationEvents {
     InitializationEvents NO_OP =
             new InitializationEvents() {
                 @Override
-                public void sdkInitializationStarted() {}
+                public void sdkInitializationStarted() {
+                }
 
                 @Override
-                public void recordConfiguration(OtelRumConfig config) {}
+                public void recordConfiguration(OtelRumConfig config) {
+                }
 
                 @Override
-                public void currentNetworkProviderInitialized() {}
+                public void currentNetworkProviderInitialized() {
+                }
             };
 }
