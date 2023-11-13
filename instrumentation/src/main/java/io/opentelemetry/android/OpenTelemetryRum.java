@@ -6,6 +6,8 @@
 package io.opentelemetry.android;
 
 import android.app.Application;
+
+import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -55,7 +57,7 @@ public interface OpenTelemetryRum {
      * the {@link SdkTracerProvider}, {@link SdkMeterProvider}, and {@link SdkLoggerProvider} are
      * configured correctly for your target RUM provider.
      *
-     * @param application The {@link Application} that is being instrumented.
+     * @param application      The {@link Application} that is being instrumented.
      * @param openTelemetrySdk The {@link OpenTelemetrySdk} that the user has already created.
      */
     static SdkPreconfiguredRumBuilder builder(
@@ -63,7 +65,9 @@ public interface OpenTelemetryRum {
         return new SdkPreconfiguredRumBuilder(application, openTelemetrySdk);
     }
 
-    /** Returns a no-op implementation of {@link OpenTelemetryRum}. */
+    /**
+     * Returns a no-op implementation of {@link OpenTelemetryRum}.
+     */
     static OpenTelemetryRum noop() {
         return NoopOpenTelemetryRum.INSTANCE;
     }

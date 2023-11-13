@@ -2,6 +2,7 @@ package io.opentelemetry.android.internal.services;
 
 import android.content.Context;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 
 import java.util.HashMap;
@@ -9,23 +10,24 @@ import java.util.HashMap;
 public final class ServiceManager implements Lifecycle {
 
     private final HashMap<Service.Type, Service> services = new HashMap<>();
-    private static ServiceManager INSTANCE;
+    @Nullable
+    private static ServiceManager instance;
 
     private ServiceManager() {
     }
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
     public static void initialize(Context appContext) {
-        INSTANCE = new ServiceManager();
-        INSTANCE.addService(new PreferencesService(appContext));
+        instance = new ServiceManager();
+        instance.addService(new PreferencesService(appContext));
     }
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
     public static ServiceManager get() {
-        if (INSTANCE == null) {
+        if (instance == null) {
             throw new IllegalStateException("Services haven't been initialized");
         }
-        return INSTANCE;
+        return instance;
     }
 
     public void addService(Service service) {
@@ -49,7 +51,7 @@ public final class ServiceManager implements Lifecycle {
     }
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"})
     public <T extends Service> T getService(Service.Type type) {
         Service service = services.get(type);
         if (service == null) {
@@ -60,10 +62,10 @@ public final class ServiceManager implements Lifecycle {
     }
 
     public static void resetForTest() {
-        if (INSTANCE != null) {
-            INSTANCE.stop();
+        if (instance != null) {
+            instance.stop();
         }
-        INSTANCE = null;
+        instance = null;
     }
 
     private void verifyNotExisting(Service.Type type) {

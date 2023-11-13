@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.config;
 
+import androidx.annotation.Nullable;
+
 import java.util.function.Supplier;
 
 import io.opentelemetry.android.ScreenAttributesSpanProcessor;
@@ -22,7 +24,8 @@ public class OtelRumConfig {
     private boolean includeNetworkAttributes = true;
     private boolean generateSdkInitializationEvents = true;
     private boolean includeScreenAttributes = true;
-    private PersistenceConfiguration persistenceConfiguration;
+    @Nullable
+    private PersistenceConfiguration persistenceConfiguration = null;
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
