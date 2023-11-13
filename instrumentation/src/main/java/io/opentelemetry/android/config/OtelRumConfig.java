@@ -22,6 +22,7 @@ public class OtelRumConfig {
     private boolean includeNetworkAttributes = true;
     private boolean generateSdkInitializationEvents = true;
     private boolean includeScreenAttributes = true;
+    private PersistenceConfiguration persistenceConfiguration;
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -56,7 +57,9 @@ public class OtelRumConfig {
         return this;
     }
 
-    /** Returns true if runtime network attributes are enabled, false otherwise. */
+    /**
+     * Returns true if runtime network attributes are enabled, false otherwise.
+     */
     public boolean shouldIncludeNetworkAttributes() {
         return includeNetworkAttributes;
     }
@@ -72,7 +75,9 @@ public class OtelRumConfig {
         return this;
     }
 
-    /** Returns true if the SDK is configured to generate initialization events, false otherwise. */
+    /**
+     * Returns true if the SDK is configured to generate initialization events, false otherwise.
+     */
     public boolean shouldGenerateSdkInitializationEvents() {
         return generateSdkInitializationEvents;
     }
@@ -88,8 +93,24 @@ public class OtelRumConfig {
         return this;
     }
 
-    /** Return true if the SDK should be configured to report screen attributes. */
+    /**
+     * Return true if the SDK should be configured to report screen attributes.
+     */
     public boolean shouldIncludeScreenAttributes() {
         return includeScreenAttributes;
+    }
+
+    public PersistenceConfiguration getPersistenceConfiguration() {
+        if (persistenceConfiguration == null) {
+            return PersistenceConfiguration.builder().build();
+        }
+        return persistenceConfiguration;
+    }
+
+    /**
+     * Sets the parameters for caching signals in disk in order to export them later.
+     */
+    public void setPersistenceConfiguration(PersistenceConfiguration persistenceConfiguration) {
+        this.persistenceConfiguration = persistenceConfiguration;
     }
 }
