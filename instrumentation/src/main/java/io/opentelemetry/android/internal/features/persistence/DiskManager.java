@@ -1,9 +1,9 @@
-package io.opentelemetry.android.internal.features.persistence;
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+package io.opentelemetry.android.internal.features.persistence;
 
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.config.PersistenceConfiguration;
@@ -11,10 +11,13 @@ import io.opentelemetry.android.internal.services.AppInfoService;
 import io.opentelemetry.android.internal.services.PreferencesService;
 import io.opentelemetry.android.internal.services.Service;
 import io.opentelemetry.android.internal.services.ServiceManager;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * This class is internal and not for public use. Its APIs are unstable and can change at any
- * time.
+ * This class is internal and not for public use. Its APIs are unstable and can change at any time.
  */
 public final class DiskManager {
     private final AppInfoService appInfoService;
@@ -26,12 +29,16 @@ public final class DiskManager {
 
     public static DiskManager create(OtelRumConfig config) {
         ServiceManager serviceManager = ServiceManager.get();
-        return new DiskManager(serviceManager.getService(Service.Type.APPLICATION_INFO),
+        return new DiskManager(
+                serviceManager.getService(Service.Type.APPLICATION_INFO),
                 serviceManager.getService(Service.Type.PREFERENCES),
                 config.getPersistenceConfiguration());
     }
 
-    DiskManager(AppInfoService appInfoService, PreferencesService preferencesService, PersistenceConfiguration persistenceConfiguration) {
+    DiskManager(
+            AppInfoService appInfoService,
+            PreferencesService preferencesService,
+            PersistenceConfiguration persistenceConfiguration) {
         this.appInfoService = appInfoService;
         this.preferencesService = preferencesService;
         this.persistenceConfiguration = persistenceConfiguration;
@@ -61,7 +68,9 @@ public final class DiskManager {
     public int getMaxFolderSize() {
         int storedSize = preferencesService.retrieveInt(MAX_FOLDER_SIZE_KEY, -1);
         if (storedSize != -1) {
-            logger.log(Level.FINER, String.format("Returning max folder size from preferences: %s", storedSize));
+            logger.log(
+                    Level.FINER,
+                    String.format("Returning max folder size from preferences: %s", storedSize));
             return storedSize;
         }
         int requestedSize = persistenceConfiguration.maxCacheSize;
@@ -69,7 +78,11 @@ public final class DiskManager {
         int calculatedSize = (availableCacheSize / 3) - MAX_FILE_SIZE;
         preferencesService.store(MAX_FOLDER_SIZE_KEY, calculatedSize);
 
-        logger.log(Level.FINER, String.format("Requested cache size: %s, available cache size: %s, folder size: %s", requestedSize, availableCacheSize, calculatedSize));
+        logger.log(
+                Level.FINER,
+                String.format(
+                        "Requested cache size: %s, available cache size: %s, folder size: %s",
+                        requestedSize, availableCacheSize, calculatedSize));
         return calculatedSize;
     }
 

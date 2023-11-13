@@ -6,12 +6,10 @@
 package io.opentelemetry.android.config;
 
 import androidx.annotation.Nullable;
-
-import java.util.function.Supplier;
-
 import io.opentelemetry.android.ScreenAttributesSpanProcessor;
 import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.api.common.Attributes;
+import java.util.function.Supplier;
 
 /**
  * Configuration object for OpenTelemetry Android. The configuration items in this class will be
@@ -24,8 +22,7 @@ public class OtelRumConfig {
     private boolean includeNetworkAttributes = true;
     private boolean generateSdkInitializationEvents = true;
     private boolean includeScreenAttributes = true;
-    @Nullable
-    private PersistenceConfiguration persistenceConfiguration = null;
+    @Nullable private PersistenceConfiguration persistenceConfiguration = null;
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -60,9 +57,7 @@ public class OtelRumConfig {
         return this;
     }
 
-    /**
-     * Returns true if runtime network attributes are enabled, false otherwise.
-     */
+    /** Returns true if runtime network attributes are enabled, false otherwise. */
     public boolean shouldIncludeNetworkAttributes() {
         return includeNetworkAttributes;
     }
@@ -78,9 +73,7 @@ public class OtelRumConfig {
         return this;
     }
 
-    /**
-     * Returns true if the SDK is configured to generate initialization events, false otherwise.
-     */
+    /** Returns true if the SDK is configured to generate initialization events, false otherwise. */
     public boolean shouldGenerateSdkInitializationEvents() {
         return generateSdkInitializationEvents;
     }
@@ -96,9 +89,7 @@ public class OtelRumConfig {
         return this;
     }
 
-    /**
-     * Return true if the SDK should be configured to report screen attributes.
-     */
+    /** Return true if the SDK should be configured to report screen attributes. */
     public boolean shouldIncludeScreenAttributes() {
         return includeScreenAttributes;
     }
@@ -110,9 +101,7 @@ public class OtelRumConfig {
         return persistenceConfiguration;
     }
 
-    /**
-     * Sets the parameters for caching signals in disk in order to export them later.
-     */
+    /** Sets the parameters for caching signals in disk in order to export them later. */
     public void setPersistenceConfiguration(PersistenceConfiguration persistenceConfiguration) {
         this.persistenceConfiguration = persistenceConfiguration;
     }

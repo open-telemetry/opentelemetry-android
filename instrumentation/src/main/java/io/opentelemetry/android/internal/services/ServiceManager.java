@@ -1,20 +1,21 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.internal.services;
 
 import android.content.Context;
-
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
-
 import java.util.HashMap;
 
 public final class ServiceManager implements Lifecycle {
 
     private final HashMap<Service.Type, Service> services = new HashMap<>();
-    @Nullable
-    private static ServiceManager instance;
+    @Nullable private static ServiceManager instance;
 
-    private ServiceManager() {
-    }
+    private ServiceManager() {}
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
     public static void initialize(Context appContext) {

@@ -1,8 +1,11 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.config;
 
-/**
- * Configuration for disk buffering.
- */
+/** Configuration for disk buffering. */
 public final class PersistenceConfiguration {
     public final boolean enabled;
     public final int maxCacheSize;
@@ -25,9 +28,7 @@ public final class PersistenceConfiguration {
             this.maxCacheSize = maxCacheSize;
         }
 
-        /**
-         * Enables or disables disk buffering.
-         */
+        /** Enables or disables disk buffering. */
         public Builder setEnabled(boolean enabled) {
             this.enabled = enabled;
             return this;
