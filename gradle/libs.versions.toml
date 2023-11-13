@@ -50,7 +50,7 @@ spotless-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", ver
 errorprone-plugin = "net.ltgt.gradle:gradle-errorprone-plugin:3.1.0"
 nullaway-plugin = "net.ltgt.gradle:gradle-nullaway-plugin:1.6.0"
 animalsniffer-plugin = "ru.vyarus:gradle-animalsniffer-plugin:1.7.1"
-android-plugin = "com.android.tools.build:gradle:8.1.2"
+android-plugin = "com.android.tools.build:gradle:8.1.3"
 byteBuddy-plugin = { module = "net.bytebuddy:byte-buddy-gradle-plugin", version.ref = "byteBuddy" }
 
 [bundles]
