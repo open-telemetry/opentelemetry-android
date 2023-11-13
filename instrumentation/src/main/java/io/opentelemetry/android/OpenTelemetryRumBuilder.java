@@ -8,6 +8,14 @@ package io.opentelemetry.android;
 import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.instrumentation.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
@@ -30,11 +38,6 @@ import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * A builder of {@link OpenTelemetryRum}. It enabled configuring the OpenTelemetry SDK and disabling
@@ -243,7 +246,9 @@ public final class OpenTelemetryRumBuilder {
         return delegate.build();
     }
 
-    /** Leverage the configuration to wire up various instrumentation components. */
+    /**
+     * Leverage the configuration to wire up various instrumentation components.
+     */
     private void applyConfiguration() {
         if (config.shouldGenerateSdkInitializationEvents()) {
             initializationEvents = new SdkInitializationEvents();

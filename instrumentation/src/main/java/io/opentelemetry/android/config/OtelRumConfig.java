@@ -37,12 +37,12 @@ public class OtelRumConfig {
         return this;
     }
 
-    boolean hasGlobalAttributes() {
+    public boolean hasGlobalAttributes() {
         Attributes attributes = globalAttributesSupplier.get();
         return attributes != null && !attributes.isEmpty();
     }
 
-    Supplier<Attributes> getGlobalAttributesSupplier() {
+    public Supplier<Attributes> getGlobalAttributesSupplier() {
         return globalAttributesSupplier;
     }
 
