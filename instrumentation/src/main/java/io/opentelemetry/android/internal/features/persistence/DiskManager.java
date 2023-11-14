@@ -25,7 +25,7 @@ public final class DiskManager {
     private final DiskBufferingConfiguration diskBufferingConfiguration;
     private static final String MAX_FOLDER_SIZE_KEY = "max_signal_folder_size";
     private static final int MAX_FILE_SIZE = 1024 * 1024;
-    private final Logger logger = Logger.getLogger("DiskManager");
+    private final static Logger logger = Logger.getLogger("DiskManager");
 
     public static DiskManager create(OtelRumConfig config) {
         ServiceManager serviceManager = ServiceManager.get();
