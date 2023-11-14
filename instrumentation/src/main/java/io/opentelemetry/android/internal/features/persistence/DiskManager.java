@@ -20,12 +20,12 @@ import java.util.logging.Logger;
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
  */
 public final class DiskManager {
+    private static final String MAX_FOLDER_SIZE_KEY = "max_signal_folder_size";
+    private static final int MAX_FILE_SIZE = 1024 * 1024;
+    private static final Logger logger = Logger.getLogger("DiskManager");
     private final AppInfoService appInfoService;
     private final PreferencesService preferencesService;
     private final DiskBufferingConfiguration diskBufferingConfiguration;
-    private static final String MAX_FOLDER_SIZE_KEY = "max_signal_folder_size";
-    private static final int MAX_FILE_SIZE = 1024 * 1024;
-    private final static Logger logger = Logger.getLogger("DiskManager");
 
     public static DiskManager create(OtelRumConfig config) {
         ServiceManager serviceManager = ServiceManager.get();

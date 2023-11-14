@@ -24,7 +24,7 @@ import java.util.logging.Logger;
  */
 public class AppInfoService implements Service {
     private final Context appContext;
-    private final static Logger logger = Logger.getLogger("AppInfoService");
+    private static final Logger logger = Logger.getLogger("AppInfoService");
 
     public AppInfoService(Context appContext) {
         this.appContext = appContext;
