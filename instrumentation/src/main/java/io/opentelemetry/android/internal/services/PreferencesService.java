@@ -18,10 +18,14 @@ import io.opentelemetry.android.BuildConfig;
 public class PreferencesService implements Service {
     private final SharedPreferences preferences;
 
-    public PreferencesService(Context context) {
-        preferences =
+    public static PreferencesService create(Context context) {
+        return new PreferencesService(
                 context.getSharedPreferences(
-                        BuildConfig.LIBRARY_PACKAGE_NAME + ".prefs", Context.MODE_PRIVATE);
+                        BuildConfig.LIBRARY_PACKAGE_NAME + ".prefs", Context.MODE_PRIVATE));
+    }
+
+    private PreferencesService(SharedPreferences sharedPreferences) {
+        preferences = sharedPreferences;
     }
 
     public void store(String key, int value) {

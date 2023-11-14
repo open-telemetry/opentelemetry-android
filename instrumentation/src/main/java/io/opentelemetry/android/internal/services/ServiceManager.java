@@ -21,7 +21,7 @@ public final class ServiceManager implements Lifecycle {
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
     public static void initialize(Context appContext) {
         instance = new ServiceManager();
-        instance.addService(new PreferencesService(appContext));
+        instance.addService(PreferencesService.create(appContext));
     }
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
