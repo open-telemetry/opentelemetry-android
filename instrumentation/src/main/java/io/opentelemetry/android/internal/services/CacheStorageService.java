@@ -22,11 +22,11 @@ import java.util.logging.Logger;
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
-public class AppInfoService implements Service {
+public class CacheStorageService implements Service {
     private final Context appContext;
-    private static final Logger logger = Logger.getLogger("AppInfoService");
+    private static final Logger logger = Logger.getLogger("CacheStorageService");
 
-    public AppInfoService(Context appContext) {
+    public CacheStorageService(Context appContext) {
         this.appContext = appContext;
     }
 
@@ -35,7 +35,7 @@ public class AppInfoService implements Service {
     }
 
     @WorkerThread
-    public long getAvailableCacheSpace(long maxSpaceNeeded) {
+    public long ensureCacheSpaceAvailable(long maxSpaceNeeded) {
         File cacheDir = getCacheDir();
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
             return getLegacyAvailableSpace(cacheDir, maxSpaceNeeded);

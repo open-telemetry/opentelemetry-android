@@ -7,7 +7,7 @@ package io.opentelemetry.android.internal.features.persistence;
 
 import io.opentelemetry.android.config.DiskBufferingConfiguration;
 import io.opentelemetry.android.config.OtelRumConfig;
-import io.opentelemetry.android.internal.services.AppInfoService;
+import io.opentelemetry.android.internal.services.CacheStorageService;
 import io.opentelemetry.android.internal.services.PreferencesService;
 import io.opentelemetry.android.internal.services.Service;
 import io.opentelemetry.android.internal.services.ServiceManager;
@@ -23,7 +23,7 @@ public final class DiskManager {
     private static final String MAX_FOLDER_SIZE_KEY = "max_signal_folder_size";
     private static final int MAX_FILE_SIZE = 1024 * 1024;
     private static final Logger logger = Logger.getLogger("DiskManager");
-    private final AppInfoService appInfoService;
+    private final CacheStorageService cacheStorageService;
     private final PreferencesService preferencesService;
     private final DiskBufferingConfiguration diskBufferingConfiguration;
 
@@ -36,16 +36,16 @@ public final class DiskManager {
     }
 
     DiskManager(
-            AppInfoService appInfoService,
+            CacheStorageService cacheStorageService,
             PreferencesService preferencesService,
             DiskBufferingConfiguration diskBufferingConfiguration) {
-        this.appInfoService = appInfoService;
+        this.cacheStorageService = cacheStorageService;
         this.preferencesService = preferencesService;
         this.diskBufferingConfiguration = diskBufferingConfiguration;
     }
 
-    public File getSignalsCacheDir() throws IOException {
-        File dir = new File(appInfoService.getCacheDir(), "opentelemetry/signals");
+    public File getSignalsBufferDir() throws IOException {
+        File dir = new File(cacheStorageService.getCacheDir(), "opentelemetry/signals");
         if (!dir.exists()) {
             if (!dir.mkdirs()) {
                 throw new IOException("Could not create dir " + dir);
@@ -55,7 +55,7 @@ public final class DiskManager {
     }
 
     public File getTemporaryDir() throws IOException {
-        File dir = new File(appInfoService.getCacheDir(), "opentelemetry/temp");
+        File dir = new File(cacheStorageService.getCacheDir(), "opentelemetry/temp");
         if (!dir.exists()) {
             if (!dir.mkdirs()) {
                 throw new IOException("Could not create dir " + dir);
@@ -74,7 +74,7 @@ public final class DiskManager {
             return storedSize;
         }
         int requestedSize = diskBufferingConfiguration.maxCacheSize;
-        int availableCacheSize = (int) appInfoService.getAvailableCacheSpace(requestedSize);
+        int availableCacheSize = (int) cacheStorageService.ensureCacheSpaceAvailable(requestedSize);
         int calculatedSize = (availableCacheSize / 3) - MAX_FILE_SIZE;
         preferencesService.store(MAX_FOLDER_SIZE_KEY, calculatedSize);
 
