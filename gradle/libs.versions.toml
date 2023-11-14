@@ -25,6 +25,7 @@ opentelemetry-api = { module = "io.opentelemetry:opentelemetry-api" }
 opentelemetry-sdk = { module = "io.opentelemetry:opentelemetry-sdk" }
 opentelemetry-exporter-zipkin = { module = "io.opentelemetry:opentelemetry-exporter-zipkin" }
 opentelemetry-exporter-logging = { module = "io.opentelemetry:opentelemetry-exporter-logging" }
+opentelemetry-apievents = { module = "io.opentelemetry:opentelemetry-api-events" }
 zipkin-sender-okhttp3 = { module = "io.zipkin.reporter2:zipkin-sender-okhttp3", version.ref = "zipkin-reporter"}
 
 #Test tools
