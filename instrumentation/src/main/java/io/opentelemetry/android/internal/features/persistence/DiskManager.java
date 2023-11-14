@@ -67,7 +67,7 @@ public final class DiskManager {
 
     public int getMaxFolderSize() {
         int storedSize = preferencesService.retrieveInt(MAX_FOLDER_SIZE_KEY, -1);
-        if (storedSize != -1) {
+        if (storedSize > 0) {
             logger.log(
                     Level.FINER,
                     String.format("Returning max folder size from preferences: %s", storedSize));
