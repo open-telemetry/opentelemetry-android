@@ -1,4 +1,5 @@
 import com.android.build.api.dsl.LibraryExtension
+import gradle.kotlin.dsl.accessors._b2446c8dc207e937a199f7dceaaf23ac.implementation
 import org.gradle.api.publish.maven.MavenPublication
 
 plugins {
@@ -25,4 +26,9 @@ android {
         sourceCompatibility(javaVersion)
         targetCompatibility(javaVersion)
     }
+}
+
+val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+dependencies {
+    implementation(libs.findLibrary("findbugs-jsr305").get())
 }
