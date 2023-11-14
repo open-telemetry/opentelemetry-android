@@ -34,6 +34,14 @@ public class CacheStorageService implements Service {
         return appContext.getCacheDir();
     }
 
+    /**
+     * Checks for available cache space in the device and compares it to the max amount needed, if
+     * the available space is lower than the provided max value, the available space is returned,
+     * otherwise, the provided amount is returned.
+     *
+     * <p>On Android OS with API level 26 and above, it will also ask the OS to clear stale cache
+     * from the device in order to make room for the provided max value if needed.
+     */
     @WorkerThread
     public long ensureCacheSpaceAvailable(long maxSpaceNeeded) {
         File cacheDir = getCacheDir();
