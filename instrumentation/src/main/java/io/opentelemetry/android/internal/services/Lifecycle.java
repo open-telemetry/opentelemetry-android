@@ -6,7 +6,7 @@
 package io.opentelemetry.android.internal.services;
 
 public interface Lifecycle {
-    void start();
+    default void start() {}
 
-    void stop();
+    default void stop() {}
 }

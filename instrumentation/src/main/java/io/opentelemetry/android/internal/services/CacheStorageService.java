@@ -85,16 +85,6 @@ public class CacheStorageService implements Service {
     }
 
     @Override
-    public void start() {
-        // No operation.
-    }
-
-    @Override
-    public void stop() {
-        // No operation.
-    }
-
-    @Override
     public Type type() {
         return Type.APPLICATION_INFO;
     }

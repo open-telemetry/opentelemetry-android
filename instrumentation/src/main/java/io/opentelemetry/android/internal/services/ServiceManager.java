@@ -9,6 +9,7 @@ import android.content.Context;
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import java.util.HashMap;
+import java.util.Map;
 
 public final class ServiceManager implements Lifecycle {
 
