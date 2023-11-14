@@ -65,6 +65,16 @@ public final class DiskManager {
         return dir;
     }
 
+    /**
+     * It checks for the available cache space in disk, then it attempts to divide by 3 in order to
+     * get each signal's folder max size. The resulting value is subtracted the max file size value
+     * in order to account for temp files used during the reading process.
+     *
+     * <p>
+     *
+     * @return If the calculated size is < the max file size value, it returns 0. The calculated
+     *     size is stored in the preferences and returned otherwise.
+     */
     public int getMaxFolderSize() {
         int storedSize = preferencesService.retrieveInt(MAX_FOLDER_SIZE_KEY, -1);
         if (storedSize > 0) {
@@ -75,7 +85,18 @@ public final class DiskManager {
         }
         int requestedSize = diskBufferingConfiguration.maxCacheSize;
         int availableCacheSize = (int) cacheStorageService.ensureCacheSpaceAvailable(requestedSize);
+        // Divides the available cache size by 3 (for each signal's folder) and then subtracts the
+        // size of a single file to be aware of a temp file used when reading data back from the
+        // disk.
         int calculatedSize = (availableCacheSize / 3) - MAX_FILE_SIZE;
+        if (calculatedSize < MAX_FILE_SIZE) {
+            logger.log(
+                    Level.WARNING,
+                    String.format(
+                            "Insufficient folder cache size: %s, it must be at least: %s",
+                            calculatedSize, MAX_FILE_SIZE));
+            return 0;
+        }
         preferencesService.store(MAX_FOLDER_SIZE_KEY, calculatedSize);
 
         logger.log(
