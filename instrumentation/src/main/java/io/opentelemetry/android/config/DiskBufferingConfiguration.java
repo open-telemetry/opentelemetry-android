@@ -5,19 +5,17 @@
 
 package io.opentelemetry.android.config;
 
-/**
- * Configuration for disk buffering.
- */
-public final class PersistenceConfiguration {
+/** Configuration for disk buffering. */
+public final class DiskBufferingConfiguration {
     public final boolean enabled;
     public final int maxCacheSize;
     private static final int DEFAULT_MAX_CACHE_SIZE = 60 * 1024 * 1024;
 
-    public static PersistenceConfiguration getDefault() {
-        return PersistenceConfiguration.builder().build();
+    public static DiskBufferingConfiguration getDefault() {
+        return DiskBufferingConfiguration.builder().build();
     }
 
-    private PersistenceConfiguration(Builder builder) {
+    private DiskBufferingConfiguration(Builder builder) {
         this.enabled = builder.enabled;
         this.maxCacheSize = builder.maxCacheSize;
     }
@@ -35,9 +33,7 @@ public final class PersistenceConfiguration {
             this.maxCacheSize = maxCacheSize;
         }
 
-        /**
-         * Enables or disables disk buffering.
-         */
+        /** Enables or disables disk buffering. */
         public Builder setEnabled(boolean enabled) {
             this.enabled = enabled;
             return this;
@@ -53,8 +49,8 @@ public final class PersistenceConfiguration {
             return this;
         }
 
-        public PersistenceConfiguration build() {
-            return new PersistenceConfiguration(this);
+        public DiskBufferingConfiguration build() {
+            return new DiskBufferingConfiguration(this);
         }
     }
 }

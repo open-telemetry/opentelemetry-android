@@ -5,8 +5,8 @@
 
 package io.opentelemetry.android.internal.features.persistence;
 
+import io.opentelemetry.android.config.DiskBufferingConfiguration;
 import io.opentelemetry.android.config.OtelRumConfig;
-import io.opentelemetry.android.config.PersistenceConfiguration;
 import io.opentelemetry.android.internal.services.AppInfoService;
 import io.opentelemetry.android.internal.services.PreferencesService;
 import io.opentelemetry.android.internal.services.Service;
@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 public final class DiskManager {
     private final AppInfoService appInfoService;
     private final PreferencesService preferencesService;
-    private final PersistenceConfiguration persistenceConfiguration;
+    private final DiskBufferingConfiguration diskBufferingConfiguration;
     private static final String MAX_FOLDER_SIZE_KEY = "max_signal_folder_size";
     private static final int MAX_FILE_SIZE = 1024 * 1024;
     private final Logger logger = Logger.getLogger("DiskManager");
@@ -32,16 +32,16 @@ public final class DiskManager {
         return new DiskManager(
                 serviceManager.getService(Service.Type.APPLICATION_INFO),
                 serviceManager.getService(Service.Type.PREFERENCES),
-                config.getPersistenceConfiguration());
+                config.getDiskBufferingConfiguration());
     }
 
     DiskManager(
             AppInfoService appInfoService,
             PreferencesService preferencesService,
-            PersistenceConfiguration persistenceConfiguration) {
+            DiskBufferingConfiguration diskBufferingConfiguration) {
         this.appInfoService = appInfoService;
         this.preferencesService = preferencesService;
-        this.persistenceConfiguration = persistenceConfiguration;
+        this.diskBufferingConfiguration = diskBufferingConfiguration;
     }
 
     public File getSignalsCacheDir() throws IOException {
@@ -73,7 +73,7 @@ public final class DiskManager {
                     String.format("Returning max folder size from preferences: %s", storedSize));
             return storedSize;
         }
-        int requestedSize = persistenceConfiguration.maxCacheSize;
+        int requestedSize = diskBufferingConfiguration.maxCacheSize;
         int availableCacheSize = (int) appInfoService.getAvailableCacheSpace(requestedSize);
         int calculatedSize = (availableCacheSize / 3) - MAX_FILE_SIZE;
         preferencesService.store(MAX_FOLDER_SIZE_KEY, calculatedSize);

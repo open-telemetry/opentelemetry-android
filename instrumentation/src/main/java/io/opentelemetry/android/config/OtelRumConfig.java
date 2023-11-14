@@ -21,8 +21,8 @@ public class OtelRumConfig {
     private boolean includeNetworkAttributes = true;
     private boolean generateSdkInitializationEvents = true;
     private boolean includeScreenAttributes = true;
-    private PersistenceConfiguration persistenceConfiguration =
-            PersistenceConfiguration.getDefault();
+    private DiskBufferingConfiguration diskBufferingConfiguration =
+            DiskBufferingConfiguration.getDefault();
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -94,12 +94,13 @@ public class OtelRumConfig {
         return includeScreenAttributes;
     }
 
-    public PersistenceConfiguration getPersistenceConfiguration() {
-        return persistenceConfiguration;
+    public DiskBufferingConfiguration getDiskBufferingConfiguration() {
+        return diskBufferingConfiguration;
     }
 
     /** Sets the parameters for caching signals in disk in order to export them later. */
-    public void setPersistenceConfiguration(PersistenceConfiguration persistenceConfiguration) {
-        this.persistenceConfiguration = persistenceConfiguration;
+    public void setDiskBufferingConfiguration(
+            DiskBufferingConfiguration diskBufferingConfiguration) {
+        this.diskBufferingConfiguration = diskBufferingConfiguration;
     }
 }
