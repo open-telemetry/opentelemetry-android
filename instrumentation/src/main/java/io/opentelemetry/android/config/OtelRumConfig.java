@@ -22,7 +22,7 @@ public class OtelRumConfig {
     private boolean generateSdkInitializationEvents = true;
     private boolean includeScreenAttributes = true;
     private DiskBufferingConfiguration diskBufferingConfiguration =
-            DiskBufferingConfiguration.getDefault();
+            DiskBufferingConfiguration.builder().build();
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing

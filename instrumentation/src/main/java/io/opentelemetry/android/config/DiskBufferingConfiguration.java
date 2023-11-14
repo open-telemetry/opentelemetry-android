@@ -11,10 +11,6 @@ public final class DiskBufferingConfiguration {
     public final int maxCacheSize;
     private static final int DEFAULT_MAX_CACHE_SIZE = 60 * 1024 * 1024;
 
-    public static DiskBufferingConfiguration getDefault() {
-        return DiskBufferingConfiguration.builder().build();
-    }
-
     private DiskBufferingConfiguration(Builder builder) {
         this.enabled = builder.enabled;
         this.maxCacheSize = builder.maxCacheSize;
