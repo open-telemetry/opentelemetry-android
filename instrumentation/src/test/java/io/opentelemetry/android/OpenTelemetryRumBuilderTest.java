@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 import android.app.Activity;
 import android.app.Application;
 import androidx.annotation.NonNull;
+import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.instrumentation.ApplicationStateListener;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
