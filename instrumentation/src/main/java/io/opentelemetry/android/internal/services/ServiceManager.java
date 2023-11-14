@@ -12,7 +12,7 @@ import java.util.HashMap;
 
 public final class ServiceManager implements Lifecycle {
 
-    private final HashMap<Service.Type, Service> services = new HashMap<>();
+    private final Map<Service.Type, Service> services = new HashMap<>();
     @Nullable private static ServiceManager instance;
 
     private ServiceManager() {}
