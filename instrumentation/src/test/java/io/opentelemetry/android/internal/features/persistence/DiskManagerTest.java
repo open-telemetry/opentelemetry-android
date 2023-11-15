@@ -7,14 +7,17 @@ package io.opentelemetry.android.internal.features.persistence;
 
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.opentelemetry.android.config.DiskBufferingConfiguration;
+import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.internal.services.CacheStorageService;
 import io.opentelemetry.android.internal.services.PreferencesService;
+import io.opentelemetry.android.internal.services.ServiceManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
@@ -38,9 +41,13 @@ class DiskManagerTest {
 
     @BeforeEach
     public void setUp() {
-        diskManager =
-                new DiskManager(
-                        cacheStorageService, preferencesService, diskBufferingConfiguration);
+        OtelRumConfig config = mock(OtelRumConfig.class);
+        ServiceManager serviceManager = mock(ServiceManager.class);
+        doReturn(diskBufferingConfiguration).when(config).getDiskBufferingConfiguration();
+        doReturn(cacheStorageService).when(serviceManager).getService(CacheStorageService.class);
+        doReturn(preferencesService).when(serviceManager).getService(PreferencesService.class);
+        ServiceManager.setForTest(serviceManager);
+        diskManager = DiskManager.create(config);
     }
 
     @Test

@@ -71,6 +71,11 @@ public final class ServiceManager implements Lifecycle {
         instance = null;
     }
 
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
+    public static void setForTest(ServiceManager serviceManager) {
+        instance = serviceManager;
+    }
+
     private void verifyNotExisting(Class<? extends Service> type) {
         if (services.containsKey(type)) {
             throw new IllegalArgumentException("Service already registered with type: " + type);

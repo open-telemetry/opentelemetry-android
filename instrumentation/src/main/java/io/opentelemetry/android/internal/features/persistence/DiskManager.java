@@ -33,7 +33,7 @@ public final class DiskManager {
                 config.getDiskBufferingConfiguration());
     }
 
-    DiskManager(
+    private DiskManager(
             CacheStorageService cacheStorageService,
             PreferencesService preferencesService,
             DiskBufferingConfiguration diskBufferingConfiguration) {
