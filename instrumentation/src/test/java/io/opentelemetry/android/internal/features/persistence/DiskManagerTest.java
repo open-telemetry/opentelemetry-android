@@ -40,9 +40,9 @@ class DiskManagerTest {
     private DiskManager diskManager;
 
     @BeforeEach
-    public void setUp() {
-        OtelRumConfig config = mock(OtelRumConfig.class);
-        ServiceManager serviceManager = mock(ServiceManager.class);
+    void setUp() {
+        OtelRumConfig config = mock();
+        ServiceManager serviceManager = mock();
         doReturn(diskBufferingConfiguration).when(config).getDiskBufferingConfiguration();
         doReturn(cacheStorageService).when(serviceManager).getService(CacheStorageService.class);
         doReturn(preferencesService).when(serviceManager).getService(PreferencesService.class);
@@ -51,7 +51,7 @@ class DiskManagerTest {
     }
 
     @Test
-    public void provideSignalBufferDir() throws IOException {
+    void provideSignalBufferDir() throws IOException {
         doReturn(cacheDir).when(cacheStorageService).getCacheDir();
         File expected = new File(cacheDir, "opentelemetry/signals");
 
@@ -60,7 +60,7 @@ class DiskManagerTest {
     }
 
     @Test
-    public void provideTemporaryDir() throws IOException {
+    void provideTemporaryDir() throws IOException {
         doReturn(cacheDir).when(cacheStorageService).getCacheDir();
         File expected = new File(cacheDir, "opentelemetry/temp");
 
@@ -69,7 +69,7 @@ class DiskManagerTest {
     }
 
     @Test
-    public void cleanupTemporaryDirBeforeProvidingIt() throws IOException {
+    void cleanupTemporaryDirBeforeProvidingIt() throws IOException {
         File dir = new File(cacheDir, "opentelemetry/temp");
         Assertions.assertTrue(dir.mkdirs());
         Assertions.assertTrue(new File(dir, "somefile.tmp").createNewFile());
@@ -84,7 +84,7 @@ class DiskManagerTest {
     }
 
     @Test
-    public void getMaxCacheFileSize() {
+    void getMaxCacheFileSize() {
         int persistenceSize = 1024 * 1024 * 2;
         doReturn(persistenceSize).when(diskBufferingConfiguration).getMaxCacheFileSize();
 
@@ -94,7 +94,7 @@ class DiskManagerTest {
     }
 
     @Test
-    public void getMaxSignalFolderSize() {
+    void getMaxSignalFolderSize() {
         long maxCacheSize = 10 * 1024 * 1024; // 10 MB
         int maxCacheFileSize = 1024 * 1024; // 1 MB
         doReturn((int) maxCacheSize).when(diskBufferingConfiguration).getMaxCacheSize();
@@ -118,7 +118,7 @@ class DiskManagerTest {
     }
 
     @Test
-    public void getMaxSignalFolderSize_whenCalculatedSizeIsNotValid() {
+    void getMaxSignalFolderSize_whenCalculatedSizeIsNotValid() {
         long maxCacheSize = 1024 * 1024; // 1 MB
         int maxCacheFileSize = 1024 * 1024; // 1 MB
         doReturn((int) maxCacheSize).when(diskBufferingConfiguration).getMaxCacheSize();
