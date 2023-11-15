@@ -21,7 +21,6 @@ import java.util.logging.Logger;
  */
 public final class DiskManager {
     private static final String MAX_FOLDER_SIZE_KEY = "max_signal_folder_size";
-    private static final int MAX_FILE_SIZE = 1024 * 1024;
     private static final Logger logger = Logger.getLogger("DiskManager");
     private final CacheStorageService cacheStorageService;
     private final PreferencesService preferencesService;
@@ -83,18 +82,19 @@ public final class DiskManager {
                     String.format("Returning max folder size from preferences: %s", storedSize));
             return storedSize;
         }
-        int requestedSize = diskBufferingConfiguration.maxCacheSize;
+        int requestedSize = diskBufferingConfiguration.getMaxCacheSize();
         int availableCacheSize = (int) cacheStorageService.ensureCacheSpaceAvailable(requestedSize);
         // Divides the available cache size by 3 (for each signal's folder) and then subtracts the
         // size of a single file to be aware of a temp file used when reading data back from the
         // disk.
-        int calculatedSize = (availableCacheSize / 3) - MAX_FILE_SIZE;
-        if (calculatedSize < MAX_FILE_SIZE) {
+        int maxCacheFileSize = getMaxCacheFileSize();
+        int calculatedSize = (availableCacheSize / 3) - maxCacheFileSize;
+        if (calculatedSize < maxCacheFileSize) {
             logger.log(
                     Level.WARNING,
                     String.format(
                             "Insufficient folder cache size: %s, it must be at least: %s",
-                            calculatedSize, MAX_FILE_SIZE));
+                            calculatedSize, maxCacheFileSize));
             return 0;
         }
         preferencesService.store(MAX_FOLDER_SIZE_KEY, calculatedSize);
@@ -108,7 +108,7 @@ public final class DiskManager {
     }
 
     public int getMaxCacheFileSize() {
-        return MAX_FILE_SIZE;
+        return diskBufferingConfiguration.getMaxCacheFileSize();
     }
 
     private static void deleteFiles(File dir) {

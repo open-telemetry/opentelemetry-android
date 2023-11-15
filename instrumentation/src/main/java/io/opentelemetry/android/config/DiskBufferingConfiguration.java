@@ -7,9 +7,10 @@ package io.opentelemetry.android.config;
 
 /** Configuration for disk buffering. */
 public final class DiskBufferingConfiguration {
-    public final boolean enabled;
-    public final int maxCacheSize;
+    private final boolean enabled;
+    private final int maxCacheSize;
     private static final int DEFAULT_MAX_CACHE_SIZE = 60 * 1024 * 1024;
+    private static final int MAX_FILE_SIZE = 1024 * 1024;
 
     private DiskBufferingConfiguration(Builder builder) {
         this.enabled = builder.enabled;
@@ -18,6 +19,18 @@ public final class DiskBufferingConfiguration {
 
     public static Builder builder() {
         return new Builder(false, DEFAULT_MAX_CACHE_SIZE);
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public int getMaxCacheSize() {
+        return maxCacheSize;
+    }
+
+    public int getMaxCacheFileSize() {
+        return MAX_FILE_SIZE;
     }
 
     public static final class Builder {
