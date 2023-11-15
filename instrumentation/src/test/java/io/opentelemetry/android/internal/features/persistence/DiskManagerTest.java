@@ -7,6 +7,7 @@ package io.opentelemetry.android.internal.features.persistence;
 
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -107,5 +108,21 @@ class DiskManagerTest {
         verify(preferencesService).retrieveInt(MAX_FOLDER_SIZE_KEY, -1);
         verifyNoMoreInteractions(preferencesService);
         verifyNoInteractions(cacheStorageService, diskBufferingConfiguration);
+    }
+
+    @Test
+    public void getMaxSignalFolderSize_whenCalculatedSizeIsNotValid() {
+        long maxCacheSize = 1024 * 1024; // 1 MB
+        int maxCacheFileSize = 1024 * 1024; // 1 MB
+        doReturn((int) maxCacheSize).when(diskBufferingConfiguration).getMaxCacheSize();
+        doReturn(maxCacheFileSize).when(diskBufferingConfiguration).getMaxCacheFileSize();
+        doReturn(maxCacheSize).when(cacheStorageService).ensureCacheSpaceAvailable(maxCacheSize);
+        doReturn(-1).when(preferencesService).retrieveInt(MAX_FOLDER_SIZE_KEY, -1);
+
+        // Expects the size of a single signal type folder minus the size of a cache file, to use as
+        // temporary space for reading.
+        int expected = 0;
+        Assertions.assertEquals(expected, diskManager.getMaxFolderSize());
+        verify(preferencesService, never()).store(MAX_FOLDER_SIZE_KEY, expected);
     }
 }
