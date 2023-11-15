@@ -9,7 +9,6 @@ import io.opentelemetry.android.config.DiskBufferingConfiguration;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.internal.services.CacheStorageService;
 import io.opentelemetry.android.internal.services.PreferencesService;
-import io.opentelemetry.android.internal.services.Service;
 import io.opentelemetry.android.internal.services.ServiceManager;
 import java.io.File;
 import java.io.IOException;
@@ -29,8 +28,8 @@ public final class DiskManager {
     public static DiskManager create(OtelRumConfig config) {
         ServiceManager serviceManager = ServiceManager.get();
         return new DiskManager(
-                serviceManager.getService(Service.Type.CACHE_STORAGE),
-                serviceManager.getService(Service.Type.PREFERENCES),
+                serviceManager.getService(CacheStorageService.class),
+                serviceManager.getService(PreferencesService.class),
                 config.getDiskBufferingConfiguration());
     }
 

@@ -35,9 +35,4 @@ public class PreferencesService implements Service {
     public int retrieveInt(String key, int defaultValue) {
         return preferences.getInt(key, defaultValue);
     }
-
-    @Override
-    public Type type() {
-        return Type.PREFERENCES;
-    }
 }

@@ -13,7 +13,7 @@ import java.util.Map;
 
 public final class ServiceManager implements Lifecycle {
 
-    private final Map<Service.Type, Service> services = new HashMap<>();
+    private final Map<Class<? extends Service>, Service> services = new HashMap<>();
     @Nullable private static ServiceManager instance;
 
     private ServiceManager() {}
@@ -22,6 +22,7 @@ public final class ServiceManager implements Lifecycle {
     public static void initialize(Context appContext) {
         instance = new ServiceManager();
         instance.addService(PreferencesService.create(appContext));
+        instance.addService(new CacheStorageService(appContext));
     }
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
@@ -32,8 +33,8 @@ public final class ServiceManager implements Lifecycle {
         return instance;
     }
 
-    public void addService(Service service) {
-        Service.Type type = service.type();
+    public <T extends Service> void addService(T service) {
+        Class<? extends Service> type = service.getClass();
         verifyNotExisting(type);
         services.put(type, service);
     }
@@ -54,7 +55,7 @@ public final class ServiceManager implements Lifecycle {
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
     @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"})
-    public <T extends Service> T getService(Service.Type type) {
+    public <T extends Service> T getService(Class<T> type) {
         Service service = services.get(type);
         if (service == null) {
             throw new IllegalArgumentException("Service not found: " + type);
@@ -70,7 +71,7 @@ public final class ServiceManager implements Lifecycle {
         instance = null;
     }
 
-    private void verifyNotExisting(Service.Type type) {
+    private void verifyNotExisting(Class<? extends Service> type) {
         if (services.containsKey(type)) {
             throw new IllegalArgumentException("Service already registered with type: " + type);
         }

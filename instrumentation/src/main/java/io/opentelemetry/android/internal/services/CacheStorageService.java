@@ -83,9 +83,4 @@ public class CacheStorageService implements Service {
                         directory, maxSpaceNeeded));
         return Math.min(directory.getUsableSpace(), maxSpaceNeeded);
     }
-
-    @Override
-    public Type type() {
-        return Type.CACHE_STORAGE;
-    }
 }
