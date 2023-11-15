@@ -10,7 +10,7 @@ public interface Service extends Lifecycle {
     Type type();
 
     enum Type {
-        APPLICATION_INFO,
+        CACHE_STORAGE,
         PREFERENCES
     }
 }

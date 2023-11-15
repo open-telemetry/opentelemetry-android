@@ -86,6 +86,6 @@ public class CacheStorageService implements Service {
 
     @Override
     public Type type() {
-        return Type.APPLICATION_INFO;
+        return Type.CACHE_STORAGE;
     }
 }

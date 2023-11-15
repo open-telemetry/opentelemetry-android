@@ -30,7 +30,7 @@ public final class DiskManager {
     public static DiskManager create(OtelRumConfig config) {
         ServiceManager serviceManager = ServiceManager.get();
         return new DiskManager(
-                serviceManager.getService(Service.Type.APPLICATION_INFO),
+                serviceManager.getService(Service.Type.CACHE_STORAGE),
                 serviceManager.getService(Service.Type.PREFERENCES),
                 config.getDiskBufferingConfiguration());
     }
