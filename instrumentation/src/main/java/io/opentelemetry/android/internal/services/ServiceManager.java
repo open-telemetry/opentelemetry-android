@@ -12,6 +12,9 @@ import androidx.annotation.VisibleForTesting;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class is internal and not for public use. Its APIs are unstable and can change at any time.
+ */
 public final class ServiceManager implements Lifecycle {
 
     private final Map<Class<? extends Service>, Service> services = new HashMap<>();
