@@ -8,6 +8,7 @@ package io.opentelemetry.android.internal.services;
 import android.content.Context;
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
+import androidx.annotation.VisibleForTesting;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +17,8 @@ public final class ServiceManager implements Lifecycle {
     private final Map<Class<? extends Service>, Service> services = new HashMap<>();
     @Nullable private static ServiceManager instance;
 
-    private ServiceManager() {}
+    @VisibleForTesting
+    ServiceManager() {}
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
     public static void initialize(Context appContext) {
