@@ -9,7 +9,6 @@ import static io.opentelemetry.instrumentation.library.httpurlconnection.interna
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.library.httpurlconnection.internal.RequestPropertySetter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,10 +26,6 @@ public class HttpUrlReplacements {
     // remove entries from the map.
     private static final WeakHashMap<URLConnection, HttpURLConnectionInfo> activeURLConnections;
     public static final int UNKNOWN_RESPONSE_CODE = -1;
-
-    // Time (ms) to wait before assuming that an idle connection is no longer
-    // in use and should be reported.
-    public static final long CONNECTION_INACTIVITY_TIMEOUT = 10000;
 
     static {
         activeURLConnections = new WeakHashMap<>();
@@ -395,11 +390,6 @@ public class HttpUrlReplacements {
         HttpURLConnectionInfo info = activeURLConnections.get(c);
         if (info != null && !info.reported) {
             Context context = info.context;
-            Scope scope = info.scope;
-            if (scope == null) {
-                return;
-            }
-            scope.close();
             instrumenter().end(context, c, responseCode, error);
             info.reported = true;
         }
@@ -424,11 +414,6 @@ public class HttpUrlReplacements {
                 // TODO: Log instrumentation error in trying to add request header for tracing
             }
         }
-
-        HttpURLConnectionInfo httpURLConnectionInfo = activeURLConnections.get(c);
-        if (!httpURLConnectionInfo.reported) {
-            httpURLConnectionInfo.scope = httpURLConnectionInfo.context.makeCurrent();
-        }
     }
 
     private static synchronized void injectContextToRequest(
@@ -441,7 +426,7 @@ public class HttpUrlReplacements {
     private static synchronized void updateLastSeenTime(URLConnection c) {
         final HttpURLConnectionInfo info = activeURLConnections.get(c);
         if (info != null && !info.reported) {
-            info.lastSeenTime = System.currentTimeMillis();
+            info.lastSeenTime = System.nanoTime();
         }
     }
 
@@ -452,31 +437,14 @@ public class HttpUrlReplacements {
         }
     }
 
-    // TODO: Move scheduleIdleConnectionReporter in a different class as it's the only client
-    // callable API
-    // in this class
-    public static Runnable scheduleIdleConnectionReporter() {
-        return new Runnable() {
-            @Override
-            public void run() {
-                reportIdleConnectionsOlderThan(CONNECTION_INACTIVITY_TIMEOUT);
-            }
-
-            @Override
-            public String toString() {
-                return "ReportIdleConnectionsRunnable";
-            }
-        };
-    }
-
-    static synchronized void reportIdleConnectionsOlderThan(long time) {
-        final long timeNow = System.currentTimeMillis();
+    static synchronized void reportIdleConnectionsOlderThan(long timeIntervalInNanoSec) {
+        final long timeNow = System.nanoTime();
         for (URLConnection c : activeURLConnections.keySet()) {
             final HttpURLConnectionInfo info = activeURLConnections.get(c);
             if (info != null
                     && info.harvestable
                     && !info.reported
-                    && (info.lastSeenTime + time) < timeNow) {
+                    && (info.lastSeenTime + timeIntervalInNanoSec) < timeNow) {
                 HttpURLConnection httpURLConnection = (HttpURLConnection) c;
                 reportWithResponseCode(httpURLConnection);
             }
@@ -484,7 +452,6 @@ public class HttpUrlReplacements {
     }
 
     private static class HttpURLConnectionInfo {
-        private Scope scope;
         private long lastSeenTime;
         private boolean reported;
         private boolean harvestable;
@@ -492,7 +459,8 @@ public class HttpUrlReplacements {
 
         private HttpURLConnectionInfo(Context context) {
             this.context = context;
-            lastSeenTime = System.currentTimeMillis();
+            // Using System.nanoTime() as it is independent of device clock and any changes to that.
+            lastSeenTime = System.nanoTime();
         }
     }
 }
