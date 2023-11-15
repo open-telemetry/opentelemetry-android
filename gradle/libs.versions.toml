@@ -1,5 +1,5 @@
 [versions]
-opentelemetry = "1.31.0"
+opentelemetry = "1.32.0"
 opentelemetry-alpha = "1.31.0-alpha"
 opentelemetry-semconv = "1.21.0-alpha"
 mockito = "5.7.0"
@@ -51,7 +51,7 @@ spotless-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", ver
 errorprone-plugin = "net.ltgt.gradle:gradle-errorprone-plugin:3.1.0"
 nullaway-plugin = "net.ltgt.gradle:gradle-nullaway-plugin:1.6.0"
 animalsniffer-plugin = "ru.vyarus:gradle-animalsniffer-plugin:1.7.1"
-android-plugin = "com.android.tools.build:gradle:8.1.2"
+android-plugin = "com.android.tools.build:gradle:8.1.3"
 byteBuddy-plugin = { module = "net.bytebuddy:byte-buddy-gradle-plugin", version.ref = "byteBuddy" }
 
 [bundles]
