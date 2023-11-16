@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 
-class ScreenAttributesSpanProcessor implements SpanProcessor {
+public final class ScreenAttributesSpanProcessor implements SpanProcessor {
 
     private final VisibleScreenTracker visibleScreenTracker;
 

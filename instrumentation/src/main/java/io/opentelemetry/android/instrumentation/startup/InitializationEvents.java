@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.instrumentation.startup;
 
-import io.opentelemetry.android.OtelRumConfig;
+import io.opentelemetry.android.config.OtelRumConfig;
 
 public interface InitializationEvents {
 
