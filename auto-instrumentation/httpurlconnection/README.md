@@ -46,7 +46,7 @@ You can configure the automatic instrumentation by using the setters in [HttpUrl
 
 #### Required Configuration
 It is required to **manually** schedule the following runnable to periodically run at the below given fixed interval to end any open spans if connection is left idle >10s.
-- API to call to get the runnable: HttpUrlInstrumentationConfig.getReportIdleConnectionRunnable()
+- API to call to get the runnable: `HttpUrlInstrumentationConfig.getReportIdleConnectionRunnable()`
 - API to call to get the fixed interval in milli seconds: HttpUrlInstrumentationConfig.getReportIdleConnectionInterval()
 
 **For example**
