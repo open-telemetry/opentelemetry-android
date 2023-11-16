@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android;
+package io.opentelemetry.android.config;
 
+import io.opentelemetry.android.ScreenAttributesSpanProcessor;
 import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.api.common.Attributes;
 import java.util.function.Supplier;
@@ -20,6 +21,8 @@ public class OtelRumConfig {
     private boolean includeNetworkAttributes = true;
     private boolean generateSdkInitializationEvents = true;
     private boolean includeScreenAttributes = true;
+    private DiskBufferingConfiguration diskBufferingConfiguration =
+            DiskBufferingConfiguration.builder().build();
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -34,12 +37,12 @@ public class OtelRumConfig {
         return this;
     }
 
-    boolean hasGlobalAttributes() {
+    public boolean hasGlobalAttributes() {
         Attributes attributes = globalAttributesSupplier.get();
         return attributes != null && !attributes.isEmpty();
     }
 
-    Supplier<Attributes> getGlobalAttributesSupplier() {
+    public Supplier<Attributes> getGlobalAttributesSupplier() {
         return globalAttributesSupplier;
     }
 
@@ -89,5 +92,15 @@ public class OtelRumConfig {
     /** Return true if the SDK should be configured to report screen attributes. */
     public boolean shouldIncludeScreenAttributes() {
         return includeScreenAttributes;
+    }
+
+    public DiskBufferingConfiguration getDiskBufferingConfiguration() {
+        return diskBufferingConfiguration;
+    }
+
+    /** Sets the parameters for caching signals in disk in order to export them later. */
+    public void setDiskBufferingConfiguration(
+            DiskBufferingConfiguration diskBufferingConfiguration) {
+        this.diskBufferingConfiguration = diskBufferingConfiguration;
     }
 }
