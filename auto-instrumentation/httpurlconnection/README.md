@@ -14,7 +14,7 @@ Provides OpenTelemetry instrumentation for:
 This plugin instruments calls to all relevant APIs (APIs that cause a connection to be established) in client's android application code. It wraps calls to these APIs to ensure the following:
 - Context is added for distributed tracing before actual API is called (i.e before connection is established)
 - Any exceptions thrown are recorded and spans are ended.
-- If it's getInputStream()/getErrorStream() API, span is ended right after calling the API (as these are usually the last APIs to be called).
+- If the getInputStream()/getErrorStream() APIs are used, the span is ended right after calling the API (as these are usually the last APIs to be called).
 
 If getInputStream()/getErrorStream() APIs are not called, spans are ended by a periodically running thread that looks for any idle connections (read from previously but idle for >10s).
 
