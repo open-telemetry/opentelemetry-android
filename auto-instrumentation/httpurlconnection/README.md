@@ -1,6 +1,6 @@
 # Android Instrumentation for URLConnection, HttpURLConnection and HttpsURLConnection
 
-# Status : Experimental
+## Status : Experimental
 
 Provides OpenTelemetry instrumentation for:
 - [URLConnection](https://developer.android.com/reference/java/net/URLConnection),
@@ -16,7 +16,7 @@ This plugin instruments calls to all relevant APIs (APIs that cause a connection
 - Any exceptions thrown are recorded and spans are ended.
 - If the getInputStream()/getErrorStream() APIs are used, the span is ended right after calling the API (as these are usually the last APIs to be called).
 
-If getInputStream()/getErrorStream() APIs are not called, spans are ended by a periodically running thread that looks for any idle connections (read from previously but idle for >10s).
+If the getInputStream()/getErrorStream() APIs are not called, spans won't be ended and reported. You can do the recommended configuration defined below to schedule a periodically running thread that looks for any idle connections (read from previously but idle for >10s) and ends any open spans on them.
 
 ### Add these dependencies to your project
 
@@ -44,10 +44,10 @@ byteBuddy("io.opentelemetry.android:httpurlconnection-agent:AUTO_HTTP_URL_INSTRU
 ### Configurations
 You can configure the automatic instrumentation by using the setters in [HttpUrlInstrumentationConfig](library/src/main/java/io/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlInstrumentationConfig.java)).
 
-#### Required Configuration
-It is required to **manually** schedule the following runnable to periodically run at the below given fixed interval to end any open spans if connection is left idle >10s.
+#### Recommended Configuration
+It is recommended to **manually** schedule the following runnable to periodically run at the below given fixed interval to end any open spans if connection is left idle >10s.
 - API to call to get the runnable: `HttpUrlInstrumentationConfig.getReportIdleConnectionRunnable()`
-- API to call to get the fixed interval in milli seconds: HttpUrlInstrumentationConfig.getReportIdleConnectionInterval()
+- API to call to get the fixed interval in milli seconds: `HttpUrlInstrumentationConfig.getReportIdleConnectionInterval()`
 
 **For example**
 Add the below code in the function where your application starts ( that could be onCreate() method of first Activity/Fragment/Service):
