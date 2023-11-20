@@ -6,6 +6,15 @@ plugins {
     id("ru.vyarus.animalsniffer")
 }
 
+// Extension to configure android parameters for non-android projects.
+interface OtelAndroidExtension {
+    val minSdk: Property<Int>
+}
+
+val otelAndroidExtension =
+    project.extensions.create("otelAndroid", OtelAndroidExtension::class.java)
+otelAndroidExtension.minSdk.convention((project.property("android.minSdk") as String).toInt())
+
 java {
     val javaVersion = rootProject.extra["java_version"] as JavaVersion
     sourceCompatibility = javaVersion
@@ -14,7 +23,6 @@ java {
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 dependencies {
-    signature("com.toasttab.android:gummy-bears-api-${project.property("android.minSdk")}:0.5.1:coreLib@signature")
     implementation(libs.findLibrary("findbugs-jsr305").get())
 }
 
@@ -30,4 +38,10 @@ tasks.withType<AnimalSniffer> {
 // Attaching animalsniffer check to the compilation process.
 tasks.named("classes").configure {
     finalizedBy("animalsnifferMain")
+}
+
+afterEvaluate {
+    dependencies {
+        signature("com.toasttab.android:gummy-bears-api-${otelAndroidExtension.minSdk.get()}:0.5.1:coreLib@signature")
+    }
 }
