@@ -24,7 +24,11 @@ builds, but their use in production is strongly discouraged.
 ## Android API Compatibility
 
 The core Android instrumentation provided here is designed to be used with
-Android API Level 21 and above. API levels 21 to 25 require [desugaring of the core library](https://developer.android.com/studio/write/java8-support#library-desugaring).
+Android API Level 21 and above. API levels 21 to 25 require
+[desugaring of the core library](https://developer.android.com/studio/write/java8-support#library-desugaring).
+The desugaring library should be version 2.0.4 or newer, and the Android Gradle Plugin (AGP)
+should be version 7.4 or newer. You can consult the
+[Android docs for Gradle and AGP compatibility](https://developer.android.com/build/releases/gradle-plugin#updating-gradle)
 
 The API compatibility level outlined here is aligned with the Android compatibility
 in [opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java/blob/main/VERSIONING.md#language-version-compatibility).
