@@ -3,7 +3,7 @@
 ## Status : Experimental
 
 Provides OpenTelemetry instrumentation for:
-- [URLConnection](https://developer.android.com/reference/java/net/URLConnection),
+- [URLConnection](https://developer.android.com/reference/java/net/URLConnection)
 - [HttpURLConnection](https://developer.android.com/reference/java/net/HttpURLConnection)
 - [HttpsURLConnection](https://developer.android.com/reference/javax/net/ssl/HttpsURLConnection)
 
@@ -47,7 +47,7 @@ byteBuddy("io.opentelemetry.android:httpurlconnection-agent:AUTO_HTTP_URL_INSTRU
 ```
 
 ### Configurations
-You can configure the automatic instrumentation by using the setters in [HttpUrlInstrumentationConfig](library/src/main/java/io/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlInstrumentationConfig.java)).
+You can configure the automatic instrumentation by using the setters in [HttpUrlInstrumentationConfig](library/src/main/java/io/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlInstrumentationConfig.java).
 
 #### Recommended Configuration
 It is recommended to **manually** schedule the following runnable to periodically run at the below given fixed interval to end any open spans if connection is left idle >10s.
