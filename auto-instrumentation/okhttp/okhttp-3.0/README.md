@@ -1,7 +1,5 @@
 # Android Instrumentation for OkHttp version 3.0 and higher
 
-# 🚧Work in progress 🚧
-
 Provides OpenTelemetry instrumentation for [okhttp3](https://square.github.io/okhttp/).
 
 ## Quickstart
