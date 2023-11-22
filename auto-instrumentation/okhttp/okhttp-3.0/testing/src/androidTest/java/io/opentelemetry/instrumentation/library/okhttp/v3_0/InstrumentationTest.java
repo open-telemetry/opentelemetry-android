@@ -120,6 +120,9 @@ public class InstrumentationTest {
 
     @Test
     public void avoidCreatingSpansForInternalOkhttpRequests() throws InterruptedException {
+        // NOTE: For some reason this test always passes when running all the tests in this file at
+        // once,
+        // so it should be run isolated to actually get it to fail when it's expected to fail.
         OtlpHttpSpanExporter exporter =
                 OtlpHttpSpanExporter.builder().setEndpoint(server.url("").toString()).build();
         setUpSpanExporter(exporter);
