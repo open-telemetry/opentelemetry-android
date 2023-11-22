@@ -148,7 +148,7 @@ public class InstrumentationTest {
     }
 
     private static Span getSpan() {
-        return GlobalOpenTelemetry.get().getTracer("TestTracer").spanBuilder("A Span").startSpan();
+        return GlobalOpenTelemetry.getTracer("TestTracer").spanBuilder("A Span").startSpan();
     }
 
     private void setUpSpanExporter(SpanExporter spanExporter) {
