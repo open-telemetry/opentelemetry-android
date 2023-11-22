@@ -20,6 +20,7 @@ android {
         val javaVersion = rootProject.extra["java_version"] as JavaVersion
         sourceCompatibility(javaVersion)
         targetCompatibility(javaVersion)
+        isCoreLibraryDesugaringEnabled = true
     }
 }
 
@@ -27,4 +28,5 @@ val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 dependencies {
     androidTestImplementation(libs.findLibrary("androidx-test-runner").get())
     androidTestImplementation(libs.findLibrary("opentelemetry-sdk-testing").get())
+    coreLibraryDesugaring(libs.findLibrary("desugarJdkLibs").get())
 }
