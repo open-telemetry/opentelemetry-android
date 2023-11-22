@@ -18,6 +18,8 @@ import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class HttpUrlReplacements {
 
@@ -25,10 +27,12 @@ public class HttpUrlReplacements {
     // the entry is effectively removed from the map. This means that we never have to
     // remove entries from the map.
     private static final WeakHashMap<URLConnection, HttpURLConnectionInfo> activeURLConnections;
+    private static final Logger logger;
     public static final int UNKNOWN_RESPONSE_CODE = -1;
 
     static {
         activeURLConnections = new WeakHashMap<>();
+        logger = Logger.getLogger("HttpUrlReplacements");
     }
 
     public static void replacementForConnect(URLConnection c) throws IOException {
@@ -225,7 +229,12 @@ public class HttpUrlReplacements {
         try {
             endTracing(c, c.getResponseCode(), null);
         } catch (IOException e) {
-            // TODO: Log instrumentation error in getting response code
+            logger.log(
+                    Level.FINE,
+                    "Exception "
+                            + e.getMessage()
+                            + " was thrown while ending span for connection "
+                            + c.toString());
         }
     }
 
@@ -254,7 +263,12 @@ public class HttpUrlReplacements {
                 // If connection was already made prior to setting this request property,
                 // (which should not happen as we've instrumented all methods that connect)
                 // above call would throw IllegalStateException.
-                // TODO: Log instrumentation error in trying to add request header for tracing
+                logger.log(
+                        Level.FINE,
+                        "Exception "
+                                + e.getMessage()
+                                + " was thrown while adding distributed tracing context for connection "
+                                + c.toString());
             }
         }
     }

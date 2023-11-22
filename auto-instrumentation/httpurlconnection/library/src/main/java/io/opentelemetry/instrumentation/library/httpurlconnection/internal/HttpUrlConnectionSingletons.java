@@ -13,6 +13,7 @@ import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttribut
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientExperimentalMetrics;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientMetrics;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientPeerServiceAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpExperimentalAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanNameExtractorBuilder;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanStatusExtractor;
@@ -58,10 +59,9 @@ public final class HttpUrlConnectionSingletons {
                         .addOperationMetrics(HttpClientMetrics.get());
 
         if (HttpUrlInstrumentationConfig.emitExperimentalHttpClientMetrics()) {
-            // TODO: Add HttpExperimentalAttributesExtractor when
-            // https://github.com/open-telemetry/opentelemetry-java-instrumentation/commit/d6c2aff7c2cf07b9d5c8ec85be6331539f8b1cd3
-            // is published in next version
-            builder.addOperationMetrics(HttpClientExperimentalMetrics.get());
+            builder.addAttributesExtractor(
+                            HttpExperimentalAttributesExtractor.create(httpAttributesGetter))
+                    .addOperationMetrics(HttpClientExperimentalMetrics.get());
         }
 
         INSTRUMENTER = builder.buildClientInstrumenter(RequestPropertySetter.INSTANCE);
