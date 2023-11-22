@@ -31,7 +31,7 @@ public class HttpUrlReplacements {
         activeURLConnections = new WeakHashMap<>();
     }
 
-    public static synchronized void replacementForConnect(URLConnection c) throws IOException {
+    public static void replacementForConnect(URLConnection c) throws IOException {
         startTracingAtFirstConnection(c);
 
         try {
@@ -46,324 +46,115 @@ public class HttpUrlReplacements {
         // reported if left idle).
     }
 
-    public static synchronized Object replacementForContent(URLConnection c) throws IOException {
-        startTracingAtFirstConnection(c);
-
-        Object content;
-        try {
-            content = c.getContent();
-        } catch (IOException e) {
-            reportWithThrowable(c, e);
-            throw e;
-        }
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return content;
+    public static Object replacementForContent(URLConnection c) throws IOException {
+        return replaceThrowable(c, c::getContent);
     }
 
-    public static synchronized Object replacementForContent(URLConnection c, Class<?>[] classes)
+    public static Object replacementForContent(URLConnection c, Class<?>[] classes)
             throws IOException {
-        startTracingAtFirstConnection(c);
-
-        Object content;
-        try {
-            content = c.getContent(classes);
-        } catch (IOException e) {
-            reportWithThrowable(c, e);
-            throw e;
-        }
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return content;
+        return replaceThrowable(c, () -> c.getContent(classes));
     }
 
-    public static synchronized String replacementForContentType(URLConnection c) {
-        startTracingAtFirstConnection(c);
-
-        String contentType = c.getContentType();
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return contentType;
+    public static String replacementForContentType(URLConnection c) {
+        return replace(c, () -> c.getContentType());
     }
 
-    public static synchronized String replacementForContentEncoding(URLConnection c) {
-        startTracingAtFirstConnection(c);
-
-        String contentEncoding = c.getContentEncoding();
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return contentEncoding;
+    public static String replacementForContentEncoding(URLConnection c) {
+        return replace(c, () -> c.getContentEncoding());
     }
 
-    public static synchronized int replacementForContentLength(URLConnection c) {
-        startTracingAtFirstConnection(c);
-
-        int contentLength = c.getContentLength();
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return contentLength;
+    public static int replacementForContentLength(URLConnection c) {
+        return replace(c, () -> c.getContentLength());
     }
 
-    // TODO: uncomment and correct return value when animal sniffer is disabled
-    public static synchronized long replacementForContentLengthLong(URLConnection c) {
-        startTracingAtFirstConnection(c);
-
-        // long contentLengthLong = c.getContentLengthLong();
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        // return contentLengthLong;
-        return 1L;
+    public static long replacementForContentLengthLong(URLConnection c) {
+        return replace(c, () -> c.getContentLengthLong());
     }
 
-    public static synchronized long replacementForExpiration(URLConnection c) {
-        startTracingAtFirstConnection(c);
-
-        long expiration = c.getExpiration();
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return expiration;
+    public static long replacementForExpiration(URLConnection c) {
+        return replace(c, () -> c.getExpiration());
     }
 
-    public static synchronized long replacementForDate(URLConnection c) {
-        startTracingAtFirstConnection(c);
-
-        long date = c.getDate();
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return date;
+    public static long replacementForDate(URLConnection c) {
+        return replace(c, () -> c.getDate());
     }
 
-    public static synchronized long replacementForLastModified(URLConnection c) {
-        startTracingAtFirstConnection(c);
-
-        long lastModified = c.getLastModified();
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return lastModified;
+    public static long replacementForLastModified(URLConnection c) {
+        return replace(c, () -> c.getLastModified());
     }
 
-    public static synchronized String replacementForHeaderField(URLConnection c, String name) {
-        startTracingAtFirstConnection(c);
-
-        String headerField = c.getHeaderField(name);
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return headerField;
+    public static String replacementForHeaderField(URLConnection c, String name) {
+        return replace(c, () -> c.getHeaderField(name));
     }
 
-    public static synchronized Map<String, List<String>> replacementForHeaderFields(
-            URLConnection c) {
-        startTracingAtFirstConnection(c);
-
-        Map<String, List<String>> headerFields = c.getHeaderFields();
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return headerFields;
+    public static Map<String, List<String>> replacementForHeaderFields(URLConnection c) {
+        return replace(c, () -> c.getHeaderFields());
     }
 
-    public static synchronized int replacementForHeaderFieldInt(
-            URLConnection c, String name, int Default) {
-        startTracingAtFirstConnection(c);
-
-        int headerFieldInt = c.getHeaderFieldInt(name, Default);
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return headerFieldInt;
+    public static int replacementForHeaderFieldInt(URLConnection c, String name, int Default) {
+        return replace(c, () -> c.getHeaderFieldInt(name, Default));
     }
 
-    // TODO: uncomment and correct return value when animal sniffer is disabled
-    public static synchronized long replacementForHeaderFieldLong(
-            URLConnection c, String name, long Default) {
-        startTracingAtFirstConnection(c);
-
-        // long headerFieldLong = c.getHeaderFieldLong(name, Default);
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        // return headerFieldLong;
-        return 1L;
+    public static long replacementForHeaderFieldLong(URLConnection c, String name, long Default) {
+        return replace(c, () -> c.getHeaderFieldLong(name, Default));
     }
 
-    public static synchronized long replacementForHeaderFieldDate(
-            URLConnection c, String name, long Default) {
+    public static long replacementForHeaderFieldDate(URLConnection c, String name, long Default) {
         // HttpURLConnection also overrides this and that is covered in
         // replacementForHttpHeaderFieldDate method.
-        startTracingAtFirstConnection(c);
-
-        long headerFieldDate = c.getHeaderFieldDate(name, Default);
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return headerFieldDate;
+        return replace(c, () -> c.getHeaderFieldDate(name, Default));
     }
 
-    public static synchronized long replacementForHttpHeaderFieldDate(
+    public static long replacementForHttpHeaderFieldDate(
             HttpURLConnection c, String name, long Default) {
         // URLConnection also overrides this and that is covered in replacementForHeaderFieldDate
         // method.
-        startTracingAtFirstConnection(c);
-
-        long headerFieldDate = c.getHeaderFieldDate(name, Default);
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return headerFieldDate;
+        return replace(c, () -> c.getHeaderFieldDate(name, Default));
     }
 
-    public static synchronized String replacementForHeaderFieldKey(URLConnection c, int n) {
+    public static String replacementForHeaderFieldKey(URLConnection c, int n) {
         // HttpURLConnection also overrides this and that is covered in
         // replacementForHttpHeaderFieldKey method.
-        startTracingAtFirstConnection(c);
-
-        String headerFieldKey = c.getHeaderFieldKey(n);
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return headerFieldKey;
+        return replace(c, () -> c.getHeaderFieldKey(n));
     }
 
-    public static synchronized String replacementForHttpHeaderFieldKey(HttpURLConnection c, int n) {
+    public static String replacementForHttpHeaderFieldKey(HttpURLConnection c, int n) {
         // URLConnection also overrides this and that is covered in replacementForHeaderFieldKey
         // method.
-        startTracingAtFirstConnection(c);
-
-        String headerFieldKey = c.getHeaderFieldKey(n);
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return headerFieldKey;
+        return replace(c, () -> c.getHeaderFieldKey(n));
     }
 
-    public static synchronized String replacementForHeaderField(URLConnection c, int n) {
+    public static String replacementForHeaderField(URLConnection c, int n) {
         // HttpURLConnection also overrides this and that is covered in
         // replacementForHttpHeaderField method.
-        startTracingAtFirstConnection(c);
-
-        String headerField = c.getHeaderField(n);
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return headerField;
+        return replace(c, () -> c.getHeaderField(n));
     }
 
-    public static synchronized String replacementForHttpHeaderField(HttpURLConnection c, int n) {
+    public static String replacementForHttpHeaderField(HttpURLConnection c, int n) {
         // URLConnection also overrides this and that is covered in replacementForHeaderField
         // method.
-        startTracingAtFirstConnection(c);
-
-        String headerField = c.getHeaderField(n);
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return headerField;
+        return replace(c, () -> c.getHeaderField(n));
     }
 
-    public static synchronized int replacementForResponseCode(URLConnection c) throws IOException {
-        startTracingAtFirstConnection(c);
-
-        int responseCode;
-        HttpURLConnection con = (HttpURLConnection) c;
-        try {
-            responseCode = con.getResponseCode();
-        } catch (IOException e) {
-            reportWithThrowable(c, e);
-            throw e;
-        }
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return responseCode;
-    }
-
-    public static synchronized String replacementForResponseMessage(URLConnection c)
-            throws IOException {
-        startTracingAtFirstConnection(c);
-
-        String responseMessage;
+    public static int replacementForResponseCode(URLConnection c) throws IOException {
         HttpURLConnection httpURLConnection = (HttpURLConnection) c;
-        try {
-            responseMessage = httpURLConnection.getResponseMessage();
-        } catch (IOException e) {
-            reportWithThrowable(c, e);
-            throw e;
-        }
-
-        updateLastSeenTime(c);
-        markHarvestable(c);
-
-        return responseMessage;
+        return replaceThrowable(c, httpURLConnection::getResponseCode);
     }
 
-    public static synchronized OutputStream replacementForOutputStream(URLConnection c)
-            throws IOException {
-        startTracingAtFirstConnection(c);
-
-        OutputStream outputStream;
-        try {
-            outputStream = c.getOutputStream();
-        } catch (IOException e) {
-            reportWithThrowable(c, e);
-            throw e;
-        }
-
-        updateLastSeenTime(c);
-        // getOutputStream() does not read anything from connection so request not harvestable yet
-        // (not reportable if left idle).
-
-        return outputStream;
-    }
-
-    public static synchronized InputStream replacementForInputStream(URLConnection c)
-            throws IOException {
-        startTracingAtFirstConnection(c);
-
-        InputStream inputStream;
-        try {
-            inputStream = c.getInputStream();
-        } catch (IOException e) {
-            reportWithThrowable(c, e);
-            throw e;
-        }
-
+    public static String replacementForResponseMessage(URLConnection c) throws IOException {
         HttpURLConnection httpURLConnection = (HttpURLConnection) c;
-        reportWithResponseCode(httpURLConnection);
-
-        return inputStream;
+        return replaceThrowable(c, httpURLConnection::getResponseMessage);
     }
 
-    public static synchronized InputStream replacementForErrorStream(HttpURLConnection c) {
+    public static OutputStream replacementForOutputStream(URLConnection c) throws IOException {
+        return replaceThrowable(c, c::getOutputStream, false, false);
+    }
+
+    public static InputStream replacementForInputStream(URLConnection c) throws IOException {
+        return replaceThrowable(c, c::getInputStream, false, true);
+    }
+
+    public static InputStream replacementForErrorStream(HttpURLConnection c) {
         startTracingAtFirstConnection(c);
 
         InputStream errorStream = c.getErrorStream();
@@ -373,11 +164,64 @@ public class HttpUrlReplacements {
         return errorStream;
     }
 
-    private static synchronized void reportWithThrowable(URLConnection c, IOException e) {
+    private static <T> T replace(URLConnection c, ResultProvider<T> resultProvider) {
+        startTracingAtFirstConnection(c);
+
+        T result = resultProvider.get();
+
+        updateLastSeenTime(c);
+        markHarvestable(c);
+
+        return result;
+    }
+
+    private static <T> T replaceThrowable(
+            URLConnection c, ThrowableResultProvider<T> resultProvider) throws IOException {
+        return replaceThrowable(c, resultProvider, true, false);
+    }
+
+    private static <T> T replaceThrowable(
+            URLConnection c,
+            ThrowableResultProvider<T> resultProvider,
+            boolean shouldMarkHarvestable,
+            boolean reportWithResponseCode)
+            throws IOException {
+        startTracingAtFirstConnection(c);
+
+        T result;
+        try {
+            result = resultProvider.get();
+        } catch (IOException e) {
+            reportWithThrowable(c, e);
+            throw e;
+        }
+
+        if (reportWithResponseCode) {
+            HttpURLConnection httpURLConnection = (HttpURLConnection) c;
+            reportWithResponseCode(httpURLConnection);
+        } else {
+            updateLastSeenTime(c);
+            if (shouldMarkHarvestable) {
+                markHarvestable(c);
+            }
+        }
+
+        return result;
+    }
+
+    interface ResultProvider<T> {
+        T get();
+    }
+
+    interface ThrowableResultProvider<T> {
+        T get() throws IOException;
+    }
+
+    private static void reportWithThrowable(URLConnection c, IOException e) {
         endTracing(c, UNKNOWN_RESPONSE_CODE, e);
     }
 
-    private static synchronized void reportWithResponseCode(HttpURLConnection c) {
+    private static void reportWithResponseCode(HttpURLConnection c) {
         try {
             endTracing(c, c.getResponseCode(), null);
         } catch (IOException e) {
@@ -395,7 +239,6 @@ public class HttpUrlReplacements {
         }
     }
 
-    @SuppressWarnings("MustBeClosedChecker")
     private static synchronized void startTracingAtFirstConnection(URLConnection c) {
         Context parentContext = Context.current();
         if (!instrumenter().shouldStart(parentContext, c)) {
@@ -416,8 +259,7 @@ public class HttpUrlReplacements {
         }
     }
 
-    private static synchronized void injectContextToRequest(
-            URLConnection connection, Context context) {
+    private static void injectContextToRequest(URLConnection connection, Context context) {
         GlobalOpenTelemetry.getPropagators()
                 .getTextMapPropagator()
                 .inject(context, connection, RequestPropertySetter.INSTANCE);

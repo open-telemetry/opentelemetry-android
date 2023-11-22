@@ -3,6 +3,8 @@ plugins {
     id("otel.publish-conventions")
 }
 
+otelAndroid.minSdk = 24
+
 description = "OpenTelemetry HttpURLConnection library instrumentation for Android"
 
 dependencies {

@@ -18,6 +18,11 @@ This plugin instruments calls to all relevant APIs (APIs that cause a connection
 
 If the getInputStream()/getErrorStream() APIs are not called, spans won't be ended and reported. You can do the recommended configuration defined below to schedule a periodically running thread that looks for any idle connections (read from previously but idle for >10s) and ends any open spans on them.
 
+The minimum supported Android SDK version is 21, though it will also instrument APIs added in the Android SDK version 24 when running on devices with API level 24 and above.
+
+> If your project's minSdk is lower than 26, then you must enable
+> [corelib desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring).
+
 ### Add these dependencies to your project
 
 Replace `AUTO_HTTP_URL_INSTRUMENTATION_VERSION` with the [latest release](https://central.sonatype.com/search?q=g%3Aio.opentelemetry.android++a%3Ahttpurlconnection-library&smo=true).
