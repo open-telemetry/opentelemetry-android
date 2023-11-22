@@ -47,10 +47,6 @@ android {
         }
     }
 
-    compileOptions {
-        isCoreLibraryDesugaringEnabled = true
-    }
-
     testOptions {
         unitTests.isReturnDefaultValues = true
         unitTests.isIncludeAndroidResources = true
@@ -79,8 +75,6 @@ dependencies {
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.assertj.core)
     testImplementation(libs.awaitility)
-
-    coreLibraryDesugaring(libs.desugarJdkLibs)
 }
 
 tasks.withType<Test> {

@@ -24,10 +24,12 @@ android {
         val javaVersion = rootProject.extra["java_version"] as JavaVersion
         sourceCompatibility(javaVersion)
         targetCompatibility(javaVersion)
+        isCoreLibraryDesugaringEnabled = true
     }
 }
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 dependencies {
     implementation(libs.findLibrary("findbugs-jsr305").get())
+    coreLibraryDesugaring(libs.findLibrary("desugarJdkLibs").get())
 }
