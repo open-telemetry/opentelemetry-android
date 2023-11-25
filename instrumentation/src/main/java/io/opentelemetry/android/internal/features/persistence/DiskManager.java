@@ -6,7 +6,6 @@
 package io.opentelemetry.android.internal.features.persistence;
 
 import io.opentelemetry.android.config.DiskBufferingConfiguration;
-import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.internal.services.CacheStorageService;
 import io.opentelemetry.android.internal.services.PreferencesService;
 import io.opentelemetry.android.internal.services.ServiceManager;
@@ -25,12 +24,12 @@ public final class DiskManager {
     private final PreferencesService preferencesService;
     private final DiskBufferingConfiguration diskBufferingConfiguration;
 
-    public static DiskManager create(OtelRumConfig config) {
+    public static DiskManager create(DiskBufferingConfiguration config) {
         ServiceManager serviceManager = ServiceManager.get();
         return new DiskManager(
                 serviceManager.getService(CacheStorageService.class),
                 serviceManager.getService(PreferencesService.class),
-                config.getDiskBufferingConfiguration());
+                config);
     }
 
     private DiskManager(
