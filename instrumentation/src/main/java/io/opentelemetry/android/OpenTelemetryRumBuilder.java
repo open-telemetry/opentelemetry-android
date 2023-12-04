@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A builder of {@link OpenTelemetryRum}. It enabled configuring the OpenTelemetry SDK and disabling
@@ -62,6 +64,7 @@ public final class OpenTelemetryRumBuilder {
             loggerProviderCustomizers = new ArrayList<>();
     private final OtelRumConfig config;
     private final VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
+    private static final Logger LOGGER = Logger.getLogger("OpenTelemetryRumBuilder");
 
     private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
     private final List<Consumer<InstrumentedApplication>> instrumentationInstallers =
@@ -314,17 +317,15 @@ public final class OpenTelemetryRumBuilder {
     private SpanExporter buildSpanExporter() {
         // TODO: Default to otlp...but how can we make endpoint and auth mandatory?
         SpanExporter defaultExporter = LoggingSpanExporter.create();
-        SpanExporter spanExporter;
+        SpanExporter spanExporter = defaultExporter;
         DiskBufferingConfiguration diskBufferingConfiguration =
                 config.getDiskBufferingConfiguration();
         if (diskBufferingConfiguration.isEnabled()) {
             try {
                 spanExporter = createDiskExporter(defaultExporter, diskBufferingConfiguration);
             } catch (IOException e) {
-                spanExporter = defaultExporter;
+                LOGGER.log(Level.WARNING, "Could not create span disk exporter", e);
             }
-        } else {
-            spanExporter = defaultExporter;
         }
         return spanExporterCustomizer.apply(spanExporter);
     }
