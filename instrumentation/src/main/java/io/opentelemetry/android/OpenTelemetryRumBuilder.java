@@ -324,7 +324,7 @@ public final class OpenTelemetryRumBuilder {
             try {
                 spanExporter = createDiskExporter(defaultExporter, diskBufferingConfiguration);
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Could not create span disk exporter", e);
+                LOGGER.log(Level.WARNING, "Could not create span disk exporter.", e);
             }
         }
         return spanExporterCustomizer.apply(spanExporter);
