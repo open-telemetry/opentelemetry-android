@@ -43,6 +43,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -177,14 +178,17 @@ class OpenTelemetryRumBuilderTest {
         OtelRumConfig config = buildConfig();
         config.setDiskBufferingConfiguration(
                 DiskBufferingConfiguration.builder().setEnabled(true).build());
+        AtomicReference<SpanExporter> capturedExporter = new AtomicReference<>();
 
         OpenTelemetryRum.builder(application, config)
                 .addSpanExporterCustomizer(
                         spanExporter -> {
-                            assertThat(spanExporter).isInstanceOf(SpanDiskExporter.class);
+                            capturedExporter.set(spanExporter);
                             return spanExporter;
                         })
                 .build();
+
+        assertThat(capturedExporter.get()).isInstanceOf(SpanDiskExporter.class);
     }
 
     @Test
@@ -202,25 +206,32 @@ class OpenTelemetryRumBuilderTest {
         OtelRumConfig config = buildConfig();
         config.setDiskBufferingConfiguration(
                 DiskBufferingConfiguration.builder().setEnabled(true).build());
+        AtomicReference<SpanExporter> capturedExporter = new AtomicReference<>();
 
         OpenTelemetryRum.builder(application, config)
                 .addSpanExporterCustomizer(
                         spanExporter -> {
-                            assertThat(spanExporter).isNotInstanceOf(SpanDiskExporter.class);
+                            capturedExporter.set(spanExporter);
                             return spanExporter;
                         })
                 .build();
+
+        assertThat(capturedExporter.get()).isNotInstanceOf(SpanDiskExporter.class);
     }
 
     @Test
     void diskBufferingDisabled() {
+        AtomicReference<SpanExporter> capturedExporter = new AtomicReference<>();
+
         makeBuilder()
                 .addSpanExporterCustomizer(
                         spanExporter -> {
-                            assertThat(spanExporter).isNotInstanceOf(SpanDiskExporter.class);
+                            capturedExporter.set(spanExporter);
                             return spanExporter;
                         })
                 .build();
+
+        assertThat(capturedExporter.get()).isNotInstanceOf(SpanDiskExporter.class);
     }
 
     private static void setUpServiceManager(Service... services) {
