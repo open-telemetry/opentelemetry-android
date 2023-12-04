@@ -14,6 +14,7 @@ import java.util.function.Supplier;
 public class CachedSupplier<T> implements Supplier<T> {
     private Supplier<T> supplier;
     private T instance;
+    private final Object lock = new Object();
 
     public static <T> CachedSupplier<T> create(Supplier<T> instance) {
         return new CachedSupplier<>(instance);
@@ -25,9 +26,12 @@ public class CachedSupplier<T> implements Supplier<T> {
 
     @Override
     public T get() {
-        synchronized (this) {
+        synchronized (lock) {
             if (instance == null) {
                 instance = supplier.get();
+                if (instance == null) {
+                    throw new NullPointerException("Supplier provided null.");
+                }
                 supplier = null;
             }
             return instance;
