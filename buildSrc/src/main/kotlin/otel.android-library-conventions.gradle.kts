@@ -28,8 +28,16 @@ android {
     }
 }
 
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 dependencies {
     implementation(libs.findLibrary("findbugs-jsr305").get())
+    testImplementation(libs.findLibrary("assertj-core").get())
+    testImplementation(libs.findBundle("mockito").get())
+    testImplementation(libs.findBundle("junit").get())
+    testImplementation(libs.findLibrary("opentelemetry-sdk-testing").get())
     coreLibraryDesugaring(libs.findLibrary("desugarJdkLibs").get())
 }
