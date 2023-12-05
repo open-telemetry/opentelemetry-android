@@ -18,6 +18,7 @@ public final class SimpleTemporaryFileProvider implements TemporaryFileProvider 
         this.tempDir = tempDir;
     }
 
+    /** Creates a unique file instance using the provided prefix and the current time in millis. */
     @Override
     public File createTemporaryFile(String prefix) {
         return new File(tempDir, prefix + "_" + System.currentTimeMillis() + ".tmp");
