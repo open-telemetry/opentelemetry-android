@@ -5,21 +5,20 @@
 
 package io.opentelemetry.android.internal.features.persistence;
 
+import android.util.Log;
+import io.opentelemetry.android.RumConstants;
 import io.opentelemetry.android.config.DiskBufferingConfiguration;
 import io.opentelemetry.android.internal.services.CacheStorageService;
 import io.opentelemetry.android.internal.services.PreferencesService;
 import io.opentelemetry.android.internal.services.ServiceManager;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
  */
 public final class DiskManager {
     private static final String MAX_FOLDER_SIZE_KEY = "max_signal_folder_size";
-    private static final Logger logger = Logger.getLogger("DiskManager");
     private final CacheStorageService cacheStorageService;
     private final PreferencesService preferencesService;
     private final DiskBufferingConfiguration diskBufferingConfiguration;
@@ -75,8 +74,8 @@ public final class DiskManager {
     public int getMaxFolderSize() {
         int storedSize = preferencesService.retrieveInt(MAX_FOLDER_SIZE_KEY, -1);
         if (storedSize > 0) {
-            logger.log(
-                    Level.FINER,
+            Log.d(
+                    RumConstants.OTEL_RUM_LOG_TAG,
                     String.format("Returning max folder size from preferences: %s", storedSize));
             return storedSize;
         }
@@ -88,8 +87,8 @@ public final class DiskManager {
         int maxCacheFileSize = getMaxCacheFileSize();
         int calculatedSize = (availableCacheSize / 3) - maxCacheFileSize;
         if (calculatedSize < maxCacheFileSize) {
-            logger.log(
-                    Level.WARNING,
+            Log.w(
+                    RumConstants.OTEL_RUM_LOG_TAG,
                     String.format(
                             "Insufficient folder cache size: %s, it must be at least: %s",
                             calculatedSize, maxCacheFileSize));
@@ -97,8 +96,8 @@ public final class DiskManager {
         }
         preferencesService.store(MAX_FOLDER_SIZE_KEY, calculatedSize);
 
-        logger.log(
-                Level.FINER,
+        Log.d(
+                RumConstants.OTEL_RUM_LOG_TAG,
                 String.format(
                         "Requested cache size: %s, available cache size: %s, folder size: %s",
                         requestedSize, availableCacheSize, calculatedSize));

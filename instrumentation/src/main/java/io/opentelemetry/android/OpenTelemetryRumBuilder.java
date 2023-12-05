@@ -8,6 +8,7 @@ package io.opentelemetry.android;
 import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
+import android.util.Log;
 import io.opentelemetry.android.config.DiskBufferingConfiguration;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.instrumentation.InstrumentedApplication;
@@ -42,8 +43,6 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * A builder of {@link OpenTelemetryRum}. It enabled configuring the OpenTelemetry SDK and disabling
@@ -64,7 +63,6 @@ public final class OpenTelemetryRumBuilder {
             loggerProviderCustomizers = new ArrayList<>();
     private final OtelRumConfig config;
     private final VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
-    private static final Logger LOGGER = Logger.getLogger("OpenTelemetryRumBuilder");
 
     private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
     private final List<Consumer<InstrumentedApplication>> instrumentationInstallers =
@@ -324,7 +322,7 @@ public final class OpenTelemetryRumBuilder {
             try {
                 spanExporter = createDiskExporter(defaultExporter, diskBufferingConfiguration);
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Could not create span disk exporter.", e);
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Could not create span disk exporter.", e);
             }
         }
         return spanExporterCustomizer.apply(spanExporter);
