@@ -7,9 +7,8 @@ import java.io.File
 /**
  * This gradle plugin will define a new task called generateOtelAndroidVersionClass.
  * This task generates a Java source file that contains the project version
- * as a string constant. The "compileJava" task is updated to depend on
- * generateOtelVersionClass, and the project source set is updated to
- * include the new file.
+ * as a string constant. AGP will add generated/sources/version/java/main to the
+ * build path and the file will be compiled and added to the resulting .aar.
  */
 class OtelAndroidVersionClassPlugin : Plugin<Project> {
   override fun apply(project: Project) {
