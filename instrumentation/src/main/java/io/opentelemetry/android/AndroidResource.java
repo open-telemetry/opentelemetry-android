@@ -17,6 +17,7 @@ import static io.opentelemetry.semconv.ResourceAttributes.SERVICE_NAME;
 
 import android.app.Application;
 import android.os.Build;
+import io.opentelemetry.android.instrumentation.internal.OtelAndroidVersion;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import java.util.function.Supplier;
@@ -29,7 +30,7 @@ final class AndroidResource {
                 Resource.getDefault().toBuilder().put(SERVICE_NAME, appName);
 
         return resourceBuilder
-                .put(RUM_SDK_VERSION, detectRumVersion(application))
+                .put(RUM_SDK_VERSION, detectRumVersion())
                 .put(DEVICE_MODEL_NAME, Build.MODEL)
                 .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)
                 .put(DEVICE_MANUFACTURER, Build.MANUFACTURER)
@@ -50,17 +51,8 @@ final class AndroidResource {
                 "unknown_service:android");
     }
 
-    private static String detectRumVersion(Application application) {
-        return trapTo(
-                () -> {
-                    // TODO: Verify that this will be in the lib/jar at runtime.
-                    // TODO: After donation, package of R file will change
-                    return application
-                            .getApplicationContext()
-                            .getResources()
-                            .getString(R.string.rum_version);
-                },
-                "unknown");
+    private static String detectRumVersion() {
+        return trapTo(() -> OtelAndroidVersion.VERSION, "unknown-version");
     }
 
     private static String trapTo(Supplier<String> fn, String defaultValue) {

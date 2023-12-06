@@ -1,10 +1,11 @@
-import com.android.build.api.dsl.LibraryExtension
-import org.gradle.api.publish.maven.MavenPublication
+import io.opentelemetry.gradle.OtelAndroidVersionClassPlugin
 
 plugins {
     id("com.android.library")
     id("otel.errorprone-conventions")
 }
+
+apply<OtelAndroidVersionClassPlugin>()
 
 android {
     compileSdk = (property("android.compileSdk") as String).toInt()
@@ -30,4 +31,8 @@ android {
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 dependencies {
     implementation(libs.findLibrary("findbugs-jsr305").get())
+    // Workaround for @javax.annotation.Generated
+    // see: https://github.com/grpc/grpc-java/issues/3633
+    // Required for generated OtelAndroidVersion.java
+    compileOnly(libs.findLibrary("javax-annotation-api").get())
 }
