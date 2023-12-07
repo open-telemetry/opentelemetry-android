@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 import android.app.Application;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
+import io.opentelemetry.android.instrumentation.internal.OtelAndroidVersion;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,17 +32,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AndroidResourceTest {
 
     String appName = "robotron";
-    String rumSdkVersion = "1.2.3";
     String osDescription =
-            new StringBuilder()
-                    .append("Android Version ")
-                    .append(Build.VERSION.RELEASE)
-                    .append(" (Build ")
-                    .append(Build.ID)
-                    .append(" API level ")
-                    .append(Build.VERSION.SDK_INT)
-                    .append(")")
-                    .toString();
+            "Android Version "
+                    + Build.VERSION.RELEASE
+                    + " (Build "
+                    + Build.ID
+                    + " API level "
+                    + Build.VERSION.SDK_INT
+                    + ")";
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     Application app;
@@ -53,15 +51,13 @@ class AndroidResourceTest {
 
         when(app.getApplicationContext().getApplicationInfo()).thenReturn(appInfo);
         when(app.getApplicationContext().getString(appInfo.labelRes)).thenReturn(appName);
-        when(app.getApplicationContext().getResources().getString(R.string.rum_version))
-                .thenReturn(rumSdkVersion);
 
         Resource expected =
                 Resource.getDefault()
                         .merge(
                                 Resource.builder()
                                         .put(SERVICE_NAME, appName)
-                                        .put(RUM_SDK_VERSION, rumSdkVersion)
+                                        .put(RUM_SDK_VERSION, OtelAndroidVersion.VERSION)
                                         .put(DEVICE_MODEL_NAME, Build.MODEL)
                                         .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)
                                         .put(DEVICE_MANUFACTURER, Build.MANUFACTURER)
@@ -86,7 +82,7 @@ class AndroidResourceTest {
                         .merge(
                                 Resource.builder()
                                         .put(SERVICE_NAME, "unknown_service:android")
-                                        .put(RUM_SDK_VERSION, "unknown")
+                                        .put(RUM_SDK_VERSION, OtelAndroidVersion.VERSION)
                                         .put(DEVICE_MODEL_NAME, Build.MODEL)
                                         .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)
                                         .put(DEVICE_MANUFACTURER, Build.MANUFACTURER)
