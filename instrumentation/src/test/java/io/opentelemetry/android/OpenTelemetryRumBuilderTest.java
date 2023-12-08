@@ -34,6 +34,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 import java.util.List;
 import java.util.function.Function;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -49,10 +50,16 @@ class OpenTelemetryRumBuilderTest {
     final InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
     @Mock Application application;
+    @Mock android.content.Context applicationContext;
     @Mock Activity activity;
     @Mock ApplicationStateListener listener;
 
     @Captor ArgumentCaptor<Application.ActivityLifecycleCallbacks> activityCallbacksCaptor;
+
+    @BeforeEach
+    void setup() {
+        when(application.getApplicationContext()).thenReturn(applicationContext);
+    }
 
     @Test
     void shouldRegisterApplicationStateWatcher() {
