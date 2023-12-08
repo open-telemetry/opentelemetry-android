@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
 import javax.annotation.Nullable;
 
 /**
@@ -68,8 +67,7 @@ public final class OpenTelemetryRumBuilder {
             (a) -> a;
 
     private Resource resource;
-    @Nullable
-    private CurrentNetworkProvider currentNetworkProvider = null;
+    @Nullable private CurrentNetworkProvider currentNetworkProvider = null;
     private InitializationEvents initializationEvents = InitializationEvents.NO_OP;
 
     private static TextMapPropagator buildDefaultPropagator() {
