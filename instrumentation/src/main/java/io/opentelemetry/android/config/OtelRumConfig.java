@@ -23,6 +23,7 @@ public class OtelRumConfig {
     private boolean includeScreenAttributes = true;
     private DiskBufferingConfiguration diskBufferingConfiguration =
             DiskBufferingConfiguration.builder().build();
+    private boolean networkChangeMonitoringEnabled = true;
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -102,5 +103,13 @@ public class OtelRumConfig {
     public void setDiskBufferingConfiguration(
             DiskBufferingConfiguration diskBufferingConfiguration) {
         this.diskBufferingConfiguration = diskBufferingConfiguration;
+    }
+
+    public void disableNetworkChangeMonitoring() {
+        this.networkChangeMonitoringEnabled = false;
+    }
+
+    public boolean isNetworkChangeMonitoringEnabled() {
+        return this.networkChangeMonitoringEnabled;
     }
 }

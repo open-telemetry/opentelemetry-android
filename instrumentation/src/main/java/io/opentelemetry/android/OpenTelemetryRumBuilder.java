@@ -13,6 +13,7 @@ import io.opentelemetry.android.instrumentation.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.android.instrumentation.network.NetworkAttributesSpanAppender;
+import io.opentelemetry.android.instrumentation.network.NetworkChangeMonitor;
 import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
 import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
@@ -36,6 +37,8 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 /**
  * A builder of {@link OpenTelemetryRum}. It enabled configuring the OpenTelemetry SDK and disabling
@@ -65,6 +68,8 @@ public final class OpenTelemetryRumBuilder {
             (a) -> a;
 
     private Resource resource;
+    @Nullable
+    private CurrentNetworkProvider currentNetworkProvider = null;
     private InitializationEvents initializationEvents = InitializationEvents.NO_OP;
 
     private static TextMapPropagator buildDefaultPropagator() {
@@ -88,6 +93,18 @@ public final class OpenTelemetryRumBuilder {
      */
     public OpenTelemetryRumBuilder setResource(Resource resource) {
         this.resource = resource;
+        return this;
+    }
+
+    /**
+     * Call this to pass an existing CurrentNetworkProvider instance to share with the underlying
+     * OpenTelemetry Rum instrumentation.
+     *
+     * @return {@code this}
+     */
+    public OpenTelemetryRumBuilder setCurrentNetworkProvider(
+            CurrentNetworkProvider currentNetworkProvider) {
+        this.currentNetworkProvider = currentNetworkProvider;
         return this;
     }
 
@@ -265,8 +282,7 @@ public final class OpenTelemetryRumBuilder {
         // Network specific attributes
         if (config.shouldIncludeNetworkAttributes()) {
             // Add span processor that appends network attributes.
-            CurrentNetworkProvider currentNetworkProvider =
-                    CurrentNetworkProvider.createAndStart(application);
+            CurrentNetworkProvider currentNetworkProvider = getOrCreateCurrentNetworkProvider();
             addTracerProviderCustomizer(
                     (tracerProviderBuilder, app) -> {
                         SpanProcessor networkAttributesSpanAppender =
@@ -275,6 +291,16 @@ public final class OpenTelemetryRumBuilder {
                                 networkAttributesSpanAppender);
                     });
             initializationEvents.currentNetworkProviderInitialized();
+        }
+
+        // Add network change monitor if enabled (default = = true)
+        if (config.isNetworkChangeMonitoringEnabled()) {
+            addInstrumentation(
+                    app -> {
+                        NetworkChangeMonitor.create(getOrCreateCurrentNetworkProvider())
+                                .installOn(app);
+                        initializationEvents.networkMonitorInitialized();
+                    });
         }
 
         // Add span processor that appends screen attribute(s)
@@ -286,6 +312,13 @@ public final class OpenTelemetryRumBuilder {
                         return tracerProviderBuilder.addSpanProcessor(screenAttributesAppender);
                     });
         }
+    }
+
+    private CurrentNetworkProvider getOrCreateCurrentNetworkProvider() {
+        if (currentNetworkProvider == null) {
+            this.currentNetworkProvider = CurrentNetworkProvider.createAndStart(application);
+        }
+        return currentNetworkProvider;
     }
 
     private SdkTracerProvider buildTracerProvider(SessionId sessionId, Application application) {

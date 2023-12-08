@@ -23,4 +23,9 @@ public class SdkInitializationEvents implements InitializationEvents {
     public void currentNetworkProviderInitialized() {
         // TODO: Build me
     }
+
+    @Override
+    public void networkMonitorInitialized() {
+        // TOOD: Build me "networkMonitorInitialized"
+    }
 }

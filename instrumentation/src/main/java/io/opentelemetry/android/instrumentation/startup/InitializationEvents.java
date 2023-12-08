@@ -15,6 +15,8 @@ public interface InitializationEvents {
 
     void currentNetworkProviderInitialized();
 
+    void networkMonitorInitialized();
+
     InitializationEvents NO_OP =
             new InitializationEvents() {
                 @Override
@@ -25,5 +27,8 @@ public interface InitializationEvents {
 
                 @Override
                 public void currentNetworkProviderInitialized() {}
+
+                @Override
+                public void networkMonitorInitialized() {}
             };
 }
