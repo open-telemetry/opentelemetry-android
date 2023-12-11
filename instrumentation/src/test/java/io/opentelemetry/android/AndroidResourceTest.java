@@ -31,7 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AndroidResourceTest {
 
     String appName = "robotron";
-    String rumSdkVersion = "1.2.3";
+    String rumSdkVersion = BuildConfig.OTEL_ANDROID_VERSION;
     String osDescription =
             new StringBuilder()
                     .append("Android Version ")
@@ -53,8 +53,6 @@ class AndroidResourceTest {
 
         when(app.getApplicationContext().getApplicationInfo()).thenReturn(appInfo);
         when(app.getApplicationContext().getString(appInfo.labelRes)).thenReturn(appName);
-        when(app.getApplicationContext().getResources().getString(R.string.rum_version))
-                .thenReturn(rumSdkVersion);
 
         Resource expected =
                 Resource.getDefault()
@@ -86,7 +84,7 @@ class AndroidResourceTest {
                         .merge(
                                 Resource.builder()
                                         .put(SERVICE_NAME, "unknown_service:android")
-                                        .put(RUM_SDK_VERSION, "unknown")
+                                        .put(RUM_SDK_VERSION, rumSdkVersion)
                                         .put(DEVICE_MODEL_NAME, Build.MODEL)
                                         .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)
                                         .put(DEVICE_MANUFACTURER, Build.MANUFACTURER)

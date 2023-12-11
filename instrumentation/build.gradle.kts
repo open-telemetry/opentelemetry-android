@@ -1,3 +1,4 @@
+
 plugins {
     id("otel.android-library-conventions")
     id("otel.publish-conventions")
@@ -14,6 +15,7 @@ android {
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+        buildConfigField("String", "OTEL_ANDROID_VERSION", "\"$version\"")
     }
 
     buildTypes {
@@ -51,12 +53,17 @@ android {
         unitTests.isReturnDefaultValues = true
         unitTests.isIncludeAndroidResources = true
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core)
     implementation(libs.androidx.navigation.fragment)
+    coreLibraryDesugaring(libs.desugarJdkLibs)
 
     api(platform(libs.opentelemetry.platform))
     api(libs.opentelemetry.api)

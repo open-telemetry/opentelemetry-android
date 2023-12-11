@@ -29,7 +29,7 @@ final class AndroidResource {
                 Resource.getDefault().toBuilder().put(SERVICE_NAME, appName);
 
         return resourceBuilder
-                .put(RUM_SDK_VERSION, detectRumVersion(application))
+                .put(RUM_SDK_VERSION, BuildConfig.OTEL_ANDROID_VERSION)
                 .put(DEVICE_MODEL_NAME, Build.MODEL)
                 .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)
                 .put(DEVICE_MANUFACTURER, Build.MANUFACTURER)
@@ -48,19 +48,6 @@ final class AndroidResource {
                     return application.getApplicationContext().getString(stringId);
                 },
                 "unknown_service:android");
-    }
-
-    private static String detectRumVersion(Application application) {
-        return trapTo(
-                () -> {
-                    // TODO: Verify that this will be in the lib/jar at runtime.
-                    // TODO: After donation, package of R file will change
-                    return application
-                            .getApplicationContext()
-                            .getResources()
-                            .getString(R.string.rum_version);
-                },
-                "unknown");
     }
 
     private static String trapTo(Supplier<String> fn, String defaultValue) {
