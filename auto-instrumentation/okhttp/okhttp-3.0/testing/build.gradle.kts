@@ -3,16 +3,6 @@ plugins {
     id("net.bytebuddy.byte-buddy-gradle-plugin")
 }
 
-android {
-    buildTypes {
-        debug {
-            isMinifyEnabled = true
-            proguardFile("proguard-rules.pro")
-            testProguardFile("proguard-test-rules.pro")
-        }
-    }
-}
-
 dependencies {
     byteBuddy(project(":auto-instrumentation:okhttp:okhttp-3.0:agent"))
     implementation(project(":auto-instrumentation:okhttp:okhttp-3.0:library"))

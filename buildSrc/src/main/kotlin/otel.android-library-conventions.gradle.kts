@@ -1,6 +1,3 @@
-import com.android.build.api.dsl.LibraryExtension
-import org.gradle.api.publish.maven.MavenPublication
-
 plugins {
     id("com.android.library")
     id("otel.errorprone-conventions")
