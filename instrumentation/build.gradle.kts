@@ -47,10 +47,6 @@ android {
         }
     }
 
-    compileOptions {
-        isCoreLibraryDesugaringEnabled = true
-    }
-
     testOptions {
         unitTests.isReturnDefaultValues = true
         unitTests.isIncludeAndroidResources = true
@@ -72,19 +68,9 @@ dependencies {
     implementation(libs.opentelemetry.semconv)
     implementation(libs.opentelemetry.diskBuffering)
 
-    testImplementation(libs.bundles.mockito)
-    testImplementation(libs.bundles.junit)
-    testImplementation(libs.opentelemetry.sdk.testing)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
-    testImplementation(libs.assertj.core)
     testImplementation(libs.awaitility)
-
-    coreLibraryDesugaring(libs.desugarJdkLibs)
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
 }
 
 extra["pomName"] = "OpenTelemetry Android Instrumentation"

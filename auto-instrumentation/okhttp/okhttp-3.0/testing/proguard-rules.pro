@@ -1,0 +1,7 @@
+-keep class kotlin.** { *; }
+-keep class okhttp3.** { *; }
+-keep class io.opentelemetry.api.** { *; }
+-keep class io.opentelemetry.sdk.** { *; }
+-keep class io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter { *; }
+-keep class io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder { *; }
+-dontwarn *

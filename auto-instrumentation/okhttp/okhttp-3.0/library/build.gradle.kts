@@ -1,9 +1,17 @@
 plugins {
-    id("otel.java-library-conventions")
+    id("otel.android-library-conventions")
     id("otel.publish-conventions")
 }
 
 description = "OpenTelemetry OkHttp library instrumentation for Android"
+
+android {
+    namespace = "io.opentelemetry.android.okhttp.library"
+
+    defaultConfig {
+        consumerProguardFiles("consumer-rules.pro")
+    }
+}
 
 dependencies {
     compileOnly(libs.okhttp)
