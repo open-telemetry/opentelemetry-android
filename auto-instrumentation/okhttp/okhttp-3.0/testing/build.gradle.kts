@@ -11,6 +11,9 @@ android {
             testProguardFile("proguard-test-rules.pro")
         }
     }
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+    }
 }
 
 dependencies {
@@ -19,4 +22,5 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.opentelemetry.exporter.otlp)
     androidTestImplementation(libs.okhttp.mockwebserver)
+    coreLibraryDesugaring(libs.desugarJdkLibs)
 }
