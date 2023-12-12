@@ -1,3 +1,4 @@
+
 plugins {
     id("otel.android-library-conventions")
     id("otel.publish-conventions")
@@ -14,6 +15,7 @@ android {
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+        buildConfigField("String", "OTEL_ANDROID_VERSION", "\"$version\"")
     }
 
     buildTypes {
@@ -50,6 +52,10 @@ android {
     testOptions {
         unitTests.isReturnDefaultValues = true
         unitTests.isIncludeAndroidResources = true
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 }
 
