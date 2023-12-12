@@ -26,5 +26,9 @@ class SimpleTemporaryFileProviderTest {
         assertThat(second.getName()).startsWith("b").endsWith(".tmp");
         assertThat(third.getName()).startsWith("a").endsWith(".tmp");
         assertThat(first).isNotEqualTo(third);
+
+        assertThat(first.getParentFile()).isEqualTo(tempDir);
+        assertThat(second.getParentFile()).isEqualTo(tempDir);
+        assertThat(third.getParentFile()).isEqualTo(tempDir);
     }
 }
