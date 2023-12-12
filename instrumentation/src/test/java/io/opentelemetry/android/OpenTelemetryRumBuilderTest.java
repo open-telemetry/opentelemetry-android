@@ -11,7 +11,10 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,20 +22,28 @@ import static org.mockito.Mockito.when;
 import android.app.Activity;
 import android.app.Application;
 import androidx.annotation.NonNull;
+import io.opentelemetry.android.config.DiskBufferingConfiguration;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.instrumentation.ApplicationStateListener;
+import io.opentelemetry.android.internal.services.CacheStorageService;
+import io.opentelemetry.android.internal.services.PreferencesService;
+import io.opentelemetry.android.internal.services.Service;
+import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.contrib.disk.buffering.SpanDiskExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -163,6 +174,79 @@ class OpenTelemetryRumBuilderTest {
         // 5 sec is default
         await().atMost(Duration.ofSeconds(30))
                 .untilAsserted(() -> verify(exporter).export(anyCollection()));
+    }
+
+    @Test
+    void diskBufferingEnabled() {
+        PreferencesService preferences = mock();
+        CacheStorageService cacheStorage = mock();
+        doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
+        setUpServiceManager(preferences, cacheStorage);
+        OtelRumConfig config = buildConfig();
+        config.setDiskBufferingConfiguration(
+                DiskBufferingConfiguration.builder().setEnabled(true).build());
+        AtomicReference<SpanExporter> capturedExporter = new AtomicReference<>();
+
+        OpenTelemetryRum.builder(application, config)
+                .addSpanExporterCustomizer(
+                        spanExporter -> {
+                            capturedExporter.set(spanExporter);
+                            return spanExporter;
+                        })
+                .build();
+
+        assertThat(capturedExporter.get()).isInstanceOf(SpanDiskExporter.class);
+    }
+
+    @Test
+    void diskBufferingEnabled_when_exception_thrown() {
+        PreferencesService preferences = mock();
+        CacheStorageService cacheStorage = mock();
+        doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
+        doAnswer(
+                        invocation -> {
+                            throw new IOException();
+                        })
+                .when(cacheStorage)
+                .getCacheDir();
+        setUpServiceManager(preferences, cacheStorage);
+        OtelRumConfig config = buildConfig();
+        config.setDiskBufferingConfiguration(
+                DiskBufferingConfiguration.builder().setEnabled(true).build());
+        AtomicReference<SpanExporter> capturedExporter = new AtomicReference<>();
+
+        OpenTelemetryRum.builder(application, config)
+                .addSpanExporterCustomizer(
+                        spanExporter -> {
+                            capturedExporter.set(spanExporter);
+                            return spanExporter;
+                        })
+                .build();
+
+        assertThat(capturedExporter.get()).isNotInstanceOf(SpanDiskExporter.class);
+    }
+
+    @Test
+    void diskBufferingDisabled() {
+        AtomicReference<SpanExporter> capturedExporter = new AtomicReference<>();
+
+        makeBuilder()
+                .addSpanExporterCustomizer(
+                        spanExporter -> {
+                            capturedExporter.set(spanExporter);
+                            return spanExporter;
+                        })
+                .build();
+
+        assertThat(capturedExporter.get()).isNotInstanceOf(SpanDiskExporter.class);
+    }
+
+    private static void setUpServiceManager(Service... services) {
+        ServiceManager serviceManager = mock();
+        for (Service service : services) {
+            doReturn(service).when(serviceManager).getService(service.getClass());
+        }
+        ServiceManager.setForTest(serviceManager);
     }
 
     @NonNull

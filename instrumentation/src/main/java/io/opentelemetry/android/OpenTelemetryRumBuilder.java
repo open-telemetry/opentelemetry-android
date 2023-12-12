@@ -8,6 +8,8 @@ package io.opentelemetry.android;
 import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
+import android.util.Log;
+import io.opentelemetry.android.config.DiskBufferingConfiguration;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.instrumentation.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
@@ -16,10 +18,14 @@ import io.opentelemetry.android.instrumentation.network.NetworkAttributesSpanApp
 import io.opentelemetry.android.instrumentation.network.NetworkChangeMonitor;
 import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
 import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents;
+import io.opentelemetry.android.internal.features.persistence.DiskManager;
+import io.opentelemetry.android.internal.features.persistence.SimpleTemporaryFileProvider;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.contrib.disk.buffering.SpanDiskExporter;
+import io.opentelemetry.contrib.disk.buffering.internal.StorageConfiguration;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -32,6 +38,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -339,7 +346,32 @@ public final class OpenTelemetryRumBuilder {
     private SpanExporter buildSpanExporter() {
         // TODO: Default to otlp...but how can we make endpoint and auth mandatory?
         SpanExporter defaultExporter = LoggingSpanExporter.create();
-        return spanExporterCustomizer.apply(defaultExporter);
+        SpanExporter spanExporter = defaultExporter;
+        DiskBufferingConfiguration diskBufferingConfiguration =
+                config.getDiskBufferingConfiguration();
+        if (diskBufferingConfiguration.isEnabled()) {
+            try {
+                spanExporter = createDiskExporter(defaultExporter, diskBufferingConfiguration);
+            } catch (IOException e) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Could not create span disk exporter.", e);
+            }
+        }
+        return spanExporterCustomizer.apply(spanExporter);
+    }
+
+    private static SpanExporter createDiskExporter(
+            SpanExporter defaultExporter, DiskBufferingConfiguration diskBufferingConfiguration)
+            throws IOException {
+        DiskManager diskManager = DiskManager.create(diskBufferingConfiguration);
+        StorageConfiguration storageConfiguration =
+                StorageConfiguration.builder()
+                        .setMaxFileSize(diskManager.getMaxCacheFileSize())
+                        .setMaxFolderSize(diskManager.getMaxFolderSize())
+                        .setTemporaryFileProvider(
+                                new SimpleTemporaryFileProvider(diskManager.getTemporaryDir()))
+                        .build();
+        return SpanDiskExporter.create(
+                defaultExporter, diskManager.getSignalsBufferDir(), storageConfiguration);
     }
 
     private SdkMeterProvider buildMeterProvider(Application application) {

@@ -8,13 +8,13 @@ package io.opentelemetry.android.internal.services;
 import android.content.Context;
 import android.os.Build;
 import android.os.storage.StorageManager;
+import android.util.Log;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.WorkerThread;
+import io.opentelemetry.android.RumConstants;
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Utility to get information about the host app.
@@ -24,7 +24,6 @@ import java.util.logging.Logger;
  */
 public class CacheStorageService implements Service {
     private final Context appContext;
-    private static final Logger logger = Logger.getLogger("CacheStorageService");
 
     public CacheStorageService(Context appContext) {
         this.appContext = appContext;
@@ -53,8 +52,8 @@ public class CacheStorageService implements Service {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private long getAvailableSpace(File directory, long maxSpaceNeeded) {
-        logger.log(
-                Level.FINER,
+        Log.d(
+                RumConstants.OTEL_RUM_LOG_TAG,
                 String.format(
                         "Getting available space for %s, max needed is: %s",
                         directory, maxSpaceNeeded));
@@ -70,14 +69,14 @@ public class CacheStorageService implements Service {
             storageManager.allocateBytes(appSpecificInternalDirUuid, spaceToAllocate);
             return spaceToAllocate;
         } catch (IOException e) {
-            logger.log(Level.WARNING, "Failed to get available space", e);
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to get available space", e);
             return getLegacyAvailableSpace(directory, maxSpaceNeeded);
         }
     }
 
     private long getLegacyAvailableSpace(File directory, long maxSpaceNeeded) {
-        logger.log(
-                Level.FINER,
+        Log.d(
+                RumConstants.OTEL_RUM_LOG_TAG,
                 String.format(
                         "Getting legacy available space for %s max needed is: %s",
                         directory, maxSpaceNeeded));

@@ -14,7 +14,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.opentelemetry.android.config.DiskBufferingConfiguration;
-import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.internal.services.CacheStorageService;
 import io.opentelemetry.android.internal.services.PreferencesService;
 import io.opentelemetry.android.internal.services.ServiceManager;
@@ -41,13 +40,11 @@ class DiskManagerTest {
 
     @BeforeEach
     void setUp() {
-        OtelRumConfig config = mock();
         ServiceManager serviceManager = mock();
-        doReturn(diskBufferingConfiguration).when(config).getDiskBufferingConfiguration();
         doReturn(cacheStorageService).when(serviceManager).getService(CacheStorageService.class);
         doReturn(preferencesService).when(serviceManager).getService(PreferencesService.class);
         ServiceManager.setForTest(serviceManager);
-        diskManager = DiskManager.create(config);
+        diskManager = DiskManager.create(diskBufferingConfiguration);
     }
 
     @Test
