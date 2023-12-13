@@ -4,6 +4,14 @@
 
 - tbd
 
+### Version 0.3.0 (2023-12-13)
+
+- Update
+  to [opentelemetry-java-instrumentation 1.32.0](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.32.0)
+- Update
+  to [opentelemetry-java sdk 1.33.0](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.33.0)
+- Stabilizing support for okhttp automatic build-time instrumentation (#159)
+
 ### Version 0.2.0 (2023-10-20)
 
 This is a regular monthly cadence release, which follows the releases of
