@@ -105,10 +105,17 @@ public class OtelRumConfig {
         this.diskBufferingConfiguration = diskBufferingConfiguration;
     }
 
+    /**
+     * Sets the configuration so that network change monitoring, which is enabled by default, will
+     * not be started.
+     */
     public void disableNetworkChangeMonitoring() {
         this.networkChangeMonitoringEnabled = false;
     }
 
+    /**
+     * @return true if network change monitoring is enabled (default).
+     */
     public boolean isNetworkChangeMonitoringEnabled() {
         return this.networkChangeMonitoringEnabled;
     }
