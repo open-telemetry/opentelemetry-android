@@ -13,7 +13,7 @@ zipkin-reporter = "2.16.5"
 [libraries]
 opentelemetry-platform = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-alpha" }
 androidx-appcompat = "androidx.appcompat:appcompat:1.6.1"
-androidx-navigation-fragment = "androidx.navigation:navigation-fragment:2.7.5"
+androidx-navigation-fragment = "androidx.navigation:navigation-fragment:2.7.6"
 androidx-core = "androidx.core:core:1.12.0"
 findbugs-jsr305 = "com.google.code.findbugs:jsr305:3.0.2"
 byteBuddy = { module = "net.bytebuddy:byte-buddy", version.ref = "byteBuddy" }
