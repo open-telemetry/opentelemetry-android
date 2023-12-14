@@ -151,11 +151,25 @@ public class HttpUrlReplacements {
     }
 
     public static OutputStream replacementForOutputStream(URLConnection c) throws IOException {
-        return replaceThrowable(c, c::getOutputStream, false, false);
+        return replaceThrowable(c, c::getOutputStream, false);
     }
 
     public static InputStream replacementForInputStream(URLConnection c) throws IOException {
-        return replaceThrowable(c, c::getInputStream, false, true);
+        startTracingAtFirstConnection(c);
+
+        InputStream inputStream;
+        try {
+            inputStream = c.getInputStream();
+        } catch (IOException e) {
+            reportWithThrowable(c, e);
+            throw e;
+        }
+
+        if (inputStream == null) {
+            return inputStream;
+        }
+
+        return getInstrumentedInputStream(c, inputStream);
     }
 
     public static InputStream replacementForErrorStream(HttpURLConnection c) {
@@ -163,9 +177,71 @@ public class HttpUrlReplacements {
 
         InputStream errorStream = c.getErrorStream();
 
-        reportWithResponseCode(c);
+        if (errorStream == null) {
+            return errorStream;
+        }
 
-        return errorStream;
+        return getInstrumentedInputStream(c, errorStream);
+    }
+
+    private static InputStream getInstrumentedInputStream(
+            URLConnection c, InputStream inputStream) {
+        return new InputStream() {
+            @Override
+            public int read() throws IOException {
+                int res;
+                try {
+                    res = inputStream.read();
+                } catch (IOException e) {
+                    reportWithThrowable(c, e);
+                    throw e;
+                }
+                reportIfDoneOrMarkHarvestable(res);
+                return res;
+            }
+
+            @Override
+            public int read(byte[] b) throws IOException {
+                int res;
+                try {
+                    res = inputStream.read(b);
+                } catch (IOException e) {
+                    reportWithThrowable(c, e);
+                    throw e;
+                }
+                reportIfDoneOrMarkHarvestable(res);
+                return res;
+            }
+
+            @Override
+            public int read(byte[] b, int off, int len) throws IOException {
+                int res;
+                try {
+                    res = inputStream.read(b, off, len);
+                } catch (IOException e) {
+                    reportWithThrowable(c, e);
+                    throw e;
+                }
+                reportIfDoneOrMarkHarvestable(res);
+                return res;
+            }
+
+            @Override
+            public void close() throws IOException {
+                HttpURLConnection httpURLConnection = (HttpURLConnection) c;
+                reportWithResponseCode(httpURLConnection);
+                inputStream.close();
+            }
+
+            private void reportIfDoneOrMarkHarvestable(int result) {
+                if (result == -1) {
+                    HttpURLConnection httpURLConnection = (HttpURLConnection) c;
+                    reportWithResponseCode(httpURLConnection);
+                } else {
+                    markHarvestable(c);
+                }
+            }
+        };
     }
 
     private static <T> T replace(URLConnection c, ResultProvider<T> resultProvider) {
@@ -181,14 +257,13 @@ public class HttpUrlReplacements {
 
     private static <T> T replaceThrowable(
             URLConnection c, ThrowableResultProvider<T> resultProvider) throws IOException {
-        return replaceThrowable(c, resultProvider, true, false);
+        return replaceThrowable(c, resultProvider, true);
     }
 
     private static <T> T replaceThrowable(
             URLConnection c,
             ThrowableResultProvider<T> resultProvider,
-            boolean shouldMarkHarvestable,
-            boolean reportWithResponseCode)
+            boolean shouldMarkHarvestable)
             throws IOException {
         startTracingAtFirstConnection(c);
 
@@ -200,14 +275,9 @@ public class HttpUrlReplacements {
             throw e;
         }
 
-        if (reportWithResponseCode) {
-            HttpURLConnection httpURLConnection = (HttpURLConnection) c;
-            reportWithResponseCode(httpURLConnection);
-        } else {
-            updateLastSeenTime(c);
-            if (shouldMarkHarvestable) {
-                markHarvestable(c);
-            }
+        updateLastSeenTime(c);
+        if (shouldMarkHarvestable) {
+            markHarvestable(c);
         }
 
         return result;
