@@ -39,4 +39,13 @@ jobs:
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
+      - name: Create release tag for release builds
+        env:
+          GH_TOKEN: ${{ secrets.OPENTELEMETRYBOT_GITHUB_TOKEN }}
+        if: "${{ inputs.release_type == 'final' }}"
+        run: |
+          VERSION_NUMBER=$(grep ^version= gradle.properties  | sed -e 's/^.*=//')
+          VERSION="v${VERSION_NUMBER}"
+          git tag ${VERSION}
+          git push origin ${VERSION}
 
