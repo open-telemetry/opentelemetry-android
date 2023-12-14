@@ -1,7 +1,10 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
 
 plugins {
     id("java-library")
+    id("org.jetbrains.kotlin.jvm")
     id("otel.errorprone-conventions")
     id("ru.vyarus.animalsniffer")
 }
@@ -15,10 +18,17 @@ val otelAndroidExtension =
     project.extensions.create("otelAndroid", OtelAndroidExtension::class.java)
 otelAndroidExtension.minSdk.convention((project.property("android.minSdk") as String).toInt())
 
+val javaVersion = rootProject.extra["java_version"] as JavaVersion
+val minKotlinVersion = rootProject.extra["kotlin_min_supported_version"] as KotlinVersion
 java {
-    val javaVersion = rootProject.extra["java_version"] as JavaVersion
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
+}
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.fromTarget(javaVersion.toString()))
+        languageVersion.set(minKotlinVersion)
+    }
 }
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")

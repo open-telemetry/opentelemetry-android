@@ -8,6 +8,7 @@ plugins {
 }
 
 val javaVersion = rootProject.extra["java_version"] as JavaVersion
+val minKotlinVersion = rootProject.extra["kotlin_min_supported_version"] as KotlinVersion
 android {
     compileSdk = (property("android.compileSdk") as String).toInt()
 
@@ -32,7 +33,7 @@ android {
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.fromTarget(javaVersion.toString()))
-        languageVersion.set(KotlinVersion.KOTLIN_1_6)
+        languageVersion.set(minKotlinVersion)
     }
 }
 tasks.withType<Test> {
