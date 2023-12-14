@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
@@ -24,11 +23,11 @@ android {
         targetCompatibility(javaVersion)
         isCoreLibraryDesugaringEnabled = true
     }
-}
-kotlin {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.fromTarget(javaVersion.toString()))
-        languageVersion.set(minKotlinVersion)
+
+    kotlinOptions {
+        jvmTarget = javaVersion.toString()
+        apiVersion = minKotlinVersion.version
+        languageVersion = minKotlinVersion.version
     }
 }
 

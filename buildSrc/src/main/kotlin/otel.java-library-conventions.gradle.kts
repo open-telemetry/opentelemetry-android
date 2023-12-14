@@ -27,6 +27,7 @@ java {
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.fromTarget(javaVersion.toString()))
+        apiVersion.set(minKotlinVersion)
         languageVersion.set(minKotlinVersion)
     }
 }
