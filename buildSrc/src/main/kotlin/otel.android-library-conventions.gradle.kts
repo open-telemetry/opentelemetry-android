@@ -1,8 +1,13 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+
 plugins {
     id("com.android.library")
+    id("org.jetbrains.kotlin.android")
     id("otel.errorprone-conventions")
 }
 
+val javaVersion = rootProject.extra["java_version"] as JavaVersion
 android {
     compileSdk = (property("android.compileSdk") as String).toInt()
 
@@ -18,13 +23,18 @@ android {
     }
 
     compileOptions {
-        val javaVersion = rootProject.extra["java_version"] as JavaVersion
         sourceCompatibility(javaVersion)
         targetCompatibility(javaVersion)
         isCoreLibraryDesugaringEnabled = true
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.fromTarget(javaVersion.toString()))
+        languageVersion.set(KotlinVersion.KOTLIN_1_6)
+    }
+}
 tasks.withType<Test> {
     useJUnitPlatform()
 }
