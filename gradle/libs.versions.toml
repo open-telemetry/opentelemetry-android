@@ -8,7 +8,7 @@ junit = "5.10.1"
 byteBuddy = "1.14.10"
 okhttp = "4.12.0"
 spotless = "6.23.3"
-zipkin-reporter = "2.16.5"
+zipkin-reporter = "2.17.0"
 kotlin = "1.9.21"
 
 [libraries]
