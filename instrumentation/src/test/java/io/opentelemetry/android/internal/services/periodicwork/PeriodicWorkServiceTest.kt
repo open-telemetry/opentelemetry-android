@@ -88,6 +88,34 @@ class PeriodicWorkServiceTest {
         assertThat(secondRunExecuted).isTrue()
     }
 
+    @Test
+    fun `Remove delegated work from further executions`() {
+        val firstRunLatch = CountDownLatch(1)
+        val secondRunLatch = CountDownLatch(1)
+        var timesExecutedFirstWork = 0
+        var timesExecutedSecondWork = 0
+
+        // First run right away
+        service.enqueue {
+            timesExecutedFirstWork++
+            firstRunLatch.countDown()
+        }
+        service.start()
+        service.enqueue {
+            timesExecutedSecondWork++
+            secondRunLatch.countDown()
+        }
+        firstRunLatch.await()
+        assertThat(timesExecutedFirstWork).isEqualTo(1)
+        assertThat(timesExecutedSecondWork).isEqualTo(0)
+
+        // Second run after delay
+        fastForwardBySeconds(DELAY_BETWEEN_EXECUTIONS_IN_SECONDS)
+        secondRunLatch.await(1, TimeUnit.SECONDS)
+        assertThat(timesExecutedFirstWork).isEqualTo(1)
+        assertThat(timesExecutedSecondWork).isEqualTo(1)
+    }
+
     private fun fastForwardBySeconds(seconds: Long) {
         ShadowLooper.idleMainLooper(seconds, TimeUnit.SECONDS)
     }
