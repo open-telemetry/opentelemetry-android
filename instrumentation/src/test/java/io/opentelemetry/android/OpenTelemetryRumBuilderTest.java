@@ -21,6 +21,7 @@ import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import android.app.Application;
+import android.os.Looper;
 import androidx.annotation.NonNull;
 import io.opentelemetry.android.config.DiskBufferingConfiguration;
 import io.opentelemetry.android.config.OtelRumConfig;
@@ -61,6 +62,7 @@ class OpenTelemetryRumBuilderTest {
     final InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
     @Mock Application application;
+    @Mock Looper looper;
     @Mock android.content.Context applicationContext;
     @Mock Activity activity;
     @Mock ApplicationStateListener listener;
@@ -70,6 +72,7 @@ class OpenTelemetryRumBuilderTest {
     @BeforeEach
     void setup() {
         when(application.getApplicationContext()).thenReturn(applicationContext);
+        when(application.getMainLooper()).thenReturn(looper);
     }
 
     @Test

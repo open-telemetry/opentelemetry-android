@@ -357,7 +357,7 @@ public final class OpenTelemetryRumBuilder {
 
         // Add ANR detection if enabled
         if (config.isAnrDetectionEnabled()) {
-            Looper mainLooper = Looper.getMainLooper();
+            Looper mainLooper = application.getMainLooper();
             addInstrumentation(
                     instrumentedApplication -> {
                         AnrDetectorBuilder builder =
