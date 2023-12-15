@@ -18,6 +18,7 @@ import io.opentelemetry.android.instrumentation.anr.AnrDetector;
 import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.android.instrumentation.network.NetworkAttributesSpanAppender;
 import io.opentelemetry.android.instrumentation.network.NetworkChangeMonitor;
+import io.opentelemetry.android.instrumentation.slowrendering.SlowRenderingDetector;
 import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
 import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents;
 import io.opentelemetry.android.internal.features.persistence.DiskManager;
@@ -333,8 +334,18 @@ public final class OpenTelemetryRumBuilder {
                     });
         }
 
+        if (config.isSlowRenderingDetectionEnabled()) {
+            addInstrumentation(
+                    instrumentedApplication -> {
+                        SlowRenderingDetector.builder()
+                                .setSlowRenderingDetectionPollInterval(
+                                        config.getSlowRenderingDetectionPollInterval())
+                                .build()
+                                .installOn(instrumentedApplication);
+                        initializationEvents.slowRenderingDetectorInitialized();
+                    });
+        }
     }
-
 
     private CurrentNetworkProvider getOrCreateCurrentNetworkProvider() {
         if (currentNetworkProvider == null) {

@@ -19,6 +19,8 @@ public interface InitializationEvents {
 
     void anrMonitorInitialized();
 
+    void slowRenderingDetectorInitialized();
+
     InitializationEvents NO_OP =
             new InitializationEvents() {
                 @Override
@@ -34,8 +36,9 @@ public interface InitializationEvents {
                 public void networkMonitorInitialized() {}
 
                 @Override
-                public void anrMonitorInitialized() {
+                public void anrMonitorInitialized() {}
 
-                }
+                @Override
+                public void slowRenderingDetectorInitialized() {}
             };
 }
