@@ -8,11 +8,13 @@ package io.opentelemetry.android;
 import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
+import android.os.Looper;
 import android.util.Log;
 import io.opentelemetry.android.config.DiskBufferingConfiguration;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.instrumentation.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
+import io.opentelemetry.android.instrumentation.anr.AnrDetector;
 import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.android.instrumentation.network.NetworkAttributesSpanAppender;
 import io.opentelemetry.android.instrumentation.network.NetworkChangeMonitor;
@@ -317,7 +319,22 @@ public final class OpenTelemetryRumBuilder {
                         return tracerProviderBuilder.addSpanProcessor(screenAttributesAppender);
                     });
         }
+
+        // Add ANR detection if enabled
+        if (config.isAnrDetectionEnabled()) {
+            Looper mainLooper = Looper.getMainLooper();
+            addInstrumentation(
+                    instrumentedApplication -> {
+                        AnrDetector.builder()
+                                .setMainLooper(mainLooper)
+                                .build()
+                                .installOn(instrumentedApplication);
+                        initializationEvents.anrMonitorInitialized();
+                    });
+        }
+
     }
+
 
     private CurrentNetworkProvider getOrCreateCurrentNetworkProvider() {
         if (currentNetworkProvider == null) {

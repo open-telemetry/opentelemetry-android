@@ -24,6 +24,7 @@ public class OtelRumConfig {
     private DiskBufferingConfiguration diskBufferingConfiguration =
             DiskBufferingConfiguration.builder().build();
     private boolean networkChangeMonitoringEnabled = true;
+    private boolean anrDetectionEnabled = true;
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -114,9 +115,23 @@ public class OtelRumConfig {
     }
 
     /**
-     * @return true if network change monitoring is enabled (default).
+     * Returns true if network change monitoring is enabled (default = true).
      */
     public boolean isNetworkChangeMonitoringEnabled() {
         return this.networkChangeMonitoringEnabled;
+    }
+
+    /**
+     * Returns true if ANR (application not responding) detection is enabled (default = true).
+     */
+    public boolean isAnrDetectionEnabled() {
+        return this.anrDetectionEnabled;
+    }
+
+    /**
+     * Call this method to disable ANR (application not responding) detection.
+     */
+    public void disableAnrDetection(){
+        this.anrDetectionEnabled = false;
     }
 }

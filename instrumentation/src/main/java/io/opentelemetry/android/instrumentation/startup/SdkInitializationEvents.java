@@ -26,6 +26,11 @@ public class SdkInitializationEvents implements InitializationEvents {
 
     @Override
     public void networkMonitorInitialized() {
-        // TOOD: Build me "networkMonitorInitialized"
+        // TODO: Build me "networkMonitorInitialized"
+    }
+
+    @Override
+    public void anrMonitorInitialized() {
+        // TODO: Build me "anrMonitorInitialized"
     }
 }
