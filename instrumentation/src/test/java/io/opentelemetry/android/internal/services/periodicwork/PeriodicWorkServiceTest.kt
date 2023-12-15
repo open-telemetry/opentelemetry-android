@@ -30,18 +30,24 @@ class PeriodicWorkServiceTest {
 
     @Test
     fun `Execute enqueued work on start`() {
-        val latch = CountDownLatch(1)
-        var workerThreadId: Long? = null
-        service.enqueue {
-            workerThreadId = Thread.currentThread().id
-            latch.countDown()
+        val numberOfTasks = 5
+        val latch = CountDownLatch(numberOfTasks)
+        val threadIds = mutableSetOf<Long>()
+        repeat(numberOfTasks) {
+            service.enqueue {
+                threadIds.add(Thread.currentThread().id)
+                latch.countDown()
+            }
         }
 
         service.start()
         latch.await()
 
-        assertThat(workerThreadId).isNotNull()
-        assertThat(workerThreadId).isNotEqualTo(Thread.currentThread().id)
+        // All ran in a single worker thread
+        assertThat(threadIds.size).isEqualTo(1)
+
+        // The worker thread is not the same as the main thread
+        assertThat(threadIds.first()).isNotEqualTo(Thread.currentThread().id)
     }
 
     @Test
