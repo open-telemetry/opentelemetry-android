@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.opentelemetry.exporter.zipkin)
     implementation(libs.zipkin.sender.okhttp3)
     implementation(libs.opentelemetry.exporter.logging)
+    implementation(libs.opentelemetry.exporter.otlp)
     implementation(libs.opentelemetry.instrumentation.api)
     implementation(libs.opentelemetry.semconv)
     implementation(libs.opentelemetry.diskBuffering)

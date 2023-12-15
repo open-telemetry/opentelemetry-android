@@ -17,6 +17,8 @@ public interface InitializationEvents {
 
     void networkMonitorInitialized();
 
+    void debugSpanExporterInitialized();
+
     InitializationEvents NO_OP =
             new InitializationEvents() {
                 @Override
@@ -30,5 +32,8 @@ public interface InitializationEvents {
 
                 @Override
                 public void networkMonitorInitialized() {}
+
+                @Override
+                public void debugSpanExporterInitialized() {}
             };
 }

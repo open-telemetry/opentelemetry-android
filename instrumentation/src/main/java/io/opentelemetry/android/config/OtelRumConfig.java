@@ -24,6 +24,7 @@ public class OtelRumConfig {
     private DiskBufferingConfiguration diskBufferingConfiguration =
             DiskBufferingConfiguration.builder().build();
     private boolean networkChangeMonitoringEnabled = true;
+    private boolean debugLogEnabled = false;
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -113,10 +114,18 @@ public class OtelRumConfig {
         this.networkChangeMonitoringEnabled = false;
     }
 
-    /**
-     * @return true if network change monitoring is enabled (default).
-     */
+    /** Returns true if network change monitoring is enabled (default). */
     public boolean isNetworkChangeMonitoringEnabled() {
         return this.networkChangeMonitoringEnabled;
+    }
+
+    /** Call this method to turn on debug/verbose telemetry logging. */
+    public void enableDebugLogging() {
+        this.debugLogEnabled = true;
+    }
+
+    /** Returns true if debug logging is enabled (default = false). */
+    public boolean isDebugLogEnabled() {
+        return this.debugLogEnabled;
     }
 }

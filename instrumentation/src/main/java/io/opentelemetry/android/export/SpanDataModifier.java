@@ -14,25 +14,16 @@ import java.util.function.Predicate;
 
 /**
  * A utility that can be used to create a SpanExporter that allows filtering and modification of
- * span data before it is sent to Allows modification of span data before it is sent to a delegate
+ * span data before it is sent. Allows modification of span data before it is sent to a delegate
  * exporter. Spans can be rejected entirely based on their name or attribute content, or their
  * attributes may be modified.
  */
 public final class SpanDataModifier {
 
-    private final SpanExporter delegate;
     private Predicate<String> rejectSpanNamesPredicate = spanName -> false;
     private final Map<AttributeKey<?>, Predicate<?>> rejectSpanAttributesPredicates =
             new HashMap<>();
     private final Map<AttributeKey<?>, Function<?, ?>> spanAttributeReplacements = new HashMap<>();
-
-    public static SpanDataModifier builder(SpanExporter delegate) {
-        return new SpanDataModifier(delegate);
-    }
-
-    private SpanDataModifier(SpanExporter delegate) {
-        this.delegate = delegate;
-    }
 
     /**
      * Remove matching spans from the exporter pipeline.
@@ -127,7 +118,7 @@ public final class SpanDataModifier {
         return this;
     }
 
-    public SpanExporter build() {
+    public SpanExporter wrap(SpanExporter delegate) {
         SpanExporter modifier = delegate;
         if (!spanAttributeReplacements.isEmpty()) {
             modifier =

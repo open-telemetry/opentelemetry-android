@@ -27,6 +27,7 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.contrib.disk.buffering.SpanDiskExporter;
 import io.opentelemetry.contrib.disk.buffering.internal.StorageConfiguration;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -37,6 +38,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,6 +77,7 @@ public final class OpenTelemetryRumBuilder {
 
     private Resource resource;
     @Nullable private CurrentNetworkProvider currentNetworkProvider = null;
+    @Nullable private SpanExporter spanExporter = null;
     private InitializationEvents initializationEvents = InitializationEvents.NO_OP;
 
     private static TextMapPropagator buildDefaultPropagator() {
@@ -317,6 +320,21 @@ public final class OpenTelemetryRumBuilder {
                         return tracerProviderBuilder.addSpanProcessor(screenAttributesAppender);
                     });
         }
+
+        // Wire up the logging exporter, if enabled.
+        if (config.isDebugLogEnabled()) {
+            addTracerProviderCustomizer(
+                    (tracerProviderBuilder, app) -> {
+                        LoggingSpanExporter loggingExporter = LoggingSpanExporter.create();
+                        SpanExporter customizedExporter =
+                                spanExporterCustomizer.apply(loggingExporter);
+                        SpanProcessor spanProcessor =
+                                SimpleSpanProcessor.create(customizedExporter);
+                        tracerProviderBuilder.addSpanProcessor(spanProcessor);
+                        initializationEvents.debugSpanExporterInitialized();
+                        return tracerProviderBuilder;
+                    });
+        }
     }
 
     private CurrentNetworkProvider getOrCreateCurrentNetworkProvider() {
@@ -332,7 +350,7 @@ public final class OpenTelemetryRumBuilder {
                         .setResource(resource)
                         .addSpanProcessor(new SessionIdSpanAppender(sessionId));
 
-        SpanExporter spanExporter = buildSpanExporter();
+        SpanExporter spanExporter = getOrCreateSpanExporter();
         BatchSpanProcessor batchSpanProcessor = BatchSpanProcessor.builder(spanExporter).build();
         tracerProviderBuilder.addSpanProcessor(batchSpanProcessor);
 
@@ -343,15 +361,23 @@ public final class OpenTelemetryRumBuilder {
         return tracerProviderBuilder.build();
     }
 
+    private SpanExporter getOrCreateSpanExporter() {
+        if (spanExporter != null) {
+            return spanExporter;
+        }
+        spanExporter = buildSpanExporter();
+        return spanExporter;
+    }
+
     private SpanExporter buildSpanExporter() {
-        // TODO: Default to otlp...but how can we make endpoint and auth mandatory?
-        SpanExporter defaultExporter = LoggingSpanExporter.create();
-        SpanExporter spanExporter = defaultExporter;
+        // TODO: How can we make endpoint and auth mandatory?
+        // TODO: Make exporter features configurable
+        SpanExporter spanExporter = OtlpHttpSpanExporter.builder().build();
         DiskBufferingConfiguration diskBufferingConfiguration =
                 config.getDiskBufferingConfiguration();
         if (diskBufferingConfiguration.isEnabled()) {
             try {
-                spanExporter = createDiskExporter(defaultExporter, diskBufferingConfiguration);
+                spanExporter = createDiskExporter(spanExporter, diskBufferingConfiguration);
             } catch (IOException e) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Could not create span disk exporter.", e);
             }
