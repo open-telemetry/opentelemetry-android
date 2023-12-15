@@ -21,6 +21,8 @@ public interface InitializationEvents {
 
     void slowRenderingDetectorInitialized();
 
+    void crashReportingInitialized();
+
     InitializationEvents NO_OP =
             new InitializationEvents() {
                 @Override
@@ -40,5 +42,8 @@ public interface InitializationEvents {
 
                 @Override
                 public void slowRenderingDetectorInitialized() {}
+
+                @Override
+                public void crashReportingInitialized() {}
             };
 }

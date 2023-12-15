@@ -32,6 +32,7 @@ public class OtelRumConfig {
     private boolean slowRenderingDetectionEnabled = true;
     private Duration slowRenderingDetectionPollInterval =
             DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL;
+    private boolean crashReportingEnabled = true;
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -174,6 +175,17 @@ public class OtelRumConfig {
      */
     public OtelRumConfig setSlowRenderingDetectionPollInterval(Duration duration) {
         slowRenderingDetectionPollInterval = duration;
+        return this;
+    }
+
+    /** Returns true if crash reporting is enabled. */
+    public boolean isCrashReportingEnabled() {
+        return crashReportingEnabled;
+    }
+
+    /** Call this method to disable crash reporting. */
+    public OtelRumConfig disableCrashReporting() {
+        crashReportingEnabled = false;
         return this;
     }
 }

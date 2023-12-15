@@ -8,6 +8,7 @@ package io.opentelemetry.android;
 import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
+import android.content.Context;
 import android.os.Looper;
 import android.util.Log;
 import io.opentelemetry.android.config.DiskBufferingConfiguration;
@@ -15,6 +16,9 @@ import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.instrumentation.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.android.instrumentation.anr.AnrDetector;
+import io.opentelemetry.android.instrumentation.anr.AnrDetectorBuilder;
+import io.opentelemetry.android.instrumentation.crash.CrashReporter;
+import io.opentelemetry.android.instrumentation.crash.CrashReporterBuilder;
 import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.android.instrumentation.network.NetworkAttributesSpanAppender;
 import io.opentelemetry.android.instrumentation.network.NetworkChangeMonitor;
@@ -79,6 +83,8 @@ public final class OpenTelemetryRumBuilder {
     private Resource resource;
     @Nullable private CurrentNetworkProvider currentNetworkProvider = null;
     private InitializationEvents initializationEvents = InitializationEvents.NO_OP;
+    private Consumer<AnrDetectorBuilder> anrCustomizer = x -> {};
+    private Consumer<CrashReporterBuilder> crashReporterCustomizer = x -> {};
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
@@ -145,6 +151,34 @@ public final class OpenTelemetryRumBuilder {
             BiFunction<SdkTracerProviderBuilder, Application, SdkTracerProviderBuilder>
                     customizer) {
         tracerProviderCustomizers.add(customizer);
+        return this;
+    }
+
+    /**
+     * Pass a Consumer that will receive the AnrDetectorBuilder in order to perform additional
+     * specific customizations. If ANR detection is disabled, this method is effectively a no-op.
+     *
+     * @param customizer A Consumer that will receive the {@link AnrDetectorBuilder} before the
+     *     {@link AnrDetector} is built.
+     * @return this.
+     */
+    public OpenTelemetryRumBuilder addAnrCustomization(Consumer<AnrDetectorBuilder> customizer) {
+        this.anrCustomizer = customizer;
+        return this;
+    }
+
+    /**
+     * Pass a Consumer that will receive the CrashReporterBuilder in order to perform additional
+     * specific customizations. If crash reporting is disabled via config, this method is
+     * effectively a no-op.
+     *
+     * @param customizer A Consumer that will recieve the {@link CrashReporterBuilder} before the
+     *     {@link CrashReporter} is built.
+     * @return this.
+     */
+    public OpenTelemetryRumBuilder addCrashReportingCustomization(
+            Consumer<CrashReporterBuilder> customizer) {
+        this.crashReporterCustomizer = customizer;
         return this;
     }
 
@@ -326,14 +360,15 @@ public final class OpenTelemetryRumBuilder {
             Looper mainLooper = Looper.getMainLooper();
             addInstrumentation(
                     instrumentedApplication -> {
-                        AnrDetector.builder()
-                                .setMainLooper(mainLooper)
-                                .build()
-                                .installOn(instrumentedApplication);
+                        AnrDetectorBuilder builder =
+                                AnrDetector.builder().setMainLooper(mainLooper);
+                        anrCustomizer.accept(builder);
+                        builder.build().installOn(instrumentedApplication);
                         initializationEvents.anrMonitorInitialized();
                     });
         }
 
+        // Enable slow rendering detection if enabled
         if (config.isSlowRenderingDetectionEnabled()) {
             addInstrumentation(
                     instrumentedApplication -> {
@@ -343,6 +378,23 @@ public final class OpenTelemetryRumBuilder {
                                 .build()
                                 .installOn(instrumentedApplication);
                         initializationEvents.slowRenderingDetectorInitialized();
+                    });
+        }
+
+        // Enable crash reporting instrumentation
+        if (config.isCrashReportingEnabled()) {
+            addInstrumentation(
+                    instrumentedApplication -> {
+                        Context context =
+                                instrumentedApplication.getApplication().getApplicationContext();
+                        CrashReporterBuilder builder =
+                                CrashReporter.builder()
+                                        .addAttributesExtractor(
+                                                RuntimeDetailsExtractor.create(context));
+                        crashReporterCustomizer.accept(builder);
+                        builder.build().installOn(instrumentedApplication);
+
+                        initializationEvents.crashReportingInitialized();
                     });
         }
     }

@@ -33,4 +33,14 @@ public class SdkInitializationEvents implements InitializationEvents {
     public void anrMonitorInitialized() {
         // TODO: Build me "anrMonitorInitialized"
     }
+
+    @Override
+    public void slowRenderingDetectorInitialized() {
+        // TODO: Build me "slowRenderingDetectorInitialized"
+    }
+
+    @Override
+    public void crashReportingInitialized() {
+        // TODO: Build me "crashReportingInitialized"
+    }
 }
