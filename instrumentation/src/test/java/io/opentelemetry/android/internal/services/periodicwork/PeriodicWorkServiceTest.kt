@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
 @RunWith(RobolectricTestRunner::class)
 class PeriodicWorkServiceTest {
     companion object {
-        private const val DELAY_BETWEEN_EXECUTIONS_IN_SECONDS = 15L
+        private const val DELAY_BETWEEN_EXECUTIONS_IN_SECONDS = 10L
     }
 
     private lateinit var service: PeriodicWorkService

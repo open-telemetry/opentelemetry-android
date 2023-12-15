@@ -36,7 +36,7 @@ class PeriodicWorkService : Service {
     private class WorkerDelegator : Runnable {
         companion object {
             private const val SECONDS_TO_KILL_IDLE_THREADS = 30L
-            private const val SECONDS_FOR_NEXT_LOOP = 15L
+            private const val SECONDS_FOR_NEXT_LOOP = 10L
             private const val MAX_AMOUNT_OF_WORKER_THREADS = 1
             private const val NUMBER_OF_PERMANENT_WORKER_THREADS = 0
         }
