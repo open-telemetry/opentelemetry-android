@@ -11,10 +11,10 @@ extensions.configure<SpotlessExtension>("spotless") {
         target("src/**/*.java")
     }
     plugins.withId("org.jetbrains.kotlin.jvm") {
-        kotlin {
-            ktlint()
-            licenseHeaderFile(rootProject.file("gradle/spotless.license.java"), "(package|import|public)")
-        }
+        configureKotlin(this@configure)
+    }
+    plugins.withId("org.jetbrains.kotlin.android") {
+        configureKotlin(this@configure)
     }
     kotlinGradle {
         ktlint()
@@ -35,5 +35,17 @@ extensions.configure<SpotlessExtension>("spotless") {
         indentWithSpaces()
         trimTrailingWhitespace()
         endWithNewline()
+    }
+}
+
+fun configureKotlin(
+    spotlessExtension: SpotlessExtension,
+) {
+    spotlessExtension.kotlin {
+        ktlint()
+        licenseHeaderFile(
+            rootProject.file("gradle/spotless.license.java")
+        )
+        target("src/**/*.kt")
     }
 }
