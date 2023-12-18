@@ -8,7 +8,7 @@ package io.opentelemetry.android.features.diskbuffering
 /**
  * Sets up a scheduling mechanism to read and export previously stored signals in disk.
  */
-interface DiskExportScheduleHandler {
+interface ExportScheduleHandler {
     /**
      * Start/Set up the exporting schedule. Called when the disk buffering feature gets enabled.
      */
