@@ -9,8 +9,8 @@ import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
 import android.util.Log;
-import io.opentelemetry.android.config.DiskBufferingConfiguration;
 import io.opentelemetry.android.config.OtelRumConfig;
+import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.instrumentation.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;

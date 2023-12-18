@@ -13,7 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import io.opentelemetry.android.config.DiskBufferingConfiguration;
+import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.internal.services.CacheStorageService;
 import io.opentelemetry.android.internal.services.PreferencesService;
 import io.opentelemetry.android.internal.services.ServiceManager;
