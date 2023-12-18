@@ -9,7 +9,7 @@ import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.internal.tools.time.SystemTime
 
 /**
- * Utility create a Runnable that needs to run multiple times.
+ * Utility for creating a Runnable that needs to run multiple times.
  *
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
