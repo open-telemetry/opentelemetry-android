@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.features.diskbuffering
+package io.opentelemetry.android.features.diskbuffering.scheduler
 
 /**
  * Sets up a scheduling mechanism to read and export previously stored signals in disk.

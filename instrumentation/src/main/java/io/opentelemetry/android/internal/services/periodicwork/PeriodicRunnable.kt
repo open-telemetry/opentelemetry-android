@@ -42,16 +42,16 @@ abstract class PeriodicRunnable : Runnable {
     /**
      * Called only if a) The runnable has never run before, OR b) The minimum amount of time delay has passed after the last run.
      */
-    protected abstract fun onRun()
+    abstract fun onRun()
 
     /**
      * Should return FALSE when further runs are needed, TRUE if no need for this task to ever run again.
      */
-    protected abstract fun shouldStopRunning(): Boolean
+    abstract fun shouldStopRunning(): Boolean
 
     /**
      * The minimum amount of time to wait between runs, it might take longer than what's defined here
      * to run this task again depending on when the next batch of background work will get submitted.
      */
-    protected abstract fun minimumDelayUntilNextRunInMillis(): Long
+    abstract fun minimumDelayUntilNextRunInMillis(): Long
 }

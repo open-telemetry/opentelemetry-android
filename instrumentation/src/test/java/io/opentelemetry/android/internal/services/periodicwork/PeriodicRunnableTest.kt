@@ -5,17 +5,18 @@
 
 package io.opentelemetry.android.internal.services.periodicwork
 
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.verify
+import io.opentelemetry.android.internal.services.Service
 import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.internal.tools.time.SystemTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.doReturn
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
-import org.mockito.kotlin.never
-import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -25,10 +26,8 @@ class PeriodicRunnableTest {
 
     @Before
     fun setUp() {
-        periodicWorkService = mock()
-        val manager = mock<ServiceManager>()
-        doReturn(periodicWorkService).whenever(manager).getService(PeriodicWorkService::class.java)
-        ServiceManager.setForTest(manager)
+        periodicWorkService = createPeriodicWorkServiceMock()
+        mockServiceManager(periodicWorkService)
         testSystemTime = TestSystemTime()
         SystemTime.setForTest(testSystemTime)
     }
@@ -70,7 +69,9 @@ class PeriodicRunnableTest {
         runnable.run()
 
         assertThat(runnable.timesRun).isEqualTo(1)
-        verify(periodicWorkService).enqueue(runnable)
+        verify {
+            periodicWorkService.enqueue(runnable)
+        }
     }
 
     @Test
@@ -81,7 +82,26 @@ class PeriodicRunnableTest {
         runnable.run()
 
         assertThat(runnable.timesRun).isEqualTo(1)
-        verify(periodicWorkService, never()).enqueue(runnable)
+        verify(exactly = 0) {
+            periodicWorkService.enqueue(runnable)
+        }
+    }
+
+    private fun createPeriodicWorkServiceMock(): PeriodicWorkService {
+        val periodicWorkService = mockk<PeriodicWorkService>()
+        every { periodicWorkService.enqueue(any()) } just Runs
+
+        return periodicWorkService
+    }
+
+    private fun mockServiceManager(vararg services: Service) {
+        val manager = mockk<ServiceManager>()
+        services.forEach { service ->
+            every { manager.getService(service.javaClass) }.returns(
+                service,
+            )
+        }
+        ServiceManager.setForTest(manager)
     }
 
     private class TestRunnable(val minimumDelayInMillis: Long) : PeriodicRunnable() {
