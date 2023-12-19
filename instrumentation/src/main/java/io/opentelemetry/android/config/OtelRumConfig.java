@@ -29,7 +29,7 @@ public class OtelRumConfig {
             DiskBufferingConfiguration.builder().build();
 
     private boolean networkChangeMonitoringEnabled = true;
-    private List<InitializationListener> initializationListeners = new ArrayList<>();
+    private final List<InitializationListener> initializationListeners = new ArrayList<>();
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -128,7 +128,9 @@ public class OtelRumConfig {
 
     /** Adds a new initialization listener. It will be called during the RUM initialization. */
     public void addInitializationListener(InitializationListener listener) {
-        initializationListeners.add(listener);
+        if (!initializationListeners.contains(listener)) {
+            initializationListeners.add(listener);
+        }
     }
 
     public List<InitializationListener> getInitializationListeners() {
