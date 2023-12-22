@@ -8,6 +8,7 @@ package io.opentelemetry.android.internal.services.periodicwork
 import android.os.Handler
 import android.os.Looper
 import io.opentelemetry.android.internal.services.Service
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
@@ -41,7 +42,7 @@ class PeriodicWorkService : Service {
             private const val NUMBER_OF_PERMANENT_WORKER_THREADS = 0
         }
 
-        private val queue = LinkedBlockingQueue<Runnable>()
+        private val queue = ConcurrentLinkedQueue<Runnable>()
         private val handler = Handler(Looper.getMainLooper())
         private val executor =
             ThreadPoolExecutor(
@@ -52,22 +53,20 @@ class PeriodicWorkService : Service {
                 LinkedBlockingQueue(),
             )
 
-        fun enqueue(runnable: Runnable) =
-            synchronized(this) {
-                queue.add(runnable)
-            }
+        fun enqueue(runnable: Runnable) {
+            queue.add(runnable)
+        }
 
         override fun run() {
             delegateToWorkerThread()
             scheduleNextLookUp()
         }
 
-        private fun delegateToWorkerThread() =
-            synchronized(this) {
-                while (queue.isNotEmpty()) {
-                    executor.execute(queue.poll())
-                }
+        private fun delegateToWorkerThread() {
+            while (queue.isNotEmpty()) {
+                executor.execute(queue.poll())
             }
+        }
 
         private fun scheduleNextLookUp() {
             handler.postDelayed(this, TimeUnit.SECONDS.toMillis(SECONDS_FOR_NEXT_LOOP))
