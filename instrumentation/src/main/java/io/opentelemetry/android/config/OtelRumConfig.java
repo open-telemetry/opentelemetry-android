@@ -9,10 +9,9 @@ import io.opentelemetry.android.ScreenAttributesSpanProcessor;
 import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.android.instrumentation.startup.InitializationListener;
 import io.opentelemetry.api.common.Attributes;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -137,7 +136,7 @@ public class OtelRumConfig {
      * Provides an unmodifiable list of initialization listeners. This is mean to be called during
      * RUM initialization.
      */
-    public List<InitializationListener> getInitializationListeners() {
-        return Collections.unmodifiableList(new ArrayList<>(initializationListeners));
+    public Collection<InitializationListener> getInitializationListeners() {
+        return Collections.unmodifiableCollection(initializationListeners);
     }
 }
