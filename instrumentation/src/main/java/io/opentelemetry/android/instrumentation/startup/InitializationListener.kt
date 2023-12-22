@@ -9,8 +9,6 @@ package io.opentelemetry.android.instrumentation.startup
  * Provides callbacks to know the sate of the initialization.
  */
 interface InitializationListener {
-    companion object {
-    }
 
     /**
      * Called when the RUM initialization starts.
