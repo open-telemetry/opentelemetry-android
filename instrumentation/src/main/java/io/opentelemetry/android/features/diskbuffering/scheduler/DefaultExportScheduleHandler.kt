@@ -18,8 +18,4 @@ class DefaultExportScheduleHandler : ExportScheduleHandler {
                 .enqueue(DefaultExportScheduler())
         }
     }
-
-    override fun disable() {
-        // No operation.
-    }
 }

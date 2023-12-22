@@ -19,5 +19,5 @@ interface ExportScheduleHandler {
      * for data stored in the disk to export will be carried over if this function is called.
      * This will be called if the disk buffering feature gets disabled.
      */
-    fun disable()
+    fun disable() {}
 }

@@ -32,6 +32,7 @@ android {
         jvmTarget = javaVersion.toString()
         apiVersion = minKotlinVersion.version
         languageVersion = minKotlinVersion.version
+        freeCompilerArgs = listOf("-Xjvm-default=all")
     }
 }
 
