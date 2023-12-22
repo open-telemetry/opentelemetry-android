@@ -133,6 +133,10 @@ public class OtelRumConfig {
         }
     }
 
+    /**
+     * Provides an unmodifiable list of initialization listeners. This is mean to be called during
+     * RUM initialization.
+     */
     public List<InitializationListener> getInitializationListeners() {
         return Collections.unmodifiableList(initializationListeners);
     }
