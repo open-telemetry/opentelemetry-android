@@ -11,7 +11,9 @@ import io.opentelemetry.android.instrumentation.startup.InitializationListener;
 import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -29,7 +31,7 @@ public class OtelRumConfig {
             DiskBufferingConfiguration.builder().build();
 
     private boolean networkChangeMonitoringEnabled = true;
-    private final List<InitializationListener> initializationListeners = new ArrayList<>();
+    private final Set<InitializationListener> initializationListeners = new HashSet<>();
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -128,9 +130,7 @@ public class OtelRumConfig {
 
     /** Adds a new initialization listener. It will be called during the RUM initialization. */
     public void addInitializationListener(InitializationListener listener) {
-        if (!initializationListeners.contains(listener)) {
-            initializationListeners.add(listener);
-        }
+        initializationListeners.add(listener);
     }
 
     /**
@@ -138,6 +138,6 @@ public class OtelRumConfig {
      * RUM initialization.
      */
     public List<InitializationListener> getInitializationListeners() {
-        return Collections.unmodifiableList(initializationListeners);
+        return Collections.unmodifiableList(new ArrayList<>(initializationListeners));
     }
 }
