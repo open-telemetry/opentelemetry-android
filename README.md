@@ -35,7 +35,7 @@ in your gradle build script:
 ```kotlin
 dependencies {
     //...
-    implementation("io.opentelemetry.android:instrumentation:0.2.0-alpha")
+    implementation("io.opentelemetry.android:instrumentation:0.3.0-alpha")
     //...
 }
 ```
