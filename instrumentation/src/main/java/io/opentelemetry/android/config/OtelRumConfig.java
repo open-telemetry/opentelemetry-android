@@ -7,7 +7,12 @@ package io.opentelemetry.android.config;
 
 import io.opentelemetry.android.ScreenAttributesSpanProcessor;
 import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
+import io.opentelemetry.android.instrumentation.startup.InitializationListener;
 import io.opentelemetry.api.common.Attributes;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -23,7 +28,9 @@ public class OtelRumConfig {
     private boolean includeScreenAttributes = true;
     private DiskBufferingConfiguration diskBufferingConfiguration =
             DiskBufferingConfiguration.builder().build();
+
     private boolean networkChangeMonitoringEnabled = true;
+    private final Set<InitializationListener> initializationListeners = new HashSet<>();
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -118,5 +125,18 @@ public class OtelRumConfig {
      */
     public boolean isNetworkChangeMonitoringEnabled() {
         return this.networkChangeMonitoringEnabled;
+    }
+
+    /** Adds a new initialization listener. It will be called during the RUM initialization. */
+    public void addInitializationListener(InitializationListener listener) {
+        initializationListeners.add(listener);
+    }
+
+    /**
+     * Provides an unmodifiable list of initialization listeners. This is mean to be called during
+     * RUM initialization.
+     */
+    public Collection<InitializationListener> getInitializationListeners() {
+        return Collections.unmodifiableCollection(initializationListeners);
     }
 }

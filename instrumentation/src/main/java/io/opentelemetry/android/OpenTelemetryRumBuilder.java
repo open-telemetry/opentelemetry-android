@@ -17,9 +17,11 @@ import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.android.instrumentation.network.NetworkAttributesSpanAppender;
 import io.opentelemetry.android.instrumentation.network.NetworkChangeMonitor;
 import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
+import io.opentelemetry.android.instrumentation.startup.InitializationListener;
 import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents;
 import io.opentelemetry.android.internal.features.persistence.DiskManager;
 import io.opentelemetry.android.internal.features.persistence.SimpleTemporaryFileProvider;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -249,6 +251,7 @@ public final class OpenTelemetryRumBuilder {
      * @return A new {@link OpenTelemetryRum} instance.
      */
     public OpenTelemetryRum build() {
+        notifyInitializationStart();
 
         applyConfiguration();
 
@@ -263,7 +266,21 @@ public final class OpenTelemetryRumBuilder {
         SdkPreconfiguredRumBuilder delegate =
                 new SdkPreconfiguredRumBuilder(application, sdk, sessionId);
         instrumentationInstallers.forEach(delegate::addInstrumentation);
+
+        notifyInitializationEnd(sdk);
         return delegate.build();
+    }
+
+    private void notifyInitializationStart() {
+        for (InitializationListener listener : config.getInitializationListeners()) {
+            listener.onStart();
+        }
+    }
+
+    private void notifyInitializationEnd(OpenTelemetry openTelemetry) {
+        for (InitializationListener listener : config.getInitializationListeners()) {
+            listener.onEnd(openTelemetry);
+        }
     }
 
     /** Leverage the configuration to wire up various instrumentation components. */
