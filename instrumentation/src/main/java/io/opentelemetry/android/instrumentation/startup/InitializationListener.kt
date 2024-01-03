@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.instrumentation.startup
 
+import io.opentelemetry.api.OpenTelemetry
+
 /**
  * Provides callbacks to know the sate of the initialization.
  */
@@ -16,6 +18,7 @@ interface InitializationListener {
 
     /**
      * Called when the RUM initialization ends.
+     * @param openTelemetry - The initialized OpenTelemetry instance.
      */
-    fun onEnd()
+    fun onEnd(openTelemetry: OpenTelemetry)
 }

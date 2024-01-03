@@ -21,6 +21,7 @@ import io.opentelemetry.android.instrumentation.startup.InitializationListener;
 import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents;
 import io.opentelemetry.android.internal.features.persistence.DiskManager;
 import io.opentelemetry.android.internal.features.persistence.SimpleTemporaryFileProvider;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -266,7 +267,7 @@ public final class OpenTelemetryRumBuilder {
                 new SdkPreconfiguredRumBuilder(application, sdk, sessionId);
         instrumentationInstallers.forEach(delegate::addInstrumentation);
 
-        notifyInitializationEnd();
+        notifyInitializationEnd(sdk);
         return delegate.build();
     }
 
@@ -276,9 +277,9 @@ public final class OpenTelemetryRumBuilder {
         }
     }
 
-    private void notifyInitializationEnd() {
+    private void notifyInitializationEnd(OpenTelemetry openTelemetry) {
         for (InitializationListener listener : config.getInitializationListeners()) {
-            listener.onEnd();
+            listener.onEnd(openTelemetry);
         }
     }
 
