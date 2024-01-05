@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.config;
+package io.opentelemetry.android.features.diskbuffering;
 
 /** Configuration for disk buffering. */
 public final class DiskBufferingConfiguration {
