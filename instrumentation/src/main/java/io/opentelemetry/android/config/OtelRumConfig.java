@@ -8,6 +8,7 @@ package io.opentelemetry.android.config;
 import io.opentelemetry.android.ScreenAttributesSpanProcessor;
 import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
 import io.opentelemetry.api.common.Attributes;
+import java.time.Duration;
 import java.util.function.Supplier;
 
 /**
@@ -17,6 +18,9 @@ import java.util.function.Supplier;
  */
 public class OtelRumConfig {
 
+    private static final Duration DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL =
+            Duration.ofSeconds(1);
+
     private Supplier<Attributes> globalAttributesSupplier = Attributes::empty;
     private boolean includeNetworkAttributes = true;
     private boolean generateSdkInitializationEvents = true;
@@ -24,6 +28,11 @@ public class OtelRumConfig {
     private DiskBufferingConfiguration diskBufferingConfiguration =
             DiskBufferingConfiguration.builder().build();
     private boolean networkChangeMonitoringEnabled = true;
+    private boolean anrDetectionEnabled = true;
+    private boolean slowRenderingDetectionEnabled = true;
+    private Duration slowRenderingDetectionPollInterval =
+            DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL;
+    private boolean crashReportingEnabled = true;
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -70,7 +79,7 @@ public class OtelRumConfig {
      * @return this
      */
     public OtelRumConfig disableSdkInitializationEvents() {
-        this.generateSdkInitializationEvents = false;
+        generateSdkInitializationEvents = false;
         return this;
     }
 
@@ -86,7 +95,7 @@ public class OtelRumConfig {
      * @return this
      */
     public OtelRumConfig disableScreenAttributes() {
-        this.includeScreenAttributes = false;
+        includeScreenAttributes = false;
         return this;
     }
 
@@ -99,24 +108,84 @@ public class OtelRumConfig {
         return diskBufferingConfiguration;
     }
 
-    /** Sets the parameters for caching signals in disk in order to export them later. */
-    public void setDiskBufferingConfiguration(
+    /**
+     * Sets the parameters for caching signals in disk in order to export them later.
+     *
+     * @return this
+     */
+    public OtelRumConfig setDiskBufferingConfiguration(
             DiskBufferingConfiguration diskBufferingConfiguration) {
         this.diskBufferingConfiguration = diskBufferingConfiguration;
+        return this;
     }
 
     /**
      * Sets the configuration so that network change monitoring, which is enabled by default, will
      * not be started.
      */
-    public void disableNetworkChangeMonitoring() {
-        this.networkChangeMonitoringEnabled = false;
+    public OtelRumConfig disableNetworkChangeMonitoring() {
+        networkChangeMonitoringEnabled = false;
+        return this;
+    }
+
+    /** Returns true if network change monitoring is enabled (default = true). */
+    public boolean isNetworkChangeMonitoringEnabled() {
+        return networkChangeMonitoringEnabled;
+    }
+
+    /** Returns true if ANR (application not responding) detection is enabled (default = true). */
+    public boolean isAnrDetectionEnabled() {
+        return anrDetectionEnabled;
     }
 
     /**
-     * @return true if network change monitoring is enabled (default).
+     * Call this method to disable ANR (application not responding) detection.
+     *
+     * @return this
      */
-    public boolean isNetworkChangeMonitoringEnabled() {
-        return this.networkChangeMonitoringEnabled;
+    public OtelRumConfig disableAnrDetection() {
+        anrDetectionEnabled = false;
+        return this;
+    }
+
+    /** Returns true if the slow rendering detection instrumentation is enabled. */
+    public boolean isSlowRenderingDetectionEnabled() {
+        return slowRenderingDetectionEnabled;
+    }
+
+    /**
+     * Call this method to disable the slow rendering detection instrumentation.
+     *
+     * @return this
+     */
+    public OtelRumConfig disableSlowRenderingDetection() {
+        slowRenderingDetectionEnabled = false;
+        return this;
+    }
+
+    /** Returns the Duration at which slow renders are polled. Default = 1s. */
+    public Duration getSlowRenderingDetectionPollInterval() {
+        return slowRenderingDetectionPollInterval;
+    }
+
+    /**
+     * Call this to configure the duration for polling for slow renders.
+     *
+     * @return this
+     */
+    public OtelRumConfig setSlowRenderingDetectionPollInterval(Duration duration) {
+        slowRenderingDetectionPollInterval = duration;
+        return this;
+    }
+
+    /** Returns true if crash reporting is enabled. */
+    public boolean isCrashReportingEnabled() {
+        return crashReportingEnabled;
+    }
+
+    /** Call this method to disable crash reporting. */
+    public OtelRumConfig disableCrashReporting() {
+        crashReportingEnabled = false;
+        return this;
     }
 }
