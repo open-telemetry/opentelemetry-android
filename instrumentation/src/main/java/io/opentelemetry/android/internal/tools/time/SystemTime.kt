@@ -25,4 +25,10 @@ internal interface SystemTime {
     }
 
     fun getCurrentTimeMillis(): Long
+
+    class DefaultSystemTime : SystemTime {
+        override fun getCurrentTimeMillis(): Long {
+            return System.currentTimeMillis()
+        }
+    }
 }
