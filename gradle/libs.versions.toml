@@ -8,7 +8,6 @@ junit = "5.10.1"
 byteBuddy = "1.14.11"
 okhttp = "4.12.0"
 spotless = "6.23.3"
-zipkin-reporter = "2.17.1"
 kotlin = "1.9.22"
 
 [libraries]
@@ -25,9 +24,7 @@ opentelemetry-instrumentation-okhttp = { module = "io.opentelemetry.instrumentat
 opentelemetry-semconv = { module = "io.opentelemetry.semconv:opentelemetry-semconv", version.ref = "opentelemetry-semconv" }
 opentelemetry-api = { module = "io.opentelemetry:opentelemetry-api" }
 opentelemetry-sdk = { module = "io.opentelemetry:opentelemetry-sdk" }
-opentelemetry-exporter-zipkin = { module = "io.opentelemetry:opentelemetry-exporter-zipkin" }
 opentelemetry-exporter-logging = { module = "io.opentelemetry:opentelemetry-exporter-logging" }
-zipkin-sender-okhttp3 = { module = "io.zipkin.reporter2:zipkin-sender-okhttp3", version.ref = "zipkin-reporter" }
 opentelemetry-diskBuffering = { module = "io.opentelemetry.contrib:opentelemetry-disk-buffering", version.ref = "opentelemetry-contrib" }
 opentelemetry-exporter-otlp = { module = "io.opentelemetry:opentelemetry-exporter-otlp", version.ref = "opentelemetry" }
 
