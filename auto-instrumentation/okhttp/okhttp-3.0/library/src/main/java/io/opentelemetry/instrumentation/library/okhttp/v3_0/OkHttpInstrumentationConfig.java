@@ -18,7 +18,7 @@ import java.util.Set;
 public final class OkHttpInstrumentationConfig {
     private static List<String> capturedRequestHeaders = new ArrayList<>();
     private static List<String> capturedResponseHeaders = new ArrayList<>();
-    private static Set<String> knownMethods = new HashSet<>();
+    private static Set<String> knownMethods = HttpConstants.KNOWN_METHODS;
     private static Map<String, String> peerServiceMapping = new HashMap<>();
     private static boolean emitExperimentalHttpClientMetrics;
 
