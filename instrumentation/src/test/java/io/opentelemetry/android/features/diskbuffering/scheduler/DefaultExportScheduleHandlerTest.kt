@@ -23,7 +23,7 @@ class DefaultExportScheduleHandlerTest {
 
     @BeforeEach
     fun setUp() {
-        handler = DefaultExportScheduleHandler()
+        handler = DefaultExportScheduleHandler(DefaultExportScheduler())
     }
 
     @Test
