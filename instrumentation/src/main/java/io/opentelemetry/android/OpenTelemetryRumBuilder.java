@@ -13,6 +13,7 @@ import android.os.Looper;
 import android.util.Log;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
+import io.opentelemetry.android.features.diskbuffering.SignalDiskExporter;
 import io.opentelemetry.android.instrumentation.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.android.instrumentation.anr.AnrDetector;
@@ -85,6 +86,7 @@ public final class OpenTelemetryRumBuilder {
     private InitializationEvents initializationEvents = InitializationEvents.NO_OP;
     private Consumer<AnrDetectorBuilder> anrCustomizer = x -> {};
     private Consumer<CrashReporterBuilder> crashReporterCustomizer = x -> {};
+    @Nullable private SignalDiskExporter.Builder signalDiskExporterBuilder;
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
@@ -296,6 +298,9 @@ public final class OpenTelemetryRumBuilder {
                         .setLoggerProvider(buildLoggerProvider(application))
                         .setPropagators(buildFinalPropagators())
                         .build();
+        if (signalDiskExporterBuilder != null) {
+            SignalDiskExporter.set(signalDiskExporterBuilder.build());
+        }
 
         SdkPreconfiguredRumBuilder delegate =
                 new SdkPreconfiguredRumBuilder(application, sdk, sessionId);
@@ -426,20 +431,27 @@ public final class OpenTelemetryRumBuilder {
     private SpanExporter buildSpanExporter() {
         // TODO: Default to otlp...but how can we make endpoint and auth mandatory?
         SpanExporter defaultExporter = LoggingSpanExporter.create();
-        SpanExporter spanExporter = defaultExporter;
+        SpanExporter spanExporter = spanExporterCustomizer.apply(defaultExporter);
+
         DiskBufferingConfiguration diskBufferingConfiguration =
                 config.getDiskBufferingConfiguration();
         if (diskBufferingConfiguration.isEnabled()) {
             try {
-                spanExporter = createDiskExporter(defaultExporter, diskBufferingConfiguration);
+                SpanDiskExporter diskExporter =
+                        createDiskExporter(defaultExporter, diskBufferingConfiguration);
+                if (signalDiskExporterBuilder == null) {
+                    signalDiskExporterBuilder = SignalDiskExporter.builder();
+                }
+                signalDiskExporterBuilder.setSpanDiskExporter(diskExporter);
+                spanExporter = diskExporter;
             } catch (IOException e) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Could not create span disk exporter.", e);
             }
         }
-        return spanExporterCustomizer.apply(spanExporter);
+        return spanExporter;
     }
 
-    private static SpanExporter createDiskExporter(
+    private static SpanDiskExporter createDiskExporter(
             SpanExporter defaultExporter, DiskBufferingConfiguration diskBufferingConfiguration)
             throws IOException {
         DiskManager diskManager = DiskManager.create(diskBufferingConfiguration);

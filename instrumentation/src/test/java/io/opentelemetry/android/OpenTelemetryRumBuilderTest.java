@@ -25,6 +25,7 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
+import io.opentelemetry.android.features.diskbuffering.SignalDiskExporter;
 import io.opentelemetry.android.instrumentation.ApplicationStateListener;
 import io.opentelemetry.android.internal.services.CacheStorageService;
 import io.opentelemetry.android.internal.services.PreferencesService;
@@ -46,6 +47,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -73,6 +75,11 @@ class OpenTelemetryRumBuilderTest {
     void setup() {
         when(application.getApplicationContext()).thenReturn(applicationContext);
         when(application.getMainLooper()).thenReturn(looper);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SignalDiskExporter.resetForTesting();
     }
 
     @Test
@@ -198,7 +205,7 @@ class OpenTelemetryRumBuilderTest {
                         })
                 .build();
 
-        assertThat(capturedExporter.get()).isInstanceOf(SpanDiskExporter.class);
+        assertThat(SignalDiskExporter.get()).isNotNull();
     }
 
     @Test
@@ -227,6 +234,7 @@ class OpenTelemetryRumBuilderTest {
                 .build();
 
         assertThat(capturedExporter.get()).isNotInstanceOf(SpanDiskExporter.class);
+        assertThat(SignalDiskExporter.get()).isNull();
     }
 
     @Test
@@ -242,6 +250,7 @@ class OpenTelemetryRumBuilderTest {
                 .build();
 
         assertThat(capturedExporter.get()).isNotInstanceOf(SpanDiskExporter.class);
+        assertThat(SignalDiskExporter.get()).isNull();
     }
 
     private static void setUpServiceManager(Service... services) {
