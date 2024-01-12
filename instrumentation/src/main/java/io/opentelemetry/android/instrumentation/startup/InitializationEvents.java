@@ -6,6 +6,7 @@
 package io.opentelemetry.android.instrumentation.startup;
 
 import io.opentelemetry.android.config.OtelRumConfig;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 public interface InitializationEvents {
 
@@ -22,6 +23,8 @@ public interface InitializationEvents {
     void slowRenderingDetectorInitialized();
 
     void crashReportingInitialized();
+
+    void spanExporterInitialized(SpanExporter spanExporter);
 
     InitializationEvents NO_OP =
             new InitializationEvents() {
@@ -45,5 +48,8 @@ public interface InitializationEvents {
 
                 @Override
                 public void crashReportingInitialized() {}
+
+                @Override
+                public void spanExporterInitialized(SpanExporter spanExporter) {}
             };
 }

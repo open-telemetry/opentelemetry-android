@@ -27,6 +27,7 @@ import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.diskbuffering.SignalDiskExporter;
 import io.opentelemetry.android.instrumentation.ApplicationStateListener;
+import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
 import io.opentelemetry.android.internal.services.CacheStorageService;
 import io.opentelemetry.android.internal.services.PreferencesService;
 import io.opentelemetry.android.internal.services.Service;
@@ -45,7 +46,6 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,6 +69,7 @@ class OpenTelemetryRumBuilderTest {
     @Mock Activity activity;
     @Mock ApplicationStateListener listener;
 
+    @Mock InitializationEvents initializationEvents;
     @Captor ArgumentCaptor<Application.ActivityLifecycleCallbacks> activityCallbacksCaptor;
 
     @BeforeEach
@@ -195,17 +196,15 @@ class OpenTelemetryRumBuilderTest {
         OtelRumConfig config = buildConfig();
         config.setDiskBufferingConfiguration(
                 DiskBufferingConfiguration.builder().setEnabled(true).build());
-        AtomicReference<SpanExporter> capturedExporter = new AtomicReference<>();
+        ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
 
         OpenTelemetryRum.builder(application, config)
-                .addSpanExporterCustomizer(
-                        spanExporter -> {
-                            capturedExporter.set(spanExporter);
-                            return spanExporter;
-                        })
+                .setInitializationEvents(initializationEvents)
                 .build();
 
         assertThat(SignalDiskExporter.get()).isNotNull();
+        verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
+        assertThat(exporterCaptor.getValue()).isInstanceOf(SpanDiskExporter.class);
     }
 
     @Test
@@ -223,33 +222,25 @@ class OpenTelemetryRumBuilderTest {
         OtelRumConfig config = buildConfig();
         config.setDiskBufferingConfiguration(
                 DiskBufferingConfiguration.builder().setEnabled(true).build());
-        AtomicReference<SpanExporter> capturedExporter = new AtomicReference<>();
+        ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
 
         OpenTelemetryRum.builder(application, config)
-                .addSpanExporterCustomizer(
-                        spanExporter -> {
-                            capturedExporter.set(spanExporter);
-                            return spanExporter;
-                        })
+                .setInitializationEvents(initializationEvents)
                 .build();
 
-        assertThat(capturedExporter.get()).isNotInstanceOf(SpanDiskExporter.class);
+        verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
+        assertThat(exporterCaptor.getValue()).isNotInstanceOf(SpanDiskExporter.class);
         assertThat(SignalDiskExporter.get()).isNull();
     }
 
     @Test
     void diskBufferingDisabled() {
-        AtomicReference<SpanExporter> capturedExporter = new AtomicReference<>();
+        ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
 
-        makeBuilder()
-                .addSpanExporterCustomizer(
-                        spanExporter -> {
-                            capturedExporter.set(spanExporter);
-                            return spanExporter;
-                        })
-                .build();
+        makeBuilder().setInitializationEvents(initializationEvents).build();
 
-        assertThat(capturedExporter.get()).isNotInstanceOf(SpanDiskExporter.class);
+        verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
+        assertThat(exporterCaptor.getValue()).isNotInstanceOf(SpanDiskExporter.class);
         assertThat(SignalDiskExporter.get()).isNull();
     }
 

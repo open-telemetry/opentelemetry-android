@@ -83,6 +83,7 @@ public final class OpenTelemetryRumBuilder {
 
     private Resource resource;
     @Nullable private CurrentNetworkProvider currentNetworkProvider = null;
+
     private InitializationEvents initializationEvents = InitializationEvents.NO_OP;
     private Consumer<AnrDetectorBuilder> anrCustomizer = x -> {};
     private Consumer<CrashReporterBuilder> crashReporterCustomizer = x -> {};
@@ -311,7 +312,9 @@ public final class OpenTelemetryRumBuilder {
     /** Leverage the configuration to wire up various instrumentation components. */
     private void applyConfiguration() {
         if (config.shouldGenerateSdkInitializationEvents()) {
-            initializationEvents = new SdkInitializationEvents();
+            if (initializationEvents == InitializationEvents.NO_OP) {
+                initializationEvents = new SdkInitializationEvents();
+            }
             initializationEvents.recordConfiguration(config);
         }
         initializationEvents.sdkInitializationStarted();
@@ -418,6 +421,7 @@ public final class OpenTelemetryRumBuilder {
                         .addSpanProcessor(new SessionIdSpanAppender(sessionId));
 
         SpanExporter spanExporter = buildSpanExporter();
+        initializationEvents.spanExporterInitialized(spanExporter);
         BatchSpanProcessor batchSpanProcessor = BatchSpanProcessor.builder(spanExporter).build();
         tracerProviderBuilder.addSpanProcessor(batchSpanProcessor);
 
@@ -489,5 +493,10 @@ public final class OpenTelemetryRumBuilder {
     private ContextPropagators buildFinalPropagators() {
         TextMapPropagator defaultPropagator = buildDefaultPropagator();
         return ContextPropagators.create(propagatorCustomizer.apply(defaultPropagator));
+    }
+
+    OpenTelemetryRumBuilder setInitializationEvents(InitializationEvents initializationEvents) {
+        this.initializationEvents = initializationEvents;
+        return this;
     }
 }
