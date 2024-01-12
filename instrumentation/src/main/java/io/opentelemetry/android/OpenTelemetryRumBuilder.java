@@ -84,11 +84,10 @@ public final class OpenTelemetryRumBuilder {
 
     private Resource resource;
     @Nullable private CurrentNetworkProvider currentNetworkProvider = null;
-
+    @Nullable private SignalDiskExporter.Builder signalDiskExporterBuilder = null;
     private InitializationEvents initializationEvents = InitializationEvents.NO_OP;
     private Consumer<AnrDetectorBuilder> anrCustomizer = x -> {};
     private Consumer<CrashReporterBuilder> crashReporterCustomizer = x -> {};
-    @Nullable private SignalDiskExporter.Builder signalDiskExporterBuilder;
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
