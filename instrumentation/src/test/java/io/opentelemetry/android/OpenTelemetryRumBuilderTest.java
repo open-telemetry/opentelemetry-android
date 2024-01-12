@@ -16,6 +16,7 @@ import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,6 +27,7 @@ import androidx.annotation.NonNull;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.diskbuffering.SignalDiskExporter;
+import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 import io.opentelemetry.android.instrumentation.ApplicationStateListener;
 import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
 import io.opentelemetry.android.internal.services.CacheStorageService;
@@ -194,8 +196,12 @@ class OpenTelemetryRumBuilderTest {
         doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
         setUpServiceManager(preferences, cacheStorage);
         OtelRumConfig config = buildConfig();
+        ExportScheduleHandler scheduleHandler = mock();
         config.setDiskBufferingConfiguration(
-                DiskBufferingConfiguration.builder().setEnabled(true).build());
+                DiskBufferingConfiguration.builder()
+                        .setEnabled(true)
+                        .setExportScheduleHandler(scheduleHandler)
+                        .build());
         ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
 
         OpenTelemetryRum.builder(application, config)
@@ -203,6 +209,8 @@ class OpenTelemetryRumBuilderTest {
                 .build();
 
         assertThat(SignalDiskExporter.get()).isNotNull();
+        verify(scheduleHandler).enable();
+        verify(scheduleHandler, never()).disable();
         verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
         assertThat(exporterCaptor.getValue()).isInstanceOf(SpanDiskExporter.class);
     }
@@ -211,6 +219,7 @@ class OpenTelemetryRumBuilderTest {
     void diskBufferingEnabled_when_exception_thrown() {
         PreferencesService preferences = mock();
         CacheStorageService cacheStorage = mock();
+        ExportScheduleHandler scheduleHandler = mock();
         doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
         doAnswer(
                         invocation -> {
@@ -219,16 +228,21 @@ class OpenTelemetryRumBuilderTest {
                 .when(cacheStorage)
                 .getCacheDir();
         setUpServiceManager(preferences, cacheStorage);
+        ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
         OtelRumConfig config = buildConfig();
         config.setDiskBufferingConfiguration(
-                DiskBufferingConfiguration.builder().setEnabled(true).build());
-        ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
+                DiskBufferingConfiguration.builder()
+                        .setEnabled(true)
+                        .setExportScheduleHandler(scheduleHandler)
+                        .build());
 
         OpenTelemetryRum.builder(application, config)
                 .setInitializationEvents(initializationEvents)
                 .build();
 
         verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
+        verify(scheduleHandler, never()).enable();
+        verify(scheduleHandler).disable();
         assertThat(exporterCaptor.getValue()).isNotInstanceOf(SpanDiskExporter.class);
         assertThat(SignalDiskExporter.get()).isNull();
     }
@@ -236,10 +250,22 @@ class OpenTelemetryRumBuilderTest {
     @Test
     void diskBufferingDisabled() {
         ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
+        ExportScheduleHandler scheduleHandler = mock();
 
-        makeBuilder().setInitializationEvents(initializationEvents).build();
+        OtelRumConfig config = buildConfig();
+        config.setDiskBufferingConfiguration(
+                DiskBufferingConfiguration.builder()
+                        .setEnabled(false)
+                        .setExportScheduleHandler(scheduleHandler)
+                        .build());
+
+        OpenTelemetryRum.builder(application, config)
+                .setInitializationEvents(initializationEvents)
+                .build();
 
         verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
+        verify(scheduleHandler, never()).enable();
+        verify(scheduleHandler).disable();
         assertThat(exporterCaptor.getValue()).isNotInstanceOf(SpanDiskExporter.class);
         assertThat(SignalDiskExporter.get()).isNull();
     }

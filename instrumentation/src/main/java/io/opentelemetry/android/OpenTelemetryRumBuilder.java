@@ -14,6 +14,7 @@ import android.util.Log;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.diskbuffering.SignalDiskExporter;
+import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 import io.opentelemetry.android.instrumentation.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.android.instrumentation.anr.AnrDetector;
@@ -299,14 +300,29 @@ public final class OpenTelemetryRumBuilder {
                         .setLoggerProvider(buildLoggerProvider(application))
                         .setPropagators(buildFinalPropagators())
                         .build();
-        if (signalDiskExporterBuilder != null) {
-            SignalDiskExporter.set(signalDiskExporterBuilder.build());
-        }
+
+        setUpDiskBuffering();
 
         SdkPreconfiguredRumBuilder delegate =
                 new SdkPreconfiguredRumBuilder(application, sdk, sessionId);
         instrumentationInstallers.forEach(delegate::addInstrumentation);
         return delegate.build();
+    }
+
+    private void setUpDiskBuffering() {
+        ExportScheduleHandler exportScheduleHandler =
+                config.getDiskBufferingConfiguration().getExportScheduleHandler();
+        if (signalDiskExporterBuilder != null) {
+            // Not null means that disk buffering is enabled and disk exporters are successfully
+            // initialized.
+            SignalDiskExporter.set(signalDiskExporterBuilder.build());
+            exportScheduleHandler.enable();
+        } else {
+            // Disabling here allows to cancel previously scheduled exports using tools that
+            // can run even after the app has been terminated (such as WorkManager).
+            // But for in-memory only schedulers, nothing should need to be disabled.
+            exportScheduleHandler.disable();
+        }
     }
 
     /** Leverage the configuration to wire up various instrumentation components. */
