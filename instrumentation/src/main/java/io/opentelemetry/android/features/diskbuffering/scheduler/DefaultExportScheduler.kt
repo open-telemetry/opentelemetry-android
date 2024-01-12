@@ -5,7 +5,11 @@
 
 package io.opentelemetry.android.features.diskbuffering.scheduler
 
+import android.util.Log
+import io.opentelemetry.android.RumConstants
+import io.opentelemetry.android.features.diskbuffering.SignalDiskExporter
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicRunnable
+import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 class DefaultExportScheduler : PeriodicRunnable() {
@@ -14,11 +18,20 @@ class DefaultExportScheduler : PeriodicRunnable() {
     }
 
     override fun onRun() {
-        // TODO for next PR.
+        val exporter = SignalDiskExporter.get() ?: return
+
+        try {
+            var didExport = exporter.exportBatchOfEach()
+            while (didExport) {
+                didExport = exporter.exportBatchOfEach()
+            }
+        } catch (e: IOException) {
+            Log.e(RumConstants.OTEL_RUM_LOG_TAG, "Error while exporting signals from disk.", e)
+        }
     }
 
     override fun shouldStopRunning(): Boolean {
-        return false
+        return SignalDiskExporter.get() == null
     }
 
     override fun minimumDelayUntilNextRunInMillis(): Long {
