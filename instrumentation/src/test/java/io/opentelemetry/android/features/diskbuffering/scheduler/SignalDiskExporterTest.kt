@@ -39,7 +39,7 @@ class SignalDiskExporterTest {
     }
 
     @Test
-    fun `Verify exporting with custom timeout time`() {
+    fun `Exporting with custom timeout time`() {
         val timeoutInMillis = TimeUnit.SECONDS.toMillis(10)
         val instance =
             createInstance(
@@ -54,7 +54,7 @@ class SignalDiskExporterTest {
     }
 
     @Test
-    fun verifyExportingSpans() {
+    fun `Verify exporting spans`() {
         val instance = createInstance(spanDiskExporter, metricDiskExporter, logRecordDiskExporter)
         every { spanDiskExporter.exportStoredBatch(any(), any()) }.returns(true)
         assertThat(instance.exportBatchOfSpans()).isTrue()
@@ -62,7 +62,7 @@ class SignalDiskExporterTest {
     }
 
     @Test
-    fun verifyExportingMetrics() {
+    fun `Verify exporting metrics`() {
         val instance = createInstance(spanDiskExporter, metricDiskExporter, logRecordDiskExporter)
         every { metricDiskExporter.exportStoredBatch(any(), any()) }.returns(true)
         assertThat(instance.exportBatchOfMetrics()).isTrue()
@@ -70,7 +70,7 @@ class SignalDiskExporterTest {
     }
 
     @Test
-    fun verifyExportingLogs() {
+    fun `Verify exporting logs`() {
         val instance = createInstance(spanDiskExporter, metricDiskExporter, logRecordDiskExporter)
         every { logRecordDiskExporter.exportStoredBatch(any(), any()) }.returns(true)
         assertThat(instance.exportBatchOfLogs()).isTrue()
@@ -78,7 +78,7 @@ class SignalDiskExporterTest {
     }
 
     @Test
-    fun verifyExportingEach_whenAllReturnFalse() {
+    fun `Return false when all exports fail`() {
         val instance = createInstance(spanDiskExporter, metricDiskExporter, logRecordDiskExporter)
         every { spanDiskExporter.exportStoredBatch(any(), any()) }.returns(false)
         every { metricDiskExporter.exportStoredBatch(any(), any()) }.returns(false)
@@ -90,7 +90,7 @@ class SignalDiskExporterTest {
     }
 
     @Test
-    fun verifyExportingEach_whenSpansReturnTrue() {
+    fun `Return true when spans export succeeds`() {
         val instance = createInstance(spanDiskExporter, metricDiskExporter, logRecordDiskExporter)
         every { spanDiskExporter.exportStoredBatch(any(), any()) }.returns(true)
         every { metricDiskExporter.exportStoredBatch(any(), any()) }.returns(false)
@@ -102,7 +102,7 @@ class SignalDiskExporterTest {
     }
 
     @Test
-    fun verifyExportingEach_whenMetricsReturnTrue() {
+    fun `Return true when metrics export succeeds`() {
         val instance = createInstance(spanDiskExporter, metricDiskExporter, logRecordDiskExporter)
         every { spanDiskExporter.exportStoredBatch(any(), any()) }.returns(false)
         every { metricDiskExporter.exportStoredBatch(any(), any()) }.returns(true)
@@ -114,7 +114,7 @@ class SignalDiskExporterTest {
     }
 
     @Test
-    fun verifyExportingEach_whenLogsReturnTrue() {
+    fun `Return true when logs export succeeds`() {
         val instance = createInstance(spanDiskExporter, metricDiskExporter, logRecordDiskExporter)
         every { spanDiskExporter.exportStoredBatch(any(), any()) }.returns(false)
         every { metricDiskExporter.exportStoredBatch(any(), any()) }.returns(false)
@@ -126,19 +126,19 @@ class SignalDiskExporterTest {
     }
 
     @Test
-    fun whenSpansExporterIsNull_returnFalse() {
+    fun `Return false when spans exporter is not available`() {
         val instance = createInstance(null, metricDiskExporter, logRecordDiskExporter)
         assertThat(instance.exportBatchOfSpans()).isFalse()
     }
 
     @Test
-    fun whenMetricsExporterIsNull_returnFalse() {
+    fun `Return false when metrics exporter is not available`() {
         val instance = createInstance(spanDiskExporter, null, logRecordDiskExporter)
         assertThat(instance.exportBatchOfMetrics()).isFalse()
     }
 
     @Test
-    fun whenLogsExporterIsNull_returnFalse() {
+    fun `Return false when logs exporter is not available`() {
         val instance = createInstance(spanDiskExporter, metricDiskExporter, null)
         assertThat(instance.exportBatchOfLogs()).isFalse()
     }
