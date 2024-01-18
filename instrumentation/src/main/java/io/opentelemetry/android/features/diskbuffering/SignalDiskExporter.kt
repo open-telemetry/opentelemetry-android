@@ -16,10 +16,10 @@ import java.util.concurrent.TimeUnit
  * Entrypoint to read and export previously cached signals.
  */
 class SignalDiskExporter internal constructor(
+    private val exportTimeoutInMillis: Long,
     private val spanDiskExporter: SpanDiskExporter?,
     private val metricDiskExporter: MetricDiskExporter?,
     private val logRecordDiskExporter: LogRecordDiskExporter?,
-    private val exportTimeoutInMillis: Long,
 ) {
     /**
      * A batch contains all the signals that arrived in one call to [SpanDiskExporter.export]. So if
