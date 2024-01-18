@@ -300,7 +300,7 @@ public final class OpenTelemetryRumBuilder {
                         .setPropagators(buildFinalPropagators())
                         .build();
 
-        setUpDiskBuffering();
+        scheduleDiskTelemetryReader();
 
         SdkPreconfiguredRumBuilder delegate =
                 new SdkPreconfiguredRumBuilder(application, sdk, sessionId);
@@ -308,7 +308,7 @@ public final class OpenTelemetryRumBuilder {
         return delegate.build();
     }
 
-    private void setUpDiskBuffering() {
+    private void scheduleDiskTelemetryReader() {
         ExportScheduleHandler exportScheduleHandler =
                 config.getDiskBufferingConfiguration().getExportScheduleHandler();
         if (signalDiskExporterBuilder == null) {
