@@ -311,16 +311,16 @@ public final class OpenTelemetryRumBuilder {
     private void setUpDiskBuffering() {
         ExportScheduleHandler exportScheduleHandler =
                 config.getDiskBufferingConfiguration().getExportScheduleHandler();
-        if (signalDiskExporterBuilder != null) {
-            // Not null means that disk buffering is enabled and disk exporters are successfully
-            // initialized.
-            SignalDiskExporter.set(signalDiskExporterBuilder.build());
-            exportScheduleHandler.enable();
-        } else {
+        if (signalDiskExporterBuilder == null) {
             // Disabling here allows to cancel previously scheduled exports using tools that
             // can run even after the app has been terminated (such as WorkManager).
             // But for in-memory only schedulers, nothing should need to be disabled.
             exportScheduleHandler.disable();
+        } else {
+            // Not null means that disk buffering is enabled and disk exporters are successfully
+            // initialized.
+            SignalDiskExporter.set(signalDiskExporterBuilder.build());
+            exportScheduleHandler.enable();
         }
     }
 
