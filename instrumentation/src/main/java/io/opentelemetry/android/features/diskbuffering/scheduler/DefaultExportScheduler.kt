@@ -21,10 +21,9 @@ class DefaultExportScheduler : PeriodicRunnable() {
         val exporter = SignalDiskExporter.get() ?: return
 
         try {
-            var didExport = exporter.exportBatchOfEach()
-            while (didExport) {
-                didExport = exporter.exportBatchOfEach()
-            }
+            do {
+              val didExport = exporter.exportBatchOfEach()
+            } while (didExport)
         } catch (e: IOException) {
             Log.e(RumConstants.OTEL_RUM_LOG_TAG, "Error while exporting signals from disk.", e)
         }
