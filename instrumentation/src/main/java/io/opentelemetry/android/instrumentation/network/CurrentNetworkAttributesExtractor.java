@@ -17,7 +17,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 
-final class CurrentNetworkAttributesExtractor {
+public final class CurrentNetworkAttributesExtractor {
 
     Attributes extract(CurrentNetwork network) {
         AttributesBuilder builder =
