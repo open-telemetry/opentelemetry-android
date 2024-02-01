@@ -6,10 +6,17 @@
 package io.opentelemetry.android.instrumentation.crash;
 
 import io.opentelemetry.android.instrumentation.InstrumentedApplication;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.logs.LoggerProvider;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
+import io.opentelemetry.semconv.SemanticAttributes;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
+import java.util.function.Consumer;
 
 /** Entrypoint for installing the crash reporting instrumentation. */
 public final class CrashReporter {
@@ -38,16 +45,47 @@ public final class CrashReporter {
                 Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(
                 new CrashReportingExceptionHandler(
-                        buildInstrumenter(instrumentedApplication.getOpenTelemetrySdk()),
-                        instrumentedApplication.getOpenTelemetrySdk().getSdkTracerProvider(),
+                        buildInstrumenter(
+                                instrumentedApplication
+                                        .getOpenTelemetrySdk()
+                                        .getSdkLoggerProvider()),
+                        instrumentedApplication.getOpenTelemetrySdk().getSdkLoggerProvider(),
                         existingHandler));
     }
 
-    private Instrumenter<CrashDetails, Void> buildInstrumenter(OpenTelemetry openTelemetry) {
-        return Instrumenter.<CrashDetails, Void>builder(
-                        openTelemetry, "io.opentelemetry.crash", CrashDetails::spanName)
-                .addAttributesExtractor(new CrashDetailsAttributesExtractor())
-                .addAttributesExtractors(additionalExtractors)
-                .buildInstrumenter();
+    private void emitCrashEvent(Logger crashReporter, CrashDetails crashDetails) {
+        Throwable throwable = crashDetails.getCause();
+        Thread thread = crashDetails.getThread();
+        AttributesBuilder attributesBuilder =
+                Attributes.builder()
+                        .put(SemanticAttributes.EXCEPTION_ESCAPED, true)
+                        .put(SemanticAttributes.THREAD_ID, thread.getId())
+                        .put(SemanticAttributes.THREAD_NAME, thread.getName())
+                        .put(SemanticAttributes.EXCEPTION_MESSAGE, throwable.getMessage())
+                        .put(SemanticAttributes.EXCEPTION_STACKTRACE, stackTraceToString(throwable))
+                        .put(SemanticAttributes.EXCEPTION_TYPE, throwable.getClass().getName());
+
+        for (AttributesExtractor<CrashDetails, Void> extractor : additionalExtractors) {
+            extractor.onStart(attributesBuilder, Context.current(), crashDetails);
+        }
+
+        crashReporter.logRecordBuilder().setAllAttributes(attributesBuilder.build()).emit();
+    }
+
+    private String stackTraceToString(Throwable throwable) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+
+        throwable.printStackTrace(pw);
+        pw.flush();
+
+        return sw.toString();
+    }
+
+    private Consumer<CrashDetails> buildInstrumenter(LoggerProvider loggerProvider) {
+        return crashDetails ->
+                emitCrashEvent(
+                        loggerProvider.loggerBuilder("io.opentelemetry.crash").build(),
+                        crashDetails);
     }
 }
