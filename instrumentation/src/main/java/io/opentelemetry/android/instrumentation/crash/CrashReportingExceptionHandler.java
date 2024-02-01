@@ -6,24 +6,23 @@
 package io.opentelemetry.android.instrumentation.crash;
 
 import androidx.annotation.NonNull;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 final class CrashReportingExceptionHandler implements Thread.UncaughtExceptionHandler {
 
-    private final Instrumenter<CrashDetails, Void> instrumenter;
-    private final SdkTracerProvider sdkTracerProvider;
+    private final Consumer<CrashDetails> crashSender;
+    private final SdkLoggerProvider sdkLoggerProvider;
     private final Thread.UncaughtExceptionHandler existingHandler;
 
     CrashReportingExceptionHandler(
-            Instrumenter<CrashDetails, Void> instrumenter,
-            SdkTracerProvider sdkTracerProvider,
+            Consumer<CrashDetails> crashSender,
+            SdkLoggerProvider sdkLoggerProvider,
             Thread.UncaughtExceptionHandler existingHandler) {
-        this.instrumenter = instrumenter;
-        this.sdkTracerProvider = sdkTracerProvider;
+        this.crashSender = crashSender;
+        this.sdkLoggerProvider = sdkLoggerProvider;
         this.existingHandler = existingHandler;
     }
 
@@ -32,7 +31,7 @@ final class CrashReportingExceptionHandler implements Thread.UncaughtExceptionHa
         reportCrash(t, e);
 
         // do our best to make sure the crash makes it out of the VM
-        CompletableResultCode flushResult = sdkTracerProvider.forceFlush();
+        CompletableResultCode flushResult = sdkLoggerProvider.forceFlush();
         flushResult.join(10, TimeUnit.SECONDS);
 
         // preserve any existing behavior
@@ -43,7 +42,6 @@ final class CrashReportingExceptionHandler implements Thread.UncaughtExceptionHa
 
     private void reportCrash(Thread t, Throwable e) {
         CrashDetails crashDetails = CrashDetails.create(t, e);
-        Context context = instrumenter.start(Context.current(), crashDetails);
-        instrumenter.end(context, crashDetails, null, e);
+        crashSender.accept(crashDetails);
     }
 }
