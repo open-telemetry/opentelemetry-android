@@ -119,10 +119,10 @@ class SignalDiskExporter internal constructor(
 
         fun build(): SignalDiskExporter {
             return SignalDiskExporter(
+                exportTimeoutInMillis,
                 spanDiskExporter,
                 metricDiskExporter,
                 logRecordDiskExporter,
-                exportTimeoutInMillis,
             )
         }
     }
