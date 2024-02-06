@@ -24,9 +24,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        maven {
-            url = uri("https://oss.sonatype.org/content/repositories/snapshots")
-        }
     }
     if (findProperty("final") != "true") {
         version = "$version-SNAPSHOT"
