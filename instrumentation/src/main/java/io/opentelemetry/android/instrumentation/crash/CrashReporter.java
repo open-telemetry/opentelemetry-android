@@ -73,7 +73,7 @@ public final class CrashReporter {
     }
 
     private String stackTraceToString(Throwable throwable) {
-        StringWriter sw = new StringWriter();
+        StringWriter sw = new StringWriter(256);
         PrintWriter pw = new PrintWriter(sw);
 
         throwable.printStackTrace(pw);
