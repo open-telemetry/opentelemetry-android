@@ -83,9 +83,7 @@ public final class CrashReporter {
     }
 
     private Consumer<CrashDetails> buildInstrumenter(LoggerProvider loggerProvider) {
-        return crashDetails ->
-                emitCrashEvent(
-                        loggerProvider.loggerBuilder("io.opentelemetry.crash").build(),
-                        crashDetails);
+        Logger logger = loggerProvider.loggerBuilder("io.opentelemetry.crash").build();
+        return crashDetails -> emitCrashEvent(logger, crashDetails);
     }
 }
