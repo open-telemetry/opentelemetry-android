@@ -8,7 +8,7 @@ package io.opentelemetry.android.features.diskbuffering.scheduler
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import io.opentelemetry.android.features.diskbuffering.SignalDiskExporter
+import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -27,27 +27,27 @@ class DefaultExportSchedulerTest {
 
     @AfterEach
     fun tearDown() {
-        SignalDiskExporter.resetForTesting()
+        SignalFromDiskExporter.resetForTesting()
     }
 
     @Test
     fun `Try to export all available signals when running`() {
-        val signalDiskExporter = mockk<SignalDiskExporter>()
-        every { signalDiskExporter.exportBatchOfEach() }.returns(true).andThen(true).andThen(false)
-        SignalDiskExporter.set(signalDiskExporter)
+        val signalFromDiskExporter = mockk<SignalFromDiskExporter>()
+        every { signalFromDiskExporter.exportBatchOfEach() }.returns(true).andThen(true).andThen(false)
+        SignalFromDiskExporter.set(signalFromDiskExporter)
 
         scheduler.onRun()
 
         verify(exactly = 3) {
-            signalDiskExporter.exportBatchOfEach()
+            signalFromDiskExporter.exportBatchOfEach()
         }
     }
 
     @Test
     fun `Avoid crashing when an exception happens during execution`() {
-        val signalDiskExporter = mockk<SignalDiskExporter>()
-        every { signalDiskExporter.exportBatchOfEach() }.throws(IOException())
-        SignalDiskExporter.set(signalDiskExporter)
+        val signalFromDiskExporter = mockk<SignalFromDiskExporter>()
+        every { signalFromDiskExporter.exportBatchOfEach() }.throws(IOException())
+        SignalFromDiskExporter.set(signalFromDiskExporter)
 
         try {
             scheduler.onRun()
@@ -63,7 +63,7 @@ class DefaultExportSchedulerTest {
 
     @Test
     fun `Continue to run if it can export from disk`() {
-        SignalDiskExporter.set(mockk())
+        SignalFromDiskExporter.set(mockk())
         assertThat(scheduler.shouldStopRunning()).isFalse()
     }
 

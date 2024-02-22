@@ -7,7 +7,7 @@ package io.opentelemetry.android.features.diskbuffering.scheduler
 
 import android.util.Log
 import io.opentelemetry.android.RumConstants
-import io.opentelemetry.android.features.diskbuffering.SignalDiskExporter
+import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicRunnable
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -18,7 +18,7 @@ class DefaultExportScheduler : PeriodicRunnable() {
     }
 
     override fun onRun() {
-        val exporter = SignalDiskExporter.get() ?: return
+        val exporter = SignalFromDiskExporter.get() ?: return
 
         try {
             do {
@@ -30,7 +30,7 @@ class DefaultExportScheduler : PeriodicRunnable() {
     }
 
     override fun shouldStopRunning(): Boolean {
-        return SignalDiskExporter.get() == null
+        return SignalFromDiskExporter.get() == null
     }
 
     override fun minimumDelayUntilNextRunInMillis(): Long {

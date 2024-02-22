@@ -26,7 +26,7 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
-import io.opentelemetry.android.features.diskbuffering.SignalDiskExporter;
+import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 import io.opentelemetry.android.instrumentation.ApplicationStateListener;
 import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
@@ -39,7 +39,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.contrib.disk.buffering.SpanDiskExporter;
+import io.opentelemetry.contrib.disk.buffering.SpanToDiskExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -82,7 +82,7 @@ class OpenTelemetryRumBuilderTest {
 
     @AfterEach
     void tearDown() {
-        SignalDiskExporter.resetForTesting();
+        SignalFromDiskExporter.resetForTesting();
     }
 
     @Test
@@ -208,11 +208,11 @@ class OpenTelemetryRumBuilderTest {
                 .setInitializationEvents(initializationEvents)
                 .build();
 
-        assertThat(SignalDiskExporter.get()).isNotNull();
+        assertThat(SignalFromDiskExporter.get()).isNotNull();
         verify(scheduleHandler).enable();
         verify(scheduleHandler, never()).disable();
         verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
-        assertThat(exporterCaptor.getValue()).isInstanceOf(SpanDiskExporter.class);
+        assertThat(exporterCaptor.getValue()).isInstanceOf(SpanToDiskExporter.class);
     }
 
     @Test
@@ -243,8 +243,8 @@ class OpenTelemetryRumBuilderTest {
         verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
         verify(scheduleHandler, never()).enable();
         verify(scheduleHandler).disable();
-        assertThat(exporterCaptor.getValue()).isNotInstanceOf(SpanDiskExporter.class);
-        assertThat(SignalDiskExporter.get()).isNull();
+        assertThat(exporterCaptor.getValue()).isNotInstanceOf(SpanToDiskExporter.class);
+        assertThat(SignalFromDiskExporter.get()).isNull();
     }
 
     @Test
@@ -266,8 +266,8 @@ class OpenTelemetryRumBuilderTest {
         verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
         verify(scheduleHandler, never()).enable();
         verify(scheduleHandler).disable();
-        assertThat(exporterCaptor.getValue()).isNotInstanceOf(SpanDiskExporter.class);
-        assertThat(SignalDiskExporter.get()).isNull();
+        assertThat(exporterCaptor.getValue()).isNotInstanceOf(SpanToDiskExporter.class);
+        assertThat(SignalFromDiskExporter.get()).isNull();
     }
 
     private static void setUpServiceManager(Service... services) {
