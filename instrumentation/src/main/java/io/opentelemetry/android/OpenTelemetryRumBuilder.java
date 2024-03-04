@@ -13,6 +13,8 @@ import android.os.Looper;
 import android.util.Log;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
+import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
+import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 import io.opentelemetry.android.instrumentation.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.android.instrumentation.anr.AnrDetector;
@@ -31,8 +33,9 @@ import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.contrib.disk.buffering.SpanDiskExporter;
-import io.opentelemetry.contrib.disk.buffering.internal.StorageConfiguration;
+import io.opentelemetry.contrib.disk.buffering.SpanFromDiskExporter;
+import io.opentelemetry.contrib.disk.buffering.SpanToDiskExporter;
+import io.opentelemetry.contrib.disk.buffering.StorageConfiguration;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -289,13 +292,38 @@ public final class OpenTelemetryRumBuilder {
 
         applyConfiguration();
 
+        DiskBufferingConfiguration diskBufferingConfiguration =
+                config.getDiskBufferingConfiguration();
+        SpanExporter spanExporter = buildSpanExporter();
+        SignalFromDiskExporter signalFromDiskExporter = null;
+        if (diskBufferingConfiguration.isEnabled()) {
+            try {
+                StorageConfiguration storageConfiguration = createStorageConfiguration();
+                final SpanExporter originalSpanExporter = spanExporter;
+                spanExporter =
+                        SpanToDiskExporter.create(originalSpanExporter, storageConfiguration);
+
+                signalFromDiskExporter =
+                        new SignalFromDiskExporter(
+                                SpanFromDiskExporter.create(
+                                        originalSpanExporter, storageConfiguration),
+                                null,
+                                null);
+            } catch (IOException e) {
+                Log.e(RumConstants.OTEL_RUM_LOG_TAG, "Could not initialize disk exporters.", e);
+            }
+        }
+
         OpenTelemetrySdk sdk =
                 OpenTelemetrySdk.builder()
-                        .setTracerProvider(buildTracerProvider(sessionId, application))
+                        .setTracerProvider(
+                                buildTracerProvider(sessionId, application, spanExporter))
                         .setMeterProvider(buildMeterProvider(application))
                         .setLoggerProvider(buildLoggerProvider(application))
                         .setPropagators(buildFinalPropagators())
                         .build();
+
+        scheduleDiskTelemetryReader(signalFromDiskExporter, diskBufferingConfiguration);
 
         SdkPreconfiguredRumBuilder delegate =
                 new SdkPreconfiguredRumBuilder(application, sdk, sessionId);
@@ -303,10 +331,41 @@ public final class OpenTelemetryRumBuilder {
         return delegate.build();
     }
 
+    private StorageConfiguration createStorageConfiguration() throws IOException {
+        DiskManager diskManager = DiskManager.create(config.getDiskBufferingConfiguration());
+        return StorageConfiguration.builder()
+                .setMaxFileSize(diskManager.getMaxCacheFileSize())
+                .setMaxFolderSize(diskManager.getMaxFolderSize())
+                .setRootDir(diskManager.getSignalsBufferDir())
+                .setTemporaryFileProvider(
+                        new SimpleTemporaryFileProvider(diskManager.getTemporaryDir()))
+                .build();
+    }
+
+    private void scheduleDiskTelemetryReader(
+            @Nullable SignalFromDiskExporter signalExporter,
+            DiskBufferingConfiguration diskBufferingConfiguration) {
+        ExportScheduleHandler exportScheduleHandler =
+                diskBufferingConfiguration.getExportScheduleHandler();
+        if (signalExporter == null) {
+            // Disabling here allows to cancel previously scheduled exports using tools that
+            // can run even after the app has been terminated (such as WorkManager).
+            // But for in-memory only schedulers, nothing should need to be disabled.
+            exportScheduleHandler.disable();
+        } else {
+            // Not null means that disk buffering is enabled and disk exporters are successfully
+            // initialized.
+            SignalFromDiskExporter.set(signalExporter);
+            exportScheduleHandler.enable();
+        }
+    }
+
     /** Leverage the configuration to wire up various instrumentation components. */
     private void applyConfiguration() {
         if (config.shouldGenerateSdkInitializationEvents()) {
-            initializationEvents = new SdkInitializationEvents();
+            if (initializationEvents == InitializationEvents.NO_OP) {
+                initializationEvents = new SdkInitializationEvents();
+            }
             initializationEvents.recordConfiguration(config);
         }
         initializationEvents.sdkInitializationStarted();
@@ -406,13 +465,14 @@ public final class OpenTelemetryRumBuilder {
         return currentNetworkProvider;
     }
 
-    private SdkTracerProvider buildTracerProvider(SessionId sessionId, Application application) {
+    private SdkTracerProvider buildTracerProvider(
+            SessionId sessionId, Application application, SpanExporter spanExporter) {
         SdkTracerProviderBuilder tracerProviderBuilder =
                 SdkTracerProvider.builder()
                         .setResource(resource)
                         .addSpanProcessor(new SessionIdSpanAppender(sessionId));
 
-        SpanExporter spanExporter = buildSpanExporter();
+        initializationEvents.spanExporterInitialized(spanExporter);
         BatchSpanProcessor batchSpanProcessor = BatchSpanProcessor.builder(spanExporter).build();
         tracerProviderBuilder.addSpanProcessor(batchSpanProcessor);
 
@@ -426,32 +486,7 @@ public final class OpenTelemetryRumBuilder {
     private SpanExporter buildSpanExporter() {
         // TODO: Default to otlp...but how can we make endpoint and auth mandatory?
         SpanExporter defaultExporter = LoggingSpanExporter.create();
-        SpanExporter spanExporter = defaultExporter;
-        DiskBufferingConfiguration diskBufferingConfiguration =
-                config.getDiskBufferingConfiguration();
-        if (diskBufferingConfiguration.isEnabled()) {
-            try {
-                spanExporter = createDiskExporter(defaultExporter, diskBufferingConfiguration);
-            } catch (IOException e) {
-                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Could not create span disk exporter.", e);
-            }
-        }
-        return spanExporterCustomizer.apply(spanExporter);
-    }
-
-    private static SpanExporter createDiskExporter(
-            SpanExporter defaultExporter, DiskBufferingConfiguration diskBufferingConfiguration)
-            throws IOException {
-        DiskManager diskManager = DiskManager.create(diskBufferingConfiguration);
-        StorageConfiguration storageConfiguration =
-                StorageConfiguration.builder()
-                        .setMaxFileSize(diskManager.getMaxCacheFileSize())
-                        .setMaxFolderSize(diskManager.getMaxFolderSize())
-                        .setTemporaryFileProvider(
-                                new SimpleTemporaryFileProvider(diskManager.getTemporaryDir()))
-                        .build();
-        return SpanDiskExporter.create(
-                defaultExporter, diskManager.getSignalsBufferDir(), storageConfiguration);
+        return spanExporterCustomizer.apply(defaultExporter);
     }
 
     private SdkMeterProvider buildMeterProvider(Application application) {
@@ -477,5 +512,10 @@ public final class OpenTelemetryRumBuilder {
     private ContextPropagators buildFinalPropagators() {
         TextMapPropagator defaultPropagator = buildDefaultPropagator();
         return ContextPropagators.create(propagatorCustomizer.apply(defaultPropagator));
+    }
+
+    OpenTelemetryRumBuilder setInitializationEvents(InitializationEvents initializationEvents) {
+        this.initializationEvents = initializationEvents;
+        return this;
     }
 }

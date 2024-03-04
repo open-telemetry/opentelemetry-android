@@ -6,6 +6,7 @@
 package io.opentelemetry.android.instrumentation.startup;
 
 import io.opentelemetry.android.config.OtelRumConfig;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 public class SdkInitializationEvents implements InitializationEvents {
 
@@ -42,5 +43,10 @@ public class SdkInitializationEvents implements InitializationEvents {
     @Override
     public void crashReportingInitialized() {
         // TODO: Build me "crashReportingInitialized"
+    }
+
+    @Override
+    public void spanExporterInitialized(SpanExporter spanExporter) {
+        // TODO: Build me "spanExporterInitialized"
     }
 }

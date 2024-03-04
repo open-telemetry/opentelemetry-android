@@ -16,6 +16,7 @@ import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,7 +26,10 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
+import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
+import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 import io.opentelemetry.android.instrumentation.ApplicationStateListener;
+import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
 import io.opentelemetry.android.internal.services.CacheStorageService;
 import io.opentelemetry.android.internal.services.PreferencesService;
 import io.opentelemetry.android.internal.services.Service;
@@ -35,7 +39,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.contrib.disk.buffering.SpanDiskExporter;
+import io.opentelemetry.contrib.disk.buffering.SpanToDiskExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -44,8 +48,8 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -67,12 +71,18 @@ class OpenTelemetryRumBuilderTest {
     @Mock Activity activity;
     @Mock ApplicationStateListener listener;
 
+    @Mock InitializationEvents initializationEvents;
     @Captor ArgumentCaptor<Application.ActivityLifecycleCallbacks> activityCallbacksCaptor;
 
     @BeforeEach
     void setup() {
         when(application.getApplicationContext()).thenReturn(applicationContext);
         when(application.getMainLooper()).thenReturn(looper);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SignalFromDiskExporter.resetForTesting();
     }
 
     @Test
@@ -186,25 +196,30 @@ class OpenTelemetryRumBuilderTest {
         doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
         setUpServiceManager(preferences, cacheStorage);
         OtelRumConfig config = buildConfig();
+        ExportScheduleHandler scheduleHandler = mock();
         config.setDiskBufferingConfiguration(
-                DiskBufferingConfiguration.builder().setEnabled(true).build());
-        AtomicReference<SpanExporter> capturedExporter = new AtomicReference<>();
+                DiskBufferingConfiguration.builder()
+                        .setEnabled(true)
+                        .setExportScheduleHandler(scheduleHandler)
+                        .build());
+        ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
 
         OpenTelemetryRum.builder(application, config)
-                .addSpanExporterCustomizer(
-                        spanExporter -> {
-                            capturedExporter.set(spanExporter);
-                            return spanExporter;
-                        })
+                .setInitializationEvents(initializationEvents)
                 .build();
 
-        assertThat(capturedExporter.get()).isInstanceOf(SpanDiskExporter.class);
+        assertThat(SignalFromDiskExporter.get()).isNotNull();
+        verify(scheduleHandler).enable();
+        verify(scheduleHandler, never()).disable();
+        verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
+        assertThat(exporterCaptor.getValue()).isInstanceOf(SpanToDiskExporter.class);
     }
 
     @Test
     void diskBufferingEnabled_when_exception_thrown() {
         PreferencesService preferences = mock();
         CacheStorageService cacheStorage = mock();
+        ExportScheduleHandler scheduleHandler = mock();
         doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
         doAnswer(
                         invocation -> {
@@ -213,35 +228,46 @@ class OpenTelemetryRumBuilderTest {
                 .when(cacheStorage)
                 .getCacheDir();
         setUpServiceManager(preferences, cacheStorage);
+        ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
         OtelRumConfig config = buildConfig();
         config.setDiskBufferingConfiguration(
-                DiskBufferingConfiguration.builder().setEnabled(true).build());
-        AtomicReference<SpanExporter> capturedExporter = new AtomicReference<>();
+                DiskBufferingConfiguration.builder()
+                        .setEnabled(true)
+                        .setExportScheduleHandler(scheduleHandler)
+                        .build());
 
         OpenTelemetryRum.builder(application, config)
-                .addSpanExporterCustomizer(
-                        spanExporter -> {
-                            capturedExporter.set(spanExporter);
-                            return spanExporter;
-                        })
+                .setInitializationEvents(initializationEvents)
                 .build();
 
-        assertThat(capturedExporter.get()).isNotInstanceOf(SpanDiskExporter.class);
+        verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
+        verify(scheduleHandler, never()).enable();
+        verify(scheduleHandler).disable();
+        assertThat(exporterCaptor.getValue()).isNotInstanceOf(SpanToDiskExporter.class);
+        assertThat(SignalFromDiskExporter.get()).isNull();
     }
 
     @Test
     void diskBufferingDisabled() {
-        AtomicReference<SpanExporter> capturedExporter = new AtomicReference<>();
+        ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
+        ExportScheduleHandler scheduleHandler = mock();
 
-        makeBuilder()
-                .addSpanExporterCustomizer(
-                        spanExporter -> {
-                            capturedExporter.set(spanExporter);
-                            return spanExporter;
-                        })
+        OtelRumConfig config = buildConfig();
+        config.setDiskBufferingConfiguration(
+                DiskBufferingConfiguration.builder()
+                        .setEnabled(false)
+                        .setExportScheduleHandler(scheduleHandler)
+                        .build());
+
+        OpenTelemetryRum.builder(application, config)
+                .setInitializationEvents(initializationEvents)
                 .build();
 
-        assertThat(capturedExporter.get()).isNotInstanceOf(SpanDiskExporter.class);
+        verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
+        verify(scheduleHandler, never()).enable();
+        verify(scheduleHandler).disable();
+        assertThat(exporterCaptor.getValue()).isNotInstanceOf(SpanToDiskExporter.class);
+        assertThat(SignalFromDiskExporter.get()).isNull();
     }
 
     private static void setUpServiceManager(Service... services) {
