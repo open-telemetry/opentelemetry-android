@@ -5,7 +5,7 @@
 
 package io.opentelemetry.instrumentation.library.okhttp.v3_0;
 
-import io.opentelemetry.instrumentation.api.instrumenter.net.PeerServiceResolver;
+import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceResolver;
 import io.opentelemetry.instrumentation.api.internal.HttpConstants;
 import java.util.ArrayList;
 import java.util.HashMap;
