@@ -34,13 +34,20 @@ import io.opentelemetry.android.internal.services.CacheStorageService;
 import io.opentelemetry.android.internal.services.PreferencesService;
 import io.opentelemetry.android.internal.services.Service;
 import io.opentelemetry.android.internal.services.ServiceManager;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.contrib.disk.buffering.SpanToDiskExporter;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
+import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -64,6 +71,7 @@ class OpenTelemetryRumBuilderTest {
     final Resource resource =
             Resource.getDefault().toBuilder().put("test.attribute", "abcdef").build();
     final InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
+    final InMemoryLogRecordExporter logRecordExporter = InMemoryLogRecordExporter.create();
 
     @Mock Application application;
     @Mock Looper looper;
@@ -268,6 +276,36 @@ class OpenTelemetryRumBuilderTest {
         verify(scheduleHandler).disable();
         assertThat(exporterCaptor.getValue()).isNotInstanceOf(SpanToDiskExporter.class);
         assertThat(SignalFromDiskExporter.get()).isNull();
+    }
+
+    @Test
+    void verifyGlobalAttrsForLogs() {
+        OtelRumConfig otelRumConfig = buildConfig();
+        otelRumConfig.setGlobalAttributes(
+                () -> Attributes.of(AttributeKey.stringKey("someGlobalKey"), "someGlobalValue"));
+
+        OpenTelemetryRum rum =
+                OpenTelemetryRum.builder(application, otelRumConfig)
+                        .addLoggerProviderCustomizer(
+                                (sdkLoggerProviderBuilder, application) ->
+                                        sdkLoggerProviderBuilder.addLogRecordProcessor(
+                                                SimpleLogRecordProcessor.create(logRecordExporter)))
+                        .build();
+
+        Logger logger = rum.getOpenTelemetry().getLogsBridge().loggerBuilder("LogScope").build();
+        logger.logRecordBuilder()
+                .setAttribute(AttributeKey.stringKey("localAttrKey"), "localAttrValue")
+                .emit();
+
+        List<LogRecordData> recordedLogs = logRecordExporter.getFinishedLogRecordItems();
+        assertThat(recordedLogs).hasSize(1);
+        LogRecordData logRecordData = recordedLogs.get(0);
+        OpenTelemetryAssertions.assertThat(logRecordData)
+                .hasAttributes(
+                        Attributes.builder()
+                                .put("someGlobalKey", "someGlobalValue")
+                                .put("localAttrKey", "localAttrValue")
+                                .build());
     }
 
     private static void setUpServiceManager(Service... services) {

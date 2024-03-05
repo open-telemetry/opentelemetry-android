@@ -29,6 +29,7 @@ import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
 import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents;
 import io.opentelemetry.android.internal.features.persistence.DiskManager;
 import io.opentelemetry.android.internal.features.persistence.SimpleTemporaryFileProvider;
+import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordAppender;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -501,7 +502,11 @@ public final class OpenTelemetryRumBuilder {
 
     private SdkLoggerProvider buildLoggerProvider(Application application) {
         SdkLoggerProviderBuilder loggerProviderBuilder =
-                SdkLoggerProvider.builder().setResource(resource);
+                SdkLoggerProvider.builder()
+                        .addLogRecordProcessor(
+                                new GlobalAttributesLogRecordAppender(
+                                        config.getGlobalAttributesSupplier()))
+                        .setResource(resource);
         for (BiFunction<SdkLoggerProviderBuilder, Application, SdkLoggerProviderBuilder>
                 customizer : loggerProviderCustomizers) {
             loggerProviderBuilder = customizer.apply(loggerProviderBuilder, application);
