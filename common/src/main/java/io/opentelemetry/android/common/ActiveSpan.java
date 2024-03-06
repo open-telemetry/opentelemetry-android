@@ -3,9 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.util;
-
-import static io.opentelemetry.android.RumConstants.LAST_SCREEN_NAME_KEY;
+package io.opentelemetry.android.common;
 
 import androidx.annotation.Nullable;
 import io.opentelemetry.api.trace.Span;
@@ -60,7 +58,7 @@ public class ActiveSpan {
         }
         String previouslyVisibleScreen = lastVisibleScreen.get();
         if (previouslyVisibleScreen != null && !screenName.equals(previouslyVisibleScreen)) {
-            span.setAttribute(LAST_SCREEN_NAME_KEY, previouslyVisibleScreen);
+            span.setAttribute(RumConstants.LAST_SCREEN_NAME_KEY, previouslyVisibleScreen);
         }
     }
 }

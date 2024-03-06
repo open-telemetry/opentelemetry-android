@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android;
 
+import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.api.trace.Tracer;
 
 final class SessionIdChangeTracer implements SessionIdChangeListener {

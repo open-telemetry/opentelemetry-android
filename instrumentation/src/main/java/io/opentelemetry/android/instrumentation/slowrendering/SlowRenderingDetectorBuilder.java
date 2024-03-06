@@ -6,7 +6,7 @@
 package io.opentelemetry.android.instrumentation.slowrendering;
 
 import android.util.Log;
-import io.opentelemetry.android.RumConstants;
+import io.opentelemetry.android.common.RumConstants;
 import java.time.Duration;
 
 /**

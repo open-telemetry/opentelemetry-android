@@ -6,7 +6,7 @@
 package io.opentelemetry.android.internal.features.persistence;
 
 import android.util.Log;
-import io.opentelemetry.android.RumConstants;
+import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.internal.services.CacheStorageService;
 import io.opentelemetry.android.internal.services.PreferencesService;

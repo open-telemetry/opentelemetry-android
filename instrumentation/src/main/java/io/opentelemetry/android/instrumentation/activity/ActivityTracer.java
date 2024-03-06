@@ -5,15 +5,17 @@
 
 package io.opentelemetry.android.instrumentation.activity;
 
-import static io.opentelemetry.android.RumConstants.APP_START_SPAN_NAME;
-import static io.opentelemetry.android.RumConstants.SCREEN_NAME_KEY;
-import static io.opentelemetry.android.RumConstants.START_TYPE_KEY;
+import static io.opentelemetry.android.common.RumConstants.APP_START_SPAN_NAME;
+import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
+import static io.opentelemetry.android.common.RumConstants.START_TYPE_KEY;
 
 import android.app.Activity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import io.opentelemetry.android.common.ActiveSpan;
 import io.opentelemetry.android.instrumentation.startup.AppStartupTimer;
-import io.opentelemetry.android.util.ActiveSpan;
+import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;

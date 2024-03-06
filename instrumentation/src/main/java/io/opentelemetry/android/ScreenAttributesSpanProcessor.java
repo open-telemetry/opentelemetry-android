@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android;
 
-import static io.opentelemetry.android.RumConstants.SCREEN_NAME_KEY;
+import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
 
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.context.Context;

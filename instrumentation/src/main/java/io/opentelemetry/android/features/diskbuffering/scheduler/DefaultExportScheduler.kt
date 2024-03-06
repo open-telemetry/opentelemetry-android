@@ -6,7 +6,7 @@
 package io.opentelemetry.android.features.diskbuffering.scheduler
 
 import android.util.Log
-import io.opentelemetry.android.RumConstants
+import io.opentelemetry.android.common.RumConstants.OTEL_RUM_LOG_TAG
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicRunnable
 import java.io.IOException
@@ -25,7 +25,7 @@ class DefaultExportScheduler : PeriodicRunnable() {
                 val didExport = exporter.exportBatchOfEach()
             } while (didExport)
         } catch (e: IOException) {
-            Log.e(RumConstants.OTEL_RUM_LOG_TAG, "Error while exporting signals from disk.", e)
+            Log.e(OTEL_RUM_LOG_TAG, "Error while exporting signals from disk.", e)
         }
     }
 

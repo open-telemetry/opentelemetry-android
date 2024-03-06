@@ -5,9 +5,9 @@
 
 package io.opentelemetry.android;
 
-import static io.opentelemetry.android.RumConstants.BATTERY_PERCENT_KEY;
-import static io.opentelemetry.android.RumConstants.HEAP_FREE_KEY;
-import static io.opentelemetry.android.RumConstants.STORAGE_SPACE_FREE_KEY;
+import static io.opentelemetry.android.common.RumConstants.BATTERY_PERCENT_KEY;
+import static io.opentelemetry.android.common.RumConstants.HEAP_FREE_KEY;
+import static io.opentelemetry.android.common.RumConstants.STORAGE_SPACE_FREE_KEY;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

@@ -11,6 +11,8 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Looper;
 import android.util.Log;
+
+import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
