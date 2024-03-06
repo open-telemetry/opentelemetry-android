@@ -7,20 +7,18 @@ package io.opentelemetry.android.instrumentation.crash;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor.constant;
-import static org.awaitility.Awaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.android.instrumentation.InstrumentedApplication;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.testing.assertj.TraceAssert;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
-import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.SemanticAttributes;
-import java.time.Duration;
-import java.util.function.Consumer;
+import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -56,7 +54,8 @@ class CrashReporterTest {
                 .build()
                 .installOn(instrumentedApplication);
 
-        RuntimeException crash = new RuntimeException("boooom!");
+        String exceptionMessage = "boooom!";
+        RuntimeException crash = new RuntimeException(exceptionMessage);
         Thread crashingThread =
                 new Thread(
                         () -> {
@@ -66,26 +65,18 @@ class CrashReporterTest {
         crashingThread.start();
         crashingThread.join();
 
-        Attributes expectedAttributes =
-                Attributes.builder()
-                        .put(SemanticAttributes.EXCEPTION_ESCAPED, true)
-                        .put(SemanticAttributes.THREAD_ID, crashingThread.getId())
-                        .put(SemanticAttributes.THREAD_NAME, crashingThread.getName())
-                        .put(stringKey("test.key"), "abc")
-                        .build();
-        assertTrace(
-                trace ->
-                        trace.hasSpansSatisfyingExactly(
-                                span ->
-                                        span.hasName("RuntimeException")
-                                                .hasKind(SpanKind.INTERNAL)
-                                                .hasStatus(StatusData.error())
-                                                .hasException(crash)
-                                                .hasAttributes(expectedAttributes)));
-    }
+        List<LogRecordData> logRecords = testing.getLogRecords();
+        assertThat(logRecords).hasSize(1);
 
-    private static void assertTrace(Consumer<TraceAssert> assertion) {
-        await().atMost(Duration.ofSeconds(30))
-                .untilAsserted(() -> testing.assertTraces().hasTracesSatisfyingExactly(assertion));
+        Attributes crashAttributes = logRecords.get(0).getAttributes();
+        OpenTelemetryAssertions.assertThat(crashAttributes)
+                .containsEntry(SemanticAttributes.EXCEPTION_ESCAPED, true)
+                .containsEntry(SemanticAttributes.EXCEPTION_MESSAGE, exceptionMessage)
+                .containsEntry(SemanticAttributes.EXCEPTION_TYPE, "java.lang.RuntimeException")
+                .containsEntry(SemanticAttributes.THREAD_ID, crashingThread.getId())
+                .containsEntry(SemanticAttributes.THREAD_NAME, crashingThread.getName())
+                .containsEntry(stringKey("test.key"), "abc");
+        assertThat(crashAttributes.get(SemanticAttributes.EXCEPTION_STACKTRACE))
+                .startsWith("java.lang.RuntimeException: boooom!");
     }
 }
