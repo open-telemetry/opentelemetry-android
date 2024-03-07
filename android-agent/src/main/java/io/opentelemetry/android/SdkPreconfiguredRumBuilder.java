@@ -6,7 +6,7 @@
 package io.opentelemetry.android;
 
 import android.app.Application;
-import io.opentelemetry.android.instrumentation.InstrumentedApplication;
+import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;

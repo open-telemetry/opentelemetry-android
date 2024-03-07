@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation;
+package io.opentelemetry.android.instrumentation.common;
 
 import android.app.Application;
-import io.opentelemetry.android.OpenTelemetryRum;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 
 /**
@@ -21,10 +20,7 @@ public interface InstrumentedApplication {
     /** Returns the instrumented {@link Application}. */
     Application getApplication();
 
-    /**
-     * Returns the {@link OpenTelemetrySdk} that is a part of the constructed {@link
-     * OpenTelemetryRum}.
-     */
+    /** Returns the {@link OpenTelemetrySdk} instance. */
     OpenTelemetrySdk getOpenTelemetrySdk();
 
     /**

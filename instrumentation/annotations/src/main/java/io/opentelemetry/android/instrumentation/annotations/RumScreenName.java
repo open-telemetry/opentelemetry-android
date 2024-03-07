@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation;
+package io.opentelemetry.android.instrumentation.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

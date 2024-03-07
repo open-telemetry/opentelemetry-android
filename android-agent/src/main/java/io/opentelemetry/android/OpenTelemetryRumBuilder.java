@@ -11,16 +11,15 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Looper;
 import android.util.Log;
-
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
-import io.opentelemetry.android.instrumentation.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.android.instrumentation.anr.AnrDetector;
 import io.opentelemetry.android.instrumentation.anr.AnrDetectorBuilder;
+import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.crash.CrashReporter;
 import io.opentelemetry.android.instrumentation.crash.CrashReporterBuilder;
 import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;

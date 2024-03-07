@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation;
+package io.opentelemetry.android.instrumentation.common;
 
 /**
  * Listener interface that is called whenever the instrumented application is brought to foreground

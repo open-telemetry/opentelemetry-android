@@ -5,8 +5,8 @@
 
 package io.opentelemetry.android.instrumentation.lifecycle;
 
-import io.opentelemetry.android.instrumentation.ScreenNameExtractor;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
+import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor;
 import io.opentelemetry.android.instrumentation.startup.AppStartupTimer;
 import io.opentelemetry.api.trace.Tracer;
 import java.util.function.Function;

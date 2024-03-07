@@ -8,8 +8,6 @@ package io.opentelemetry.android.instrumentation.lifecycle;
 import android.app.Application;
 import android.os.Build;
 import androidx.annotation.NonNull;
-import io.opentelemetry.android.instrumentation.InstrumentedApplication;
-import io.opentelemetry.android.instrumentation.ScreenNameExtractor;
 import io.opentelemetry.android.instrumentation.activity.ActivityCallbacks;
 import io.opentelemetry.android.instrumentation.activity.ActivityTracerCache;
 import io.opentelemetry.android.instrumentation.activity.Pre29ActivityCallbacks;
@@ -17,6 +15,8 @@ import io.opentelemetry.android.instrumentation.activity.Pre29VisibleScreenLifec
 import io.opentelemetry.android.instrumentation.activity.RumFragmentActivityRegisterer;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenLifecycleBinding;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
+import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
+import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor;
 import io.opentelemetry.android.instrumentation.fragment.RumFragmentLifecycleCallbacks;
 import io.opentelemetry.android.instrumentation.startup.AppStartupTimer;
 import io.opentelemetry.api.trace.Tracer;

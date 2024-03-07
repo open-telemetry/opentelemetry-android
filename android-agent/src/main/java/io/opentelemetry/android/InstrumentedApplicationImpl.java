@@ -6,8 +6,8 @@
 package io.opentelemetry.android;
 
 import android.app.Application;
-import io.opentelemetry.android.instrumentation.ApplicationStateListener;
-import io.opentelemetry.android.instrumentation.InstrumentedApplication;
+import io.opentelemetry.android.instrumentation.common.ApplicationStateListener;
+import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 
 final class InstrumentedApplicationImpl implements InstrumentedApplication {

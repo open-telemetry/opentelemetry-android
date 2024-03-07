@@ -13,8 +13,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.os.Build;
-import io.opentelemetry.android.instrumentation.ApplicationStateListener;
-import io.opentelemetry.android.instrumentation.InstrumentedApplication;
+import io.opentelemetry.android.instrumentation.common.ApplicationStateListener;
+import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;

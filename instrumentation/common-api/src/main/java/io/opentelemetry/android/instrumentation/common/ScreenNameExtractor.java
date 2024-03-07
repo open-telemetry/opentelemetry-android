@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation;
+package io.opentelemetry.android.instrumentation.common;
 
 import android.app.Activity;
 import androidx.fragment.app.Fragment;
+import io.opentelemetry.android.instrumentation.annotations.RumScreenName;
 
 public interface ScreenNameExtractor {
 

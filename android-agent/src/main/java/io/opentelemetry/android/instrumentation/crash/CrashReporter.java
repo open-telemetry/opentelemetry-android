@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.instrumentation.crash;
 
-import io.opentelemetry.android.instrumentation.InstrumentedApplication;
+import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.logs.Logger;
