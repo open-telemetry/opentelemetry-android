@@ -8,7 +8,7 @@ junit = "5.10.2"
 byteBuddy = "1.14.12"
 okhttp = "4.12.0"
 spotless = "6.25.0"
-kotlin = "1.9.22"
+kotlin = "1.9.23"
 
 [libraries]
 opentelemetry-platform = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-alpha" }
