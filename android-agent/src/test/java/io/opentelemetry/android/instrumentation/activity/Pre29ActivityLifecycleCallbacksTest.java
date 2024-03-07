@@ -5,9 +5,9 @@
 
 package io.opentelemetry.android.instrumentation.activity;
 
-import static io.opentelemetry.android.RumConstants.LAST_SCREEN_NAME_KEY;
-import static io.opentelemetry.android.RumConstants.SCREEN_NAME_KEY;
-import static io.opentelemetry.android.RumConstants.START_TYPE_KEY;
+import static io.opentelemetry.android.common.RumConstants.LAST_SCREEN_NAME_KEY;
+import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
+import static io.opentelemetry.android.common.RumConstants.START_TYPE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -28,27 +28,27 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-class ActivityCallbacksTest {
+class Pre29ActivityLifecycleCallbacksTest {
     @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
-
     private ActivityTracerCache tracers;
+
     private VisibleScreenTracker visibleScreenTracker;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
+        AppStartupTimer appStartupTimer = new AppStartupTimer();
         Tracer tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
-        AppStartupTimer startupTimer = new AppStartupTimer();
         visibleScreenTracker = mock(VisibleScreenTracker.class);
         ScreenNameExtractor extractor = mock(ScreenNameExtractor.class);
         when(extractor.extract(isA(Activity.class))).thenReturn("Activity");
-        tracers = new ActivityTracerCache(tracer, visibleScreenTracker, startupTimer, extractor);
+        tracers = new ActivityTracerCache(tracer, visibleScreenTracker, appStartupTimer, extractor);
     }
 
     @Test
     void appStartup() {
-        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracers);
-        ActivityCallbackTestHarness testHarness =
-                new ActivityCallbackTestHarness(activityCallbacks);
+        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracers);
+        Pre29ActivityCallbackTestHarness testHarness =
+                new Pre29ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         Activity activity = mock(Activity.class);
         testHarness.runAppStartupLifecycle(activity);
@@ -58,9 +58,9 @@ class ActivityCallbacksTest {
 
         SpanData creationSpan = spans.get(0);
 
-        // TODO: ADD THIS TEST TO THE NEW COMPONENT(S)
-        //        assertEquals("AppStart", startupSpan.getName());
-        //        assertEquals("cold", startupSpan.getAttributes().get(SplunkRum.START_TYPE_KEY));
+        // TODO: Add test to relevant components
+        //        assertEquals("AppStart", appStartSpan.getName());
+        //        assertEquals("cold", appStartSpan.getAttributes().get(SplunkRum.START_TYPE_KEY));
 
         assertEquals(
                 activity.getClass().getSimpleName(),
@@ -71,27 +71,18 @@ class ActivityCallbacksTest {
         assertNull(creationSpan.getAttributes().get(LAST_SCREEN_NAME_KEY));
 
         List<EventData> events = creationSpan.getEvents();
-        assertEquals(9, events.size());
+        assertEquals(3, events.size());
 
-        checkEventExists(events, "activityPreCreated");
         checkEventExists(events, "activityCreated");
-        checkEventExists(events, "activityPostCreated");
-
-        checkEventExists(events, "activityPreStarted");
         checkEventExists(events, "activityStarted");
-        checkEventExists(events, "activityPostStarted");
-
-        checkEventExists(events, "activityPreResumed");
         checkEventExists(events, "activityResumed");
-        checkEventExists(events, "activityPostResumed");
     }
 
     @Test
     void activityCreation() {
-        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracers);
-
-        ActivityCallbackTestHarness testHarness =
-                new ActivityCallbackTestHarness(activityCallbacks);
+        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracers);
+        Pre29ActivityCallbackTestHarness testHarness =
+                new Pre29ActivityCallbackTestHarness(rumLifecycleCallbacks);
         startupAppAndClearSpans(testHarness);
 
         Activity activity = mock(Activity.class);
@@ -111,22 +102,14 @@ class ActivityCallbacksTest {
         assertNull(span.getAttributes().get(LAST_SCREEN_NAME_KEY));
 
         List<EventData> events = span.getEvents();
-        assertEquals(9, events.size());
+        assertEquals(3, events.size());
 
-        checkEventExists(events, "activityPreCreated");
         checkEventExists(events, "activityCreated");
-        checkEventExists(events, "activityPostCreated");
-
-        checkEventExists(events, "activityPreStarted");
         checkEventExists(events, "activityStarted");
-        checkEventExists(events, "activityPostStarted");
-
-        checkEventExists(events, "activityPreResumed");
         checkEventExists(events, "activityResumed");
-        checkEventExists(events, "activityPostResumed");
     }
 
-    private void startupAppAndClearSpans(ActivityCallbackTestHarness testHarness) {
+    private void startupAppAndClearSpans(Pre29ActivityCallbackTestHarness testHarness) {
         // make sure that the initial state has been set up & the application is started.
         testHarness.runAppStartupLifecycle(mock(Activity.class));
         otelTesting.clearSpans();
@@ -134,10 +117,9 @@ class ActivityCallbacksTest {
 
     @Test
     void activityRestart() {
-        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracers);
-
-        ActivityCallbackTestHarness testHarness =
-                new ActivityCallbackTestHarness(activityCallbacks);
+        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracers);
+        Pre29ActivityCallbackTestHarness testHarness =
+                new Pre29ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
 
@@ -159,24 +141,19 @@ class ActivityCallbacksTest {
         assertNull(span.getAttributes().get(LAST_SCREEN_NAME_KEY));
 
         List<EventData> events = span.getEvents();
-        assertEquals(6, events.size());
+        assertEquals(2, events.size());
 
-        checkEventExists(events, "activityPreStarted");
         checkEventExists(events, "activityStarted");
-        checkEventExists(events, "activityPostStarted");
-
-        checkEventExists(events, "activityPreResumed");
         checkEventExists(events, "activityResumed");
-        checkEventExists(events, "activityPostResumed");
     }
 
     @Test
     void activityResumed() {
         when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
-        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracers);
 
-        ActivityCallbackTestHarness testHarness =
-                new ActivityCallbackTestHarness(activityCallbacks);
+        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracers);
+        Pre29ActivityCallbackTestHarness testHarness =
+                new Pre29ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
 
@@ -197,19 +174,16 @@ class ActivityCallbacksTest {
         assertEquals("previousScreen", span.getAttributes().get(LAST_SCREEN_NAME_KEY));
 
         List<EventData> events = span.getEvents();
-        assertEquals(3, events.size());
+        assertEquals(1, events.size());
 
-        checkEventExists(events, "activityPreResumed");
         checkEventExists(events, "activityResumed");
-        checkEventExists(events, "activityPostResumed");
     }
 
     @Test
     void activityDestroyedFromStopped() {
-        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracers);
-
-        ActivityCallbackTestHarness testHarness =
-                new ActivityCallbackTestHarness(activityCallbacks);
+        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracers);
+        Pre29ActivityCallbackTestHarness testHarness =
+                new Pre29ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
 
@@ -230,19 +204,16 @@ class ActivityCallbacksTest {
         assertNull(span.getAttributes().get(LAST_SCREEN_NAME_KEY));
 
         List<EventData> events = span.getEvents();
-        assertEquals(3, events.size());
+        assertEquals(1, events.size());
 
-        checkEventExists(events, "activityPreDestroyed");
         checkEventExists(events, "activityDestroyed");
-        checkEventExists(events, "activityPostDestroyed");
     }
 
     @Test
     void activityDestroyedFromPaused() {
-        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracers);
-
-        ActivityCallbackTestHarness testHarness =
-                new ActivityCallbackTestHarness(activityCallbacks);
+        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracers);
+        Pre29ActivityCallbackTestHarness testHarness =
+                new Pre29ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
 
@@ -264,11 +235,9 @@ class ActivityCallbacksTest {
         assertNull(stoppedSpan.getAttributes().get(LAST_SCREEN_NAME_KEY));
 
         List<EventData> events = stoppedSpan.getEvents();
-        assertEquals(3, events.size());
+        assertEquals(1, events.size());
 
-        checkEventExists(events, "activityPreStopped");
         checkEventExists(events, "activityStopped");
-        checkEventExists(events, "activityPostStopped");
 
         SpanData destroyedSpan = spans.get(1);
 
@@ -282,19 +251,16 @@ class ActivityCallbacksTest {
         assertNull(destroyedSpan.getAttributes().get(LAST_SCREEN_NAME_KEY));
 
         events = destroyedSpan.getEvents();
-        assertEquals(3, events.size());
+        assertEquals(1, events.size());
 
-        checkEventExists(events, "activityPreDestroyed");
         checkEventExists(events, "activityDestroyed");
-        checkEventExists(events, "activityPostDestroyed");
     }
 
     @Test
     void activityStoppedFromRunning() {
-        ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracers);
-
-        ActivityCallbackTestHarness testHarness =
-                new ActivityCallbackTestHarness(activityCallbacks);
+        Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracers);
+        Pre29ActivityCallbackTestHarness testHarness =
+                new Pre29ActivityCallbackTestHarness(rumLifecycleCallbacks);
 
         startupAppAndClearSpans(testHarness);
 
@@ -316,11 +282,9 @@ class ActivityCallbacksTest {
         assertNull(stoppedSpan.getAttributes().get(LAST_SCREEN_NAME_KEY));
 
         List<EventData> events = stoppedSpan.getEvents();
-        assertEquals(3, events.size());
+        assertEquals(1, events.size());
 
-        checkEventExists(events, "activityPrePaused");
         checkEventExists(events, "activityPaused");
-        checkEventExists(events, "activityPostPaused");
 
         SpanData destroyedSpan = spans.get(1);
 
@@ -334,11 +298,9 @@ class ActivityCallbacksTest {
         assertNull(destroyedSpan.getAttributes().get(LAST_SCREEN_NAME_KEY));
 
         events = destroyedSpan.getEvents();
-        assertEquals(3, events.size());
+        assertEquals(1, events.size());
 
-        checkEventExists(events, "activityPreStopped");
         checkEventExists(events, "activityStopped");
-        checkEventExists(events, "activityPostStopped");
     }
 
     private void checkEventExists(List<EventData> events, String eventName) {
