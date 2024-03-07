@@ -10,7 +10,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":auto-instrumentation:okhttp:okhttp-3.0:library"))
+    implementation(project(":instrumentation:okhttp:okhttp-3.0:library"))
     implementation(libs.okhttp)
     implementation(libs.byteBuddy)
 }
