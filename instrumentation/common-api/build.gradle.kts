@@ -16,7 +16,6 @@ android {
 dependencies {
     api(platform(libs.opentelemetry.platform))
     api(libs.opentelemetry.api)
-    implementation(project(":instrumentation:annotations"))
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.instrumentation.api)
