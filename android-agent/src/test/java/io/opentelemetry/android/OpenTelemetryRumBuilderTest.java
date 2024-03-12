@@ -308,6 +308,13 @@ class OpenTelemetryRumBuilderTest {
                                 .build());
     }
 
+    @Test
+    void verifyServicesAreInitialized() {
+        makeBuilder().build();
+
+        assertThat(ServiceManager.get()).isNotNull();
+    }
+
     private static void setUpServiceManager(Service... services) {
         ServiceManager serviceManager = mock();
         for (Service service : services) {

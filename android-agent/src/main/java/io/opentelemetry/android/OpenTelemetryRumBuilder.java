@@ -31,6 +31,7 @@ import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents;
 import io.opentelemetry.android.internal.features.persistence.DiskManager;
 import io.opentelemetry.android.internal.features.persistence.SimpleTemporaryFileProvider;
 import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordAppender;
+import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -291,6 +292,7 @@ public final class OpenTelemetryRumBuilder {
      * @return A new {@link OpenTelemetryRum} instance.
      */
     public OpenTelemetryRum build() {
+        ServiceManager.initialize(application);
 
         applyConfiguration();
 
