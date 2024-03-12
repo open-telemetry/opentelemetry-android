@@ -5,25 +5,33 @@
 
 package io.opentelemetry.android.internal.services;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 
-class ServiceManagerTest {
+@RunWith(RobolectricTestRunner.class)
+public class ServiceManagerTest {
 
     private ServiceManager serviceManager;
 
-    @BeforeEach
-    void setUp() {
+    @Before
+    public void setUp() {
         serviceManager = new ServiceManager();
     }
 
     @Test
-    void addingServices() {
+    public void addingServices() {
         FirstService firstService = mock();
         SecondService secondService = mock();
 
@@ -35,7 +43,7 @@ class ServiceManagerTest {
     }
 
     @Test
-    void allowOnlyOneServicePerType() {
+    public void allowOnlyOneServicePerType() {
         FirstService firstService = mock();
         FirstService anotherFirstService = mock();
 
@@ -49,7 +57,7 @@ class ServiceManagerTest {
     }
 
     @Test
-    void delegatingStartCall() {
+    public void delegatingStartCall() {
         FirstService firstService = mock();
         SecondService secondService = mock();
         serviceManager.addService(firstService);
@@ -62,7 +70,7 @@ class ServiceManagerTest {
     }
 
     @Test
-    void delegatingStopCall() {
+    public void delegatingStopCall() {
         FirstService firstService = mock();
         SecondService secondService = mock();
         serviceManager.addService(firstService);
@@ -72,6 +80,20 @@ class ServiceManagerTest {
 
         verify(firstService).stop();
         verify(secondService).stop();
+    }
+
+    @Test
+    public void validateRegisteredServices() {
+        List<Class<? extends Service>> expectedServices = new ArrayList<>();
+        expectedServices.add(PreferencesService.class);
+        expectedServices.add(CacheStorageService.class);
+        expectedServices.add(PeriodicWorkService.class);
+
+        ServiceManager.initialize(RuntimeEnvironment.getApplication());
+
+        for (Class<? extends Service> expectedService : expectedServices) {
+            assertThat(ServiceManager.get().getService(expectedService)).isNotNull();
+        }
     }
 
     private static class FirstService implements Service {}
