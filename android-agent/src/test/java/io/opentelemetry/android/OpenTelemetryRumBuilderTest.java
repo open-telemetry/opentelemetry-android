@@ -9,6 +9,7 @@ import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
 import static io.opentelemetry.android.common.RumConstants.SESSION_ID_KEY;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static org.assertj.core.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -306,6 +307,17 @@ class OpenTelemetryRumBuilderTest {
                                 .put("someGlobalKey", "someGlobalValue")
                                 .put("localAttrKey", "localAttrValue")
                                 .build());
+    }
+
+    @Test
+    void verifyServicesAreInitialized() {
+        makeBuilder().build();
+
+        try {
+            ServiceManager.get();
+        } catch (IllegalStateException e) {
+            fail("Services were not initialized.");
+        }
     }
 
     private static void setUpServiceManager(Service... services) {
