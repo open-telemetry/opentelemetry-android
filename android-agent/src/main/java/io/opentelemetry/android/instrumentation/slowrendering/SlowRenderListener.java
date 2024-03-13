@@ -20,7 +20,7 @@ import android.view.Window;
 import androidx.annotation.GuardedBy;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import io.opentelemetry.android.DefaultingActivityLifecycleCallbacks;
+import io.opentelemetry.android.instrumentation.common.DefaultingActivityLifecycleCallbacks;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;

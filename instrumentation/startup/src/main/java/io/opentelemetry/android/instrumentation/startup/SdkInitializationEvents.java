@@ -5,7 +5,8 @@
 
 package io.opentelemetry.android.instrumentation.startup;
 
-import io.opentelemetry.android.config.OtelRumConfig;
+import java.util.Map;
+
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 public class SdkInitializationEvents implements InitializationEvents {
@@ -16,7 +17,7 @@ public class SdkInitializationEvents implements InitializationEvents {
     }
 
     @Override
-    public void recordConfiguration(OtelRumConfig config) {
+    public void recordConfiguration(Map<String,String> config) {
         // TODO: Build me (create event containing the config params for the sdk)
     }
 

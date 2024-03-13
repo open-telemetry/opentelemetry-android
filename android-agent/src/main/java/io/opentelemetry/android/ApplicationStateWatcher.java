@@ -8,6 +8,8 @@ package io.opentelemetry.android;
 import android.app.Activity;
 import androidx.annotation.NonNull;
 import io.opentelemetry.android.instrumentation.common.ApplicationStateListener;
+import io.opentelemetry.android.instrumentation.common.DefaultingActivityLifecycleCallbacks;
+
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 

@@ -12,7 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
-import io.opentelemetry.android.DefaultingActivityLifecycleCallbacks;
+import io.opentelemetry.android.instrumentation.common.DefaultingActivityLifecycleCallbacks;
 
 /**
  * Registers the RumFragmentLifecycleCallbacks when an activity is created. There are just 2 factory

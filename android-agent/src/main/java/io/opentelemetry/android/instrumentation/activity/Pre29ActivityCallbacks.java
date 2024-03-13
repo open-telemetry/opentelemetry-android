@@ -9,7 +9,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import io.opentelemetry.android.DefaultingActivityLifecycleCallbacks;
+import io.opentelemetry.android.instrumentation.common.DefaultingActivityLifecycleCallbacks;
 
 public class Pre29ActivityCallbacks implements DefaultingActivityLifecycleCallbacks {
     private final ActivityTracerCache tracers;

@@ -7,7 +7,7 @@ package io.opentelemetry.android.instrumentation.activity;
 
 import android.app.Activity;
 import androidx.annotation.NonNull;
-import io.opentelemetry.android.DefaultingActivityLifecycleCallbacks;
+import io.opentelemetry.android.instrumentation.common.DefaultingActivityLifecycleCallbacks;
 
 /**
  * An ActivityLifecycleCallbacks that is responsible for telling the VisibleScreenTracker when an
