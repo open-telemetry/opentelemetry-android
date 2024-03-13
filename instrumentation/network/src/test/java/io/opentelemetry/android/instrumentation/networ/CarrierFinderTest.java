@@ -3,13 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.instrumentation.networ;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.telephony.TelephonyManager;
+
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class CarrierFinderTest {
@@ -34,7 +36,7 @@ class CarrierFinderTest {
 
         CarrierFinder finder = new CarrierFinder(manager);
         Carrier carrier = finder.get();
-        assertThat(carrier).isEqualTo(expected);
+        Assertions.assertThat(carrier).isEqualTo(expected);
     }
 
     @Test
@@ -49,6 +51,6 @@ class CarrierFinderTest {
 
         CarrierFinder finder = new CarrierFinder(manager);
         Carrier carrier = finder.get();
-        assertThat(carrier).isEqualTo(expected);
+        Assertions.assertThat(carrier).isEqualTo(expected);
     }
 }

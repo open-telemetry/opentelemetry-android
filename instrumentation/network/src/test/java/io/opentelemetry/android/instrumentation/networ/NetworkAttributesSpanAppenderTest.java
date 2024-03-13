@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.instrumentation.networ;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,6 +14,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.semconv.SemanticAttributes;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -36,7 +38,7 @@ class NetworkAttributesSpanAppenderTest {
                                 .subType("LTE")
                                 .build());
 
-        assertTrue(underTest.isStartRequired());
+        Assertions.assertTrue(underTest.isStartRequired());
         underTest.onStart(Context.current(), span);
 
         verify(span)
@@ -45,6 +47,6 @@ class NetworkAttributesSpanAppenderTest {
                                 SemanticAttributes.NETWORK_CONNECTION_TYPE, "cell",
                                 SemanticAttributes.NETWORK_CONNECTION_SUBTYPE, "LTE"));
 
-        assertFalse(underTest.isEndRequired());
+        Assertions.assertFalse(underTest.isEndRequired());
     }
 }

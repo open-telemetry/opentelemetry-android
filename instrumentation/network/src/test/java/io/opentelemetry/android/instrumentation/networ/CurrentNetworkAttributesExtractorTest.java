@@ -3,12 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.instrumentation.networ;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
 import android.os.Build;
+
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.semconv.SemanticAttributes;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,7 +38,7 @@ public class CurrentNetworkAttributesExtractorTest {
                                         .build())
                         .build();
 
-        assertThat(underTest.extract(currentNetwork))
+        OpenTelemetryAssertions.assertThat(underTest.extract(currentNetwork))
                 .containsOnly(
                         entry(SemanticAttributes.NETWORK_CONNECTION_TYPE, "cell"),
                         entry(SemanticAttributes.NETWORK_CONNECTION_SUBTYPE, "aaa"),
@@ -55,7 +57,7 @@ public class CurrentNetworkAttributesExtractorTest {
                         .carrier(Carrier.builder().id(42).name("ShadyTel").build())
                         .build();
 
-        assertThat(underTest.extract(currentNetwork))
+        OpenTelemetryAssertions.assertThat(underTest.extract(currentNetwork))
                 .containsOnly(
                         entry(SemanticAttributes.NETWORK_CONNECTION_TYPE, "cell"),
                         entry(SemanticAttributes.NETWORK_CONNECTION_SUBTYPE, "aaa"));

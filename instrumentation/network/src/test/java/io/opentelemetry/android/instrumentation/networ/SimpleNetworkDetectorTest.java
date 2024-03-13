@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.instrumentation.networ;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -14,6 +14,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
+
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -36,7 +38,7 @@ public class SimpleNetworkDetectorTest {
 
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
 
-        assertEquals(
+        Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build(), currentNetwork);
     }
 
@@ -60,7 +62,7 @@ public class SimpleNetworkDetectorTest {
 
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
 
-        assertEquals(
+        Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_UNKNOWN).build(), currentNetwork);
     }
 
@@ -84,7 +86,7 @@ public class SimpleNetworkDetectorTest {
 
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
 
-        assertEquals(CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(), currentNetwork);
+        Assert.assertEquals(CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(), currentNetwork);
     }
 
     @Test
@@ -107,7 +109,7 @@ public class SimpleNetworkDetectorTest {
 
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
 
-        assertEquals(CurrentNetwork.builder(NetworkState.TRANSPORT_VPN).build(), currentNetwork);
+        Assert.assertEquals(CurrentNetwork.builder(NetworkState.TRANSPORT_VPN).build(), currentNetwork);
     }
 
     @Test
@@ -128,7 +130,7 @@ public class SimpleNetworkDetectorTest {
 
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
 
-        assertEquals(
+        Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).subType("LTE").build(),
                 currentNetwork);
     }

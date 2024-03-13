@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.instrumentation.networ;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,9 +22,12 @@ import android.net.Network;
 import android.net.NetworkRequest;
 import android.os.Build;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
@@ -36,7 +39,7 @@ public class CurrentNetworkProviderTest {
     @Config(maxSdk = Build.VERSION_CODES.LOLLIPOP)
     public void lollipop() {
         NetworkRequest networkRequest = mock(NetworkRequest.class);
-        NetworkDetector networkDetector = mock(NetworkDetector.class);
+        NetworkDetector networkDetector = Mockito.mock(NetworkDetector.class);
         ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
 
         when(networkDetector.detectCurrentNetwork())
@@ -51,7 +54,7 @@ public class CurrentNetworkProviderTest {
         CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
         currentNetworkProvider.startMonitoring(() -> networkRequest, connectivityManager);
 
-        assertEquals(
+        Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
                 currentNetworkProvider.getCurrentNetwork());
 
@@ -65,13 +68,13 @@ public class CurrentNetworkProviderTest {
                 (currentNetwork) -> {
                     int timesCalled = notified.incrementAndGet();
                     if (timesCalled == 1) {
-                        assertEquals(
+                        Assert.assertEquals(
                                 CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
                                         .subType("LTE")
                                         .build(),
                                 currentNetwork);
                     } else {
-                        assertEquals(
+                        Assert.assertEquals(
                                 CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build(),
                                 currentNetwork);
                     }
@@ -88,7 +91,7 @@ public class CurrentNetworkProviderTest {
     @Config(maxSdk = Build.VERSION_CODES.S, minSdk = Build.VERSION_CODES.O)
     public void modernSdks() {
         NetworkRequest networkRequest = mock(NetworkRequest.class);
-        NetworkDetector networkDetector = mock(NetworkDetector.class);
+        NetworkDetector networkDetector = Mockito.mock(NetworkDetector.class);
         ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
 
         when(networkDetector.detectCurrentNetwork())
@@ -101,7 +104,7 @@ public class CurrentNetworkProviderTest {
         CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
         currentNetworkProvider.startMonitoring(() -> networkRequest, connectivityManager);
 
-        assertEquals(
+        Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
                 currentNetworkProvider.getCurrentNetwork());
         verify(connectivityManager, never())
@@ -116,13 +119,13 @@ public class CurrentNetworkProviderTest {
                 (currentNetwork) -> {
                     int timesCalled = notified.incrementAndGet();
                     if (timesCalled == 1) {
-                        assertEquals(
+                        Assert.assertEquals(
                                 CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
                                         .subType("LTE")
                                         .build(),
                                 currentNetwork);
                     } else {
-                        assertEquals(
+                        Assert.assertEquals(
                                 CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build(),
                                 currentNetwork);
                     }
@@ -137,11 +140,11 @@ public class CurrentNetworkProviderTest {
 
     @Test
     public void networkDetectorException() {
-        NetworkDetector networkDetector = mock(NetworkDetector.class);
+        NetworkDetector networkDetector = Mockito.mock(NetworkDetector.class);
         when(networkDetector.detectCurrentNetwork()).thenThrow(new SecurityException("bug"));
 
         CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
-        assertEquals(
+        Assert.assertEquals(
                 CurrentNetworkProvider.UNKNOWN_NETWORK,
                 currentNetworkProvider.refreshNetworkStatus());
     }
@@ -149,7 +152,7 @@ public class CurrentNetworkProviderTest {
     @Test
     @Config(maxSdk = Build.VERSION_CODES.S, minSdk = Build.VERSION_CODES.O)
     public void networkDetectorExceptionOnCallbackRegistration() {
-        NetworkDetector networkDetector = mock(NetworkDetector.class);
+        NetworkDetector networkDetector = Mockito.mock(NetworkDetector.class);
         ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
 
         when(networkDetector.detectCurrentNetwork())
@@ -161,7 +164,7 @@ public class CurrentNetworkProviderTest {
         CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
         currentNetworkProvider.startMonitoring(
                 () -> mock(NetworkRequest.class), connectivityManager);
-        assertEquals(
+        Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
                 currentNetworkProvider.refreshNetworkStatus());
     }
@@ -169,7 +172,7 @@ public class CurrentNetworkProviderTest {
     @Test
     @Config(maxSdk = Build.VERSION_CODES.LOLLIPOP)
     public void networkDetectorExceptionOnCallbackRegistration_lollipop() {
-        NetworkDetector networkDetector = mock(NetworkDetector.class);
+        NetworkDetector networkDetector = Mockito.mock(NetworkDetector.class);
         ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
         NetworkRequest networkRequest = mock(NetworkRequest.class);
 
@@ -181,7 +184,7 @@ public class CurrentNetworkProviderTest {
 
         CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
         currentNetworkProvider.startMonitoring(() -> networkRequest, connectivityManager);
-        assertEquals(
+        Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
                 currentNetworkProvider.refreshNetworkStatus());
     }
@@ -190,7 +193,7 @@ public class CurrentNetworkProviderTest {
     @Config(maxSdk = Build.VERSION_CODES.LOLLIPOP)
     public void shouldNotFailOnImmediateConnectionManagerCall_lollipop() {
         NetworkRequest networkRequest = mock(NetworkRequest.class);
-        NetworkDetector networkDetector = mock(NetworkDetector.class);
+        NetworkDetector networkDetector = Mockito.mock(NetworkDetector.class);
         ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
 
         doAnswer(
@@ -210,7 +213,7 @@ public class CurrentNetworkProviderTest {
     @Config(maxSdk = Build.VERSION_CODES.S, minSdk = Build.VERSION_CODES.O)
     public void shouldNotFailOnImmediateConnectionManagerCall() {
         NetworkRequest networkRequest = mock(NetworkRequest.class);
-        NetworkDetector networkDetector = mock(NetworkDetector.class);
+        NetworkDetector networkDetector = Mockito.mock(NetworkDetector.class);
         ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
 
         doAnswer(

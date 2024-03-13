@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.instrumentation.networ;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,9 +17,13 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.os.Build;
 import android.telephony.TelephonyManager;
+
+import org.assertj.core.api.Assertions;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
@@ -40,7 +44,7 @@ public class PostApi28NetworkDetectorTest {
         telephonyManager = mock(TelephonyManager.class);
         context = mock(Context.class);
         network = mock(Network.class);
-        carrierFinder = mock(CarrierFinder.class);
+        carrierFinder = Mockito.mock(CarrierFinder.class);
         networkCapabilities = mock(NetworkCapabilities.class);
 
         when(connectivityManager.getActiveNetwork()).thenReturn(network);
@@ -55,7 +59,7 @@ public class PostApi28NetworkDetectorTest {
                 new PostApi28NetworkDetector(
                         connectivityManager, telephonyManager, carrierFinder, context);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        assertEquals(
+        Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build(), currentNetwork);
     }
 
@@ -67,7 +71,7 @@ public class PostApi28NetworkDetectorTest {
                 new PostApi28NetworkDetector(
                         connectivityManager, telephonyManager, carrierFinder, context);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        assertEquals(CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(), currentNetwork);
+        Assert.assertEquals(CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(), currentNetwork);
     }
 
     @Test
@@ -80,7 +84,7 @@ public class PostApi28NetworkDetectorTest {
                 new PostApi28NetworkDetector(
                         connectivityManager, telephonyManager, carrierFinder, context);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        assertEquals(
+        Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).subType("LTE").build(),
                 currentNetwork);
     }
@@ -100,7 +104,7 @@ public class PostApi28NetworkDetectorTest {
                     }
                 };
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        assertEquals(
+        Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).build(), currentNetwork);
     }
 
@@ -110,7 +114,7 @@ public class PostApi28NetworkDetectorTest {
                 new PostApi28NetworkDetector(
                         connectivityManager, telephonyManager, carrierFinder, context);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        assertEquals(
+        Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_UNKNOWN).build(), currentNetwork);
     }
 
@@ -122,7 +126,7 @@ public class PostApi28NetworkDetectorTest {
                 new PostApi28NetworkDetector(
                         connectivityManager, telephonyManager, carrierFinder, context);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        assertEquals(CurrentNetwork.builder(NetworkState.TRANSPORT_VPN).build(), currentNetwork);
+        Assert.assertEquals(CurrentNetwork.builder(NetworkState.TRANSPORT_VPN).build(), currentNetwork);
     }
 
     @Test
@@ -135,6 +139,6 @@ public class PostApi28NetworkDetectorTest {
                 new PostApi28NetworkDetector(
                         connectivityManager, telephonyManager, carrierFinder, context);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        assertThat(currentNetwork.getCarrierName()).isEqualTo("flib");
+        Assertions.assertThat(currentNetwork.getCarrierName()).isEqualTo("flib");
     }
 }
