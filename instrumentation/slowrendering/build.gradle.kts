@@ -23,5 +23,4 @@ dependencies {
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.instrumentation.api)
     testImplementation(libs.robolectric)
-
 }

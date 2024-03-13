@@ -5,11 +5,9 @@
 
 package io.opentelemetry.android.instrumentation.network;
 
-import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
 import android.os.Build;
-
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.semconv.SemanticAttributes;
 import org.junit.Test;

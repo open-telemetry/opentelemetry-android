@@ -17,7 +17,7 @@ dependencies {
     api(platform(libs.opentelemetry.platform))
     api(libs.opentelemetry.api)
     api(project(":instrumentation:common-api"))
-    api(project(":instrumentation:activity"))   // TODO: Determine if fragment and activity should share a more specific root
+    api(project(":instrumentation:activity")) // TODO: Determine if fragment and activity should share a more specific root
     implementation(libs.androidx.core)
     api(libs.androidx.navigation.fragment)
     implementation(libs.opentelemetry.sdk)

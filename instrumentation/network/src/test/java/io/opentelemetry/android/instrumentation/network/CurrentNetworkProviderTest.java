@@ -22,7 +22,6 @@ import android.net.Network;
 import android.net.NetworkRequest;
 import android.os.Build;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

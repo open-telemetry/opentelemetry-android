@@ -5,12 +5,10 @@
 
 package io.opentelemetry.android.instrumentation.network;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.telephony.TelephonyManager;
-
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 

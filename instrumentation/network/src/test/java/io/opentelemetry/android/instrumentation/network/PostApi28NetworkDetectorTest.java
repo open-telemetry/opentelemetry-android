@@ -5,9 +5,6 @@
 
 package io.opentelemetry.android.instrumentation.network;
 
-import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -17,7 +14,6 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.os.Build;
 import android.telephony.TelephonyManager;
-
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
@@ -71,7 +67,8 @@ public class PostApi28NetworkDetectorTest {
                 new PostApi28NetworkDetector(
                         connectivityManager, telephonyManager, carrierFinder, context);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        Assert.assertEquals(CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(), currentNetwork);
+        Assert.assertEquals(
+                CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(), currentNetwork);
     }
 
     @Test
@@ -126,7 +123,8 @@ public class PostApi28NetworkDetectorTest {
                 new PostApi28NetworkDetector(
                         connectivityManager, telephonyManager, carrierFinder, context);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        Assert.assertEquals(CurrentNetwork.builder(NetworkState.TRANSPORT_VPN).build(), currentNetwork);
+        Assert.assertEquals(
+                CurrentNetwork.builder(NetworkState.TRANSPORT_VPN).build(), currentNetwork);
     }
 
     @Test

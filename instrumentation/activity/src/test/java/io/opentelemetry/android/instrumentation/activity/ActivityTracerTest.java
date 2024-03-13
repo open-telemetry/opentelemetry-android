@@ -29,7 +29,8 @@ public class ActivityTracerTest {
     @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
     private Tracer tracer;
-    private final VisibleScreenTracker visibleScreenTracker = Mockito.mock(VisibleScreenTracker.class);
+    private final VisibleScreenTracker visibleScreenTracker =
+            Mockito.mock(VisibleScreenTracker.class);
     private final AppStartupTimer appStartupTimer = new AppStartupTimer();
     private ActiveSpan activeSpan;
 

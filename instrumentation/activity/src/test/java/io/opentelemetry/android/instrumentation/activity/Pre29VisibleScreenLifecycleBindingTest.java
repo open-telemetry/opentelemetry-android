@@ -6,7 +6,6 @@
 package io.opentelemetry.android.instrumentation.activity;
 
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import android.app.Activity;
 import org.junit.jupiter.api.Test;

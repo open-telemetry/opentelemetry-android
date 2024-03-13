@@ -5,7 +5,6 @@
 
 package io.opentelemetry.android.instrumentation.network;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -14,7 +13,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -86,7 +84,8 @@ public class SimpleNetworkDetectorTest {
 
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
 
-        Assert.assertEquals(CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(), currentNetwork);
+        Assert.assertEquals(
+                CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(), currentNetwork);
     }
 
     @Test
@@ -109,7 +108,8 @@ public class SimpleNetworkDetectorTest {
 
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
 
-        Assert.assertEquals(CurrentNetwork.builder(NetworkState.TRANSPORT_VPN).build(), currentNetwork);
+        Assert.assertEquals(
+                CurrentNetwork.builder(NetworkState.TRANSPORT_VPN).build(), currentNetwork);
     }
 
     @Test

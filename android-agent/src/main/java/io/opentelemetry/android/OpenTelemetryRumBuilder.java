@@ -372,8 +372,8 @@ public final class OpenTelemetryRumBuilder {
             if (initializationEvents == InitializationEvents.NO_OP) {
                 initializationEvents = new SdkInitializationEvents();
             }
-            Map<String,String> configMap = new HashMap<>();
-            //TODO: Convert config to map
+            Map<String, String> configMap = new HashMap<>();
+            // TODO: Convert config to map
             initializationEvents.recordConfiguration(configMap);
         }
         initializationEvents.sdkInitializationStarted();

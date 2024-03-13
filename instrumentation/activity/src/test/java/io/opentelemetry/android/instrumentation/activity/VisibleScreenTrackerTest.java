@@ -5,7 +5,6 @@
 
 package io.opentelemetry.android.instrumentation.activity;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
@@ -13,7 +12,6 @@ import android.app.Activity;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
