@@ -86,6 +86,7 @@ class OpenTelemetryRumBuilderTest {
     void setup() {
         when(application.getApplicationContext()).thenReturn(applicationContext);
         when(application.getMainLooper()).thenReturn(looper);
+        ServiceManager.resetForTest();
     }
 
     @AfterEach
@@ -313,6 +314,15 @@ class OpenTelemetryRumBuilderTest {
         makeBuilder().build();
 
         assertThat(ServiceManager.get()).isNotNull();
+    }
+
+    @Test
+    void verifyServicesAreStarted() {
+        setUpServiceManager();
+
+        makeBuilder().build();
+
+        verify(ServiceManager.get()).start();
     }
 
     private static void setUpServiceManager(Service... services) {

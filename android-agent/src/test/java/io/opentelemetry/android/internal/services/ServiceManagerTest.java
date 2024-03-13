@@ -84,7 +84,7 @@ public class ServiceManagerTest {
 
     @Test
     public void validateRegisteredServices() {
-        ServiceManager.setForTest(null);
+        ServiceManager.resetForTest();
         List<Class<? extends Service>> expectedServices = new ArrayList<>();
         expectedServices.add(PreferencesService.class);
         expectedServices.add(CacheStorageService.class);
