@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.networ;
+package io.opentelemetry.android.instrumentation.network;
 
-import static io.opentelemetry.android.instrumentation.networ.CurrentNetworkProvider.NO_NETWORK;
-import static io.opentelemetry.android.instrumentation.networ.CurrentNetworkProvider.UNKNOWN_NETWORK;
+import static io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider.NO_NETWORK;
+import static io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider.UNKNOWN_NETWORK;
 
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;

@@ -53,7 +53,9 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -370,7 +372,9 @@ public final class OpenTelemetryRumBuilder {
             if (initializationEvents == InitializationEvents.NO_OP) {
                 initializationEvents = new SdkInitializationEvents();
             }
-            initializationEvents.recordConfiguration(config);
+            Map<String,String> configMap = new HashMap<>();
+            //TODO: Convert config to map
+            initializationEvents.recordConfiguration(configMap);
         }
         initializationEvents.sdkInitializationStarted();
 
