@@ -19,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -97,7 +98,7 @@ class ActivityTracerCacheTest {
         Activity activity2 = new Activity() {
                     // to get a new class name used in the cache
                 };
-        ActivityTracer activityTracer2 = mock(ActivityTracer.class);
+        ActivityTracer activityTracer2 = Mockito.mock(ActivityTracer.class);
 
         when(tracerCreator.apply(activity)).thenReturn(activityTracer);
         when(tracerCreator.apply(activity2)).thenReturn(activityTracer2);

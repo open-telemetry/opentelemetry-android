@@ -12,6 +12,7 @@ import android.app.Activity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,7 +26,7 @@ class VisibleScreenLifecycleBindingTest {
         VisibleScreenLifecycleBinding underTest = new VisibleScreenLifecycleBinding(tracker);
         underTest.onActivityPostResumed(activity);
         verify(tracker).activityResumed(activity);
-        verifyNoMoreInteractions(tracker);
+        Mockito.verifyNoMoreInteractions(tracker);
     }
 
     @Test

@@ -13,6 +13,8 @@ import android.app.Activity;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class VisibleScreenTrackerTest {
@@ -22,17 +24,17 @@ class VisibleScreenTrackerTest {
         VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
         Activity activity = mock(Activity.class);
 
-        assertEquals("unknown", visibleScreenTracker.getCurrentlyVisibleScreen());
+        Assertions.assertEquals("unknown", visibleScreenTracker.getCurrentlyVisibleScreen());
 
         visibleScreenTracker.activityResumed(activity);
-        assertEquals(
+        Assertions.assertEquals(
                 activity.getClass().getSimpleName(),
                 visibleScreenTracker.getCurrentlyVisibleScreen());
         assertNull(visibleScreenTracker.getPreviouslyVisibleScreen());
 
         visibleScreenTracker.activityPaused(activity);
-        assertEquals("unknown", visibleScreenTracker.getCurrentlyVisibleScreen());
-        assertEquals(
+        Assertions.assertEquals("unknown", visibleScreenTracker.getCurrentlyVisibleScreen());
+        Assertions.assertEquals(
                 activity.getClass().getSimpleName(),
                 visibleScreenTracker.getPreviouslyVisibleScreen());
     }
@@ -42,17 +44,17 @@ class VisibleScreenTrackerTest {
         VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
         Fragment fragment = mock(Fragment.class);
 
-        assertEquals("unknown", visibleScreenTracker.getCurrentlyVisibleScreen());
+        Assertions.assertEquals("unknown", visibleScreenTracker.getCurrentlyVisibleScreen());
 
         visibleScreenTracker.fragmentResumed(fragment);
-        assertEquals(
+        Assertions.assertEquals(
                 fragment.getClass().getSimpleName(),
                 visibleScreenTracker.getCurrentlyVisibleScreen());
         assertNull(visibleScreenTracker.getPreviouslyVisibleScreen());
 
         visibleScreenTracker.fragmentPaused(fragment);
-        assertEquals("unknown", visibleScreenTracker.getCurrentlyVisibleScreen());
-        assertEquals(
+        Assertions.assertEquals("unknown", visibleScreenTracker.getCurrentlyVisibleScreen());
+        Assertions.assertEquals(
                 fragment.getClass().getSimpleName(),
                 visibleScreenTracker.getPreviouslyVisibleScreen());
     }
@@ -63,19 +65,19 @@ class VisibleScreenTrackerTest {
         Fragment fragment = mock(Fragment.class);
         NavHostFragment navHostFragment = mock(NavHostFragment.class);
 
-        assertEquals("unknown", visibleScreenTracker.getCurrentlyVisibleScreen());
+        Assertions.assertEquals("unknown", visibleScreenTracker.getCurrentlyVisibleScreen());
 
         visibleScreenTracker.fragmentResumed(fragment);
         visibleScreenTracker.fragmentResumed(navHostFragment);
-        assertEquals(
+        Assertions.assertEquals(
                 fragment.getClass().getSimpleName(),
                 visibleScreenTracker.getCurrentlyVisibleScreen());
         assertNull(visibleScreenTracker.getPreviouslyVisibleScreen());
 
         visibleScreenTracker.fragmentPaused(navHostFragment);
         visibleScreenTracker.fragmentPaused(fragment);
-        assertEquals("unknown", visibleScreenTracker.getCurrentlyVisibleScreen());
-        assertEquals(
+        Assertions.assertEquals("unknown", visibleScreenTracker.getCurrentlyVisibleScreen());
+        Assertions.assertEquals(
                 fragment.getClass().getSimpleName(),
                 visibleScreenTracker.getPreviouslyVisibleScreen());
     }
@@ -86,22 +88,22 @@ class VisibleScreenTrackerTest {
         Fragment fragment = mock(Fragment.class);
         DialogFragment dialogFragment = mock(DialogFragment.class);
 
-        assertEquals("unknown", visibleScreenTracker.getCurrentlyVisibleScreen());
+        Assertions.assertEquals("unknown", visibleScreenTracker.getCurrentlyVisibleScreen());
 
         visibleScreenTracker.fragmentResumed(fragment);
         visibleScreenTracker.fragmentResumed(dialogFragment);
-        assertEquals(
+        Assertions.assertEquals(
                 dialogFragment.getClass().getSimpleName(),
                 visibleScreenTracker.getCurrentlyVisibleScreen());
-        assertEquals(
+        Assertions.assertEquals(
                 fragment.getClass().getSimpleName(),
                 visibleScreenTracker.getPreviouslyVisibleScreen());
 
         visibleScreenTracker.fragmentPaused(dialogFragment);
-        assertEquals(
+        Assertions.assertEquals(
                 fragment.getClass().getSimpleName(),
                 visibleScreenTracker.getCurrentlyVisibleScreen());
-        assertEquals(
+        Assertions.assertEquals(
                 dialogFragment.getClass().getSimpleName(),
                 visibleScreenTracker.getPreviouslyVisibleScreen());
     }
@@ -112,20 +114,20 @@ class VisibleScreenTrackerTest {
         Activity activity = mock(Activity.class);
         Fragment fragment = mock(Fragment.class);
 
-        assertEquals("unknown", visibleScreenTracker.getCurrentlyVisibleScreen());
+        Assertions.assertEquals("unknown", visibleScreenTracker.getCurrentlyVisibleScreen());
 
         visibleScreenTracker.activityResumed(activity);
         visibleScreenTracker.fragmentResumed(fragment);
-        assertEquals(
+        Assertions.assertEquals(
                 fragment.getClass().getSimpleName(),
                 visibleScreenTracker.getCurrentlyVisibleScreen());
         assertNull(visibleScreenTracker.getPreviouslyVisibleScreen());
 
         visibleScreenTracker.fragmentPaused(fragment);
-        assertEquals(
+        Assertions.assertEquals(
                 activity.getClass().getSimpleName(),
                 visibleScreenTracker.getCurrentlyVisibleScreen());
-        assertEquals(
+        Assertions.assertEquals(
                 fragment.getClass().getSimpleName(),
                 visibleScreenTracker.getPreviouslyVisibleScreen());
     }

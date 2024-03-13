@@ -27,6 +27,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.mockito.Mockito;
 
 class Pre29ActivityLifecycleCallbacksTest {
     @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
@@ -38,7 +39,7 @@ class Pre29ActivityLifecycleCallbacksTest {
     void setup() {
         AppStartupTimer appStartupTimer = new AppStartupTimer();
         Tracer tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
-        visibleScreenTracker = mock(VisibleScreenTracker.class);
+        visibleScreenTracker = Mockito.mock(VisibleScreenTracker.class);
         ScreenNameExtractor extractor = mock(ScreenNameExtractor.class);
         when(extractor.extract(isA(Activity.class))).thenReturn("Activity");
         tracers = new ActivityTracerCache(tracer, visibleScreenTracker, appStartupTimer, extractor);

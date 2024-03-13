@@ -23,12 +23,13 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.mockito.Mockito;
 
 public class ActivityTracerTest {
     @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
     private Tracer tracer;
-    private final VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
+    private final VisibleScreenTracker visibleScreenTracker = Mockito.mock(VisibleScreenTracker.class);
     private final AppStartupTimer appStartupTimer = new AppStartupTimer();
     private ActiveSpan activeSpan;
 
@@ -162,7 +163,7 @@ public class ActivityTracerTest {
 
     @Test
     public void addPreviousScreen_currentSameAsPrevious() {
-        VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
+        VisibleScreenTracker visibleScreenTracker = Mockito.mock(VisibleScreenTracker.class);
         when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("Activity");
 
         ActivityTracer trackableTracer =
