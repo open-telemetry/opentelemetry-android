@@ -29,12 +29,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class RumFragmentLifecycleCallbacksTest {
     @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
-    private final VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
+    private final VisibleScreenTracker visibleScreenTracker = Mockito.mock(VisibleScreenTracker.class);
     private Tracer tracer;
     @Mock private ScreenNameExtractor screenNameExtractor;
 

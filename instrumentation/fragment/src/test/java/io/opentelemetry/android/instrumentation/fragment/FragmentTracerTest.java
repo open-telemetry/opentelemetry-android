@@ -21,6 +21,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.mockito.Mockito;
 
 class FragmentTracerTest {
     @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
@@ -30,7 +31,7 @@ class FragmentTracerTest {
     @BeforeEach
     void setup() {
         tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
-        VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
+        VisibleScreenTracker visibleScreenTracker = Mockito.mock(VisibleScreenTracker.class);
         activeSpan = new ActiveSpan(visibleScreenTracker::getPreviouslyVisibleScreen);
     }
 
@@ -49,7 +50,7 @@ class FragmentTracerTest {
 
     @Test
     void addPreviousScreen_noPrevious() {
-        VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
+        VisibleScreenTracker visibleScreenTracker = Mockito.mock(VisibleScreenTracker.class);
 
         FragmentTracer trackableTracer =
                 FragmentTracer.builder(mock(Fragment.class))
@@ -67,7 +68,7 @@ class FragmentTracerTest {
 
     @Test
     void addPreviousScreen_currentSameAsPrevious() {
-        VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
+        VisibleScreenTracker visibleScreenTracker = Mockito.mock(VisibleScreenTracker.class);
         when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("Fragment");
 
         FragmentTracer trackableTracer =
@@ -87,7 +88,7 @@ class FragmentTracerTest {
     @Test
     void addPreviousScreen() {
 
-        VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
+        VisibleScreenTracker visibleScreenTracker = Mockito.mock(VisibleScreenTracker.class);
         when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
         activeSpan = new ActiveSpan(visibleScreenTracker::getPreviouslyVisibleScreen);
 
