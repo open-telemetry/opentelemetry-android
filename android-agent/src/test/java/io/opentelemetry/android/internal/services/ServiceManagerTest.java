@@ -6,6 +6,7 @@
 package io.opentelemetry.android.internal.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -15,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
@@ -38,8 +38,8 @@ public class ServiceManagerTest {
         serviceManager.addService(firstService);
         serviceManager.addService(secondService);
 
-        Assertions.assertEquals(firstService, serviceManager.getService(FirstService.class));
-        Assertions.assertEquals(secondService, serviceManager.getService(SecondService.class));
+        assertEquals(firstService, serviceManager.getService(FirstService.class));
+        assertEquals(secondService, serviceManager.getService(SecondService.class));
     }
 
     @Test

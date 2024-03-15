@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.instrumentation.network;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -12,7 +14,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.semconv.SemanticAttributes;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,7 +36,7 @@ class NetworkAttributesSpanAppenderTest {
                                 .subType("LTE")
                                 .build());
 
-        Assertions.assertTrue(underTest.isStartRequired());
+        assertTrue(underTest.isStartRequired());
         underTest.onStart(Context.current(), span);
 
         verify(span)
@@ -44,6 +45,6 @@ class NetworkAttributesSpanAppenderTest {
                                 SemanticAttributes.NETWORK_CONNECTION_TYPE, "cell",
                                 SemanticAttributes.NETWORK_CONNECTION_SUBTYPE, "LTE"));
 
-        Assertions.assertFalse(underTest.isEndRequired());
+        assertFalse(underTest.isEndRequired());
     }
 }

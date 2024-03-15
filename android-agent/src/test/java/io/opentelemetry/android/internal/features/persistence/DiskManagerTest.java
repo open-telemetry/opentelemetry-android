@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.internal.features.persistence;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -20,7 +22,6 @@ import io.opentelemetry.android.internal.services.ServiceManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,8 +53,8 @@ class DiskManagerTest {
         doReturn(cacheDir).when(cacheStorageService).getCacheDir();
         File expected = new File(cacheDir, "opentelemetry/signals");
 
-        Assertions.assertEquals(expected, diskManager.getSignalsBufferDir());
-        Assertions.assertTrue(expected.exists());
+        assertEquals(expected, diskManager.getSignalsBufferDir());
+        assertTrue(expected.exists());
     }
 
     @Test
@@ -61,23 +62,23 @@ class DiskManagerTest {
         doReturn(cacheDir).when(cacheStorageService).getCacheDir();
         File expected = new File(cacheDir, "opentelemetry/temp");
 
-        Assertions.assertEquals(expected, diskManager.getTemporaryDir());
-        Assertions.assertTrue(expected.exists());
+        assertEquals(expected, diskManager.getTemporaryDir());
+        assertTrue(expected.exists());
     }
 
     @Test
     void cleanupTemporaryDirBeforeProvidingIt() throws IOException {
         File dir = new File(cacheDir, "opentelemetry/temp");
-        Assertions.assertTrue(dir.mkdirs());
-        Assertions.assertTrue(new File(dir, "somefile.tmp").createNewFile());
-        Assertions.assertTrue(new File(dir, "some_other_file.tmp").createNewFile());
-        Assertions.assertTrue(new File(dir, "somedir").mkdirs());
-        Assertions.assertTrue(new File(dir, "somedir/some_other_file.tmp").createNewFile());
+        assertTrue(dir.mkdirs());
+        assertTrue(new File(dir, "somefile.tmp").createNewFile());
+        assertTrue(new File(dir, "some_other_file.tmp").createNewFile());
+        assertTrue(new File(dir, "somedir").mkdirs());
+        assertTrue(new File(dir, "somedir/some_other_file.tmp").createNewFile());
 
         File temporaryDir = diskManager.getTemporaryDir();
 
-        Assertions.assertTrue(temporaryDir.exists());
-        Assertions.assertEquals(0, Objects.requireNonNull(temporaryDir.listFiles()).length);
+        assertTrue(temporaryDir.exists());
+        assertEquals(0, Objects.requireNonNull(temporaryDir.listFiles()).length);
     }
 
     @Test
@@ -85,7 +86,7 @@ class DiskManagerTest {
         int persistenceSize = 1024 * 1024 * 2;
         doReturn(persistenceSize).when(diskBufferingConfiguration).getMaxCacheFileSize();
 
-        Assertions.assertEquals(persistenceSize, diskManager.getMaxCacheFileSize());
+        assertEquals(persistenceSize, diskManager.getMaxCacheFileSize());
 
         verify(diskBufferingConfiguration).getMaxCacheFileSize();
     }
@@ -102,13 +103,13 @@ class DiskManagerTest {
         // Expects the size of a single signal type folder minus the size of a cache file, to use as
         // temporary space for reading.
         int expected = 2_446_677;
-        Assertions.assertEquals(expected, diskManager.getMaxFolderSize());
+        assertEquals(expected, diskManager.getMaxFolderSize());
         verify(preferencesService).store(MAX_FOLDER_SIZE_KEY, expected);
 
         // On a second call, should get the value from the preferences.
         clearInvocations(cacheStorageService, diskBufferingConfiguration, preferencesService);
         doReturn(expected).when(preferencesService).retrieveInt(MAX_FOLDER_SIZE_KEY, -1);
-        Assertions.assertEquals(expected, diskManager.getMaxFolderSize());
+        assertEquals(expected, diskManager.getMaxFolderSize());
         verify(preferencesService).retrieveInt(MAX_FOLDER_SIZE_KEY, -1);
         verifyNoMoreInteractions(preferencesService);
         verifyNoInteractions(cacheStorageService, diskBufferingConfiguration);
@@ -126,7 +127,7 @@ class DiskManagerTest {
         // Expects the size of a single signal type folder minus the size of a cache file, to use as
         // temporary space for reading.
         int expected = 0;
-        Assertions.assertEquals(expected, diskManager.getMaxFolderSize());
+        assertEquals(expected, diskManager.getMaxFolderSize());
         verify(preferencesService, never()).store(MAX_FOLDER_SIZE_KEY, expected);
     }
 }
