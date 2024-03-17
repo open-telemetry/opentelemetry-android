@@ -76,9 +76,6 @@ public final class ServiceManager implements Lifecycle {
     }
 
     public static void resetForTest() {
-        if (instance != null) {
-            instance.stop();
-        }
         instance = null;
     }
 

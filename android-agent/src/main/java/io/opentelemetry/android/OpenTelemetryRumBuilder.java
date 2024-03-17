@@ -334,6 +334,7 @@ public final class OpenTelemetryRumBuilder {
         SdkPreconfiguredRumBuilder delegate =
                 new SdkPreconfiguredRumBuilder(application, sdk, sessionId);
         instrumentationInstallers.forEach(delegate::addInstrumentation);
+        ServiceManager.get().start();
         return delegate.build();
     }
 
