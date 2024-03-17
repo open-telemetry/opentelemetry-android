@@ -10,7 +10,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install markdown-link-check
-        run: npm install -g markdown-link-check
+        # https://github.com/tcort/markdown-link-check/issues/297
+        run: npm install -g markdown-link-check@3.11.2
 
       - name: Run markdown-link-check
         run: |
