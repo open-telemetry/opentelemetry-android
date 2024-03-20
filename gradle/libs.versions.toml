@@ -1,5 +1,5 @@
 [versions]
-opentelemetry = "1.35.0"
+opentelemetry = "1.36.0"
 opentelemetry-alpha = "2.1.0-alpha"
 opentelemetry-semconv = "1.23.1-alpha"
 opentelemetry-contrib = "1.33.0-alpha"
