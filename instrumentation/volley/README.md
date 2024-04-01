@@ -24,7 +24,7 @@ dependencies {
 
 To use `VolleyTracing`, you must have already initialized `OpenTelemetryRum`.
 To build an instrumented client HTTP call, you will first create an instance of
-`VolleyTracing` by passing in the `OpenTelemetry` instance from the `OpenTelemtryRum` 
+`VolleyTracing` by passing in the `OpenTelemetry` instance from the `OpenTelemtryRum`
 instance to the builder:
 
 ```java
@@ -46,5 +46,5 @@ Then, use the `hurlStack` to create your request queue and send requests like yo
 # Troubleshooting
 
 This library is `Experimental` and we actively welcome feedback. Please
-[open an issue](https://github.com/open-telemetry/opentelemetry-android/issues) to report any 
+[open an issue](https://github.com/open-telemetry/opentelemetry-android/issues) to report any
 challenges or concerns.
