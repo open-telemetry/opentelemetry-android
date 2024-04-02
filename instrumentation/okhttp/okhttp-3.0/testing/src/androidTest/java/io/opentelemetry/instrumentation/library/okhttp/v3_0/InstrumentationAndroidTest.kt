@@ -30,14 +30,14 @@ class InstrumentationAndroidTest {
     fun setUp() {
         server = MockWebServer()
         server.start()
-        InstrumentationUtil.setUpSpanExporter(inMemorySpanExporter)
+        GlobalOpenTelemetryUtil.setUpSpanExporter(inMemorySpanExporter)
     }
 
     @Test
     @Throws(IOException::class, InterruptedException::class)
     fun okhttpTracesAndroid() {
         server.enqueue(MockResponse().setResponseCode(200))
-        val span = InstrumentationUtil.startSpan()
+        val span = SpanUtil.startSpan()
         span.makeCurrent().use {
             execute(span)
         }

@@ -10,10 +10,12 @@ plugins {
 dependencies {
     byteBuddy(project(":instrumentation:okhttp:okhttp-3.0:agent"))
     implementation(project(":instrumentation:okhttp:okhttp-3.0:library"))
+    api("io.opentelemetry:opentelemetry-extension-trace-propagators:1.24.0")
     implementation(libs.okhttp)
     api(libs.annotationx)
     api(libs.opentelemetry.sdk.testing)
     implementation(libs.opentelemetry.exporter.otlp)
+    implementation(libs.opentelemetry.exporter.logging)
 
     androidTestImplementation(libs.gson)
     androidTestImplementation(libs.truth)
@@ -27,5 +29,6 @@ dependencies {
     testImplementation(libs.opentelemetry.sdk)
     testImplementation(libs.opentelemetry.instrumentation.apiSemconv)
     testImplementation("junit:junit:4.13.2")
+
 
 }
