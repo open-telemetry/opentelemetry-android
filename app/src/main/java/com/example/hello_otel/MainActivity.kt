@@ -3,6 +3,7 @@ package com.example.hello_otel
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.navigation.findNavController
@@ -11,6 +12,12 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
+import com.uber.autodispose.autoDispose
+import io.opentelemetry.api.trace.Span
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.functions.Consumer
+import io.reactivex.schedulers.Schedulers
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,10 +37,36 @@ class MainActivity : AppCompatActivity() {
         val fab: FloatingActionButton = findViewById(R.id.fab)
 
         fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null)
-                    .setAnchorView(R.id.fab).show()
+            login(view)
         }
+    }
+
+    private fun login(view: View) {
+
+        DemoApp.appScope(application).restApi()
+                .login("tony_tang")
+                .doOnSubscribe {
+                    //do on login
+                }
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(AndroidLifecycleScopeProvider.from(this))
+                .subscribe(Consumer {
+                    loginSuccess(it, view)
+                })
+
+
+    }
+
+    private fun loginSuccess(it: UserToken, view: View) {
+        Snackbar.make(view, "login result token: $it", Snackbar.LENGTH_LONG)
+                .setAction("Action"){
+                    showOtelLog()
+                }
+                .setAnchorView(R.id.fab).show()
+    }
+
+    private fun showOtelLog() {
+        println(Span.current().toString())
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

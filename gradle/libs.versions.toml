@@ -1,4 +1,7 @@
 [versions]
+adapterRxjava2Version = "2.9.0"
+autodisposeVersion = "1.4.1"
+converterGsonVersion = "2.9.0"
 opentelemetry = "1.36.0"
 opentelemetry-alpha = "2.1.0-alpha"
 opentelemetry-semconv = "1.23.1-alpha"
@@ -15,9 +18,19 @@ material = "1.11.0"
 constraintlayout = "2.1.4"
 navigationFragmentKtx = "2.7.7"
 navigationUiKtx = "2.7.7"
+opentelemetryExtensionTracePropagatorsVersion = "1.24.0"
+retrofitVersion = "2.9.0"
+rxandroidVersion = "2.1.1"
+rxjavaVersion = "2.2.21"
+rxrelayVersion = "2.1.1"
 timberVersion = "5.0.1"
 
 [libraries]
+autodispose = { module = "com.uber.autodispose:autodispose", version.ref = "autodisposeVersion" }
+autodispose-android = { module = "com.uber.autodispose:autodispose-android", version.ref = "autodisposeVersion" }
+autodispose-android-archcomponents = { module = "com.uber.autodispose:autodispose-android-archcomponents", version.ref = "autodisposeVersion" }
+converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGsonVersion" }
+opentelemetry-extension-trace-propagators = { module = "io.opentelemetry:opentelemetry-extension-trace-propagators", version.ref = "opentelemetryExtensionTracePropagatorsVersion" }
 opentelemetry-platform = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-alpha" }
 androidx-appcompat = "androidx.appcompat:appcompat:1.6.1"
 androidx-navigation-fragment = "androidx.navigation:navigation-fragment:2.7.7"
@@ -47,6 +60,11 @@ opentelemetry-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-testi
 androidx-test-core = "androidx.test:core:1.5.0"
 gson = "com.google.code.gson:gson:2.10.1"
 annotationx = "androidx.annotation:annotation:1.7.1"
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofitVersion" }
+retrofit2-adapter-rxjava2 = { module = "com.squareup.retrofit2:adapter-rxjava2", version.ref = "adapterRxjava2Version" }
+rxandroid = { module = "io.reactivex.rxjava2:rxandroid", version.ref = "rxandroidVersion" }
+rxjava = { module = "io.reactivex.rxjava2:rxjava", version.ref = "rxjavaVersion" }
+rxrelay = { module = "com.jakewharton.rxrelay2:rxrelay", version.ref = "rxrelayVersion" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timberVersion" }
 truth = "com.google.truth:truth:1.4.2"
 androidx-test-runner = "androidx.test:runner:1.5.2"
