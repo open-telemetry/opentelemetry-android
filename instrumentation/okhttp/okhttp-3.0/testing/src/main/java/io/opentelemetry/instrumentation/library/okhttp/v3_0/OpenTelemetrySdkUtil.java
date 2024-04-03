@@ -21,6 +21,14 @@ public class OpenTelemetrySdkUtil {
                 .setPropagators(ContextPropagators.create(JaegerPropagator.getInstance()))
                 .build();
     }
+
+    @NonNull
+    public static OpenTelemetrySdk createSdkWithJaegerPropagator(SpanExporter inMemorySpanExporter) {
+        return OpenTelemetrySdkBuilderUtil.createRawBuilder()
+                .setTracerProvider(SdkTracerProviderUtil.getSimpleTracerProvider(inMemorySpanExporter))
+                .setPropagators(ContextPropagators.create(JaegerPropagator.getInstance()))
+                .build();
+    }
     @NonNull
     public static OpenTelemetrySdk createSdkWithAllDefault( ) {
         return OpenTelemetrySdkBuilderUtil.createRawBuilder()

@@ -23,6 +23,12 @@ public class GlobalOpenTelemetryUtil {
     }
 
 
+    public static void setSdkWithJaegerPropagator(SpanExporter inMemorySpanExporter ) {
+        GlobalOpenTelemetry.resetForTest();
+        GlobalOpenTelemetry.set(OpenTelemetrySdkUtil.createSdkWithJaegerPropagator(inMemorySpanExporter));
+    }
+
+
     public static void setSdkWithAllDefault( ) {
         GlobalOpenTelemetry.resetForTest();
         GlobalOpenTelemetry.set(OpenTelemetrySdkUtil.createSdkWithAllDefault());
