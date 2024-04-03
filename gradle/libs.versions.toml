@@ -8,6 +8,8 @@ junit = "5.10.2"
 byteBuddy = "1.14.12"
 okhttp = "4.12.0"
 kotlin = "1.9.23"
+junitVersion = "4.13.2"
+androidxJunitVersion = "1.1.5"
 
 [libraries]
 opentelemetry-platform = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-alpha" }
@@ -56,6 +58,8 @@ animalsniffer-plugin = "ru.vyarus:gradle-animalsniffer-plugin:1.7.1"
 android-plugin = "com.android.tools.build:gradle:8.3.1"
 byteBuddy-plugin = { module = "net.bytebuddy:byte-buddy-gradle-plugin", version.ref = "byteBuddy" }
 kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+junit = { group = "junit", name = "junit", version.ref = "junitVersion" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxJunitVersion" }
 
 [bundles]
 mocking = ["mockito-core", "mockito-junit-jupiter", "mockk"]
