@@ -37,9 +37,3 @@ The output artifacts will be in `instrumentation/build/outputs/`.
 ```
 
 ## Code Conventions
-
-We use [spotless](https://github.com/diffplug/spotless) to enforce a consistent code style
-throughout the project. This includes reformatting (linting) of both source code and markdown.
-
-Before submitting a PR, you should ensure that your code is linted by
-running `./gradlew spotlessApply` and committing your changes.

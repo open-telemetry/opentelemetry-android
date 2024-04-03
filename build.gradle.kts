@@ -13,7 +13,6 @@ buildscript {
 }
 
 plugins {
-    id("otel.spotless-conventions")
     alias(libs.plugins.publishPlugin)
 }
 
@@ -28,10 +27,6 @@ allprojects {
     if (findProperty("final") != "true") {
         version = "$version-SNAPSHOT"
     }
-}
-
-subprojects {
-    apply(plugin = "otel.spotless-conventions")
 }
 
 nexusPublishing.repositories {
