@@ -44,7 +44,8 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(project(":instrumentation:okhttp:okhttp-3.0:library"))
-
+    debugImplementation (libs.chuck.library)
+    releaseImplementation (libs.chuck.library.no.op)
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)

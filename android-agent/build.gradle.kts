@@ -78,6 +78,7 @@ dependencies {
     api(libs.opentelemetry.instrumentation.api)
     api(libs.opentelemetry.semconv)
     api(libs.opentelemetry.diskBuffering)
+    api(libs.opentelemetry.extension.trace.propagators)
 
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
