@@ -11,6 +11,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.timber)
 
     api(project(":android-agent"))
 

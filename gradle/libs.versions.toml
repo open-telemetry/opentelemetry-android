@@ -15,6 +15,7 @@ material = "1.11.0"
 constraintlayout = "2.1.4"
 navigationFragmentKtx = "2.7.7"
 navigationUiKtx = "2.7.7"
+timberVersion = "5.0.1"
 
 [libraries]
 opentelemetry-platform = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-alpha" }
@@ -46,6 +47,7 @@ opentelemetry-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-testi
 androidx-test-core = "androidx.test:core:1.5.0"
 gson = "com.google.code.gson:gson:2.10.1"
 annotationx = "androidx.annotation:annotation:1.7.1"
+timber = { module = "com.jakewharton.timber:timber", version.ref = "timberVersion" }
 truth = "com.google.truth:truth:1.4.2"
 androidx-test-runner = "androidx.test:runner:1.5.2"
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
