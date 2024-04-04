@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 class SessionId {
 
-    private static final long SESSION_LIFETIME_NANOS = TimeUnit.SECONDS.toNanos(4);
+    private static final long SESSION_LIFETIME_NANOS = TimeUnit.HOURS.toNanos(4);
 
     private final Clock clock;
     private final AtomicReference<String> value = new AtomicReference<>();
