@@ -5,4 +5,4 @@
 
 package io.opentelemetry.android.internal.services;
 
-public interface Service extends Lifecycle {}
+public interface AppWorker extends AppWorking {}

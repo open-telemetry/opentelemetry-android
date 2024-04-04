@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.internal.services.periodicwork
 
-import io.opentelemetry.android.internal.services.ServiceManager
+import io.opentelemetry.android.internal.services.AppWorkerManager
 import io.opentelemetry.android.internal.tools.time.SystemTime
 
 /**
@@ -34,7 +34,7 @@ abstract class PeriodicRunnable : Runnable {
     }
 
     private fun enqueueForNextLoop() {
-        ServiceManager.get().getService(PeriodicWorkService::class.java).enqueue(this)
+        AppWorkerManager.get().getService(PeriodicWorkAppWorker::class.java).enqueue(this)
     }
 
     private fun getCurrentTimeMillis() = SystemTime.get().getCurrentTimeMillis()

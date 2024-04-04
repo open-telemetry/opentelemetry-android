@@ -15,16 +15,16 @@ import io.opentelemetry.android.BuildConfig;
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
-public class PreferencesService implements Service {
+public class PreferencesAppWorker implements AppWorker {
     private final SharedPreferences preferences;
 
-    public static PreferencesService create(Context context) {
-        return new PreferencesService(
+    public static PreferencesAppWorker create(Context context) {
+        return new PreferencesAppWorker(
                 context.getSharedPreferences(
                         BuildConfig.LIBRARY_PACKAGE_NAME + ".prefs", Context.MODE_PRIVATE));
     }
 
-    private PreferencesService(SharedPreferences sharedPreferences) {
+    private PreferencesAppWorker(SharedPreferences sharedPreferences) {
         preferences = sharedPreferences;
     }
 

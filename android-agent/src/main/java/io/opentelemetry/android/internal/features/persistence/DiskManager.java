@@ -8,9 +8,9 @@ package io.opentelemetry.android.internal.features.persistence;
 import android.util.Log;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
-import io.opentelemetry.android.internal.services.CacheStorageService;
-import io.opentelemetry.android.internal.services.PreferencesService;
-import io.opentelemetry.android.internal.services.ServiceManager;
+import io.opentelemetry.android.internal.services.CacheStorageAppWorker;
+import io.opentelemetry.android.internal.services.PreferencesAppWorker;
+import io.opentelemetry.android.internal.services.AppWorkerManager;
 import java.io.File;
 import java.io.IOException;
 
@@ -19,21 +19,21 @@ import java.io.IOException;
  */
 public final class DiskManager {
     private static final String MAX_FOLDER_SIZE_KEY = "max_signal_folder_size";
-    private final CacheStorageService cacheStorageService;
-    private final PreferencesService preferencesService;
+    private final CacheStorageAppWorker cacheStorageService;
+    private final PreferencesAppWorker preferencesService;
     private final DiskBufferingConfiguration diskBufferingConfiguration;
 
     public static DiskManager create(DiskBufferingConfiguration config) {
-        ServiceManager serviceManager = ServiceManager.get();
+        AppWorkerManager appWorkerManager = AppWorkerManager.get();
         return new DiskManager(
-                serviceManager.getService(CacheStorageService.class),
-                serviceManager.getService(PreferencesService.class),
+                appWorkerManager.getService(CacheStorageAppWorker.class),
+                appWorkerManager.getService(PreferencesAppWorker.class),
                 config);
     }
 
     private DiskManager(
-            CacheStorageService cacheStorageService,
-            PreferencesService preferencesService,
+            CacheStorageAppWorker cacheStorageService,
+            PreferencesAppWorker preferencesService,
             DiskBufferingConfiguration diskBufferingConfiguration) {
         this.cacheStorageService = cacheStorageService;
         this.preferencesService = preferencesService;

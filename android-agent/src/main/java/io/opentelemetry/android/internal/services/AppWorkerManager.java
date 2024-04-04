@@ -9,20 +9,20 @@ import android.content.Context;
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.annotation.VisibleForTesting;
-import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService;
+import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkAppWorker;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Manging the app worker with singleton pattern.
  */
-public final class ServiceManager implements Lifecycle {
+public final class AppWorkerManager implements AppWorking {
 
-    private final Map<Class<? extends Service>, Service> services = new HashMap<>();
-    @Nullable private static ServiceManager instance;
+    private final Map<Class<? extends AppWorker>, AppWorker> services = new HashMap<>();
+    @Nullable private static AppWorkerManager instance;
 
     @VisibleForTesting
-    ServiceManager() {}
+    AppWorkerManager() {}
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
     public static void initialize(Context appContext) {
@@ -30,49 +30,49 @@ public final class ServiceManager implements Lifecycle {
             // Already initialized.
             return;
         }
-        instance = new ServiceManager();
-        instance.addService(PreferencesService.create(appContext));
-        instance.addService(new CacheStorageService(appContext));
-        instance.addService(new PeriodicWorkService());
+        instance = new AppWorkerManager();
+        instance.addService(PreferencesAppWorker.create(appContext));
+        instance.addService(new CacheStorageAppWorker(appContext));
+        instance.addService(new PeriodicWorkAppWorker());
     }
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
-    public static ServiceManager get() {
+    public static AppWorkerManager get() {
         if (instance == null) {
             throw new IllegalStateException("Services haven't been initialized");
         }
         return instance;
     }
 
-    public <T extends Service> void addService(T service) {
-        Class<? extends Service> type = service.getClass();
+    public <T extends AppWorker> void addService(T service) {
+        Class<? extends AppWorker> type = service.getClass();
         verifyNotExisting(type);
         services.put(type, service);
     }
 
     @Override
     public void start() {
-        for (Service service : services.values()) {
-            service.start();
+        for (AppWorker appWorker : services.values()) {
+            appWorker.start();
         }
     }
 
     @Override
     public void stop() {
-        for (Service service : services.values()) {
-            service.stop();
+        for (AppWorker appWorker : services.values()) {
+            appWorker.stop();
         }
     }
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
     @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"})
-    public <T extends Service> T getService(Class<T> type) {
-        Service service = services.get(type);
-        if (service == null) {
+    public <T extends AppWorker> T getService(Class<T> type) {
+        AppWorker appWorker = services.get(type);
+        if (appWorker == null) {
             throw new IllegalArgumentException("Service not found: " + type);
         }
 
-        return (T) service;
+        return (T) appWorker;
     }
 
     public static void resetForTest() {
@@ -80,11 +80,11 @@ public final class ServiceManager implements Lifecycle {
     }
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
-    public static void setForTest(ServiceManager serviceManager) {
-        instance = serviceManager;
+    public static void setForTest(AppWorkerManager appWorkerManager) {
+        instance = appWorkerManager;
     }
 
-    private void verifyNotExisting(Class<? extends Service> type) {
+    private void verifyNotExisting(Class<? extends AppWorker> type) {
         if (services.containsKey(type)) {
             throw new IllegalArgumentException("Service already registered with type: " + type);
         }

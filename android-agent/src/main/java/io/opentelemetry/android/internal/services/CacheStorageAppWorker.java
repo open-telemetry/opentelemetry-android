@@ -22,10 +22,10 @@ import java.util.UUID;
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
-public class CacheStorageService implements Service {
+public class CacheStorageAppWorker implements AppWorker {
     private final Context appContext;
 
-    public CacheStorageService(Context appContext) {
+    public CacheStorageAppWorker(Context appContext) {
         this.appContext = appContext;
     }
 

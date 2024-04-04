@@ -12,8 +12,8 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import io.opentelemetry.android.internal.services.ServiceManager
-import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService
+import io.opentelemetry.android.internal.services.AppWorkerManager
+import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkAppWorker
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -46,14 +46,14 @@ class DefaultExportScheduleHandlerTest {
         }
     }
 
-    private fun createMock(): PeriodicWorkService {
-        val periodicWorkService = mockk<PeriodicWorkService>()
-        val manager = mockk<ServiceManager>()
+    private fun createMock(): PeriodicWorkAppWorker {
+        val periodicWorkService = mockk<PeriodicWorkAppWorker>()
+        val manager = mockk<AppWorkerManager>()
         every {
-            manager.getService(PeriodicWorkService::class.java)
+            manager.getService(PeriodicWorkAppWorker::class.java)
         }.returns(periodicWorkService)
         every { periodicWorkService.enqueue(any()) } just Runs
-        ServiceManager.setForTest(manager)
+        AppWorkerManager.setForTest(manager)
 
         return periodicWorkService
     }

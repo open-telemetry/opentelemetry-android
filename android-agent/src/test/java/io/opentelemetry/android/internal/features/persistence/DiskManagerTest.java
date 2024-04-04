@@ -16,9 +16,9 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
-import io.opentelemetry.android.internal.services.CacheStorageService;
-import io.opentelemetry.android.internal.services.PreferencesService;
-import io.opentelemetry.android.internal.services.ServiceManager;
+import io.opentelemetry.android.internal.services.CacheStorageAppWorker;
+import io.opentelemetry.android.internal.services.PreferencesAppWorker;
+import io.opentelemetry.android.internal.services.AppWorkerManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
@@ -33,18 +33,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class DiskManagerTest {
 
     private static final String MAX_FOLDER_SIZE_KEY = "max_signal_folder_size";
-    @Mock CacheStorageService cacheStorageService;
-    @Mock PreferencesService preferencesService;
+    @Mock
+    CacheStorageAppWorker cacheStorageService;
+    @Mock
+    PreferencesAppWorker preferencesService;
     @Mock DiskBufferingConfiguration diskBufferingConfiguration;
     @TempDir File cacheDir;
     private DiskManager diskManager;
 
     @BeforeEach
     void setUp() {
-        ServiceManager serviceManager = mock();
-        doReturn(cacheStorageService).when(serviceManager).getService(CacheStorageService.class);
-        doReturn(preferencesService).when(serviceManager).getService(PreferencesService.class);
-        ServiceManager.setForTest(serviceManager);
+        AppWorkerManager appWorkerManager = mock();
+        doReturn(cacheStorageService).when(appWorkerManager).getService(CacheStorageAppWorker.class);
+        doReturn(preferencesService).when(appWorkerManager).getService(PreferencesAppWorker.class);
+        AppWorkerManager.setForTest(appWorkerManager);
         diskManager = DiskManager.create(diskBufferingConfiguration);
     }
 

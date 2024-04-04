@@ -30,10 +30,10 @@ import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 import io.opentelemetry.android.instrumentation.common.ApplicationStateListener;
 import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
-import io.opentelemetry.android.internal.services.CacheStorageService;
-import io.opentelemetry.android.internal.services.PreferencesService;
-import io.opentelemetry.android.internal.services.Service;
-import io.opentelemetry.android.internal.services.ServiceManager;
+import io.opentelemetry.android.internal.services.CacheStorageAppWorker;
+import io.opentelemetry.android.internal.services.PreferencesAppWorker;
+import io.opentelemetry.android.internal.services.AppWorker;
+import io.opentelemetry.android.internal.services.AppWorkerManager;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Logger;
@@ -86,7 +86,7 @@ class OpenTelemetryRumBuilderTest {
     void setup() {
         when(application.getApplicationContext()).thenReturn(applicationContext);
         when(application.getMainLooper()).thenReturn(looper);
-        ServiceManager.resetForTest();
+        AppWorkerManager.resetForTest();
     }
 
     @AfterEach
@@ -200,8 +200,8 @@ class OpenTelemetryRumBuilderTest {
 
     @Test
     void diskBufferingEnabled() {
-        PreferencesService preferences = mock();
-        CacheStorageService cacheStorage = mock();
+        PreferencesAppWorker preferences = mock();
+        CacheStorageAppWorker cacheStorage = mock();
         doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
         setUpServiceManager(preferences, cacheStorage);
         OtelRumConfig config = buildConfig();
@@ -226,8 +226,8 @@ class OpenTelemetryRumBuilderTest {
 
     @Test
     void diskBufferingEnabled_when_exception_thrown() {
-        PreferencesService preferences = mock();
-        CacheStorageService cacheStorage = mock();
+        PreferencesAppWorker preferences = mock();
+        CacheStorageAppWorker cacheStorage = mock();
         ExportScheduleHandler scheduleHandler = mock();
         doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
         doAnswer(
@@ -313,7 +313,7 @@ class OpenTelemetryRumBuilderTest {
     void verifyServicesAreInitialized() {
         makeBuilder().build();
 
-        assertThat(ServiceManager.get()).isNotNull();
+        assertThat(AppWorkerManager.get()).isNotNull();
     }
 
     @Test
@@ -322,15 +322,15 @@ class OpenTelemetryRumBuilderTest {
 
         makeBuilder().build();
 
-        verify(ServiceManager.get()).start();
+        verify(AppWorkerManager.get()).start();
     }
 
-    private static void setUpServiceManager(Service... services) {
-        ServiceManager serviceManager = mock();
-        for (Service service : services) {
-            doReturn(service).when(serviceManager).getService(service.getClass());
+    private static void setUpServiceManager(AppWorker... appWorkers) {
+        AppWorkerManager appWorkerManager = mock();
+        for (AppWorker appWorker : appWorkers) {
+            doReturn(appWorker).when(appWorkerManager).getService(appWorker.getClass());
         }
-        ServiceManager.setForTest(serviceManager);
+        AppWorkerManager.setForTest(appWorkerManager);
     }
 
     @NonNull

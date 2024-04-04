@@ -16,16 +16,16 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
-class PeriodicWorkServiceTest {
+class PeriodicWorkAppWorkerTest {
     companion object {
         private const val DELAY_BETWEEN_EXECUTIONS_IN_SECONDS = 10L
     }
 
-    private lateinit var service: PeriodicWorkService
+    private lateinit var service: PeriodicWorkAppWorker
 
     @Before
     fun setUp() {
-        service = PeriodicWorkService()
+        service = PeriodicWorkAppWorker()
     }
 
     @Test

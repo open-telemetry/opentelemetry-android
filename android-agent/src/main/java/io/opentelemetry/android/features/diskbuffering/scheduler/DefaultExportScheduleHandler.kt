@@ -5,8 +5,8 @@
 
 package io.opentelemetry.android.features.diskbuffering.scheduler
 
-import io.opentelemetry.android.internal.services.ServiceManager
-import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService
+import io.opentelemetry.android.internal.services.AppWorkerManager
+import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkAppWorker
 import java.util.concurrent.atomic.AtomicBoolean
 
 class DefaultExportScheduleHandler(private val exportScheduler: DefaultExportScheduler) :
@@ -15,7 +15,7 @@ class DefaultExportScheduleHandler(private val exportScheduler: DefaultExportSch
 
     override fun enable() {
         if (!enabled.getAndSet(true)) {
-            ServiceManager.get().getService(PeriodicWorkService::class.java)
+            AppWorkerManager.get().getService(PeriodicWorkAppWorker::class.java)
                 .enqueue(exportScheduler)
         }
     }

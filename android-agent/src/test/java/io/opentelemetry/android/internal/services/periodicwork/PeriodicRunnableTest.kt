@@ -10,8 +10,8 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
-import io.opentelemetry.android.internal.services.Service
-import io.opentelemetry.android.internal.services.ServiceManager
+import io.opentelemetry.android.internal.services.AppWorker
+import io.opentelemetry.android.internal.services.AppWorkerManager
 import io.opentelemetry.android.internal.tools.time.SystemTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -21,7 +21,7 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class PeriodicRunnableTest {
-    private lateinit var periodicWorkService: PeriodicWorkService
+    private lateinit var periodicWorkService: PeriodicWorkAppWorker
     private lateinit var testSystemTime: TestSystemTime
 
     @Before
@@ -87,21 +87,21 @@ class PeriodicRunnableTest {
         }
     }
 
-    private fun createPeriodicWorkServiceMock(): PeriodicWorkService {
-        val periodicWorkService = mockk<PeriodicWorkService>()
+    private fun createPeriodicWorkServiceMock(): PeriodicWorkAppWorker {
+        val periodicWorkService = mockk<PeriodicWorkAppWorker>()
         every { periodicWorkService.enqueue(any()) } just Runs
 
         return periodicWorkService
     }
 
-    private fun mockServiceManager(vararg services: Service) {
-        val manager = mockk<ServiceManager>()
-        services.forEach { service ->
+    private fun mockServiceManager(vararg appWorkers: AppWorker) {
+        val manager = mockk<AppWorkerManager>()
+        appWorkers.forEach { service ->
             every { manager.getService(service.javaClass) }.returns(
                 service,
             )
         }
-        ServiceManager.setForTest(manager)
+        AppWorkerManager.setForTest(manager)
     }
 
     private class TestRunnable(val minimumDelayInMillis: Long) : PeriodicRunnable() {
