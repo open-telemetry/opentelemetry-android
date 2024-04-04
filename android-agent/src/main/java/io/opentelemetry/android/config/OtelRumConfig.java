@@ -16,7 +16,6 @@ import java.util.function.Supplier;
  * Configuration object for OpenTelemetry Android. The configuration items in this class will be
  * used in the OpenTelemetryRumBuilder to wire up and enable/disable various mobile instrumentation
  * components.
- * All configuration are default to be true.
  */
 public class OtelRumConfig {
 

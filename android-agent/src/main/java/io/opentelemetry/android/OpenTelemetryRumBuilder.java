@@ -40,7 +40,6 @@ import io.opentelemetry.contrib.disk.buffering.SpanFromDiskExporter;
 import io.opentelemetry.contrib.disk.buffering.SpanToDiskExporter;
 import io.opentelemetry.contrib.disk.buffering.StorageConfiguration;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
-import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -97,8 +96,7 @@ public final class OpenTelemetryRumBuilder {
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
-                W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance(),
-                JaegerPropagator.getInstance());
+                W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance());
     }
 
     OpenTelemetryRumBuilder(Application application, OtelRumConfig config) {
@@ -322,15 +320,14 @@ public final class OpenTelemetryRumBuilder {
             }
         }
 
-        SdkTracerProvider tracerProvider = buildTracerProvider(sessionId, application, spanExporter);
-        ContextPropagators propagators = buildFinalPropagators();
         OpenTelemetrySdk sdk =
                 OpenTelemetrySdk.builder()
-                        .setTracerProvider(tracerProvider)
+                        .setTracerProvider(
+                                buildTracerProvider(sessionId, application, spanExporter))
                         .setMeterProvider(buildMeterProvider(application))
                         .setLoggerProvider(buildLoggerProvider(application))
-                        .setPropagators(propagators)
-                        .buildAndRegisterGlobal();
+                        .setPropagators(buildFinalPropagators())
+                        .build();
 
         scheduleDiskTelemetryReader(signalFromDiskExporter, diskBufferingConfiguration);
 

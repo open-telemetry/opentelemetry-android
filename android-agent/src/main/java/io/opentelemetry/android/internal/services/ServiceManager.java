@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Manging the app worker with singleton pattern.
+ * This class is internal and not for public use. Its APIs are unstable and can change at any time.
  */
 public final class ServiceManager implements Lifecycle {
 
