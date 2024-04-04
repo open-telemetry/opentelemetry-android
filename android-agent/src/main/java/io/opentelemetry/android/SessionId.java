@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 class SessionId {
 
-    private static final long SESSION_LIFETIME_NANOS = TimeUnit.HOURS.toNanos(4);
+    private static final long SESSION_LIFETIME_NANOS = TimeUnit.SECONDS.toNanos(4);
 
     private final Clock clock;
     private final AtomicReference<String> value = new AtomicReference<>();
@@ -33,7 +33,7 @@ class SessionId {
         this.clock = clock;
         this.timeoutHandler = timeoutHandler;
         value.set(createNewId());
-        createTimeNanos = clock.now();
+        createTimeNanos = clock.nanoTime();
     }
 
     private static String createNewId() {
@@ -76,7 +76,8 @@ class SessionId {
     }
 
     private boolean sessionExpired() {
-        long elapsedTime = clock.nanoTime() - createTimeNanos;
+        long nowNanoTime = clock.nanoTime();
+        long elapsedTime = nowNanoTime - createTimeNanos;
         return elapsedTime >= SESSION_LIFETIME_NANOS;
     }
 
