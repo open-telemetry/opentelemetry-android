@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.fragment.app.Fragment
 import com.google.gson.annotations.SerializedName
 import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.data.SpanData
@@ -40,7 +41,9 @@ class DemoApp : Application(), AppScope {
     private var rootSpan: Span? = null
     private val inMemorySpanExporter = InMemorySpanExporter.create()
     private val openTelemetryRum: OpenTelemetryRum by lazy {
-        OpenTelemetryRum.builder(this).build()
+        val instance = OpenTelemetryRum.builder(this).build()
+        GlobalOpenTelemetry.set(instance.openTelemetry)
+        instance
     }
     private val restApi by lazy {
         RestApiUtil.restApi(this, server)

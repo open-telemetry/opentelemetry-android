@@ -330,7 +330,7 @@ public final class OpenTelemetryRumBuilder {
                         .setMeterProvider(buildMeterProvider(application))
                         .setLoggerProvider(buildLoggerProvider(application))
                         .setPropagators(propagators)
-                        .buildAndRegisterGlobal();
+                        .build();
 
         scheduleDiskTelemetryReader(signalFromDiskExporter, diskBufferingConfiguration);
 
