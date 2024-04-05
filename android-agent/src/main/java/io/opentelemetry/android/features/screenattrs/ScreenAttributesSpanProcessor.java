@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android;
+package io.opentelemetry.android.features.screenattrs;
 
 import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
 

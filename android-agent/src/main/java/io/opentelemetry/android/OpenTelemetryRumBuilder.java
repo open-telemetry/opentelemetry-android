@@ -9,7 +9,6 @@ import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
 import android.content.Context;
-import android.os.Looper;
 import android.util.Log;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
@@ -18,6 +17,8 @@ import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 import io.opentelemetry.android.features.networkattrs.CurrentNetworkProvider;
 import io.opentelemetry.android.features.networkattrs.NetworkAttributesSpanAppender;
+import io.opentelemetry.android.features.screenattrs.ScreenAttributesSpanProcessor;
+import io.opentelemetry.android.features.screenattrs.VisibleScreenTracker;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.internal.features.persistence.DiskManager;
 import io.opentelemetry.android.internal.features.persistence.SimpleTemporaryFileProvider;
@@ -398,19 +399,6 @@ public final class OpenTelemetryRumBuilder {
                         SpanProcessor screenAttributesAppender =
                                 new ScreenAttributesSpanProcessor(visibleScreenTracker);
                         return tracerProviderBuilder.addSpanProcessor(screenAttributesAppender);
-                    });
-        }
-
-        // Add ANR detection if enabled
-        if (config.isAnrDetectionEnabled()) {
-            Looper mainLooper = application.getMainLooper();
-            addInstrumentation(
-                    instrumentedApplication -> {
-                        AnrDetectorBuilder builder =
-                                AnrDetector.builder().setMainLooper(mainLooper);
-                        anrCustomizer.accept(builder);
-                        builder.build().installOn(instrumentedApplication);
-                        initializationEvents.anrMonitorInitialized();
                     });
         }
 

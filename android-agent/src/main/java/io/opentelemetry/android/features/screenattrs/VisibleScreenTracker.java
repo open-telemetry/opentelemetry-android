@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.activity;
+package io.opentelemetry.android.features.screenattrs;
 
 import android.app.Activity;
 import androidx.annotation.Nullable;
