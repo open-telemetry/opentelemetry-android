@@ -15,7 +15,6 @@ import io.opentelemetry.android.instrumentation.activity.Pre29VisibleScreenLifec
 import io.opentelemetry.android.instrumentation.activity.RumFragmentActivityRegisterer;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenLifecycleBinding;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
-import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor;
 import io.opentelemetry.android.instrumentation.fragment.RumFragmentLifecycleCallbacks;
 import io.opentelemetry.android.instrumentation.startup.AppStartupTimer;

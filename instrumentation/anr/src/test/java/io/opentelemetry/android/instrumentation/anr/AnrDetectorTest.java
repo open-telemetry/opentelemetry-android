@@ -13,7 +13,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.os.Looper;
-import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;

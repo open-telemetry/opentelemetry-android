@@ -11,7 +11,6 @@ import io.opentelemetry.android.OpenTelemetryRum;
 import io.opentelemetry.android.features.networkattrs.CurrentNetwork;
 import io.opentelemetry.android.features.networkattrs.CurrentNetworkProvider;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
-import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
 import io.opentelemetry.api.OpenTelemetry;
