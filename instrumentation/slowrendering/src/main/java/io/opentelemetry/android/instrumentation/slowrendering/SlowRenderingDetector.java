@@ -5,8 +5,10 @@
 
 package io.opentelemetry.android.instrumentation.slowrendering;
 
+import android.app.Application;
 import android.os.Build;
 import android.util.Log;
+import io.opentelemetry.android.OpenTelemetryRum;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import java.time.Duration;
@@ -19,25 +21,17 @@ import java.time.Duration;
  */
 public final class SlowRenderingDetector {
 
-    public static SlowRenderingDetector create() {
-        return builder().build();
-    }
-
-    public static SlowRenderingDetectorBuilder builder() {
-        return new SlowRenderingDetectorBuilder();
-    }
-
     private final Duration slowRenderingDetectionPollInterval;
 
-    SlowRenderingDetector(SlowRenderingDetectorBuilder builder) {
-        this.slowRenderingDetectionPollInterval = builder.slowRenderingDetectionPollInterval;
+    SlowRenderingDetector(Duration slowRenderingDetectionPollInterval) {
+        this.slowRenderingDetectionPollInterval = slowRenderingDetectionPollInterval;
     }
 
     /**
      * Installs the slow rendering detection instrumentation on the given {@link
      * InstrumentedApplication}.
      */
-    public void installOn(InstrumentedApplication instrumentedApplication) {
+    public void install(Application application, OpenTelemetryRum openTelemetryRum) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             Log.w(
                     RumConstants.OTEL_RUM_LOG_TAG,
@@ -47,12 +41,12 @@ public final class SlowRenderingDetector {
 
         SlowRenderListener detector =
                 new SlowRenderListener(
-                        instrumentedApplication
-                                .getOpenTelemetrySdk()
+                        openTelemetryRum
+                                .getOpenTelemetry()
                                 .getTracer("io.opentelemetry.slow-rendering"),
                         slowRenderingDetectionPollInterval);
 
-        instrumentedApplication.getApplication().registerActivityLifecycleCallbacks(detector);
+        application.registerActivityLifecycleCallbacks(detector);
         detector.start();
     }
 }

@@ -27,9 +27,6 @@ public class OtelRumConfig {
     private boolean includeScreenAttributes = true;
     private DiskBufferingConfiguration diskBufferingConfiguration =
             DiskBufferingConfiguration.builder().build();
-    private boolean slowRenderingDetectionEnabled = true;
-    private Duration slowRenderingDetectionPollInterval =
-            DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL;
     private boolean crashReportingEnabled = true;
 
     /**
@@ -55,8 +52,7 @@ public class OtelRumConfig {
     }
 
     /**
-     * Disables the collection of runtime network attributes. See {@link CurrentNetworkProvider} for
-     * more information. Default = true.
+     * Disables the collection of runtime network attributes.
      *
      * @return this
      */
@@ -114,36 +110,6 @@ public class OtelRumConfig {
     public OtelRumConfig setDiskBufferingConfiguration(
             DiskBufferingConfiguration diskBufferingConfiguration) {
         this.diskBufferingConfiguration = diskBufferingConfiguration;
-        return this;
-    }
-
-    /** Returns true if the slow rendering detection instrumentation is enabled. */
-    public boolean isSlowRenderingDetectionEnabled() {
-        return slowRenderingDetectionEnabled;
-    }
-
-    /**
-     * Call this method to disable the slow rendering detection instrumentation.
-     *
-     * @return this
-     */
-    public OtelRumConfig disableSlowRenderingDetection() {
-        slowRenderingDetectionEnabled = false;
-        return this;
-    }
-
-    /** Returns the Duration at which slow renders are polled. Default = 1s. */
-    public Duration getSlowRenderingDetectionPollInterval() {
-        return slowRenderingDetectionPollInterval;
-    }
-
-    /**
-     * Call this to configure the duration for polling for slow renders.
-     *
-     * @return this
-     */
-    public OtelRumConfig setSlowRenderingDetectionPollInterval(Duration duration) {
-        slowRenderingDetectionPollInterval = duration;
         return this;
     }
 

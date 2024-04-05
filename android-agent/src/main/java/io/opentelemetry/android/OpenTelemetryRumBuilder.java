@@ -402,19 +402,6 @@ public final class OpenTelemetryRumBuilder {
                     });
         }
 
-        // Enable slow rendering detection if enabled
-        if (config.isSlowRenderingDetectionEnabled()) {
-            addInstrumentation(
-                    instrumentedApplication -> {
-                        SlowRenderingDetector.builder()
-                                .setSlowRenderingDetectionPollInterval(
-                                        config.getSlowRenderingDetectionPollInterval())
-                                .build()
-                                .installOn(instrumentedApplication);
-                        initializationEvents.slowRenderingDetectorInitialized();
-                    });
-        }
-
         // Enable crash reporting instrumentation
         if (config.isCrashReportingEnabled()) {
             addInstrumentation(
