@@ -8,7 +8,6 @@ package io.opentelemetry.android;
 import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
-import android.content.Context;
 import android.util.Log;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
@@ -399,23 +398,6 @@ public final class OpenTelemetryRumBuilder {
                         SpanProcessor screenAttributesAppender =
                                 new ScreenAttributesSpanProcessor(visibleScreenTracker);
                         return tracerProviderBuilder.addSpanProcessor(screenAttributesAppender);
-                    });
-        }
-
-        // Enable crash reporting instrumentation
-        if (config.isCrashReportingEnabled()) {
-            addInstrumentation(
-                    instrumentedApplication -> {
-                        Context context =
-                                instrumentedApplication.getApplication().getApplicationContext();
-                        CrashReporterBuilder builder =
-                                CrashReporter.builder()
-                                        .addAttributesExtractor(
-                                                RuntimeDetailsExtractor.create(context));
-                        crashReporterCustomizer.accept(builder);
-                        builder.build().installOn(instrumentedApplication);
-
-                        initializationEvents.crashReportingInitialized();
                     });
         }
     }

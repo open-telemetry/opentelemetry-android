@@ -73,7 +73,7 @@ public interface OpenTelemetryRum {
      * Get a handle to the instance of the {@linkplain OpenTelemetry OpenTelemetry API} that this
      * instance is using for instrumentation.
      */
-    OpenTelemetry getOpenTelemetry();
+    OpenTelemetrySdk getOpenTelemetry();
 
     /**
      * Get the client session ID associated with this instance of the RUM instrumentation library.

@@ -27,7 +27,6 @@ public class OtelRumConfig {
     private boolean includeScreenAttributes = true;
     private DiskBufferingConfiguration diskBufferingConfiguration =
             DiskBufferingConfiguration.builder().build();
-    private boolean crashReportingEnabled = true;
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -110,17 +109,6 @@ public class OtelRumConfig {
     public OtelRumConfig setDiskBufferingConfiguration(
             DiskBufferingConfiguration diskBufferingConfiguration) {
         this.diskBufferingConfiguration = diskBufferingConfiguration;
-        return this;
-    }
-
-    /** Returns true if crash reporting is enabled. */
-    public boolean isCrashReportingEnabled() {
-        return crashReportingEnabled;
-    }
-
-    /** Call this method to disable crash reporting. */
-    public OtelRumConfig disableCrashReporting() {
-        crashReportingEnabled = false;
         return this;
     }
 }
