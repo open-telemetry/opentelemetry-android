@@ -48,7 +48,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
@@ -81,8 +80,6 @@ public final class OpenTelemetryRumBuilder {
     private Resource resource;
     @Nullable private CurrentNetworkProvider currentNetworkProvider = null;
     private InitializationEvents initializationEvents = InitializationEvents.NO_OP;
-    private Consumer<AnrDetectorBuilder> anrCustomizer = x -> {};
-    private Consumer<CrashReporterBuilder> crashReporterCustomizer = x -> {};
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
@@ -149,34 +146,6 @@ public final class OpenTelemetryRumBuilder {
             BiFunction<SdkTracerProviderBuilder, Application, SdkTracerProviderBuilder>
                     customizer) {
         tracerProviderCustomizers.add(customizer);
-        return this;
-    }
-
-    /**
-     * Pass a Consumer that will receive the AnrDetectorBuilder in order to perform additional
-     * specific customizations. If ANR detection is disabled, this method is effectively a no-op.
-     *
-     * @param customizer A Consumer that will receive the {@link AnrDetectorBuilder} before the
-     *     {@link AnrDetector} is built.
-     * @return this.
-     */
-    public OpenTelemetryRumBuilder addAnrCustomization(Consumer<AnrDetectorBuilder> customizer) {
-        this.anrCustomizer = customizer;
-        return this;
-    }
-
-    /**
-     * Pass a Consumer that will receive the CrashReporterBuilder in order to perform additional
-     * specific customizations. If crash reporting is disabled via config, this method is
-     * effectively a no-op.
-     *
-     * @param customizer A Consumer that will recieve the {@link CrashReporterBuilder} before the
-     *     {@link CrashReporter} is built.
-     * @return this.
-     */
-    public OpenTelemetryRumBuilder addCrashReportingCustomization(
-            Consumer<CrashReporterBuilder> customizer) {
-        this.crashReporterCustomizer = customizer;
         return this;
     }
 
