@@ -5,8 +5,8 @@
 
 package io.opentelemetry.android.instrumentation.network;
 
-import io.opentelemetry.android.features.network.CurrentNetwork;
-import io.opentelemetry.android.features.network.CurrentNetworkProvider;
+import io.opentelemetry.android.features.networkattrs.CurrentNetwork;
+import io.opentelemetry.android.features.networkattrs.CurrentNetworkProvider;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import java.util.ArrayList;
 import java.util.List;

@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.features.network;
+package io.opentelemetry.android.features.networkattrs;
 
-import static io.opentelemetry.android.features.network.CurrentNetworkProvider.NO_NETWORK;
-import static io.opentelemetry.android.features.network.CurrentNetworkProvider.UNKNOWN_NETWORK;
+import static io.opentelemetry.android.features.networkattrs.CurrentNetworkProvider.NO_NETWORK;
+import static io.opentelemetry.android.features.networkattrs.CurrentNetworkProvider.UNKNOWN_NETWORK;
 
 import android.Manifest;
 import android.annotation.SuppressLint;

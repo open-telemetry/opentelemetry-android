@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.features.network;
+package io.opentelemetry.android.features.networkattrs;
 
 import static io.opentelemetry.semconv.SemanticAttributes.NETWORK_CARRIER_ICC;
 import static io.opentelemetry.semconv.SemanticAttributes.NETWORK_CARRIER_MCC;
