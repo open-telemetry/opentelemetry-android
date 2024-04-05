@@ -3,9 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.features.network
 
 interface NetworkChangeListener {
-
-    void onNetworkChange(CurrentNetwork currentNetwork);
+    fun onNetworkChange(currentNetwork: CurrentNetwork?)
 }

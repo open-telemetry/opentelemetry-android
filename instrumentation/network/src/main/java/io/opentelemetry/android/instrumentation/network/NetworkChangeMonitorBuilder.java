@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.instrumentation.network;
 
+import io.opentelemetry.android.features.network.CurrentNetwork;
+import io.opentelemetry.android.features.network.CurrentNetworkProvider;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +22,7 @@ public final class NetworkChangeMonitorBuilder {
     final CurrentNetworkProvider currentNetworkProvider;
     final List<AttributesExtractor<CurrentNetwork, Void>> additionalExtractors = new ArrayList<>();
 
-    NetworkChangeMonitorBuilder(CurrentNetworkProvider currentNetworkProvider) {
+    public NetworkChangeMonitorBuilder(CurrentNetworkProvider currentNetworkProvider) {
         this.currentNetworkProvider = currentNetworkProvider;
     }
 

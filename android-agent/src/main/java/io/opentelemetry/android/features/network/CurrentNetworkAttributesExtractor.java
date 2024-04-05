@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.features.network;
 
 import static io.opentelemetry.semconv.SemanticAttributes.NETWORK_CARRIER_ICC;
 import static io.opentelemetry.semconv.SemanticAttributes.NETWORK_CARRIER_MCC;
@@ -17,9 +17,9 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 
-final class CurrentNetworkAttributesExtractor {
+public final class CurrentNetworkAttributesExtractor {
 
-    Attributes extract(CurrentNetwork network) {
+    public Attributes extract(CurrentNetwork network) {
         AttributesBuilder builder =
                 Attributes.builder()
                         .put(NETWORK_CONNECTION_TYPE, network.getState().getHumanName());

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.features.network;
 
 import android.os.Build;
 import android.telephony.TelephonyManager;

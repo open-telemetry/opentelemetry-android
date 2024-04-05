@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.features.network;
 
 import android.os.Build;
 import androidx.annotation.Nullable;
@@ -27,7 +27,7 @@ public final class CurrentNetwork {
         return getState() != NetworkState.NO_NETWORK_AVAILABLE;
     }
 
-    NetworkState getState() {
+    public NetworkState getState() {
         return state;
     }
 

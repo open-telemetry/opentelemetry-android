@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.features.network;
 
 import io.opentelemetry.semconv.SemanticAttributes;
 
-enum NetworkState {
+public enum NetworkState {
     NO_NETWORK_AVAILABLE(SemanticAttributes.NetworkConnectionTypeValues.UNAVAILABLE),
     TRANSPORT_CELLULAR(SemanticAttributes.NetworkConnectionTypeValues.CELL),
     TRANSPORT_WIFI(SemanticAttributes.NetworkConnectionTypeValues.WIFI),
@@ -21,7 +21,7 @@ enum NetworkState {
         this.humanName = humanName;
     }
 
-    String getHumanName() {
+    public String getHumanName() {
         return humanName;
     }
 }

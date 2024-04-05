@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.features.network;
 
 import android.app.Application;
 import android.content.Context;
@@ -111,7 +111,7 @@ public final class CurrentNetworkProvider {
         return currentNetwork;
     }
 
-    void addNetworkChangeListener(NetworkChangeListener listener) {
+    public void addNetworkChangeListener(NetworkChangeListener listener) {
         listeners.add(listener);
     }
 
