@@ -61,5 +61,5 @@ mocking = ["mockito-core", "mockito-junit-jupiter", "mockk"]
 junit = ["junit-jupiter-api", "junit-jupiter-engine", "junit-vintage-engine"]
 
 [plugins]
-publishPlugin = { id = "io.github.gradle-nexus.publish-plugin", version = "1.3.0" }
+publishPlugin = { id = "io.github.gradle-nexus.publish-plugin", version = "2.0.0" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
