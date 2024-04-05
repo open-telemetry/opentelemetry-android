@@ -6,20 +6,20 @@
 package io.opentelemetry.android;
 
 import android.app.Application;
-import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
+import io.opentelemetry.android.internal.services.ServiceManager;
+import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public final class SdkPreconfiguredRumBuilder {
     private final Application application;
     private final OpenTelemetrySdk sdk;
     private final SessionId sessionId;
 
-    private final List<Consumer<InstrumentedApplication>> instrumentationInstallers =
-            new ArrayList<>();
+    private final List<AndroidInstrumentation> instrumentations = new ArrayList<>();
 
     SdkPreconfiguredRumBuilder(Application application, OpenTelemetrySdk openTelemetrySdk) {
         this(application, openTelemetrySdk, new SessionId(new SessionIdTimeoutHandler()));
@@ -33,14 +33,12 @@ public final class SdkPreconfiguredRumBuilder {
     }
 
     /**
-     * Adds an instrumentation installer function that will be run on an {@link
-     * InstrumentedApplication} instance as a part of the {@link #build()} method call.
+     * Adds an instrumentation to be applied as a part of the {@link #build()} method call.
      *
      * @return {@code this}
      */
-    public SdkPreconfiguredRumBuilder addInstrumentation(
-            Consumer<InstrumentedApplication> instrumentationInstaller) {
-        instrumentationInstallers.add(instrumentationInstaller);
+    public SdkPreconfiguredRumBuilder addInstrumentation(AndroidInstrumentation instrumentation) {
+        instrumentations.add(instrumentation);
         return this;
     }
 
@@ -54,21 +52,20 @@ public final class SdkPreconfiguredRumBuilder {
      * @return A new {@link OpenTelemetryRum} instance.
      */
     public OpenTelemetryRum build() {
-        // the app state listeners need to be run in the first ActivityLifecycleCallbacks since they
-        // might turn off/on additional telemetry depending on whether the app is active or not
-        ApplicationStateWatcher applicationStateWatcher = new ApplicationStateWatcher();
-        application.registerActivityLifecycleCallbacks(applicationStateWatcher);
-        applicationStateWatcher.registerListener(sessionId.getTimeoutHandler());
+        ServiceManager.get()
+                .getService(AppLifecycleService.class)
+                .registerListener(sessionId.getTimeoutHandler());
 
         Tracer tracer = sdk.getTracer(OpenTelemetryRum.class.getSimpleName());
         sessionId.setSessionIdChangeListener(new SessionIdChangeTracer(tracer));
 
-        InstrumentedApplication instrumentedApplication =
-                new InstrumentedApplicationImpl(application, sdk, applicationStateWatcher);
-        for (Consumer<InstrumentedApplication> installer : instrumentationInstallers) {
-            installer.accept(instrumentedApplication);
+        OpenTelemetryRumImpl openTelemetryRum = new OpenTelemetryRumImpl(sdk, sessionId);
+
+        // Apply instrumentations
+        for (AndroidInstrumentation instrumentation : instrumentations) {
+            instrumentation.apply(application, openTelemetryRum);
         }
 
-        return new OpenTelemetryRumImpl(sdk, sessionId);
+        return openTelemetryRum;
     }
 }

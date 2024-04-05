@@ -1,4 +1,3 @@
-
 plugins {
     id("otel.android-library-conventions")
     id("otel.publish-conventions")
@@ -61,15 +60,10 @@ android {
 
 dependencies {
     implementation(project(":common"))
-    implementation(project(":instrumentation:activity"))
-    implementation(project(":instrumentation:anr"))
-    implementation(project(":instrumentation:common-api"))
-    implementation(project(":instrumentation:crash"))
-    implementation(project(":instrumentation:network"))
-    implementation(project(":instrumentation:slowrendering"))
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core)
     implementation(libs.androidx.navigation.fragment)
+    implementation(libs.androidx.lifecycle.process)
 
     api(platform(libs.opentelemetry.platform))
     api(libs.opentelemetry.api)

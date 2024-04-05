@@ -9,6 +9,7 @@ import static org.mockito.Mockito.inOrder;
 
 import android.app.Activity;
 import io.opentelemetry.android.instrumentation.common.ApplicationStateListener;
+import io.opentelemetry.android.internal.services.ApplicationStateWatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -16,10 +16,10 @@ import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.android.instrumentation.anr.AnrDetector;
 import io.opentelemetry.android.instrumentation.anr.AnrDetectorBuilder;
-import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.crash.CrashReporter;
 import io.opentelemetry.android.instrumentation.crash.CrashReporterBuilder;
 import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
@@ -82,8 +82,7 @@ public final class OpenTelemetryRumBuilder {
     private final VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
 
     private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
-    private final List<Consumer<InstrumentedApplication>> instrumentationInstallers =
-            new ArrayList<>();
+    private final List<AndroidInstrumentation> instrumentations = new ArrayList<>();
 
     private Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer =
             (a) -> a;
@@ -230,14 +229,12 @@ public final class OpenTelemetryRumBuilder {
     }
 
     /**
-     * Adds an instrumentation installer function that will be run on an {@link
-     * InstrumentedApplication} instance as a part of the {@link #build()} method call.
+     * Adds an instrumentation to be applied as a part of the {@link #build()} method call.
      *
      * @return {@code this}
      */
-    public OpenTelemetryRumBuilder addInstrumentation(
-            Consumer<InstrumentedApplication> instrumentationInstaller) {
-        instrumentationInstallers.add(instrumentationInstaller);
+    public OpenTelemetryRumBuilder addInstrumentation(AndroidInstrumentation instrumentation) {
+        instrumentations.add(instrumentation);
         return this;
     }
 
@@ -333,7 +330,7 @@ public final class OpenTelemetryRumBuilder {
 
         SdkPreconfiguredRumBuilder delegate =
                 new SdkPreconfiguredRumBuilder(application, sdk, sessionId);
-        instrumentationInstallers.forEach(delegate::addInstrumentation);
+        instrumentations.forEach(delegate::addInstrumentation);
         ServiceManager.get().start();
         return delegate.build();
     }

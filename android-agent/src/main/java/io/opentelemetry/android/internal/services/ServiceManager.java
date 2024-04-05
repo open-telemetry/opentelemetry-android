@@ -9,6 +9,7 @@ import android.content.Context;
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.annotation.VisibleForTesting;
+import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +35,7 @@ public final class ServiceManager implements Lifecycle {
         instance.addService(PreferencesService.create(appContext));
         instance.addService(new CacheStorageService(appContext));
         instance.addService(new PeriodicWorkService());
+        instance.addService(AppLifecycleService.create());
     }
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
