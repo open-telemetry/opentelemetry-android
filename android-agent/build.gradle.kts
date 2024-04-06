@@ -73,10 +73,12 @@ dependencies {
     implementation(libs.opentelemetry.instrumentation.api)
     implementation(libs.opentelemetry.semconv.incubating)
     implementation(libs.opentelemetry.diskBuffering)
-
-    testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.awaitility)
+    testImplementation(libs.robolectric)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.junit.ktx)
+    androidTestImplementation(libs.robolectric)
 }
 
 extra["pomName"] = "OpenTelemetry Android Instrumentation"
