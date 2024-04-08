@@ -36,6 +36,7 @@ public final class ServiceManager implements Lifecycle {
         instance.addService(new CacheStorageService(appContext));
         instance.addService(new PeriodicWorkService());
         instance.addService(AppLifecycleService.create());
+        instance.addService(VisibleScreenService.create());
     }
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)

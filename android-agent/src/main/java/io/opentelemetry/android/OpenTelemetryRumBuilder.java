@@ -17,12 +17,12 @@ import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleH
 import io.opentelemetry.android.features.networkattrs.CurrentNetworkProvider;
 import io.opentelemetry.android.features.networkattrs.NetworkAttributesSpanAppender;
 import io.opentelemetry.android.features.screenattrs.ScreenAttributesSpanProcessor;
-import io.opentelemetry.android.features.screenattrs.VisibleScreenTracker;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.internal.features.persistence.DiskManager;
 import io.opentelemetry.android.internal.features.persistence.SimpleTemporaryFileProvider;
 import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordAppender;
 import io.opentelemetry.android.internal.services.ServiceManager;
+import io.opentelemetry.android.internal.services.VisibleScreenService;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -69,7 +69,6 @@ public final class OpenTelemetryRumBuilder {
     private final List<BiFunction<SdkLoggerProviderBuilder, Application, SdkLoggerProviderBuilder>>
             loggerProviderCustomizers = new ArrayList<>();
     private final OtelRumConfig config;
-    private final VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
 
     private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
     private final List<AndroidInstrumentation> instrumentations = new ArrayList<>();
@@ -365,7 +364,9 @@ public final class OpenTelemetryRumBuilder {
             addTracerProviderCustomizer(
                     (tracerProviderBuilder, app) -> {
                         SpanProcessor screenAttributesAppender =
-                                new ScreenAttributesSpanProcessor(visibleScreenTracker);
+                                new ScreenAttributesSpanProcessor(
+                                        ServiceManager.get()
+                                                .getService(VisibleScreenService.class));
                         return tracerProviderBuilder.addSpanProcessor(screenAttributesAppender);
                     });
         }
