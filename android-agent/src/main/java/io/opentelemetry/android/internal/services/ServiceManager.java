@@ -11,6 +11,7 @@ import androidx.annotation.RestrictTo;
 import androidx.annotation.VisibleForTesting;
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService;
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
 import java.util.HashMap;
 import java.util.Map;
 

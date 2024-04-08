@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.services
+package io.opentelemetry.android.internal.services.visiblescreen
 
 import android.app.Activity
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
+import io.opentelemetry.android.internal.services.Service
 import java.util.concurrent.atomic.AtomicReference
 
 /**

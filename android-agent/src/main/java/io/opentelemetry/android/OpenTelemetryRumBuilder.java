@@ -22,7 +22,7 @@ import io.opentelemetry.android.internal.features.persistence.DiskManager;
 import io.opentelemetry.android.internal.features.persistence.SimpleTemporaryFileProvider;
 import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordAppender;
 import io.opentelemetry.android.internal.services.ServiceManager;
-import io.opentelemetry.android.internal.services.VisibleScreenService;
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
