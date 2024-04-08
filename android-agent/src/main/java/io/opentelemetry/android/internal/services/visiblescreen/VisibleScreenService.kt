@@ -6,10 +6,17 @@
 package io.opentelemetry.android.internal.services.visiblescreen
 
 import android.app.Activity
+import android.app.Application
+import android.app.Application.ActivityLifecycleCallbacks
+import android.os.Build
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
 import io.opentelemetry.android.internal.services.Service
+import io.opentelemetry.android.internal.services.visiblescreen.activities.Pre29VisibleScreenLifecycleBinding
+import io.opentelemetry.android.internal.services.visiblescreen.activities.VisibleScreenLifecycleBinding
+import io.opentelemetry.android.internal.services.visiblescreen.fragments.RumFragmentActivityRegisterer
+import io.opentelemetry.android.internal.services.visiblescreen.fragments.VisibleFragmentTracker
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -24,16 +31,45 @@ import java.util.concurrent.atomic.AtomicReference
  * <p>We have to treat DialogFragments slightly differently since they don't replace the launching
  * screen, and the launching screen never leaves visibility.
  */
-class VisibleScreenService private constructor() : Service {
+class VisibleScreenService private constructor(private val application: Application) : Service {
     private val lastResumedActivity = AtomicReference<String?>()
     private val previouslyLastResumedActivity = AtomicReference<String>()
     private val lastResumedFragment = AtomicReference<String?>()
     private val previouslyLastResumedFragment = AtomicReference<String?>()
+    private val activityLifecycleTracker by lazy { buildActivitiesTracker() }
+    private val fragmentLifecycleTrackerRegisterer by lazy { buildFragmentsTrackerRegisterer() }
 
     companion object {
         @JvmStatic
-        fun create(): VisibleScreenService {
-            return VisibleScreenService()
+        fun create(application: Application): VisibleScreenService {
+            return VisibleScreenService(application)
+        }
+    }
+
+    override fun start() {
+        application.registerActivityLifecycleCallbacks(activityLifecycleTracker)
+        application.registerActivityLifecycleCallbacks(fragmentLifecycleTrackerRegisterer)
+    }
+
+    override fun stop() {
+        application.unregisterActivityLifecycleCallbacks(activityLifecycleTracker)
+        application.unregisterActivityLifecycleCallbacks(fragmentLifecycleTrackerRegisterer)
+    }
+
+    private fun buildActivitiesTracker(): ActivityLifecycleCallbacks {
+        return if (Build.VERSION.SDK_INT < 29) {
+            Pre29VisibleScreenLifecycleBinding(this)
+        } else {
+            VisibleScreenLifecycleBinding(this)
+        }
+    }
+
+    private fun buildFragmentsTrackerRegisterer(): ActivityLifecycleCallbacks {
+        val fragmentLifecycle = VisibleFragmentTracker(this)
+        return if (Build.VERSION.SDK_INT < 29) {
+            RumFragmentActivityRegisterer.createPre29(fragmentLifecycle)
+        } else {
+            RumFragmentActivityRegisterer.create(fragmentLifecycle)
         }
     }
 

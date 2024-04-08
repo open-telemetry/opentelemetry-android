@@ -11,12 +11,8 @@ import androidx.annotation.NonNull;
 import io.opentelemetry.android.instrumentation.activity.ActivityCallbacks;
 import io.opentelemetry.android.instrumentation.activity.ActivityTracerCache;
 import io.opentelemetry.android.instrumentation.activity.Pre29ActivityCallbacks;
-import io.opentelemetry.android.instrumentation.activity.Pre29VisibleScreenLifecycleBinding;
-import io.opentelemetry.android.instrumentation.activity.RumFragmentActivityRegisterer;
-import io.opentelemetry.android.instrumentation.activity.VisibleScreenLifecycleBinding;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor;
-import io.opentelemetry.android.instrumentation.fragment.RumFragmentLifecycleCallbacks;
 import io.opentelemetry.android.instrumentation.startup.AppStartupTimer;
 import io.opentelemetry.api.trace.Tracer;
 import java.util.function.Function;
@@ -79,40 +75,5 @@ public class AndroidLifecycleInstrumentation {
             return new Pre29ActivityCallbacks(tracers);
         }
         return new ActivityCallbacks(tracers);
-    }
-
-    private void installFragmentLifecycleInstrumentation(InstrumentedApplication app) {
-        Application.ActivityLifecycleCallbacks fragmentRegisterer = buildFragmentRegisterer(app);
-        app.getApplication().registerActivityLifecycleCallbacks(fragmentRegisterer);
-    }
-
-    @NonNull
-    private Application.ActivityLifecycleCallbacks buildFragmentRegisterer(
-            InstrumentedApplication app) {
-
-        Tracer delegateTracer = app.getOpenTelemetrySdk().getTracer(INSTRUMENTATION_SCOPE);
-        Tracer tracer = tracerCustomizer.apply(delegateTracer);
-        RumFragmentLifecycleCallbacks fragmentLifecycle =
-                new RumFragmentLifecycleCallbacks(
-                        tracer, visibleScreenTracker, screenNameExtractor);
-        if (Build.VERSION.SDK_INT < 29) {
-            return RumFragmentActivityRegisterer.createPre29(fragmentLifecycle);
-        }
-        return RumFragmentActivityRegisterer.create(fragmentLifecycle);
-    }
-
-    private void installScreenTrackingInstrumentation(InstrumentedApplication app) {
-        Application.ActivityLifecycleCallbacks screenTrackingBinding =
-                buildScreenTrackingBinding(visibleScreenTracker);
-        app.getApplication().registerActivityLifecycleCallbacks(screenTrackingBinding);
-    }
-
-    @NonNull
-    private Application.ActivityLifecycleCallbacks buildScreenTrackingBinding(
-            VisibleScreenTracker visibleScreenTracker) {
-        if (Build.VERSION.SDK_INT < 29) {
-            return new Pre29VisibleScreenLifecycleBinding(visibleScreenTracker);
-        }
-        return new VisibleScreenLifecycleBinding(visibleScreenTracker);
     }
 }

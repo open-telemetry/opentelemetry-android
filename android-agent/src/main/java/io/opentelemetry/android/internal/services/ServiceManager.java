@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.internal.services;
 
-import android.content.Context;
+import android.app.Application;
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.annotation.VisibleForTesting;
@@ -27,17 +27,17 @@ public final class ServiceManager implements Lifecycle {
     ServiceManager() {}
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
-    public static void initialize(Context appContext) {
+    public static void initialize(Application application) {
         if (instance != null) {
             // Already initialized.
             return;
         }
         instance = new ServiceManager();
-        instance.addService(PreferencesService.create(appContext));
-        instance.addService(new CacheStorageService(appContext));
+        instance.addService(PreferencesService.create(application));
+        instance.addService(new CacheStorageService(application));
         instance.addService(new PeriodicWorkService());
         instance.addService(AppLifecycleService.create());
-        instance.addService(VisibleScreenService.create());
+        instance.addService(VisibleScreenService.create(application));
     }
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
