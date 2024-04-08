@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android;
 
-import static io.opentelemetry.android.common.RumConstants.PREVIOUS_SESSION_ID_KEY;
+import static io.opentelemetry.android.internal.tools.RumConstants.PREVIOUS_SESSION_ID_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.api.common.Attributes;

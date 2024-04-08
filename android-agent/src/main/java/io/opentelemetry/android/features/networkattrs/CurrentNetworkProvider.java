@@ -14,7 +14,7 @@ import android.net.NetworkRequest;
 import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import io.opentelemetry.android.common.RumConstants;
+import io.opentelemetry.android.internal.tools.RumConstants;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;

@@ -9,7 +9,6 @@ import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
 import android.util.Log;
-import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
@@ -23,6 +22,7 @@ import io.opentelemetry.android.internal.features.persistence.SimpleTemporaryFil
 import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordAppender;
 import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
+import io.opentelemetry.android.internal.tools.RumConstants;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;

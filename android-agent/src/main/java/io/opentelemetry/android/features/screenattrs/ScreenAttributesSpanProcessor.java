@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.features.screenattrs;
 
-import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
+import static io.opentelemetry.android.internal.tools.RumConstants.SCREEN_NAME_KEY;
 
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
 import io.opentelemetry.context.Context;

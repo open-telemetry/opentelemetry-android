@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android;
 
-import static io.opentelemetry.android.common.RumConstants.RUM_SDK_VERSION;
+import static io.opentelemetry.android.internal.tools.RumConstants.RUM_SDK_VERSION;
 import static io.opentelemetry.semconv.ResourceAttributes.DEVICE_MANUFACTURER;
 import static io.opentelemetry.semconv.ResourceAttributes.DEVICE_MODEL_IDENTIFIER;
 import static io.opentelemetry.semconv.ResourceAttributes.DEVICE_MODEL_NAME;

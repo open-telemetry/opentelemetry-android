@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android;
 
-import io.opentelemetry.android.common.RumConstants;
+import io.opentelemetry.android.internal.tools.RumConstants;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;

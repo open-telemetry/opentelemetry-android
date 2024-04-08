@@ -9,7 +9,7 @@ import android.app.Application;
 import android.os.Build;
 import android.util.Log;
 import io.opentelemetry.android.OpenTelemetryRum;
-import io.opentelemetry.android.common.RumConstants;
+import io.opentelemetry.android.internal.tools.RumConstants;
 import java.time.Duration;
 
 /**
