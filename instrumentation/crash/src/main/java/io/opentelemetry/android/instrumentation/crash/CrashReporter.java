@@ -35,7 +35,11 @@ public final class CrashReporter {
         Thread.setDefaultUncaughtExceptionHandler(
                 new CrashReportingExceptionHandler(
                         buildInstrumenter(openTelemetryRum.getOpenTelemetry().getLogsBridge()),
-                        openTelemetryRum.getOpenTelemetry().getSdkLoggerProvider(),
+                        openTelemetryRum
+                                .getOpenTelemetry()
+                                .getSdkLoggerProvider(), // TODO avoid using OpenTelemetrySdk
+                        // methods, only use the ones from
+                        // OpenTelemetry.
                         existingHandler));
     }
 
