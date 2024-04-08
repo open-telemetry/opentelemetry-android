@@ -7,7 +7,6 @@ package io.opentelemetry.android.features.screenattrs;
 
 import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
 
-import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
