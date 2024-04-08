@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.startup;
+package io.opentelemetry.android.instrumentation.activity.startup;
 
 import io.opentelemetry.sdk.common.Clock;
 

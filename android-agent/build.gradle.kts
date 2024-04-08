@@ -67,7 +67,7 @@ dependencies {
 
     api(platform(libs.opentelemetry.platform))
     api(libs.opentelemetry.api)
-    implementation(libs.opentelemetry.sdk)
+    api(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.exporter.logging)
     implementation(libs.opentelemetry.instrumentation.api)
     implementation(libs.opentelemetry.semconv)
