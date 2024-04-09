@@ -13,6 +13,7 @@ import static io.opentelemetry.semconv.SemanticAttributes.NETWORK_CONNECTION_SUB
 import static io.opentelemetry.semconv.SemanticAttributes.NETWORK_CONNECTION_TYPE;
 
 import androidx.annotation.Nullable;
+import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;

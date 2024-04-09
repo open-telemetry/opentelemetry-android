@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.features.networkattrs;
+package io.opentelemetry.android.internal.services.network;
 
 import android.app.Application;
 import android.content.Context;
@@ -14,6 +14,9 @@ import android.net.NetworkRequest;
 import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
+import io.opentelemetry.android.internal.services.network.data.NetworkState;
+import io.opentelemetry.android.internal.services.network.detector.NetworkDetector;
 import io.opentelemetry.android.internal.tools.RumConstants;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -28,9 +31,9 @@ import java.util.function.Supplier;
  */
 public final class CurrentNetworkProvider {
 
-    static final CurrentNetwork NO_NETWORK =
+    public static final CurrentNetwork NO_NETWORK =
             CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build();
-    static final CurrentNetwork UNKNOWN_NETWORK =
+    public static final CurrentNetwork UNKNOWN_NETWORK =
             CurrentNetwork.builder(NetworkState.TRANSPORT_UNKNOWN).build();
 
     /**
@@ -107,7 +110,7 @@ public final class CurrentNetworkProvider {
                 .build();
     }
 
-    CurrentNetwork getCurrentNetwork() {
+    public CurrentNetwork getCurrentNetwork() {
         return currentNetwork;
     }
 

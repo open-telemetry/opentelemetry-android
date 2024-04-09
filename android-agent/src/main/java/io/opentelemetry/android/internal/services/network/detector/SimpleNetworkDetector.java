@@ -3,13 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.features.networkattrs;
+package io.opentelemetry.android.internal.services.network.detector;
 
-import static io.opentelemetry.android.features.networkattrs.CurrentNetworkProvider.NO_NETWORK;
-import static io.opentelemetry.android.features.networkattrs.CurrentNetworkProvider.UNKNOWN_NETWORK;
+import static io.opentelemetry.android.internal.services.network.CurrentNetworkProvider.NO_NETWORK;
+import static io.opentelemetry.android.internal.services.network.CurrentNetworkProvider.UNKNOWN_NETWORK;
 
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
+import io.opentelemetry.android.internal.services.network.data.NetworkState;
 
 class SimpleNetworkDetector implements NetworkDetector {
     private final ConnectivityManager connectivityManager;
