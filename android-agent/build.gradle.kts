@@ -1,11 +1,7 @@
-
 plugins {
     id("otel.android-library-conventions")
     id("otel.publish-conventions")
 }
-
-// This submodule is alpha and is not yet intended to be used by itself
-version = project.version.toString().replaceFirst("(-SNAPSHOT)?$".toRegex(), "-alpha$1")
 
 android {
     namespace = "io.opentelemetry.android"
