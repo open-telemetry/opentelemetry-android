@@ -35,7 +35,7 @@ public final class AnrDetector {
     }
 
     /**
-     * Installs the ANR detection instrumentation on the given {@link InstrumentedApplication}.
+     * Installs the ANR detection instrumentation.
      *
      * <p>When the main thread is unresponsive for 5 seconds or more, an event including the main
      * thread's stack trace will be reported to the RUM system.

@@ -6,8 +6,8 @@
 package io.opentelemetry.android.instrumentation.fragment;
 
 import androidx.fragment.app.Fragment;
-import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.instrumentation.common.ActiveSpan;
+import io.opentelemetry.android.internal.tools.RumConstants;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;

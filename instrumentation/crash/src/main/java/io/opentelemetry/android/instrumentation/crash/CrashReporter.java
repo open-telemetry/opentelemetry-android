@@ -26,9 +26,7 @@ public final class CrashReporter {
         this.additionalExtractors = additionalExtractors;
     }
 
-    /**
-     * Installs the crash reporting instrumentation on the given {@link InstrumentedApplication}.
-     */
+    /** Installs the crash reporting instrumentation. */
     public void install(OpenTelemetryRum openTelemetryRum) {
         Thread.UncaughtExceptionHandler existingHandler =
                 Thread.getDefaultUncaughtExceptionHandler();

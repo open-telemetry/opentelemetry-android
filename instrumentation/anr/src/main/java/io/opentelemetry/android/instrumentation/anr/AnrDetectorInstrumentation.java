@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-/** A builder of {@link AnrDetector}. */
 public final class AnrDetectorInstrumentation implements AndroidInstrumentation {
 
     final List<AttributesExtractor<StackTraceElement[], Void>> additionalExtractors =
