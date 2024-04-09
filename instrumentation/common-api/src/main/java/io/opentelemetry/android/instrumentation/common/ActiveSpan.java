@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.common;
+package io.opentelemetry.android.instrumentation.common;
 
 import androidx.annotation.Nullable;
+import io.opentelemetry.android.internal.tools.RumConstants;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import java.util.function.Supplier;
