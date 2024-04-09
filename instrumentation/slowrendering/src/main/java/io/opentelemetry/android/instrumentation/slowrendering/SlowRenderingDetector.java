@@ -26,10 +26,7 @@ public final class SlowRenderingDetector {
         this.slowRenderingDetectionPollInterval = slowRenderingDetectionPollInterval;
     }
 
-    /**
-     * Installs the slow rendering detection instrumentation on the given {@link
-     * InstrumentedApplication}.
-     */
+    /** Installs the slow rendering detection instrumentation. */
     public void install(Application application, OpenTelemetryRum openTelemetryRum) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             Log.w(
