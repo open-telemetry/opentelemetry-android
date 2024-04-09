@@ -6,5 +6,5 @@
 package io.opentelemetry.android.features.networkattrs
 
 interface NetworkChangeListener {
-    fun onNetworkChange(currentNetwork: CurrentNetwork?)
+    fun onNetworkChange(currentNetwork: CurrentNetwork)
 }

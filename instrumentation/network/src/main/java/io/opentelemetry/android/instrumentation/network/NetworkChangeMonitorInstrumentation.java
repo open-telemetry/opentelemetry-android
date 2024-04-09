@@ -19,36 +19,21 @@ import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Entrypoint for installing the network change monitoring instrumentation.
- *
- * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
- * time.
- */
-public final class NetworkChangeMonitor implements AndroidInstrumentation {
+public final class NetworkChangeMonitorInstrumentation implements AndroidInstrumentation {
 
-    public static NetworkChangeMonitor create(CurrentNetworkProvider currentNetworkProvider) {
-        return builder(currentNetworkProvider).build();
+    final CurrentNetworkProvider currentNetworkProvider;
+    final List<AttributesExtractor<CurrentNetwork, Void>> additionalExtractors = new ArrayList<>();
+
+    public NetworkChangeMonitorInstrumentation(CurrentNetworkProvider currentNetworkProvider) {
+        this.currentNetworkProvider = currentNetworkProvider;
     }
 
-    public static NetworkChangeMonitorBuilder builder(
-            CurrentNetworkProvider currentNetworkProvider) {
-        return new NetworkChangeMonitorBuilder(currentNetworkProvider);
+    /** Adds an {@link AttributesExtractor} that will extract additional attributes. */
+    public NetworkChangeMonitorInstrumentation addAttributesExtractor(
+            AttributesExtractor<CurrentNetwork, Void> extractor) {
+        additionalExtractors.add(extractor);
+        return this;
     }
-
-    private final CurrentNetworkProvider currentNetworkProvider;
-    private final List<AttributesExtractor<CurrentNetwork, Void>> additionalExtractors;
-
-    NetworkChangeMonitor(NetworkChangeMonitorBuilder builder) {
-        this.currentNetworkProvider = builder.currentNetworkProvider;
-        this.additionalExtractors = new ArrayList<>(builder.additionalExtractors);
-    }
-
-    /**
-     * Installs the network change monitoring instrumentation on the given {@link
-     * InstrumentedApplication}.
-     */
-    public void installOn(InstrumentedApplication instrumentedApplication) {}
 
     private Instrumenter<CurrentNetwork, Void> buildInstrumenter(OpenTelemetry openTelemetry) {
         return Instrumenter.<CurrentNetwork, Void>builder(
