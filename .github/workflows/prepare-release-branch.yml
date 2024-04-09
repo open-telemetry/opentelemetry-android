@@ -46,9 +46,8 @@ jobs:
       - name: Update version
         run: .github/scripts/update-version.sh $VERSION
 
-      - name: Update download link version
-        run: |
-          sed -Ei "s,https://github\.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/,https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v$VERSION/," README.md
+      - name: Update version in README
+        run: sed -Ei "s/(\"io.opentelemetry.android:android-agent:).*\"/\1${VERSION}-alpha\"/" README.md
 
       - name: Update the change log with the approximate release date
         run: |
@@ -83,7 +82,6 @@ jobs:
       - name: Set environment variables
         run: |
           version=$(.github/scripts/get-version.sh)
-          version=${version//-SNAPSHOT/}
           if [[ $version =~ ^([0-9]+)\.([0-9]+)\.0$ ]]; then
             major="${BASH_REMATCH[1]}"
             minor="${BASH_REMATCH[2]}"
@@ -97,6 +95,9 @@ jobs:
 
       - name: Update version
         run: .github/scripts/update-version.sh $NEXT_VERSION
+
+      - name: Update version in README
+        run: sed -Ei "s/(\"io.opentelemetry.android:android-agent:).*\"/\1${VERSION}-alpha\"/" README.md
 
       - name: Update the change log on main
         run: |
