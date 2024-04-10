@@ -5,14 +5,14 @@
 
 package io.opentelemetry.android;
 
+import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.util.Map;
 
 public interface InitializationEvents {
 
     void sdkInitializationStarted();
 
-    void recordConfiguration(Map<String, String> config);
+    void recordConfiguration(OtelRumConfig config);
 
     void currentNetworkProviderInitialized();
 
@@ -32,7 +32,7 @@ public interface InitializationEvents {
                 public void sdkInitializationStarted() {}
 
                 @Override
-                public void recordConfiguration(Map<String, String> config) {}
+                public void recordConfiguration(OtelRumConfig config) {}
 
                 @Override
                 public void currentNetworkProviderInitialized() {}
