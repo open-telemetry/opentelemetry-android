@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.features.networkattrs;
 
-import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
+import io.opentelemetry.android.internal.services.network.CurrentNetworkService;
 import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -22,21 +22,21 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
  */
 public final class NetworkAttributesSpanAppender implements SpanProcessor {
 
-    public static SpanProcessor create(CurrentNetworkProvider currentNetworkProvider) {
-        return new NetworkAttributesSpanAppender(currentNetworkProvider);
+    public static SpanProcessor create(CurrentNetworkService currentNetworkService) {
+        return new NetworkAttributesSpanAppender(currentNetworkService);
     }
 
-    private final CurrentNetworkProvider currentNetworkProvider;
+    private final CurrentNetworkService currentNetworkService;
     private final CurrentNetworkAttributesExtractor networkAttributesExtractor =
             new CurrentNetworkAttributesExtractor();
 
-    NetworkAttributesSpanAppender(CurrentNetworkProvider currentNetworkProvider) {
-        this.currentNetworkProvider = currentNetworkProvider;
+    NetworkAttributesSpanAppender(CurrentNetworkService currentNetworkService) {
+        this.currentNetworkService = currentNetworkService;
     }
 
     @Override
     public void onStart(Context parentContext, ReadWriteSpan span) {
-        CurrentNetwork currentNetwork = currentNetworkProvider.getCurrentNetwork();
+        CurrentNetwork currentNetwork = currentNetworkService.getCurrentNetwork();
         span.setAllAttributes(networkAttributesExtractor.extract(currentNetwork));
     }
 

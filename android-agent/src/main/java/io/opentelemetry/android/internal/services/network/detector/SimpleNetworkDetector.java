@@ -5,8 +5,8 @@
 
 package io.opentelemetry.android.internal.services.network.detector;
 
-import static io.opentelemetry.android.internal.services.network.CurrentNetworkProvider.NO_NETWORK;
-import static io.opentelemetry.android.internal.services.network.CurrentNetworkProvider.UNKNOWN_NETWORK;
+import static io.opentelemetry.android.internal.services.network.CurrentNetworkService.NO_NETWORK;
+import static io.opentelemetry.android.internal.services.network.CurrentNetworkService.UNKNOWN_NETWORK;
 
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;

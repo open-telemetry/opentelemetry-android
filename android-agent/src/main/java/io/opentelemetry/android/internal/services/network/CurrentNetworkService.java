@@ -14,6 +14,7 @@ import android.net.NetworkRequest;
 import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import io.opentelemetry.android.internal.services.Service;
 import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
 import io.opentelemetry.android.internal.services.network.data.NetworkState;
 import io.opentelemetry.android.internal.services.network.detector.NetworkDetector;
@@ -29,35 +30,35 @@ import java.util.function.Supplier;
  * A provider of {@link CurrentNetwork} information. Registers itself in the Android {@link
  * ConnectivityManager} and listens for network changes.
  */
-public final class CurrentNetworkProvider {
+public final class CurrentNetworkService implements Service {
 
     public static final CurrentNetwork NO_NETWORK =
             CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build();
     public static final CurrentNetwork UNKNOWN_NETWORK =
             CurrentNetwork.builder(NetworkState.TRANSPORT_UNKNOWN).build();
 
-    /**
-     * Creates a new {@link CurrentNetworkProvider} instance and registers network callbacks in the
-     * Android {@link ConnectivityManager}.
-     */
-    public static CurrentNetworkProvider createAndStart(Application application) {
-        Context context = application.getApplicationContext();
-        CurrentNetworkProvider currentNetworkProvider =
-                new CurrentNetworkProvider(NetworkDetector.create(context));
-        currentNetworkProvider.startMonitoring(
-                CurrentNetworkProvider::createNetworkMonitoringRequest,
-                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
-        return currentNetworkProvider;
+    public static CurrentNetworkService create(Application application) {
+        return new CurrentNetworkService(
+                NetworkDetector.create(application),
+                (ConnectivityManager) application.getSystemService(Context.CONNECTIVITY_SERVICE));
     }
 
     private final NetworkDetector networkDetector;
+    private final ConnectivityManager connectivityManager;
 
     private volatile CurrentNetwork currentNetwork = UNKNOWN_NETWORK;
     private final List<NetworkChangeListener> listeners = new CopyOnWriteArrayList<>();
 
     // visible for tests
-    CurrentNetworkProvider(NetworkDetector networkDetector) {
+    CurrentNetworkService(
+            NetworkDetector networkDetector, ConnectivityManager connectivityManager) {
         this.networkDetector = networkDetector;
+        this.connectivityManager = connectivityManager;
+    }
+
+    @Override
+    public void start() {
+        startMonitoring(CurrentNetworkService::createNetworkMonitoringRequest, connectivityManager);
     }
 
     // visible for tests
@@ -141,7 +142,7 @@ public final class CurrentNetworkProvider {
             // ConnectivityManager to have the right
             // state at the right time during this event.
             CurrentNetwork currentNetwork = NO_NETWORK;
-            CurrentNetworkProvider.this.currentNetwork = currentNetwork;
+            CurrentNetworkService.this.currentNetwork = currentNetwork;
             Log.d(RumConstants.OTEL_RUM_LOG_TAG, "  onLost: currentNetwork=" + currentNetwork);
 
             notifyListeners(currentNetwork);
