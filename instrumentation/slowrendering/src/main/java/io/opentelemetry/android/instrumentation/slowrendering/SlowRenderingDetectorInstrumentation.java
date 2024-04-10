@@ -7,6 +7,7 @@ package io.opentelemetry.android.instrumentation.slowrendering;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
+import com.google.auto.service.AutoService;
 import io.opentelemetry.android.OpenTelemetryRum;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import java.time.Duration;
@@ -17,8 +18,8 @@ import java.time.Duration;
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
+@AutoService(AndroidInstrumentation.class)
 public final class SlowRenderingDetectorInstrumentation implements AndroidInstrumentation {
-
     private Duration slowRenderingDetectionPollInterval = Duration.ofSeconds(1);
 
     public void setSlowRenderingDetectionPollInterval(Duration slowRenderingDetectionPollInterval) {

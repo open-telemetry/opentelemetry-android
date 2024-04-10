@@ -8,6 +8,7 @@ package io.opentelemetry.android.instrumentation.anr;
 import android.app.Application;
 import android.os.Looper;
 import androidx.annotation.NonNull;
+import com.google.auto.service.AutoService;
 import io.opentelemetry.android.OpenTelemetryRum;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
@@ -16,8 +17,8 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+@AutoService(AndroidInstrumentation.class)
 public final class AnrDetectorInstrumentation implements AndroidInstrumentation {
-
     private final List<AttributesExtractor<StackTraceElement[], Void>> additionalExtractors =
             new ArrayList<>();
 

@@ -7,6 +7,7 @@ package io.opentelemetry.android.instrumentation.network;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
+import com.google.auto.service.AutoService;
 import io.opentelemetry.android.OpenTelemetryRum;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.internal.services.ServiceManager;
@@ -19,6 +20,7 @@ import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import java.util.ArrayList;
 import java.util.List;
 
+@AutoService(AndroidInstrumentation.class)
 public final class NetworkChangeMonitorInstrumentation implements AndroidInstrumentation {
 
     final List<AttributesExtractor<CurrentNetwork, Void>> additionalExtractors = new ArrayList<>();

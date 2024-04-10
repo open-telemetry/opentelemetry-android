@@ -7,6 +7,7 @@ package io.opentelemetry.android.instrumentation.crash;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
+import com.google.auto.service.AutoService;
 import io.opentelemetry.android.OpenTelemetryRum;
 import io.opentelemetry.android.RuntimeDetailsExtractor;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** A builder of {@link CrashReporter}. */
+@AutoService(AndroidInstrumentation.class)
 public final class CrashReporterInstrumentation implements AndroidInstrumentation {
     private final List<AttributesExtractor<CrashDetails, Void>> additionalExtractors =
             new ArrayList<>();
