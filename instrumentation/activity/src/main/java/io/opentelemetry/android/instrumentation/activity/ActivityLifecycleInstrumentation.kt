@@ -19,7 +19,16 @@ import io.opentelemetry.api.trace.Tracer
 
 class ActivityLifecycleInstrumentation : AndroidInstrumentation {
     private val startupTimer: AppStartupTimer by lazy { AppStartupTimer() }
-    private val screenNameExtractor: ScreenNameExtractor by lazy { ScreenNameExtractor.DEFAULT }
+    private var screenNameExtractor: ScreenNameExtractor = ScreenNameExtractor.DEFAULT
+    private var tracerCustomizer: (Tracer) -> Tracer = { it }
+
+    fun setTracerCustomizer(customizer: (Tracer) -> Tracer) {
+        tracerCustomizer = customizer
+    }
+
+    fun setScreenNameExtractor(screenNameExtractor: ScreenNameExtractor) {
+        this.screenNameExtractor = screenNameExtractor
+    }
 
     override fun apply(
         application: Application,
@@ -31,12 +40,10 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
 
     private fun buildActivityLifecycleTracer(openTelemetryRum: OpenTelemetryRum): DefaultingActivityLifecycleCallbacks {
         val visibleScreenService = ServiceManager.get().getService(VisibleScreenService::class.java)
-        val delegateTracer: Tracer =
-            openTelemetryRum.openTelemetry
-                .getTracer(INSTRUMENTATION_SCOPE)
+        val delegateTracer: Tracer = openTelemetryRum.openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
         val tracers =
             ActivityTracerCache(
-                delegateTracer,
+                tracerCustomizer.invoke(delegateTracer),
                 visibleScreenService,
                 startupTimer,
                 screenNameExtractor,
