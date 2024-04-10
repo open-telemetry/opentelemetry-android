@@ -8,7 +8,6 @@ package io.opentelemetry.android.config;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.screenattrs.ScreenAttributesSpanProcessor;
 import io.opentelemetry.api.common.Attributes;
-import java.time.Duration;
 import java.util.function.Supplier;
 
 /**
@@ -17,10 +16,6 @@ import java.util.function.Supplier;
  * components.
  */
 public class OtelRumConfig {
-
-    private static final Duration DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL =
-            Duration.ofSeconds(1);
-
     private Supplier<Attributes> globalAttributesSupplier = Attributes::empty;
     private boolean includeNetworkAttributes = true;
     private boolean generateSdkInitializationEvents = true;
