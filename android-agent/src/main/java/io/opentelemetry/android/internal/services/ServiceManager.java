@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.annotation.VisibleForTesting;
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
+import io.opentelemetry.android.internal.services.network.CurrentNetworkService;
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService;
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
 import java.util.HashMap;
@@ -38,6 +39,7 @@ public final class ServiceManager implements Lifecycle {
         instance.addService(new PeriodicWorkService());
         instance.addService(AppLifecycleService.create());
         instance.addService(VisibleScreenService.create(application));
+        instance.addService(CurrentNetworkService.create(application));
     }
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)

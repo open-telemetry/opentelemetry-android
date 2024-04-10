@@ -77,7 +77,6 @@ public final class OpenTelemetryRumBuilder {
             (a) -> a;
 
     private Resource resource;
-    @Nullable private CurrentNetworkService currentNetworkService = null;
     private InitializationEvents initializationEvents = InitializationEvents.NO_OP;
 
     private static TextMapPropagator buildDefaultPropagator() {
@@ -101,18 +100,6 @@ public final class OpenTelemetryRumBuilder {
      */
     public OpenTelemetryRumBuilder setResource(Resource resource) {
         this.resource = resource;
-        return this;
-    }
-
-    /**
-     * Call this to pass an existing CurrentNetworkProvider instance to share with the underlying
-     * OpenTelemetry Rum instrumentation.
-     *
-     * @return {@code this}
-     */
-    public OpenTelemetryRumBuilder setCurrentNetworkProvider(
-            CurrentNetworkService currentNetworkService) {
-        this.currentNetworkService = currentNetworkService;
         return this;
     }
 
@@ -348,11 +335,12 @@ public final class OpenTelemetryRumBuilder {
         // Network specific attributes
         if (config.shouldIncludeNetworkAttributes()) {
             // Add span processor that appends network attributes.
-            CurrentNetworkService currentNetworkService = getOrCreateCurrentNetworkProvider();
             addTracerProviderCustomizer(
                     (tracerProviderBuilder, app) -> {
                         SpanProcessor networkAttributesSpanAppender =
-                                NetworkAttributesSpanAppender.create(currentNetworkService);
+                                NetworkAttributesSpanAppender.create(
+                                        ServiceManager.get()
+                                                .getService(CurrentNetworkService.class));
                         return tracerProviderBuilder.addSpanProcessor(
                                 networkAttributesSpanAppender);
                     });
@@ -370,13 +358,6 @@ public final class OpenTelemetryRumBuilder {
                         return tracerProviderBuilder.addSpanProcessor(screenAttributesAppender);
                     });
         }
-    }
-
-    private CurrentNetworkService getOrCreateCurrentNetworkProvider() {
-        if (currentNetworkService == null) {
-            this.currentNetworkService = CurrentNetworkService.createAndStart(application);
-        }
-        return currentNetworkService;
     }
 
     private SdkTracerProvider buildTracerProvider(
