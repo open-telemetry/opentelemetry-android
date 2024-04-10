@@ -7,6 +7,7 @@ package io.opentelemetry.instrumentation.library.okhttp.v3_0.internal;
 
 import static java.util.Collections.singletonList;
 
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -31,28 +32,27 @@ public final class OkHttp3Singletons {
 
     private static final Supplier<Instrumenter<Request, Response>> INSTRUMENTER =
             CachedSupplier.create(
-                    () ->
-                            OkHttpInstrumenterFactory.create(
-                                    GlobalOpenTelemetry.get(),
-                                    builder ->
-                                            builder.setCapturedRequestHeaders(
-                                                            OkHttpInstrumentation
-                                                                    .getCapturedRequestHeaders())
-                                                    .setCapturedResponseHeaders(
-                                                            OkHttpInstrumentation
-                                                                    .getCapturedResponseHeaders())
-                                                    .setKnownMethods(
-                                                            OkHttpInstrumentation
-                                                                    .getKnownMethods()),
-                                    spanNameExtractorConfigurer ->
-                                            spanNameExtractorConfigurer.setKnownMethods(
-                                                    OkHttpInstrumentation.getKnownMethods()),
-                                    singletonList(
-                                            PeerServiceAttributesExtractor.create(
-                                                    OkHttpAttributesGetter.INSTANCE,
-                                                    OkHttpInstrumentation
-                                                            .newPeerServiceResolver())),
-                                    OkHttpInstrumentation.emitExperimentalHttpClientMetrics()));
+                    () -> {
+                        OkHttpInstrumentation instrumentation =
+                                AndroidInstrumentation.get(OkHttpInstrumentation.class);
+                        return OkHttpInstrumenterFactory.create(
+                                GlobalOpenTelemetry.get(),
+                                builder ->
+                                        builder.setCapturedRequestHeaders(
+                                                        instrumentation.getCapturedRequestHeaders())
+                                                .setCapturedResponseHeaders(
+                                                        instrumentation
+                                                                .getCapturedResponseHeaders())
+                                                .setKnownMethods(instrumentation.getKnownMethods()),
+                                spanNameExtractorConfigurer ->
+                                        spanNameExtractorConfigurer.setKnownMethods(
+                                                instrumentation.getKnownMethods()),
+                                singletonList(
+                                        PeerServiceAttributesExtractor.create(
+                                                OkHttpAttributesGetter.INSTANCE,
+                                                instrumentation.newPeerServiceResolver())),
+                                instrumentation.emitExperimentalHttpClientMetrics());
+                    });
 
     public static final Interceptor CALLBACK_CONTEXT_INTERCEPTOR =
             chain -> {
