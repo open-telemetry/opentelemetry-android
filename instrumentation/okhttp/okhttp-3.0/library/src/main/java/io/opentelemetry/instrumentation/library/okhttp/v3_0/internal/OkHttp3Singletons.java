@@ -13,7 +13,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.instrumentation.api.semconv.http.HttpClientRequestResendCount;
-import io.opentelemetry.instrumentation.library.okhttp.v3_0.OkHttpInstrumentationConfig;
+import io.opentelemetry.instrumentation.library.okhttp.v3_0.OkHttpInstrumentation;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.ConnectionErrorSpanInterceptor;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpAttributesGetter;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpInstrumenterFactory;
@@ -36,24 +36,23 @@ public final class OkHttp3Singletons {
                                     GlobalOpenTelemetry.get(),
                                     builder ->
                                             builder.setCapturedRequestHeaders(
-                                                            OkHttpInstrumentationConfig
+                                                            OkHttpInstrumentation
                                                                     .getCapturedRequestHeaders())
                                                     .setCapturedResponseHeaders(
-                                                            OkHttpInstrumentationConfig
+                                                            OkHttpInstrumentation
                                                                     .getCapturedResponseHeaders())
                                                     .setKnownMethods(
-                                                            OkHttpInstrumentationConfig
+                                                            OkHttpInstrumentation
                                                                     .getKnownMethods()),
                                     spanNameExtractorConfigurer ->
                                             spanNameExtractorConfigurer.setKnownMethods(
-                                                    OkHttpInstrumentationConfig.getKnownMethods()),
+                                                    OkHttpInstrumentation.getKnownMethods()),
                                     singletonList(
                                             PeerServiceAttributesExtractor.create(
                                                     OkHttpAttributesGetter.INSTANCE,
-                                                    OkHttpInstrumentationConfig
+                                                    OkHttpInstrumentation
                                                             .newPeerServiceResolver())),
-                                    OkHttpInstrumentationConfig
-                                            .emitExperimentalHttpClientMetrics()));
+                                    OkHttpInstrumentation.emitExperimentalHttpClientMetrics()));
 
     public static final Interceptor CALLBACK_CONTEXT_INTERCEPTOR =
             chain -> {

@@ -14,7 +14,8 @@ android {
 }
 
 dependencies {
-    compileOnly(libs.okhttp)
     api(libs.opentelemetry.instrumentation.okhttp)
+    api(project(":android-agent"))
     implementation(libs.opentelemetry.instrumentation.apiSemconv)
+    compileOnly(libs.okhttp)
 }
