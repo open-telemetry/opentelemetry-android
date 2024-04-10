@@ -18,18 +18,30 @@ public final class SdkPreconfiguredRumBuilder {
     private final Application application;
     private final OpenTelemetrySdk sdk;
     private final SessionId sessionId;
+    private final boolean discoverInstrumentations;
 
     private final List<AndroidInstrumentation> instrumentations = new ArrayList<>();
 
-    SdkPreconfiguredRumBuilder(Application application, OpenTelemetrySdk openTelemetrySdk) {
-        this(application, openTelemetrySdk, new SessionId(new SessionIdTimeoutHandler()));
+    SdkPreconfiguredRumBuilder(
+            Application application,
+            OpenTelemetrySdk openTelemetrySdk,
+            boolean discoverInstrumentations) {
+        this(
+                application,
+                openTelemetrySdk,
+                new SessionId(new SessionIdTimeoutHandler()),
+                discoverInstrumentations);
     }
 
     SdkPreconfiguredRumBuilder(
-            Application application, OpenTelemetrySdk openTelemetrySdk, SessionId sessionId) {
+            Application application,
+            OpenTelemetrySdk openTelemetrySdk,
+            SessionId sessionId,
+            boolean discoverInstrumentations) {
         this.application = application;
         this.sdk = openTelemetrySdk;
         this.sessionId = sessionId;
+        this.discoverInstrumentations = discoverInstrumentations;
     }
 
     /**
@@ -62,10 +74,18 @@ public final class SdkPreconfiguredRumBuilder {
         OpenTelemetryRumImpl openTelemetryRum = new OpenTelemetryRumImpl(sdk, sessionId);
 
         // Apply instrumentations
-        for (AndroidInstrumentation instrumentation : instrumentations) {
+        for (AndroidInstrumentation instrumentation : getInstrumentations()) {
             instrumentation.apply(application, openTelemetryRum);
         }
 
         return openTelemetryRum;
+    }
+
+    private List<AndroidInstrumentation> getInstrumentations() {
+        if (discoverInstrumentations) {
+            instrumentations.addAll(AndroidInstrumentation.getAll());
+        }
+
+        return instrumentations;
     }
 }
