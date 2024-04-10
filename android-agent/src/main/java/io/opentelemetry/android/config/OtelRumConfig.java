@@ -20,6 +20,7 @@ public class OtelRumConfig {
     private boolean includeNetworkAttributes = true;
     private boolean generateSdkInitializationEvents = true;
     private boolean includeScreenAttributes = true;
+    private boolean discoverInstrumentations = true;
     private DiskBufferingConfiguration diskBufferingConfiguration =
             DiskBufferingConfiguration.builder().build();
 
@@ -90,6 +91,24 @@ public class OtelRumConfig {
     /** Return true if the SDK should be configured to report screen attributes. */
     public boolean shouldIncludeScreenAttributes() {
         return includeScreenAttributes;
+    }
+
+    /**
+     * Return true if the RUM initialization should look for instrumentations in the classpath and
+     * apply them automatically.
+     */
+    public boolean shouldDiscoverInstrumentations() {
+        return discoverInstrumentations;
+    }
+
+    /**
+     * Call this to disable the automatic search for instrumentations in the classpath.
+     *
+     * @return this
+     */
+    public OtelRumConfig disableInstrumentationDiscovery() {
+        discoverInstrumentations = false;
+        return this;
     }
 
     public DiskBufferingConfiguration getDiskBufferingConfiguration() {
