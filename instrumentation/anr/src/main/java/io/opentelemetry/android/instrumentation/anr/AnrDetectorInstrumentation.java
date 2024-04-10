@@ -18,15 +18,20 @@ import java.util.concurrent.ScheduledExecutorService;
 
 public final class AnrDetectorInstrumentation implements AndroidInstrumentation {
 
-    final List<AttributesExtractor<StackTraceElement[], Void>> additionalExtractors =
+    private final List<AttributesExtractor<StackTraceElement[], Void>> additionalExtractors =
             new ArrayList<>();
-    Looper mainLooper = Looper.getMainLooper();
-    ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+    /** Adds an {@link AttributesExtractor} that will extract additional attributes. */
+    public void addAttributesExtractor(AttributesExtractor<StackTraceElement[], Void> extractor) {
+        additionalExtractors.add(extractor);
+    }
 
     @Override
     public void apply(
             @NonNull Application application, @NonNull OpenTelemetryRum openTelemetryRum) {
-        AnrDetector anrDetector = new AnrDetector(additionalExtractors, mainLooper, scheduler);
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        AnrDetector anrDetector =
+                new AnrDetector(additionalExtractors, Looper.getMainLooper(), scheduler);
         anrDetector.install(openTelemetryRum);
     }
 }
