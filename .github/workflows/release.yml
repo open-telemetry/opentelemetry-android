@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       branch_specifier:
-        description: The branch to release e.g. release/x.x.x
+        description: The branch to release e.g. release/vX.Y.Z
         required: true
         default: "main"
         type: string
