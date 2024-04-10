@@ -7,10 +7,10 @@ package io.opentelemetry.android.instrumentation.network;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import io.opentelemetry.android.features.networkattrs.CurrentNetwork;
-import io.opentelemetry.android.features.networkattrs.CurrentNetworkProvider;
-import io.opentelemetry.android.features.networkattrs.NetworkChangeListener;
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
+import io.opentelemetry.android.internal.services.network.CurrentNetworkService;
+import io.opentelemetry.android.internal.services.network.NetworkChangeListener;
+import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
@@ -19,15 +19,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class NetworkApplicationListener implements ApplicationStateListener {
     static final AttributeKey<String> NETWORK_STATUS_KEY = stringKey("network.status");
 
-    private final CurrentNetworkProvider currentNetworkProvider;
+    private final CurrentNetworkService currentNetworkService;
     private final AtomicBoolean shouldEmitChangeEvents = new AtomicBoolean(true);
 
-    NetworkApplicationListener(CurrentNetworkProvider currentNetworkProvider) {
-        this.currentNetworkProvider = currentNetworkProvider;
+    NetworkApplicationListener(CurrentNetworkService currentNetworkService) {
+        this.currentNetworkService = currentNetworkService;
     }
 
     void startMonitoring(Instrumenter<CurrentNetwork, Void> instrumenter) {
-        currentNetworkProvider.addNetworkChangeListener(
+        currentNetworkService.addNetworkChangeListener(
                 new TracingNetworkChangeListener(instrumenter, shouldEmitChangeEvents));
     }
 

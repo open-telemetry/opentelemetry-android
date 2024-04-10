@@ -8,9 +8,9 @@ package io.opentelemetry.android.instrumentation.network;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.semconv.SemanticAttributes.NETWORK_CONNECTION_TYPE;
 
-import io.opentelemetry.android.features.networkattrs.CurrentNetwork;
 import io.opentelemetry.android.features.networkattrs.CurrentNetworkAttributesExtractor;
-import io.opentelemetry.android.features.networkattrs.NetworkState;
+import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
+import io.opentelemetry.android.internal.services.network.data.NetworkState;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
