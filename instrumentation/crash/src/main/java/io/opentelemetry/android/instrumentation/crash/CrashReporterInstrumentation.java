@@ -16,16 +16,12 @@ import java.util.List;
 
 /** A builder of {@link CrashReporter}. */
 public final class CrashReporterInstrumentation implements AndroidInstrumentation {
-
-    final List<AttributesExtractor<CrashDetails, Void>> additionalExtractors = new ArrayList<>();
-
-    public CrashReporterInstrumentation() {}
+    private final List<AttributesExtractor<CrashDetails, Void>> additionalExtractors =
+            new ArrayList<>();
 
     /** Adds an {@link AttributesExtractor} that will extract additional attributes. */
-    public CrashReporterInstrumentation addAttributesExtractor(
-            AttributesExtractor<CrashDetails, Void> extractor) {
+    public void addAttributesExtractor(AttributesExtractor<CrashDetails, Void> extractor) {
         additionalExtractors.add(extractor);
-        return this;
     }
 
     @Override
