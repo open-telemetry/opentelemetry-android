@@ -30,7 +30,6 @@ jobs:
       - name: Create release branch
         run: |
           version=$(.github/scripts/get-version.sh)
-          version=${version//-SNAPSHOT/}
           if [[ $version =~ ^([0-9]+)\.([0-9]+)\.0$ ]]; then
             release_branch_name=$(echo $version | sed -E 's/([0-9]+)\.([0-9]+)\.0/release\/v\1.\2.x/')
           else
