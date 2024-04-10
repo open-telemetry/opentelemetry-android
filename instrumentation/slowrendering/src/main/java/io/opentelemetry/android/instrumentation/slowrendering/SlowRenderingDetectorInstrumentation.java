@@ -19,7 +19,11 @@ import java.time.Duration;
  */
 public final class SlowRenderingDetectorInstrumentation implements AndroidInstrumentation {
 
-    Duration slowRenderingDetectionPollInterval = Duration.ofSeconds(1);
+    private Duration slowRenderingDetectionPollInterval = Duration.ofSeconds(1);
+
+    public void setSlowRenderingDetectionPollInterval(Duration slowRenderingDetectionPollInterval) {
+        this.slowRenderingDetectionPollInterval = slowRenderingDetectionPollInterval;
+    }
 
     @Override
     public void apply(
