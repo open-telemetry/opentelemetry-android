@@ -65,7 +65,7 @@ class GlobalOpenTelemetryTest {
 
     private fun execute(parentSpan: Span) {
         val client: OkHttpClient = OkHttpClient.Builder()
-                .addInterceptor(TestInjectingInterceptor())
+                .addInterceptor(FixedTestInterceptor())
                 .addNetworkInterceptor(OkHttp3Singletons.TRACING_INTERCEPTOR)
                 .addInterceptor {
                     response(parentSpan, it)

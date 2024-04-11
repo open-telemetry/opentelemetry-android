@@ -61,7 +61,7 @@ class JaegerPropagatorIgnoredTest {
 
     private fun execute(parentSpan: Span, server: MockWebServer) {
         val client: OkHttpClient = OkHttpClient.Builder()
-                .addInterceptor(TestInjectingInterceptor())
+                .addInterceptor(FixedTestInterceptor())
                 //Pay attention that this is done without any context related to open telemetry.
                 .addNetworkInterceptor(OkHttp3Singletons.TRACING_INTERCEPTOR)
                 .addInterceptor {

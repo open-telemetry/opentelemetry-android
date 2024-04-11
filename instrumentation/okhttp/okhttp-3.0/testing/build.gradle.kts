@@ -30,5 +30,7 @@ dependencies {
     testImplementation(libs.opentelemetry.instrumentation.apiSemconv)
     testImplementation("junit:junit:4.13.2")
 
-
+    testImplementation(libs.retrofit)
+    testImplementation(libs.converter.gson)
+    testImplementation(libs.retrofit2.adapter.rxjava2)
 }
