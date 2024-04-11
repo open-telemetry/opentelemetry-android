@@ -46,8 +46,8 @@ class DemoApp : Application(), AppScope {
 
     companion object {
         const val LOG_TAG = "trace"
-        fun appScope(context: android.content.Context): AppScope {
-            return context.applicationContext as AppScope
+        fun appScope(context: AppContext): AppScope {
+            return context.context.applicationContext as AppScope
         }
     }
 }

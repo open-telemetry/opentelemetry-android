@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import app.AppContext
 import com.example.hello_otel.R
 import network.UserToken
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
@@ -43,7 +44,7 @@ class LoggedOutFragment : Fragment() {
     }
 
     private fun auth(success: Boolean) {
-        AuthRepo(requireContext()).auth(success)
+        AuthRepo(appContext()).auth(success)
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(AndroidLifecycleScopeProvider.from(this))
                 .subscribe(
@@ -54,9 +55,11 @@ class LoggedOutFragment : Fragment() {
     }
 
     private fun onAuthSuccess(it: UserToken) {
-        TokenRepo(requireContext()).saveToken(it.token)
+        TokenRepo(appContext()).saveToken(it.token)
         (requireActivity() as LoggedInListener).onLoggedIn()
     }
+
+    private fun appContext() = AppContext.from(requireContext())
 
     private fun onAuthError(it: Throwable) {
         Timber.e(it)

@@ -1,32 +1,35 @@
 package repo
 
-import android.content.Context
+import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
+import app.AppContext
 
 
-class TokenRepo(private val context: Context) {
+class TokenRepo(private val context: AppContext) {
 
 
     fun saveToken(token: String) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putString(KEY_TOKEN, token).apply()
+        preferences().edit().putString(KEY_TOKEN, token).apply()
     }
 
     fun eraseToken() {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().remove(KEY_TOKEN).apply()
+        preferences().edit().remove(KEY_TOKEN).apply()
     }
 
     fun isLoggedIn(): Boolean {
-        val string = rawToken()
-        return string != null
+        return rawToken() != null
     }
 
     fun token(): String {
-        val string = rawToken()
-        return string?:""
+        return rawToken() ?: ""
     }
 
     private fun rawToken(): String? {
-        return PreferenceManager.getDefaultSharedPreferences(context).getString(KEY_TOKEN, null)
+        return preferences().getString(KEY_TOKEN, null)
+    }
+
+    private fun preferences(): SharedPreferences {
+        return PreferenceManager.getDefaultSharedPreferences(context.context)
     }
 
     companion object {

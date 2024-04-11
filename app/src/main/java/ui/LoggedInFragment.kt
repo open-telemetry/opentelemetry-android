@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import app.AppContext
 import app.DemoApp
 import com.example.hello_otel.R
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
@@ -79,16 +80,16 @@ class LoggedInFragment : Fragment() {
     }
 
     private fun checkout(withBaggage: Boolean): Single<UserStatus> {
-        return CheckOutRepo(requireContext()).checkingOut(withBaggage)
+        return CheckOutRepo(appContext()).checkingOut(withBaggage)
     }
 
     private fun checkingIn(): Single<UserStatus> {
-        return DemoApp.appScope(requireContext()).restApi().checkIn(TokenRepo(requireContext()).token())
+        return DemoApp.appScope(appContext()).restApi().checkIn(TokenRepo(appContext()).token())
     }
 
 
     private fun loggingOut(): Single<LogOutStatus> {
-        return DemoApp.appScope(requireContext()).restApi().logOut()
+        return DemoApp.appScope(appContext()).restApi().logOut()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -120,9 +121,11 @@ class LoggedInFragment : Fragment() {
         if (!status.loggedOut) {
             Toast.makeText(requireContext(), "Forcing logging out", Toast.LENGTH_SHORT).show()
         }
-        TokenRepo(requireContext()).eraseToken()
+        TokenRepo(appContext()).eraseToken()
         (requireActivity() as LoggedOutListener).onLoggedOut()
     }
+
+    private fun appContext() = AppContext.from(requireContext())
 
     interface LoggedOutListener {
         fun onLoggedOut()

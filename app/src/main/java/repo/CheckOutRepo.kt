@@ -1,5 +1,6 @@
 package repo
 
+import app.AppContext
 import app.DemoApp
 import io.opentelemetry.api.baggage.Baggage
 import io.opentelemetry.context.Context
@@ -8,7 +9,7 @@ import io.reactivex.schedulers.Schedulers
 import network.UserStatus
 
 
-class CheckOutRepo(private val appContext: android.content.Context) {
+class CheckOutRepo(private val appContext: AppContext) {
 
     fun checkingOut(withBaggage: Boolean): Single<UserStatus> {
         Context.current().with(ignoredBaggage()).makeCurrent().use {

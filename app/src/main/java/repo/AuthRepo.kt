@@ -1,12 +1,13 @@
 package repo
 
 import android.content.Context
+import app.AppContext
 import app.DemoApp
 import network.UserToken
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 
-class AuthRepo(private val app: Context) {
+class AuthRepo(private val app: AppContext) {
 
     private fun authInternal(flag: Int): Single<UserToken> {
         return Single.defer {
