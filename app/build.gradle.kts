@@ -34,9 +34,7 @@ dependencies {
     implementation(libs.autodispose)
     implementation(libs.autodispose.android.archcomponents)
     implementation(libs.autodispose.android)
-
-
-
+    implementation(libs.androidx.preference)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

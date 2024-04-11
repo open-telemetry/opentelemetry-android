@@ -1,11 +1,15 @@
 <resources>
   <string name="app_name">hello_otel</string>
-  <string name="action_settings">Show Uber Trace Id</string>
+  <string name="action_show_log">Show Log</string>
+  <string name="action_log_out">Log out</string>
   <!-- Strings used for fragments for navigation -->
-  <string name="first_fragment_label">Check Profile </string>
-  <string name="second_fragment_label">Check Data</string>
+  <string name="login_action_label">Log In </string>
+  <string name="check_in_action_label">Check In</string>
   <string name="next">Next</string>
   <string name="previous">Previous</string>
+  <string name="check_in">Check In</string>
+  <string name="log_in_success">Log In</string>
+  <string name="log_in_failure">Log In Failure</string>
 
   <string name="lorem_ipsum">
    This is test data
