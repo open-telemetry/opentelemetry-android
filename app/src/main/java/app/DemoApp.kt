@@ -15,13 +15,6 @@ import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 
-interface AppScope {
-
-    fun dumpData(): List<Any>
-    fun restApi(): RestApi
-    fun recordedRequest(): RecordedRequest?
-}
-
 class DemoApp : Application(), AppScope {
     private val server = MockWebServer()
     private var rootSpan: Span? = null
