@@ -31,7 +31,6 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -40,39 +39,6 @@ import java.io.IOException
 
 @RunWith(RobolectricTestRunner::class)
 class JaegerPropagatorTest {
-
-
-    @Ignore("State conflict with case 1")
-    @Test
-    @Throws(IOException::class, InterruptedException::class)
-    fun `case 0 when jaeger propagator is not added it will not trigger the request with uber header`() {
-
-        //arrange
-        val inMemorySpanExporter = InMemorySpanExporter.create()
-        GlobalOpenTelemetryUtil.setSdkWithAllDefault()
-        val server = MockWebServer()
-        server.start()
-        server.enqueue(MockResponse().setResponseCode(200))
-        val span = SpanUtil.startSpan()
-        //act
-        span.makeCurrent().use {
-            execute(span, server)
-        }
-        span.end()
-        //affirm
-        assertThat(inMemorySpanExporter.finishedSpanItems).hasSize(0)
-        //assert
-        val recordedRequest = server.takeRequest()
-        val uberTraceId = recordedRequest.headers["uber-trace-id"]
-        val spanTraceId = span.spanContext.traceId
-        //example value 8d828d3c7c8663418b067492675bef12
-        assertThat(spanTraceId).isNotEmpty()
-        assertThat(uberTraceId).isNull()
-
-        //clean up
-        server.shutdown()
-        inMemorySpanExporter.reset()
-    }
 
     @Test
     @Throws(IOException::class, InterruptedException::class)
@@ -103,6 +69,7 @@ class JaegerPropagatorTest {
         val spanBuilder: SpanBuilder = tracer.spanBuilder("A Test Span")
         val baggage = Baggage.builder()
                 .put("user.name", "jack")
+                .put("user.id", "321")
                 .build()
         val makeCurrent: Scope = Context.current().with(baggage).makeCurrent()
         makeCurrent.use {
@@ -140,6 +107,12 @@ class JaegerPropagatorTest {
         val finishedSpanItems = inMemorySpanExporter.finishedSpanItems
         assertThat(finishedSpanItems).hasSize(2)
         val recordedRequest = server.takeRequest()
+        //affirm
+        assertThat(recordedRequest.headers).hasSize(10)
+        val list: List<Pair<String, String>> = recordedRequest.headers.filter { it.first.startsWith("uberctx") }
+        assertThat(list).containsExactlyElementsIn(
+                listOf(Pair("uberctx-user.id", "321"), Pair("uberctx-user.name", "jack"))
+        )
         val uberTraceId = recordedRequest.headers["uber-trace-id"]
         val spanTraceId = rootSpan.spanContext.traceId
         //example value 8d828d3c7c8663418b067492675bef12
