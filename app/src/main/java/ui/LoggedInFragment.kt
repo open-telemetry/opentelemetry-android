@@ -14,8 +14,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import app.DemoApp
-import app.LogOutStatus
-import app.UserStatus
+import network.LogOutStatus
+import network.UserStatus
 import com.example.hello_otel.R
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose

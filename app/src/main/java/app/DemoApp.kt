@@ -1,24 +1,18 @@
 package app
 
 import android.app.Application
-import network.MockWebServerUtil
-import network.RestApiUtil
-import com.google.gson.annotations.SerializedName
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.data.SpanData
+import network.MockWebServerUtil
 import network.RestApi
+import network.RestApiUtil
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
-
-
-data class UserToken(@SerializedName("token") val token: String)
-data class UserStatus(@SerializedName("status") val status: String)
-data class LogOutStatus(@SerializedName("logged_out") val loggedOut: Boolean)
 
 
 interface AppScope {
