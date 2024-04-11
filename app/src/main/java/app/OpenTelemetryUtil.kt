@@ -10,7 +10,6 @@ import io.opentelemetry.sdk.trace.export.SpanExporter
 
 object OpenTelemetryUtil {
 
-
     fun configOpenTelemetry(spanExporter:SpanExporter) {
         val jaegerPropagator: JaegerPropagator = JaegerPropagator.getInstance()
         val contextPropagators = ContextPropagators.create(jaegerPropagator)
@@ -20,8 +19,4 @@ object OpenTelemetryUtil {
                 .setPropagators(contextPropagators)
                 .build())
     }
-
-
-
-
 }

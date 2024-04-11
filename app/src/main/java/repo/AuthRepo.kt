@@ -1,6 +1,5 @@
 package repo
 
-import android.content.Context
 import app.AppContext
 import app.DemoApp
 import network.UserToken
@@ -12,7 +11,7 @@ class AuthRepo(private val app: AppContext) {
     private fun authInternal(flag: Int): Single<UserToken> {
         return Single.defer {
             DemoApp.appScope(app).restApi()
-                    .login(flag)
+                    .logIn(flag)
         }
                 .subscribeOn(Schedulers.io())
     }

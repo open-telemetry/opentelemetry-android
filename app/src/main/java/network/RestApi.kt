@@ -6,7 +6,7 @@ import retrofit2.http.Header
 
 interface RestApi {
     @GET("log_in")
-    fun login(@Header("x-bypass") flag: Int): Single<UserToken>
+    fun logIn(@Header("x-bypass") flag: Int): Single<UserToken>
 
     @GET("log_out")
     fun logOut(): Single<LogOutStatus>
@@ -16,6 +16,7 @@ interface RestApi {
 
     @GET("check_out")
     fun checkout(): retrofit2.Call<UserStatus>
+
     @GET("check_out")
     fun checkoutWithoutBaggage(): Single<UserStatus>
 }

@@ -13,27 +13,25 @@ class CheckOutRepo(private val appContext: AppContext) {
 
     fun checkingOut(withBaggage: Boolean): Single<UserStatus> {
         Context.current().with(ignoredBaggage()).makeCurrent().use {
-            return if (withBaggage) callable() else rxjava()
+            return if (withBaggage) withBaggage() else withoutBaggage()
         }
     }
 
-    private fun callable(): Single<UserStatus> {
-        return Single.fromCallable { checkingOutWithBaggage() }
+    private fun withBaggage(): Single<UserStatus> {
+        return Single.fromCallable { withBaggageInternal() }
     }
 
-    private fun checkingOutWithBaggage(): UserStatus {
+    private fun withBaggageInternal(): UserStatus {
         Context.current().with(attachedBaggage()).makeCurrent().use {
             return DemoApp.appScope(appContext).restApi().checkout().execute().body()!!
         }
     }
 
-    private fun rxjava(): Single<UserStatus> {
-        return Single.defer { single() }
-                .subscribeOn(Schedulers.computation())
-
+    private fun withoutBaggage(): Single<UserStatus> {
+        return Single.defer { withoutBaggageInternal() }.subscribeOn(Schedulers.computation())
     }
 
-    private fun single(): Single<UserStatus> {
+    private fun withoutBaggageInternal(): Single<UserStatus> {
         return Context.current().with(attachedBaggageRx()).makeCurrent().use {
             DemoApp.appScope(appContext).restApi().checkoutWithoutBaggage()
         }
@@ -41,20 +39,20 @@ class CheckOutRepo(private val appContext: AppContext) {
 
     private fun ignoredBaggage(): Baggage {
         return Baggage.builder()
-                .put("user.name", "jack")
+                .put("user.name", "tony")
                 .put("user.id", "321")
                 .build()
     }
 
     private fun attachedBaggage(): Baggage {
         return Baggage.builder()
-                .put("user.name", "tony")
+                .put("session_id", "test_session_id")
                 .build()
     }
 
     private fun attachedBaggageRx(): Baggage {
         return Baggage.builder()
-                .put("user.name.rx", "tony")
+                .put("session_id", "ignored_session_id")
                 .build()
     }
 
