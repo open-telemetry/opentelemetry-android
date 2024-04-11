@@ -41,7 +41,10 @@ class LoggedInFragment : Fragment() {
         }
 
         loggedInView.findViewById<View>(R.id.btn_check_out).setOnClickListener {
-            checkOut(loggedInView.findViewById(R.id.tv_status))
+            checkingOut(checkout(true), loggedInView.findViewById(R.id.tv_status))
+        }
+        loggedInView.findViewById<View>(R.id.btn_check_out_without_baggage).setOnClickListener {
+            checkingOut(checkout(false), loggedInView.findViewById(R.id.tv_status))
         }
     }
 
@@ -62,8 +65,8 @@ class LoggedInFragment : Fragment() {
                 )
     }
 
-    private fun checkOut(tvStatus: TextView) {
-        CheckOutRepo(requireContext()).checkingOut()
+    private fun checkingOut(call: Single<UserStatus>, tvStatus: TextView) {
+        call
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(AndroidLifecycleScopeProvider.from(this))
@@ -72,6 +75,10 @@ class LoggedInFragment : Fragment() {
                             tvStatus.text = it.status
                         }
                 )
+    }
+
+    private fun checkout(withBaggage: Boolean): Single<UserStatus> {
+        return CheckOutRepo(requireContext()).checkingOut(withBaggage)
     }
 
     private fun checkingIn(): Single<UserStatus> {

@@ -18,6 +18,12 @@
         android:layout_height="wrap_content"
         android:text="@string/check_out" />
 
+    <Button
+        android:id="@+id/btn_check_out_without_baggage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/check_out_without_baggage" />
+
     <TextView
         android:id="@+id/tv_status"
         style="@style/TextAppearance.AppCompat.Display1"

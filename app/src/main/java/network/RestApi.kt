@@ -19,4 +19,6 @@ interface RestApi {
 
     @GET("check_out")
     fun checkout(): retrofit2.Call<UserStatus>
+    @GET("check_out")
+    fun checkoutWithoutBaggage(): Single<UserStatus>
 }

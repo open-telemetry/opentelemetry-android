@@ -13,4 +13,5 @@
     <string name="check_in_status">To Be Checked In</string>
     <string name="action_log_history">Action Log…</string>
     <string name="check_out">Check out</string>
+    <string name="check_out_without_baggage">Check out without Baggage</string>
 </resources>
