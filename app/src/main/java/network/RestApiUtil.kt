@@ -25,7 +25,7 @@ object RestApiUtil {
                 .client(client)
                 .baseUrl(server.url("rt/v1/"))
                 .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build().create(RestApi::class.java)
     }
 
