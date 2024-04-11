@@ -17,13 +17,7 @@ import java.util.concurrent.TimeUnit
 
 class DemoApp : Application(), AppScope {
     private val server = MockWebServer()
-    private var rootSpan: Span? = null
     private val inMemorySpanExporter = InMemorySpanExporter.create()
-    private val openTelemetryRum: OpenTelemetryRum by lazy {
-        val instance = OpenTelemetryRum.builder(this).build()
-        GlobalOpenTelemetry.set(instance.openTelemetry)
-        instance
-    }
     private val restApi by lazy {
         RestApiUtil.restApi(this, server)
     }
@@ -32,7 +26,7 @@ class DemoApp : Application(), AppScope {
         super.onCreate()
         plantTimberLogger()
         MockWebServerUtil.initServer(server)
-        this.rootSpan = OpenTelemetryUtil.kickOffRootSpan(openTelemetryRum)
+        OpenTelemetryUtil.configOpenTelemetry(inMemorySpanExporter)
     }
 
 
