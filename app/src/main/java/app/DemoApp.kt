@@ -20,8 +20,6 @@ interface AppScope {
     fun dumpData(): List<Any>
     fun restApi(): RestApi
     fun recordedRequest(): RecordedRequest?
-    fun openTelemetryRum(): OpenTelemetryRum
-    fun rootSpan(): Span?
 }
 
 class DemoApp : Application(), AppScope {
@@ -60,14 +58,6 @@ class DemoApp : Application(), AppScope {
 
     override fun recordedRequest(): RecordedRequest? {
         return server.takeRequest(3, TimeUnit.SECONDS)
-    }
-
-    override fun openTelemetryRum(): OpenTelemetryRum {
-        return openTelemetryRum
-    }
-
-    override fun rootSpan(): Span? {
-        return rootSpan
     }
 
     companion object {
