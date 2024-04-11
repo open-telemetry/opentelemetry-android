@@ -126,6 +126,7 @@ class JaegerPropagatorMiniTest {
         //affirm
         assertThat(request.headers).hasSize(9)
         val list: List<Pair<String, String>> = request.headers.filter { it.first.startsWith("uberctx") }
+        //assert the root baggage
         assertThat(list).containsExactlyElementsIn(
                 listOf(Pair("uberctx-user.id", "321"), Pair("uberctx-user.name", "jack"))
         )
@@ -146,6 +147,7 @@ class JaegerPropagatorMiniTest {
         //affirm
         assertThat(request.headers).hasSize(8)
         val list: List<Pair<String, String>> = request.headers.filter { it.first.startsWith("uberctx") }
+        //assert the logged in baggage
         assertThat(list).containsExactlyElementsIn(
                 listOf(Pair("uberctx-user.logged_in", "true"))
         )
@@ -175,6 +177,9 @@ class JaegerPropagatorMiniTest {
         return restApi.profile("1234").execute().body()!!
     }
 
+    /**
+     * Configured the root baggage
+     */
     private fun rootBaggage(): Baggage {
         return Baggage.builder()
                 .put("user.name", "jack")
@@ -182,6 +187,9 @@ class JaegerPropagatorMiniTest {
                 .build()
     }
 
+    /**
+     * Configured the logged-in baggage
+     */
     private fun loggedInBaggage(): Baggage {
         return Baggage.builder()
                 .put("user.logged_in", "true")
