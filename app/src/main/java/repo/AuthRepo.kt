@@ -26,7 +26,7 @@ class AuthRepo(private val app: AppContext) {
     }
 
     private fun userToken1(flag: Int): UserToken {
-        return DemoApp.appScope(app).callableApi().logIn(flag).execute().body()!!
+        return DemoApp.appScope(app).singleApi().logIn(flag).blockingGet()
     }
 
 
