@@ -4,7 +4,8 @@ import io.reactivex.Single
 import retrofit2.http.GET
 import retrofit2.http.Header
 
-interface RestApi {
+interface SingleApi {
+
     @GET("log_in")
     fun logIn(@Header("x-bypass") flag: Int): Single<UserToken>
 
@@ -15,8 +16,6 @@ interface RestApi {
     fun checkIn(@Header("token") flag: String): Single<UserStatus>
 
     @GET("check_out")
-    fun checkout(): retrofit2.Call<UserStatus>
-
-    @GET("check_out")
     fun checkoutWithoutBaggage(): Single<UserStatus>
+
 }

@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.chuckerteam.chucker.api.Chucker
 import com.example.hello_otel.R
-import repo.TokenRepo
+import repo.TokenStore
 import ui.LoggedInFragment
 import ui.LoggedOutFragment
 
@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity(), LoggedInFragment.LoggedOutListener, Lo
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        if (TokenRepo(AppContext.from(this)).isLoggedIn()) {
+        if (TokenStore(AppContext.from(this)).isLoggedIn()) {
             bindLoggedInState()
         } else {
             bindLoggedOutState()

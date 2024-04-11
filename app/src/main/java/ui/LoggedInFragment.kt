@@ -25,7 +25,7 @@ import io.reactivex.schedulers.Schedulers
 import network.LogOutStatus
 import network.UserStatus
 import repo.CheckOutRepo
-import repo.TokenRepo
+import repo.TokenStore
 
 class LoggedInFragment : Fragment() {
 
@@ -84,12 +84,12 @@ class LoggedInFragment : Fragment() {
     }
 
     private fun checkingIn(): Single<UserStatus> {
-        return DemoApp.appScope(appContext()).restApi().checkIn(TokenRepo(appContext()).token())
+        return DemoApp.appScope(appContext()).singleApi().checkIn(TokenStore(appContext()).token())
     }
 
 
     private fun loggingOut(): Single<LogOutStatus> {
-        return DemoApp.appScope(appContext()).restApi().logOut()
+        return DemoApp.appScope(appContext()).singleApi().logOut()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -121,7 +121,7 @@ class LoggedInFragment : Fragment() {
         if (!status.loggedOut) {
             Toast.makeText(requireContext(), "Forcing logging out", Toast.LENGTH_SHORT).show()
         }
-        TokenRepo(appContext()).eraseToken()
+        TokenStore(appContext()).eraseToken()
         (requireActivity() as LoggedOutListener).onLoggedOut()
     }
 

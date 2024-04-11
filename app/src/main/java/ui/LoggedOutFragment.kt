@@ -16,7 +16,7 @@ import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import repo.AuthRepo
-import repo.TokenRepo
+import repo.TokenStore
 import timber.log.Timber
 
 /**
@@ -55,7 +55,7 @@ class LoggedOutFragment : Fragment() {
     }
 
     private fun onAuthSuccess(it: UserToken) {
-        TokenRepo(appContext()).saveToken(it.token)
+        TokenStore(appContext()).saveToken(it.token)
         (requireActivity() as LoggedInListener).onLoggedIn()
     }
 

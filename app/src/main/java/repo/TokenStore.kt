@@ -5,8 +5,7 @@ import androidx.preference.PreferenceManager
 import app.AppContext
 
 
-class TokenRepo(private val context: AppContext) {
-
+class TokenStore(private val context: AppContext) {
 
     fun saveToken(token: String) {
         preferences().edit().putString(KEY_TOKEN, token).apply()

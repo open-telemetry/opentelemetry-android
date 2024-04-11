@@ -10,10 +10,8 @@ class AuthRepo(private val app: AppContext) {
 
     private fun authInternal(flag: Int): Single<UserToken> {
         return Single.defer {
-            DemoApp.appScope(app).restApi()
-                    .logIn(flag)
-        }
-                .subscribeOn(Schedulers.io())
+            DemoApp.appScope(app).singleApi().logIn(flag)
+        }.subscribeOn(Schedulers.io())
     }
 
 

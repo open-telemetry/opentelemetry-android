@@ -23,7 +23,7 @@ class CheckOutRepo(private val appContext: AppContext) {
 
     private fun withBaggageInternal(): UserStatus {
         Context.current().with(attachedBaggage()).makeCurrent().use {
-            return DemoApp.appScope(appContext).restApi().checkout().execute().body()!!
+            return DemoApp.appScope(appContext).callableApi().checkout().execute().body()!!
         }
     }
 
@@ -33,7 +33,7 @@ class CheckOutRepo(private val appContext: AppContext) {
 
     private fun withoutBaggageInternal(): Single<UserStatus> {
         return Context.current().with(attachedBaggageRx()).makeCurrent().use {
-            DemoApp.appScope(appContext).restApi().checkoutWithoutBaggage()
+            DemoApp.appScope(appContext).singleApi().checkoutWithoutBaggage()
         }
     }
 

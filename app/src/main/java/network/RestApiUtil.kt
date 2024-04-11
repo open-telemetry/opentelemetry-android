@@ -11,7 +11,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RestApiUtil {
 
-    fun restApi(app: DemoApp, server: MockWebServer): RestApi {
+    fun retrofit(app: DemoApp, server: MockWebServer): Retrofit {
         val client: OkHttpClient = OkHttpClient.Builder()
                 .addInterceptor(FirstFixedInterceptor())
                 .addInterceptor(ChuckerInterceptor.Builder(app).createShortcut(true).build())
@@ -23,7 +23,7 @@ object RestApiUtil {
                 .baseUrl(server.url("rt/v1/"))
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .build().create(RestApi::class.java)
+                .build()
     }
 
 }
