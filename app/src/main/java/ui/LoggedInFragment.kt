@@ -14,8 +14,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import app.DemoApp
-import network.LogOutStatus
-import network.UserStatus
 import com.example.hello_otel.R
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
@@ -23,6 +21,8 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers
+import network.LogOutStatus
+import network.UserStatus
 import repo.TokenRepo
 
 class LoggedInFragment : Fragment() {
@@ -63,7 +63,7 @@ class LoggedInFragment : Fragment() {
     }
 
     private fun checkOut(tvStatus: TextView) {
-        Single.defer { checkingOut() }
+        CheckOutRepo(requireContext()).checkingOut()
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(AndroidLifecycleScopeProvider.from(this))
@@ -76,10 +76,6 @@ class LoggedInFragment : Fragment() {
 
     private fun checkingIn(): Single<UserStatus> {
         return DemoApp.appScope(requireContext()).restApi().checkIn(TokenRepo(requireContext()).token())
-    }
-
-    private fun checkingOut(): Single<UserStatus> {
-        return DemoApp.appScope(requireContext()).restApi().checkout()
     }
 
 

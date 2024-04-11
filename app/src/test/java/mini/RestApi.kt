@@ -1,12 +1,14 @@
 package mini
 
+import io.reactivex.Single
 import retrofit2.http.GET
 import retrofit2.http.Header
 
 interface RestApi {
-    @GET("auth")
-    fun login(@Header("x-bypass") flag: Int): retrofit2.Call<UserToken>
+    @GET("log_in")
+    fun login(@Header("x-bypass") flag: Int): Single<UserToken>
 
-    @GET("profile")
-    fun profile(@Header("token") flag: String): retrofit2.Call<UserStatus>
+    @GET("auth")
+    fun loginRetrofit2Call(@Header("x-bypass") flag: Int): retrofit2.Call<UserToken>
+
 }

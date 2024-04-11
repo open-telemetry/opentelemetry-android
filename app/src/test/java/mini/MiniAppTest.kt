@@ -126,7 +126,7 @@ class MiniAppTest {
     }
 
     private fun login(restApi: RestApi): UserToken {
-        return restApi.login(1).execute().body()!!
+        return restApi.loginRetrofit2Call(1).execute().body()!!
     }
 
     /**

@@ -18,5 +18,5 @@ interface RestApi {
     fun checkIn(@Header("token") flag: String): Single<UserStatus>
 
     @GET("check_out")
-    fun checkout(): Single<UserStatus>
+    fun checkout(): retrofit2.Call<UserStatus>
 }
