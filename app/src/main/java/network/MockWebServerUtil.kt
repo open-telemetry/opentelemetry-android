@@ -22,7 +22,6 @@ object MockWebServerUtil {
     fun initServer(mockWebServer: MockWebServer) {
         Completable.fromAction {
             mockWebServer.start()
-
             val mockDispatcher: Dispatcher = object : Dispatcher() {
                 @Throws(InterruptedException::class)
                 override fun dispatch(request: RecordedRequest): MockResponse {
@@ -72,22 +71,6 @@ object MockWebServerUtil {
             mockWebServer.dispatcher = mockDispatcher
         }.subscribeOn(Schedulers.computation()).subscribe()
 
-    }
-
-    fun restApi(app: DemoApp, server: MockWebServer): RestApi {
-        val client: OkHttpClient = OkHttpClient.Builder()
-                .addInterceptor(FirstFixedInterceptor())
-                .addInterceptor(ChuckerInterceptor.Builder(app).createShortcut(true).build())
-                .addInterceptor(OkHttp3Singletons.TRACING_INTERCEPTOR)
-                .addInterceptor(SecondFixedInterceptor())
-
-                .build()
-        return Retrofit.Builder()
-                .client(client)
-                .baseUrl(server.url("rt/v1/"))
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
-                .build().create(RestApi::class.java)
     }
 
 }

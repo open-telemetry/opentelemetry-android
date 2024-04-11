@@ -21,7 +21,6 @@ object RestApiUtil {
                 .addInterceptor(ChuckerInterceptor.Builder(app).createShortcut(true).build())
                 .addInterceptor(OkHttp3Singletons.TRACING_INTERCEPTOR)
                 .addInterceptor(SecondFixedInterceptor())
-
                 .build()
         return Retrofit.Builder()
                 .client(client)
