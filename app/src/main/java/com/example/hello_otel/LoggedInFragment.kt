@@ -10,8 +10,14 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
+import com.uber.autodispose.autoDispose
+import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.functions.Consumer
+import io.reactivex.schedulers.Schedulers
 
 class LoggedInFragment : Fragment() {
 
@@ -25,7 +31,11 @@ class LoggedInFragment : Fragment() {
     override fun onViewCreated(loggedInView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(loggedInView, savedInstanceState)
         loggedInView.findViewById<View>(R.id.btn_check_in).setOnClickListener {
-            checkIn()
+            checkIn(loggedInView.findViewById(R.id.tv_status))
+        }
+
+        loggedInView.findViewById<View>(R.id.btn_check_out).setOnClickListener {
+            checkOut(loggedInView.findViewById(R.id.tv_status))
         }
     }
 
@@ -34,8 +44,36 @@ class LoggedInFragment : Fragment() {
         setHasOptionsMenu(true)
     }
 
-    private fun checkIn() {
-        Toast.makeText(requireContext(), "Checked in", Toast.LENGTH_SHORT).show()
+    private fun checkIn(tvStatus: TextView) {
+        Single.defer { checkingIn() }
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(AndroidLifecycleScopeProvider.from(this))
+                .subscribe(
+                        Consumer {
+                            tvStatus.text = it.status
+                        }
+                )
+    }
+
+    private fun checkOut(tvStatus: TextView) {
+        Single.defer { checkingOut() }
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(AndroidLifecycleScopeProvider.from(this))
+                .subscribe(
+                        Consumer {
+                            tvStatus.text = it.status
+                        }
+                )
+    }
+
+    private fun checkingIn(): Single<UserStatus> {
+        return DemoApp.appScope(requireContext()).restApi().checkIn(TokenRepo(requireContext()).token())
+    }
+
+    private fun checkingOut(): Single<UserStatus> {
+        return DemoApp.appScope(requireContext()).restApi().checkout()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -56,7 +94,7 @@ class LoggedInFragment : Fragment() {
     }
 
     private fun eraseState() {
-        AuthRepo(requireContext()).eraseToken()
+        TokenRepo(requireContext()).eraseToken()
     }
 
     interface LoggedOutListener {

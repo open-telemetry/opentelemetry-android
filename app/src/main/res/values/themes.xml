@@ -1,9 +1,9 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
   <!-- Base application theme. -->
-  <style name="Base.Theme.Hello_otel" parent="Theme.Material3.DayNight">
+  <style name="Base.Theme.HelloOtel" parent="Theme.Material3.Light">
     <!-- Customize your light theme here. -->
     <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
   </style>
 
-  <style name="Theme.Hello_otel" parent="Base.Theme.Hello_otel" />
+  <style name="Theme.HelloOtel" parent="Base.Theme.HelloOtel" />
 </resources>

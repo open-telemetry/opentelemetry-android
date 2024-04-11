@@ -16,7 +16,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 object MockWebServerUtil {
 
 
-
     fun initServer(mockWebServer: MockWebServer) {
         Completable.fromAction {
             mockWebServer.start()
@@ -27,14 +26,14 @@ object MockWebServerUtil {
                     val path = request.path
                     return when (path) {
                         "/rt/v1/auth" -> mockResponse(request.getHeader("x-bypass") == "1")
-                        "/rt/v1/profile" -> MockResponse().setResponseCode(200).setBody("""
+                        "/rt/v1/check_in" -> MockResponse().setResponseCode(200).setBody("""
                             {
-                              "info": {
-                                "userId": "1234",
-                                "name": "Lucas Albuquerque",
-                                "age": "21",
-                                "gender": "male"
-                              }
+                              "status": "Checked In" 
+                            }
+                        """.trimIndent())
+                        "/rt/v1/check_out" -> MockResponse().setResponseCode(200).setBody("""
+                            {
+                              "status": "Checked Out" 
                             }
                         """.trimIndent())
 
@@ -65,7 +64,7 @@ object MockWebServerUtil {
 
     }
 
-    fun restApi(app: DemoApp,server: MockWebServer): RestApi {
+    fun restApi(app: DemoApp, server: MockWebServer): RestApi {
         val client: OkHttpClient = OkHttpClient.Builder()
                 .addInterceptor(FirstFixedInterceptor())
                 .addInterceptor(ChuckerInterceptor.Builder(app).createShortcut(true).build())

@@ -1,26 +1,23 @@
 package com.example.hello_otel
 
 import android.content.Context
-import androidx.preference.PreferenceManager
+import io.reactivex.Single
+import io.reactivex.schedulers.Schedulers
 
+class AuthRepo(private val app: Context) {
 
-class AuthRepo(private val context: Context) {
-
-
-    fun saveToken(token: String) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putString(KEY_TOKEN, token).apply()
+    private fun authInternal(flag: Int): Single<UserToken> {
+        return Single.defer {
+            DemoApp.appScope(app).restApi()
+                    .login(flag)
+        }
+                .subscribeOn(Schedulers.io())
     }
 
-    fun eraseToken() {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().remove(KEY_TOKEN).apply()
+
+    fun auth(success: Boolean): Single<UserToken> {
+        return authInternal(if (success) 1 else 0)
     }
 
-    fun isLoggedIn(): Boolean {
-        val string = PreferenceManager.getDefaultSharedPreferences(context).getString(KEY_TOKEN, null)
-        return string != null
-    }
 
-    companion object {
-        private const val KEY_TOKEN = "key_token"
-    }
 }

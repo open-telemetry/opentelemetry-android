@@ -2,7 +2,6 @@ package com.example.hello_otel
 
 import android.app.Application
 import androidx.fragment.app.Fragment
-import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.api.GlobalOpenTelemetry
@@ -25,12 +24,14 @@ interface RestApi {
     @GET("auth")
     fun login(@Header("x-bypass") flag: Int): Single<UserToken>
 
-    @GET("profile")
-    fun profile(@Header("token") flag: String): Single<JsonElement>
-
+    @GET("check_in")
+    fun checkIn(@Header("token") flag: String): Single<UserStatus>
+    @GET("check_out")
+    fun checkout(): Single<UserStatus>
 }
 
 data class UserToken(@SerializedName("token") val token: String)
+data class UserStatus(@SerializedName("status") val status: String)
 
 interface AppScope {
 

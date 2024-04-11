@@ -14,7 +14,7 @@ class MainActivity : AppCompatActivity(), LoggedInFragment.LoggedOutListener, Lo
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        if (AuthRepo(this).isLoggedIn()) {
+        if (TokenRepo(this).isLoggedIn()) {
             bindLoggedInState()
         } else {
             bindLoggedOutState()

@@ -11,13 +11,20 @@
         android:layout_height="wrap_content"
         android:text="@string/check_in" />
 
+
+    <Button
+        android:id="@+id/btn_check_out"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/check_out" />
+
     <TextView
         android:id="@+id/tv_status"
         style="@style/TextAppearance.AppCompat.Display1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="@string/lorem_ipsum" />
+        android:text="@string/check_in_status" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -30,7 +37,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="@string/lorem_ipsum" />
+            android:text="@string/action_log_history" />
     </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>

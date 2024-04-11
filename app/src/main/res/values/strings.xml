@@ -10,8 +10,7 @@
   <string name="check_in">Check In</string>
   <string name="log_in_success">Log In</string>
   <string name="log_in_failure">Log In Failure</string>
-
-  <string name="lorem_ipsum">
-   This is test data
-  </string>
+  <string name="check_in_status">To Be Checked In</string>
+  <string name="action_log_history">Action Log…</string>
+  <string name="check_out">Check out</string>
 </resources>
