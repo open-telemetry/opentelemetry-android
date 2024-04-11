@@ -23,6 +23,7 @@ import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers
 import network.LogOutStatus
 import network.UserStatus
+import repo.CheckOutRepo
 import repo.TokenRepo
 
 class LoggedInFragment : Fragment() {

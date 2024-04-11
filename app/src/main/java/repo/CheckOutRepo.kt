@@ -1,4 +1,4 @@
-package ui
+package repo
 
 import app.DemoApp
 import io.opentelemetry.api.baggage.Baggage

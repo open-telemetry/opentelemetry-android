@@ -2,10 +2,7 @@ package network
 
 import app.DemoApp
 import com.chuckerteam.chucker.api.ChuckerInterceptor
-import interceptor.FirstFixedInterceptor
-import interceptor.SecondFixedInterceptor
 import io.opentelemetry.instrumentation.library.okhttp.v3_0.internal.OkHttp3Singletons
-import io.reactivex.schedulers.Schedulers
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockWebServer
 import retrofit2.Retrofit
