@@ -1,4 +1,4 @@
-package com.example.hello_otel
+package app
 
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.api.baggage.Baggage

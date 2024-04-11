@@ -11,11 +11,11 @@
     android:label="@string/app_name"
     android:roundIcon="@mipmap/ic_launcher_round"
     android:supportsRtl="true"
-      android:name="com.example.hello_otel.DemoApp"
+      android:name="app.DemoApp"
     android:theme="@style/Theme.HelloOtel"
     tools:targetApi="31">
     <activity
-      android:name="com.example.hello_otel.MainActivity"
+      android:name="app.MainActivity"
       android:exported="true"
       android:theme="@style/Theme.HelloOtel">
       <intent-filter>

@@ -1,4 +1,4 @@
-package com.example.hello_otel
+package repo
 
 import android.content.Context
 import androidx.preference.PreferenceManager

@@ -1,37 +1,25 @@
-package com.example.hello_otel
+package app
 
 import android.app.Application
-import androidx.fragment.app.Fragment
+import network.MockWebServerUtil
+import network.RestApiUtil
 import com.google.gson.annotations.SerializedName
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.data.SpanData
-import io.reactivex.Single
+import network.RestApi
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
-import retrofit2.http.GET
-import retrofit2.http.Header
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 
-/**
- * A simple [Fragment] subclass as the default destination in the navigation.
- */
-interface RestApi {
-    @GET("auth")
-    fun login(@Header("x-bypass") flag: Int): Single<UserToken>
-
-    @GET("check_in")
-    fun checkIn(@Header("token") flag: String): Single<UserStatus>
-    @GET("check_out")
-    fun checkout(): Single<UserStatus>
-}
-
 data class UserToken(@SerializedName("token") val token: String)
 data class UserStatus(@SerializedName("status") val status: String)
+data class LogOutStatus(@SerializedName("logged_out") val loggedOut: Boolean)
+
 
 interface AppScope {
 

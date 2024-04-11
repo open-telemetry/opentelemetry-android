@@ -1,6 +1,9 @@
-package com.example.hello_otel
+package network
 
+import app.DemoApp
 import com.chuckerteam.chucker.api.ChuckerInterceptor
+import interceptor.FirstFixedInterceptor
+import interceptor.SecondFixedInterceptor
 import io.opentelemetry.instrumentation.library.okhttp.v3_0.internal.OkHttp3Singletons
 import io.reactivex.Completable
 import io.reactivex.schedulers.Schedulers
@@ -25,15 +28,22 @@ object MockWebServerUtil {
                 override fun dispatch(request: RecordedRequest): MockResponse {
                     val path = request.path
                     return when (path) {
-                        "/rt/v1/auth" -> mockResponse(request.getHeader("x-bypass") == "1")
+                        "/rt/v1/log_in" -> mockResponse(request.getHeader("x-bypass") == "1")
                         "/rt/v1/check_in" -> MockResponse().setResponseCode(200).setBody("""
                             {
                               "status": "Checked In" 
                             }
                         """.trimIndent())
+
                         "/rt/v1/check_out" -> MockResponse().setResponseCode(200).setBody("""
                             {
                               "status": "Checked Out" 
+                            }
+                        """.trimIndent())
+
+                        "/rt/v1/log_out" -> MockResponse().setResponseCode(200).setBody("""
+                            {
+                              "logged_out": true 
                             }
                         """.trimIndent())
 

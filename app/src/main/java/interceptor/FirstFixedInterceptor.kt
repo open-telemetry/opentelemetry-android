@@ -1,4 +1,4 @@
-package com.example.hello_otel
+package interceptor
 
 import io.opentelemetry.api.baggage.Baggage
 import io.opentelemetry.api.baggage.BaggageEntry

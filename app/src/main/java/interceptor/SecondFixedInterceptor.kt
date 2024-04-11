@@ -1,4 +1,4 @@
-package com.example.hello_otel
+package interceptor
 
 import okhttp3.Interceptor
 import okhttp3.Request

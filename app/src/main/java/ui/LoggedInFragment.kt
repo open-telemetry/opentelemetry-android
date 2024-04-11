@@ -1,6 +1,6 @@
 @file:Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
 
-package com.example.hello_otel
+package ui
 
 import android.content.Context
 import android.os.Bundle
@@ -11,13 +11,19 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import app.DemoApp
+import app.LogOutStatus
+import app.UserStatus
+import com.example.hello_otel.R
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers
+import repo.TokenRepo
 
 class LoggedInFragment : Fragment() {
 
@@ -76,6 +82,11 @@ class LoggedInFragment : Fragment() {
         return DemoApp.appScope(requireContext()).restApi().checkout()
     }
 
+
+    private fun loggingOut(): Single<LogOutStatus> {
+        return DemoApp.appScope(requireContext()).restApi().logOut()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.menu_logged_in, menu)
     }
@@ -88,13 +99,25 @@ class LoggedInFragment : Fragment() {
     }
 
     private fun logOut(): Boolean {
-        eraseState()
-        (requireActivity() as LoggedOutListener).onLoggedOut()
+        loggingOutInternal()
         return true
     }
 
-    private fun eraseState() {
+    private fun loggingOutInternal() {
+        Single.defer { loggingOut() }
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(AndroidLifecycleScopeProvider.from(this))
+                .subscribe(this::onLogOutStatusReady)
+
+    }
+
+    private fun onLogOutStatusReady(status: LogOutStatus) {
+        if (!status.loggedOut) {
+            Toast.makeText(requireContext(), "Forcing logging out", Toast.LENGTH_SHORT).show()
+        }
         TokenRepo(requireContext()).eraseToken()
+        (requireActivity() as LoggedOutListener).onLoggedOut()
     }
 
     interface LoggedOutListener {

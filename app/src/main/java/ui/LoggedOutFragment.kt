@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.example.hello_otel
+package ui
 
 import android.content.Context
 import android.os.Bundle
@@ -9,9 +9,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.example.hello_otel.R
+import app.UserToken
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
+import repo.AuthRepo
+import repo.TokenRepo
 import timber.log.Timber
 
 /**

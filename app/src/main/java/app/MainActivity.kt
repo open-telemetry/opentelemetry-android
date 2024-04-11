@@ -1,4 +1,4 @@
-package com.example.hello_otel
+package app
 
 import android.os.Bundle
 import android.view.Menu
@@ -6,6 +6,10 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.chuckerteam.chucker.api.Chucker
+import com.example.hello_otel.R
+import repo.TokenRepo
+import ui.LoggedInFragment
+import ui.LoggedOutFragment
 
 class MainActivity : AppCompatActivity(), LoggedInFragment.LoggedOutListener, LoggedOutFragment.LoggedInListener {
 
