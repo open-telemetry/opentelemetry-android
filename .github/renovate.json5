@@ -7,14 +7,15 @@
     {
       "matchPackageNames": [
         "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha",
-        "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv",
+        "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator",
         "io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0"
       ],
       // Renovate's default behavior is only to update from unstable -> unstable if it's for the
       // major.minor.patch, under the assumption that you would want to update to the stable version
       // of that release instead of the unstable version for a future release (but there's never any
       // stable version of opentelemetry-instrumentation-bom-alpha so this logic doesn't apply
-      "ignoreUnstable": false
+      "ignoreUnstable": false,
+      "allowedVersions": "!/\\-SNAPSHOT$/"
     },
     {
       // navigation-fragment 2.7.0 and above require android api 34+, which we are not ready for
