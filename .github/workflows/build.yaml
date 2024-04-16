@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17.0.6
+          java-version: 17
       - name: run gradle check
         run: ./gradlew check
       - name: publish snapshot
