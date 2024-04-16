@@ -14,7 +14,7 @@ object RestApiUtil {
     fun retrofit(app: DemoApp, server: MockWebServer): Retrofit {
         val client: OkHttpClient = OkHttpClient.Builder()
                 .addInterceptor(FirstFixedInterceptor())
-                .addInterceptor(DemoContextInterceptor())
+                .addInterceptor(OtelContextRequestTagInterceptor())
                 .addInterceptor(ChuckerInterceptor.Builder(app).createShortcut(true).build())
                 .addInterceptor(OkHttp3Singletons.TRACING_INTERCEPTOR)
                 .addInterceptor(SecondFixedInterceptor())
