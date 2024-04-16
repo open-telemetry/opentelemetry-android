@@ -3,6 +3,7 @@ package network
 import app.DemoApp
 import com.chuckerteam.chucker.api.ChuckerInterceptor
 import io.opentelemetry.instrumentation.library.okhttp.v3_0.internal.OkHttp3Singletons
+import io.reactivex.schedulers.Schedulers
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockWebServer
 import retrofit2.Retrofit
@@ -23,7 +24,7 @@ object RestApiUtil {
                 .client(client)
                 .baseUrl(server.url("rt/v1/"))
                 .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
                 .build()
     }
 

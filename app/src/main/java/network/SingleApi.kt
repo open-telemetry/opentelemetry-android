@@ -11,9 +11,6 @@ interface SingleApi {
     @GET("log_in")
     fun logInWithContext(@Tag context: Context, @Header("x-bypass") flag: Int): Single<UserToken>
 
-    @GET("log_in")
-    fun logIn(@Header("x-bypass") flag: Int): Single<UserToken>
-
     @GET("log_out")
     fun logOut(): Single<LogOutStatus>
 

@@ -5,7 +5,6 @@ import app.DemoApp
 import io.opentelemetry.api.baggage.Baggage
 import io.opentelemetry.context.Context
 import io.reactivex.Single
-import io.reactivex.schedulers.Schedulers
 import network.UserToken
 
 class AuthRepo(private val app: AppContext) {
@@ -15,20 +14,17 @@ class AuthRepo(private val app: AppContext) {
     }
 
     private fun authInternal(flag: Int): Single<UserToken> {
-        return Single.fromCallable {
-            authWithBaggage(flag)
-        }.subscribeOn(Schedulers.io())
+        return authWithExplicitOpenTelContext(flag)
     }
 
-    private fun authWithBaggage(flag: Int): UserToken {
-        val context: Context = Context.current().with(attachedBaggage())
-        return userToken1(flag, context)
+    private fun authWithExplicitOpenTelContext(flag: Int): Single<UserToken> {
+        val context: Context = explicitContext()
+        return DemoApp.appScope(app).singleApi().logInWithContext(context, flag)
     }
 
-    private fun userToken1(flag: Int, nothing: Context): UserToken {
-        return DemoApp.appScope(app).singleApi().logInWithContext(nothing, flag).blockingGet()
+    private fun explicitContext(): Context {
+        return Context.current().with(attachedBaggage())
     }
-
 
     private fun attachedBaggage(): Baggage {
         return Baggage.builder()
