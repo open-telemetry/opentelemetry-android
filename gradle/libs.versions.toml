@@ -20,6 +20,7 @@ constraintlayout = "2.1.4"
 navigationFragmentKtx = "2.7.7"
 navigationUiKtx = "2.7.7"
 opentelemetryExtensionTracePropagatorsVersion = "1.24.0"
+playServicesLocationVersion = "21.2.0"
 preferenceVersion = "1.2.1"
 retrofitVersion = "2.9.0"
 rxandroidVersion = "2.1.1"
@@ -65,6 +66,7 @@ opentelemetry-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-testi
 androidx-test-core = "androidx.test:core:1.5.0"
 gson = "com.google.code.gson:gson:2.10.1"
 annotationx = "androidx.annotation:annotation:1.7.1"
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocationVersion" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofitVersion" }
 retrofit2-adapter-rxjava2 = { module = "com.squareup.retrofit2:adapter-rxjava2", version.ref = "adapterRxjava2Version" }
 rxandroid = { module = "io.reactivex.rxjava2:rxandroid", version.ref = "rxandroidVersion" }
