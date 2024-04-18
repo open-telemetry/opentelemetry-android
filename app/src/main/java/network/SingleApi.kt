@@ -2,8 +2,10 @@ package network
 
 import io.opentelemetry.context.Context
 import io.reactivex.Single
+import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.POST
 import retrofit2.http.Tag
 
 interface SingleApi {
@@ -14,10 +16,10 @@ interface SingleApi {
     @GET("log_out")
     fun logOut(): Single<LogOutStatus>
 
-    @GET("check_in")
-    fun checkIn(@Header("token") flag: String): Single<UserStatus>
+    @POST("check_in")
+    fun checkIn(@Header("token") flag: String, @Body model: LocationModel): Single<CheckInResult>
 
     @GET("check_out")
-    fun checkoutWithoutBaggage(): Single<UserStatus>
+    fun checkoutWithoutBaggage(): Single<CheckInResult>
 
 }

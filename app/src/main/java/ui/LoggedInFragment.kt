@@ -2,8 +2,12 @@
 
 package ui
 
+import android.Manifest.permission.ACCESS_COARSE_LOCATION
+import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.content.Context
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -12,42 +16,105 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import app.AppContext
 import app.DemoApp
 import com.example.hello_otel.R
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers
+import network.CheckInResult
+import network.LocationEntity
+import network.LocationModel
 import network.LogOutStatus
-import network.UserStatus
 import repo.CheckOutRepo
 import repo.TokenStore
 
 class LoggedInFragment : Fragment() {
 
-    override fun onCreateView(
-            inflater: LayoutInflater, container: ViewGroup?,
-            savedInstanceState: Bundle?
-    ): View {
+    private lateinit var tvStatus: TextView
+    private var progressDialogFragment: ProgressDialogFragment? = null
+    private val fusedLocationClient: FusedLocationProviderClient by lazy {
+        LocationServices.getFusedLocationProviderClient(requireActivity())
+    }
+    private val locationRequest by lazy {
+        LocationRequest.create().apply {
+            interval = 10000
+            fastestInterval = 3000
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+    }
+
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.fragment_logged_in, container, false)
     }
 
     override fun onViewCreated(loggedInView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(loggedInView, savedInstanceState)
+        tvStatus = loggedInView.findViewById(R.id.tv_status)
         loggedInView.findViewById<View>(R.id.btn_check_in).setOnClickListener {
-            checkIn(loggedInView.findViewById(R.id.tv_status))
+            kickOffCheckIn()
         }
 
         loggedInView.findViewById<View>(R.id.btn_check_out).setOnClickListener {
-            checkingOut(checkout(true), loggedInView.findViewById(R.id.tv_status))
+            checkingOut(checkout(true))
         }
         loggedInView.findViewById<View>(R.id.btn_check_out_without_baggage).setOnClickListener {
-            checkingOut(checkout(false), loggedInView.findViewById(R.id.tv_status))
+            checkingOut(checkout(false))
         }
+    }
+
+    private fun kickOffCheckIn() {
+        if (ActivityCompat.checkSelfPermission(requireActivity(), ACCESS_FINE_LOCATION) != PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireActivity(), ACCESS_COARSE_LOCATION) != PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(), arrayOf(ACCESS_FINE_LOCATION), REQUEST_LOCATION_PERMISSION)
+            return
+        }
+
+        showProcessDialog()
+        fusedLocationClient.requestLocationUpdates(locationRequest, object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                onLocationResultReady(locationResult)
+            }
+        }, Looper.getMainLooper())
+    }
+
+
+    private fun showProcessDialog() {
+        progressDialogFragment = ProgressDialogFragment()
+        progressDialogFragment?.show(childFragmentManager, ProgressDialogFragment.TAG)
+    }
+
+    private fun LocationCallback.onLocationResultReady(locationResult: LocationResult) {
+        fusedLocationClient.removeLocationUpdates(this)
+        checkInWithLocation(locationResult)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PERMISSION_GRANTED) {
+                onPermissionGranted()
+            } else {
+                onPermissionDenied()
+            }
+        }
+    }
+
+    private fun onPermissionDenied() {
+        Toast.makeText(requireActivity(), "Permission Denied", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun onPermissionGranted() {
+        kickOffCheckIn()
     }
 
     override fun onAttach(context: Context) {
@@ -55,36 +122,37 @@ class LoggedInFragment : Fragment() {
         setHasOptionsMenu(true)
     }
 
-    private fun checkIn(tvStatus: TextView) {
-        Single.defer { checkingIn() }
+    private fun checkInWithLocation(location: LocationResult) {
+        Single.defer { checkingIn(locationResultModel(location)) }
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(AndroidLifecycleScopeProvider.from(this))
-                .subscribe(
-                        Consumer {
-                            tvStatus.text = it.status
-                        }
-                )
+                .subscribe(this::updateStatus)
     }
 
-    private fun checkingOut(call: Single<UserStatus>, tvStatus: TextView) {
+    private fun locationResultModel(location: LocationResult): LocationModel {
+        return LocationModel(location.locations.map { LocationEntity(it.latitude, it.longitude) })
+    }
+
+    private fun updateStatus(it: CheckInResult) {
+        this.tvStatus.text = it.status
+        progressDialogFragment?.dismiss()
+    }
+
+    private fun checkingOut(call: Single<CheckInResult>) {
         call
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(AndroidLifecycleScopeProvider.from(this))
-                .subscribe(
-                        Consumer {
-                            tvStatus.text = it.status
-                        }
-                )
+                .subscribe(this::updateStatus)
     }
 
-    private fun checkout(withBaggage: Boolean): Single<UserStatus> {
+    private fun checkout(withBaggage: Boolean): Single<CheckInResult> {
         return CheckOutRepo(appContext()).checkingOut(withBaggage)
     }
 
-    private fun checkingIn(): Single<UserStatus> {
-        return DemoApp.appScope(appContext()).singleApi().checkIn(TokenStore(appContext()).token())
+    private fun checkingIn(locationModel: LocationModel): Single<CheckInResult> {
+        return DemoApp.appScope(appContext()).singleApi().checkIn(TokenStore(appContext()).token(), locationModel)
     }
 
 
@@ -130,4 +198,10 @@ class LoggedInFragment : Fragment() {
     interface LoggedOutListener {
         fun onLoggedOut()
     }
+
+    companion object {
+        private const val REQUEST_LOCATION_PERMISSION = 0
+
+    }
 }
+

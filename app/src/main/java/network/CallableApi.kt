@@ -12,10 +12,10 @@ interface CallableApi {
     fun logOut(): retrofit2.Call<LogOutStatus>
 
     @GET("check_in")
-    fun checkIn(@Header("token") flag: String): retrofit2.Call<UserStatus>
+    fun checkIn(@Header("token") flag: String): retrofit2.Call<CheckInResult>
 
     @GET("check_out")
-    fun checkout(): retrofit2.Call<UserStatus>
+    fun checkout(): retrofit2.Call<CheckInResult>
 
 
 }
