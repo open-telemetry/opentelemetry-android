@@ -4,7 +4,6 @@ package ui
 
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.content.Context
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
 import android.os.Looper
@@ -28,6 +27,8 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
+import io.opentelemetry.api.baggage.Baggage
+import io.opentelemetry.context.Context
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -74,6 +75,9 @@ class LoggedInFragment : Fragment() {
     }
 
     private fun kickOffCheckIn() {
+
+        val context = Context.current()
+        val withCheckInStarted = context.with(attachedCheckInStarted())
         if (ActivityCompat.checkSelfPermission(requireActivity(), ACCESS_FINE_LOCATION) != PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireActivity(), ACCESS_COARSE_LOCATION) != PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(), arrayOf(ACCESS_FINE_LOCATION), REQUEST_LOCATION_PERMISSION)
             return
@@ -82,7 +86,7 @@ class LoggedInFragment : Fragment() {
         showProcessDialog()
         fusedLocationClient.requestLocationUpdates(locationRequest, object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
-                onLocationResultReady(locationResult)
+                onLocationResultReady(locationResult, withCheckInStarted)
             }
         }, Looper.getMainLooper())
     }
@@ -93,9 +97,9 @@ class LoggedInFragment : Fragment() {
         progressDialogFragment?.show(childFragmentManager, ProgressDialogFragment.TAG)
     }
 
-    private fun LocationCallback.onLocationResultReady(locationResult: LocationResult) {
+    private fun LocationCallback.onLocationResultReady(locationResult: LocationResult, context: Context) {
         fusedLocationClient.removeLocationUpdates(this)
-        checkInWithLocation(locationResult)
+        checkInWithLocation(locationResult, context.with(attachedLocationFetched()))
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
@@ -117,13 +121,13 @@ class LoggedInFragment : Fragment() {
         kickOffCheckIn()
     }
 
-    override fun onAttach(context: Context) {
+    override fun onAttach(context: android.content.Context) {
         super.onAttach(context)
         setHasOptionsMenu(true)
     }
 
-    private fun checkInWithLocation(location: LocationResult) {
-        Single.defer { checkingIn(locationResultModel(location)) }
+    private fun checkInWithLocation(location: LocationResult, context: Context) {
+        Single.defer { checkingIn(locationResultModel(location), context) }
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(AndroidLifecycleScopeProvider.from(this))
@@ -151,8 +155,8 @@ class LoggedInFragment : Fragment() {
         return CheckOutRepo(appContext()).checkingOut(withBaggage)
     }
 
-    private fun checkingIn(locationModel: LocationModel): Single<CheckInResult> {
-        return DemoApp.appScope(appContext()).singleApi().checkIn(TokenStore(appContext()).token(), locationModel)
+    private fun checkingIn(locationModel: LocationModel, context: Context): Single<CheckInResult> {
+        return DemoApp.appScope(appContext()).singleApi().checkIn(context, locationModel, TokenStore(appContext()).token())
     }
 
 
@@ -194,6 +198,20 @@ class LoggedInFragment : Fragment() {
     }
 
     private fun appContext() = AppContext.from(requireContext())
+
+    private fun attachedCheckInStarted(): Baggage {
+        return Baggage.builder()
+                .put("check_in_started", System.currentTimeMillis().toString())
+                .build()
+    }
+
+
+    private fun attachedLocationFetched(): Baggage {
+        return Baggage.builder()
+                .put("location_fetched", System.currentTimeMillis().toString())
+                .build()
+    }
+
 
     interface LoggedOutListener {
         fun onLoggedOut()
