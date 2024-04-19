@@ -38,6 +38,7 @@ import network.LocationModel
 import network.LogOutStatus
 import repo.CheckOutRepo
 import repo.TokenStore
+import java.util.UUID
 
 class LoggedInFragment : Fragment() {
 
@@ -63,7 +64,7 @@ class LoggedInFragment : Fragment() {
         super.onViewCreated(loggedInView, savedInstanceState)
         tvStatus = loggedInView.findViewById(R.id.tv_status)
         loggedInView.findViewById<View>(R.id.btn_check_in).setOnClickListener {
-            kickOffCheckIn()
+            kickOffCheckIn(generateInteractionContext("checked_button_clicked"))
         }
 
         loggedInView.findViewById<View>(R.id.btn_check_out).setOnClickListener {
@@ -74,10 +75,15 @@ class LoggedInFragment : Fragment() {
         }
     }
 
-    private fun kickOffCheckIn() {
+    private fun generateInteractionContext(interactionName: String): Context {
+        return Context.current().with(Baggage.builder()
+                .put("interaction_uuid", UUID.randomUUID().toString())
+                .put("interaction_name", interactionName)
+                .build())
+    }
 
-        val context = currentContext()
-        val withCheckInStarted = context.with(attachedCheckInStarted())
+    private fun kickOffCheckIn(context: Context) {
+        val withCheckInStarted = context.with(attachedCheckInStarted(context))
         if (ActivityCompat.checkSelfPermission(requireActivity(), ACCESS_FINE_LOCATION) != PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireActivity(), ACCESS_COARSE_LOCATION) != PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(), arrayOf(ACCESS_FINE_LOCATION), REQUEST_LOCATION_PERMISSION)
             return
@@ -89,10 +95,6 @@ class LoggedInFragment : Fragment() {
                 onLocationResultReady(locationResult, withCheckInStarted)
             }
         }, Looper.getMainLooper())
-    }
-
-    private fun currentContext(): Context {
-        return Context.current()
     }
 
 
@@ -122,7 +124,7 @@ class LoggedInFragment : Fragment() {
     }
 
     private fun onPermissionGranted() {
-        kickOffCheckIn()
+        kickOffCheckIn(generateInteractionContext("checked_button_clicked"))
     }
 
     override fun onAttach(context: android.content.Context) {
@@ -204,8 +206,8 @@ class LoggedInFragment : Fragment() {
 
     private fun appContext() = AppContext.from(requireContext())
 
-    private fun attachedCheckInStarted(): Baggage {
-        return Baggage.builder()
+    private fun attachedCheckInStarted(context: Context): Baggage {
+        return Baggage.fromContext(context).toBuilder()
                 .put("check_in_started", System.currentTimeMillis().toString())
                 .build()
     }
