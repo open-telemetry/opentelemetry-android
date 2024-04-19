@@ -28,7 +28,6 @@ import com.google.android.gms.location.LocationServices
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
 import io.opentelemetry.api.baggage.Baggage
-import io.opentelemetry.api.baggage.BaggageBuilder
 import io.opentelemetry.context.Context
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -75,12 +74,10 @@ class LoggedInFragment : Fragment() {
         }
     }
 
-    /**
-     * We want to show all 3 different baggages attached at the different in the http request header.
-     */
     private fun kickOffCheckIn() {
-        val builder = Baggage.builder()
-        builder.put("check_in_started", System.currentTimeMillis().toString())
+
+        val context = Context.current()
+        val withCheckInStarted = context.with(attachedCheckInStarted())
         if (ActivityCompat.checkSelfPermission(requireActivity(), ACCESS_FINE_LOCATION) != PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireActivity(), ACCESS_COARSE_LOCATION) != PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(), arrayOf(ACCESS_FINE_LOCATION), REQUEST_LOCATION_PERMISSION)
             return
@@ -89,13 +86,9 @@ class LoggedInFragment : Fragment() {
         showProcessDialog()
         fusedLocationClient.requestLocationUpdates(locationRequest, object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
-                onLocationResultReady(locationResult, builder)
+                onLocationResultReady(locationResult, withCheckInStarted)
             }
         }, Looper.getMainLooper())
-    }
-
-    private fun newContext(): Context {
-        return Context.current()
     }
 
 
@@ -104,10 +97,9 @@ class LoggedInFragment : Fragment() {
         progressDialogFragment?.show(childFragmentManager, ProgressDialogFragment.TAG)
     }
 
-    private fun LocationCallback.onLocationResultReady(locationResult: LocationResult, baggageBuilder: BaggageBuilder) {
+    private fun LocationCallback.onLocationResultReady(locationResult: LocationResult, context: Context) {
         fusedLocationClient.removeLocationUpdates(this)
-        baggageBuilder.put("location_fetched", System.currentTimeMillis().toString())
-        checkInWithLocation(locationResult, baggageBuilder)
+        checkInWithLocation(locationResult, context.with(attachedLocationFetched()))
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
@@ -134,8 +126,8 @@ class LoggedInFragment : Fragment() {
         setHasOptionsMenu(true)
     }
 
-    private fun checkInWithLocation(location: LocationResult, baggageBuilder: BaggageBuilder) {
-        Single.defer { checkingIn(locationResultModel(location), baggageBuilder) }
+    private fun checkInWithLocation(location: LocationResult, context: Context) {
+        Single.defer { checkingIn(locationResultModel(location), context) }
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(AndroidLifecycleScopeProvider.from(this))
@@ -163,11 +155,8 @@ class LoggedInFragment : Fragment() {
         return CheckOutRepo(appContext()).checkingOut(withBaggage)
     }
 
-    private fun checkingIn(locationModel: LocationModel, baggageBuilder: BaggageBuilder): Single<CheckInResult> {
-        baggageBuilder.put("sending_network", System.currentTimeMillis().toString())
-        val baggage = baggageBuilder.build()
-        val newContext = Context.current().with(baggage)
-        return DemoApp.appScope(appContext()).singleApi().checkIn(newContext, locationModel, TokenStore(appContext()).token())
+    private fun checkingIn(locationModel: LocationModel, context: Context): Single<CheckInResult> {
+        return DemoApp.appScope(appContext()).singleApi().checkIn(context, locationModel, TokenStore(appContext()).token())
     }
 
 
@@ -211,8 +200,7 @@ class LoggedInFragment : Fragment() {
     private fun appContext() = AppContext.from(requireContext())
 
     private fun attachedCheckInStarted(): Baggage {
-        val builder = Baggage.builder()
-        return builder
+        return Baggage.builder()
                 .put("check_in_started", System.currentTimeMillis().toString())
                 .build()
     }
