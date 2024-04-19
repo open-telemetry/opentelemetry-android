@@ -76,7 +76,7 @@ class LoggedInFragment : Fragment() {
 
     private fun kickOffCheckIn() {
 
-        val context = Context.current()
+        val context = currentContext()
         val withCheckInStarted = context.with(attachedCheckInStarted())
         if (ActivityCompat.checkSelfPermission(requireActivity(), ACCESS_FINE_LOCATION) != PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireActivity(), ACCESS_COARSE_LOCATION) != PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(), arrayOf(ACCESS_FINE_LOCATION), REQUEST_LOCATION_PERMISSION)
@@ -91,6 +91,10 @@ class LoggedInFragment : Fragment() {
         }, Looper.getMainLooper())
     }
 
+    private fun currentContext(): Context {
+        return Context.current()
+    }
+
 
     private fun showProcessDialog() {
         progressDialogFragment = ProgressDialogFragment()
@@ -99,7 +103,7 @@ class LoggedInFragment : Fragment() {
 
     private fun LocationCallback.onLocationResultReady(locationResult: LocationResult, context: Context) {
         fusedLocationClient.removeLocationUpdates(this)
-        checkInWithLocation(locationResult, context.with(attachedLocationFetched()))
+        checkInWithLocation(locationResult, context.with(attachedLocationFetched(context)))
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
@@ -156,7 +160,8 @@ class LoggedInFragment : Fragment() {
     }
 
     private fun checkingIn(locationModel: LocationModel, context: Context): Single<CheckInResult> {
-        return DemoApp.appScope(appContext()).singleApi().checkIn(context, locationModel, TokenStore(appContext()).token())
+
+        return DemoApp.appScope(appContext()).singleApi().checkIn(context.with(attachedSendingNetwork(context)), locationModel, TokenStore(appContext()).token())
     }
 
 
@@ -206,9 +211,15 @@ class LoggedInFragment : Fragment() {
     }
 
 
-    private fun attachedLocationFetched(): Baggage {
-        return Baggage.builder()
+    private fun attachedLocationFetched(context: Context): Baggage {
+        return Baggage.fromContext(context).toBuilder()
                 .put("location_fetched", System.currentTimeMillis().toString())
+                .build()
+    }
+
+    private fun attachedSendingNetwork(context: Context): Baggage {
+        return Baggage.fromContext(context).toBuilder()
+                .put("sending_network", System.currentTimeMillis().toString())
                 .build()
     }
 
