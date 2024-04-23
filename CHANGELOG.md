@@ -24,7 +24,7 @@ Breaking changes include considerable restructuring of the overall project layou
 
 - Ensure that services are initialized via ServiceManager when `OpenTelemetryRum` is built.
   ([#272](https://github.com/open-telemetry/opentelemetry-android/pull/272))
-- Starting services
+- Start the `ServiceManager` itself when `OpenTelemetryRum` is built.
   ([#278](https://github.com/open-telemetry/opentelemetry-android/pull/278))
 
 ### 🧰 Tooling
