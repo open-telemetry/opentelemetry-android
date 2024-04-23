@@ -1,5 +1,36 @@
 # OpenTelemetry Android Changelog
 
+## Unreleased
+
+### 📈 Enhancements
+
+- Global attrs for logs
+  ([#266](https://github.com/open-telemetry/opentelemetry-android/pull/266))
+- Crashes as logs
+  ([#237](https://github.com/open-telemetry/opentelemetry-android/pull/237))
+- Restructure
+  modules ([#267](https://github.com/open-telemetry/opentelemetry-android/pull/267), [#269](https://github.com/open-telemetry/opentelemetry-android/pull/269),
+  and [#276](https://github.com/open-telemetry/opentelemetry-android/pull/276))
+- Update upstream deps
+  ([#301](https://github.com/open-telemetry/opentelemetry-android/pull/301)
+  and [#304](https://github.com/open-telemetry/opentelemetry-android/pull/304))
+- Update README re: desugaring
+  ([#309](https://github.com/open-telemetry/opentelemetry-android/pull/309))
+
+### 🛠️ Bug fixes
+
+- Initializing services
+  ([#272](https://github.com/open-telemetry/opentelemetry-android/pull/272))
+- Starting services
+  ([#278](https://github.com/open-telemetry/opentelemetry-android/pull/278))
+
+### 🧰 Tooling
+
+- Update Release process
+  ([#300](https://github.com/open-telemetry/opentelemetry-android/pull/300))
+- Adding '-alpha' to all modules' versions
+  ([#297](https://github.com/open-telemetry/opentelemetry-android/pull/297))
+
 ## Version 0.4.0 (2024-03-04)
 
 - Update to [opentelemetry-java-instrumentation 1.32.1](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.32.1)
