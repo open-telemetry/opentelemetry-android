@@ -7,7 +7,7 @@
 Breaking changes include considerable restructuring of the overall project layout. This provides a much more modularized project that publishes more granular instrumentation modules. Note that as a result of this, the topmost dependency is changing its name to `io.opentelemetry.android:android-agent`.
 ### 📈 Enhancements
 
-- Global attrs for logs
+- Append global attributes to logs signal.
   ([#266](https://github.com/open-telemetry/opentelemetry-android/pull/266))
 - Crashes as logs
   ([#237](https://github.com/open-telemetry/opentelemetry-android/pull/237))
