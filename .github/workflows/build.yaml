@@ -48,5 +48,5 @@ jobs:
     if: always()
     steps:
       - if: |
-          needs.build.result != 'success' ||
+          needs.build.result != 'success'
         run: exit 1
