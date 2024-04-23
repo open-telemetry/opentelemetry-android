@@ -28,10 +28,7 @@ echo
 echo "### Migration notes"
 echo
 echo
-echo "### 🌟 New javaagent instrumentation"
-echo
-echo
-echo "### 🌟 New library instrumentation"
+echo "### 🌟 New instrumentation"
 echo
 echo
 echo "### 📈 Enhancements"
