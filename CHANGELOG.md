@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 0.5.0 (2024-04-23)
+
 ⚠️⚠️⚠️ There are considerable breaking changes in this release.
 
 Breaking changes include considerable restructuring of the overall project layout. This provides a much more modularized project that publishes more granular instrumentation modules. Note that as a result of this, the topmost dependency is changing its name to `io.opentelemetry.android:android-agent`.
