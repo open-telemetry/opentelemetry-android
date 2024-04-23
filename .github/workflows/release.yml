@@ -3,12 +3,6 @@ name: Release
 
 on:
   workflow_dispatch:
-    inputs:
-      branch_specifier:
-        description: The branch to release e.g. release/vX.Y.Z
-        required: true
-        default: "main"
-        type: string
 
 jobs:
   release:
@@ -21,8 +15,6 @@ jobs:
             exit 1
           fi
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.branch_specifier }}
 
       - name: Set environment variables
         run: |
