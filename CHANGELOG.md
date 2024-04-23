@@ -9,7 +9,7 @@ Breaking changes include considerable restructuring of the overall project layou
 
 - Append global attributes to logs signal.
   ([#266](https://github.com/open-telemetry/opentelemetry-android/pull/266))
-- Crashes as logs
+- Change crash reporting to send a LogRecord instead of Span.
   ([#237](https://github.com/open-telemetry/opentelemetry-android/pull/237))
 - Restructure
   modules ([#267](https://github.com/open-telemetry/opentelemetry-android/pull/267), [#269](https://github.com/open-telemetry/opentelemetry-android/pull/269),
