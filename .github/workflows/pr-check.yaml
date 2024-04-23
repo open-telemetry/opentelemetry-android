@@ -15,3 +15,13 @@ jobs:
           java-version: 17
       - name: run gradle
         run: ./gradlew check
+
+  required-status-check:
+    needs:
+      - pr-checks
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - if: |
+          needs.pr-checks.result != 'success'
+        run: exit 1
