@@ -1,5 +1,40 @@
 # OpenTelemetry Android Changelog
 
+## Unreleased
+
+⚠️⚠️⚠️ There are considerable breaking changes in this release.
+
+Breaking changes include considerable restructuring of the overall project layout. This provides a much more modularized project that publishes more granular instrumentation modules. Note that as a result of this, the topmost dependency is changing its name to `io.opentelemetry.android:android-agent`.
+
+### 📈 Enhancements
+
+- Append global attributes to logs signal.
+  ([#266](https://github.com/open-telemetry/opentelemetry-android/pull/266))
+- Change crash reporting to send a LogRecord instead of Span.
+  ([#237](https://github.com/open-telemetry/opentelemetry-android/pull/237))
+- Restructure
+  modules ([#267](https://github.com/open-telemetry/opentelemetry-android/pull/267), [#269](https://github.com/open-telemetry/opentelemetry-android/pull/269),
+  and [#276](https://github.com/open-telemetry/opentelemetry-android/pull/276))
+- Update upstream deps
+  ([#301](https://github.com/open-telemetry/opentelemetry-android/pull/301)
+  and [#304](https://github.com/open-telemetry/opentelemetry-android/pull/304))
+- Update README re: desugaring
+  ([#309](https://github.com/open-telemetry/opentelemetry-android/pull/309))
+
+### 🛠️ Bug fixes
+
+- Ensure that services are initialized via ServiceManager when `OpenTelemetryRum` is built.
+  ([#272](https://github.com/open-telemetry/opentelemetry-android/pull/272))
+- Start the `ServiceManager` itself when `OpenTelemetryRum` is built.
+  ([#278](https://github.com/open-telemetry/opentelemetry-android/pull/278))
+
+### 🧰 Tooling
+
+- Update Release process
+  ([#300](https://github.com/open-telemetry/opentelemetry-android/pull/300))
+- Adding '-alpha' to all modules' versions
+  ([#297](https://github.com/open-telemetry/opentelemetry-android/pull/297))
+
 ## Version 0.4.0 (2024-03-04)
 
 - Update to [opentelemetry-java-instrumentation 1.32.1](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.32.1)
