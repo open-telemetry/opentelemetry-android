@@ -11,7 +11,14 @@ settings](https://github.com/open-telemetry/community/blob/main/docs/how-to-conf
 - Require branches to be up to date before merging: UNCHECKED
   (PR jobs take too long, and leaving this unchecked has not been a significant problem)
 
+### `release/*`
 
+Same settings as above for `main`, except:
+
+* Restrict pushes that create matching branches: UNCHECKED
+
+  (So that opentelemetrybot can create release branches)
+ 
 ## Secrets and variables > Actions
 
 * `GPG_PASSWORD` - stored in OpenTelemetry-Java 1Password
