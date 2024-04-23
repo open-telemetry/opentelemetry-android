@@ -40,3 +40,13 @@ jobs:
     uses: ./.github/workflows/reusable-workflow-notification.yml
     with:
       success: ${{ needs.build.result == 'success' }}
+
+  required-status-check:
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - if: |
+          needs.build.result != 'success' ||
+        run: exit 1
