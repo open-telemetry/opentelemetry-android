@@ -101,7 +101,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cp android-agent/build/outputs/aar/opentelemetry-android.aar opentelemetry-android.aar
+          cp android-agent/build/outputs/aar/opentelemetry-android-release.aar opentelemetry-android.aar
           gh release create --target $GITHUB_REF_NAME \
                             --title "Version $VERSION" \
                             --notes-file /tmp/release-notes.txt \
