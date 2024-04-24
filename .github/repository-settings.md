@@ -18,6 +18,24 @@ Same settings as above for `main`, except:
 * Restrict pushes that create matching branches: UNCHECKED
 
   (So that opentelemetrybot can create release branches)
+
+### `renovate/**/**`, and `opentelemetrybot/*`
+
+* Require status checks to pass before merging: UNCHECKED
+
+  (So that renovate PRs can be rebased)
+
+* Restrict who can push to matching branches: UNCHECKED
+
+  (So that bots can create PR branches in this repository)
+
+* Allow force pushes > Everyone
+
+  (So that renovate PRs can be rebased)
+
+* Allow deletions: CHECKED
+
+  (So that bot PR branches can be deleted)
  
 ## Secrets and variables > Actions
 
