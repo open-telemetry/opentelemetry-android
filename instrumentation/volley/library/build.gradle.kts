@@ -1,20 +1,15 @@
 import java.time.Duration
 
 plugins {
-    id("com.android.library")
     id("otel.android-library-conventions")
-    id("otel.errorprone-conventions")
 }
 
 android {
     namespace = "io.opentelemetry.android.volley"
 
-    compileSdk = 34
     buildToolsVersion = "34.0.0"
 
     defaultConfig {
-        minSdk = 21
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -24,11 +19,6 @@ android {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
-    }
-    compileOptions {
-        sourceCompatibility(JavaVersion.VERSION_1_8)
-        targetCompatibility(JavaVersion.VERSION_1_8)
-        isCoreLibraryDesugaringEnabled = true
     }
 
     testOptions {
