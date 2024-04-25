@@ -8,7 +8,6 @@ package io.opentelemetry.android.instrumentation.volley;
 import static java.util.Collections.emptyList;
 
 import android.net.Uri;
-
 import androidx.annotation.Nullable;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Header;
