@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  */
 final class SessionIdTimeoutHandler implements ApplicationStateListener {
 
-    private static final long SESSION_TIMEOUT_NANOS = TimeUnit.MINUTES.toNanos(15);
+    private long SESSION_TIMEOUT_NANOS = TimeUnit.MINUTES.toNanos(15);
 
     private final Clock clock;
     private volatile long timeoutStartNanos;
@@ -38,6 +38,10 @@ final class SessionIdTimeoutHandler implements ApplicationStateListener {
     // for testing
     SessionIdTimeoutHandler(Clock clock) {
         this.clock = clock;
+    }
+
+    public void setSessionTimeout(final int sessionTimeout) {
+        this.SESSION_TIMEOUT_NANOS = TimeUnit.MINUTES.toNanos(sessionTimeout);
     }
 
     @Override
@@ -71,7 +75,9 @@ final class SessionIdTimeoutHandler implements ApplicationStateListener {
     private enum State {
         FOREGROUND,
         BACKGROUND,
-        /** A temporary state representing the first event after the app has been brought back. */
+        /**
+         * A temporary state representing the first event after the app has been brought back.
+         */
         TRANSITIONING_TO_FOREGROUND
     }
 }
