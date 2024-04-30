@@ -44,7 +44,8 @@ class AnrDetectorTest {
 
         // verify that the ANR scheduler was started
         verify(scheduler)
-                .scheduleWithFixedDelay(isA(AnrWatcher.class), eq(1L), eq(1L), eq(TimeUnit.SECONDS));
+                .scheduleWithFixedDelay(
+                        isA(AnrWatcher.class), eq(1L), eq(1L), eq(TimeUnit.SECONDS));
         // verify that an application listener was installed
         verify(instrumentedApplication)
                 .registerApplicationStateListener(isA(AnrDetectorToggler.class));
