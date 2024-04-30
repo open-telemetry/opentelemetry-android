@@ -85,7 +85,7 @@ class SlowRenderListener implements DefaultingActivityLifecycleCallbacks {
     // the returned future is very unlikely to fail
     @SuppressWarnings("FutureReturnValueIgnored")
     void start() {
-        executorService.scheduleAtFixedRate(
+        executorService.scheduleWithFixedDelay(
                 this::reportSlowRenders,
                 pollInterval.toMillis(),
                 pollInterval.toMillis(),

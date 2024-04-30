@@ -29,18 +29,18 @@ class AnrDetectorTogglerTest {
 
     @Test
     void testOnApplicationForegrounded() {
-        doReturn(future).when(scheduler).scheduleAtFixedRate(anrWatcher, 1, 1, TimeUnit.SECONDS);
+        doReturn(future).when(scheduler).scheduleWithFixedDelay(anrWatcher, 1, 1, TimeUnit.SECONDS);
 
         underTest.onApplicationForegrounded();
         underTest.onApplicationForegrounded();
         underTest.onApplicationForegrounded();
 
-        verify(scheduler, times(1)).scheduleAtFixedRate(anrWatcher, 1, 1, TimeUnit.SECONDS);
+        verify(scheduler, times(1)).scheduleWithFixedDelay(anrWatcher, 1, 1, TimeUnit.SECONDS);
     }
 
     @Test
     void testOnApplicationBackgrounded() {
-        doReturn(future).when(scheduler).scheduleAtFixedRate(anrWatcher, 1, 1, TimeUnit.SECONDS);
+        doReturn(future).when(scheduler).scheduleWithFixedDelay(anrWatcher, 1, 1, TimeUnit.SECONDS);
 
         underTest.onApplicationForegrounded();
 

@@ -26,7 +26,7 @@ final class AnrDetectorToggler implements ApplicationStateListener {
     @Override
     public void onApplicationForegrounded() {
         if (future == null) {
-            future = anrScheduler.scheduleAtFixedRate(anrWatcher, 1, 1, TimeUnit.SECONDS);
+            future = anrScheduler.scheduleWithFixedDelay(anrWatcher, 1, 1, TimeUnit.SECONDS);
         }
     }
 
