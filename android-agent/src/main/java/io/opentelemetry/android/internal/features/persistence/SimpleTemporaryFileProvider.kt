@@ -2,6 +2,7 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package io.opentelemetry.android.internal.features.persistence
 
 import io.opentelemetry.contrib.disk.buffering.internal.files.TemporaryFileProvider

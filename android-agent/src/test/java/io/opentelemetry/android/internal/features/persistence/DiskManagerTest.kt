@@ -2,6 +2,7 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package io.opentelemetry.android.internal.features.persistence
 
 import io.mockk.Called
@@ -89,9 +90,9 @@ internal class DiskManagerTest {
         val maxCacheFileSize = 1024 * 1024 // 1 MB
         every { diskBufferingConfiguration.maxCacheSize }.returns(maxCacheSize.toInt())
         every { diskBufferingConfiguration.maxCacheFileSize }.returns(maxCacheFileSize)
-        every { cacheStorageService.ensureCacheSpaceAvailable(maxCacheSize)}.returns(maxCacheSize)
-        every { preferencesService.retrieveInt(MAX_FOLDER_SIZE_KEY, -1)}.returns(-1)
-        every { preferencesService.store(any(), any())} just Runs
+        every { cacheStorageService.ensureCacheSpaceAvailable(maxCacheSize) }.returns(maxCacheSize)
+        every { preferencesService.retrieveInt(MAX_FOLDER_SIZE_KEY, -1) }.returns(-1)
+        every { preferencesService.store(any(), any()) } just Runs
 
         // Expects the size of a single signal type folder minus the size of a cache file, to use as
         // temporary space for reading.
@@ -103,15 +104,15 @@ internal class DiskManagerTest {
 
         // On a second call, should get the value from the preferences.
         clearMocks(cacheStorageService, diskBufferingConfiguration, preferencesService)
-        every { preferencesService.retrieveInt(MAX_FOLDER_SIZE_KEY, -1)}.returns(expected)
+        every { preferencesService.retrieveInt(MAX_FOLDER_SIZE_KEY, -1) }.returns(expected)
         assertThat(diskManager.maxFolderSize).isEqualTo(expected)
 
         verify {
             preferencesService.retrieveInt(MAX_FOLDER_SIZE_KEY, -1)
         }
         confirmVerified(preferencesService)
-        verify { cacheStorageService wasNot Called}
-        verify { diskBufferingConfiguration wasNot Called}
+        verify { cacheStorageService wasNot Called }
+        verify { diskBufferingConfiguration wasNot Called }
     }
 
     @Test
@@ -120,12 +121,12 @@ internal class DiskManagerTest {
         val maxCacheFileSize = 1024 * 1024 // 1 MB
         every { diskBufferingConfiguration.maxCacheSize }.returns(maxCacheSize.toInt())
         every { diskBufferingConfiguration.maxCacheFileSize }.returns(maxCacheFileSize)
-        every { cacheStorageService.ensureCacheSpaceAvailable(maxCacheSize)}.returns(maxCacheSize)
-        every { preferencesService.retrieveInt(MAX_FOLDER_SIZE_KEY, -1)}.returns(-1)
+        every { cacheStorageService.ensureCacheSpaceAvailable(maxCacheSize) }.returns(maxCacheSize)
+        every { preferencesService.retrieveInt(MAX_FOLDER_SIZE_KEY, -1) }.returns(-1)
         // Expects the size of a single signal type folder minus the size of a cache file, to use as
         // temporary space for reading.
         assertThat(diskManager.maxFolderSize).isEqualTo(0)
-        verify(inverse=true) {
+        verify(inverse = true) {
             preferencesService.store(any(), any())
         }
     }
