@@ -15,7 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.opentelemetry.android.demo.theme.BackpackingBuddyTheme
+import io.opentelemetry.android.demo.theme.DemoAppTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            BackpackingBuddyTheme {
+            DemoAppTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),

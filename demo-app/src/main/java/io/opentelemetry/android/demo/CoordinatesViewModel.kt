@@ -10,7 +10,6 @@ class CoordinatesViewModel : ViewModel() {
     val distanceState = MutableStateFlow("0.0")
     val sessionIdState = MutableStateFlow("? unknown ?")
     private var distance = 0f
-    private var elevation = 0f
     private val tracer = OtelSampleApplication.tracer("bb.distance")!!
 
     init {
