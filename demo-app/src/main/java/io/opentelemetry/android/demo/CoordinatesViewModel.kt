@@ -8,7 +8,7 @@ import kotlinx.coroutines.launch
 
 class CoordinatesViewModel : ViewModel() {
     val distanceState = MutableStateFlow("0.0")
-    val elevationState = MutableStateFlow("0.0")
+    val sessionIdState = MutableStateFlow("? unknown ?")
     private var distance = 0f
     private var elevation = 0f
     private val tracer = OtelSampleApplication.tracer("bb.distance")!!
@@ -20,13 +20,6 @@ class CoordinatesViewModel : ViewModel() {
                 updateDistance()
             }
         }
-        viewModelScope.launch {
-            delay(1000)
-            while (true) {
-                delay(500)
-                updateElevation()
-            }
-        }
     }
 
     private fun updateDistance() {
@@ -35,15 +28,12 @@ class CoordinatesViewModel : ViewModel() {
         sendTrace("distance", distance)
     }
 
-    private fun updateElevation() {
-        elevation += 0.005f
-        elevationState.value = String.format("%.2f", elevation)
-        sendTrace("elevation", elevation)
+    private fun updateSession(){
+
     }
 
     private fun sendTrace(type: String, value: Float) {
-        // A metric should be a better fit for this use case, but due to presentation limitations we're using spans.
-
+        // A metric should be a better fit, but for now we're using spans.
         tracer.spanBuilder(type).setAttribute("value", value.toDouble()).startSpan().end()
     }
 }

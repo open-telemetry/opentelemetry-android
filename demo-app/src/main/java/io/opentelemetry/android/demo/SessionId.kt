@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.StateFlow
 
 @Composable
-fun Elevation(elevationState: StateFlow<String>) {
+fun SessionId(sessionId: StateFlow<String>) {
     Row {
         Card(modifier = Modifier.size(width = 250.dp, height = 150.dp)) {
             Column(
@@ -23,9 +23,8 @@ fun Elevation(elevationState: StateFlow<String>) {
                     .fillMaxWidth()
                     .padding(vertical = 25.dp), Arrangement.Center
             ) {
-                CenterText(text = "Elevation", fontSize = 20.sp)
-                CenterText(text = elevationState.collectAsState().value, fontSize = 40.sp)
-                CenterText(text = "meters", fontSize = 12.sp)
+                CenterText(text = "session.id", fontSize = 12.sp)
+                CenterText(text = sessionId.collectAsState().value, fontSize = 12.sp)
             }
         }
     }

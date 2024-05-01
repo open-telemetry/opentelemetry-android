@@ -38,10 +38,11 @@ class MainActivity : ComponentActivity() {
                             Modifier.padding(all = 20.dp),
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            CenterText("Backpacking Buddy", fontSize = 40.sp)
+                            CenterText("OpenTelemetry Demo", fontSize = 40.sp)
                         }
                         Distance(viewModel.distanceState)
-                        Elevation(viewModel.elevationState)
+//                        Elevation(viewModel.elevationState)
+                        SessionId(viewModel.sessionIdState)
                         Disposition()
                     }
                 }
