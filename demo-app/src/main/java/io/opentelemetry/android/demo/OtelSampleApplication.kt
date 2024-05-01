@@ -10,13 +10,15 @@ import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguratio
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
 
+private const val TAG = "otel.demo"
+
 class OtelSampleApplication : Application() {
 
     @SuppressLint("RestrictedApi")
     override fun onCreate() {
         super.onCreate()
 
-        Log.i("bb", "Initializing the opentelemetry-android-agent")
+        Log.i(TAG, "Initializing the opentelemetry-android-agent")
         val diskBufferingConfig = DiskBufferingConfiguration.builder()
             .setEnabled(true)
             .setMaxCacheSize(10_000_000)
@@ -32,9 +34,9 @@ class OtelSampleApplication : Application() {
             }
         try {
             rum = otelRumBuilder.build()
-            Log.d("bb",  "RUM session started: " + rum!!.rumSessionId)
+            Log.d(TAG,  "RUM session started: " + rum!!.rumSessionId)
         } catch (e: Exception) {
-            Log.e("bb", "Oh no!", e)
+            Log.e(TAG, "Oh no!", e)
         }
     }
 
