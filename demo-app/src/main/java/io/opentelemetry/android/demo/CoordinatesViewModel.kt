@@ -11,7 +11,7 @@ class CoordinatesViewModel : ViewModel() {
     val elevationState = MutableStateFlow("0.0")
     private var distance = 0f
     private var elevation = 0f
-    private val tracer = BackpackingBuddyApplication.tracer("bb.distance")!!
+    private val tracer = OtelSampleApplication.tracer("bb.distance")!!
 
     init {
         viewModelScope.launch {

@@ -10,7 +10,7 @@ import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguratio
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
 
-class BackpackingBuddyApplication : Application() {
+class OtelSampleApplication : Application() {
 
     @SuppressLint("RestrictedApi")
     override fun onCreate() {

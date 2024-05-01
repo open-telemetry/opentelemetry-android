@@ -30,7 +30,7 @@ fun Disposition() {
 }
 
 fun dispositionClickEvent(disposition: String, emoji: String) {
-    val tracer = BackpackingBuddyApplication.tracer("bb.disposition")
+    val tracer = OtelSampleApplication.tracer("bb.disposition")
     val span = tracer
         ?.spanBuilder("bb.disposition")
         ?.setSpanKind(SpanKind.INTERNAL)
