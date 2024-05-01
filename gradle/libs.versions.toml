@@ -1,4 +1,5 @@
 [versions]
+agp = "8.3.2"
 opentelemetry = "1.37.0"
 opentelemetry-instrumentation = "2.3.0"
 opentelemetry-instrumentation-alpha = "2.3.0-alpha"
@@ -34,6 +35,7 @@ volley = "com.android.volley:volley:1.2.1"
 opentelemetry-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-testing", version.ref = "opentelemetry" }
 androidx-test-core = "androidx.test:core:1.5.0"
 androidx-test-runner = "androidx.test:runner:1.5.2"
+androidx-junit = "androidx.test.ext:junit:1.1.5"
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 mockk = "io.mockk:mockk:1.13.10"
@@ -58,6 +60,19 @@ animalsniffer-plugin = "ru.vyarus:gradle-animalsniffer-plugin:1.7.1"
 android-plugin = "com.android.tools.build:gradle:8.4.0"
 byteBuddy-plugin = { module = "net.bytebuddy:byte-buddy-gradle-plugin", version.ref = "byteBuddy" }
 kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+
+# demo-app
+androidx-core-ktx = "androidx.core:core-ktx:1.13.0"
+androidx-lifecycle-runtime-ktx = "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
+androidx-compose-bom = "androidx.compose:compose-bom:2024.05.00"
+androidx-activity-compose = "androidx.activity:activity-compose:1.9.0"
+androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 
 [bundles]
 mocking = ["mockito-core", "mockito-junit-jupiter", "mockk"]
