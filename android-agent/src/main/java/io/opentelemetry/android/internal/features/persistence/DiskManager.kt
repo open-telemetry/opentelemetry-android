@@ -2,6 +2,7 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package io.opentelemetry.android.internal.features.persistence
 
 import android.util.Log
@@ -15,7 +16,7 @@ import java.io.IOException
 internal class DiskManager(
     private val cacheStorageService: CacheStorageService,
     private val preferencesService: PreferencesService,
-    private val diskBufferingConfiguration: DiskBufferingConfiguration
+    private val diskBufferingConfiguration: DiskBufferingConfiguration,
 ) {
     @get:Throws(IOException::class)
     val signalsBufferDir: File
@@ -48,7 +49,7 @@ internal class DiskManager(
             if (storedSize > 0) {
                 Log.d(
                     RumConstants.OTEL_RUM_LOG_TAG,
-                    String.format("Returning max folder size from preferences: %s", storedSize)
+                    String.format("Returning max folder size from preferences: %s", storedSize),
                 )
                 return storedSize
             }
@@ -62,30 +63,28 @@ internal class DiskManager(
             val calculatedSize = availableCacheSize / 3 - maxCacheFileSize
             if (calculatedSize < maxCacheFileSize) {
                 Log.w(
-                    RumConstants.OTEL_RUM_LOG_TAG, String.format(
+                    RumConstants.OTEL_RUM_LOG_TAG,
+                    String.format(
                         "Insufficient folder cache size: %s, it must be at least: %s",
-                        calculatedSize, maxCacheFileSize
-                    )
+                        calculatedSize,
+                        maxCacheFileSize,
+                    ),
                 )
                 return 0
             }
             preferencesService.store(MAX_FOLDER_SIZE_KEY, calculatedSize)
             Log.d(
-                RumConstants.OTEL_RUM_LOG_TAG, String.format(
+                RumConstants.OTEL_RUM_LOG_TAG,
+                String.format(
                     "Requested cache size: %s, available cache size: %s, folder size: %s",
-                    requestedSize, availableCacheSize, calculatedSize
-                )
+                    requestedSize,
+                    availableCacheSize,
+                    calculatedSize,
+                ),
             )
             return calculatedSize
         }
 
-    private fun ensureExistingOrThrow(dir: File) {
-        if (!dir.exists()) {
-            if (!dir.mkdirs()) {
-                throw IOException("Could not create dir $dir")
-            }
-        }
-    }
     val maxCacheFileSize: Int
         get() = diskBufferingConfiguration.maxCacheFileSize
 
@@ -100,6 +99,14 @@ internal class DiskManager(
                         deleteFiles(file)
                     }
                     file.delete()
+                }
+            }
+        }
+
+        private fun ensureExistingOrThrow(dir: File) {
+            if (!dir.exists()) {
+                if (!dir.mkdirs()) {
+                    throw IOException("Could not create dir $dir")
                 }
             }
         }
