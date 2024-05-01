@@ -12,8 +12,8 @@ spotless {
 
 repositories {
     mavenCentral()
-    gradlePluginPortal()
     google()
+    gradlePluginPortal()
 }
 
 dependencies {

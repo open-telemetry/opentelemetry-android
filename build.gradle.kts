@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
-        mavenCentral()
         google()
+        mavenCentral()
     }
     dependencies {
         classpath(libs.android.plugin)
@@ -22,8 +22,8 @@ extra["kotlin_min_supported_version"] = KotlinVersion.KOTLIN_1_6
 
 allprojects {
     repositories {
-        mavenCentral()
         google()
+        mavenCentral()
     }
     if (findProperty("final") != "true") {
         version = "$version-SNAPSHOT"
