@@ -44,8 +44,7 @@ class MainActivity : ComponentActivity() {
                         SessionId(viewModel.sessionIdState)
                         MainOtelButton(
                             painterResource(id = R.drawable.otel_icon),
-                            "Click to begin",
-                            onClick = {}
+                            "Click to begin"
                         )
                     }
                 }

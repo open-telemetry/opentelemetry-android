@@ -8,24 +8,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.opentelemetry.api.trace.SpanKind
 
 @Composable
 fun MainOtelButton(
     icon: Painter,
     text: String,
-    onClick: () -> Unit
 ) {
     Row {
         Spacer(modifier = Modifier.height(5.dp))
         Button(
-            onClick = onClick,
+            onClick = { generateClickEvent() },
             modifier = Modifier.padding(20.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
             content = {
@@ -41,4 +40,15 @@ fun MainOtelButton(
     Row {
         CenterText(text = text, fontSize = 30.sp)
     }
+}
+
+fun generateClickEvent(){
+    //TODO: Make an actual otel event
+    val tracer = OtelSampleApplication.tracer("otel.demo")
+    val span = tracer
+        ?.spanBuilder("logo.clicked")
+        ?.setSpanKind(SpanKind.INTERNAL)
+        ?.startSpan()
+    span?.end()
+
 }

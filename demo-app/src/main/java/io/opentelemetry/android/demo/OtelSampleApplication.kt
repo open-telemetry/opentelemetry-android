@@ -7,6 +7,8 @@ import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.OpenTelemetryRumBuilder
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration
+import io.opentelemetry.api.common.AttributeKey.stringKey
+import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
 
@@ -24,9 +26,11 @@ class OtelSampleApplication : Application() {
             .setMaxCacheSize(10_000_000)
             .build()
         val config = OtelRumConfig()
+            .setGlobalAttributes(Attributes.of(stringKey("toolkit"), "jetpack compose"))
             .setDiskBufferingConfiguration(diskBufferingConfig)
+
         // 10.0.2.2 is apparently a special binding to the host running the emulator
-        val ingestUrl = "http://10.0.2.2:4317/v1/trace"
+        val ingestUrl = "http://10.0.2.2:4318/v1/traces"
         val otelRumBuilder: OpenTelemetryRumBuilder = OpenTelemetryRum.builder(this, config)
             .addSpanExporterCustomizer {
                 OtlpHttpSpanExporter.builder()
