@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 @Composable
 fun SessionId(sessionId: StateFlow<String>) {
     Row {
-        Card(modifier = Modifier.size(width = 250.dp, height = 150.dp)) {
+        Card(modifier = Modifier.size(width = 250.dp, height = 75.dp)) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
