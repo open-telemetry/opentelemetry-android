@@ -47,6 +47,7 @@ tasks {
 
             nullaway {
                 severity.set(CheckSeverity.ERROR)
+                unannotatedSubPackages.add("io.opentelemetry.android.demo.databinding")
             }
 
             // Builder 'return this;' pattern
