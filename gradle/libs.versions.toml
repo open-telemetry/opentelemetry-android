@@ -15,7 +15,7 @@ kotlin = "1.9.23"
 opentelemetry-platform = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom", version.ref = "opentelemetry-instrumentation" }
 androidx-appcompat = "androidx.appcompat:appcompat:1.6.1"
 androidx-navigation-fragment = "androidx.navigation:navigation-fragment:2.7.7"
-androidx-core = "androidx.core:core:1.13.0"
+androidx-core = "androidx.core:core:1.13.1"
 findbugs-jsr305 = "com.google.code.findbugs:jsr305:3.0.2"
 byteBuddy = { module = "net.bytebuddy:byte-buddy", version.ref = "byteBuddy" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
