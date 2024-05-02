@@ -31,6 +31,8 @@ import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents;
 import io.opentelemetry.android.internal.features.persistence.DiskManager;
 import io.opentelemetry.android.internal.features.persistence.SimpleTemporaryFileProvider;
 import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordAppender;
+import io.opentelemetry.android.internal.services.CacheStorageService;
+import io.opentelemetry.android.internal.services.PreferencesService;
 import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -339,7 +341,13 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private StorageConfiguration createStorageConfiguration() throws IOException {
-        DiskManager diskManager = DiskManager.create(config.getDiskBufferingConfiguration());
+        PreferencesService preferencesService =
+                ServiceManager.get().getService(PreferencesService.class);
+        CacheStorageService storageService =
+                ServiceManager.get().getService(CacheStorageService.class);
+        DiskManager diskManager =
+                new DiskManager(
+                        storageService, preferencesService, config.getDiskBufferingConfiguration());
         return StorageConfiguration.builder()
                 .setMaxFileSize(diskManager.getMaxCacheFileSize())
                 .setMaxFolderSize(diskManager.getMaxFolderSize())
