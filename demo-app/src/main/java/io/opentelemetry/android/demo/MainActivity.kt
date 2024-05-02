@@ -15,6 +15,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.opentelemetry.android.demo.theme.DemoAppTheme
@@ -40,7 +43,7 @@ class MainActivity : ComponentActivity() {
                             Modifier.padding(all = 20.dp),
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            CenterText("OpenTelemetry Demo", fontSize = 40.sp)
+                            CenterText("OpenTelemetry Android Demo", fontSize = 40.sp)
                         }
 //                        Distance(viewModel.distanceState)
                         SessionId(viewModel.sessionIdState)

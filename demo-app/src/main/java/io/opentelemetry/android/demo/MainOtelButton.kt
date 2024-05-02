@@ -39,6 +39,6 @@ fun MainOtelButton(
             })
     }
     Row {
-        Text(text, fontSize = 30.sp)
+        CenterText(text = text, fontSize = 30.sp)
     }
 }
