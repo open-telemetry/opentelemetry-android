@@ -6,29 +6,21 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
-class CoordinatesViewModel : ViewModel() {
-    val distanceState = MutableStateFlow("0.0")
+class DemoViewModel : ViewModel() {
+
     val sessionIdState = MutableStateFlow("? unknown ?")
-    private var distance = 0f
-    private val tracer = OtelSampleApplication.tracer("bb.distance")!!
+    private val tracer = OtelSampleApplication.tracer("otel.demo")!!
 
     init {
         viewModelScope.launch {
             while (true) {
-                delay(500)
-                updateDistance()
+                delay(5000)
+                //TODO: Do some work here maybe
             }
         }
     }
-
-    private fun updateDistance() {
-        distance += 0.003f
-        distanceState.value = String.format("%.2f", distance)
-        sendTrace("distance", distance)
-    }
-
     private fun updateSession(){
-
+        // TODO
     }
 
     private fun sendTrace(type: String, value: Float) {

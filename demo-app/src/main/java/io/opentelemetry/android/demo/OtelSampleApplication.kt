@@ -25,6 +25,7 @@ class OtelSampleApplication : Application() {
             .build()
         val config = OtelRumConfig()
             .setDiskBufferingConfiguration(diskBufferingConfig)
+        // 10.0.2.2 is apparently a special binding to the host running the emulator
         val ingestUrl = "http://10.0.2.2:4317/v1/trace"
         val otelRumBuilder: OpenTelemetryRumBuilder = OpenTelemetryRum.builder(this, config)
             .addSpanExporterCustomizer {

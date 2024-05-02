@@ -9,22 +9,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.opentelemetry.android.demo.theme.DemoAppTheme
 
 class MainActivity : ComponentActivity() {
 
-    private val viewModel by viewModels<CoordinatesViewModel>()
+    private val viewModel by viewModels<DemoViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,14 +41,12 @@ class MainActivity : ComponentActivity() {
                         ) {
                             CenterText("OpenTelemetry Android Demo", fontSize = 40.sp)
                         }
-//                        Distance(viewModel.distanceState)
                         SessionId(viewModel.sessionIdState)
                         MainOtelButton(
                             painterResource(id = R.drawable.otel_icon),
-                            "Click to Begin",
+                            "Click to begin",
                             onClick = {}
                         )
-//                        Disposition()
                     }
                 }
             }
