@@ -147,7 +147,7 @@ public class SlowRenderListenerTest {
                             return null;
                         })
                 .when(exec)
-                .scheduleAtFixedRate(any(), eq(1001L), eq(1001L), eq(TimeUnit.MILLISECONDS));
+                .scheduleWithFixedDelay(any(), eq(1001L), eq(1001L), eq(TimeUnit.MILLISECONDS));
 
         SlowRenderListener testInstance =
                 new SlowRenderListener(tracer, exec, frameMetricsHandler, Duration.ofMillis(1001));
