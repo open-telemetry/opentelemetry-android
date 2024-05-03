@@ -13,6 +13,8 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+      - name: touch local props
+        run: touch local.properties
       - name: run gradle
         run: ./gradlew check
 

@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.demo
 
 import androidx.compose.foundation.Image
@@ -13,13 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import io.opentelemetry.api.trace.SpanKind
 
 @Composable
-fun MainOtelButton(
-    icon: Painter,
-) {
+fun MainOtelButton(icon: Painter) {
     Row {
         Spacer(modifier = Modifier.height(5.dp))
         Button(
@@ -32,19 +34,20 @@ fun MainOtelButton(
                     contentDescription = null,
                     Modifier
                         .width(150.dp)
-                        .padding(30.dp)
+                        .padding(30.dp),
                 )
-            })
+            },
+        )
     }
 }
 
-fun generateClickEvent(){
-    //TODO: Make an actual otel event
+fun generateClickEvent() {
+    // TODO: Make an actual otel event
     val tracer = OtelSampleApplication.tracer("otel.demo")
-    val span = tracer
-        ?.spanBuilder("logo.clicked")
-        ?.setSpanKind(SpanKind.INTERNAL)
-        ?.startSpan()
+    val span =
+        tracer
+            ?.spanBuilder("logo.clicked")
+            ?.setSpanKind(SpanKind.INTERNAL)
+            ?.startSpan()
     span?.end()
-
 }

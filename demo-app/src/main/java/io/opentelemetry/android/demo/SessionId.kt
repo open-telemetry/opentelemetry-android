@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.demo
 
 import androidx.compose.foundation.layout.Arrangement
@@ -19,9 +24,11 @@ fun SessionId(sessionId: StateFlow<String>) {
     Row {
         Card(modifier = Modifier.size(width = 250.dp, height = 75.dp)) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 25.dp), Arrangement.Center
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 25.dp),
+                Arrangement.Center,
             ) {
                 CenterText(text = "session.id", fontSize = 12.sp)
                 CenterText(text = sessionId.collectAsState().value, fontSize = 12.sp)
@@ -29,4 +36,3 @@ fun SessionId(sessionId: StateFlow<String>) {
         }
     }
 }
-

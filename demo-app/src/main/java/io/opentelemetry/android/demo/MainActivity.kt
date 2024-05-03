@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.demo
 
 import android.content.Intent
@@ -12,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,7 +30,6 @@ import androidx.compose.ui.unit.sp
 import io.opentelemetry.android.demo.theme.DemoAppTheme
 
 class MainActivity : ComponentActivity() {
-
     private val viewModel by viewModels<DemoViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,34 +39,36 @@ class MainActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background,
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.SpaceEvenly
+                        verticalArrangement = Arrangement.SpaceEvenly,
                     ) {
                         Row(
                             Modifier.padding(all = 20.dp),
-                            horizontalArrangement = Arrangement.Center
+                            horizontalArrangement = Arrangement.Center,
                         ) {
-                            CenterText(fontSize = 40.sp,
-                                text = buildAnnotatedString {
-                                    withStyle(style = SpanStyle(color = Color(0xFFF5A800))) {
-                                        append("Open")
-                                    }
-                                    withStyle(style = SpanStyle(color = Color(0xFF425CC7))) {
-                                        append("Telemetry")
-                                    }
-                                    withStyle(style = SpanStyle(color = Color.Black)) {
+                            CenterText(
+                                fontSize = 40.sp,
+                                text =
+                                    buildAnnotatedString {
+                                        withStyle(style = SpanStyle(color = Color(0xFFF5A800))) {
+                                            append("Open")
+                                        }
+                                        withStyle(style = SpanStyle(color = Color(0xFF425CC7))) {
+                                            append("Telemetry")
+                                        }
+                                        withStyle(style = SpanStyle(color = Color.Black)) {
                                             append(" Android Demo")
-                                    }
-                                    toAnnotatedString()
-                                }
+                                        }
+                                        toAnnotatedString()
+                                    },
                             )
                         }
                         SessionId(viewModel.sessionIdState)
                         MainOtelButton(
-                            painterResource(id = R.drawable.otel_icon)
+                            painterResource(id = R.drawable.otel_icon),
                         )
                         val context = LocalContext.current
                         OpenStoreButton(text = "Click to begin", onClick = {
@@ -74,7 +79,4 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
 }
-
-

@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.demo
 
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,28 +18,37 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 
-val gothamFont = FontFamily(
-    Font(R.font.gotham_bold, FontWeight.Bold),
-)
+val gothamFont =
+    FontFamily(
+        Font(R.font.gotham_bold, FontWeight.Bold),
+    )
 
 @Composable
-fun CenterText(text: AnnotatedString, fontSize: TextUnit = 12.sp) {
+fun CenterText(
+    text: AnnotatedString,
+    fontSize: TextUnit = 12.sp,
+) {
     Text(
-        text, textAlign = TextAlign.Center,
+        text,
+        textAlign = TextAlign.Center,
         fontSize = fontSize,
         modifier = Modifier.fillMaxWidth(),
         fontFamily = gothamFont,
-        style = TextStyle.Default.copy(textAlign = TextAlign.Center)
+        style = TextStyle.Default.copy(textAlign = TextAlign.Center),
     )
 }
 
 @Composable
-fun CenterText(text: String, fontSize: TextUnit = 12.sp) {
+fun CenterText(
+    text: String,
+    fontSize: TextUnit = 12.sp,
+) {
     Text(
-        text, textAlign = TextAlign.Center,
+        text,
+        textAlign = TextAlign.Center,
         fontSize = fontSize,
         modifier = Modifier.fillMaxWidth(),
         fontFamily = gothamFont,
-        style = TextStyle.Default.copy(textAlign = TextAlign.Center)
+        style = TextStyle.Default.copy(textAlign = TextAlign.Center),
     )
 }

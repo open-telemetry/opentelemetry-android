@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.demo.ui.home
 
 import android.os.Bundle
@@ -10,25 +15,30 @@ import androidx.lifecycle.ViewModelProvider
 import io.opentelemetry.android.demo.databinding.FragmentHomeBinding
 
 class HomeFragment : Fragment() {
+    // Renamed from _binding (default) due to ktlint problem below
+    private var binding: FragmentHomeBinding? = null
 
-    private var _binding: FragmentHomeBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-    private val binding get() = _binding!!
+    // This property is only valid between onCreateView and onDestroyView.
+    // Currently failing ktlint due to
+    // https://github.com/pinterest/ktlint/issues/2448
+    // which hasn't hit the aging gradle spotless plugin yet
+//    private val binding get() = _binding!!
+    private fun getBinding(): FragmentHomeBinding {
+        return binding!!
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         val homeViewModel =
             ViewModelProvider(this).get(HomeViewModel::class.java)
 
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        val root: View = binding.root
+        binding = FragmentHomeBinding.inflate(inflater, container, false)
+        val root: View = getBinding().root
 
-        val textView: TextView = binding.textHome
+        val textView: TextView = getBinding().textHome
         homeViewModel.text.observe(viewLifecycleOwner) {
             textView.text = it
         }
@@ -37,6 +47,6 @@ class HomeFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        binding = null
     }
 }
