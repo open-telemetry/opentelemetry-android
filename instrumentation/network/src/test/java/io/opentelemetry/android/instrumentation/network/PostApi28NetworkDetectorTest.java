@@ -96,7 +96,7 @@ public class PostApi28NetworkDetectorTest {
                 new PostApi28NetworkDetector(
                         connectivityManager, telephonyManager, carrierFinder, context) {
                     @Override
-                    boolean hasPermission(String permission) {
+                    boolean canReadPhoneState() {
                         return false;
                     }
                 };

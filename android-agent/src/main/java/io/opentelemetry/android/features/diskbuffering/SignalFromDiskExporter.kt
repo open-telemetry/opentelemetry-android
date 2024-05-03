@@ -24,7 +24,7 @@ class SignalFromDiskExporter
         private val exportTimeoutInMillis: Long = TimeUnit.SECONDS.toMillis(5),
     ) {
         /**
-         * A batch contains all the signals that arrived in one call to [SpanDiskExporter.export]. So if
+         * A batch contains all the signals that arrived in one call to [SpanFromDiskExporter.exportStoredBatch]. So if
          * that function is called 5 times, then there will be 5 batches in disk. This function reads
          * and exports ONE batch every time is called.
          *
@@ -41,7 +41,7 @@ class SignalFromDiskExporter
         }
 
         /**
-         * A batch contains all the signals that arrived in one call to [MetricDiskExporter.export]. So if
+         * A batch contains all the signals that arrived in one call to [MetricFromDiskExporter.exportStoredBatch]. So if
          * that function is called 5 times, then there will be 5 batches in disk. This function reads
          * and exports ONE batch every time is called.
          *
@@ -58,7 +58,7 @@ class SignalFromDiskExporter
         }
 
         /**
-         * A batch contains all the signals that arrived in one call to [LogRecordDiskExporter.export]. So if
+         * A batch contains all the signals that arrived in one call to [LogRecordFromDiskExporter.exportStoredBatch]. So if
          * that function is called 5 times, then there will be 5 batches in disk. This function reads
          * and exports ONE batch every time is called.
          *

@@ -49,7 +49,7 @@ class PostApi28NetworkDetector implements NetworkDetector {
         Carrier carrier = carrierFinder.get();
         if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
             // If the app has the permission, use it to get a subtype.
-            if (hasPermission(Manifest.permission.READ_PHONE_STATE)) {
+            if (canReadPhoneState()) {
                 subType = getDataNetworkTypeName(telephonyManager.getDataNetworkType());
             }
             return CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
@@ -66,8 +66,8 @@ class PostApi28NetworkDetector implements NetworkDetector {
     }
 
     // visible for testing
-    boolean hasPermission(String permission) {
-        return ActivityCompat.checkSelfPermission(context, permission)
+    boolean canReadPhoneState() {
+        return ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE)
                 == PackageManager.PERMISSION_GRANTED;
     }
 

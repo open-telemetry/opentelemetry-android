@@ -36,7 +36,7 @@ tasks {
         options.errorprone {
             if (name.lowercase(Locale.getDefault()).contains("test")) {
                 // just disable all error prone checks for test
-                isEnabled.set(false);
+                isEnabled.set(false)
                 isCompilingTestOnlyCode.set(true)
             } else {
                 if (isAndroidProject) {

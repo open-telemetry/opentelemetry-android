@@ -107,7 +107,7 @@ enum VolleyHttpClientAttributesGetter
     }
 
     static List<String> headersToList(List<Header> headers, String name) {
-        if (headers.size() == 0) {
+        if (headers.isEmpty()) {
             return emptyList();
         }
 

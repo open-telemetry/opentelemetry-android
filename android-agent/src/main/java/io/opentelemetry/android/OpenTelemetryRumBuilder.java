@@ -273,10 +273,9 @@ public final class OpenTelemetryRumBuilder {
     public OpenTelemetryRumBuilder addSpanExporterCustomizer(
             Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer) {
         requireNonNull(spanExporterCustomizer, "spanExporterCustomizer");
-        Function<? super SpanExporter, ? extends SpanExporter> existing = spanExporterCustomizer;
         this.spanExporterCustomizer =
                 exporter -> {
-                    SpanExporter intermediate = existing.apply(exporter);
+                    SpanExporter intermediate = spanExporterCustomizer.apply(exporter);
                     return spanExporterCustomizer.apply(intermediate);
                 };
         return this;
