@@ -18,9 +18,6 @@ import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
-import io.opentelemetry.semconv.SemanticAttributes;
-import io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;

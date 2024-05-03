@@ -5,8 +5,6 @@
 
 package io.opentelemetry.android.instrumentation.network;
 
-import io.opentelemetry.semconv.SemanticAttributes;
-import io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes;
 import io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NetworkConnectionTypeValues;
 
 enum NetworkState {

@@ -49,7 +49,6 @@ public final class DiskBufferingConfiguration {
         private ExportScheduleHandler exportScheduleHandler =
                 new DefaultExportScheduleHandler(new DefaultExportScheduler());
 
-
         /** Enables or disables disk buffering. */
         public Builder setEnabled(boolean enabled) {
             this.enabled = enabled;
