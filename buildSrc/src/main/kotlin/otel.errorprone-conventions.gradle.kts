@@ -47,6 +47,7 @@ tasks {
 
             nullaway {
                 severity.set(CheckSeverity.ERROR)
+                // Prevent generated binding code in demo app from failing the build
                 unannotatedSubPackages.add("io.opentelemetry.android.demo.databinding")
             }
 
