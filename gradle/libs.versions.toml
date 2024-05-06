@@ -85,4 +85,4 @@ junit = ["junit-jupiter-api", "junit-jupiter-engine", "junit-vintage-engine"]
 [plugins]
 publishPlugin = { id = "io.github.gradle-nexus.publish-plugin", version = "2.0.0" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
-jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
