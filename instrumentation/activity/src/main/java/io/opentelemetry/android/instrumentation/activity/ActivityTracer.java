@@ -134,7 +134,7 @@ public class ActivityTracer {
         return this;
     }
 
-    public static Builder builder(Activity activity) {
+    static Builder builder(Activity activity) {
         return new Builder(activity);
     }
 

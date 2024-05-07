@@ -5,12 +5,12 @@
 
 package io.opentelemetry.android.instrumentation.network;
 
-import static io.opentelemetry.semconv.SemanticAttributes.NETWORK_CARRIER_ICC;
-import static io.opentelemetry.semconv.SemanticAttributes.NETWORK_CARRIER_MCC;
-import static io.opentelemetry.semconv.SemanticAttributes.NETWORK_CARRIER_MNC;
-import static io.opentelemetry.semconv.SemanticAttributes.NETWORK_CARRIER_NAME;
-import static io.opentelemetry.semconv.SemanticAttributes.NETWORK_CONNECTION_SUBTYPE;
-import static io.opentelemetry.semconv.SemanticAttributes.NETWORK_CONNECTION_TYPE;
+import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_ICC;
+import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_MCC;
+import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_MNC;
+import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_NAME;
+import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CONNECTION_SUBTYPE;
+import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE;
 
 import androidx.annotation.Nullable;
 import io.opentelemetry.api.common.AttributeKey;

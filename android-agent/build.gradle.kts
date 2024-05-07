@@ -72,7 +72,7 @@ dependencies {
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.exporter.logging)
     implementation(libs.opentelemetry.instrumentation.api)
-    implementation(libs.opentelemetry.semconv)
+    implementation(libs.opentelemetry.semconv.incubating)
     implementation(libs.opentelemetry.diskBuffering)
 
     testImplementation(libs.robolectric)

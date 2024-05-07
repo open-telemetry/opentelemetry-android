@@ -5,6 +5,12 @@
 
 package io.opentelemetry.android.instrumentation.crash;
 
+import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_ESCAPED;
+import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_MESSAGE;
+import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE;
+import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_TYPE;
+import static io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.*;
+
 import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -12,7 +18,6 @@ import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
-import io.opentelemetry.semconv.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
@@ -58,12 +63,12 @@ public final class CrashReporter {
         Thread thread = crashDetails.getThread();
         AttributesBuilder attributesBuilder =
                 Attributes.builder()
-                        .put(SemanticAttributes.EXCEPTION_ESCAPED, true)
-                        .put(SemanticAttributes.THREAD_ID, thread.getId())
-                        .put(SemanticAttributes.THREAD_NAME, thread.getName())
-                        .put(SemanticAttributes.EXCEPTION_MESSAGE, throwable.getMessage())
-                        .put(SemanticAttributes.EXCEPTION_STACKTRACE, stackTraceToString(throwable))
-                        .put(SemanticAttributes.EXCEPTION_TYPE, throwable.getClass().getName());
+                        .put(EXCEPTION_ESCAPED, true)
+                        .put(THREAD_ID, thread.getId())
+                        .put(THREAD_NAME, thread.getName())
+                        .put(EXCEPTION_MESSAGE, throwable.getMessage())
+                        .put(EXCEPTION_STACKTRACE, stackTraceToString(throwable))
+                        .put(EXCEPTION_TYPE, throwable.getClass().getName());
 
         for (AttributesExtractor<CrashDetails, Void> extractor : additionalExtractors) {
             extractor.onStart(attributesBuilder, Context.current(), crashDetails);

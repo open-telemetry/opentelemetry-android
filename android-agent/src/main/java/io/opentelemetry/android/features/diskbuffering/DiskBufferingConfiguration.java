@@ -24,7 +24,7 @@ public final class DiskBufferingConfiguration {
     }
 
     public static Builder builder() {
-        return new Builder(false, DEFAULT_MAX_CACHE_SIZE);
+        return new Builder();
     }
 
     public boolean isEnabled() {
@@ -44,15 +44,10 @@ public final class DiskBufferingConfiguration {
     }
 
     public static final class Builder {
-        private boolean enabled;
-        private int maxCacheSize;
+        private boolean enabled = false;
+        private int maxCacheSize = DEFAULT_MAX_CACHE_SIZE;
         private ExportScheduleHandler exportScheduleHandler =
                 new DefaultExportScheduleHandler(new DefaultExportScheduler());
-
-        private Builder(boolean enabled, int maxCacheSize) {
-            this.enabled = enabled;
-            this.maxCacheSize = maxCacheSize;
-        }
 
         /** Enables or disables disk buffering. */
         public Builder setEnabled(boolean enabled) {
