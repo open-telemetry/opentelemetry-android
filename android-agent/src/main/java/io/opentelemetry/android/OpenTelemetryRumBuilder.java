@@ -107,8 +107,8 @@ public final class OpenTelemetryRumBuilder {
 
     OpenTelemetryRumBuilder(Application application, OtelRumConfig config) {
         this.application = application;
-        SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler();
-        timeoutHandler.setSessionTimeout(config.getSessionTimeoutMinutes());
+        final SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler(
+                config.getSessionTimeout().toMinutes());
         this.sessionId = new SessionId(timeoutHandler);
         this.resource = AndroidResource.createDefault(application);
         this.config = config;
