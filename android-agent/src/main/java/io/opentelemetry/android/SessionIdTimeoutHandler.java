@@ -7,7 +7,6 @@ package io.opentelemetry.android;
 
 import io.opentelemetry.android.instrumentation.common.ApplicationStateListener;
 import io.opentelemetry.sdk.common.Clock;
-
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -77,9 +76,7 @@ final class SessionIdTimeoutHandler implements ApplicationStateListener {
     private enum State {
         FOREGROUND,
         BACKGROUND,
-        /**
-         * A temporary state representing the first event after the app has been brought back.
-         */
+        /** A temporary state representing the first event after the app has been brought back. */
         TRANSITIONING_TO_FOREGROUND
     }
 }

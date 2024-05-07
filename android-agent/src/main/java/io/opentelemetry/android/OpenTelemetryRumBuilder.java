@@ -11,7 +11,6 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Looper;
 import android.util.Log;
-
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
@@ -52,7 +51,6 @@ import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,7 +59,6 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
 import javax.annotation.Nullable;
 
 /**
@@ -92,13 +89,10 @@ public final class OpenTelemetryRumBuilder {
             (a) -> a;
 
     private Resource resource;
-    @Nullable
-    private CurrentNetworkProvider currentNetworkProvider = null;
+    @Nullable private CurrentNetworkProvider currentNetworkProvider = null;
     private InitializationEvents initializationEvents = InitializationEvents.NO_OP;
-    private Consumer<AnrDetectorBuilder> anrCustomizer = x -> {
-    };
-    private Consumer<CrashReporterBuilder> crashReporterCustomizer = x -> {
-    };
+    private Consumer<AnrDetectorBuilder> anrCustomizer = x -> {};
+    private Consumer<CrashReporterBuilder> crashReporterCustomizer = x -> {};
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
@@ -107,8 +101,8 @@ public final class OpenTelemetryRumBuilder {
 
     OpenTelemetryRumBuilder(Application application, OtelRumConfig config) {
         this.application = application;
-        final SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler(
-                config.getSessionTimeout().toMinutes());
+        final SessionIdTimeoutHandler timeoutHandler =
+                new SessionIdTimeoutHandler(config.getSessionTimeout().toMinutes());
         this.sessionId = new SessionId(timeoutHandler);
         this.resource = AndroidResource.createDefault(application);
         this.config = config;
@@ -174,7 +168,7 @@ public final class OpenTelemetryRumBuilder {
      * specific customizations. If ANR detection is disabled, this method is effectively a no-op.
      *
      * @param customizer A Consumer that will receive the {@link AnrDetectorBuilder} before the
-     *                   {@link AnrDetector} is built.
+     *     {@link AnrDetector} is built.
      * @return this.
      */
     public OpenTelemetryRumBuilder addAnrCustomization(Consumer<AnrDetectorBuilder> customizer) {
@@ -188,7 +182,7 @@ public final class OpenTelemetryRumBuilder {
      * effectively a no-op.
      *
      * @param customizer A Consumer that will recieve the {@link CrashReporterBuilder} before the
-     *                   {@link CrashReporter} is built.
+     *     {@link CrashReporter} is built.
      * @return this.
      */
     public OpenTelemetryRumBuilder addCrashReportingCustomization(
@@ -374,9 +368,7 @@ public final class OpenTelemetryRumBuilder {
         }
     }
 
-    /**
-     * Leverage the configuration to wire up various instrumentation components.
-     */
+    /** Leverage the configuration to wire up various instrumentation components. */
     private void applyConfiguration() {
         if (config.shouldGenerateSdkInitializationEvents()) {
             if (initializationEvents == InitializationEvents.NO_OP) {

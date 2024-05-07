@@ -9,10 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.sdk.testing.time.TestClock;
-
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-
 import org.junit.jupiter.api.Test;
 
 class SessionIdTimeoutHandlerTest {
@@ -20,9 +18,8 @@ class SessionIdTimeoutHandlerTest {
     @Test
     void shouldNeverTimeOutInForeground() {
         TestClock clock = TestClock.create();
-        SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler(
-                clock,
-                TimeUnit.MINUTES.toNanos(15));
+        SessionIdTimeoutHandler timeoutHandler =
+                new SessionIdTimeoutHandler(clock, TimeUnit.MINUTES.toNanos(15));
 
         assertFalse(timeoutHandler.hasTimedOut());
         timeoutHandler.bump();
@@ -35,9 +32,8 @@ class SessionIdTimeoutHandlerTest {
     @Test
     void shouldApply15MinutesTimeoutToAppsInBackground() {
         TestClock clock = TestClock.create();
-        SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler(
-                clock,
-                TimeUnit.MINUTES.toNanos(15));
+        SessionIdTimeoutHandler timeoutHandler =
+                new SessionIdTimeoutHandler(clock, TimeUnit.MINUTES.toNanos(15));
 
         timeoutHandler.onApplicationBackgrounded();
         timeoutHandler.bump();
@@ -68,9 +64,8 @@ class SessionIdTimeoutHandlerTest {
     @Test
     void shouldApplyTimeoutToFirstSpanAfterAppBeingMovedToForeground() {
         TestClock clock = TestClock.create();
-        SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler(
-                clock,
-                TimeUnit.MINUTES.toNanos(15));
+        SessionIdTimeoutHandler timeoutHandler =
+                new SessionIdTimeoutHandler(clock, TimeUnit.MINUTES.toNanos(15));
 
         timeoutHandler.onApplicationBackgrounded();
         timeoutHandler.bump();
@@ -89,9 +84,8 @@ class SessionIdTimeoutHandlerTest {
     @Test
     void shouldApplyCustomTimeoutToFirstSpanAfterAppBeingMovedToForeground() {
         TestClock clock = TestClock.create();
-        SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler(
-                clock,
-                TimeUnit.MINUTES.toNanos(5));
+        SessionIdTimeoutHandler timeoutHandler =
+                new SessionIdTimeoutHandler(clock, TimeUnit.MINUTES.toNanos(5));
 
         timeoutHandler.onApplicationBackgrounded();
         timeoutHandler.bump();

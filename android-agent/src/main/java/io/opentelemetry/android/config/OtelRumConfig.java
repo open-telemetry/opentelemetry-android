@@ -69,9 +69,7 @@ public class OtelRumConfig {
         return this;
     }
 
-    /**
-     * Returns true if runtime network attributes are enabled, false otherwise.
-     */
+    /** Returns true if runtime network attributes are enabled, false otherwise. */
     public boolean shouldIncludeNetworkAttributes() {
         return includeNetworkAttributes;
     }
@@ -87,9 +85,7 @@ public class OtelRumConfig {
         return this;
     }
 
-    /**
-     * Returns true if the SDK is configured to generate initialization events, false otherwise.
-     */
+    /** Returns true if the SDK is configured to generate initialization events, false otherwise. */
     public boolean shouldGenerateSdkInitializationEvents() {
         return generateSdkInitializationEvents;
     }
@@ -105,9 +101,7 @@ public class OtelRumConfig {
         return this;
     }
 
-    /**
-     * Return true if the SDK should be configured to report screen attributes.
-     */
+    /** Return true if the SDK should be configured to report screen attributes. */
     public boolean shouldIncludeScreenAttributes() {
         return includeScreenAttributes;
     }
@@ -136,16 +130,12 @@ public class OtelRumConfig {
         return this;
     }
 
-    /**
-     * Returns true if network change monitoring is enabled (default = true).
-     */
+    /** Returns true if network change monitoring is enabled (default = true). */
     public boolean isNetworkChangeMonitoringEnabled() {
         return networkChangeMonitoringEnabled;
     }
 
-    /**
-     * Returns true if ANR (application not responding) detection is enabled (default = true).
-     */
+    /** Returns true if ANR (application not responding) detection is enabled (default = true). */
     public boolean isAnrDetectionEnabled() {
         return anrDetectionEnabled;
     }
@@ -160,9 +150,7 @@ public class OtelRumConfig {
         return this;
     }
 
-    /**
-     * Returns true if the slow rendering detection instrumentation is enabled.
-     */
+    /** Returns true if the slow rendering detection instrumentation is enabled. */
     public boolean isSlowRenderingDetectionEnabled() {
         return slowRenderingDetectionEnabled;
     }
@@ -177,9 +165,7 @@ public class OtelRumConfig {
         return this;
     }
 
-    /**
-     * Returns the Duration at which slow renders are polled. Default = 1s.
-     */
+    /** Returns the Duration at which slow renders are polled. Default = 1s. */
     public Duration getSlowRenderingDetectionPollInterval() {
         return slowRenderingDetectionPollInterval;
     }
@@ -194,32 +180,24 @@ public class OtelRumConfig {
         return this;
     }
 
-    /**
-     * Returns true if crash reporting is enabled.
-     */
+    /** Returns true if crash reporting is enabled. */
     public boolean isCrashReportingEnabled() {
         return crashReportingEnabled;
     }
 
-    /**
-     * Call this method to disable crash reporting.
-     */
+    /** Call this method to disable crash reporting. */
     public OtelRumConfig disableCrashReporting() {
         crashReportingEnabled = false;
         return this;
     }
 
-    /**
-     * Call this method to set session timeout in minutes
-     */
+    /** Call this method to set session timeout in minutes */
     public OtelRumConfig setSessionTimeout(Duration sessionTimeout) {
         this.sessionTimeout = sessionTimeout;
         return this;
     }
 
-    /**
-     * Call this method to retrieve session timeout
-     */
+    /** Call this method to retrieve session timeout */
     public Duration getSessionTimeout() {
         return sessionTimeout;
     }
