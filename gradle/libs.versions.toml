@@ -35,6 +35,7 @@ volley = "com.android.volley:volley:1.2.1"
 opentelemetry-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-testing", version.ref = "opentelemetry" }
 androidx-test-core = "androidx.test:core:1.5.0"
 androidx-test-runner = "androidx.test:runner:1.5.2"
+androidx-junit = "androidx.test.ext:junit:1.1.5"
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 mockk = "io.mockk:mockk:1.13.10"
@@ -60,6 +61,24 @@ android-plugin = "com.android.tools.build:gradle:8.4.0"
 byteBuddy-plugin = { module = "net.bytebuddy:byte-buddy-gradle-plugin", version.ref = "byteBuddy" }
 kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 
+# demo-app
+androidx-core-ktx = "androidx.core:core-ktx:1.13.0"
+androidx-lifecycle-runtime-ktx = "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
+androidx-compose-bom = "androidx.compose:compose-bom:2024.05.00"
+androidx-activity-compose = "androidx.activity:activity-compose:1.9.0"
+androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version = "2.1.4" }
+material = { group = "com.google.android.material", name = "material", version = "1.12.0" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version = "2.7.0" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version = "2.7.0" }
+androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version = "2.7.7" }
+androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version = "2.7.7" }
+
 [bundles]
 mocking = ["mockito-core", "mockito-junit-jupiter", "mockk"]
 junit = ["junit-jupiter-api", "junit-jupiter-engine", "junit-vintage-engine"]
@@ -67,3 +86,4 @@ junit = ["junit-jupiter-api", "junit-jupiter-engine", "junit-vintage-engine"]
 [plugins]
 publishPlugin = { id = "io.github.gradle-nexus.publish-plugin", version = "2.0.0" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
