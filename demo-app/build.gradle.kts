@@ -53,7 +53,7 @@ android {
             resValue("string", "rum_access_token", accessToken ?: "fakebroken")
         }
         release {
-            //TODO: Get minification working one day for compatibility testing
+            // TODO: Get minification working one day for compatibility testing
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
