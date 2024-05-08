@@ -9,7 +9,7 @@ junit = "5.10.2"
 byteBuddy = "1.14.14"
 okhttp = "4.12.0"
 spotless = "6.25.0"
-kotlin = "1.9.24"
+kotlin = "1.9.23"
 
 [libraries]
 opentelemetry-platform = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom", version.ref = "opentelemetry-instrumentation" }
@@ -62,7 +62,7 @@ byteBuddy-plugin = { module = "net.bytebuddy:byte-buddy-gradle-plugin", version.
 kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 
 # demo-app
-androidx-core-ktx = "androidx.core:core-ktx:1.13.0"
+androidx-core-ktx = "androidx.core:core-ktx:1.13.1"
 androidx-lifecycle-runtime-ktx = "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
 androidx-compose-bom = "androidx.compose:compose-bom:2024.05.00"
 androidx-activity-compose = "androidx.activity:activity-compose:1.9.0"
@@ -86,4 +86,4 @@ junit = ["junit-jupiter-api", "junit-jupiter-engine", "junit-vintage-engine"]
 [plugins]
 publishPlugin = { id = "io.github.gradle-nexus.publish-plugin", version = "2.0.0" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
-kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+#kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
