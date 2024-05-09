@@ -5,7 +5,6 @@
 
 package io.opentelemetry.android.internal.services.periodicwork
 
-import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.internal.tools.time.SystemTime
 
 /**
@@ -14,7 +13,9 @@ import io.opentelemetry.android.internal.tools.time.SystemTime
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
-abstract class PeriodicRunnable : Runnable {
+abstract class PeriodicRunnable(periodicWorkServiceProvider: () -> PeriodicWorkService) :
+    Runnable {
+    private val periodicWorkService by lazy { periodicWorkServiceProvider() }
     private var lastTimeItRan: Long? = null
 
     final override fun run() {
@@ -34,7 +35,7 @@ abstract class PeriodicRunnable : Runnable {
     }
 
     private fun enqueueForNextLoop() {
-        ServiceManager.getPeriodicWorkService().enqueue(this)
+        periodicWorkService.enqueue(this)
     }
 
     private fun getCurrentTimeMillis() = SystemTime.get().getCurrentTimeMillis()

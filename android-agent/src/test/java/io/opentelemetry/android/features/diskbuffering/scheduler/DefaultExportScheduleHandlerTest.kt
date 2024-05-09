@@ -12,7 +12,6 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -20,15 +19,19 @@ import org.junit.jupiter.api.Test
 
 class DefaultExportScheduleHandlerTest {
     private lateinit var handler: DefaultExportScheduleHandler
+    private lateinit var periodicWorkService: PeriodicWorkService
 
     @BeforeEach
     fun setUp() {
-        handler = DefaultExportScheduleHandler(DefaultExportScheduler())
+        periodicWorkService = createPeriodicWorkServiceMock()
+        handler =
+            DefaultExportScheduleHandler(
+                DefaultExportScheduler { periodicWorkService },
+            ) { periodicWorkService }
     }
 
     @Test
     fun `Start scheduler once when enabled`() {
-        val periodicWorkService = createMock()
         val captor = slot<Runnable>()
 
         // Calling enable the first time (should work)
@@ -46,15 +49,9 @@ class DefaultExportScheduleHandlerTest {
         }
     }
 
-    private fun createMock(): PeriodicWorkService {
+    private fun createPeriodicWorkServiceMock(): PeriodicWorkService {
         val periodicWorkService = mockk<PeriodicWorkService>()
-        val manager = mockk<ServiceManager>()
-        every {
-            manager.getService(PeriodicWorkService::class.java)
-        }.returns(periodicWorkService)
         every { periodicWorkService.enqueue(any()) } just Runs
-        ServiceManager.setForTest(manager)
-
         return periodicWorkService
     }
 }

@@ -13,10 +13,9 @@ import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkServi
 /**
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
  */
-internal class ServiceManager
+class ServiceManager
     @VisibleForTesting
-    internal constructor(services: List<Any>) :
-    Startable {
+    internal constructor(services: List<Any>) : Startable {
         private val services: Map<Class<out Any>, Any>
 
         init {
@@ -36,7 +35,7 @@ internal class ServiceManager
         }
 
         @Suppress("UNCHECKED_CAST")
-        private fun <T : Any> getService(type: Class<T>): T {
+        fun <T : Any> getService(type: Class<T>): T {
             val service =
                 services[type]
                     ?: throw IllegalArgumentException("Service not found: $type")
@@ -63,7 +62,7 @@ internal class ServiceManager
 
             @JvmStatic
             @JvmName("initialize") // This line can be deleted once OpenTelemetryRumBuilder migrates to Kotlin.
-            internal fun initialize(appContext: Context?) {
+            internal fun initialize(appContext: Context) {
                 if (instance != null) {
                     return
                 }
@@ -79,9 +78,14 @@ internal class ServiceManager
 
             @JvmStatic
             @JvmName("get") // This line can be deleted once OpenTelemetryRumBuilder migrates to Kotlin.
-            internal fun get(): ServiceManager {
+            fun get(): ServiceManager {
                 checkNotNull(instance) { "Services haven't been initialized" }
                 return instance!!
+            }
+
+            @JvmStatic
+            fun setForTest(serviceManager: ServiceManager) {
+                instance = serviceManager
             }
         }
     }

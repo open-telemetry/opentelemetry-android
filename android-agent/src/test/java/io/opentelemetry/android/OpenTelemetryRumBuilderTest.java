@@ -53,6 +53,7 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import org.junit.jupiter.api.AfterEach;
@@ -85,7 +86,6 @@ class OpenTelemetryRumBuilderTest {
     void setup() {
         when(application.getApplicationContext()).thenReturn(applicationContext);
         when(application.getMainLooper()).thenReturn(looper);
-        ServiceManager.resetForTest();
     }
 
     @AfterEach
@@ -317,18 +317,16 @@ class OpenTelemetryRumBuilderTest {
 
     @Test
     void verifyServicesAreStarted() {
-        setUpServiceManager();
+        ServiceManager serviceManager = mock();
+        ServiceManager.setForTest(serviceManager);
 
         makeBuilder().build();
 
         verify(ServiceManager.get()).start();
     }
 
-    private static void setUpServiceManager(Service... services) {
-        ServiceManager serviceManager = mock();
-        for (Service service : services) {
-            doReturn(service).when(serviceManager).getService(service.getClass());
-        }
+    private static void setUpServiceManager(Object... services) {
+        ServiceManager serviceManager = new ServiceManager(Arrays.asList(services));
         ServiceManager.setForTest(serviceManager);
     }
 

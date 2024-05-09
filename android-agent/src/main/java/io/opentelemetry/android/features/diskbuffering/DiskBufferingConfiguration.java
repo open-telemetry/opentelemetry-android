@@ -6,7 +6,6 @@
 package io.opentelemetry.android.features.diskbuffering;
 
 import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduleHandler;
-import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduler;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 
 /** Configuration for disk buffering. */
@@ -46,8 +45,7 @@ public final class DiskBufferingConfiguration {
     public static final class Builder {
         private boolean enabled = false;
         private int maxCacheSize = DEFAULT_MAX_CACHE_SIZE;
-        private ExportScheduleHandler exportScheduleHandler =
-                new DefaultExportScheduleHandler(new DefaultExportScheduler());
+        private ExportScheduleHandler exportScheduleHandler = DefaultExportScheduleHandler.create();
 
         /** Enables or disables disk buffering. */
         public Builder setEnabled(boolean enabled) {
