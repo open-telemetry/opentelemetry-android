@@ -15,7 +15,7 @@ import io.opentelemetry.android.BuildConfig;
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
-public class PreferencesService implements Service {
+public class PreferencesService {
     private final SharedPreferences preferences;
 
     public static PreferencesService create(Context context) {

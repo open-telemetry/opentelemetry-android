@@ -340,10 +340,8 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private StorageConfiguration createStorageConfiguration() throws IOException {
-        PreferencesService preferencesService =
-                ServiceManager.get().getService(PreferencesService.class);
-        CacheStorageService storageService =
-                ServiceManager.get().getService(CacheStorageService.class);
+        PreferencesService preferencesService = ServiceManager.getPreferencesService();
+        CacheStorageService storageService = ServiceManager.getCacheStorageService();
         DiskManager diskManager =
                 new DiskManager(
                         storageService, preferencesService, config.getDiskBufferingConfiguration());

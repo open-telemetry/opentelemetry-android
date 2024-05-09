@@ -27,7 +27,7 @@ public class ServiceManagerTest {
 
     @Before
     public void setUp() {
-        serviceManager = new ServiceManager();
+        serviceManager = new ServiceManager(services);
     }
 
     @Test
@@ -97,7 +97,7 @@ public class ServiceManagerTest {
         }
     }
 
-    private static class FirstService implements Service {}
+    private static class FirstService implements Startable {}
 
-    private static class SecondService implements Service {}
+    private static class SecondService implements Startable {}
 }

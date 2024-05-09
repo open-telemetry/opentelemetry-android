@@ -10,7 +10,6 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
-import io.opentelemetry.android.internal.services.Service
 import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.internal.tools.time.SystemTime
 import org.assertj.core.api.Assertions.assertThat

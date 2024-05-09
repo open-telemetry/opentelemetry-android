@@ -34,7 +34,7 @@ abstract class PeriodicRunnable : Runnable {
     }
 
     private fun enqueueForNextLoop() {
-        ServiceManager.get().getService(PeriodicWorkService::class.java).enqueue(this)
+        ServiceManager.getPeriodicWorkService().enqueue(this)
     }
 
     private fun getCurrentTimeMillis() = SystemTime.get().getCurrentTimeMillis()
