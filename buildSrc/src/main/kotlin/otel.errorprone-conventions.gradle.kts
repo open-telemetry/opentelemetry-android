@@ -43,6 +43,7 @@ tasks {
                     isEnabled.set(true)
                     isCompilingTestOnlyCode.set(false)
                 }
+                excludedPaths = ".*/build/generated/.*"
             }
 
             nullaway {

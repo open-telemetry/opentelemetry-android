@@ -42,6 +42,13 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.13"
     }
+    kotlinOptions {
+        freeCompilerArgs =
+            listOf(
+                "-P",
+                "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true",
+            )
+    }
 }
 
 dependencies {
