@@ -2,7 +2,8 @@ import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
-    id("otel.android-app-conventions")
+    id("com.android.application") version "8.4.0"
+    id("org.jetbrains.kotlin.android") version "1.9.23"
 }
 
 val localProperties = Properties()
@@ -10,9 +11,11 @@ localProperties.load(FileInputStream(rootProject.file("local.properties")))
 
 android {
     namespace = "io.opentelemetry.android.demo"
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "io.opentelemetry.android.demo"
+        minSdk = 21
         versionCode = 1
         versionName = "1.0"
 
@@ -42,6 +45,16 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.13"
     }
+    val javaVersion = JavaVersion.VERSION_11
+    compileOptions {
+        sourceCompatibility(javaVersion)
+        targetCompatibility(javaVersion)
+        isCoreLibraryDesugaringEnabled = true
+    }
+
+    kotlinOptions {
+        jvmTarget = javaVersion.toString()
+    }
 }
 
 dependencies {
@@ -54,7 +67,7 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     coreLibraryDesugaring(libs.desugarJdkLibs)
 
-    implementation(project(":android-agent"))
+    implementation("io.opentelemetry.android:android-agent")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
