@@ -62,7 +62,7 @@ byteBuddy-plugin = { module = "net.bytebuddy:byte-buddy-gradle-plugin", version.
 kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 
 # demo-app
-androidx-core-ktx = "androidx.core:core-ktx:1.13.0"
+androidx-core-ktx = "androidx.core:core-ktx:1.13.1"
 androidx-lifecycle-runtime-ktx = "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
 androidx-compose-bom = "androidx.compose:compose-bom:2024.05.00"
 androidx-activity-compose = "androidx.activity:activity-compose:1.9.0"
