@@ -46,7 +46,6 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.13"
     }
-    val javaVersion = JavaVersion.VERSION_11
     compileOptions {
         sourceCompatibility(javaVersion)
         targetCompatibility(javaVersion)
