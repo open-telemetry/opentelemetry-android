@@ -18,7 +18,8 @@ jobs:
       - name: run gradle
         run: ./gradlew check
       - name: build demo app
-        run: ./demo-app/gradlew check
+        working-directory: ./demo-app
+        run: ./gradlew check assemble
 
   required-status-check:
     needs:

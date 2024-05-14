@@ -21,7 +21,8 @@ jobs:
       - name: run gradle check
         run: ./gradlew check
       - name: build demo app
-        run: ./demo-app/gradlew check
+        working-directory: ./demo-app
+        run: ./gradlew check assemble
       - name: publish snapshot
         run: ./gradlew publishToSonatype
         env:
