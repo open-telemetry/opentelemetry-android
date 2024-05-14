@@ -20,6 +20,8 @@ jobs:
           java-version: 17
       - name: run gradle check
         run: ./gradlew check
+      - name: build demo app
+        run: ./demo-app/gradlew check
       - name: publish snapshot
         run: ./gradlew publishToSonatype
         env:

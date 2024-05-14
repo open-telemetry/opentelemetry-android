@@ -17,6 +17,8 @@ jobs:
         run: touch local.properties
       - name: run gradle
         run: ./gradlew check
+      - name: build demo app
+        run: ./demo-app/gradlew check
 
   required-status-check:
     needs:
