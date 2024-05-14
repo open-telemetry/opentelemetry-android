@@ -3,7 +3,7 @@ import java.util.Properties
 
 plugins {
     id("com.android.application") version "8.4.0"
-    id("org.jetbrains.kotlin.android") version "1.9.23"
+    id("org.jetbrains.kotlin.android") version "1.9.24"
 }
 
 val localProperties = Properties()
