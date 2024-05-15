@@ -18,7 +18,8 @@ class SessionIdTimeoutHandlerTest {
     @Test
     void shouldNeverTimeOutInForeground() {
         TestClock clock = TestClock.create();
-        SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler(clock);
+        SessionIdTimeoutHandler timeoutHandler =
+                new SessionIdTimeoutHandler(clock, TimeUnit.MINUTES.toNanos(15));
 
         assertFalse(timeoutHandler.hasTimedOut());
         timeoutHandler.bump();
@@ -31,7 +32,8 @@ class SessionIdTimeoutHandlerTest {
     @Test
     void shouldApply15MinutesTimeoutToAppsInBackground() {
         TestClock clock = TestClock.create();
-        SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler(clock);
+        SessionIdTimeoutHandler timeoutHandler =
+                new SessionIdTimeoutHandler(clock, TimeUnit.MINUTES.toNanos(15));
 
         timeoutHandler.onApplicationBackgrounded();
         timeoutHandler.bump();
@@ -62,7 +64,8 @@ class SessionIdTimeoutHandlerTest {
     @Test
     void shouldApplyTimeoutToFirstSpanAfterAppBeingMovedToForeground() {
         TestClock clock = TestClock.create();
-        SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler(clock);
+        SessionIdTimeoutHandler timeoutHandler =
+                new SessionIdTimeoutHandler(clock, TimeUnit.MINUTES.toNanos(15));
 
         timeoutHandler.onApplicationBackgrounded();
         timeoutHandler.bump();
@@ -70,6 +73,26 @@ class SessionIdTimeoutHandlerTest {
         // the first span after app is moved to the foreground gets timed out
         timeoutHandler.onApplicationForegrounded();
         clock.advance(20, TimeUnit.MINUTES);
+        assertTrue(timeoutHandler.hasTimedOut());
+        timeoutHandler.bump();
+
+        // after the initial span it's the same as the usual foreground scenario
+        clock.advance(Duration.ofHours(4));
+        assertFalse(timeoutHandler.hasTimedOut());
+    }
+
+    @Test
+    void shouldApplyCustomTimeoutToFirstSpanAfterAppBeingMovedToForeground() {
+        TestClock clock = TestClock.create();
+        SessionIdTimeoutHandler timeoutHandler =
+                new SessionIdTimeoutHandler(clock, TimeUnit.MINUTES.toNanos(5));
+
+        timeoutHandler.onApplicationBackgrounded();
+        timeoutHandler.bump();
+
+        // the first span after app is moved to the foreground gets timed out
+        timeoutHandler.onApplicationForegrounded();
+        clock.advance(6, TimeUnit.MINUTES);
         assertTrue(timeoutHandler.hasTimedOut());
         timeoutHandler.bump();
 

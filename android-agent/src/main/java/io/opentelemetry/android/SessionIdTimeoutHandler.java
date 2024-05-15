@@ -25,19 +25,24 @@ import java.util.concurrent.TimeUnit;
  */
 final class SessionIdTimeoutHandler implements ApplicationStateListener {
 
-    private static final long SESSION_TIMEOUT_NANOS = TimeUnit.MINUTES.toNanos(15);
+    private final long sessionTimeoutNanos;
 
     private final Clock clock;
     private volatile long timeoutStartNanos;
     private volatile State state = State.FOREGROUND;
 
     SessionIdTimeoutHandler() {
-        this(Clock.getDefault());
+        this(Clock.getDefault(), TimeUnit.MINUTES.toNanos(15));
+    }
+
+    SessionIdTimeoutHandler(long sessionTimeoutMinutes) {
+        this(Clock.getDefault(), TimeUnit.MINUTES.toNanos(sessionTimeoutMinutes));
     }
 
     // for testing
-    SessionIdTimeoutHandler(Clock clock) {
+    SessionIdTimeoutHandler(Clock clock, long sessionTimeoutNanos) {
         this.clock = clock;
+        this.sessionTimeoutNanos = sessionTimeoutNanos;
     }
 
     @Override
@@ -56,7 +61,7 @@ final class SessionIdTimeoutHandler implements ApplicationStateListener {
             return false;
         }
         long elapsedTime = clock.nanoTime() - timeoutStartNanos;
-        return elapsedTime >= SESSION_TIMEOUT_NANOS;
+        return elapsedTime >= sessionTimeoutNanos;
     }
 
     void bump() {
