@@ -38,14 +38,17 @@
         "string:rum.version"
       ],
       "enabled": false
-//    },
-//    {
-//      "matchPackagePatterns": [
-//        "^org.jetbrains.kotlin",
-//        "^com.google.devtools.ksp",
-//        "^androidx.compose.compiler"
-//      ],
-//      "groupName": "kotlin"
-//    }
+    },
+    {
+      // Try and force the demo app's kotlin and compose compilers to be in lockstep
+      // See https://github.com/renovatebot/renovate/issues/18354
+      "includePaths": ["demo-app/"],
+      "matchPackagePatterns": [
+        "^org.jetbrains.kotlin",
+        "^com.google.devtools.ksp",
+        "^androidx.compose.compiler"
+      ],
+      "groupName": "kotlin"
+    }
   ]
 }
