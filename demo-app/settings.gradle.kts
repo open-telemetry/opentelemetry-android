@@ -1,3 +1,5 @@
+rootProject.name = "opentelemetry-android-demo"
+
 pluginManagement {
     repositories {
         mavenCentral()
