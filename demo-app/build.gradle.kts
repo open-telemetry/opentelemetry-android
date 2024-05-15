@@ -3,7 +3,7 @@ import java.util.Properties
 
 plugins {
     id("com.android.application") version "8.4.0"
-    id("org.jetbrains.kotlin.android") version "1.9.23"
+    id("org.jetbrains.kotlin.android") version "1.9.24"
 }
 
 val localProperties = Properties()
@@ -43,7 +43,7 @@ android {
         viewBinding = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.13"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
     val javaVersion = JavaVersion.VERSION_11
     compileOptions {
