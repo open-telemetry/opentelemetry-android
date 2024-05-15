@@ -18,6 +18,10 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+      - name: touch local props
+        run: |
+          touch local.properties
+          touch demo-app/local.properties
       - name: run gradle check
         run: ./gradlew check
       - name: build demo app
