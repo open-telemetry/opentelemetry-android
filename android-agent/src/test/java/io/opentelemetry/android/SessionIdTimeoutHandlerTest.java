@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android;
 
+import static io.opentelemetry.android.SessionIdTimeoutHandler.DEFAULT_SESSION_TIMEOUT;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -19,7 +20,7 @@ class SessionIdTimeoutHandlerTest {
     void shouldNeverTimeOutInForeground() {
         TestClock clock = TestClock.create();
         SessionIdTimeoutHandler timeoutHandler =
-                new SessionIdTimeoutHandler(clock, TimeUnit.MINUTES.toNanos(15));
+                new SessionIdTimeoutHandler(clock, DEFAULT_SESSION_TIMEOUT);
 
         assertFalse(timeoutHandler.hasTimedOut());
         timeoutHandler.bump();
@@ -33,7 +34,7 @@ class SessionIdTimeoutHandlerTest {
     void shouldApply15MinutesTimeoutToAppsInBackground() {
         TestClock clock = TestClock.create();
         SessionIdTimeoutHandler timeoutHandler =
-                new SessionIdTimeoutHandler(clock, TimeUnit.MINUTES.toNanos(15));
+                new SessionIdTimeoutHandler(clock, DEFAULT_SESSION_TIMEOUT);
 
         timeoutHandler.onApplicationBackgrounded();
         timeoutHandler.bump();
@@ -65,7 +66,7 @@ class SessionIdTimeoutHandlerTest {
     void shouldApplyTimeoutToFirstSpanAfterAppBeingMovedToForeground() {
         TestClock clock = TestClock.create();
         SessionIdTimeoutHandler timeoutHandler =
-                new SessionIdTimeoutHandler(clock, TimeUnit.MINUTES.toNanos(15));
+                new SessionIdTimeoutHandler(clock, DEFAULT_SESSION_TIMEOUT);
 
         timeoutHandler.onApplicationBackgrounded();
         timeoutHandler.bump();
@@ -85,7 +86,7 @@ class SessionIdTimeoutHandlerTest {
     void shouldApplyCustomTimeoutToFirstSpanAfterAppBeingMovedToForeground() {
         TestClock clock = TestClock.create();
         SessionIdTimeoutHandler timeoutHandler =
-                new SessionIdTimeoutHandler(clock, TimeUnit.MINUTES.toNanos(5));
+                new SessionIdTimeoutHandler(clock, Duration.ofNanos(5));
 
         timeoutHandler.onApplicationBackgrounded();
         timeoutHandler.bump();
