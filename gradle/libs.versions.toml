@@ -13,7 +13,6 @@ kotlin = "1.9.24"
 
 [libraries]
 opentelemetry-platform = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom", version.ref = "opentelemetry-instrumentation" }
-androidx-appcompat = "androidx.appcompat:appcompat:1.6.1"
 androidx-navigation-fragment = "androidx.navigation:navigation-fragment:2.7.7"
 androidx-core = "androidx.core:core:1.13.1"
 findbugs-jsr305 = "com.google.code.findbugs:jsr305:3.0.2"
@@ -60,24 +59,6 @@ animalsniffer-plugin = "ru.vyarus:gradle-animalsniffer-plugin:1.7.1"
 android-plugin = "com.android.tools.build:gradle:8.4.0"
 byteBuddy-plugin = { module = "net.bytebuddy:byte-buddy-gradle-plugin", version.ref = "byteBuddy" }
 kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-
-# demo-app
-androidx-core-ktx = "androidx.core:core-ktx:1.13.0"
-androidx-lifecycle-runtime-ktx = "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
-androidx-compose-bom = "androidx.compose:compose-bom:2024.05.00"
-androidx-activity-compose = "androidx.activity:activity-compose:1.9.0"
-androidx-ui = { group = "androidx.compose.ui", name = "ui" }
-androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
-androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
-androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
-androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version = "2.1.4" }
-material = { group = "com.google.android.material", name = "material", version = "1.12.0" }
-androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version = "2.7.0" }
-androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version = "2.7.0" }
-androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version = "2.7.7" }
-androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version = "2.7.7" }
 
 [bundles]
 mocking = ["mockito-core", "mockito-junit-jupiter", "mockk"]

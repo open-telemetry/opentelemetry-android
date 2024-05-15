@@ -34,8 +34,18 @@
     {
       // somehow renovate gets confused by the android property in gradle.properties,
       // so let's just exclude it and hopefully clean up the dashboard
-      "matchPackageNames": ["string:rum.version"],
+      "matchPackageNames": [
+        "string:rum.version"
+      ],
       "enabled": false
-    }
+//    },
+//    {
+//      "matchPackagePatterns": [
+//        "^org.jetbrains.kotlin",
+//        "^com.google.devtools.ksp",
+//        "^androidx.compose.compiler"
+//      ],
+//      "groupName": "kotlin"
+//    }
   ]
 }
