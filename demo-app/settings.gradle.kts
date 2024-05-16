@@ -13,10 +13,5 @@ dependencyResolutionManagement {
         mavenCentral()
         google()
     }
-    versionCatalogs {
-        create("demoLibs") {
-            from(files("./gradle/libs.versions.toml"))
-        }
-    }
 }
 includeBuild("..")

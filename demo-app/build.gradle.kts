@@ -59,30 +59,30 @@ android {
 }
 
 dependencies {
-    implementation(demoLibs.androidx.appcompat)
-    implementation(demoLibs.androidx.constraintlayout)
-    implementation(demoLibs.material)
-    implementation(demoLibs.androidx.lifecycle.livedata.ktx)
-    implementation(demoLibs.androidx.lifecycle.viewmodel.ktx)
-    implementation(demoLibs.androidx.navigation.fragment.ktx)
-    implementation(demoLibs.androidx.navigation.ui.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.material)
+    implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
 
-    coreLibraryDesugaring(demoLibs.desugarJdkLibs)
+    coreLibraryDesugaring(libs.desugarJdkLibs)
 
     implementation("io.opentelemetry.android:android-agent")    //parent dir
-    implementation(demoLibs.androidx.core.ktx)
-    implementation(demoLibs.androidx.lifecycle.runtime.ktx)
-    implementation(demoLibs.androidx.activity.compose)
-    implementation(platform(demoLibs.androidx.compose.bom))
-    implementation(demoLibs.androidx.ui)
-    implementation(demoLibs.androidx.ui.graphics)
-    implementation(demoLibs.androidx.ui.tooling.preview)
-    implementation(demoLibs.androidx.material3)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3)
 
-    implementation(demoLibs.opentelemetry.exporter.otlp)
+    implementation(libs.opentelemetry.exporter.otlp)
 
-    testImplementation(demoLibs.bundles.junit)
-    androidTestImplementation(demoLibs.androidx.junit)
-    debugImplementation(demoLibs.androidx.ui.tooling)
-    debugImplementation(demoLibs.androidx.ui.test.manifest)
+    testImplementation(libs.bundles.junit)
+    androidTestImplementation(libs.androidx.junit)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
 }
