@@ -34,8 +34,21 @@
     {
       // somehow renovate gets confused by the android property in gradle.properties,
       // so let's just exclude it and hopefully clean up the dashboard
-      "matchPackageNames": ["string:rum.version"],
+      "matchPackageNames": [
+        "string:rum.version"
+      ],
       "enabled": false
+    },
+    {
+      // Try and force the demo app's kotlin and compose compilers to be in lockstep
+      // See https://github.com/renovatebot/renovate/issues/18354
+      "includePaths": ["demo-app/"],
+      "matchPackagePatterns": [
+        "^org.jetbrains.kotlin",
+        "^com.google.devtools.ksp",
+        "^androidx.compose.compiler"
+      ],
+      "groupName": "kotlin"
     }
   ]
 }

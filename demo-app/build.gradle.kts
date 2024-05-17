@@ -3,7 +3,7 @@ import java.util.Properties
 
 plugins {
     id("com.android.application") version "8.4.0"
-    id("org.jetbrains.kotlin.android") version "1.9.23"
+    id("org.jetbrains.kotlin.android") version "1.9.24"
 }
 
 val localProperties = Properties()
@@ -12,11 +12,11 @@ localProperties.load(FileInputStream(rootProject.file("local.properties")))
 android {
     namespace = "io.opentelemetry.android.demo"
     compileSdk = 34
-    targetSdk = 34
 
     defaultConfig {
         applicationId = "io.opentelemetry.android.demo"
         minSdk = 21
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -46,6 +46,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.14"
     }
+    val javaVersion = JavaVersion.VERSION_11
     compileOptions {
         sourceCompatibility(javaVersion)
         targetCompatibility(javaVersion)
@@ -65,9 +66,10 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+
     coreLibraryDesugaring(libs.desugarJdkLibs)
 
-    implementation("io.opentelemetry.android:android-agent")
+    implementation("io.opentelemetry.android:android-agent")    //parent dir
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -76,8 +78,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.opentelemetry.sdk)
+
     implementation(libs.opentelemetry.exporter.otlp)
+
     testImplementation(libs.bundles.junit)
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.ui.tooling)

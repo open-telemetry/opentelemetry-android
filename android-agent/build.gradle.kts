@@ -63,7 +63,6 @@ dependencies {
     implementation(project(":instrumentation:crash"))
     implementation(project(":instrumentation:network"))
     implementation(project(":instrumentation:slowrendering"))
-    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core)
     implementation(libs.androidx.navigation.fragment)
 

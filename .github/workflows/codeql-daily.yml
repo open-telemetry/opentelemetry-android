@@ -20,7 +20,7 @@ jobs:
           java-version: 17
 
       - name: touch local props
-        run: touch local.properties
+        run: touch demo-app/local.properties
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3

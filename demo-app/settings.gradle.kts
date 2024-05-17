@@ -1,3 +1,5 @@
+rootProject.name = "opentelemetry-android-demo"
+
 pluginManagement {
     repositories {
         mavenCentral()
@@ -10,11 +12,6 @@ dependencyResolutionManagement {
     repositories {
         mavenCentral()
         google()
-    }
-    versionCatalogs {
-        create("libs") {
-            from(files("../gradle/libs.versions.toml"))
-        }
     }
 }
 includeBuild("..")
