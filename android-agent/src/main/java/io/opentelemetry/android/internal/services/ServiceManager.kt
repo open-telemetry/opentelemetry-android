@@ -41,10 +41,5 @@ interface ServiceManager : Startable {
             checkNotNull(instance) { "Services haven't been initialized" }
             return instance!!
         }
-
-        @JvmStatic
-        fun setForTest(serviceManager: ServiceManager) {
-            instance = serviceManager
-        }
     }
 }

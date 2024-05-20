@@ -319,11 +319,10 @@ class OpenTelemetryRumBuilderTest {
     @Test
     void verifyServicesAreStarted() {
         ServiceManager serviceManager = mock();
-        ServiceManager.setForTest(serviceManager);
 
-        makeBuilder().build();
+        makeBuilder().build(serviceManager);
 
-        verify(ServiceManager.get()).start();
+        verify(serviceManager).start();
     }
 
     /**
