@@ -18,8 +18,13 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+      - name: touch local props
+        run: touch demo-app/local.properties
       - name: run gradle check
         run: ./gradlew check
+      - name: build demo app
+        working-directory: ./demo-app
+        run: ./gradlew check assemble
       - name: publish snapshot
         run: ./gradlew publishToSonatype
         env:

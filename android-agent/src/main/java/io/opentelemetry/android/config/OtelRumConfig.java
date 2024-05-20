@@ -34,6 +34,7 @@ public class OtelRumConfig {
     private Duration slowRenderingDetectionPollInterval =
             DEFAULT_SLOW_RENDERING_DETECTION_POLL_INTERVAL;
     private boolean crashReportingEnabled = true;
+    private Duration sessionTimeout = Duration.ofMinutes(15);
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -188,5 +189,16 @@ public class OtelRumConfig {
     public OtelRumConfig disableCrashReporting() {
         crashReportingEnabled = false;
         return this;
+    }
+
+    /** Call this method to set session timeout in minutes */
+    public OtelRumConfig setSessionTimeout(Duration sessionTimeout) {
+        this.sessionTimeout = sessionTimeout;
+        return this;
+    }
+
+    /** Call this method to retrieve session timeout */
+    public Duration getSessionTimeout() {
+        return sessionTimeout;
     }
 }

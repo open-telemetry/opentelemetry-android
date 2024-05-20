@@ -7,7 +7,7 @@ package io.opentelemetry.android;
 
 import io.opentelemetry.android.instrumentation.common.ApplicationStateListener;
 import io.opentelemetry.sdk.common.Clock;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 /**
  * This class encapsulates the following criteria about the sessionId timeout:
@@ -25,19 +25,25 @@ import java.util.concurrent.TimeUnit;
  */
 final class SessionIdTimeoutHandler implements ApplicationStateListener {
 
-    private static final long SESSION_TIMEOUT_NANOS = TimeUnit.MINUTES.toNanos(15);
+    static final Duration DEFAULT_SESSION_TIMEOUT = Duration.ofMinutes(15);
+    private final Duration sessionTimeout;
 
     private final Clock clock;
     private volatile long timeoutStartNanos;
     private volatile State state = State.FOREGROUND;
 
     SessionIdTimeoutHandler() {
-        this(Clock.getDefault());
+        this(DEFAULT_SESSION_TIMEOUT);
     }
 
     // for testing
-    SessionIdTimeoutHandler(Clock clock) {
+    SessionIdTimeoutHandler(Duration sessionTimeout) {
+        this(Clock.getDefault(), sessionTimeout);
+    }
+
+    SessionIdTimeoutHandler(Clock clock, Duration sessionTimeout) {
         this.clock = clock;
+        this.sessionTimeout = sessionTimeout;
     }
 
     @Override
@@ -56,7 +62,7 @@ final class SessionIdTimeoutHandler implements ApplicationStateListener {
             return false;
         }
         long elapsedTime = clock.nanoTime() - timeoutStartNanos;
-        return elapsedTime >= SESSION_TIMEOUT_NANOS;
+        return elapsedTime >= sessionTimeout.toNanos();
     }
 
     void bump() {

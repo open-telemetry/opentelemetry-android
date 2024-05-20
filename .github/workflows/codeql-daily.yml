@@ -19,6 +19,9 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: touch local props
+        run: touch demo-app/local.properties
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:

@@ -1,19 +1,18 @@
 [versions]
-opentelemetry = "1.37.0"
-opentelemetry-instrumentation = "2.3.0"
+opentelemetry = "1.38.0"
+opentelemetry-instrumentation = "2.4.0"
 opentelemetry-instrumentation-alpha = "2.3.0-alpha"
 opentelemetry-semconv = "1.25.0-alpha"
 opentelemetry-contrib = "1.34.0-alpha"
-mockito = "5.11.0"
+mockito = "5.12.0"
 junit = "5.10.2"
-byteBuddy = "1.14.14"
+byteBuddy = "1.14.15"
 okhttp = "4.12.0"
 spotless = "6.25.0"
 kotlin = "1.9.24"
 
 [libraries]
 opentelemetry-platform = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom", version.ref = "opentelemetry-instrumentation" }
-androidx-appcompat = "androidx.appcompat:appcompat:1.6.1"
 androidx-navigation-fragment = "androidx.navigation:navigation-fragment:2.7.7"
 androidx-core = "androidx.core:core:1.13.1"
 findbugs-jsr305 = "com.google.code.findbugs:jsr305:3.0.2"
@@ -38,11 +37,11 @@ androidx-test-runner = "androidx.test:runner:1.5.2"
 androidx-junit = "androidx.test.ext:junit:1.1.5"
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
-mockk = "io.mockk:mockk:1.13.10"
+mockk = "io.mockk:mockk:1.13.11"
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "junit" }
-robolectric = "org.robolectric:robolectric:4.12.1"
+robolectric = "org.robolectric:robolectric:4.12.2"
 assertj-core = "org.assertj:assertj-core:3.25.3"
 awaitility = "org.awaitility:awaitility:4.2.1"
 mockwebserver = "com.google.mockwebserver:mockwebserver:20130706"
@@ -60,24 +59,6 @@ animalsniffer-plugin = "ru.vyarus:gradle-animalsniffer-plugin:1.7.1"
 android-plugin = "com.android.tools.build:gradle:8.4.0"
 byteBuddy-plugin = { module = "net.bytebuddy:byte-buddy-gradle-plugin", version.ref = "byteBuddy" }
 kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-
-# demo-app
-androidx-core-ktx = "androidx.core:core-ktx:1.13.0"
-androidx-lifecycle-runtime-ktx = "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
-androidx-compose-bom = "androidx.compose:compose-bom:2024.05.00"
-androidx-activity-compose = "androidx.activity:activity-compose:1.9.0"
-androidx-ui = { group = "androidx.compose.ui", name = "ui" }
-androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
-androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
-androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
-androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version = "2.1.4" }
-material = { group = "com.google.android.material", name = "material", version = "1.12.0" }
-androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version = "2.7.0" }
-androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version = "2.7.0" }
-androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version = "2.7.7" }
-androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version = "2.7.7" }
 
 [bundles]
 mocking = ["mockito-core", "mockito-junit-jupiter", "mockk"]

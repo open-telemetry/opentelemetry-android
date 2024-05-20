@@ -35,12 +35,10 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.opentelemetry.instrumentation.api)
     implementation(libs.opentelemetry.semconv.incubating)
     compileOnly(libs.volley)
-    coreLibraryDesugaring(libs.desugarJdkLibs)
 
     api(platform(libs.opentelemetry.platform))
     api(libs.opentelemetry.api)
