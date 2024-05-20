@@ -18,6 +18,7 @@ import io.opentelemetry.instrumentation.okhttp.v3_0.internal.ConnectionErrorSpan
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpAttributesGetter;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpInstrumenterFactory;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.TracingInterceptor;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import okhttp3.Interceptor;
 import okhttp3.Request;
@@ -47,6 +48,7 @@ public final class OkHttp3Singletons {
                                     spanNameExtractorConfigurer ->
                                             spanNameExtractorConfigurer.setKnownMethods(
                                                     OkHttpInstrumentationConfig.getKnownMethods()),
+                                    Function.identity(),
                                     singletonList(
                                             PeerServiceAttributesExtractor.create(
                                                     OkHttpAttributesGetter.INSTANCE,
