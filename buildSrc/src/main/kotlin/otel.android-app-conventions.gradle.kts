@@ -14,7 +14,6 @@ android {
 
     defaultConfig {
         minSdk = (property("android.minSdk") as String).toInt()
-        targetSdk = (property("android.targetSdk") as String).toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
