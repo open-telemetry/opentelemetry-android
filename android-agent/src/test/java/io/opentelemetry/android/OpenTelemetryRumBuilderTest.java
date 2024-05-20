@@ -33,6 +33,7 @@ import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
 import io.opentelemetry.android.internal.services.CacheStorageService;
 import io.opentelemetry.android.internal.services.PreferencesService;
 import io.opentelemetry.android.internal.services.ServiceManager;
+import io.opentelemetry.android.internal.services.ServiceManagerImpl;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Logger;
@@ -202,7 +203,7 @@ class OpenTelemetryRumBuilderTest {
         PreferencesService preferences = mock();
         CacheStorageService cacheStorage = mock();
         doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
-        setUpServiceManager(preferences, cacheStorage);
+        ServiceManager serviceManager = createServiceManager(preferences, cacheStorage);
         OtelRumConfig config = buildConfig();
         ExportScheduleHandler scheduleHandler = mock();
         config.setDiskBufferingConfiguration(
@@ -214,7 +215,7 @@ class OpenTelemetryRumBuilderTest {
 
         OpenTelemetryRum.builder(application, config)
                 .setInitializationEvents(initializationEvents)
-                .build();
+                .build(serviceManager);
 
         assertThat(SignalFromDiskExporter.get()).isNotNull();
         verify(scheduleHandler).enable();
@@ -235,7 +236,7 @@ class OpenTelemetryRumBuilderTest {
                         })
                 .when(cacheStorage)
                 .getCacheDir();
-        setUpServiceManager(preferences, cacheStorage);
+        ServiceManager serviceManager = createServiceManager(preferences, cacheStorage);
         ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
         OtelRumConfig config = buildConfig();
         config.setDiskBufferingConfiguration(
@@ -246,7 +247,7 @@ class OpenTelemetryRumBuilderTest {
 
         OpenTelemetryRum.builder(application, config)
                 .setInitializationEvents(initializationEvents)
-                .build();
+                .build(serviceManager);
 
         verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
         verify(scheduleHandler, never()).enable();
@@ -325,9 +326,11 @@ class OpenTelemetryRumBuilderTest {
         verify(ServiceManager.get()).start();
     }
 
-    private static void setUpServiceManager(Object... services) {
-        ServiceManager serviceManager = new ServiceManager(Arrays.asList(services));
-        ServiceManager.setForTest(serviceManager);
+    /**
+     * @noinspection KotlinInternalInJava
+     */
+    private static ServiceManager createServiceManager(Object... services) {
+        return new ServiceManagerImpl(Arrays.asList(services));
     }
 
     @NonNull

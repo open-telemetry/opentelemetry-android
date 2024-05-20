@@ -18,21 +18,23 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 
 @RunWith(RobolectricTestRunner::class)
-class ServiceManagerTest {
+class ServiceManagerImplTest {
     @Test
     fun verifyAvailableServices() {
         initialize(RuntimeEnvironment.getApplication())
 
-        assertThat(ServiceManager.getPeriodicWorkService()).isInstanceOf(PeriodicWorkService::class.java)
-        assertThat(ServiceManager.getCacheStorageService()).isInstanceOf(CacheStorageService::class.java)
-        assertThat(ServiceManager.getPreferencesService()).isInstanceOf(PreferencesService::class.java)
+        val serviceManager = ServiceManager.get()
+
+        assertThat(serviceManager.getPeriodicWorkService()).isInstanceOf(PeriodicWorkService::class.java)
+        assertThat(serviceManager.getCacheStorageService()).isInstanceOf(CacheStorageService::class.java)
+        assertThat(serviceManager.getPreferencesService()).isInstanceOf(PreferencesService::class.java)
     }
 
     @Test
     fun delegatingStartCall() {
         val firstService = Mockito.mock<FirstService>()
         val secondService = Mockito.mock<SecondService>()
-        val serviceManager = ServiceManager(listOf(firstService, secondService))
+        val serviceManager = ServiceManagerImpl(listOf(firstService, secondService))
 
         serviceManager.start()
 

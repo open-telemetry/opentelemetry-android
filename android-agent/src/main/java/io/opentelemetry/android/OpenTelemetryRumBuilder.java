@@ -297,7 +297,10 @@ public final class OpenTelemetryRumBuilder {
      */
     public OpenTelemetryRum build() {
         ServiceManager.initialize(application);
+        return build(ServiceManager.get());
+    }
 
+    OpenTelemetryRum build(ServiceManager serviceManager) {
         applyConfiguration();
 
         DiskBufferingConfiguration diskBufferingConfiguration =
@@ -306,7 +309,8 @@ public final class OpenTelemetryRumBuilder {
         SignalFromDiskExporter signalFromDiskExporter = null;
         if (diskBufferingConfiguration.isEnabled()) {
             try {
-                StorageConfiguration storageConfiguration = createStorageConfiguration();
+                StorageConfiguration storageConfiguration =
+                        createStorageConfiguration(serviceManager);
                 final SpanExporter originalSpanExporter = spanExporter;
                 spanExporter =
                         SpanToDiskExporter.create(originalSpanExporter, storageConfiguration);
@@ -336,13 +340,14 @@ public final class OpenTelemetryRumBuilder {
         SdkPreconfiguredRumBuilder delegate =
                 new SdkPreconfiguredRumBuilder(application, sdk, sessionId);
         instrumentationInstallers.forEach(delegate::addInstrumentation);
-        ServiceManager.get().start();
+        serviceManager.start();
         return delegate.build();
     }
 
-    private StorageConfiguration createStorageConfiguration() throws IOException {
-        PreferencesService preferencesService = ServiceManager.getPreferencesService();
-        CacheStorageService storageService = ServiceManager.getCacheStorageService();
+    private StorageConfiguration createStorageConfiguration(ServiceManager serviceManager)
+            throws IOException {
+        PreferencesService preferencesService = serviceManager.getPreferencesService();
+        CacheStorageService storageService = serviceManager.getCacheStorageService();
         DiskManager diskManager =
                 new DiskManager(
                         storageService, preferencesService, config.getDiskBufferingConfiguration());

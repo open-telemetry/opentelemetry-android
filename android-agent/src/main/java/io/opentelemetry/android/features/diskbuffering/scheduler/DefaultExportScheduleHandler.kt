@@ -28,8 +28,9 @@ class DefaultExportScheduleHandler(
         fun create(): DefaultExportScheduleHandler {
             return DefaultExportScheduleHandler(
                 DefaultExportScheduler.create(),
-                ServiceManager::getPeriodicWorkService,
-            )
+            ) {
+                ServiceManager.get().getPeriodicWorkService()
+            }
         }
     }
 }

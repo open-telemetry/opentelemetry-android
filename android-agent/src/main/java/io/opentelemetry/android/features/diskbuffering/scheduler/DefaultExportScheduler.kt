@@ -20,7 +20,9 @@ class DefaultExportScheduler(periodicWorkServiceProvider: () -> PeriodicWorkServ
         private val DELAY_BEFORE_NEXT_EXPORT_IN_MILLIS = TimeUnit.SECONDS.toMillis(10)
 
         fun create(): DefaultExportScheduler {
-            return DefaultExportScheduler(ServiceManager::getPeriodicWorkService)
+            return DefaultExportScheduler {
+                ServiceManager.get().getPeriodicWorkService()
+            }
         }
     }
 
