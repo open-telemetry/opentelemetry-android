@@ -31,8 +31,8 @@ import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents;
 import io.opentelemetry.android.internal.features.persistence.DiskManager;
 import io.opentelemetry.android.internal.features.persistence.SimpleTemporaryFileProvider;
 import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordAppender;
-import io.opentelemetry.android.internal.services.CacheStorageService;
-import io.opentelemetry.android.internal.services.PreferencesService;
+import io.opentelemetry.android.internal.services.CacheStorage;
+import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -297,7 +297,10 @@ public final class OpenTelemetryRumBuilder {
      */
     public OpenTelemetryRum build() {
         ServiceManager.initialize(application);
+        return build(ServiceManager.get());
+    }
 
+    OpenTelemetryRum build(ServiceManager serviceManager) {
         applyConfiguration();
 
         DiskBufferingConfiguration diskBufferingConfiguration =
@@ -306,7 +309,8 @@ public final class OpenTelemetryRumBuilder {
         SignalFromDiskExporter signalFromDiskExporter = null;
         if (diskBufferingConfiguration.isEnabled()) {
             try {
-                StorageConfiguration storageConfiguration = createStorageConfiguration();
+                StorageConfiguration storageConfiguration =
+                        createStorageConfiguration(serviceManager);
                 final SpanExporter originalSpanExporter = spanExporter;
                 spanExporter =
                         SpanToDiskExporter.create(originalSpanExporter, storageConfiguration);
@@ -336,18 +340,16 @@ public final class OpenTelemetryRumBuilder {
         SdkPreconfiguredRumBuilder delegate =
                 new SdkPreconfiguredRumBuilder(application, sdk, sessionId);
         instrumentationInstallers.forEach(delegate::addInstrumentation);
-        ServiceManager.get().start();
+        serviceManager.start();
         return delegate.build();
     }
 
-    private StorageConfiguration createStorageConfiguration() throws IOException {
-        PreferencesService preferencesService =
-                ServiceManager.get().getService(PreferencesService.class);
-        CacheStorageService storageService =
-                ServiceManager.get().getService(CacheStorageService.class);
+    private StorageConfiguration createStorageConfiguration(ServiceManager serviceManager)
+            throws IOException {
+        Preferences preferences = serviceManager.getPreferences();
+        CacheStorage storage = serviceManager.getCacheStorage();
         DiskManager diskManager =
-                new DiskManager(
-                        storageService, preferencesService, config.getDiskBufferingConfiguration());
+                new DiskManager(storage, preferences, config.getDiskBufferingConfiguration());
         return StorageConfiguration.builder()
                 .setMaxFileSize(diskManager.getMaxCacheFileSize())
                 .setMaxFolderSize(diskManager.getMaxFolderSize())

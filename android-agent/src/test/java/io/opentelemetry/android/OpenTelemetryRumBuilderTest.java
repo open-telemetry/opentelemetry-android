@@ -30,10 +30,10 @@ import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 import io.opentelemetry.android.instrumentation.common.ApplicationStateListener;
 import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
-import io.opentelemetry.android.internal.services.CacheStorageService;
-import io.opentelemetry.android.internal.services.PreferencesService;
-import io.opentelemetry.android.internal.services.Service;
+import io.opentelemetry.android.internal.services.CacheStorage;
+import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.ServiceManager;
+import io.opentelemetry.android.internal.services.ServiceManagerImpl;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Logger;
@@ -54,6 +54,7 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import org.junit.jupiter.api.AfterEach;
@@ -86,7 +87,6 @@ class OpenTelemetryRumBuilderTest {
     void setup() {
         when(application.getApplicationContext()).thenReturn(applicationContext);
         when(application.getMainLooper()).thenReturn(looper);
-        ServiceManager.resetForTest();
     }
 
     @AfterEach
@@ -200,10 +200,10 @@ class OpenTelemetryRumBuilderTest {
 
     @Test
     void diskBufferingEnabled() {
-        PreferencesService preferences = mock();
-        CacheStorageService cacheStorage = mock();
+        Preferences preferences = mock();
+        CacheStorage cacheStorage = mock();
         doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
-        setUpServiceManager(preferences, cacheStorage);
+        ServiceManager serviceManager = createServiceManager(preferences, cacheStorage);
         OtelRumConfig config = buildConfig();
         ExportScheduleHandler scheduleHandler = mock();
         config.setDiskBufferingConfiguration(
@@ -215,7 +215,7 @@ class OpenTelemetryRumBuilderTest {
 
         OpenTelemetryRum.builder(application, config)
                 .setInitializationEvents(initializationEvents)
-                .build();
+                .build(serviceManager);
 
         assertThat(SignalFromDiskExporter.get()).isNotNull();
         verify(scheduleHandler).enable();
@@ -226,8 +226,8 @@ class OpenTelemetryRumBuilderTest {
 
     @Test
     void diskBufferingEnabled_when_exception_thrown() {
-        PreferencesService preferences = mock();
-        CacheStorageService cacheStorage = mock();
+        Preferences preferences = mock();
+        CacheStorage cacheStorage = mock();
         ExportScheduleHandler scheduleHandler = mock();
         doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
         doAnswer(
@@ -236,7 +236,7 @@ class OpenTelemetryRumBuilderTest {
                         })
                 .when(cacheStorage)
                 .getCacheDir();
-        setUpServiceManager(preferences, cacheStorage);
+        ServiceManager serviceManager = createServiceManager(preferences, cacheStorage);
         ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
         OtelRumConfig config = buildConfig();
         config.setDiskBufferingConfiguration(
@@ -247,7 +247,7 @@ class OpenTelemetryRumBuilderTest {
 
         OpenTelemetryRum.builder(application, config)
                 .setInitializationEvents(initializationEvents)
-                .build();
+                .build(serviceManager);
 
         verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
         verify(scheduleHandler, never()).enable();
@@ -318,19 +318,18 @@ class OpenTelemetryRumBuilderTest {
 
     @Test
     void verifyServicesAreStarted() {
-        setUpServiceManager();
+        ServiceManager serviceManager = mock();
 
-        makeBuilder().build();
+        makeBuilder().build(serviceManager);
 
-        verify(ServiceManager.get()).start();
+        verify(serviceManager).start();
     }
 
-    private static void setUpServiceManager(Service... services) {
-        ServiceManager serviceManager = mock();
-        for (Service service : services) {
-            doReturn(service).when(serviceManager).getService(service.getClass());
-        }
-        ServiceManager.setForTest(serviceManager);
+    /**
+     * @noinspection KotlinInternalInJava
+     */
+    private static ServiceManager createServiceManager(Object... services) {
+        return new ServiceManagerImpl(Arrays.asList(services));
     }
 
     @NonNull

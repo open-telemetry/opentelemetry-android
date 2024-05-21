@@ -8,20 +8,20 @@ package io.opentelemetry.android.internal.features.persistence
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration
-import io.opentelemetry.android.internal.services.CacheStorageService
-import io.opentelemetry.android.internal.services.PreferencesService
+import io.opentelemetry.android.internal.services.CacheStorage
+import io.opentelemetry.android.internal.services.Preferences
 import java.io.File
 import java.io.IOException
 
 internal class DiskManager(
-    private val cacheStorageService: CacheStorageService,
-    private val preferencesService: PreferencesService,
+    private val cacheStorage: CacheStorage,
+    private val preferences: Preferences,
     private val diskBufferingConfiguration: DiskBufferingConfiguration,
 ) {
     @get:Throws(IOException::class)
     val signalsBufferDir: File
         get() {
-            val dir = File(cacheStorageService.cacheDir, "opentelemetry/signals")
+            val dir = File(cacheStorage.cacheDir, "opentelemetry/signals")
             ensureExistingOrThrow(dir)
             return dir
         }
@@ -29,7 +29,7 @@ internal class DiskManager(
     @get:Throws(IOException::class)
     val temporaryDir: File
         get() {
-            val dir = File(cacheStorageService.cacheDir, "opentelemetry/temp")
+            val dir = File(cacheStorage.cacheDir, "opentelemetry/temp")
             ensureExistingOrThrow(dir)
             deleteFiles(dir)
             return dir
@@ -45,7 +45,7 @@ internal class DiskManager(
          * size is stored in the preferences and returned otherwise.
          */
         get() {
-            val storedSize = preferencesService.retrieveInt(MAX_FOLDER_SIZE_KEY, -1)
+            val storedSize = preferences.retrieveInt(MAX_FOLDER_SIZE_KEY, -1)
             if (storedSize > 0) {
                 Log.d(
                     RumConstants.OTEL_RUM_LOG_TAG,
@@ -55,7 +55,7 @@ internal class DiskManager(
             }
             val requestedSize = diskBufferingConfiguration.maxCacheSize
             val availableCacheSize =
-                cacheStorageService.ensureCacheSpaceAvailable(requestedSize.toLong()).toInt()
+                cacheStorage.ensureCacheSpaceAvailable(requestedSize.toLong()).toInt()
             // Divides the available cache size by 3 (for each signal's folder) and then subtracts the
             // size of a single file to be aware of a temp file used when reading data back from the
             // disk.
@@ -72,7 +72,7 @@ internal class DiskManager(
                 )
                 return 0
             }
-            preferencesService.store(MAX_FOLDER_SIZE_KEY, calculatedSize)
+            preferences.store(MAX_FOLDER_SIZE_KEY, calculatedSize)
             Log.d(
                 RumConstants.OTEL_RUM_LOG_TAG,
                 String.format(

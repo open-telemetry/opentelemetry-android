@@ -5,4 +5,6 @@
 
 package io.opentelemetry.android.internal.services;
 
-public interface Service extends Lifecycle {}
+public interface Startable {
+    void start();
+}
