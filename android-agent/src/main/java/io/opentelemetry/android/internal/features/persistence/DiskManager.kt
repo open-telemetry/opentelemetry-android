@@ -9,13 +9,13 @@ import android.util.Log
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration
 import io.opentelemetry.android.internal.services.CacheStorage
-import io.opentelemetry.android.internal.services.PreferencesService
+import io.opentelemetry.android.internal.services.Preferences
 import java.io.File
 import java.io.IOException
 
 internal class DiskManager(
     private val cacheStorage: CacheStorage,
-    private val preferencesService: PreferencesService,
+    private val preferences: Preferences,
     private val diskBufferingConfiguration: DiskBufferingConfiguration,
 ) {
     @get:Throws(IOException::class)
@@ -45,7 +45,7 @@ internal class DiskManager(
          * size is stored in the preferences and returned otherwise.
          */
         get() {
-            val storedSize = preferencesService.retrieveInt(MAX_FOLDER_SIZE_KEY, -1)
+            val storedSize = preferences.retrieveInt(MAX_FOLDER_SIZE_KEY, -1)
             if (storedSize > 0) {
                 Log.d(
                     RumConstants.OTEL_RUM_LOG_TAG,
@@ -72,7 +72,7 @@ internal class DiskManager(
                 )
                 return 0
             }
-            preferencesService.store(MAX_FOLDER_SIZE_KEY, calculatedSize)
+            preferences.store(MAX_FOLDER_SIZE_KEY, calculatedSize)
             Log.d(
                 RumConstants.OTEL_RUM_LOG_TAG,
                 String.format(

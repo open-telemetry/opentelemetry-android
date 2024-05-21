@@ -19,8 +19,8 @@ internal class ServiceManagerImpl(services: List<Any>) : ServiceManager {
         this.services = Collections.unmodifiableMap(map)
     }
 
-    override fun getPreferencesService(): PreferencesService {
-        return getService(PreferencesService::class.java)
+    override fun getPreferences(): Preferences {
+        return getService(Preferences::class.java)
     }
 
     override fun getCacheStorage(): CacheStorage {

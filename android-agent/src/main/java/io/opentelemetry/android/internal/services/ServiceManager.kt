@@ -12,7 +12,7 @@ import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkServi
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
  */
 interface ServiceManager : Startable {
-    fun getPreferencesService(): PreferencesService
+    fun getPreferences(): Preferences
 
     fun getCacheStorage(): CacheStorage
 
@@ -29,7 +29,7 @@ interface ServiceManager : Startable {
             instance =
                 ServiceManagerImpl(
                     listOf(
-                        PreferencesService.create(appContext),
+                        Preferences.create(appContext),
                         CacheStorage(
                             appContext,
                         ),

@@ -27,7 +27,7 @@ class ServiceManagerImplTest {
 
         assertThat(serviceManager.getPeriodicWorkService()).isInstanceOf(PeriodicWorkService::class.java)
         assertThat(serviceManager.getCacheStorage()).isInstanceOf(CacheStorage::class.java)
-        assertThat(serviceManager.getPreferencesService()).isInstanceOf(PreferencesService::class.java)
+        assertThat(serviceManager.getPreferences()).isInstanceOf(Preferences::class.java)
     }
 
     @Test

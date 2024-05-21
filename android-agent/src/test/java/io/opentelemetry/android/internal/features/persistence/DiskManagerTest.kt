@@ -16,7 +16,7 @@ import io.mockk.just
 import io.mockk.verify
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration
 import io.opentelemetry.android.internal.services.CacheStorage
-import io.opentelemetry.android.internal.services.PreferencesService
+import io.opentelemetry.android.internal.services.Preferences
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -29,7 +29,7 @@ internal class DiskManagerTest {
     lateinit var cacheStorage: CacheStorage
 
     @MockK
-    lateinit var preferencesService: PreferencesService
+    lateinit var preferences: Preferences
 
     @MockK
     lateinit var diskBufferingConfiguration: DiskBufferingConfiguration
@@ -43,7 +43,7 @@ internal class DiskManagerTest {
         MockKAnnotations.init(this)
         every { cacheStorage.cacheDir }.returns(cacheDir)
         diskManager =
-            DiskManager(cacheStorage, preferencesService, diskBufferingConfiguration)
+            DiskManager(cacheStorage, preferences, diskBufferingConfiguration)
     }
 
     @Test
@@ -91,26 +91,26 @@ internal class DiskManagerTest {
         every { diskBufferingConfiguration.maxCacheSize }.returns(maxCacheSize.toInt())
         every { diskBufferingConfiguration.maxCacheFileSize }.returns(maxCacheFileSize)
         every { cacheStorage.ensureCacheSpaceAvailable(maxCacheSize) }.returns(maxCacheSize)
-        every { preferencesService.retrieveInt(MAX_FOLDER_SIZE_KEY, -1) }.returns(-1)
-        every { preferencesService.store(any(), any()) } just Runs
+        every { preferences.retrieveInt(MAX_FOLDER_SIZE_KEY, -1) }.returns(-1)
+        every { preferences.store(any(), any()) } just Runs
 
         // Expects the size of a single signal type folder minus the size of a cache file, to use as
         // temporary space for reading.
         val expected = 2446677
         assertThat(diskManager.maxFolderSize).isEqualTo(expected)
         verify {
-            preferencesService.store(MAX_FOLDER_SIZE_KEY, expected)
+            preferences.store(MAX_FOLDER_SIZE_KEY, expected)
         }
 
         // On a second call, should get the value from the preferences.
-        clearMocks(cacheStorage, diskBufferingConfiguration, preferencesService)
-        every { preferencesService.retrieveInt(MAX_FOLDER_SIZE_KEY, -1) }.returns(expected)
+        clearMocks(cacheStorage, diskBufferingConfiguration, preferences)
+        every { preferences.retrieveInt(MAX_FOLDER_SIZE_KEY, -1) }.returns(expected)
         assertThat(diskManager.maxFolderSize).isEqualTo(expected)
 
         verify {
-            preferencesService.retrieveInt(MAX_FOLDER_SIZE_KEY, -1)
+            preferences.retrieveInt(MAX_FOLDER_SIZE_KEY, -1)
         }
-        confirmVerified(preferencesService)
+        confirmVerified(preferences)
         verify { cacheStorage wasNot Called }
         verify { diskBufferingConfiguration wasNot Called }
     }
@@ -122,12 +122,12 @@ internal class DiskManagerTest {
         every { diskBufferingConfiguration.maxCacheSize }.returns(maxCacheSize.toInt())
         every { diskBufferingConfiguration.maxCacheFileSize }.returns(maxCacheFileSize)
         every { cacheStorage.ensureCacheSpaceAvailable(maxCacheSize) }.returns(maxCacheSize)
-        every { preferencesService.retrieveInt(MAX_FOLDER_SIZE_KEY, -1) }.returns(-1)
+        every { preferences.retrieveInt(MAX_FOLDER_SIZE_KEY, -1) }.returns(-1)
         // Expects the size of a single signal type folder minus the size of a cache file, to use as
         // temporary space for reading.
         assertThat(diskManager.maxFolderSize).isEqualTo(0)
         verify(inverse = true) {
-            preferencesService.store(any(), any())
+            preferences.store(any(), any())
         }
     }
 

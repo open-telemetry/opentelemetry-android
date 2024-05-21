@@ -31,7 +31,7 @@ import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleH
 import io.opentelemetry.android.instrumentation.common.ApplicationStateListener;
 import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
 import io.opentelemetry.android.internal.services.CacheStorage;
-import io.opentelemetry.android.internal.services.PreferencesService;
+import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.android.internal.services.ServiceManagerImpl;
 import io.opentelemetry.api.common.AttributeKey;
@@ -200,7 +200,7 @@ class OpenTelemetryRumBuilderTest {
 
     @Test
     void diskBufferingEnabled() {
-        PreferencesService preferences = mock();
+        Preferences preferences = mock();
         CacheStorage cacheStorage = mock();
         doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
         ServiceManager serviceManager = createServiceManager(preferences, cacheStorage);
@@ -226,7 +226,7 @@ class OpenTelemetryRumBuilderTest {
 
     @Test
     void diskBufferingEnabled_when_exception_thrown() {
-        PreferencesService preferences = mock();
+        Preferences preferences = mock();
         CacheStorage cacheStorage = mock();
         ExportScheduleHandler scheduleHandler = mock();
         doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
