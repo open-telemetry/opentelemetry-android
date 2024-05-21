@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+This version of OpenTelemetry Android is built on:
+* OpenTelemetry Java Instrumentation [2.4.0](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v2.4.0)
+* OpenTelemetry Java Contrib [1.34.0-alpha](https://github.com/open-telemetry/opentelemetry-java-contrib/releases/tag/v1.35.0)
+* OpenTelemetry SDK [1.38.0](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.38.0)
+
+### 🌟 New instrumentation
+
+- Experimental Volley http client instrumentation [#291](https://github.com/open-telemetry/opentelemetry-android/pull/291).
+
+### 📈 Enhancements
+
+- There is now an initial version of an OpenTelemetry Android demo app. [#338](https://github.com/open-telemetry/opentelemetry-android/pull/338)
+- Session timeout duration is now configurable beyond the 15 minute default [#330](https://github.com/open-telemetry/opentelemetry-android/pull/330)
+
+### 🛠️ Bug fixes
+
+- Scheduled components now use fixed delay instead of fixed rate [#332](https://github.com/open-telemetry/opentelemetry-android/pull/332).
+
+### 🧰 Tooling
+- A variety of small tweaks to the build process to make it smoother and more consistent with other
+  OpenTelemetry Java repos.
+
 ## Version 0.5.0 (2024-04-23)
 
 ⚠️⚠️⚠️ There are considerable breaking changes in this release.
