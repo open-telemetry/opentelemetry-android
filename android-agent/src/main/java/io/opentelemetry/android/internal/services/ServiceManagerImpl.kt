@@ -23,8 +23,8 @@ internal class ServiceManagerImpl(services: List<Any>) : ServiceManager {
         return getService(PreferencesService::class.java)
     }
 
-    override fun getCacheStorageService(): CacheStorageService {
-        return getService(CacheStorageService::class.java)
+    override fun getCacheStorage(): CacheStorage {
+        return getService(CacheStorage::class.java)
     }
 
     override fun getPeriodicWorkService(): PeriodicWorkService {

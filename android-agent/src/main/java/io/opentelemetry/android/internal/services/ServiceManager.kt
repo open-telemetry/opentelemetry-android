@@ -14,7 +14,7 @@ import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkServi
 interface ServiceManager : Startable {
     fun getPreferencesService(): PreferencesService
 
-    fun getCacheStorageService(): CacheStorageService
+    fun getCacheStorage(): CacheStorage
 
     fun getPeriodicWorkService(): PeriodicWorkService
 
@@ -30,7 +30,9 @@ interface ServiceManager : Startable {
                 ServiceManagerImpl(
                     listOf(
                         PreferencesService.create(appContext),
-                        CacheStorageService(appContext),
+                        CacheStorage(
+                            appContext,
+                        ),
                         PeriodicWorkService(),
                     ),
                 )

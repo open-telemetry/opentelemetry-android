@@ -30,7 +30,7 @@ import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 import io.opentelemetry.android.instrumentation.common.ApplicationStateListener;
 import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
-import io.opentelemetry.android.internal.services.CacheStorageService;
+import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.PreferencesService;
 import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.android.internal.services.ServiceManagerImpl;
@@ -201,7 +201,7 @@ class OpenTelemetryRumBuilderTest {
     @Test
     void diskBufferingEnabled() {
         PreferencesService preferences = mock();
-        CacheStorageService cacheStorage = mock();
+        CacheStorage cacheStorage = mock();
         doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
         ServiceManager serviceManager = createServiceManager(preferences, cacheStorage);
         OtelRumConfig config = buildConfig();
@@ -227,7 +227,7 @@ class OpenTelemetryRumBuilderTest {
     @Test
     void diskBufferingEnabled_when_exception_thrown() {
         PreferencesService preferences = mock();
-        CacheStorageService cacheStorage = mock();
+        CacheStorage cacheStorage = mock();
         ExportScheduleHandler scheduleHandler = mock();
         doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
         doAnswer(

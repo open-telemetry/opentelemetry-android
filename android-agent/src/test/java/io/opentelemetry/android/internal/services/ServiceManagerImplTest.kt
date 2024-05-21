@@ -26,7 +26,7 @@ class ServiceManagerImplTest {
         val serviceManager = ServiceManager.get()
 
         assertThat(serviceManager.getPeriodicWorkService()).isInstanceOf(PeriodicWorkService::class.java)
-        assertThat(serviceManager.getCacheStorageService()).isInstanceOf(CacheStorageService::class.java)
+        assertThat(serviceManager.getCacheStorage()).isInstanceOf(CacheStorage::class.java)
         assertThat(serviceManager.getPreferencesService()).isInstanceOf(PreferencesService::class.java)
     }
 
