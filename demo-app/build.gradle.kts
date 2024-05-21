@@ -2,8 +2,8 @@ import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
-    id("com.android.application") version "8.4.0"
-    id("org.jetbrains.kotlin.android") version "1.9.24"
+    alias(rootLibs.plugins.androidApp)
+    alias(libs.plugins.kotlinAndroid)
 }
 
 val localProperties = Properties()
