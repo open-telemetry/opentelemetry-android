@@ -33,7 +33,7 @@ class ServiceManagerImplTest {
     @Test
     fun delegatingStartCall() {
         val firstService = Mockito.mock<FirstService>()
-        val secondService = Mockito.mock<SecondService>()
+        val secondService = Mockito.mock<SecondService>() // SecondService is not "Startable".
         val serviceManager = ServiceManagerImpl(listOf(firstService, secondService))
 
         serviceManager.start()
