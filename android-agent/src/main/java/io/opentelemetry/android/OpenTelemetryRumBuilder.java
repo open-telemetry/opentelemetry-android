@@ -347,10 +347,9 @@ public final class OpenTelemetryRumBuilder {
     private StorageConfiguration createStorageConfiguration(ServiceManager serviceManager)
             throws IOException {
         Preferences preferences = serviceManager.getPreferences();
-        CacheStorage storageService = serviceManager.getCacheStorage();
+        CacheStorage storage = serviceManager.getCacheStorage();
         DiskManager diskManager =
-                new DiskManager(
-                        storageService, preferences, config.getDiskBufferingConfiguration());
+                new DiskManager(storage, preferences, config.getDiskBufferingConfiguration());
         return StorageConfiguration.builder()
                 .setMaxFileSize(diskManager.getMaxCacheFileSize())
                 .setMaxFolderSize(diskManager.getMaxFolderSize())
