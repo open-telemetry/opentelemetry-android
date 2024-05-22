@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 0.6.0 (2024-05-22)
+
 This version of OpenTelemetry Android is built on:
 * OpenTelemetry Java Instrumentation [2.4.0](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v2.4.0)
 * OpenTelemetry Java Contrib [1.34.0-alpha](https://github.com/open-telemetry/opentelemetry-java-contrib/releases/tag/v1.35.0)
