@@ -4,17 +4,17 @@ plugins {
     id("com.diffplug.spotless")
 }
 
-extensions.configure<SpotlessExtension>("spotless") {
+spotless {
     java {
         googleJavaFormat().aosp()
         licenseHeaderFile(rootProject.file("gradle/spotless.license.java"), "(package|import|public)")
         target("src/**/*.java")
     }
     plugins.withId("org.jetbrains.kotlin.jvm") {
-        kotlin {
-            ktlint()
-            licenseHeaderFile(rootProject.file("gradle/spotless.license.java"), "(package|import|public)")
-        }
+        configureKotlin(this@spotless)
+    }
+    plugins.withId("org.jetbrains.kotlin.android") {
+        configureKotlin(this@spotless)
     }
     kotlinGradle {
         ktlint()
@@ -35,5 +35,36 @@ extensions.configure<SpotlessExtension>("spotless") {
         indentWithSpaces()
         trimTrailingWhitespace()
         endWithNewline()
+    }
+}
+
+// Use root declared tool deps to avoid issues with high concurrency.
+// see https://github.com/diffplug/spotless/tree/main/plugin-gradle#dependency-resolution-modes
+if (project == rootProject) {
+    spotless {
+        predeclareDeps()
+    }
+    with(extensions["spotlessPredeclare"] as SpotlessExtension) {
+        java {
+            googleJavaFormat()
+        }
+        kotlin {
+            ktlint()
+        }
+        kotlinGradle {
+            ktlint()
+        }
+    }
+}
+
+fun configureKotlin(
+    spotlessExtension: SpotlessExtension,
+) {
+    spotlessExtension.kotlin {
+        ktlint()
+        licenseHeaderFile(
+            rootProject.file("gradle/spotless.license.java")
+        )
+        target("src/**/*.kt")
     }
 }

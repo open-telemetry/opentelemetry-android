@@ -5,6 +5,8 @@ plugins {
     id("signing")
 }
 
+version = project.version.toString().replaceFirst("(-SNAPSHOT)?$".toRegex(), "-alpha$1")
+
 val isARelease = System.getenv("CI") != null
 
 val android = extensions.findByType(LibraryExtension::class.java)
@@ -79,7 +81,7 @@ afterEvaluate {
 
 fun computeArtifactId(): String {
     val path = project.path
-    if (!path.contains("auto-instrumentation")) {
+    if (!path.contains("instrumentation")) {
         // Return default artifacId for non auto-instrumentation publications.
         return project.name
     }

@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">OpenTelemetryDemoApp</string>
+    <string name="title_activity_astronomy_shop">AstronomyShopActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+</resources>

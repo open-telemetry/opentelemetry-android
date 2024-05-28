@@ -20,9 +20,15 @@ of the [OpenTelemetry Java SDK](https://github.com/open-telemetry/opentelemetry-
 
 > If your project's minSdk is lower than 26, then you must enable
 > [corelib desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring).
-> See #73 for more information.
+> See [#73](https://github.com/open-telemetry/opentelemetry-android/issues/73) for more information.
+> If your project's minSdk is lower than 24, in order to run instrumentation tests or run the app
+> built on debug, you must use AGP 8.3.0+ and set the `android.useFullClasspathForDexingTransform`
+> property in `gradle.properties` to `true` to ensure desugaring runs properly. For the full
+> context for this workaround, please see
+> [this issue](https://issuetracker.google.com/issues/230454566#comment18).
 
-For an overview of how to contribute, see the contributing guide in [CONTRIBUTING.md](CONTRIBUTING.md).
+For an overview of how to contribute, see the contributing guide
+in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 We are also available in the [#otel-android](https://cloud-native.slack.com/archives/C05J0T9K27Q)
 channel in the [CNCF slack](https://slack.cncf.io/). Please join us there for further discussions.
@@ -35,15 +41,15 @@ in your gradle build script:
 ```kotlin
 dependencies {
     //...
-    implementation("io.opentelemetry.android:instrumentation:0.2.0-alpha")
+    implementation("io.opentelemetry.android:android-agent:0.6.0-alpha")
     //...
 }
 ```
 
-
 # Features
 
-This android library builds on top of the [OpenTelemetry Java SDK](https://github.com/open-telemetry/opentelemetry-java).
+This android library builds on top of
+the [OpenTelemetry Java SDK](https://github.com/open-telemetry/opentelemetry-java).
 Some of the additional features provided include:
 
 * Crash reporting
@@ -65,13 +71,16 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 - [Jack Berg](https://github.com/jack-berg), New Relic
 - [Trask Stalnaker](https://github.com/trask), Microsoft
--
+
 ## Maintainers ([@open-telemetry/android-maintainers](https://github.com/orgs/open-telemetry/teams/android-maintainers)):
 
 - [Jason Plumb](https://github.com/breedx-splk), Splunk
 - [Cesar Munoz](https://github.com/likethesalad), Elastic
 
 [ci-image]: https://github.com/open-telemetry/opentelemetry-android/actions/workflows/build.yaml/badge.svg
+
 [ci-url]: https://github.com/open-telemetry/opentelemetry-android/actions?query=workflow%3Abuild+branch%3Amain
+
 [maven-image]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry.android/instrumentation/badge.svg
+
 [maven-url]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry.android/instrumentation

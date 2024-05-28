@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
@@ -16,14 +18,12 @@ plugins {
 }
 
 extra["java_version"] = JavaVersion.VERSION_1_8
+extra["kotlin_min_supported_version"] = KotlinVersion.KOTLIN_1_6
 
 allprojects {
     repositories {
         google()
         mavenCentral()
-        maven {
-            url = uri("https://oss.sonatype.org/content/repositories/snapshots")
-        }
     }
     if (findProperty("final") != "true") {
         version = "$version-SNAPSHOT"

@@ -22,4 +22,5 @@ dependencies {
     implementation(libs.errorprone.plugin)
     implementation(libs.nullaway.plugin)
     implementation(libs.animalsniffer.plugin)
+    implementation(libs.kotlin.plugin)
 }
