@@ -8,7 +8,7 @@ package io.opentelemetry.instrumentation.library.httpurlconnection.internal;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesGetter;
+import io.opentelemetry.instrumentation.api.semconv.http.HttpClientAttributesGetter;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.util.List;
