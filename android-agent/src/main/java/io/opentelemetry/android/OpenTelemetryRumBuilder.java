@@ -11,6 +11,19 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Looper;
 import android.util.Log;
+
+import java.io.IOException;
+import java.util.AbstractCollection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
@@ -53,15 +66,6 @@ import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import javax.annotation.Nullable;
 
 /**
  * A builder of {@link OpenTelemetryRum}. It enabled configuring the OpenTelemetry SDK and disabling
@@ -83,18 +87,22 @@ public final class OpenTelemetryRumBuilder {
     private final OtelRumConfig config;
     private final VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
 
-    private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
     private final List<Consumer<InstrumentedApplication>> instrumentationInstallers =
             new ArrayList<>();
 
+    private final List<Consumer<OpenTelemetrySdk>> otelSdkReadyListeners = new ArrayList<>();
+    private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
     private Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer =
             (a) -> a;
 
     private Resource resource;
-    @Nullable private CurrentNetworkProvider currentNetworkProvider = null;
+    @Nullable
+    private CurrentNetworkProvider currentNetworkProvider = null;
     private InitializationEvents initializationEvents = InitializationEvents.NO_OP;
-    private Consumer<AnrDetectorBuilder> anrCustomizer = x -> {};
-    private Consumer<CrashReporterBuilder> crashReporterCustomizer = x -> {};
+    private Consumer<AnrDetectorBuilder> anrCustomizer = x -> {
+    };
+    private Consumer<CrashReporterBuilder> crashReporterCustomizer = x -> {
+    };
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
@@ -170,7 +178,7 @@ public final class OpenTelemetryRumBuilder {
      * specific customizations. If ANR detection is disabled, this method is effectively a no-op.
      *
      * @param customizer A Consumer that will receive the {@link AnrDetectorBuilder} before the
-     *     {@link AnrDetector} is built.
+     *                   {@link AnrDetector} is built.
      * @return this.
      */
     public OpenTelemetryRumBuilder addAnrCustomization(Consumer<AnrDetectorBuilder> customizer) {
@@ -184,7 +192,7 @@ public final class OpenTelemetryRumBuilder {
      * effectively a no-op.
      *
      * @param customizer A Consumer that will recieve the {@link CrashReporterBuilder} before the
-     *     {@link CrashReporter} is built.
+     *                   {@link CrashReporter} is built.
      * @return this.
      */
     public OpenTelemetryRumBuilder addCrashReportingCustomization(
@@ -306,6 +314,7 @@ public final class OpenTelemetryRumBuilder {
         DiskBufferingConfiguration diskBufferingConfiguration =
                 config.getDiskBufferingConfiguration();
         SpanExporter spanExporter = buildSpanExporter();
+        initializationEvents.spanExporterInitialized(spanExporter);
         SignalFromDiskExporter signalFromDiskExporter = null;
         if (diskBufferingConfiguration.isEnabled()) {
             try {
@@ -377,11 +386,27 @@ public final class OpenTelemetryRumBuilder {
         }
     }
 
-    /** Leverage the configuration to wire up various instrumentation components. */
+    /**
+     * Adds a callback to be invoked after the OpenTelemetry SDK has been initialized. This can
+     * be used to defer some early lifecycle functionality until the working SDK is ready.
+     *
+     * @param callback - A callback that receives the OpenTelemetry SDK instance.
+     * @return this
+     */
+    public OpenTelemetryRumBuilder addOtelSdkReadyListener(Consumer<OpenTelemetrySdk> callback) {
+        otelSdkReadyListeners.add(callback);
+        return this;
+    }
+
+    /**
+     * Leverage the configuration to wire up various instrumentation components.
+     */
     private void applyConfiguration() {
         if (config.shouldGenerateSdkInitializationEvents()) {
             if (initializationEvents == InitializationEvents.NO_OP) {
-                initializationEvents = new SdkInitializationEvents();
+                SdkInitializationEvents sdkInitEvents = new SdkInitializationEvents();
+                addOtelSdkReadyListener(sdk -> sdkInitEvents.finish(sdk));
+                initializationEvents = sdkInitEvents;
             }
             Map<String, String> configMap = new HashMap<>();
             // TODO: Convert config to map
@@ -491,7 +516,6 @@ public final class OpenTelemetryRumBuilder {
                         .setResource(resource)
                         .addSpanProcessor(new SessionIdSpanAppender(sessionId));
 
-        initializationEvents.spanExporterInitialized(spanExporter);
         BatchSpanProcessor batchSpanProcessor = BatchSpanProcessor.builder(spanExporter).build();
         tracerProviderBuilder.addSpanProcessor(batchSpanProcessor);
 

@@ -34,5 +34,17 @@ public class RumConstants {
 
     public static final String APP_START_SPAN_NAME = "AppStart";
 
+    public final static class Events {
+        public static final String INIT_EVENT_STARTED = "rum.sdk.init.started";
+        public static final String INIT_EVENT_CONFIG = "rum.sdk.init.config";
+        public static final String INIT_EVENT_NET_PROVIDER = "rum.sdk.init.net.provider";
+        public static final String INIT_EVENT_NET_MONITOR = "rum.sdk.init.net.monitor";
+        public static final String INIT_EVENT_ANR_MONITOR = "rum.sdk.init.anr_monitor";
+        public static final String INIT_EVENT_JANK_MONITOR = "rum.sdk.init.jank_monitor";
+        public static final String INIT_EVENT_CRASH_REPORTER = "rum.sdk.init.crash.reporter";
+        public static final String INIT_EVENT_SPAN_EXPORTER = "rum.sdk.init.span.exporter";
+        private Events(){}
+    }
+
     private RumConstants() {}
 }
