@@ -1,0 +1,12 @@
+name: Draft CHANGELOG entries for a release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create_draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run changelog draft script
+        run: sh .github/scripts/draft-change-log-entries.sh
