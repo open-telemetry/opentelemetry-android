@@ -2,54 +2,45 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+package io.opentelemetry.android.instrumentation.startup
 
-package io.opentelemetry.android.instrumentation.startup;
+import io.opentelemetry.sdk.trace.export.SpanExporter
 
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.util.Map;
+interface InitializationEvents {
+    fun sdkInitializationStarted()
 
-public interface InitializationEvents {
+    fun recordConfiguration(config: Map<String?, String?>?)
 
-    void sdkInitializationStarted();
+    fun currentNetworkProviderInitialized()
 
-    void recordConfiguration(Map<String, String> config);
+    fun networkMonitorInitialized()
 
-    void currentNetworkProviderInitialized();
+    fun anrMonitorInitialized()
 
-    void networkMonitorInitialized();
+    fun slowRenderingDetectorInitialized()
 
-    void anrMonitorInitialized();
+    fun crashReportingInitialized()
 
-    void slowRenderingDetectorInitialized();
+    fun spanExporterInitialized(spanExporter: SpanExporter?)
 
-    void crashReportingInitialized();
+    companion object {
+        @JvmField
+        val NO_OP: InitializationEvents = object : InitializationEvents {
+            override fun sdkInitializationStarted() {}
 
-    void spanExporterInitialized(SpanExporter spanExporter);
+            override fun recordConfiguration(config: Map<String?, String?>?) {}
 
-    InitializationEvents NO_OP =
-            new InitializationEvents() {
-                @Override
-                public void sdkInitializationStarted() {}
+            override fun currentNetworkProviderInitialized() {}
 
-                @Override
-                public void recordConfiguration(Map<String, String> config) {}
+            override fun networkMonitorInitialized() {}
 
-                @Override
-                public void currentNetworkProviderInitialized() {}
+            override fun anrMonitorInitialized() {}
 
-                @Override
-                public void networkMonitorInitialized() {}
+            override fun slowRenderingDetectorInitialized() {}
 
-                @Override
-                public void anrMonitorInitialized() {}
+            override fun crashReportingInitialized() {}
 
-                @Override
-                public void slowRenderingDetectorInitialized() {}
-
-                @Override
-                public void crashReportingInitialized() {}
-
-                @Override
-                public void spanExporterInitialized(SpanExporter spanExporter) {}
-            };
+            override fun spanExporterInitialized(spanExporter: SpanExporter?) {}
+        }
+    }
 }
