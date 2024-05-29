@@ -11,7 +11,8 @@ We first need to prepare the release. This creates a versioned release branch, T
 - Make sure that the `gradle.properties` version property is set to the value you want to release.
   This must be different than the most recent release number (typically one minor version increase).
 - Merge a pull request to `main` branch that updates the `CHANGELOG.md`.
-  - The heading for the unreleased entries must be `## Unreleased`.
+    - The heading for the unreleased entries must be `## Unreleased`.
+    - Use [this action](https://github.com/open-telemetry/opentelemetry-android/actions/workflows/draft-change-log-entries.yaml) as a starting point for writing the change log. It will print a draft in the console that you can copy to create your PR for updating the `CHANGELOG.md` file.
 - Go to the
   [prepare-release-branch action](https://github.com/open-telemetry/opentelemetry-android/actions/workflows/prepare-release-branch.yml)
   in Github and click on "Run workflow".
