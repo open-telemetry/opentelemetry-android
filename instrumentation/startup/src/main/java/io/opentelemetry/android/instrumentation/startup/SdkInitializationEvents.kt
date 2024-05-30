@@ -2,6 +2,7 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package io.opentelemetry.android.instrumentation.startup
 
 import io.opentelemetry.android.common.RumConstants
@@ -15,19 +16,20 @@ import java.time.Instant
 import java.util.function.Consumer
 import java.util.function.Supplier
 
-class SdkInitializationEvents : InitializationEvents {
+class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { Instant.now() }) : InitializationEvents {
     private val events: MutableList<Event> = ArrayList()
-    private val clock = Supplier { Instant.now() }
 
     override fun sdkInitializationStarted() {
         addEvent(RumConstants.Events.INIT_EVENT_STARTED)
     }
 
-    override fun recordConfiguration(config: Map<String?, String?>?) {
-        val map: MutableMap<String?, AnyValue<*>> = HashMap()
-        config!!.entries.forEach(Consumer { e: Map.Entry<String?, String?> ->
-            map[e.key] = AnyValue.of(e.value)
-        })
+    override fun recordConfiguration(config: Map<String, String>) {
+        val map: MutableMap<String, AnyValue<*>> = HashMap()
+        config.entries.forEach(
+            Consumer { e: Map.Entry<String, String> ->
+                map[e.key] = AnyValue.of(e.value)
+            },
+        )
         val body = AnyValue.of(map)
         addEvent(RumConstants.Events.INIT_EVENT_CONFIG, body)
     }
@@ -52,7 +54,7 @@ class SdkInitializationEvents : InitializationEvents {
         addEvent(RumConstants.Events.INIT_EVENT_CRASH_REPORTER)
     }
 
-    override fun spanExporterInitialized(spanExporter: SpanExporter?) {
+    override fun spanExporterInitialized(spanExporter: SpanExporter) {
         val attributes =
             Attributes.of(AttributeKey.stringKey("span.exporter"), spanExporter.toString())
         addEvent(RumConstants.Events.INIT_EVENT_SPAN_EXPORTER, attributes)
@@ -61,29 +63,40 @@ class SdkInitializationEvents : InitializationEvents {
     fun finish(sdk: OpenTelemetrySdk) {
         val loggerProvider = sdk.sdkLoggerProvider
         val eventLogger =
-            SdkEventLoggerProvider.create(loggerProvider)["otel.initialization.events"]
-        events.forEach(Consumer { event: Event ->
-            val eventBuilder = eventLogger.builder(event.name)
-                .setTimestamp(event.timestamp)
-                .setAttributes(event.attributes)
+            SdkEventLoggerProvider.create(loggerProvider).get("otel.initialization.events")
+        events.forEach { event: Event ->
+            val eventBuilder =
+                eventLogger.builder(event.name)
+                    .setTimestamp(event.timestamp)
+                    .setAttributes(event.attributes)
             if (event.body != null) {
                 // TODO: Config is technically correct because config is the only startup event
                 // with a body, but this is ultimately clunky/fragile.
                 eventBuilder.put("config", event.body)
             }
             eventBuilder.emit()
-        })
+        }
     }
 
-    private fun addEvent(name: String, body: AnyValue<*>) {
+    private fun addEvent(
+        name: String,
+        body: AnyValue<*>,
+    ) {
         addEvent(name, null, body)
     }
 
-    private fun addEvent(name: String, attr: Attributes) {
-        addEvent(name, attr)
+    private fun addEvent(
+        name: String,
+        attr: Attributes,
+    ) {
+        addEvent(name, attr, null)
     }
 
-    private fun addEvent(name: String, attr: Attributes? = null, body: AnyValue<*>? = null) {
+    private fun addEvent(
+        name: String,
+        attr: Attributes? = null,
+        body: AnyValue<*>? = null,
+    ) {
         events.add(Event(clock.get(), name, attr, body))
     }
 
@@ -91,13 +104,13 @@ class SdkInitializationEvents : InitializationEvents {
         val timestamp: Instant,
         val name: String,
         val attributes: Attributes?,
-        val body: AnyValue<*>? = null
+        val body: AnyValue<*>? = null,
     ) {
         private constructor(timestamp: Instant, name: String, body: AnyValue<*>) : this(
             timestamp,
             name,
             null,
-            body
+            body,
         )
     }
 }
