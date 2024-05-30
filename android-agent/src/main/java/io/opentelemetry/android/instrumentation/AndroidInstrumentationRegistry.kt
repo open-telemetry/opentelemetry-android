@@ -29,7 +29,7 @@ interface AndroidInstrumentationRegistry {
      * type.
      *
      * @param instrumentation The instrumentation to register.
-     * @throws IllegalArgumentException If the instrumentation couldn't be registered.
+     * @throws IllegalStateException If the instrumentation couldn't be registered.
      */
     fun register(instrumentation: AndroidInstrumentation)
 }

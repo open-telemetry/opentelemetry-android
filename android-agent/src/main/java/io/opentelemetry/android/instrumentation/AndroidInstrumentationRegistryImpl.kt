@@ -15,8 +15,8 @@ internal class AndroidInstrumentationRegistryImpl : AndroidInstrumentationRegist
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : AndroidInstrumentation> get(type: Class<out T>): T {
-        return instrumentations.getValue(type) as T
+    override fun <T : AndroidInstrumentation> get(type: Class<out T>): T? {
+        return instrumentations[type] as? T
     }
 
     override fun getAll(): Collection<AndroidInstrumentation> {
