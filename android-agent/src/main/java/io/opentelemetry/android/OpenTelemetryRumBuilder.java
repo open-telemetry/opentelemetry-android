@@ -307,7 +307,6 @@ public final class OpenTelemetryRumBuilder {
         DiskBufferingConfiguration diskBufferingConfiguration =
                 config.getDiskBufferingConfiguration();
         SpanExporter spanExporter = buildSpanExporter();
-        initializationEvents.spanExporterInitialized(spanExporter);
         SignalFromDiskExporter signalFromDiskExporter = null;
         if (diskBufferingConfiguration.isEnabled()) {
             try {
@@ -327,6 +326,7 @@ public final class OpenTelemetryRumBuilder {
                 Log.e(RumConstants.OTEL_RUM_LOG_TAG, "Could not initialize disk exporters.", e);
             }
         }
+        initializationEvents.spanExporterInitialized(spanExporter);
 
         OpenTelemetrySdk sdk =
                 OpenTelemetrySdk.builder()
