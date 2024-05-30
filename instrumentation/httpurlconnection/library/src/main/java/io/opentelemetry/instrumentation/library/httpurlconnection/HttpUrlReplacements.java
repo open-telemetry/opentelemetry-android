@@ -7,9 +7,6 @@ package io.opentelemetry.instrumentation.library.httpurlconnection;
 
 import static io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons.instrumenter;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.instrumentation.library.httpurlconnection.internal.RequestPropertySetter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -17,22 +14,35 @@ import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.library.httpurlconnection.internal.RequestPropertySetter;
+
 public class HttpUrlReplacements {
 
-    // WeakHashMap has weak references to the key, and when the key is garbage collected
-    // the entry is effectively removed from the map. This means that we never have to
-    // remove entries from the map.
-    private static final WeakHashMap<URLConnection, HttpURLConnectionInfo> activeURLConnections;
+    private static final Map<URLConnection, HttpURLConnectionInfo> activeURLConnections;
     private static final Logger logger;
     public static final int UNKNOWN_RESPONSE_CODE = -1;
 
     static {
-        activeURLConnections = new WeakHashMap<>();
+        activeURLConnections = new ConcurrentHashMap<>();
         logger = Logger.getLogger("HttpUrlReplacements");
+    }
+
+    public static void replacementForDisconnect(HttpURLConnection c) {
+        // Ensure ending of un-ended spans while connection is still alive
+        // If disconnect is not called, harvester thread if scheduled, takes care of ending any
+        // un-ended spans.
+        final HttpURLConnectionInfo info = activeURLConnections.get(c);
+        if (info != null && !info.reported) {
+            reportWithResponseCode(c);
+        }
+
+        c.disconnect();
     }
 
     public static void replacementForConnect(URLConnection c) throws IOException {
@@ -308,23 +318,23 @@ public class HttpUrlReplacements {
         }
     }
 
-    private static synchronized void endTracing(
-            URLConnection c, int responseCode, Throwable error) {
+    private static void endTracing(URLConnection c, int responseCode, Throwable error) {
         HttpURLConnectionInfo info = activeURLConnections.get(c);
         if (info != null && !info.reported) {
             Context context = info.context;
             instrumenter().end(context, c, responseCode, error);
             info.reported = true;
+            activeURLConnections.remove(c);
         }
     }
 
-    private static synchronized void startTracingAtFirstConnection(URLConnection c) {
+    private static void startTracingAtFirstConnection(URLConnection c) {
         Context parentContext = Context.current();
         if (!instrumenter().shouldStart(parentContext, c)) {
             return;
         }
 
-        if (activeURLConnections.get(c) == null) {
+        if (!activeURLConnections.containsKey(c)) {
             Context context = instrumenter().start(parentContext, c);
             activeURLConnections.put(c, new HttpURLConnectionInfo(context));
             try {
@@ -338,7 +348,8 @@ public class HttpUrlReplacements {
                         "Exception "
                                 + e.getMessage()
                                 + " was thrown while adding distributed tracing context for connection "
-                                + c.toString());
+                                + c,
+                        e);
             }
         }
     }
@@ -349,21 +360,21 @@ public class HttpUrlReplacements {
                 .inject(context, connection, RequestPropertySetter.INSTANCE);
     }
 
-    private static synchronized void updateLastSeenTime(URLConnection c) {
+    private static void updateLastSeenTime(URLConnection c) {
         final HttpURLConnectionInfo info = activeURLConnections.get(c);
         if (info != null && !info.reported) {
             info.lastSeenTime = System.nanoTime();
         }
     }
 
-    private static synchronized void markHarvestable(URLConnection c) {
+    private static void markHarvestable(URLConnection c) {
         final HttpURLConnectionInfo info = activeURLConnections.get(c);
         if (info != null && !info.reported) {
             info.harvestable = true;
         }
     }
 
-    static synchronized void reportIdleConnectionsOlderThan(long timeIntervalInNanoSec) {
+    static void reportIdleConnectionsOlderThan(long timeIntervalInNanoSec) {
         final long timeNow = System.nanoTime();
         for (URLConnection c : activeURLConnections.keySet()) {
             final HttpURLConnectionInfo info = activeURLConnections.get(c);

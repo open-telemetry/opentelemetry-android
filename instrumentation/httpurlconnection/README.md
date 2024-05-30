@@ -57,7 +57,7 @@ It is recommended to **manually** schedule the following runnable to periodicall
 **For example**
 Add the below code in the function where your application starts ( that could be onCreate() method of first Activity/Fragment/Service):
 ```Java
-Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(HttpUrlInstrumentationConfig.getReportIdleConnectionRunnable(), 0, HttpUrlInstrumentationConfig.getReportIdleConnectionInterval(), TimeUnit.MILLISECONDS);
+Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(HttpUrlInstrumentationConfig.getReportIdleConnectionRunnable(), 0, HttpUrlInstrumentationConfig.getReportIdleConnectionInterval(), TimeUnit.MILLISECONDS);
 ```
 
 All other configurations are optional.

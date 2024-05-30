@@ -201,6 +201,10 @@ public class HttpUrlConnectionPlugin implements Plugin {
                             .replaceWith(
                                     HttpUrlReplacements.class.getDeclaredMethod(
                                             "replacementForErrorStream", HttpURLConnection.class))
+                            .method(is(HttpURLConnection.class.getDeclaredMethod("disconnect")))
+                            .replaceWith(
+                                    HttpUrlReplacements.class.getDeclaredMethod(
+                                            "replacementForDisconnect", HttpURLConnection.class))
                             .on(isMethod()));
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);

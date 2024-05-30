@@ -3,7 +3,7 @@ plugins {
     id("otel.publish-conventions")
 }
 
-description = "OpenTelemetry HttpURLConnection agent instrumentation for Android"
+description = "OpenTelemetry build-time auto-instrumentation for HttpURLConnection on Android"
 
 otelAndroid.minSdk = 21
 
