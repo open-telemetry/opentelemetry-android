@@ -32,4 +32,15 @@ interface AndroidInstrumentationRegistry {
      * @throws IllegalStateException If the instrumentation couldn't be registered.
      */
     fun register(instrumentation: AndroidInstrumentation)
+
+    companion object {
+        private val instance: AndroidInstrumentationRegistry by lazy {
+            AndroidInstrumentationRegistryImpl()
+        }
+
+        @JvmStatic
+        fun get(): AndroidInstrumentationRegistry {
+            return instance
+        }
+    }
 }

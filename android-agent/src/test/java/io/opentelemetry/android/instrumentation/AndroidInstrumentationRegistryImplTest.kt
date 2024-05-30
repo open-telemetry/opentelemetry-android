@@ -25,9 +25,9 @@ class AndroidInstrumentationRegistryImplTest {
     fun `Find and register implementations available in the classpath when querying an instrumentation`() {
         val instrumentation = registry.get(TestAndroidInstrumentation::class.java)
 
-        instrumentation.install(mockk(), mockk())
+        instrumentation?.install(mockk(), mockk())
 
-        assertThat(registry.get(TestAndroidInstrumentation::class.java).installed).isTrue()
+        assertThat(registry.get(TestAndroidInstrumentation::class.java)?.installed).isTrue()
     }
 
     @Test
@@ -44,7 +44,7 @@ class AndroidInstrumentationRegistryImplTest {
 
         registry.register(instrumentation)
 
-        assertThat(registry.get(DummyInstrumentation::class.java).name).isEqualTo("test")
+        assertThat(registry.get(DummyInstrumentation::class.java)?.name).isEqualTo("test")
     }
 
     @Test
