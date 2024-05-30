@@ -54,5 +54,12 @@ interface AndroidInstrumentation {
         fun getAll(): Collection<AndroidInstrumentation> {
             return instrumentations.values
         }
+
+        fun register(instrumentation: AndroidInstrumentation) {
+            if (instrumentation::class.java in instrumentations) {
+                throw IllegalStateException("Instrumentation with type '${instrumentation::class.java}' already exists.")
+            }
+            instrumentations[instrumentation.javaClass] = instrumentation
+        }
     }
 }
