@@ -7,6 +7,7 @@ package io.opentelemetry.android.instrumentation
 
 import android.app.Application
 import io.opentelemetry.android.OpenTelemetryRum
+import java.util.Collections
 import java.util.ServiceLoader
 
 /**
@@ -52,7 +53,7 @@ interface AndroidInstrumentation {
 
         @JvmStatic
         fun getAll(): Collection<AndroidInstrumentation> {
-            return instrumentations.values
+            return Collections.unmodifiableCollection(instrumentations.values)
         }
 
         fun register(instrumentation: AndroidInstrumentation) {
