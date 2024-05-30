@@ -7,6 +7,7 @@ package io.opentelemetry.android.instrumentation
 
 import android.app.Application
 import io.opentelemetry.android.OpenTelemetryRum
+import java.util.ServiceLoader
 
 /**
  * This interface defines a tool that automatically generates telemetry, that is, creates spans, metrics or logs for a specific use-case
@@ -37,15 +38,21 @@ interface AndroidInstrumentation {
         openTelemetryRum: OpenTelemetryRum,
     )
 
-    companion object {
+    companion object Registry {
+        private val instrumentations: MutableMap<Class<out AndroidInstrumentation>, AndroidInstrumentation> by lazy {
+            ServiceLoader.load(AndroidInstrumentation::class.java).associateBy { it.javaClass }
+                .toMutableMap()
+        }
+
+        @Suppress("UNCHECKED_CAST")
         @JvmStatic
         fun <T : AndroidInstrumentation> get(type: Class<out T>): T {
-            TODO()
+            return instrumentations.getValue(type) as T
         }
 
         @JvmStatic
         fun getAll(): Collection<AndroidInstrumentation> {
-            TODO()
+            return instrumentations.values
         }
     }
 }
