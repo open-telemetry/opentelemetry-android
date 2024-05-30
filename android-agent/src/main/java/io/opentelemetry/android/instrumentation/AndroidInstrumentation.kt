@@ -31,6 +31,9 @@ interface AndroidInstrumentation {
      * This is the entry point of the instrumentation, it must be called once per implementation and it should
      * only be called from [OpenTelemetryRum]'s builder once the [OpenTelemetryRum] instance is initialized and ready
      * to use for generating telemetry.
+     *
+     * @param application The host android application.
+     * @param openTelemetryRum The [OpenTelemetryRum] instance to use for creating signals.
      */
     fun install(
         application: Application,
