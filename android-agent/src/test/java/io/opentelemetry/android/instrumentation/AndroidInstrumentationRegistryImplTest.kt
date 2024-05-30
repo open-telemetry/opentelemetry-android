@@ -9,22 +9,30 @@ import android.app.Application
 import io.mockk.mockk
 import io.opentelemetry.android.OpenTelemetryRum
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 
-class AndroidInstrumentationTest {
+class AndroidInstrumentationRegistryImplTest {
+    private lateinit var registry: AndroidInstrumentationRegistryImpl
+
+    @BeforeEach
+    fun setUp() {
+        registry = AndroidInstrumentationRegistryImpl()
+    }
+
     @Test
     fun `Find and register implementations available in the classpath when querying an instrumentation`() {
-        val instrumentation = AndroidInstrumentation.get(TestAndroidInstrumentation::class.java)
+        val instrumentation = registry.get(TestAndroidInstrumentation::class.java)
 
         instrumentation.install(mockk(), mockk())
 
-        assertThat(AndroidInstrumentation.get(TestAndroidInstrumentation::class.java).installed).isTrue()
+        assertThat(registry.get(TestAndroidInstrumentation::class.java).installed).isTrue()
     }
 
     @Test
     fun `Find and register implementations available in the classpath when querying all instrumentations`() {
-        val instrumentations = AndroidInstrumentation.getAll()
+        val instrumentations = registry.getAll()
 
         assertThat(instrumentations).hasSize(1)
         assertThat(instrumentations.first()).isInstanceOf(TestAndroidInstrumentation::class.java)
@@ -34,9 +42,9 @@ class AndroidInstrumentationTest {
     fun `Register instrumentations`() {
         val instrumentation = DummyInstrumentation("test")
 
-        AndroidInstrumentation.register(instrumentation)
+        registry.register(instrumentation)
 
-        assertThat(AndroidInstrumentation.get(DummyInstrumentation::class.java).name).isEqualTo("test")
+        assertThat(registry.get(DummyInstrumentation::class.java).name).isEqualTo("test")
     }
 
     @Test
@@ -44,10 +52,10 @@ class AndroidInstrumentationTest {
         val instrumentation = DummyInstrumentation("test")
         val instrumentation2 = DummyInstrumentation("test2")
 
-        AndroidInstrumentation.register(instrumentation)
+        registry.register(instrumentation)
 
         try {
-            AndroidInstrumentation.register(instrumentation2)
+            registry.register(instrumentation2)
             fail("Should not allow to register the same type of instrumentation more than once.")
         } catch (e: IllegalStateException) {
             assertThat(e.message).isEqualTo("Instrumentation with type '${DummyInstrumentation::class.java}' already exists.")
