@@ -9,9 +9,9 @@ import android.app.Application
 import io.mockk.mockk
 import io.opentelemetry.android.OpenTelemetryRum
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 
 class AndroidInstrumentationRegistryImplTest {
     private lateinit var registry: AndroidInstrumentationRegistryImpl
@@ -24,6 +24,8 @@ class AndroidInstrumentationRegistryImplTest {
     @Test
     fun `Find and register implementations available in the classpath when querying an instrumentation`() {
         val instrumentation = registry.get(TestAndroidInstrumentation::class.java)
+
+        assertThat(instrumentation?.installed).isFalse()
 
         instrumentation?.install(mockk(), mockk())
 
@@ -54,12 +56,10 @@ class AndroidInstrumentationRegistryImplTest {
 
         registry.register(instrumentation)
 
-        try {
+        assertThatThrownBy {
             registry.register(instrumentation2)
-            fail("Should not allow to register the same type of instrumentation more than once.")
-        } catch (e: IllegalStateException) {
-            assertThat(e.message).isEqualTo("Instrumentation with type '${DummyInstrumentation::class.java}' already exists.")
-        }
+        }.isInstanceOf(IllegalStateException::class.java)
+            .hasMessage("Instrumentation with type '${DummyInstrumentation::class.java}' already exists.")
     }
 
     private class DummyInstrumentation(val name: String) : AndroidInstrumentation {
