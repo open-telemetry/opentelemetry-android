@@ -32,7 +32,7 @@ interface AndroidInstrumentation {
      * only be called from [OpenTelemetryRum]'s builder once the [OpenTelemetryRum] instance is initialized and ready
      * to use for generating telemetry.
      *
-     * @param application The host android application.
+     * @param application The Android application being instrumented.
      * @param openTelemetryRum The [OpenTelemetryRum] instance to use for creating signals.
      */
     fun install(
