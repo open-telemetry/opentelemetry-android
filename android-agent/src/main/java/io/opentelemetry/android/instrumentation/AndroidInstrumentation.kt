@@ -9,8 +9,8 @@ import android.app.Application
 import io.opentelemetry.android.OpenTelemetryRum
 
 /**
- * This interface defines a tool that automatically generates telemetry, that is, creates spans, metrics or logs for a specific use-case
- * without the need for end users to directly interact with the OpenTelemetry SDK to create those signals manually.
+ * This interface defines a tool that automatically generates telemetry for a specific use-case,
+ * without the need for end users to directly interact with the OpenTelemetry SDK to create telemetry manually.
  *
  * Implementations of this interface should be focused on a single use-case and should attach themselves automatically
  * to the tool that they are supposed to generate telemetry for. For example, an implementation that tracks
