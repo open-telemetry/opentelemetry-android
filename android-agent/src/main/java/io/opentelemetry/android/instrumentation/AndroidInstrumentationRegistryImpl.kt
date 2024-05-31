@@ -23,6 +23,7 @@ internal class AndroidInstrumentationRegistryImpl : AndroidInstrumentationRegist
         return Collections.unmodifiableCollection(instrumentations.values)
     }
 
+    @Throws(IllegalStateException::class)
     override fun register(instrumentation: AndroidInstrumentation) {
         if (instrumentation::class.java in instrumentations) {
             throw IllegalStateException("Instrumentation with type '${instrumentation::class.java}' already exists.")
