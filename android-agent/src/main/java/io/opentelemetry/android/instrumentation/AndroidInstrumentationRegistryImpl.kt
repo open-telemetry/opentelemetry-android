@@ -5,7 +5,6 @@
 
 package io.opentelemetry.android.instrumentation
 
-import java.util.Collections
 import java.util.ServiceLoader
 
 internal class AndroidInstrumentationRegistryImpl : AndroidInstrumentationRegistry {
@@ -20,7 +19,7 @@ internal class AndroidInstrumentationRegistryImpl : AndroidInstrumentationRegist
     }
 
     override fun getAll(): Collection<AndroidInstrumentation> {
-        return Collections.unmodifiableCollection(instrumentations.values)
+        return instrumentations.values.toList()
     }
 
     @Throws(IllegalStateException::class)
