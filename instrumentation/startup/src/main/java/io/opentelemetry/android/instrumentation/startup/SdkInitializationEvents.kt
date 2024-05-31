@@ -31,7 +31,7 @@ class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { 
             },
         )
         val body = AnyValue.of(map)
-        addEvent(RumConstants.Events.INIT_EVENT_CONFIG, body)
+        addEvent(RumConstants.Events.INIT_EVENT_CONFIG, body = body)
     }
 
     override fun currentNetworkProviderInitialized() {
@@ -57,7 +57,7 @@ class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { 
     override fun spanExporterInitialized(spanExporter: SpanExporter) {
         val attributes =
             Attributes.of(AttributeKey.stringKey("span.exporter"), spanExporter.toString())
-        addEvent(RumConstants.Events.INIT_EVENT_SPAN_EXPORTER, attributes)
+        addEvent(RumConstants.Events.INIT_EVENT_SPAN_EXPORTER, attr = attributes)
     }
 
     fun finish(sdk: OpenTelemetrySdk) {
@@ -76,20 +76,6 @@ class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { 
             }
             eventBuilder.emit()
         }
-    }
-
-    private fun addEvent(
-        name: String,
-        body: AnyValue<*>,
-    ) {
-        addEvent(name, null, body)
-    }
-
-    private fun addEvent(
-        name: String,
-        attr: Attributes,
-    ) {
-        addEvent(name, attr, null)
     }
 
     private fun addEvent(
