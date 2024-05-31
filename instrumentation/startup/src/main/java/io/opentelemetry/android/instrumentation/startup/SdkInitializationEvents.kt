@@ -86,17 +86,10 @@ class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { 
         events.add(Event(clock.get(), name, attr, body))
     }
 
-    private class Event(
+    private data class Event(
         val timestamp: Instant,
         val name: String,
         val attributes: Attributes?,
         val body: AnyValue<*>? = null,
-    ) {
-        private constructor(timestamp: Instant, name: String, body: AnyValue<*>) : this(
-            timestamp,
-            name,
-            null,
-            body,
-        )
-    }
+    )
 }
