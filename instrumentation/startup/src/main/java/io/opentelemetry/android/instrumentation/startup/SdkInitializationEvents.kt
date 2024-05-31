@@ -24,7 +24,7 @@ class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { 
     }
 
     override fun recordConfiguration(config: Map<String, String>) {
-        val map: MutableMap<String, AnyValue<*>> = HashMap()
+        val map = mutableMapOf<String, AnyValue<*>>()
         config.entries.forEach(
             Consumer { e: Map.Entry<String, String> ->
                 map[e.key] = AnyValue.of(e.value)
