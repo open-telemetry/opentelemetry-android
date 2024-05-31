@@ -17,7 +17,7 @@ import java.util.function.Consumer
 import java.util.function.Supplier
 
 class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { Instant.now() }) : InitializationEvents {
-    private val events: MutableList<Event> = ArrayList()
+    private val events = mutableListOf<Event>()
 
     override fun sdkInitializationStarted() {
         addEvent(RumConstants.Events.INIT_EVENT_STARTED)
