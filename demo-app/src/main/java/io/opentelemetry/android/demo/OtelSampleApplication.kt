@@ -17,7 +17,7 @@ import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
 
-private const val TAG = "otel.demo"
+const val TAG = "otel.demo"
 
 class OtelSampleApplication : Application() {
     @SuppressLint("RestrictedApi")
