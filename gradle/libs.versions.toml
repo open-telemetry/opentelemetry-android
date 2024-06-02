@@ -54,7 +54,7 @@ nullaway = "com.uber.nullaway:nullaway:0.10.26"
 errorprone-core = "com.google.errorprone:error_prone_core:2.28.0"
 errorprone-javac = "com.google.errorprone:javac:9+181-r4173-1"
 spotless-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
-errorprone-plugin = "net.ltgt.gradle:gradle-errorprone-plugin:3.1.0"
+errorprone-plugin = "net.ltgt.gradle:gradle-errorprone-plugin:4.0.0"
 nullaway-plugin = "net.ltgt.gradle:gradle-nullaway-plugin:2.0.0"
 animalsniffer-plugin = "ru.vyarus:gradle-animalsniffer-plugin:1.7.1"
 android-plugin = { module = "com.android.tools.build:gradle", version.ref = "androidPlugin" }
