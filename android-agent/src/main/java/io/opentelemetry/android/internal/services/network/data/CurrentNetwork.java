@@ -56,7 +56,7 @@ public final class CurrentNetwork {
 
     @SuppressWarnings("NullAway")
     @Nullable
-    String getCarrierName() {
+    public String getCarrierName() {
         return haveCarrier() ? carrier.getName() : null;
     }
 

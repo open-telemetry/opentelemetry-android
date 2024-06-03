@@ -22,8 +22,6 @@ import io.opentelemetry.android.instrumentation.anr.AnrDetectorBuilder;
 import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.crash.CrashReporter;
 import io.opentelemetry.android.instrumentation.crash.CrashReporterBuilder;
-import io.opentelemetry.android.instrumentation.network.NetworkAttributesSpanAppender;
-import io.opentelemetry.android.instrumentation.network.NetworkChangeMonitor;
 import io.opentelemetry.android.instrumentation.slowrendering.SlowRenderingDetector;
 import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
 import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents;

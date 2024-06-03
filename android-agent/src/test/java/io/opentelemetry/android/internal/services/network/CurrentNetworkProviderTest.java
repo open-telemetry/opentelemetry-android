@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.internal.services.network;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -21,6 +21,9 @@ import android.net.ConnectivityManager.NetworkCallback;
 import android.net.Network;
 import android.net.NetworkRequest;
 import android.os.Build;
+import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
+import io.opentelemetry.android.internal.services.network.data.NetworkState;
+import io.opentelemetry.android.internal.services.network.detector.NetworkDetector;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.junit.Test;

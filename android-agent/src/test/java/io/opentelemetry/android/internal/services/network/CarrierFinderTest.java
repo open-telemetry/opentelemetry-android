@@ -3,13 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.internal.services.network;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.telephony.TelephonyManager;
+import io.opentelemetry.android.internal.services.network.data.Carrier;
 import org.junit.jupiter.api.Test;
 
 class CarrierFinderTest {

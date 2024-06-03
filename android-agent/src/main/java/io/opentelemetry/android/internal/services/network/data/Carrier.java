@@ -32,27 +32,27 @@ public final class Carrier {
         this.isoCountryCode = builder.isoCountryCode;
     }
 
-    int getId() {
+    public int getId() {
         return id;
     }
 
     @Nullable
-    String getName() {
+    public String getName() {
         return name;
     }
 
     @Nullable
-    String getMobileCountryCode() {
+    public String getMobileCountryCode() {
         return mobileCountryCode;
     }
 
     @Nullable
-    String getMobileNetworkCode() {
+    public String getMobileNetworkCode() {
         return mobileNetworkCode;
     }
 
     @Nullable
-    String getIsoCountryCode() {
+    public String getIsoCountryCode() {
         return isoCountryCode;
     }
 
