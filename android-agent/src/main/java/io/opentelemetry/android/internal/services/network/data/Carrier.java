@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.internal.services.network.data;
 
 import android.os.Build;
 import android.telephony.TelephonyManager;
@@ -12,7 +12,7 @@ import androidx.annotation.RequiresApi;
 import java.util.Objects;
 
 @RequiresApi(api = Build.VERSION_CODES.P)
-final class Carrier {
+public final class Carrier {
 
     private final int id;
     private final @Nullable String name;
@@ -20,7 +20,7 @@ final class Carrier {
     private final @Nullable String mobileNetworkCode; // 2 or 3 digits
     private final @Nullable String isoCountryCode;
 
-    static Builder builder() {
+    public static Builder builder() {
         return new Builder();
     }
 
@@ -93,38 +93,38 @@ final class Carrier {
                 + '}';
     }
 
-    static class Builder {
+    public static class Builder {
         private int id = TelephonyManager.UNKNOWN_CARRIER_ID;
         private @Nullable String name = null;
         private @Nullable String mobileCountryCode = null;
         private @Nullable String mobileNetworkCode = null;
         private @Nullable String isoCountryCode = null;
 
-        Carrier build() {
+        public Carrier build() {
             return new Carrier(this);
         }
 
-        Builder id(int id) {
+        public Builder id(int id) {
             this.id = id;
             return this;
         }
 
-        Builder name(String name) {
+        public Builder name(String name) {
             this.name = name;
             return this;
         }
 
-        Builder mobileCountryCode(String countryCode) {
+        public Builder mobileCountryCode(String countryCode) {
             this.mobileCountryCode = countryCode;
             return this;
         }
 
-        Builder mobileNetworkCode(String networkCode) {
+        public Builder mobileNetworkCode(String networkCode) {
             this.mobileNetworkCode = networkCode;
             return this;
         }
 
-        Builder isoCountryCode(String isoCountryCode) {
+        public Builder isoCountryCode(String isoCountryCode) {
             this.isoCountryCode = isoCountryCode;
             return this;
         }

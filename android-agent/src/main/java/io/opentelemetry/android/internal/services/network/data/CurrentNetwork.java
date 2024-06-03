@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.internal.services.network.data;
 
 import android.os.Build;
 import androidx.annotation.Nullable;
@@ -92,11 +92,11 @@ public final class CurrentNetwork {
                 + '}';
     }
 
-    static Builder builder(NetworkState state) {
+    public static Builder builder(NetworkState state) {
         return new Builder(state);
     }
 
-    static class Builder {
+    public static class Builder {
         @Nullable private Carrier carrier;
         private final NetworkState state;
         @Nullable private String subType;
@@ -105,17 +105,17 @@ public final class CurrentNetwork {
             this.state = state;
         }
 
-        Builder carrier(@Nullable Carrier carrier) {
+        public Builder carrier(@Nullable Carrier carrier) {
             this.carrier = carrier;
             return this;
         }
 
-        Builder subType(@Nullable String subType) {
+        public Builder subType(@Nullable String subType) {
             this.subType = subType;
             return this;
         }
 
-        CurrentNetwork build() {
+        public CurrentNetwork build() {
             return new CurrentNetwork(this);
         }
     }

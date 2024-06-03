@@ -7,7 +7,7 @@ package io.opentelemetry.android.config;
 
 import io.opentelemetry.android.ScreenAttributesSpanProcessor;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
-import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
+import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.api.common.Attributes;
 import java.time.Duration;
 import java.util.function.Supplier;

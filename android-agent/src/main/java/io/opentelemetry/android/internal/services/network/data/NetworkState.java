@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.internal.services.network.data;
 
 import io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NetworkConnectionTypeValues;
 
-enum NetworkState {
+public enum NetworkState {
     NO_NETWORK_AVAILABLE(NetworkConnectionTypeValues.UNAVAILABLE),
     TRANSPORT_CELLULAR(NetworkConnectionTypeValues.CELL),
     TRANSPORT_WIFI(NetworkConnectionTypeValues.WIFI),

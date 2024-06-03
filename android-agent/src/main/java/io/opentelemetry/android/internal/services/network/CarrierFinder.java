@@ -3,22 +3,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.internal.services.network;
 
 import android.os.Build;
 import android.telephony.TelephonyManager;
 import androidx.annotation.RequiresApi;
+import io.opentelemetry.android.internal.services.network.data.Carrier;
 
 @RequiresApi(api = Build.VERSION_CODES.P)
-class CarrierFinder {
+public class CarrierFinder {
 
     private final TelephonyManager telephonyManager;
 
-    CarrierFinder(TelephonyManager telephonyManager) {
+    public CarrierFinder(TelephonyManager telephonyManager) {
         this.telephonyManager = telephonyManager;
     }
 
-    Carrier get() {
+    public Carrier get() {
         Carrier.Builder builder = Carrier.builder();
         int id = telephonyManager.getSimCarrierId();
         builder.id(id);
