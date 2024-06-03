@@ -5,7 +5,6 @@
 
 package io.opentelemetry.android.instrumentation.network;
 
-import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
 import io.opentelemetry.api.OpenTelemetry;
@@ -32,8 +31,7 @@ public final class NetworkChangeMonitor {
     private final List<AttributesExtractor<CurrentNetwork, Void>> additionalExtractors;
 
     /**
-     * Installs the network change monitoring instrumentation on the given {@link
-     * InstrumentedApplication}.
+     * Installs the network change monitoring instrumentation on the given {@link OpenTelemetry}.
      */
     public void installOn(OpenTelemetry openTelemetry) {
         NetworkApplicationListener networkApplicationListener =
