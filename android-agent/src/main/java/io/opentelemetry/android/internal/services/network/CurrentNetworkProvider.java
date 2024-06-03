@@ -110,11 +110,11 @@ public final class CurrentNetworkProvider {
                 .build();
     }
 
-    CurrentNetwork getCurrentNetwork() {
+    public CurrentNetwork getCurrentNetwork() {
         return currentNetwork;
     }
 
-    void addNetworkChangeListener(NetworkChangeListener listener) {
+    public void addNetworkChangeListener(NetworkChangeListener listener) {
         listeners.add(listener);
     }
 

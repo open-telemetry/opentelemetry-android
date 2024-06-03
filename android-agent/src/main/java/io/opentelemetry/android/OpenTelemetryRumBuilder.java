@@ -25,6 +25,7 @@ import io.opentelemetry.android.instrumentation.crash.CrashReporterBuilder;
 import io.opentelemetry.android.instrumentation.slowrendering.SlowRenderingDetector;
 import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
 import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents;
+import io.opentelemetry.android.internal.features.networkattrs.NetworkAttributesSpanAppender;
 import io.opentelemetry.android.internal.features.persistence.DiskManager;
 import io.opentelemetry.android.internal.features.persistence.SimpleTemporaryFileProvider;
 import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordAppender;
@@ -409,16 +410,6 @@ public final class OpenTelemetryRumBuilder {
                                 networkAttributesSpanAppender);
                     });
             initializationEvents.currentNetworkProviderInitialized();
-        }
-
-        // Add network change monitor if enabled (default = = true)
-        if (config.isNetworkChangeMonitoringEnabled()) {
-            addInstrumentation(
-                    app -> {
-                        NetworkChangeMonitor.create(getOrCreateCurrentNetworkProvider())
-                                .installOn(app);
-                        initializationEvents.networkMonitorInitialized();
-                    });
         }
 
         // Add span processor that appends screen attribute(s)

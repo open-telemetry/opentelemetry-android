@@ -21,7 +21,7 @@ public enum NetworkState {
         this.humanName = humanName;
     }
 
-    String getHumanName() {
+    public String getHumanName() {
         return humanName;
     }
 }

@@ -27,30 +27,30 @@ public final class CurrentNetwork {
         return getState() != NetworkState.NO_NETWORK_AVAILABLE;
     }
 
-    NetworkState getState() {
+    public NetworkState getState() {
         return state;
     }
 
     @Nullable
-    String getSubType() {
+    public String getSubType() {
         return subType;
     }
 
     @SuppressWarnings("NullAway")
     @Nullable
-    String getCarrierCountryCode() {
+    public String getCarrierCountryCode() {
         return haveCarrier() ? carrier.getMobileCountryCode() : null;
     }
 
     @SuppressWarnings("NullAway")
     @Nullable
-    String getCarrierIsoCountryCode() {
+    public String getCarrierIsoCountryCode() {
         return haveCarrier() ? carrier.getIsoCountryCode() : null;
     }
 
     @SuppressWarnings("NullAway")
     @Nullable
-    String getCarrierNetworkCode() {
+    public String getCarrierNetworkCode() {
         return haveCarrier() ? carrier.getMobileNetworkCode() : null;
     }
 
