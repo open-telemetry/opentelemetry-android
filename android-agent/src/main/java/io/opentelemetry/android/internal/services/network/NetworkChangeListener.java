@@ -7,7 +7,7 @@ package io.opentelemetry.android.internal.services.network;
 
 import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
 
-interface NetworkChangeListener {
+public interface NetworkChangeListener {
 
     void onNetworkChange(CurrentNetwork currentNetwork);
 }

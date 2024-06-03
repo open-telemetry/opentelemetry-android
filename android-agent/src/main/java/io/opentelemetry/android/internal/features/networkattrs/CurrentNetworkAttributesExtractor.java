@@ -18,9 +18,9 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 
-final class CurrentNetworkAttributesExtractor {
+public final class CurrentNetworkAttributesExtractor {
 
-    Attributes extract(CurrentNetwork network) {
+    public Attributes extract(CurrentNetwork network) {
         AttributesBuilder builder =
                 Attributes.builder()
                         .put(NETWORK_CONNECTION_TYPE, network.getState().getHumanName());
