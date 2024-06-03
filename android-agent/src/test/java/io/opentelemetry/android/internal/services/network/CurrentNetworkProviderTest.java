@@ -53,8 +53,9 @@ public class CurrentNetworkProviderTest {
                                 .subType("LTE")
                                 .build());
 
-        CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
-        currentNetworkProvider.startMonitoring(() -> networkRequest, connectivityManager);
+        CurrentNetworkProvider currentNetworkProvider =
+                new CurrentNetworkProvider(networkDetector, connectivityManager);
+        currentNetworkProvider.startMonitoring(() -> networkRequest);
 
         Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
@@ -103,8 +104,9 @@ public class CurrentNetworkProviderTest {
                                 .subType("LTE")
                                 .build());
 
-        CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
-        currentNetworkProvider.startMonitoring(() -> networkRequest, connectivityManager);
+        CurrentNetworkProvider currentNetworkProvider =
+                new CurrentNetworkProvider(networkDetector, connectivityManager);
+        currentNetworkProvider.startMonitoring(() -> networkRequest);
 
         Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
@@ -145,7 +147,8 @@ public class CurrentNetworkProviderTest {
         NetworkDetector networkDetector = Mockito.mock(NetworkDetector.class);
         when(networkDetector.detectCurrentNetwork()).thenThrow(new SecurityException("bug"));
 
-        CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
+        CurrentNetworkProvider currentNetworkProvider =
+                new CurrentNetworkProvider(networkDetector, Mockito.mock());
         Assert.assertEquals(
                 CurrentNetworkProvider.UNKNOWN_NETWORK,
                 currentNetworkProvider.refreshNetworkStatus());
@@ -163,9 +166,9 @@ public class CurrentNetworkProviderTest {
                 .when(connectivityManager)
                 .registerDefaultNetworkCallback(isA(NetworkCallback.class));
 
-        CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
-        currentNetworkProvider.startMonitoring(
-                () -> mock(NetworkRequest.class), connectivityManager);
+        CurrentNetworkProvider currentNetworkProvider =
+                new CurrentNetworkProvider(networkDetector, connectivityManager);
+        currentNetworkProvider.startMonitoring(() -> mock(NetworkRequest.class));
         Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
                 currentNetworkProvider.refreshNetworkStatus());
@@ -184,8 +187,9 @@ public class CurrentNetworkProviderTest {
                 .when(connectivityManager)
                 .registerNetworkCallback(eq(networkRequest), isA(NetworkCallback.class));
 
-        CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
-        currentNetworkProvider.startMonitoring(() -> networkRequest, connectivityManager);
+        CurrentNetworkProvider currentNetworkProvider =
+                new CurrentNetworkProvider(networkDetector, connectivityManager);
+        currentNetworkProvider.startMonitoring(() -> networkRequest);
         Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
                 currentNetworkProvider.refreshNetworkStatus());
@@ -207,8 +211,9 @@ public class CurrentNetworkProviderTest {
                 .when(connectivityManager)
                 .registerNetworkCallback(eq(networkRequest), any(NetworkCallback.class));
 
-        CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
-        currentNetworkProvider.startMonitoring(() -> networkRequest, connectivityManager);
+        CurrentNetworkProvider currentNetworkProvider =
+                new CurrentNetworkProvider(networkDetector, connectivityManager);
+        currentNetworkProvider.startMonitoring(() -> networkRequest);
     }
 
     @Test
@@ -227,7 +232,8 @@ public class CurrentNetworkProviderTest {
                 .when(connectivityManager)
                 .registerDefaultNetworkCallback(any(NetworkCallback.class));
 
-        CurrentNetworkProvider currentNetworkProvider = new CurrentNetworkProvider(networkDetector);
-        currentNetworkProvider.startMonitoring(() -> networkRequest, connectivityManager);
+        CurrentNetworkProvider currentNetworkProvider =
+                new CurrentNetworkProvider(networkDetector, connectivityManager);
+        currentNetworkProvider.startMonitoring(() -> networkRequest);
     }
 }

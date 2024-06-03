@@ -32,7 +32,6 @@ import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordApp
 import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.ServiceManager;
-import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -90,7 +89,6 @@ public final class OpenTelemetryRumBuilder {
             (a) -> a;
 
     private Resource resource;
-    @Nullable private CurrentNetworkProvider currentNetworkProvider = null;
     private InitializationEvents initializationEvents = InitializationEvents.NO_OP;
     private Consumer<AnrDetectorBuilder> anrCustomizer = x -> {};
     private Consumer<CrashReporterBuilder> crashReporterCustomizer = x -> {};
@@ -117,18 +115,6 @@ public final class OpenTelemetryRumBuilder {
      */
     public OpenTelemetryRumBuilder setResource(Resource resource) {
         this.resource = resource;
-        return this;
-    }
-
-    /**
-     * Call this to pass an existing CurrentNetworkProvider instance to share with the underlying
-     * OpenTelemetry Rum instrumentation.
-     *
-     * @return {@code this}
-     */
-    public OpenTelemetryRumBuilder setCurrentNetworkProvider(
-            CurrentNetworkProvider currentNetworkProvider) {
-        this.currentNetworkProvider = currentNetworkProvider;
         return this;
     }
 
@@ -401,11 +387,11 @@ public final class OpenTelemetryRumBuilder {
         // Network specific attributes
         if (config.shouldIncludeNetworkAttributes()) {
             // Add span processor that appends network attributes.
-            CurrentNetworkProvider currentNetworkProvider = getOrCreateCurrentNetworkProvider();
             addTracerProviderCustomizer(
                     (tracerProviderBuilder, app) -> {
                         SpanProcessor networkAttributesSpanAppender =
-                                NetworkAttributesSpanAppender.create(currentNetworkProvider);
+                                NetworkAttributesSpanAppender.create(
+                                        ServiceManager.get().getCurrentNetworkProvider());
                         return tracerProviderBuilder.addSpanProcessor(
                                 networkAttributesSpanAppender);
                     });
@@ -464,13 +450,6 @@ public final class OpenTelemetryRumBuilder {
                         initializationEvents.crashReportingInitialized();
                     });
         }
-    }
-
-    private CurrentNetworkProvider getOrCreateCurrentNetworkProvider() {
-        if (currentNetworkProvider == null) {
-            this.currentNetworkProvider = CurrentNetworkProvider.createAndStart(application);
-        }
-        return currentNetworkProvider;
     }
 
     private SdkTracerProvider buildTracerProvider(
