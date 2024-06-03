@@ -39,7 +39,9 @@ public final class NetworkChangeMonitor {
         NetworkApplicationListener networkApplicationListener =
                 new NetworkApplicationListener(currentNetworkProvider);
         networkApplicationListener.startMonitoring(buildInstrumenter(openTelemetry));
-        instrumentedApplication.registerApplicationStateListener(networkApplicationListener);
+        //
+        // instrumentedApplication.registerApplicationStateListener(networkApplicationListener);
+        // TODO uncomment in part 3
     }
 
     private Instrumenter<CurrentNetwork, Void> buildInstrumenter(OpenTelemetry openTelemetry) {
