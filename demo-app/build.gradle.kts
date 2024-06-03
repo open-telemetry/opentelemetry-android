@@ -4,6 +4,7 @@ import java.util.Properties
 plugins {
     alias(rootLibs.plugins.androidApp)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.compose.compiler)
 }
 
 val localProperties = Properties()
@@ -40,11 +41,7 @@ android {
         }
     }
     buildFeatures {
-        compose = true
         viewBinding = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
     }
     val javaVersion = JavaVersion.VERSION_11
     compileOptions {

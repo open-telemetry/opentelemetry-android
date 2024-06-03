@@ -83,10 +83,11 @@ public final class OpenTelemetryRumBuilder {
     private final OtelRumConfig config;
     private final VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
 
-    private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
     private final List<Consumer<InstrumentedApplication>> instrumentationInstallers =
             new ArrayList<>();
 
+    private final List<Consumer<OpenTelemetrySdk>> otelSdkReadyListeners = new ArrayList<>();
+    private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
     private Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer =
             (a) -> a;
 
@@ -325,6 +326,7 @@ public final class OpenTelemetryRumBuilder {
                 Log.e(RumConstants.OTEL_RUM_LOG_TAG, "Could not initialize disk exporters.", e);
             }
         }
+        initializationEvents.spanExporterInitialized(spanExporter);
 
         OpenTelemetrySdk sdk =
                 OpenTelemetrySdk.builder()
@@ -377,14 +379,30 @@ public final class OpenTelemetryRumBuilder {
         }
     }
 
+    /**
+     * Adds a callback to be invoked after the OpenTelemetry SDK has been initialized. This can be
+     * used to defer some early lifecycle functionality until the working SDK is ready.
+     *
+     * @param callback - A callback that receives the OpenTelemetry SDK instance.
+     * @return this
+     */
+    public OpenTelemetryRumBuilder addOtelSdkReadyListener(Consumer<OpenTelemetrySdk> callback) {
+        otelSdkReadyListeners.add(callback);
+        return this;
+    }
+
     /** Leverage the configuration to wire up various instrumentation components. */
     private void applyConfiguration() {
         if (config.shouldGenerateSdkInitializationEvents()) {
             if (initializationEvents == InitializationEvents.NO_OP) {
-                initializationEvents = new SdkInitializationEvents();
+                SdkInitializationEvents sdkInitEvents = new SdkInitializationEvents();
+                addOtelSdkReadyListener(sdkInitEvents::finish);
+                initializationEvents = sdkInitEvents;
             }
             Map<String, String> configMap = new HashMap<>();
             // TODO: Convert config to map
+            // breedx-splk: Left incomplete for now, because I think Cesar is making changes around
+            // this
             initializationEvents.recordConfiguration(configMap);
         }
         initializationEvents.sdkInitializationStarted();
@@ -491,7 +509,6 @@ public final class OpenTelemetryRumBuilder {
                         .setResource(resource)
                         .addSpanProcessor(new SessionIdSpanAppender(sessionId));
 
-        initializationEvents.spanExporterInitialized(spanExporter);
         BatchSpanProcessor batchSpanProcessor = BatchSpanProcessor.builder(spanExporter).build();
         tracerProviderBuilder.addSpanProcessor(batchSpanProcessor);
 

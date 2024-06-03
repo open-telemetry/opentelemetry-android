@@ -18,8 +18,8 @@
         tools:layout="@layout/fragment_dashboard" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="io.opentelemetry.android.demo.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
+        android:id="@+id/navigation_cart"
+        android:name="io.opentelemetry.android.demo.ui.cart.CartFragment"
+        android:label="@string/title_cart"
         tools:layout="@layout/fragment_notifications" />
 </navigation>
