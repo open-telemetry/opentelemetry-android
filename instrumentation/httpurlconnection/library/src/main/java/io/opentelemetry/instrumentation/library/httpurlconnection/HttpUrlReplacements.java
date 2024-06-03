@@ -7,6 +7,10 @@ package io.opentelemetry.instrumentation.library.httpurlconnection;
 
 import static io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons.instrumenter;
 
+import android.os.SystemClock;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.library.httpurlconnection.internal.RequestPropertySetter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -17,10 +21,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.instrumentation.library.httpurlconnection.internal.RequestPropertySetter;
 
 public class HttpUrlReplacements {
 
@@ -363,7 +363,7 @@ public class HttpUrlReplacements {
     private static void updateLastSeenTime(URLConnection c) {
         final HttpURLConnectionInfo info = activeURLConnections.get(c);
         if (info != null && !info.reported) {
-            info.lastSeenTime = System.nanoTime();
+            info.lastSeenTime = SystemClock.uptimeMillis();
         }
     }
 
@@ -374,14 +374,14 @@ public class HttpUrlReplacements {
         }
     }
 
-    static void reportIdleConnectionsOlderThan(long timeIntervalInNanoSec) {
-        final long timeNow = System.nanoTime();
+    static void reportIdleConnectionsOlderThan(long timeInterval) {
+        final long timeNow = SystemClock.uptimeMillis();
         for (URLConnection c : activeURLConnections.keySet()) {
             final HttpURLConnectionInfo info = activeURLConnections.get(c);
             if (info != null
                     && info.harvestable
                     && !info.reported
-                    && (info.lastSeenTime + timeIntervalInNanoSec) < timeNow) {
+                    && (info.lastSeenTime + timeInterval) < timeNow) {
                 HttpURLConnection httpURLConnection = (HttpURLConnection) c;
                 reportWithResponseCode(httpURLConnection);
             }
@@ -396,8 +396,7 @@ public class HttpUrlReplacements {
 
         private HttpURLConnectionInfo(Context context) {
             this.context = context;
-            // Using System.nanoTime() as it is independent of device clock and any changes to that.
-            lastSeenTime = System.nanoTime();
+            lastSeenTime = SystemClock.uptimeMillis();
         }
     }
 }

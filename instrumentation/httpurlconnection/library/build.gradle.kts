@@ -1,11 +1,17 @@
 plugins {
-    id("otel.java-library-conventions")
+    id("otel.android-library-conventions")
     id("otel.publish-conventions")
 }
 
-otelAndroid.minSdk = 24
-
 description = "OpenTelemetry HttpURLConnection library instrumentation for Android"
+
+android {
+    namespace = "io.opentelemetry.android.httpurlconnection.library"
+
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
+}
 
 dependencies {
     api(libs.opentelemetry.api)
