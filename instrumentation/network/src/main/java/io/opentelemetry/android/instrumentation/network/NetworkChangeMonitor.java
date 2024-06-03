@@ -11,7 +11,6 @@ import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,32 +21,24 @@ import java.util.List;
  */
 public final class NetworkChangeMonitor {
 
-    public static NetworkChangeMonitor create(CurrentNetworkProvider currentNetworkProvider) {
-        return builder(currentNetworkProvider).build();
-    }
-
-    public static NetworkChangeMonitorBuilder builder(
-            CurrentNetworkProvider currentNetworkProvider) {
-        return new NetworkChangeMonitorBuilder(currentNetworkProvider);
+    public NetworkChangeMonitor(
+            CurrentNetworkProvider currentNetworkProvider,
+            List<AttributesExtractor<CurrentNetwork, Void>> additionalExtractors) {
+        this.currentNetworkProvider = currentNetworkProvider;
+        this.additionalExtractors = additionalExtractors;
     }
 
     private final CurrentNetworkProvider currentNetworkProvider;
     private final List<AttributesExtractor<CurrentNetwork, Void>> additionalExtractors;
 
-    NetworkChangeMonitor(NetworkChangeMonitorBuilder builder) {
-        this.currentNetworkProvider = builder.currentNetworkProvider;
-        this.additionalExtractors = new ArrayList<>(builder.additionalExtractors);
-    }
-
     /**
      * Installs the network change monitoring instrumentation on the given {@link
      * InstrumentedApplication}.
      */
-    public void installOn(InstrumentedApplication instrumentedApplication) {
+    public void installOn(OpenTelemetry openTelemetry) {
         NetworkApplicationListener networkApplicationListener =
                 new NetworkApplicationListener(currentNetworkProvider);
-        networkApplicationListener.startMonitoring(
-                buildInstrumenter(instrumentedApplication.getOpenTelemetrySdk()));
+        networkApplicationListener.startMonitoring(buildInstrumenter(openTelemetry));
         instrumentedApplication.registerApplicationStateListener(networkApplicationListener);
     }
 
