@@ -6,6 +6,7 @@
 package io.opentelemetry.android.demo
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -42,8 +43,9 @@ fun CenterText(
 fun CenterText(
     text: String,
     fontSize: TextUnit = 12.sp,
+    selectable: Boolean = false
 ) {
-    Text(
+    val textComposable = Text(
         text,
         textAlign = TextAlign.Center,
         fontSize = fontSize,
@@ -51,4 +53,10 @@ fun CenterText(
         fontFamily = gothamFont,
         style = TextStyle.Default.copy(textAlign = TextAlign.Center),
     )
+    if (selectable) {
+        return SelectionContainer {
+            textComposable
+        }
+    }
+    return textComposable
 }

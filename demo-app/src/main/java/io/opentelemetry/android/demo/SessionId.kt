@@ -34,7 +34,7 @@ fun SessionId(sessionId: StateFlow<String>) {
                 CenterText(text = "session.id", fontSize = 14.sp)
                 //TODO: Fix me -- this selection doesn't work
                 SelectionContainer {
-                    CenterText(text = sessionId.collectAsState().value, fontSize = 14.sp)
+                    CenterText(text = sessionId.collectAsState().value, fontSize = 14.sp, selectable = true)
                 }
             }
         }
