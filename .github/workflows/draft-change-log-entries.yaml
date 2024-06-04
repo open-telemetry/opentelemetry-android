@@ -11,6 +11,4 @@ jobs:
         with:
           fetch-depth: 0
       - name: Run changelog draft script
-        run: |
-          chmod +x ./.github/scripts/draft-change-log-entries.sh
-          ./.github/scripts/draft-change-log-entries.sh
+        run: ./.github/scripts/draft-change-log-entries.sh
