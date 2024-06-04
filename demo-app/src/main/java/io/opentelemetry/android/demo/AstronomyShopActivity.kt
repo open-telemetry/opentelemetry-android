@@ -5,7 +5,10 @@
 
 package io.opentelemetry.android.demo
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -38,5 +41,10 @@ class AstronomyShopActivity : AppCompatActivity() {
             )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+    }
+
+    fun onExitToMainClicked(item: MenuItem) {
+        Log.d(TAG, "Exiting shop back to main activity")
+        startActivity(Intent(this@AstronomyShopActivity, MainActivity::class.java))
     }
 }

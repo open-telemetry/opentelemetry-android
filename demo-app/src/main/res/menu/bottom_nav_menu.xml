@@ -16,4 +16,10 @@
         android:icon="@drawable/ic_cart_foreground"
         android:title="@string/title_cart" />
 
+    <item
+        android:id="@+id/exit_shop"
+        android:icon="@drawable/exit_to_main"
+        android:title="@string/title_exit_to_main"
+        android:onClick="onExitToMainClicked"/>
+
 </menu>
