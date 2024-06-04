@@ -50,9 +50,9 @@ public final class CurrentNetworkProvider implements Startable {
     private final ConnectivityManager connectivityManager;
 
     private volatile CurrentNetwork currentNetwork = UNKNOWN_NETWORK;
-    private final List<NetworkChangeListener> listeners =
-            new CopyOnWriteArrayList<>(); // visible for tests
+    private final List<NetworkChangeListener> listeners = new CopyOnWriteArrayList<>();
 
+    // visible for tests
     CurrentNetworkProvider(
             NetworkDetector networkDetector, ConnectivityManager connectivityManager) {
         this.connectivityManager = connectivityManager;
