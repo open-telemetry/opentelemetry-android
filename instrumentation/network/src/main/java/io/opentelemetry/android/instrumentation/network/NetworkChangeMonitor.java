@@ -19,10 +19,13 @@ import java.util.List;
  * time.
  */
 public final class NetworkChangeMonitor {
+    private final OpenTelemetry openTelemetry;
 
     public NetworkChangeMonitor(
+            OpenTelemetry openTelemetry,
             CurrentNetworkProvider currentNetworkProvider,
             List<AttributesExtractor<CurrentNetwork, Void>> additionalExtractors) {
+        this.openTelemetry = openTelemetry;
         this.currentNetworkProvider = currentNetworkProvider;
         this.additionalExtractors = additionalExtractors;
     }
@@ -33,7 +36,7 @@ public final class NetworkChangeMonitor {
     /**
      * Installs the network change monitoring instrumentation on the given {@link OpenTelemetry}.
      */
-    public void installOn(OpenTelemetry openTelemetry) {
+    public void start() {
         NetworkApplicationListener networkApplicationListener =
                 new NetworkApplicationListener(currentNetworkProvider);
         networkApplicationListener.startMonitoring(buildInstrumenter(openTelemetry));

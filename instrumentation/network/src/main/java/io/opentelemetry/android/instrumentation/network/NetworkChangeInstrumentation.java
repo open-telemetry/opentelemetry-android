@@ -33,8 +33,9 @@ public final class NetworkChangeInstrumentation implements AndroidInstrumentatio
             @NonNull Application application, @NonNull OpenTelemetryRum openTelemetryRum) {
         NetworkChangeMonitor networkChangeMonitor =
                 new NetworkChangeMonitor(
+                        openTelemetryRum.getOpenTelemetry(),
                         ServiceManager.get().getCurrentNetworkProvider(),
                         Collections.unmodifiableList(additionalExtractors));
-        networkChangeMonitor.installOn(openTelemetryRum.getOpenTelemetry());
+        networkChangeMonitor.start();
     }
 }

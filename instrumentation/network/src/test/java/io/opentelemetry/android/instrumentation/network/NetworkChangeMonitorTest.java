@@ -61,7 +61,7 @@ public class NetworkChangeMonitorTest {
 
     @Test
     public void networkAvailable_wifi() {
-        create().installOn(otelTesting.getOpenTelemetry());
+        create().start();
 
         verify(currentNetworkProvider)
                 .addNetworkChangeListener(networkChangeListenerCaptor.capture());
@@ -80,7 +80,7 @@ public class NetworkChangeMonitorTest {
 
     @Test
     public void networkAvailable_cellular() {
-        create().installOn(otelTesting.getOpenTelemetry());
+        create().start();
 
         verify(currentNetworkProvider)
                 .addNetworkChangeListener(networkChangeListenerCaptor.capture());
@@ -117,7 +117,7 @@ public class NetworkChangeMonitorTest {
 
     @Test
     public void networkLost() {
-        create().installOn(otelTesting.getOpenTelemetry());
+        create().start();
 
         verify(currentNetworkProvider)
                 .addNetworkChangeListener(networkChangeListenerCaptor.capture());
@@ -137,7 +137,7 @@ public class NetworkChangeMonitorTest {
     @Test
     @Ignore("Reintroduce in part 3")
     public void noEventsPlease() {
-        create().installOn(otelTesting.getOpenTelemetry());
+        create().start();
 
         verify(currentNetworkProvider)
                 .addNetworkChangeListener(networkChangeListenerCaptor.capture());
@@ -166,6 +166,7 @@ public class NetworkChangeMonitorTest {
     }
 
     private NetworkChangeMonitor create() {
-        return new NetworkChangeMonitor(currentNetworkProvider, Collections.emptyList());
+        return new NetworkChangeMonitor(
+                otelTesting.getOpenTelemetry(), currentNetworkProvider, Collections.emptyList());
     }
 }
