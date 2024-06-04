@@ -13,6 +13,9 @@ import android.net.NetworkInfo;
 import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
 import io.opentelemetry.android.internal.services.network.data.NetworkState;
 
+/**
+ * This class is internal and not for public use. Its APIs are unstable and can change at any time.
+ */
 class SimpleNetworkDetector implements NetworkDetector {
     private final ConnectivityManager connectivityManager;
 

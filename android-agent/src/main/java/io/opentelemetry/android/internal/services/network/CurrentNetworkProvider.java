@@ -29,6 +29,9 @@ import java.util.function.Supplier;
 /**
  * A provider of {@link CurrentNetwork} information. Registers itself in the Android {@link
  * ConnectivityManager} and listens for network changes.
+ *
+ * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
+ * time.
  */
 public final class CurrentNetworkProvider implements Startable {
 

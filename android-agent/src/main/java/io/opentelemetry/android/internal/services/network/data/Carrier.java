@@ -11,6 +11,9 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import java.util.Objects;
 
+/**
+ * This class is internal and not for public use. Its APIs are unstable and can change at any time.
+ */
 @RequiresApi(api = Build.VERSION_CODES.P)
 public final class Carrier {
 

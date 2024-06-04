@@ -23,6 +23,9 @@ import io.opentelemetry.android.internal.services.network.data.Carrier;
 import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
 import io.opentelemetry.android.internal.services.network.data.NetworkState;
 
+/**
+ * This class is internal and not for public use. Its APIs are unstable and can change at any time.
+ */
 @RequiresApi(api = Build.VERSION_CODES.P)
 class PostApi28NetworkDetector implements NetworkDetector {
     private final ConnectivityManager connectivityManager;

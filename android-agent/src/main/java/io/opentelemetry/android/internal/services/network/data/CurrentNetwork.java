@@ -9,7 +9,12 @@ import android.os.Build;
 import androidx.annotation.Nullable;
 import java.util.Objects;
 
-/** A value class representing the current network that the device is connected to. */
+/**
+ * A value class representing the current network that the device is connected to.
+ *
+ * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
+ * time.
+ */
 public final class CurrentNetwork {
 
     @Nullable private final Carrier carrier;
