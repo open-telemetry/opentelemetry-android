@@ -17,7 +17,8 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
-import io.opentelemetry.semconv.SemanticAttributes;
+import io.opentelemetry.semconv.ExceptionAttributes;
+import io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -70,13 +71,13 @@ class CrashReporterTest {
 
         Attributes crashAttributes = logRecords.get(0).getAttributes();
         OpenTelemetryAssertions.assertThat(crashAttributes)
-                .containsEntry(SemanticAttributes.EXCEPTION_ESCAPED, true)
-                .containsEntry(SemanticAttributes.EXCEPTION_MESSAGE, exceptionMessage)
-                .containsEntry(SemanticAttributes.EXCEPTION_TYPE, "java.lang.RuntimeException")
-                .containsEntry(SemanticAttributes.THREAD_ID, crashingThread.getId())
-                .containsEntry(SemanticAttributes.THREAD_NAME, crashingThread.getName())
+                .containsEntry(ExceptionAttributes.EXCEPTION_ESCAPED, true)
+                .containsEntry(ExceptionAttributes.EXCEPTION_MESSAGE, exceptionMessage)
+                .containsEntry(ExceptionAttributes.EXCEPTION_TYPE, "java.lang.RuntimeException")
+                .containsEntry(ThreadIncubatingAttributes.THREAD_ID, crashingThread.getId())
+                .containsEntry(ThreadIncubatingAttributes.THREAD_NAME, crashingThread.getName())
                 .containsEntry(stringKey("test.key"), "abc");
-        assertThat(crashAttributes.get(SemanticAttributes.EXCEPTION_STACKTRACE))
+        assertThat(crashAttributes.get(ExceptionAttributes.EXCEPTION_STACKTRACE))
                 .startsWith("java.lang.RuntimeException: boooom!");
     }
 }
