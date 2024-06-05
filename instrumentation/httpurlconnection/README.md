@@ -11,17 +11,29 @@ Provides OpenTelemetry instrumentation for:
 
 ### Overview
 
-This plugin instruments calls to all relevant APIs (APIs that cause a connection to be established) in client's android application code. It wraps calls to these APIs to ensure the following:
-- Context is added for distributed tracing before actual API is called (i.e before connection is established)
-- Any exceptions thrown are recorded and spans are ended.
-- If the getInputStream()/getErrorStream() APIs are used, the span is ended right after calling the API (as these are usually the last APIs to be called).
+This plugin enhances the Android application host code by instrumenting all critical APIs (specifically those that initiate a connection). It intercepts calls to these APIs to ensure the following actions are performed:
+- Context is added for distributed tracing before actual API is called (i.e before connection is initiated).
+- Traces and spans are generated and properly closed.
+- Any exceptions thrown are recorded.
 
-If the getInputStream()/getErrorStream() APIs are not called, spans won't be ended and reported. You can do the recommended configuration defined below to schedule a periodically running thread that looks for any idle connections (read from previously but idle for >10s) and ends any open spans on them.
+A span associated with a given request is concluded in the following scenarios:
+- When the getInputStream()/getErrorStream() APIs are called, the span concludes after the stream is fully read, an IOException is encountered, or the stream is closed.
+- When the disconnect API is called.
 
-The minimum supported Android SDK version is 21, though it will also instrument APIs added in the Android SDK version 24 when running on devices with API level 24 and above.
+Spans won't be automatically ended and reported otherwise. If any of your URLConnection requests do not call the span concluding APIs mentioned above, refer the section entitled ["Scheduling Harvester Thread"](#scheduling-harvester-thread). This section provides guidance on setting up a recurring thread that identifies unreported, idle connections (those that have been read from but have been inactive for more than 10 seconds) and concludes any open spans associated with them.
+
+> The minimum supported Android SDK version is 21, though it will also instrument APIs added in the Android SDK version 24 when running on devices with API level 24 and above.
 
 > If your project's minSdk is lower than 26, then you must enable
 > [corelib desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring).
+>
+> If your project's minSdk is lower than 24, in order to run the app built on debug, you need to add the following property in `gradle.properties` file:
+> -  If AGP <= 8.3.0, set `android.enableDexingArtifactTransform=false`
+> - if AGP > 8.3.0, set `android.useFullClasspathForDexingTransform=true`
+>
+> For the full context for these workaround, please see
+> [this issue](https://issuetracker.google.com/issues/334281968) for AGP <= 8.3.0
+> or [this issue](https://issuetracker.google.com/issues/230454566#comment18) for AGP > 8.3.0.
 
 ### Add these dependencies to your project
 
@@ -31,7 +43,7 @@ Replace `BYTEBUDDY_VERSION` with the [latest release](https://search.maven.org/s
 
 #### Byte buddy compilation plugin
 
-This plugin leverages Android's [Transform API](https://developer.android.com/reference/tools/gradle-api/current/com/android/build/api/variant/ScopedArtifactsOperation#toTransform(com.android.build.api.artifact.ScopedArtifact,kotlin.Function1,kotlin.Function1,kotlin.Function1)) to instrument bytecode at compile time. You can find more info on its [repo page](https://github.com/raphw/byte-buddy/tree/master/byte-buddy-gradle-plugin/android-plugin.
+This plugin leverages Android's [Transform API](https://developer.android.com/reference/tools/gradle-api/current/com/android/build/api/variant/ScopedArtifactsOperation#toTransform(com.android.build.api.artifact.ScopedArtifact,kotlin.Function1,kotlin.Function1,kotlin.Function1)) to instrument bytecode at compile time. You can find more info on its [repo page](https://github.com/raphw/byte-buddy/tree/master/byte-buddy-gradle-plugin/android-plugin).
 
 ```groovy
 plugins {
@@ -47,19 +59,17 @@ byteBuddy("io.opentelemetry.android:httpurlconnection-agent:AUTO_HTTP_URL_INSTRU
 ```
 
 ### Configurations
-You can configure the automatic instrumentation by using the setters in [HttpUrlInstrumentationConfig](library/src/main/java/io/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlInstrumentationConfig.java).
 
-#### Recommended Configuration
-It is recommended to **manually** schedule the following runnable to periodically run at the below given fixed interval to end any open spans if connection is left idle >10s.
-- API to call to get the runnable: `HttpUrlInstrumentationConfig.getReportIdleConnectionRunnable()`
-- API to call to get the fixed interval in milli seconds: `HttpUrlInstrumentationConfig.getReportIdleConnectionInterval()`
+#### Scheduling Harvester Thread
 
-**For example**
-Add the below code in the function where your application starts ( that could be onCreate() method of first Activity/Fragment/Service):
+To schedule a periodically running thread to conclude spans on any unreported, idle connections, add the below code in the function where your application starts ( that could be onCreate() method of first Activity/Fragment/Service):
 ```Java
 Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(HttpUrlInstrumentationConfig.getReportIdleConnectionRunnable(), 0, HttpUrlInstrumentationConfig.getReportIdleConnectionInterval(), TimeUnit.MILLISECONDS);
 ```
 
-All other configurations are optional.
+`HttpUrlInstrumentationConfig.getReportIdleConnectionRunnable()` is the API to get the runnable. `HttpUrlInstrumentationConfig.getReportIdleConnectionInterval()` is the API to get the fixed interval (10s) in milli seconds.
 
-After adding the plugin and the dependencies to your project, and after doing the required configuration, your requests will be traced automatically.
+#### Other Optional Configurations
+You can optionally configure the automatic instrumentation by using the setters in [HttpUrlInstrumentationConfig](library/src/main/java/io/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlInstrumentationConfig.java).
+
+After adding the plugin and the dependencies to your project, and after doing the required configurations, your requests will be traced automatically.

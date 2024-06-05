@@ -135,8 +135,7 @@ public final class HttpUrlInstrumentationConfig {
         return new Runnable() {
             @Override
             public void run() {
-                HttpUrlReplacements.reportIdleConnectionsOlderThan(
-                        CONNECTION_INACTIVITY_TIMEOUT * 1000000L);
+                HttpUrlReplacements.reportIdleConnectionsOlderThan(CONNECTION_INACTIVITY_TIMEOUT);
             }
 
             @Override
