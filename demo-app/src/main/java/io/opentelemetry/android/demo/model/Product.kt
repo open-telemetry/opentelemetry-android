@@ -6,8 +6,11 @@ data class Product(
     val description: String,
     val picture: String,
     val priceUsd: PriceUsd,
-    val categories: List<String>
-)
+    val categories: List<String>) {
+    fun priceValue(): Double {
+        return priceUsd.units.toDouble() + priceUsd.nanos.toDouble()/1_000_000_000f
+    }
+}
 
 // For deserialization
 data class ProductDeserializationWrapper(

@@ -10,6 +10,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -43,10 +44,12 @@ fun CenterText(
 fun CenterText(
     text: String,
     fontSize: TextUnit = 12.sp,
-    selectable: Boolean = false
+    selectable: Boolean = false,
+    color: Color = Color.Unspecified
 ) {
     val textComposable = Text(
         text,
+        color = color,
         textAlign = TextAlign.Center,
         fontSize = fontSize,
         modifier = Modifier.fillMaxWidth(),
