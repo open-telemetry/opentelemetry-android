@@ -7,8 +7,8 @@
 
     <fragment
         android:id="@+id/navigation_home"
-        android:name="io.opentelemetry.android.demo.ui.home.ShopFragment"
-        android:label="@string/title_home"
+        android:name="io.opentelemetry.android.demo.ui.shop.ShopFragment"
+        android:label="@string/title_shop"
         tools:layout="@layout/fragment_home" />
 
     <fragment

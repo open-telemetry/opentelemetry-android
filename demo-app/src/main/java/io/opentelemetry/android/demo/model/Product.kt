@@ -7,8 +7,12 @@ data class Product(
     val picture: String,
     val priceUsd: PriceUsd,
     val categories: List<String>
-) {
-}
+)
+
+// For deserialization
+data class ProductDeserializationWrapper(
+    val products: List<Product>
+)
 
 data class PriceUsd(
     val currencyCode: String,

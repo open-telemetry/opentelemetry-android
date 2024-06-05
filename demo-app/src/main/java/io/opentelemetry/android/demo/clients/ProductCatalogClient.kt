@@ -4,8 +4,9 @@ import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.opentelemetry.android.demo.model.Product
+import io.opentelemetry.android.demo.model.ProductDeserializationWrapper
 
-const val PRODUCTS_FILE = "projects.json"
+const val PRODUCTS_FILE = "products.json"
 
 /** A fake (for now!) client for the ProductCatalog */
 // TODO: breedx-splk add instrumentation!
@@ -15,8 +16,7 @@ class ProductCatalogClient(private val context: Context) {
     fun get(): List<Product> {
         val input = context.assets.open(PRODUCTS_FILE)
         val jsonStr = input.bufferedReader().use { it.readText() }
-//        val prods: Array<Product> = Gson().fromJson(jsonStr, Array<Product>::class.java)
-        val itemType = object : TypeToken<List<Product>>() {}.type
-        return Gson().fromJson(jsonStr, itemType)
+        val wrapper = Gson().fromJson(jsonStr, ProductDeserializationWrapper::class.java)
+        return wrapper.products
     }
 }
