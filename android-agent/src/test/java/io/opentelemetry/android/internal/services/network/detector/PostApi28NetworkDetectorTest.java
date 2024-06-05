@@ -133,7 +133,7 @@ public class PostApi28NetworkDetectorTest {
 
     @Test
     public void carrierIsSet() {
-        Carrier carrier = Carrier.builder().name("flib").build();
+        Carrier carrier = new Carrier(0, "flib");
         when(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
                 .thenReturn(true);
         when(carrierFinder.get()).thenReturn(carrier);

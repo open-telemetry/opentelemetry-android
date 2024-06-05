@@ -89,14 +89,7 @@ public class NetworkChangeMonitorTest {
         CurrentNetwork network =
                 CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
                         .subType("LTE")
-                        .carrier(
-                                Carrier.builder()
-                                        .id(206)
-                                        .name("ShadyTel")
-                                        .isoCountryCode("US")
-                                        .mobileCountryCode("usa")
-                                        .mobileNetworkCode("omg")
-                                        .build())
+                        .carrier(new Carrier(206, "ShadyTel", "usa", "omg", "US"))
                         .build();
 
         listener.onNetworkChange(network);

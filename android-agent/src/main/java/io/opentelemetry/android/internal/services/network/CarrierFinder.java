@@ -23,24 +23,25 @@ public class CarrierFinder {
     }
 
     public Carrier get() {
-        Carrier.Builder builder = Carrier.builder();
         int id = telephonyManager.getSimCarrierId();
-        builder.id(id);
-        CharSequence name = telephonyManager.getSimCarrierIdName();
-        if (validString(name)) {
-            builder.name(name.toString());
+        String name = null;
+        String mobileCountryCode = null;
+        String mobileNetworkCode = null;
+        String isoCountryCode = null;
+        CharSequence simCarrierIdName = telephonyManager.getSimCarrierIdName();
+        if (validString(simCarrierIdName)) {
+            name = simCarrierIdName.toString();
         }
         String simOperator = telephonyManager.getSimOperator();
         if (validString(simOperator) && simOperator.length() >= 5) {
-            String countryCode = simOperator.substring(0, 3);
-            String networkCode = simOperator.substring(3);
-            builder.mobileCountryCode(countryCode).mobileNetworkCode(networkCode);
+            mobileCountryCode = simOperator.substring(0, 3);
+            mobileNetworkCode = simOperator.substring(3);
         }
-        String isoCountryCode = telephonyManager.getSimCountryIso();
-        if (validString(isoCountryCode)) {
-            builder.isoCountryCode(isoCountryCode);
+        String providedIsoCountryCode = telephonyManager.getSimCountryIso();
+        if (validString(providedIsoCountryCode)) {
+            isoCountryCode = providedIsoCountryCode;
         }
-        return builder.build();
+        return new Carrier(id, name, mobileCountryCode, mobileNetworkCode, isoCountryCode);
     }
 
     private boolean validString(CharSequence str) {

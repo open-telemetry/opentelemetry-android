@@ -29,14 +29,7 @@ public class CurrentNetworkAttributesExtractorTest {
         CurrentNetwork currentNetwork =
                 CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
                         .subType("aaa")
-                        .carrier(
-                                Carrier.builder()
-                                        .id(206)
-                                        .name("ShadyTel")
-                                        .isoCountryCode("US")
-                                        .mobileCountryCode("usa")
-                                        .mobileNetworkCode("omg")
-                                        .build())
+                        .carrier(new Carrier(206, "ShadyTel", "usa", "omg", "US"))
                         .build();
 
         OpenTelemetryAssertions.assertThat(underTest.extract(currentNetwork))
@@ -55,7 +48,7 @@ public class CurrentNetworkAttributesExtractorTest {
         CurrentNetwork currentNetwork =
                 CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
                         .subType("aaa")
-                        .carrier(Carrier.builder().id(42).name("ShadyTel").build())
+                        .carrier(new Carrier(42, "ShadyTel"))
                         .build();
 
         OpenTelemetryAssertions.assertThat(underTest.extract(currentNetwork))

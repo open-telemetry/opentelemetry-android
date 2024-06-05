@@ -17,14 +17,7 @@ class CarrierFinderTest {
 
     @Test
     void testSimpleGet() {
-        Carrier expected =
-                Carrier.builder()
-                        .id(206)
-                        .name("ShadyTel")
-                        .isoCountryCode("US")
-                        .mobileCountryCode("usa")
-                        .mobileNetworkCode("omg")
-                        .build();
+        Carrier expected = new Carrier(206, "ShadyTel", "usa", "omg", "US");
 
         TelephonyManager manager = mock(TelephonyManager.class);
         when(manager.getSimCarrierId()).thenReturn(expected.getId());
@@ -40,7 +33,7 @@ class CarrierFinderTest {
 
     @Test
     void testMostlyInvalid() {
-        Carrier expected = Carrier.builder().build();
+        Carrier expected = new Carrier();
 
         TelephonyManager manager = mock(TelephonyManager.class);
         when(manager.getSimCarrierId()).thenReturn(-1);
