@@ -9,6 +9,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import io.opentelemetry.android.internal.services.Startable
 
+/**
+ * This class is internal and not for public use. Its APIs are unstable and can change at any time.
+ */
 class AppLifecycleService internal constructor(
     private val applicationStateWatcher: ApplicationStateWatcher,
     private val appLifecycle: Lifecycle,

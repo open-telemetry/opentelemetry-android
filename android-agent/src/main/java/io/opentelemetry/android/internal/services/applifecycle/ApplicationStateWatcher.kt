@@ -9,6 +9,9 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import java.util.concurrent.CopyOnWriteArrayList
 
+/**
+ * This class is internal and not for public use. Its APIs are unstable and can change at any time.
+ */
 internal class ApplicationStateWatcher : DefaultLifecycleObserver {
     private val applicationStateListeners: MutableList<ApplicationStateListener> =
         CopyOnWriteArrayList()
