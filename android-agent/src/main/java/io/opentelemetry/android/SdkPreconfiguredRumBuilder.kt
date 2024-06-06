@@ -7,7 +7,8 @@ package io.opentelemetry.android
 
 import android.app.Application
 import io.opentelemetry.android.instrumentation.common.InstrumentedApplication
-import io.opentelemetry.android.internal.services.ServiceManager.Companion.get
+import io.opentelemetry.android.internal.services.ServiceManager
+import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import java.util.function.Consumer
 
@@ -20,9 +21,13 @@ class SdkPreconfiguredRumBuilder
             SessionId(
                 SessionIdTimeoutHandler(),
             ),
+        appLifecycleServiceProvider: () -> AppLifecycleService = {
+            ServiceManager.get().getAppLifecycleService()
+        },
     ) {
         private val instrumentationInstallers: MutableList<Consumer<InstrumentedApplication>> =
             ArrayList()
+        private val appLifecycleService by lazy { appLifecycleServiceProvider.invoke() }
 
         /**
          * Adds an instrumentation installer function that will be run on an [ ] instance as a part of the [.build] method call.
@@ -46,9 +51,7 @@ class SdkPreconfiguredRumBuilder
         fun build(): OpenTelemetryRum {
             // the app state listeners need to be run in the first ActivityLifecycleCallbacks since they
             // might turn off/on additional telemetry depending on whether the app is active or not
-            get()
-                .getAppLifecycleService()
-                .registerListener(sessionId.timeoutHandler)
+            appLifecycleService.registerListener(sessionId.timeoutHandler)
 
             val tracer = sdk.getTracer(OpenTelemetryRum::class.java.simpleName)
             sessionId.setSessionIdChangeListener(SessionIdChangeTracer(tracer))

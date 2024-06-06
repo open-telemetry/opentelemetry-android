@@ -323,7 +323,8 @@ public final class OpenTelemetryRumBuilder {
         scheduleDiskTelemetryReader(signalFromDiskExporter, diskBufferingConfiguration);
 
         SdkPreconfiguredRumBuilder delegate =
-                new SdkPreconfiguredRumBuilder(application, sdk, sessionId);
+                new SdkPreconfiguredRumBuilder(
+                        application, sdk, sessionId, serviceManager::getAppLifecycleService);
         instrumentationInstallers.forEach(delegate::addInstrumentation);
         serviceManager.start();
         return delegate.build();

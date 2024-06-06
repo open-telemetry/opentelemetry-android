@@ -7,7 +7,10 @@ package io.opentelemetry.android.internal.services.applifecycle
 
 import androidx.lifecycle.Lifecycle
 import io.mockk.MockKAnnotations
+import io.mockk.Runs
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
@@ -24,13 +27,14 @@ class AppLifecycleServiceTest {
 
     @BeforeEach
     fun setUp() {
-        MockKAnnotations.init()
+        MockKAnnotations.init(this)
         lifecycleService = AppLifecycleService(applicationStateWatcher, lifecycle)
     }
 
     @Test
     fun `Registering listener`() {
         val listener = mockk<ApplicationStateListener>()
+        every { applicationStateWatcher.registerListener(any()) } just Runs
 
         lifecycleService.registerListener(listener)
 
@@ -39,6 +43,8 @@ class AppLifecycleServiceTest {
 
     @Test
     fun `Starting to observe app's lifecycle`() {
+        every { lifecycle.addObserver(any()) } just Runs
+
         lifecycleService.start()
 
         verify { lifecycle.addObserver(applicationStateWatcher) }
