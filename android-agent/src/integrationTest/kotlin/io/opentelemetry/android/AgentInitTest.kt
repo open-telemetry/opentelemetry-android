@@ -17,7 +17,7 @@ import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 
 @RunWith(AndroidJUnit4::class)
-internal class BasicInstrumentationTest {
+internal class AgentInitTest {
     @Config(sdk = [LOLLIPOP, UPSIDE_DOWN_CAKE])
     @Test
     fun startOpenTelemetryRumInAndroid() {
