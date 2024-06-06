@@ -15,7 +15,7 @@ class ProductCatalogClient(private val context: Context) {
 
     fun get(): List<Product> {
         val input = context.assets.open(PRODUCTS_FILE)
-        val jsonStr = input.bufferedReader().use { it.readText() }
+        val jsonStr = input.bufferedReader()
         val wrapper = Gson().fromJson(jsonStr, ProductDeserializationWrapper::class.java)
         return wrapper.products
     }
