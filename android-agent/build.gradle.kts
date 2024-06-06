@@ -64,6 +64,7 @@ dependencies {
     implementation(project(":instrumentation:slowrendering"))
     implementation(libs.androidx.core)
     implementation(libs.androidx.navigation.fragment)
+    implementation(libs.androidx.lifecycle.process)
 
     api(platform(libs.opentelemetry.platform))
     api(libs.opentelemetry.api)

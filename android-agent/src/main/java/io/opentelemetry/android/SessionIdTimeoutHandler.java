@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android;
 
-import io.opentelemetry.android.instrumentation.common.ApplicationStateListener;
+import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
 import io.opentelemetry.sdk.common.Clock;
 import java.time.Duration;
 

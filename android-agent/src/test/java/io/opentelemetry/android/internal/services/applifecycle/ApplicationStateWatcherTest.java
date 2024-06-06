@@ -3,12 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android;
+package io.opentelemetry.android.internal.services.applifecycle;
 
 import static org.mockito.Mockito.inOrder;
 
-import android.app.Activity;
-import io.opentelemetry.android.instrumentation.common.ApplicationStateListener;
+import androidx.core.app.ComponentActivity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,10 +15,13 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+/**
+ * @noinspection KotlinInternalInJava
+ */
 @ExtendWith(MockitoExtension.class)
 class ApplicationStateWatcherTest {
 
-    @Mock Activity activity;
+    @Mock ComponentActivity activity;
     @Mock ApplicationStateListener listener1;
     @Mock ApplicationStateListener listener2;
 
@@ -34,11 +36,7 @@ class ApplicationStateWatcherTest {
 
     @Test
     void appForegrounded() {
-        underTest.onActivityStarted(activity);
-        underTest.onActivityStarted(activity);
-        underTest.onActivityStopped(activity);
-        underTest.onActivityStarted(activity);
-        underTest.onActivityStopped(activity);
+        underTest.onStart(activity);
 
         InOrder io = inOrder(listener1, listener2);
         io.verify(listener1).onApplicationForegrounded();
@@ -48,10 +46,7 @@ class ApplicationStateWatcherTest {
 
     @Test
     void appBackgrounded() {
-        underTest.onActivityStarted(activity);
-        underTest.onActivityStarted(activity);
-        underTest.onActivityStopped(activity);
-        underTest.onActivityStopped(activity);
+        underTest.onStop(activity);
 
         InOrder io = inOrder(listener1, listener2);
         io.verify(listener1).onApplicationForegrounded();
