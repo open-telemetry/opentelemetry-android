@@ -59,7 +59,6 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":instrumentation:activity"))
     implementation(project(":instrumentation:anr"))
-    implementation(project(":instrumentation:common-api"))
     implementation(project(":instrumentation:crash"))
     implementation(project(":instrumentation:slowrendering"))
     implementation(libs.androidx.core)

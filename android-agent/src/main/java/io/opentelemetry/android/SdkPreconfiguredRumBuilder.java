@@ -7,6 +7,7 @@ package io.opentelemetry.android;
 
 import android.app.Application;
 import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
+import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
@@ -56,18 +57,20 @@ public final class SdkPreconfiguredRumBuilder {
     public OpenTelemetryRum build() {
         // the app state listeners need to be run in the first ActivityLifecycleCallbacks since they
         // might turn off/on additional telemetry depending on whether the app is active or not
-        ApplicationStateWatcher applicationStateWatcher = new ApplicationStateWatcher();
-        application.registerActivityLifecycleCallbacks(applicationStateWatcher);
-        applicationStateWatcher.registerListener(sessionId.getTimeoutHandler());
+        ServiceManager.get()
+                .getAppLifecycleService()
+                .registerListener(sessionId.getTimeoutHandler());
 
         Tracer tracer = sdk.getTracer(OpenTelemetryRum.class.getSimpleName());
         sessionId.setSessionIdChangeListener(new SessionIdChangeTracer(tracer));
 
-        InstrumentedApplication instrumentedApplication =
-                new InstrumentedApplicationImpl(application, sdk, applicationStateWatcher);
-        for (Consumer<InstrumentedApplication> installer : instrumentationInstallers) {
-            installer.accept(instrumentedApplication);
-        }
+        //        InstrumentedApplication instrumentedApplication =
+        //                new InstrumentedApplicationImpl(application, sdk,
+        // applicationStateWatcher);
+        //        for (Consumer<InstrumentedApplication> installer : instrumentationInstallers) {
+        //            installer.accept(instrumentedApplication); TODO to be replaced by calls to
+        // AndroidInstrumentation.install
+        //        }
 
         return new OpenTelemetryRumImpl(sdk, sessionId);
     }

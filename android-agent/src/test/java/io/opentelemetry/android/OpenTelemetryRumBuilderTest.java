@@ -34,6 +34,7 @@ import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.android.internal.services.ServiceManagerImpl;
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
+import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateWatcher;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Logger;
