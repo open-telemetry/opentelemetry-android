@@ -259,7 +259,7 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    void sdkReadyListeners(){
+    void sdkReadyListeners() {
         OtelRumConfig config = buildConfig();
         AtomicReference<OpenTelemetrySdk> seen = new AtomicReference<>();
         OpenTelemetryRum.builder(application, config)
