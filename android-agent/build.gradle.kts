@@ -53,6 +53,12 @@ android {
     buildFeatures {
         buildConfig = true
     }
+
+    sourceSets {
+        getByName("test") {
+            kotlin.srcDirs("src/integrationTest/kotlin")
+        }
+    }
 }
 
 dependencies {
@@ -73,10 +79,10 @@ dependencies {
     implementation(libs.opentelemetry.instrumentation.api)
     implementation(libs.opentelemetry.semconv.incubating)
     implementation(libs.opentelemetry.diskBuffering)
-
-    testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.awaitility)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.junit.ktx)
 }
 
 extra["pomName"] = "OpenTelemetry Android Instrumentation"
