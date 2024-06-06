@@ -46,6 +46,7 @@ class ApplicationStateWatcherTest {
 
     @Test
     void appBackgrounded() {
+        underTest.onStart(activity);
         underTest.onStop(activity);
 
         InOrder io = inOrder(listener1, listener2);
