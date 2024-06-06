@@ -7,6 +7,12 @@ package io.opentelemetry.android.instrumentation.network;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_ICC;
+import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_MCC;
+import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_MNC;
+import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_NAME;
+import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CONNECTION_SUBTYPE;
+import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
@@ -20,7 +26,6 @@ import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
 import io.opentelemetry.android.internal.services.network.data.NetworkState;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.semconv.SemanticAttributes;
 import java.util.Collections;
 import java.util.List;
 import org.junit.After;
@@ -75,7 +80,7 @@ public class NetworkChangeMonitorTest {
                 .hasName("network.change")
                 .hasAttributesSatisfyingExactly(
                         equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "available"),
-                        equalTo(SemanticAttributes.NETWORK_CONNECTION_TYPE, "wifi"));
+                        equalTo(NETWORK_CONNECTION_TYPE, "wifi"));
     }
 
     @Test
@@ -100,12 +105,12 @@ public class NetworkChangeMonitorTest {
                 .hasName("network.change")
                 .hasAttributesSatisfyingExactly(
                         equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "available"),
-                        equalTo(SemanticAttributes.NETWORK_CONNECTION_TYPE, "cell"),
-                        equalTo(SemanticAttributes.NETWORK_CONNECTION_SUBTYPE, "LTE"),
-                        equalTo(SemanticAttributes.NETWORK_CARRIER_NAME, "ShadyTel"),
-                        equalTo(SemanticAttributes.NETWORK_CARRIER_ICC, "US"),
-                        equalTo(SemanticAttributes.NETWORK_CARRIER_MCC, "usa"),
-                        equalTo(SemanticAttributes.NETWORK_CARRIER_MNC, "omg"));
+                        equalTo(NETWORK_CONNECTION_TYPE, "cell"),
+                        equalTo(NETWORK_CONNECTION_SUBTYPE, "LTE"),
+                        equalTo(NETWORK_CARRIER_NAME, "ShadyTel"),
+                        equalTo(NETWORK_CARRIER_ICC, "US"),
+                        equalTo(NETWORK_CARRIER_MCC, "usa"),
+                        equalTo(NETWORK_CARRIER_MNC, "omg"));
     }
 
     @Test
@@ -124,7 +129,7 @@ public class NetworkChangeMonitorTest {
                 .hasName("network.change")
                 .hasAttributesSatisfyingExactly(
                         equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "lost"),
-                        equalTo(SemanticAttributes.NETWORK_CONNECTION_TYPE, "unavailable"));
+                        equalTo(NETWORK_CONNECTION_TYPE, "unavailable"));
     }
 
     @Test

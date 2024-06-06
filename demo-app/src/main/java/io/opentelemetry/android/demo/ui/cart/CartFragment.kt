@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.demo.ui.notifications
+package io.opentelemetry.android.demo.ui.cart
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,7 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import io.opentelemetry.android.demo.databinding.FragmentNotificationsBinding
 
-class NotificationsFragment : Fragment() {
+class CartFragment : Fragment() {
     // Renamed from _binding (default) due to ktlint problem below
     private var binding: FragmentNotificationsBinding? = null
 
@@ -32,14 +32,14 @@ class NotificationsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        val notificationsViewModel =
-            ViewModelProvider(this).get(NotificationsViewModel::class.java)
+        val cartViewModel =
+            ViewModelProvider(this).get(CartViewModel::class.java)
 
         binding = FragmentNotificationsBinding.inflate(inflater, container, false)
         val root: View = getBinding().root
 
         val textView: TextView = getBinding().textNotifications
-        notificationsViewModel.text.observe(viewLifecycleOwner) {
+        cartViewModel.text.observe(viewLifecycleOwner) {
             textView.text = it
         }
         return root

@@ -1,5 +1,6 @@
 [versions]
 opentelemetry = "1.38.0"
+opentelemetry-alpha = "1.38.0-alpha"
 opentelemetry-instrumentation = "2.4.0"
 opentelemetry-instrumentation-alpha = "2.4.0-alpha"
 opentelemetry-semconv = "1.25.0-alpha"
@@ -25,6 +26,8 @@ opentelemetry-instrumentation-okhttp = { module = "io.opentelemetry.instrumentat
 opentelemetry-semconv = { module = "io.opentelemetry.semconv:opentelemetry-semconv", version.ref = "opentelemetry-semconv" }
 opentelemetry-semconv-incubating = { module = "io.opentelemetry.semconv:opentelemetry-semconv-incubating", version.ref = "opentelemetry-semconv" }
 opentelemetry-api = { module = "io.opentelemetry:opentelemetry-api" }
+opentelemetry-api-incubator = { module = "io.opentelemetry:opentelemetry-api-incubator" }
+opentelemetry-sdk-extension-incubator = { module = "io.opentelemetry:opentelemetry-sdk-extension-incubator", version.ref = "opentelemetry-alpha" }
 opentelemetry-sdk = { module = "io.opentelemetry:opentelemetry-sdk" }
 opentelemetry-exporter-logging = { module = "io.opentelemetry:opentelemetry-exporter-logging" }
 opentelemetry-diskBuffering = { module = "io.opentelemetry.contrib:opentelemetry-disk-buffering", version.ref = "opentelemetry-contrib" }

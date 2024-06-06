@@ -16,7 +16,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -50,8 +50,10 @@ class ModifiedSpanDataTest {
                         .setTotalRecordedEvents(0)
                         .setTotalRecordedLinks(0)
                         .setTotalAttributeCount(12)
-                        .setInstrumentationLibraryInfo(
-                                InstrumentationLibraryInfo.create("test", "0.0.1"))
+                        .setInstrumentationScopeInfo(
+                                InstrumentationScopeInfo.builder("test")
+                                        .setVersion("0.0.1")
+                                        .build())
                         .setResource(Resource.getDefault())
                         .build();
 
@@ -73,7 +75,7 @@ class ModifiedSpanDataTest {
         assertEquals(original.getTotalRecordedLinks(), modified.getTotalRecordedLinks());
         assertEquals(1, modified.getTotalAttributeCount());
         assertEquals(
-                original.getInstrumentationLibraryInfo(), modified.getInstrumentationLibraryInfo());
+                original.getInstrumentationScopeInfo(), modified.getInstrumentationScopeInfo());
         assertEquals(original.getResource(), modified.getResource());
     }
 }

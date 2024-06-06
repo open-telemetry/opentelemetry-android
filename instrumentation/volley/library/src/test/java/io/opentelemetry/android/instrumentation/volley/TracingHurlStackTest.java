@@ -23,7 +23,11 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.semconv.HttpAttributes;
 import io.opentelemetry.semconv.SemanticAttributes;
+import io.opentelemetry.semconv.ServerAttributes;
+import io.opentelemetry.semconv.UrlAttributes;
+import io.opentelemetry.semconv.incubating.HttpIncubatingAttributes;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URL;
@@ -248,15 +252,14 @@ public class TracingHurlStackTest {
         assertThat(span.getKind()).isEqualTo(SpanKind.CLIENT);
 
         Attributes spanAttributes = span.getAttributes();
-        assertThat(spanAttributes.get(SemanticAttributes.HTTP_REQUEST_METHOD)).isEqualTo("GET");
-        assertThat(spanAttributes.get(SemanticAttributes.HTTP_RESPONSE_STATUS_CODE))
-                .isEqualTo(status);
-        assertThat(spanAttributes.get(SemanticAttributes.URL_FULL)).isEqualTo(url.toString());
-        assertThat(spanAttributes.get(SemanticAttributes.SERVER_PORT)).isEqualTo(url.getPort());
-        assertThat(spanAttributes.get(SemanticAttributes.SERVER_ADDRESS)).isEqualTo(url.getHost());
+        assertThat(spanAttributes.get(HttpAttributes.HTTP_REQUEST_METHOD)).isEqualTo("GET");
+        assertThat(spanAttributes.get(HttpAttributes.HTTP_RESPONSE_STATUS_CODE)).isEqualTo(status);
+        assertThat(spanAttributes.get(UrlAttributes.URL_FULL)).isEqualTo(url.toString());
+        assertThat(spanAttributes.get(ServerAttributes.SERVER_PORT)).isEqualTo(url.getPort());
+        assertThat(spanAttributes.get(ServerAttributes.SERVER_ADDRESS)).isEqualTo(url.getHost());
 
         if (responseBody != null) {
-            assertThat(span.getAttributes().get(SemanticAttributes.HTTP_RESPONSE_BODY_SIZE))
+            assertThat(span.getAttributes().get(HttpIncubatingAttributes.HTTP_RESPONSE_BODY_SIZE))
                     .isEqualTo(responseBody.length());
         }
     }
