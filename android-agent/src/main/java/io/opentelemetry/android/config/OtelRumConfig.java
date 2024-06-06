@@ -7,7 +7,7 @@ package io.opentelemetry.android.config;
 
 import io.opentelemetry.android.ScreenAttributesSpanProcessor;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
-import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
+import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.api.common.Attributes;
 import java.time.Duration;
 import java.util.function.Supplier;
@@ -28,7 +28,6 @@ public class OtelRumConfig {
     private boolean includeScreenAttributes = true;
     private DiskBufferingConfiguration diskBufferingConfiguration =
             DiskBufferingConfiguration.builder().build();
-    private boolean networkChangeMonitoringEnabled = true;
     private boolean anrDetectionEnabled = true;
     private boolean slowRenderingDetectionEnabled = true;
     private Duration slowRenderingDetectionPollInterval =
@@ -119,20 +118,6 @@ public class OtelRumConfig {
             DiskBufferingConfiguration diskBufferingConfiguration) {
         this.diskBufferingConfiguration = diskBufferingConfiguration;
         return this;
-    }
-
-    /**
-     * Sets the configuration so that network change monitoring, which is enabled by default, will
-     * not be started.
-     */
-    public OtelRumConfig disableNetworkChangeMonitoring() {
-        networkChangeMonitoringEnabled = false;
-        return this;
-    }
-
-    /** Returns true if network change monitoring is enabled (default = true). */
-    public boolean isNetworkChangeMonitoringEnabled() {
-        return networkChangeMonitoringEnabled;
     }
 
     /** Returns true if ANR (application not responding) detection is enabled (default = true). */

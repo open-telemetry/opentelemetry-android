@@ -5,11 +5,11 @@
 
 package io.opentelemetry.android.instrumentation.network;
 
-import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
+import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
+import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,34 +19,30 @@ import java.util.List;
  * time.
  */
 public final class NetworkChangeMonitor {
+    private final OpenTelemetry openTelemetry;
 
-    public static NetworkChangeMonitor create(CurrentNetworkProvider currentNetworkProvider) {
-        return builder(currentNetworkProvider).build();
-    }
-
-    public static NetworkChangeMonitorBuilder builder(
-            CurrentNetworkProvider currentNetworkProvider) {
-        return new NetworkChangeMonitorBuilder(currentNetworkProvider);
+    public NetworkChangeMonitor(
+            OpenTelemetry openTelemetry,
+            CurrentNetworkProvider currentNetworkProvider,
+            List<AttributesExtractor<CurrentNetwork, Void>> additionalExtractors) {
+        this.openTelemetry = openTelemetry;
+        this.currentNetworkProvider = currentNetworkProvider;
+        this.additionalExtractors = additionalExtractors;
     }
 
     private final CurrentNetworkProvider currentNetworkProvider;
     private final List<AttributesExtractor<CurrentNetwork, Void>> additionalExtractors;
 
-    NetworkChangeMonitor(NetworkChangeMonitorBuilder builder) {
-        this.currentNetworkProvider = builder.currentNetworkProvider;
-        this.additionalExtractors = new ArrayList<>(builder.additionalExtractors);
-    }
-
     /**
-     * Installs the network change monitoring instrumentation on the given {@link
-     * InstrumentedApplication}.
+     * Installs the network change monitoring instrumentation on the given {@link OpenTelemetry}.
      */
-    public void installOn(InstrumentedApplication instrumentedApplication) {
+    public void start() {
         NetworkApplicationListener networkApplicationListener =
                 new NetworkApplicationListener(currentNetworkProvider);
-        networkApplicationListener.startMonitoring(
-                buildInstrumenter(instrumentedApplication.getOpenTelemetrySdk()));
-        instrumentedApplication.registerApplicationStateListener(networkApplicationListener);
+        networkApplicationListener.startMonitoring(buildInstrumenter(openTelemetry));
+        //
+        // instrumentedApplication.registerApplicationStateListener(networkApplicationListener);
+        // TODO uncomment in part 3
     }
 
     private Instrumenter<CurrentNetwork, Void> buildInstrumenter(OpenTelemetry openTelemetry) {

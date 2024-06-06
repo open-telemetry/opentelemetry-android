@@ -3,27 +3,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.internal.services.network;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.telephony.TelephonyManager;
+import io.opentelemetry.android.internal.services.network.data.Carrier;
 import org.junit.jupiter.api.Test;
 
 class CarrierFinderTest {
 
     @Test
     void testSimpleGet() {
-        Carrier expected =
-                Carrier.builder()
-                        .id(206)
-                        .name("ShadyTel")
-                        .isoCountryCode("US")
-                        .mobileCountryCode("usa")
-                        .mobileNetworkCode("omg")
-                        .build();
+        Carrier expected = new Carrier(206, "ShadyTel", "usa", "omg", "US");
 
         TelephonyManager manager = mock(TelephonyManager.class);
         when(manager.getSimCarrierId()).thenReturn(expected.getId());
@@ -39,7 +33,7 @@ class CarrierFinderTest {
 
     @Test
     void testMostlyInvalid() {
-        Carrier expected = Carrier.builder().build();
+        Carrier expected = new Carrier();
 
         TelephonyManager manager = mock(TelephonyManager.class);
         when(manager.getSimCarrierId()).thenReturn(-1);

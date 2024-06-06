@@ -3,14 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.internal.services.network.detector;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.os.Build;
 import android.telephony.TelephonyManager;
+import io.opentelemetry.android.internal.services.network.CarrierFinder;
+import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
 
-interface NetworkDetector {
+/**
+ * This class is internal and not for public use. Its APIs are unstable and can change at any time.
+ */
+public interface NetworkDetector {
     CurrentNetwork detectCurrentNetwork();
 
     static NetworkDetector create(Context context) {

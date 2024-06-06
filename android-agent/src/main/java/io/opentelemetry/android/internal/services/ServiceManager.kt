@@ -5,7 +5,8 @@
 
 package io.opentelemetry.android.internal.services
 
-import android.content.Context
+import android.app.Application
+import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService
 
 /**
@@ -18,22 +19,25 @@ interface ServiceManager : Startable {
 
     fun getPeriodicWorkService(): PeriodicWorkService
 
+    fun getCurrentNetworkProvider(): CurrentNetworkProvider
+
     companion object {
         private var instance: ServiceManager? = null
 
         @JvmStatic
-        fun initialize(appContext: Context) {
+        fun initialize(application: Application) {
             if (instance != null) {
                 return
             }
             instance =
                 ServiceManagerImpl(
                     listOf(
-                        Preferences.create(appContext),
+                        Preferences.create(application),
                         CacheStorage(
-                            appContext,
+                            application,
                         ),
                         PeriodicWorkService(),
+                        CurrentNetworkProvider.create(application),
                     ),
                 )
         }

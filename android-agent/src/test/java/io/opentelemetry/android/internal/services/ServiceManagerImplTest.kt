@@ -6,6 +6,7 @@
 package io.opentelemetry.android.internal.services
 
 import io.opentelemetry.android.internal.services.ServiceManager.Companion.initialize
+import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -28,6 +29,7 @@ class ServiceManagerImplTest {
         assertThat(serviceManager.getPeriodicWorkService()).isInstanceOf(PeriodicWorkService::class.java)
         assertThat(serviceManager.getCacheStorage()).isInstanceOf(CacheStorage::class.java)
         assertThat(serviceManager.getPreferences()).isInstanceOf(Preferences::class.java)
+        assertThat(serviceManager.getCurrentNetworkProvider()).isInstanceOf(CurrentNetworkProvider::class.java)
     }
 
     @Test

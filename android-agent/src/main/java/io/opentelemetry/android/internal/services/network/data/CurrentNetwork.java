@@ -3,13 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.internal.services.network.data;
 
 import android.os.Build;
 import androidx.annotation.Nullable;
 import java.util.Objects;
 
-/** A value class representing the current network that the device is connected to. */
+/**
+ * A value class representing the current network that the device is connected to.
+ *
+ * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
+ * time.
+ */
 public final class CurrentNetwork {
 
     @Nullable private final Carrier carrier;
@@ -27,36 +32,36 @@ public final class CurrentNetwork {
         return getState() != NetworkState.NO_NETWORK_AVAILABLE;
     }
 
-    NetworkState getState() {
+    public NetworkState getState() {
         return state;
     }
 
     @Nullable
-    String getSubType() {
+    public String getSubType() {
         return subType;
     }
 
     @SuppressWarnings("NullAway")
     @Nullable
-    String getCarrierCountryCode() {
+    public String getCarrierCountryCode() {
         return haveCarrier() ? carrier.getMobileCountryCode() : null;
     }
 
     @SuppressWarnings("NullAway")
     @Nullable
-    String getCarrierIsoCountryCode() {
+    public String getCarrierIsoCountryCode() {
         return haveCarrier() ? carrier.getIsoCountryCode() : null;
     }
 
     @SuppressWarnings("NullAway")
     @Nullable
-    String getCarrierNetworkCode() {
+    public String getCarrierNetworkCode() {
         return haveCarrier() ? carrier.getMobileNetworkCode() : null;
     }
 
     @SuppressWarnings("NullAway")
     @Nullable
-    String getCarrierName() {
+    public String getCarrierName() {
         return haveCarrier() ? carrier.getName() : null;
     }
 
@@ -92,11 +97,11 @@ public final class CurrentNetwork {
                 + '}';
     }
 
-    static Builder builder(NetworkState state) {
+    public static Builder builder(NetworkState state) {
         return new Builder(state);
     }
 
-    static class Builder {
+    public static class Builder {
         @Nullable private Carrier carrier;
         private final NetworkState state;
         @Nullable private String subType;
@@ -105,17 +110,17 @@ public final class CurrentNetwork {
             this.state = state;
         }
 
-        Builder carrier(@Nullable Carrier carrier) {
+        public Builder carrier(@Nullable Carrier carrier) {
             this.carrier = carrier;
             return this;
         }
 
-        Builder subType(@Nullable String subType) {
+        public Builder subType(@Nullable String subType) {
             this.subType = subType;
             return this;
         }
 
-        CurrentNetwork build() {
+        public CurrentNetwork build() {
             return new CurrentNetwork(this);
         }
     }

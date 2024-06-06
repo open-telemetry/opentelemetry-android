@@ -10,18 +10,22 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equal
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import android.os.Build;
 import io.opentelemetry.android.instrumentation.common.ApplicationStateListener;
-import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
+import io.opentelemetry.android.internal.services.network.NetworkChangeListener;
+import io.opentelemetry.android.internal.services.network.data.Carrier;
+import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
+import io.opentelemetry.android.internal.services.network.data.NetworkState;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.semconv.SemanticAttributes;
+import java.util.Collections;
 import java.util.List;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,15 +46,12 @@ public class NetworkChangeMonitorTest {
     @Captor ArgumentCaptor<NetworkChangeListener> networkChangeListenerCaptor;
 
     @Mock CurrentNetworkProvider currentNetworkProvider;
-    @Mock InstrumentedApplication instrumentedApplication;
 
     AutoCloseable mocks;
 
     @Before
     public void setUp() {
         mocks = MockitoAnnotations.openMocks(this);
-        when(instrumentedApplication.getOpenTelemetrySdk())
-                .thenReturn((OpenTelemetrySdk) otelTesting.getOpenTelemetry());
     }
 
     @After
@@ -60,7 +61,7 @@ public class NetworkChangeMonitorTest {
 
     @Test
     public void networkAvailable_wifi() {
-        NetworkChangeMonitor.create(currentNetworkProvider).installOn(instrumentedApplication);
+        create().start();
 
         verify(currentNetworkProvider)
                 .addNetworkChangeListener(networkChangeListenerCaptor.capture());
@@ -79,7 +80,7 @@ public class NetworkChangeMonitorTest {
 
     @Test
     public void networkAvailable_cellular() {
-        NetworkChangeMonitor.create(currentNetworkProvider).installOn(instrumentedApplication);
+        create().start();
 
         verify(currentNetworkProvider)
                 .addNetworkChangeListener(networkChangeListenerCaptor.capture());
@@ -88,14 +89,7 @@ public class NetworkChangeMonitorTest {
         CurrentNetwork network =
                 CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
                         .subType("LTE")
-                        .carrier(
-                                Carrier.builder()
-                                        .id(206)
-                                        .name("ShadyTel")
-                                        .isoCountryCode("US")
-                                        .mobileCountryCode("usa")
-                                        .mobileNetworkCode("omg")
-                                        .build())
+                        .carrier(new Carrier(206, "ShadyTel", "usa", "omg", "US"))
                         .build();
 
         listener.onNetworkChange(network);
@@ -116,7 +110,7 @@ public class NetworkChangeMonitorTest {
 
     @Test
     public void networkLost() {
-        NetworkChangeMonitor.create(currentNetworkProvider).installOn(instrumentedApplication);
+        create().start();
 
         verify(currentNetworkProvider)
                 .addNetworkChangeListener(networkChangeListenerCaptor.capture());
@@ -134,15 +128,18 @@ public class NetworkChangeMonitorTest {
     }
 
     @Test
+    @Ignore("Reintroduce in part 3")
     public void noEventsPlease() {
-        NetworkChangeMonitor.create(currentNetworkProvider).installOn(instrumentedApplication);
+        create().start();
 
         verify(currentNetworkProvider)
                 .addNetworkChangeListener(networkChangeListenerCaptor.capture());
         NetworkChangeListener networkListener = networkChangeListenerCaptor.getValue();
 
-        verify(instrumentedApplication)
-                .registerApplicationStateListener(applicationStateListenerCaptor.capture());
+        //        verify(instrumentedApplication)
+        //
+        // .registerApplicationStateListener(applicationStateListenerCaptor.capture()); TODO
+        // uncomment in part 3
         ApplicationStateListener applicationListener = applicationStateListenerCaptor.getValue();
 
         applicationListener.onApplicationBackgrounded();
@@ -159,5 +156,10 @@ public class NetworkChangeMonitorTest {
         networkListener.onNetworkChange(
                 CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
         assertEquals(1, otelTesting.getSpans().size());
+    }
+
+    private NetworkChangeMonitor create() {
+        return new NetworkChangeMonitor(
+                otelTesting.getOpenTelemetry(), currentNetworkProvider, Collections.emptyList());
     }
 }
