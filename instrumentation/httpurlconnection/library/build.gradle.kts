@@ -14,6 +14,7 @@ android {
 }
 
 dependencies {
+    api(platform(libs.opentelemetry.platform))
     api(libs.opentelemetry.api)
     api(libs.opentelemetry.context)
     implementation(libs.opentelemetry.instrumentation.apiSemconv)
