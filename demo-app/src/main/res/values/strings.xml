@@ -1,7 +1,8 @@
 <resources>
     <string name="app_name">OpenTelemetryDemoApp</string>
     <string name="title_activity_astronomy_shop">AstronomyShopActivity</string>
-    <string name="title_home">Home</string>
+    <string name="title_shop">OpenTelemetry Astronomy Shop</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_cart">Cart</string>
+    <string name="title_exit_to_main">Exit</string>
 </resources>
