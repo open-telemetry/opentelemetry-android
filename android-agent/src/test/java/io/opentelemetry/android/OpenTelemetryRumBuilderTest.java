@@ -349,6 +349,6 @@ public class OpenTelemetryRumBuilderTest {
 
     @NonNull
     private OpenTelemetryRumBuilder makeBuilder() {
-        return new OpenTelemetryRumBuilder(application, buildConfig());
+        return OpenTelemetryRum.builder(application, buildConfig());
     }
 }
