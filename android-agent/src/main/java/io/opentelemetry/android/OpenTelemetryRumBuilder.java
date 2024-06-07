@@ -38,13 +38,19 @@ import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.contrib.disk.buffering.LogRecordFromDiskExporter;
+import io.opentelemetry.contrib.disk.buffering.LogRecordToDiskExporter;
 import io.opentelemetry.contrib.disk.buffering.SpanFromDiskExporter;
 import io.opentelemetry.contrib.disk.buffering.SpanToDiskExporter;
 import io.opentelemetry.contrib.disk.buffering.StorageConfiguration;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
+import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
+import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.resources.Resource;
@@ -88,6 +94,8 @@ public final class OpenTelemetryRumBuilder {
 
     private final List<Consumer<OpenTelemetrySdk>> otelSdkReadyListeners = new ArrayList<>();
     private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
+    private Function<? super LogRecordExporter, ? extends LogRecordExporter>
+            logRecordExporterCustomizer = a -> a;
     private Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer =
             (a) -> a;
 
@@ -275,10 +283,31 @@ public final class OpenTelemetryRumBuilder {
     public OpenTelemetryRumBuilder addSpanExporterCustomizer(
             Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer) {
         requireNonNull(spanExporterCustomizer, "spanExporterCustomizer");
+        Function<? super SpanExporter, ? extends SpanExporter> existing =
+                this.spanExporterCustomizer;
         this.spanExporterCustomizer =
                 exporter -> {
-                    SpanExporter intermediate = spanExporterCustomizer.apply(exporter);
+                    SpanExporter intermediate = existing.apply(exporter);
                     return spanExporterCustomizer.apply(intermediate);
+                };
+        return this;
+    }
+
+    /**
+     * Adds a {@link Function} to invoke with the default {@link LogRecordExporter} to allow
+     * customization. The return value of the {@link Function} will replace the passed-in argument.
+     *
+     * <p>Multiple calls will execute the customizers in order.
+     */
+    public OpenTelemetryRumBuilder addLogRecordExporterCustomizer(
+            Function<? super LogRecordExporter, ? extends LogRecordExporter>
+                    logRecordExporterCustomizer) {
+        Function<? super LogRecordExporter, ? extends LogRecordExporter> existing =
+                this.logRecordExporterCustomizer;
+        this.logRecordExporterCustomizer =
+                exporter -> {
+                    LogRecordExporter intermediate = existing.apply(exporter);
+                    return logRecordExporterCustomizer.apply(intermediate);
                 };
         return this;
     }
@@ -307,6 +336,7 @@ public final class OpenTelemetryRumBuilder {
         DiskBufferingConfiguration diskBufferingConfiguration =
                 config.getDiskBufferingConfiguration();
         SpanExporter spanExporter = buildSpanExporter();
+        LogRecordExporter logsExporter = buildLogsExporter();
         SignalFromDiskExporter signalFromDiskExporter = null;
         if (diskBufferingConfiguration.isEnabled()) {
             try {
@@ -315,13 +345,16 @@ public final class OpenTelemetryRumBuilder {
                 final SpanExporter originalSpanExporter = spanExporter;
                 spanExporter =
                         SpanToDiskExporter.create(originalSpanExporter, storageConfiguration);
-
+                final LogRecordExporter originalLogsExporter = logsExporter;
+                logsExporter =
+                        LogRecordToDiskExporter.create(originalLogsExporter, storageConfiguration);
                 signalFromDiskExporter =
                         new SignalFromDiskExporter(
                                 SpanFromDiskExporter.create(
                                         originalSpanExporter, storageConfiguration),
                                 null,
-                                null);
+                                LogRecordFromDiskExporter.create(
+                                        originalLogsExporter, storageConfiguration));
             } catch (IOException e) {
                 Log.e(RumConstants.OTEL_RUM_LOG_TAG, "Could not initialize disk exporters.", e);
             }
@@ -333,7 +366,7 @@ public final class OpenTelemetryRumBuilder {
                         .setTracerProvider(
                                 buildTracerProvider(sessionId, application, spanExporter))
                         .setMeterProvider(buildMeterProvider(application))
-                        .setLoggerProvider(buildLoggerProvider(application))
+                        .setLoggerProvider(buildLoggerProvider(application, logsExporter))
                         .setPropagators(buildFinalPropagators())
                         .build();
 
@@ -521,10 +554,33 @@ public final class OpenTelemetryRumBuilder {
         return tracerProviderBuilder.build();
     }
 
+    private SdkLoggerProvider buildLoggerProvider(
+            Application application, LogRecordExporter logsExporter) {
+        SdkLoggerProviderBuilder loggerProviderBuilder =
+                SdkLoggerProvider.builder()
+                        .addLogRecordProcessor(
+                                new GlobalAttributesLogRecordAppender(
+                                        config.getGlobalAttributesSupplier()))
+                        .setResource(resource);
+        LogRecordProcessor batchLogsProcessor =
+                BatchLogRecordProcessor.builder(logsExporter).build();
+        loggerProviderBuilder.addLogRecordProcessor(batchLogsProcessor);
+        for (BiFunction<SdkLoggerProviderBuilder, Application, SdkLoggerProviderBuilder>
+                customizer : loggerProviderCustomizers) {
+            loggerProviderBuilder = customizer.apply(loggerProviderBuilder, application);
+        }
+        return loggerProviderBuilder.build();
+    }
+
     private SpanExporter buildSpanExporter() {
         // TODO: Default to otlp...but how can we make endpoint and auth mandatory?
         SpanExporter defaultExporter = LoggingSpanExporter.create();
         return spanExporterCustomizer.apply(defaultExporter);
+    }
+
+    private LogRecordExporter buildLogsExporter() {
+        LogRecordExporter defaultExporter = SystemOutLogRecordExporter.create();
+        return logRecordExporterCustomizer.apply(defaultExporter);
     }
 
     private SdkMeterProvider buildMeterProvider(Application application) {
@@ -535,20 +591,6 @@ public final class OpenTelemetryRumBuilder {
             meterProviderBuilder = customizer.apply(meterProviderBuilder, application);
         }
         return meterProviderBuilder.build();
-    }
-
-    private SdkLoggerProvider buildLoggerProvider(Application application) {
-        SdkLoggerProviderBuilder loggerProviderBuilder =
-                SdkLoggerProvider.builder()
-                        .addLogRecordProcessor(
-                                new GlobalAttributesLogRecordAppender(
-                                        config.getGlobalAttributesSupplier()))
-                        .setResource(resource);
-        for (BiFunction<SdkLoggerProviderBuilder, Application, SdkLoggerProviderBuilder>
-                customizer : loggerProviderCustomizers) {
-            loggerProviderBuilder = customizer.apply(loggerProviderBuilder, application);
-        }
-        return loggerProviderBuilder.build();
     }
 
     private ContextPropagators buildFinalPropagators() {
