@@ -23,7 +23,8 @@ import java.net.URLConnection;
 public final class HttpUrlConnectionSingletons {
 
     private static final Instrumenter<URLConnection, Integer> INSTRUMENTER;
-    private static final String INSTRUMENTATION_NAME = "io.opentelemetry.android.http-url-connection";
+    private static final String INSTRUMENTATION_NAME =
+            "io.opentelemetry.android.http-url-connection";
 
     static {
         HttpUrlHttpAttributesGetter httpAttributesGetter = new HttpUrlHttpAttributesGetter();
