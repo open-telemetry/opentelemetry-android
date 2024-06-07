@@ -151,10 +151,6 @@ class OpenTelemetryRumBuilderTest {
         verify(listener).onApplicationBackgrounded();
     }
 
-    private OtelRumConfig buildConfig() {
-        return new OtelRumConfig().disableNetworkAttributes();
-    }
-
     @Test
     void canAddPropagator() {
         Context context = Context.root();
@@ -347,5 +343,9 @@ class OpenTelemetryRumBuilderTest {
     @NonNull
     private OpenTelemetryRumBuilder makeBuilder() {
         return OpenTelemetryRum.builder(application, buildConfig());
+    }
+
+    private OtelRumConfig buildConfig() {
+        return new OtelRumConfig().disableNetworkAttributes().disableSdkInitializationEvents();
     }
 }
