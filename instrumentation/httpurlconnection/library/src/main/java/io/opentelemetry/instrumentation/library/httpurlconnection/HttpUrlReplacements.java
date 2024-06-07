@@ -24,270 +24,213 @@ import java.util.logging.Logger;
 
 public class HttpUrlReplacements {
 
-    private static final Map<URLConnection, HttpURLConnectionInfo> activeURLConnections;
-    private static final Logger logger;
+    private static final Map<URLConnection, HttpURLConnectionInfo> activeURLConnections =
+            new ConcurrentHashMap<>();
+    private static final Logger logger = Logger.getLogger("HttpUrlReplacements");
     public static final int UNKNOWN_RESPONSE_CODE = -1;
 
-    static {
-        activeURLConnections = new ConcurrentHashMap<>();
-        logger = Logger.getLogger("HttpUrlReplacements");
-    }
-
-    public static void replacementForDisconnect(HttpURLConnection c) {
+    public static void replacementForDisconnect(HttpURLConnection connection) {
         // Ensure ending of un-ended spans while connection is still alive
         // If disconnect is not called, harvester thread if scheduled, takes care of ending any
         // un-ended spans.
-        final HttpURLConnectionInfo info = activeURLConnections.get(c);
+        final HttpURLConnectionInfo info = activeURLConnections.get(connection);
         if (info != null && !info.reported) {
-            reportWithResponseCode(c);
+            reportWithResponseCode(connection);
         }
 
-        c.disconnect();
+        connection.disconnect();
     }
 
-    public static void replacementForConnect(URLConnection c) throws IOException {
-        startTracingAtFirstConnection(c);
+    public static void replacementForConnect(URLConnection connection) throws IOException {
+        startTracingAtFirstConnection(connection);
 
         try {
-            c.connect();
-        } catch (IOException e) {
-            reportWithThrowable(c, e);
-            throw e;
+            connection.connect();
+        } catch (IOException exception) {
+            reportWithThrowable(connection, exception);
+            throw exception;
         }
 
-        updateLastSeenTime(c);
+        updateLastSeenTime(connection);
         // connect() does not read anything from connection so request not harvestable yet (to be
         // reported if left idle).
     }
 
-    public static Object replacementForContent(URLConnection c) throws IOException {
-        return replaceThrowable(c, c::getContent);
+    public static Object replacementForContent(URLConnection connection) throws IOException {
+        return replaceThrowable(connection, connection::getContent);
     }
 
-    public static Object replacementForContent(URLConnection c, Class<?>[] classes)
+    public static Object replacementForContent(URLConnection connection, Class<?>[] classes)
             throws IOException {
-        return replaceThrowable(c, () -> c.getContent(classes));
+        return replaceThrowable(connection, () -> connection.getContent(classes));
     }
 
-    public static String replacementForContentType(URLConnection c) {
-        return replace(c, () -> c.getContentType());
+    public static String replacementForContentType(URLConnection connection) {
+        return replace(connection, () -> connection.getContentType());
     }
 
-    public static String replacementForContentEncoding(URLConnection c) {
-        return replace(c, () -> c.getContentEncoding());
+    public static String replacementForContentEncoding(URLConnection connection) {
+        return replace(connection, () -> connection.getContentEncoding());
     }
 
-    public static int replacementForContentLength(URLConnection c) {
-        return replace(c, () -> c.getContentLength());
+    public static int replacementForContentLength(URLConnection connection) {
+        return replace(connection, () -> connection.getContentLength());
     }
 
-    public static long replacementForContentLengthLong(URLConnection c) {
-        return replace(c, () -> c.getContentLengthLong());
+    public static long replacementForContentLengthLong(URLConnection connection) {
+        return replace(connection, () -> connection.getContentLengthLong());
     }
 
-    public static long replacementForExpiration(URLConnection c) {
-        return replace(c, () -> c.getExpiration());
+    public static long replacementForExpiration(URLConnection connection) {
+        return replace(connection, () -> connection.getExpiration());
     }
 
-    public static long replacementForDate(URLConnection c) {
-        return replace(c, () -> c.getDate());
+    public static long replacementForDate(URLConnection connection) {
+        return replace(connection, () -> connection.getDate());
     }
 
-    public static long replacementForLastModified(URLConnection c) {
-        return replace(c, () -> c.getLastModified());
+    public static long replacementForLastModified(URLConnection connection) {
+        return replace(connection, () -> connection.getLastModified());
     }
 
-    public static String replacementForHeaderField(URLConnection c, String name) {
-        return replace(c, () -> c.getHeaderField(name));
+    public static String replacementForHeaderField(URLConnection connection, String name) {
+        return replace(connection, () -> connection.getHeaderField(name));
     }
 
-    public static Map<String, List<String>> replacementForHeaderFields(URLConnection c) {
-        return replace(c, () -> c.getHeaderFields());
+    public static Map<String, List<String>> replacementForHeaderFields(URLConnection connection) {
+        return replace(connection, () -> connection.getHeaderFields());
     }
 
-    public static int replacementForHeaderFieldInt(URLConnection c, String name, int Default) {
-        return replace(c, () -> c.getHeaderFieldInt(name, Default));
+    public static int replacementForHeaderFieldInt(
+            URLConnection connection, String name, int Default) {
+        return replace(connection, () -> connection.getHeaderFieldInt(name, Default));
     }
 
-    public static long replacementForHeaderFieldLong(URLConnection c, String name, long Default) {
-        return replace(c, () -> c.getHeaderFieldLong(name, Default));
+    public static long replacementForHeaderFieldLong(
+            URLConnection connection, String name, long Default) {
+        return replace(connection, () -> connection.getHeaderFieldLong(name, Default));
     }
 
-    public static long replacementForHeaderFieldDate(URLConnection c, String name, long Default) {
+    public static long replacementForHeaderFieldDate(
+            URLConnection connection, String name, long Default) {
         // HttpURLConnection also overrides this and that is covered in
         // replacementForHttpHeaderFieldDate method.
-        return replace(c, () -> c.getHeaderFieldDate(name, Default));
+        return replace(connection, () -> connection.getHeaderFieldDate(name, Default));
     }
 
     public static long replacementForHttpHeaderFieldDate(
-            HttpURLConnection c, String name, long Default) {
+            HttpURLConnection connection, String name, long Default) {
         // URLConnection also overrides this and that is covered in replacementForHeaderFieldDate
         // method.
-        return replace(c, () -> c.getHeaderFieldDate(name, Default));
+        return replace(connection, () -> connection.getHeaderFieldDate(name, Default));
     }
 
-    public static String replacementForHeaderFieldKey(URLConnection c, int n) {
+    public static String replacementForHeaderFieldKey(URLConnection connection, int index) {
         // HttpURLConnection also overrides this and that is covered in
         // replacementForHttpHeaderFieldKey method.
-        return replace(c, () -> c.getHeaderFieldKey(n));
+        return replace(connection, () -> connection.getHeaderFieldKey(index));
     }
 
-    public static String replacementForHttpHeaderFieldKey(HttpURLConnection c, int n) {
+    public static String replacementForHttpHeaderFieldKey(HttpURLConnection connection, int index) {
         // URLConnection also overrides this and that is covered in replacementForHeaderFieldKey
         // method.
-        return replace(c, () -> c.getHeaderFieldKey(n));
+        return replace(connection, () -> connection.getHeaderFieldKey(index));
     }
 
-    public static String replacementForHeaderField(URLConnection c, int n) {
+    public static String replacementForHeaderField(URLConnection connection, int index) {
         // HttpURLConnection also overrides this and that is covered in
         // replacementForHttpHeaderField method.
-        return replace(c, () -> c.getHeaderField(n));
+        return replace(connection, () -> connection.getHeaderField(index));
     }
 
-    public static String replacementForHttpHeaderField(HttpURLConnection c, int n) {
+    public static String replacementForHttpHeaderField(HttpURLConnection connection, int index) {
         // URLConnection also overrides this and that is covered in replacementForHeaderField
         // method.
-        return replace(c, () -> c.getHeaderField(n));
+        return replace(connection, () -> connection.getHeaderField(index));
     }
 
-    public static int replacementForResponseCode(URLConnection c) throws IOException {
-        HttpURLConnection httpURLConnection = (HttpURLConnection) c;
-        return replaceThrowable(c, httpURLConnection::getResponseCode);
+    public static int replacementForResponseCode(URLConnection connection) throws IOException {
+        HttpURLConnection httpURLConnection = (HttpURLConnection) connection;
+        return replaceThrowable(connection, httpURLConnection::getResponseCode);
     }
 
-    public static String replacementForResponseMessage(URLConnection c) throws IOException {
-        HttpURLConnection httpURLConnection = (HttpURLConnection) c;
-        return replaceThrowable(c, httpURLConnection::getResponseMessage);
+    public static String replacementForResponseMessage(URLConnection connection)
+            throws IOException {
+        HttpURLConnection httpURLConnection = (HttpURLConnection) connection;
+        return replaceThrowable(connection, httpURLConnection::getResponseMessage);
     }
 
-    public static OutputStream replacementForOutputStream(URLConnection c) throws IOException {
-        return replaceThrowable(c, c::getOutputStream, false);
+    public static OutputStream replacementForOutputStream(URLConnection connection)
+            throws IOException {
+        return replaceThrowable(connection, connection::getOutputStream, false);
     }
 
-    public static InputStream replacementForInputStream(URLConnection c) throws IOException {
-        startTracingAtFirstConnection(c);
+    public static InputStream replacementForInputStream(URLConnection connection)
+            throws IOException {
+        startTracingAtFirstConnection(connection);
 
         InputStream inputStream;
         try {
-            inputStream = c.getInputStream();
-        } catch (IOException e) {
-            reportWithThrowable(c, e);
-            throw e;
+            inputStream = connection.getInputStream();
+        } catch (IOException exception) {
+            reportWithThrowable(connection, exception);
+            throw exception;
         }
 
         if (inputStream == null) {
             return inputStream;
         }
 
-        return getInstrumentedInputStream(c, inputStream);
+        return new InstrumentedInputStream(connection, inputStream);
     }
 
-    public static InputStream replacementForErrorStream(HttpURLConnection c) {
-        startTracingAtFirstConnection(c);
+    public static InputStream replacementForErrorStream(HttpURLConnection connection) {
+        startTracingAtFirstConnection(connection);
 
-        InputStream errorStream = c.getErrorStream();
+        InputStream errorStream = connection.getErrorStream();
 
         if (errorStream == null) {
             return errorStream;
         }
 
-        return getInstrumentedInputStream(c, errorStream);
+        return new InstrumentedInputStream(connection, errorStream);
     }
 
-    private static InputStream getInstrumentedInputStream(
-            URLConnection c, InputStream inputStream) {
-        return new InputStream() {
-            @Override
-            public int read() throws IOException {
-                int res;
-                try {
-                    res = inputStream.read();
-                } catch (IOException e) {
-                    reportWithThrowable(c, e);
-                    throw e;
-                }
-                reportIfDoneOrMarkHarvestable(res);
-                return res;
-            }
-
-            @Override
-            public int read(byte[] b) throws IOException {
-                int res;
-                try {
-                    res = inputStream.read(b);
-                } catch (IOException e) {
-                    reportWithThrowable(c, e);
-                    throw e;
-                }
-                reportIfDoneOrMarkHarvestable(res);
-                return res;
-            }
-
-            @Override
-            public int read(byte[] b, int off, int len) throws IOException {
-                int res;
-                try {
-                    res = inputStream.read(b, off, len);
-                } catch (IOException e) {
-                    reportWithThrowable(c, e);
-                    throw e;
-                }
-                reportIfDoneOrMarkHarvestable(res);
-                return res;
-            }
-
-            @Override
-            public void close() throws IOException {
-                HttpURLConnection httpURLConnection = (HttpURLConnection) c;
-                reportWithResponseCode(httpURLConnection);
-                inputStream.close();
-            }
-
-            private void reportIfDoneOrMarkHarvestable(int result) {
-                if (result == -1) {
-                    HttpURLConnection httpURLConnection = (HttpURLConnection) c;
-                    reportWithResponseCode(httpURLConnection);
-                } else {
-                    markHarvestable(c);
-                }
-            }
-        };
-    }
-
-    private static <T> T replace(URLConnection c, ResultProvider<T> resultProvider) {
-        startTracingAtFirstConnection(c);
+    private static <T> T replace(URLConnection connection, ResultProvider<T> resultProvider) {
+        startTracingAtFirstConnection(connection);
 
         T result = resultProvider.get();
 
-        updateLastSeenTime(c);
-        markHarvestable(c);
+        updateLastSeenTime(connection);
+        markHarvestable(connection);
 
         return result;
     }
 
     private static <T> T replaceThrowable(
-            URLConnection c, ThrowableResultProvider<T> resultProvider) throws IOException {
-        return replaceThrowable(c, resultProvider, true);
+            URLConnection connection, ThrowableResultProvider<T> resultProvider)
+            throws IOException {
+        return replaceThrowable(connection, resultProvider, true);
     }
 
     private static <T> T replaceThrowable(
-            URLConnection c,
+            URLConnection connection,
             ThrowableResultProvider<T> resultProvider,
             boolean shouldMarkHarvestable)
             throws IOException {
-        startTracingAtFirstConnection(c);
+        startTracingAtFirstConnection(connection);
 
         T result;
         try {
             result = resultProvider.get();
-        } catch (IOException e) {
-            reportWithThrowable(c, e);
-            throw e;
+        } catch (IOException exception) {
+            reportWithThrowable(connection, exception);
+            throw exception;
         }
 
-        updateLastSeenTime(c);
+        updateLastSeenTime(connection);
         if (shouldMarkHarvestable) {
-            markHarvestable(c);
+            markHarvestable(connection);
         }
 
         return result;
@@ -301,55 +244,55 @@ public class HttpUrlReplacements {
         T get() throws IOException;
     }
 
-    private static void reportWithThrowable(URLConnection c, IOException e) {
-        endTracing(c, UNKNOWN_RESPONSE_CODE, e);
+    private static void reportWithThrowable(URLConnection connection, IOException exception) {
+        endTracing(connection, UNKNOWN_RESPONSE_CODE, exception);
     }
 
-    private static void reportWithResponseCode(HttpURLConnection c) {
+    private static void reportWithResponseCode(HttpURLConnection connection) {
         try {
-            endTracing(c, c.getResponseCode(), null);
-        } catch (IOException e) {
+            endTracing(connection, connection.getResponseCode(), null);
+        } catch (IOException exception) {
             logger.log(
                     Level.FINE,
                     "Exception "
-                            + e.getMessage()
+                            + exception.getMessage()
                             + " was thrown while ending span for connection "
-                            + c.toString());
+                            + connection);
         }
     }
 
-    private static void endTracing(URLConnection c, int responseCode, Throwable error) {
-        HttpURLConnectionInfo info = activeURLConnections.get(c);
+    private static void endTracing(URLConnection connection, int responseCode, Throwable error) {
+        HttpURLConnectionInfo info = activeURLConnections.get(connection);
         if (info != null && !info.reported) {
             Context context = info.context;
-            instrumenter().end(context, c, responseCode, error);
+            instrumenter().end(context, connection, responseCode, error);
             info.reported = true;
-            activeURLConnections.remove(c);
+            activeURLConnections.remove(connection);
         }
     }
 
-    private static void startTracingAtFirstConnection(URLConnection c) {
+    private static void startTracingAtFirstConnection(URLConnection connection) {
         Context parentContext = Context.current();
-        if (!instrumenter().shouldStart(parentContext, c)) {
+        if (!instrumenter().shouldStart(parentContext, connection)) {
             return;
         }
 
-        if (!activeURLConnections.containsKey(c)) {
-            Context context = instrumenter().start(parentContext, c);
-            activeURLConnections.put(c, new HttpURLConnectionInfo(context));
+        if (!activeURLConnections.containsKey(connection)) {
+            Context context = instrumenter().start(parentContext, connection);
+            activeURLConnections.put(connection, new HttpURLConnectionInfo(context));
             try {
-                injectContextToRequest(c, context);
-            } catch (Exception e) {
+                injectContextToRequest(connection, context);
+            } catch (Exception exception) {
                 // If connection was already made prior to setting this request property,
                 // (which should not happen as we've instrumented all methods that connect)
                 // above call would throw IllegalStateException.
                 logger.log(
                         Level.FINE,
                         "Exception "
-                                + e.getMessage()
+                                + exception.getMessage()
                                 + " was thrown while adding distributed tracing context for connection "
-                                + c,
-                        e);
+                                + connection,
+                        exception);
             }
         }
     }
@@ -360,15 +303,15 @@ public class HttpUrlReplacements {
                 .inject(context, connection, RequestPropertySetter.INSTANCE);
     }
 
-    private static void updateLastSeenTime(URLConnection c) {
-        final HttpURLConnectionInfo info = activeURLConnections.get(c);
+    private static void updateLastSeenTime(URLConnection connection) {
+        final HttpURLConnectionInfo info = activeURLConnections.get(connection);
         if (info != null && !info.reported) {
             info.lastSeenTime = SystemClock.uptimeMillis();
         }
     }
 
-    private static void markHarvestable(URLConnection c) {
-        final HttpURLConnectionInfo info = activeURLConnections.get(c);
+    private static void markHarvestable(URLConnection connection) {
+        final HttpURLConnectionInfo info = activeURLConnections.get(connection);
         if (info != null && !info.reported) {
             info.harvestable = true;
         }
@@ -376,13 +319,13 @@ public class HttpUrlReplacements {
 
     static void reportIdleConnectionsOlderThan(long timeInterval) {
         final long timeNow = SystemClock.uptimeMillis();
-        for (URLConnection c : activeURLConnections.keySet()) {
-            final HttpURLConnectionInfo info = activeURLConnections.get(c);
+        for (URLConnection connection : activeURLConnections.keySet()) {
+            final HttpURLConnectionInfo info = activeURLConnections.get(connection);
             if (info != null
                     && info.harvestable
                     && !info.reported
                     && (info.lastSeenTime + timeInterval) < timeNow) {
-                HttpURLConnection httpURLConnection = (HttpURLConnection) c;
+                HttpURLConnection httpURLConnection = (HttpURLConnection) connection;
                 reportWithResponseCode(httpURLConnection);
             }
         }
@@ -397,6 +340,72 @@ public class HttpUrlReplacements {
         private HttpURLConnectionInfo(Context context) {
             this.context = context;
             lastSeenTime = SystemClock.uptimeMillis();
+        }
+    }
+
+    private static class InstrumentedInputStream extends InputStream {
+        private final URLConnection connection;
+
+        private final InputStream inputStream;
+
+        public InstrumentedInputStream(URLConnection connection, InputStream inputStream) {
+            this.connection = connection;
+            this.inputStream = inputStream;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int res;
+            try {
+                res = inputStream.read();
+            } catch (IOException exception) {
+                reportWithThrowable(connection, exception);
+                throw exception;
+            }
+            reportIfDoneOrMarkHarvestable(res);
+            return res;
+        }
+
+        @Override
+        public int read(byte[] b) throws IOException {
+            int res;
+            try {
+                res = inputStream.read(b);
+            } catch (IOException exception) {
+                reportWithThrowable(connection, exception);
+                throw exception;
+            }
+            reportIfDoneOrMarkHarvestable(res);
+            return res;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            int res;
+            try {
+                res = inputStream.read(b, off, len);
+            } catch (IOException exception) {
+                reportWithThrowable(connection, exception);
+                throw exception;
+            }
+            reportIfDoneOrMarkHarvestable(res);
+            return res;
+        }
+
+        @Override
+        public void close() throws IOException {
+            HttpURLConnection httpURLConnection = (HttpURLConnection) connection;
+            reportWithResponseCode(httpURLConnection);
+            inputStream.close();
+        }
+
+        private void reportIfDoneOrMarkHarvestable(int result) {
+            if (result == -1) {
+                HttpURLConnection httpURLConnection = (HttpURLConnection) connection;
+                reportWithResponseCode(httpURLConnection);
+            } else {
+                markHarvestable(connection);
+            }
         }
     }
 }
