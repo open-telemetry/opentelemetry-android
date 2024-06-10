@@ -7,7 +7,7 @@ kotlin = "2.0.0"
 [libraries]
 androidx-appcompat = "androidx.appcompat:appcompat:1.7.0"
 opentelemetry-exporter-otlp = { module = "io.opentelemetry:opentelemetry-exporter-otlp", version.ref = "opentelemetry" }
-opentelemetry-api-incubator = { module = "io.opentelemetry:opentelemetry-api-incubator" }
+opentelemetry-api-incubator = { module = "io.opentelemetry:opentelemetry-api-incubator", version.ref = "opentelemetry" }
 gson = "com.google.code.gson:gson:2.11.0"
 
 #Test tools
