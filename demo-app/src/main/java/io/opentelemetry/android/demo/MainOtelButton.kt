@@ -42,12 +42,6 @@ fun MainOtelButton(icon: Painter) {
 }
 
 fun generateClickEvent() {
-    // TODO: Make an actual otel event
-    val tracer = OtelSampleApplication.tracer("otel.demo")
-    val span =
-        tracer
-            ?.spanBuilder("logo.clicked")
-            ?.setSpanKind(SpanKind.INTERNAL)
-            ?.startSpan()
-    span?.end()
+    OtelDemoApplication.eventBuilder("otel.demo.app", "logo.clicked")
+        .emit()
 }

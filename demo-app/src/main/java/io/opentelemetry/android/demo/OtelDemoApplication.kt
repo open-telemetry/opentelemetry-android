@@ -14,14 +14,16 @@ import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.incubator.events.EventBuilder
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
+import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider
 import kotlin.math.log
 
 const val TAG = "otel.demo"
 
-class OtelSampleApplication : Application() {
+class OtelDemoApplication : Application() {
     @SuppressLint("RestrictedApi")
     override fun onCreate() {
         super.onCreate()
@@ -65,6 +67,13 @@ class OtelSampleApplication : Application() {
 
         fun tracer(name: String): Tracer? {
             return rum?.openTelemetry?.tracerProvider?.get(name)
+        }
+
+        fun eventBuilder(scopeName: String, eventName: String): EventBuilder {
+            val loggerProvider = rum?.openTelemetry?.logsBridge
+            val eventLogger =
+                SdkEventLoggerProvider.create(loggerProvider).get(scopeName)
+            return eventLogger.builder(eventName)
         }
     }
 }
