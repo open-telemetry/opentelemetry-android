@@ -337,6 +337,8 @@ public final class OpenTelemetryRumBuilder {
                         .setPropagators(buildFinalPropagators())
                         .build();
 
+        otelSdkReadyListeners.forEach(listener -> listener.accept(sdk));
+
         scheduleDiskTelemetryReader(signalFromDiskExporter, diskBufferingConfiguration);
 
         SdkPreconfiguredRumBuilder delegate =

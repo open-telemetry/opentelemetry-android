@@ -43,6 +43,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.contrib.disk.buffering.SpanToDiskExporter;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -56,6 +57,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -147,10 +149,6 @@ class OpenTelemetryRumBuilderTest {
 
         activityCallbacksCaptor.getValue().onActivityStopped(activity);
         verify(listener).onApplicationBackgrounded();
-    }
-
-    private OtelRumConfig buildConfig() {
-        return new OtelRumConfig().disableNetworkAttributes();
     }
 
     @Test
@@ -257,6 +255,16 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
+    void sdkReadyListeners() {
+        OtelRumConfig config = buildConfig();
+        AtomicReference<OpenTelemetrySdk> seen = new AtomicReference<>();
+        OpenTelemetryRum.builder(application, config)
+                .addOtelSdkReadyListener(seen::set)
+                .build(mock(ServiceManager.class));
+        assertThat(seen.get()).isNotNull();
+    }
+
+    @Test
     void diskBufferingDisabled() {
         ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
         ExportScheduleHandler scheduleHandler = mock();
@@ -335,5 +343,9 @@ class OpenTelemetryRumBuilderTest {
     @NonNull
     private OpenTelemetryRumBuilder makeBuilder() {
         return OpenTelemetryRum.builder(application, buildConfig());
+    }
+
+    private OtelRumConfig buildConfig() {
+        return new OtelRumConfig().disableNetworkAttributes().disableSdkInitializationEvents();
     }
 }
