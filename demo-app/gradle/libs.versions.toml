@@ -1,5 +1,6 @@
 [versions]
 opentelemetry = "1.39.0"
+opentelemetry-alpha = "1.39.0"
 junit = "5.10.2"
 spotless = "6.25.0"
 kotlin = "2.0.0"
@@ -7,7 +8,7 @@ kotlin = "2.0.0"
 [libraries]
 androidx-appcompat = "androidx.appcompat:appcompat:1.7.0"
 opentelemetry-exporter-otlp = { module = "io.opentelemetry:opentelemetry-exporter-otlp", version.ref = "opentelemetry" }
-opentelemetry-api-incubator = { module = "io.opentelemetry:opentelemetry-api-incubator", version.ref = "opentelemetry" }
+opentelemetry-api-incubator = { module = "io.opentelemetry:opentelemetry-api-incubator", version.ref = "opentelemetry-alpha" }
 gson = "com.google.code.gson:gson:2.11.0"
 
 #Test tools
