@@ -1,5 +1,6 @@
 -dontwarn com.fasterxml.jackson.core.JsonFactory
 -dontwarn com.fasterxml.jackson.core.JsonGenerator
--dontwarn com.google.auto.value.AutoValue$Builder
 -dontwarn com.google.auto.value.AutoValue
+-dontwarn com.google.auto.value.AutoValue$Builder
+-dontwarn com.google.auto.value.AutoValue$CopyAnnotations
 -dontwarn com.google.auto.value.extension.memoized.Memoized
