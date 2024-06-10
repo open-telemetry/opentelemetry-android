@@ -42,6 +42,15 @@ fun MainOtelButton(icon: Painter) {
 }
 
 fun generateClickEvent() {
-    OtelDemoApplication.eventBuilder("otel.demo.app", "logo.clicked")
+    val scope = "otel.demo.app"
+    OtelDemoApplication.eventBuilder(scope, "logo.clicked")
         .emit()
+    // For now, we also emit a span, so that we can see something in a UI
+    val tracer = OtelDemoApplication.tracer(scope)
+    val span =
+        tracer
+            ?.spanBuilder("logo.clicked")
+            ?.setSpanKind(SpanKind.INTERNAL)
+            ?.startSpan()
+    span?.end()
 }
