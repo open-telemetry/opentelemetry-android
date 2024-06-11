@@ -7,6 +7,7 @@ package io.opentelemetry.android;
 
 import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
 import static io.opentelemetry.android.common.RumConstants.SESSION_ID_KEY;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static org.awaitility.Awaitility.await;
@@ -34,9 +35,12 @@ import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.android.internal.services.ServiceManagerImpl;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.events.EventLogger;
+import io.opentelemetry.api.incubator.logs.AnyValue;
+import io.opentelemetry.api.incubator.logs.KeyAnyValue;
 import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -45,7 +49,10 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.contrib.disk.buffering.SpanToDiskExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
+import io.opentelemetry.sdk.logs.internal.AnyValueBody;
+import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
@@ -56,7 +63,9 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import org.junit.jupiter.api.AfterEach;
@@ -74,6 +83,7 @@ class OpenTelemetryRumBuilderTest {
     final Resource resource =
             Resource.getDefault().toBuilder().put("test.attribute", "abcdef").build();
     final InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
+    final InMemoryLogRecordExporter logsExporter = InMemoryLogRecordExporter.create();
     final InMemoryLogRecordExporter logRecordExporter = InMemoryLogRecordExporter.create();
 
     @Mock Application application;
@@ -132,6 +142,40 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
+    void shouldBuildLogRecordProvider() {
+        OpenTelemetryRum openTelemetryRum =
+                makeBuilder()
+                        .setResource(resource)
+                        .addLoggerProviderCustomizer(
+                                (logRecordProviderBuilder, app) ->
+                                        logRecordProviderBuilder.addLogRecordProcessor(
+                                                SimpleLogRecordProcessor.create(logsExporter)))
+                        .build();
+
+        OpenTelemetrySdk sdk = (OpenTelemetrySdk) openTelemetryRum.getOpenTelemetry();
+        String sessionId = openTelemetryRum.getRumSessionId();
+        EventLogger eventLogger =
+                SdkEventLoggerProvider.create(sdk.getSdkLoggerProvider())
+                        .get("otel.initialization.events");
+        Attributes attrs = Attributes.of(stringKey("mega"), "hit");
+        eventLogger.builder("test.event").put("body.field", "foo").setAttributes(attrs).emit();
+
+        List<LogRecordData> logs = logsExporter.getFinishedLogRecordItems();
+        assertThat(logs).hasSize(1);
+        assertThat(logs.get(0))
+                .hasAttributesSatisfyingExactly(
+                        equalTo(stringKey("event.name"), "test.event"),
+                        equalTo(stringKey("mega"), "hit"))
+                .hasResource(resource);
+
+        AnyValue<?> bodyValue = ((AnyValueBody) logs.get(0).getBody()).asAnyValue();
+        List<KeyAnyValue> payload = (List<KeyAnyValue>) bodyValue.getValue();
+        assertThat(payload).hasSize(1);
+        KeyAnyValue expected = KeyAnyValue.of("body.field", AnyValue.of("foo"));
+        assertThat(payload.get(0)).isEqualTo(expected);
+    }
+
+    @Test
     void shouldInstallInstrumentation() {
         OpenTelemetryRum.builder(application, buildConfig())
                 .addInstrumentation(
@@ -183,7 +227,12 @@ class OpenTelemetryRumBuilderTest {
     @Test
     void setSpanExporterCustomizer() {
         SpanExporter exporter = mock(SpanExporter.class);
-        Function<SpanExporter, SpanExporter> customizer = x -> exporter;
+        AtomicBoolean wasCalled = new AtomicBoolean(false);
+        Function<SpanExporter, SpanExporter> customizer =
+                x -> {
+                    wasCalled.set(true);
+                    return exporter;
+                };
         OpenTelemetryRum rum = makeBuilder().addSpanExporterCustomizer(customizer).build();
         Span span = rum.getOpenTelemetry().getTracer("test").spanBuilder("foo").startSpan();
         try (Scope scope = span.makeCurrent()) {
@@ -194,6 +243,36 @@ class OpenTelemetryRumBuilderTest {
         // 5 sec is default
         await().atMost(Duration.ofSeconds(30))
                 .untilAsserted(() -> verify(exporter).export(anyCollection()));
+        assertThat(wasCalled.get()).isTrue();
+    }
+
+    @Test
+    void setLogRecordExporterCustomizer() {
+        AtomicBoolean wasCalled = new AtomicBoolean(false);
+        Function<LogRecordExporter, LogRecordExporter> customizer =
+                x -> {
+                    wasCalled.set(true);
+                    return logsExporter;
+                };
+        OpenTelemetryRum rum = makeBuilder().addLogRecordExporterCustomizer(customizer).build();
+
+        Logger logger = rum.getOpenTelemetry().getLogsBridge().loggerBuilder("LogScope").build();
+        logger.logRecordBuilder()
+                .setBody("foo")
+                .setSeverity(Severity.FATAL3)
+                .setAttribute(stringKey("bing"), "bang")
+                .emit();
+        // 5 sec is default
+        await().atMost(Duration.ofSeconds(30))
+                .untilAsserted(
+                        () -> assertThat(logsExporter.getFinishedLogRecordItems()).isNotEmpty());
+        assertThat(wasCalled.get()).isTrue();
+        Collection<LogRecordData> logs = logsExporter.getFinishedLogRecordItems();
+        assertThat(logs).hasSize(1);
+        assertThat(logs.iterator().next())
+                .hasBody("foo")
+                .hasAttributesSatisfyingExactly(equalTo(stringKey("bing"), "bang"))
+                .hasSeverity(Severity.FATAL3);
     }
 
     @Test
@@ -291,7 +370,7 @@ class OpenTelemetryRumBuilderTest {
     void verifyGlobalAttrsForLogs() {
         OtelRumConfig otelRumConfig = buildConfig();
         otelRumConfig.setGlobalAttributes(
-                () -> Attributes.of(AttributeKey.stringKey("someGlobalKey"), "someGlobalValue"));
+                () -> Attributes.of(stringKey("someGlobalKey"), "someGlobalValue"));
 
         OpenTelemetryRum rum =
                 OpenTelemetryRum.builder(application, otelRumConfig)
@@ -302,9 +381,7 @@ class OpenTelemetryRumBuilderTest {
                         .build();
 
         Logger logger = rum.getOpenTelemetry().getLogsBridge().loggerBuilder("LogScope").build();
-        logger.logRecordBuilder()
-                .setAttribute(AttributeKey.stringKey("localAttrKey"), "localAttrValue")
-                .emit();
+        logger.logRecordBuilder().setAttribute(stringKey("localAttrKey"), "localAttrValue").emit();
 
         List<LogRecordData> recordedLogs = logRecordExporter.getFinishedLogRecordItems();
         assertThat(recordedLogs).hasSize(1);
