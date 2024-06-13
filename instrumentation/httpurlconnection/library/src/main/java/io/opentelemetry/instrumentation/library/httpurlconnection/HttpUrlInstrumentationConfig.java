@@ -31,7 +31,7 @@ public final class HttpUrlInstrumentationConfig {
     /**
      * Configures the HTTP request headers that will be captured as span attributes as described in
      * <a
-     * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/http.md#http-request-and-response-headers">HTTP
+     * href="https://github.com/open-telemetry/opentelemetry-specification/blob/4f23dce407b6fcaba34a049df7c3d41cdd58cb77/specification/trace/semantic_conventions/http.md#http-request-and-response-headers">HTTP
      * semantic conventions</a>.
      *
      * <p>The HTTP request header values will be captured under the {@code
@@ -51,7 +51,7 @@ public final class HttpUrlInstrumentationConfig {
     /**
      * Configures the HTTP response headers that will be captured as span attributes as described in
      * <a
-     * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/http.md#http-request-and-response-headers">HTTP
+     * href="https://github.com/open-telemetry/opentelemetry-specification/blob/4f23dce407b6fcaba34a049df7c3d41cdd58cb77/specification/trace/semantic_conventions/http.md#http-request-and-response-headers">HTTP
      * semantic conventions</a>.
      *
      * <p>The HTTP response header values will be captured under the {@code
@@ -93,7 +93,7 @@ public final class HttpUrlInstrumentationConfig {
 
     /**
      * Configures the extractor of the {@code peer.service} span attribute, described in <a
-     * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/span-general.md#general-remote-service-attributes">the
+     * href="https://github.com/open-telemetry/opentelemetry-specification/blob/4f23dce407b6fcaba34a049df7c3d41cdd58cb77/specification/trace/semantic_conventions/span-general.md#general-remote-service-attributes">the
      * specification</a>.
      */
     public static void setPeerServiceMapping(Map<String, String> peerServiceMapping) {
@@ -106,12 +106,8 @@ public final class HttpUrlInstrumentationConfig {
 
     /**
      * When enabled keeps track of <a
-     * href="https://github.com/open-telemetry/semantic-conventions/blob/main/specification/metrics/semantic_conventions/http-metrics.md#http-client">non-stable
-     * HTTP client metrics</a>: <a
-     * href="https://github.com/open-telemetry/semantic-conventions/blob/main/specification/metrics/semantic_conventions/http-metrics.md#metric-httpclientrequestsize">the
-     * request size </a> and the <a
-     * href="https://github.com/open-telemetry/semantic-conventions/blob/main/specification/metrics/semantic_conventions/http-metrics.md#metric-httpclientresponsesize">
-     * the response size</a>.
+     * href="https://github.com/open-telemetry/opentelemetry-specification/blob/4f23dce407b6fcaba34a049df7c3d41cdd58cb77/specification/metrics/semantic_conventions/http-metrics.md#http-client">the
+     * experimental HTTP client metrics</a>.
      */
     public static void setEmitExperimentalHttpClientMetrics(
             boolean emitExperimentalHttpClientMetrics) {
