@@ -25,6 +25,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.os.Looper;
 import androidx.annotation.NonNull;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
@@ -78,9 +79,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.RobolectricTestRunner;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class OpenTelemetryRumBuilderTest {
 
     final Resource resource =
