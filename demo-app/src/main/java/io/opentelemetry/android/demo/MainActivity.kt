@@ -7,9 +7,11 @@ package io.opentelemetry.android.demo
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -76,7 +78,9 @@ class MainActivity : ComponentActivity() {
                         })
                     }
                 }
+                Log.d(TAG, "Main Activity started ")
             }
         }
+        viewModel.sessionIdState.value = OtelSampleApplication.rum?.rumSessionId!!
     }
 }

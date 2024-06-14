@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* Logs are now exported to stdout by default.
+* New method to customize log exporter: addLogRecordExporterCustomizer()
+
 ## Version 0.6.0 (2024-05-22)
 
 This version of OpenTelemetry Android is built on:

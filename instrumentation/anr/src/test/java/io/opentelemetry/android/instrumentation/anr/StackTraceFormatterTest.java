@@ -6,11 +6,11 @@
 package io.opentelemetry.android.instrumentation.anr;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.semconv.SemanticAttributes;
 import org.junit.jupiter.api.Test;
 
 class StackTraceFormatterTest {
@@ -30,7 +30,7 @@ class StackTraceFormatterTest {
         assertThat(startAttributes.build())
                 .hasSize(1)
                 .containsEntry(
-                        SemanticAttributes.EXCEPTION_STACKTRACE,
+                        EXCEPTION_STACKTRACE,
                         "a.b.Class.foo(/src/a/b/Class.java:42)\n"
                                 + "a.b.AnotherClass.bar(/src/a/b/AnotherClass.java:123)\n");
 

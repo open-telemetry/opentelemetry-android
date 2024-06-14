@@ -1,5 +1,6 @@
 [versions]
-opentelemetry = "1.38.0"
+opentelemetry = "1.39.0"
+opentelemetry-alpha = "1.38.0-alpha"
 opentelemetry-instrumentation = "2.4.0"
 opentelemetry-instrumentation-alpha = "2.4.0-alpha"
 opentelemetry-semconv = "1.25.0-alpha"
@@ -10,7 +11,8 @@ byteBuddy = "1.14.17"
 okhttp = "4.12.0"
 spotless = "6.25.0"
 kotlin = "2.0.0"
-androidPlugin = "8.4.1"
+androidPlugin = "8.5.0"
+junitKtx = "1.1.5"
 
 [libraries]
 opentelemetry-platform = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom", version.ref = "opentelemetry-instrumentation" }
@@ -26,6 +28,8 @@ opentelemetry-instrumentation-okhttp = { module = "io.opentelemetry.instrumentat
 opentelemetry-semconv = { module = "io.opentelemetry.semconv:opentelemetry-semconv", version.ref = "opentelemetry-semconv" }
 opentelemetry-semconv-incubating = { module = "io.opentelemetry.semconv:opentelemetry-semconv-incubating", version.ref = "opentelemetry-semconv" }
 opentelemetry-api = { module = "io.opentelemetry:opentelemetry-api" }
+opentelemetry-api-incubator = { module = "io.opentelemetry:opentelemetry-api-incubator" }
+opentelemetry-sdk-extension-incubator = { module = "io.opentelemetry:opentelemetry-sdk-extension-incubator", version.ref = "opentelemetry-alpha" }
 opentelemetry-sdk = { module = "io.opentelemetry:opentelemetry-sdk" }
 opentelemetry-exporter-logging = { module = "io.opentelemetry:opentelemetry-exporter-logging" }
 opentelemetry-diskBuffering = { module = "io.opentelemetry.contrib:opentelemetry-disk-buffering", version.ref = "opentelemetry-contrib" }
@@ -61,6 +65,7 @@ animalsniffer-plugin = "ru.vyarus:gradle-animalsniffer-plugin:1.7.1"
 android-plugin = { module = "com.android.tools.build:gradle", version.ref = "androidPlugin" }
 byteBuddy-plugin = { module = "net.bytebuddy:byte-buddy-gradle-plugin", version.ref = "byteBuddy" }
 kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junitKtx" }
 
 [bundles]
 mocking = ["mockito-core", "mockito-junit-jupiter", "mockk"]

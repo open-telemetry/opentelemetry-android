@@ -15,9 +15,11 @@ import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguratio
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
+import kotlin.math.log
 
-private const val TAG = "otel.demo"
+const val TAG = "otel.demo"
 
 class OtelSampleApplication : Application() {
     @SuppressLint("RestrictedApi")
@@ -36,12 +38,18 @@ class OtelSampleApplication : Application() {
                 .setDiskBufferingConfiguration(diskBufferingConfig)
 
         // 10.0.2.2 is apparently a special binding to the host running the emulator
-        val ingestUrl = "http://10.0.2.2:4318/v1/traces"
+        val spansIngestUrl = "http://10.0.2.2:4318/v1/traces"
+        val logsIngestUrl = "http://10.0.2.2:4318/v1/logs"
         val otelRumBuilder: OpenTelemetryRumBuilder =
             OpenTelemetryRum.builder(this, config)
                 .addSpanExporterCustomizer {
                     OtlpHttpSpanExporter.builder()
-                        .setEndpoint(ingestUrl)
+                        .setEndpoint(spansIngestUrl)
+                        .build()
+                }
+                .addLogRecordExporterCustomizer {
+                    OtlpHttpLogRecordExporter.builder()
+                        .setEndpoint(logsIngestUrl)
                         .build()
                 }
         try {

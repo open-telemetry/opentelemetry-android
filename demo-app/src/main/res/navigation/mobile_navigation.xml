@@ -7,8 +7,8 @@
 
     <fragment
         android:id="@+id/navigation_home"
-        android:name="io.opentelemetry.android.demo.ui.home.HomeFragment"
-        android:label="@string/title_home"
+        android:name="io.opentelemetry.android.demo.ui.shop.ShopFragment"
+        android:label="@string/title_shop"
         tools:layout="@layout/fragment_home" />
 
     <fragment
@@ -18,8 +18,8 @@
         tools:layout="@layout/fragment_dashboard" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="io.opentelemetry.android.demo.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
+        android:id="@+id/navigation_cart"
+        android:name="io.opentelemetry.android.demo.ui.cart.CartFragment"
+        android:label="@string/title_cart"
         tools:layout="@layout/fragment_notifications" />
 </navigation>
