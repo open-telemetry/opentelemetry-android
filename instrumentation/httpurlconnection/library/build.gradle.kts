@@ -7,10 +7,6 @@ description = "OpenTelemetry HttpURLConnection library instrumentation for Andro
 
 android {
     namespace = "io.opentelemetry.android.httpurlconnection.library"
-
-    lint {
-        baseline = file("lint-baseline.xml")
-    }
 }
 
 dependencies {

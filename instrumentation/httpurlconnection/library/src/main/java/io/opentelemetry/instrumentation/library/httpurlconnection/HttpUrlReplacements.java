@@ -7,10 +7,9 @@ package io.opentelemetry.instrumentation.library.httpurlconnection;
 
 import static io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons.instrumenter;
 
+import android.annotation.SuppressLint;
 import android.os.SystemClock;
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.instrumentation.library.httpurlconnection.internal.RequestPropertySetter;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -21,6 +20,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.library.httpurlconnection.internal.RequestPropertySetter;
 
 public class HttpUrlReplacements {
 
@@ -77,6 +80,7 @@ public class HttpUrlReplacements {
         return replace(connection, () -> connection.getContentLength());
     }
 
+    @SuppressLint("NewApi")
     public static long replacementForContentLengthLong(URLConnection connection) {
         return replace(connection, () -> connection.getContentLengthLong());
     }
@@ -106,6 +110,7 @@ public class HttpUrlReplacements {
         return replace(connection, () -> connection.getHeaderFieldInt(name, Default));
     }
 
+    @SuppressLint("NewApi")
     public static long replacementForHeaderFieldLong(
             URLConnection connection, String name, long Default) {
         return replace(connection, () -> connection.getHeaderFieldLong(name, Default));
