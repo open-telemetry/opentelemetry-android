@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.internal.services.network.detector;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -15,6 +15,10 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.os.Build;
 import android.telephony.TelephonyManager;
+import io.opentelemetry.android.internal.services.network.CarrierFinder;
+import io.opentelemetry.android.internal.services.network.data.Carrier;
+import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
+import io.opentelemetry.android.internal.services.network.data.NetworkState;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -129,7 +133,7 @@ public class PostApi28NetworkDetectorTest {
 
     @Test
     public void carrierIsSet() {
-        Carrier carrier = Carrier.builder().name("flib").build();
+        Carrier carrier = new Carrier(0, "flib");
         when(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
                 .thenReturn(true);
         when(carrierFinder.get()).thenReturn(carrier);

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.internal.features.networkattrs;
 
 import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_ICC;
 import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_MCC;
@@ -14,6 +14,9 @@ import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NE
 import static org.assertj.core.api.Assertions.entry;
 
 import android.os.Build;
+import io.opentelemetry.android.internal.services.network.data.Carrier;
+import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
+import io.opentelemetry.android.internal.services.network.data.NetworkState;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,14 +34,7 @@ public class CurrentNetworkAttributesExtractorTest {
         CurrentNetwork currentNetwork =
                 CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
                         .subType("aaa")
-                        .carrier(
-                                Carrier.builder()
-                                        .id(206)
-                                        .name("ShadyTel")
-                                        .isoCountryCode("US")
-                                        .mobileCountryCode("usa")
-                                        .mobileNetworkCode("omg")
-                                        .build())
+                        .carrier(new Carrier(206, "ShadyTel", "usa", "omg", "US"))
                         .build();
 
         OpenTelemetryAssertions.assertThat(underTest.extract(currentNetwork))
@@ -57,7 +53,7 @@ public class CurrentNetworkAttributesExtractorTest {
         CurrentNetwork currentNetwork =
                 CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
                         .subType("aaa")
-                        .carrier(Carrier.builder().id(42).name("ShadyTel").build())
+                        .carrier(new Carrier(42, "ShadyTel"))
                         .build();
 
         OpenTelemetryAssertions.assertThat(underTest.extract(currentNetwork))

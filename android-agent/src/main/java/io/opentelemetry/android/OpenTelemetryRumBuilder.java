@@ -22,12 +22,10 @@ import io.opentelemetry.android.instrumentation.anr.AnrDetectorBuilder;
 import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.crash.CrashReporter;
 import io.opentelemetry.android.instrumentation.crash.CrashReporterBuilder;
-import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider;
-import io.opentelemetry.android.instrumentation.network.NetworkAttributesSpanAppender;
-import io.opentelemetry.android.instrumentation.network.NetworkChangeMonitor;
 import io.opentelemetry.android.instrumentation.slowrendering.SlowRenderingDetector;
 import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
 import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents;
+import io.opentelemetry.android.internal.features.networkattrs.NetworkAttributesSpanAppender;
 import io.opentelemetry.android.internal.features.persistence.DiskManager;
 import io.opentelemetry.android.internal.features.persistence.SimpleTemporaryFileProvider;
 import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordAppender;
@@ -100,7 +98,6 @@ public final class OpenTelemetryRumBuilder {
             (a) -> a;
 
     private Resource resource;
-    @Nullable private CurrentNetworkProvider currentNetworkProvider = null;
     private InitializationEvents initializationEvents = InitializationEvents.NO_OP;
     private Consumer<AnrDetectorBuilder> anrCustomizer = x -> {};
     private Consumer<CrashReporterBuilder> crashReporterCustomizer = x -> {};
@@ -127,18 +124,6 @@ public final class OpenTelemetryRumBuilder {
      */
     public OpenTelemetryRumBuilder setResource(Resource resource) {
         this.resource = resource;
-        return this;
-    }
-
-    /**
-     * Call this to pass an existing CurrentNetworkProvider instance to share with the underlying
-     * OpenTelemetry Rum instrumentation.
-     *
-     * @return {@code this}
-     */
-    public OpenTelemetryRumBuilder setCurrentNetworkProvider(
-            CurrentNetworkProvider currentNetworkProvider) {
-        this.currentNetworkProvider = currentNetworkProvider;
         return this;
     }
 
@@ -455,25 +440,15 @@ public final class OpenTelemetryRumBuilder {
         // Network specific attributes
         if (config.shouldIncludeNetworkAttributes()) {
             // Add span processor that appends network attributes.
-            CurrentNetworkProvider currentNetworkProvider = getOrCreateCurrentNetworkProvider();
             addTracerProviderCustomizer(
                     (tracerProviderBuilder, app) -> {
                         SpanProcessor networkAttributesSpanAppender =
-                                NetworkAttributesSpanAppender.create(currentNetworkProvider);
+                                NetworkAttributesSpanAppender.create(
+                                        ServiceManager.get().getCurrentNetworkProvider());
                         return tracerProviderBuilder.addSpanProcessor(
                                 networkAttributesSpanAppender);
                     });
             initializationEvents.currentNetworkProviderInitialized();
-        }
-
-        // Add network change monitor if enabled (default = = true)
-        if (config.isNetworkChangeMonitoringEnabled()) {
-            addInstrumentation(
-                    app -> {
-                        NetworkChangeMonitor.create(getOrCreateCurrentNetworkProvider())
-                                .installOn(app);
-                        initializationEvents.networkMonitorInitialized();
-                    });
         }
 
         // Add span processor that appends screen attribute(s)
@@ -528,13 +503,6 @@ public final class OpenTelemetryRumBuilder {
                         initializationEvents.crashReportingInitialized();
                     });
         }
-    }
-
-    private CurrentNetworkProvider getOrCreateCurrentNetworkProvider() {
-        if (currentNetworkProvider == null) {
-            this.currentNetworkProvider = CurrentNetworkProvider.createAndStart(application);
-        }
-        return currentNetworkProvider;
     }
 
     private SdkTracerProvider buildTracerProvider(

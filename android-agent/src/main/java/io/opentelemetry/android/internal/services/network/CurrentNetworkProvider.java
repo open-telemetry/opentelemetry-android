@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.internal.services.network;
 
 import android.app.Application;
 import android.content.Context;
@@ -15,6 +15,10 @@ import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import io.opentelemetry.android.common.RumConstants;
+import io.opentelemetry.android.internal.services.Startable;
+import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
+import io.opentelemetry.android.internal.services.network.data.NetworkState;
+import io.opentelemetry.android.internal.services.network.detector.NetworkDetector;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
@@ -25,45 +29,41 @@ import java.util.function.Supplier;
 /**
  * A provider of {@link CurrentNetwork} information. Registers itself in the Android {@link
  * ConnectivityManager} and listens for network changes.
+ *
+ * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
+ * time.
  */
-public final class CurrentNetworkProvider {
+public final class CurrentNetworkProvider implements Startable {
 
-    static final CurrentNetwork NO_NETWORK =
+    public static final CurrentNetwork NO_NETWORK =
             CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build();
-    static final CurrentNetwork UNKNOWN_NETWORK =
+    public static final CurrentNetwork UNKNOWN_NETWORK =
             CurrentNetwork.builder(NetworkState.TRANSPORT_UNKNOWN).build();
 
-    /**
-     * Creates a new {@link CurrentNetworkProvider} instance and registers network callbacks in the
-     * Android {@link ConnectivityManager}.
-     */
-    public static CurrentNetworkProvider createAndStart(Application application) {
-        Context context = application.getApplicationContext();
-        CurrentNetworkProvider currentNetworkProvider =
-                new CurrentNetworkProvider(NetworkDetector.create(context));
-        currentNetworkProvider.startMonitoring(
-                CurrentNetworkProvider::createNetworkMonitoringRequest,
-                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
-        return currentNetworkProvider;
+    public static CurrentNetworkProvider create(Application application) {
+        return new CurrentNetworkProvider(
+                NetworkDetector.create(application),
+                (ConnectivityManager) application.getSystemService(Context.CONNECTIVITY_SERVICE));
     }
 
     private final NetworkDetector networkDetector;
+    private final ConnectivityManager connectivityManager;
 
     private volatile CurrentNetwork currentNetwork = UNKNOWN_NETWORK;
     private final List<NetworkChangeListener> listeners = new CopyOnWriteArrayList<>();
 
     // visible for tests
-    CurrentNetworkProvider(NetworkDetector networkDetector) {
+    CurrentNetworkProvider(
+            NetworkDetector networkDetector, ConnectivityManager connectivityManager) {
+        this.connectivityManager = connectivityManager;
         this.networkDetector = networkDetector;
     }
 
     // visible for tests
-    void startMonitoring(
-            Supplier<NetworkRequest> createNetworkMonitoringRequest,
-            ConnectivityManager connectivityManager) {
+    void startMonitoring(Supplier<NetworkRequest> createNetworkMonitoringRequest) {
         refreshNetworkStatus();
         try {
-            registerNetworkCallbacks(createNetworkMonitoringRequest, connectivityManager);
+            registerNetworkCallbacks(createNetworkMonitoringRequest);
         } catch (Exception e) {
             // if this fails, we'll go without network change events.
             Log.w(
@@ -73,9 +73,7 @@ public final class CurrentNetworkProvider {
         }
     }
 
-    private void registerNetworkCallbacks(
-            Supplier<NetworkRequest> createNetworkMonitoringRequest,
-            ConnectivityManager connectivityManager) {
+    private void registerNetworkCallbacks(Supplier<NetworkRequest> createNetworkMonitoringRequest) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             connectivityManager.registerDefaultNetworkCallback(new ConnectionMonitor());
         } else {
@@ -107,11 +105,11 @@ public final class CurrentNetworkProvider {
                 .build();
     }
 
-    CurrentNetwork getCurrentNetwork() {
+    public CurrentNetwork getCurrentNetwork() {
         return currentNetwork;
     }
 
-    void addNetworkChangeListener(NetworkChangeListener listener) {
+    public void addNetworkChangeListener(NetworkChangeListener listener) {
         listeners.add(listener);
     }
 
@@ -119,6 +117,11 @@ public final class CurrentNetworkProvider {
         for (NetworkChangeListener listener : listeners) {
             listener.onNetworkChange(activeNetwork);
         }
+    }
+
+    @Override
+    public void start() {
+        startMonitoring(CurrentNetworkProvider::createNetworkMonitoringRequest);
     }
 
     private final class ConnectionMonitor extends ConnectivityManager.NetworkCallback {

@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.internal.services.network.detector;
 
-import static io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider.NO_NETWORK;
-import static io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider.UNKNOWN_NETWORK;
+import static io.opentelemetry.android.internal.services.network.CurrentNetworkProvider.NO_NETWORK;
+import static io.opentelemetry.android.internal.services.network.CurrentNetworkProvider.UNKNOWN_NETWORK;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -18,7 +18,14 @@ import android.os.Build;
 import android.telephony.TelephonyManager;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
+import io.opentelemetry.android.internal.services.network.CarrierFinder;
+import io.opentelemetry.android.internal.services.network.data.Carrier;
+import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
+import io.opentelemetry.android.internal.services.network.data.NetworkState;
 
+/**
+ * This class is internal and not for public use. Its APIs are unstable and can change at any time.
+ */
 @RequiresApi(api = Build.VERSION_CODES.P)
 class PostApi28NetworkDetector implements NetworkDetector {
     private final ConnectivityManager connectivityManager;
