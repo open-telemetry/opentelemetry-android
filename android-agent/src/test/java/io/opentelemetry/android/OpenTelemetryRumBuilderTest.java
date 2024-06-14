@@ -151,7 +151,7 @@ public class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    void shouldBuildLogRecordProvider() {
+    public void shouldBuildLogRecordProvider() {
         OpenTelemetryRum openTelemetryRum =
                 makeBuilder()
                         .setResource(resource)
@@ -259,7 +259,7 @@ public class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    void setLogRecordExporterCustomizer() {
+    public void setLogRecordExporterCustomizer() {
         AtomicBoolean wasCalled = new AtomicBoolean(false);
         Function<LogRecordExporter, LogRecordExporter> customizer =
                 x -> {
@@ -344,12 +344,12 @@ public class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    void sdkReadyListeners() {
+    public void sdkReadyListeners() {
         OtelRumConfig config = buildConfig();
         AtomicReference<OpenTelemetrySdk> seen = new AtomicReference<>();
         OpenTelemetryRum.builder(application, config)
                 .addOtelSdkReadyListener(seen::set)
-                .build(mock(ServiceManager.class));
+                .build(createServiceManager());
         assertThat(seen.get()).isNotNull();
     }
 
