@@ -9,6 +9,7 @@ import android.app.Application;
 import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import io.opentelemetry.android.OpenTelemetryRum;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
@@ -38,6 +39,7 @@ public final class SlowRenderingInstrumentation implements AndroidInstrumentatio
         return this;
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     @Override
     public void install(
             @NonNull Application application, @NonNull OpenTelemetryRum openTelemetryRum) {
