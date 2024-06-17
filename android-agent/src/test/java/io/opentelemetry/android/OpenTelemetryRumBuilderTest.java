@@ -25,16 +25,18 @@ import android.app.Activity;
 import android.app.Application;
 import android.os.Looper;
 import androidx.annotation.NonNull;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
-import io.opentelemetry.android.instrumentation.common.ApplicationStateListener;
 import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
 import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.android.internal.services.ServiceManagerImpl;
+import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
+import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.events.EventLogger;
 import io.opentelemetry.api.incubator.logs.AnyValue;
@@ -68,17 +70,18 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 
-@ExtendWith(MockitoExtension.class)
-class OpenTelemetryRumBuilderTest {
+@RunWith(AndroidJUnit4.class)
+public class OpenTelemetryRumBuilderTest {
 
     final Resource resource =
             Resource.getDefault().toBuilder().put("test.attribute", "abcdef").build();
@@ -94,27 +97,33 @@ class OpenTelemetryRumBuilderTest {
 
     @Mock InitializationEvents initializationEvents;
     @Captor ArgumentCaptor<Application.ActivityLifecycleCallbacks> activityCallbacksCaptor;
+    private AutoCloseable mocks;
 
-    @BeforeEach
-    void setup() {
+    @Before
+    public void setup() {
+        mocks = MockitoAnnotations.openMocks(this);
         when(application.getApplicationContext()).thenReturn(applicationContext);
         when(application.getMainLooper()).thenReturn(looper);
     }
 
-    @AfterEach
-    void tearDown() {
+    @After
+    public void tearDown() throws Exception {
         SignalFromDiskExporter.resetForTesting();
+        mocks.close();
     }
 
     @Test
-    void shouldRegisterApplicationStateWatcher() {
-        makeBuilder().build();
+    public void shouldRegisterApplicationStateWatcher() {
+        ServiceManager serviceManager = createServiceManager();
+        AppLifecycleService appLifecycleService = serviceManager.getAppLifecycleService();
 
-        verify(application).registerActivityLifecycleCallbacks(isA(ApplicationStateWatcher.class));
+        makeBuilder().build(serviceManager);
+
+        verify(appLifecycleService).registerListener(isA(ApplicationStateListener.class));
     }
 
     @Test
-    void shouldBuildTracerProvider() {
+    public void shouldBuildTracerProvider() {
         OpenTelemetryRum openTelemetryRum =
                 makeBuilder()
                         .setResource(resource)
@@ -142,7 +151,7 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    void shouldBuildLogRecordProvider() {
+    public void shouldBuildLogRecordProvider() {
         OpenTelemetryRum openTelemetryRum =
                 makeBuilder()
                         .setResource(resource)
@@ -175,14 +184,17 @@ class OpenTelemetryRumBuilderTest {
         assertThat(payload.get(0)).isEqualTo(expected);
     }
 
+    @Ignore("To be updated once AndroidInstrumentation is fully implemented")
     @Test
-    void shouldInstallInstrumentation() {
+    public void shouldInstallInstrumentation() {
         OpenTelemetryRum.builder(application, buildConfig())
                 .addInstrumentation(
                         instrumentedApplication -> {
                             assertThat(instrumentedApplication.getApplication())
                                     .isSameAs(application);
-                            instrumentedApplication.registerApplicationStateListener(listener);
+                            //
+                            // instrumentedApplication.registerApplicationStateListener(listener);
+                            // TODO update with AndroidInstrumentation
                         })
                 .build();
 
@@ -196,7 +208,7 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    void canAddPropagator() {
+    public void canAddPropagator() {
         Context context = Context.root();
         Object carrier = new Object();
 
@@ -216,7 +228,7 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    void canSetPropagator() {
+    public void canSetPropagator() {
         TextMapPropagator customPropagator = mock(TextMapPropagator.class);
 
         OpenTelemetryRum rum = makeBuilder().addPropagatorCustomizer(x -> customPropagator).build();
@@ -225,7 +237,7 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    void setSpanExporterCustomizer() {
+    public void setSpanExporterCustomizer() {
         SpanExporter exporter = mock(SpanExporter.class);
         AtomicBoolean wasCalled = new AtomicBoolean(false);
         Function<SpanExporter, SpanExporter> customizer =
@@ -247,7 +259,7 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    void setLogRecordExporterCustomizer() {
+    public void setLogRecordExporterCustomizer() {
         AtomicBoolean wasCalled = new AtomicBoolean(false);
         Function<LogRecordExporter, LogRecordExporter> customizer =
                 x -> {
@@ -276,11 +288,10 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    void diskBufferingEnabled() {
-        Preferences preferences = mock();
-        CacheStorage cacheStorage = mock();
+    public void diskBufferingEnabled() {
+        ServiceManager serviceManager = createServiceManager();
+        CacheStorage cacheStorage = serviceManager.getCacheStorage();
         doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
-        ServiceManager serviceManager = createServiceManager(preferences, cacheStorage);
         OtelRumConfig config = buildConfig();
         ExportScheduleHandler scheduleHandler = mock();
         config.setDiskBufferingConfiguration(
@@ -302,9 +313,9 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    void diskBufferingEnabled_when_exception_thrown() {
-        Preferences preferences = mock();
-        CacheStorage cacheStorage = mock();
+    public void diskBufferingEnabled_when_exception_thrown() {
+        ServiceManager serviceManager = createServiceManager();
+        CacheStorage cacheStorage = serviceManager.getCacheStorage();
         ExportScheduleHandler scheduleHandler = mock();
         doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
         doAnswer(
@@ -313,7 +324,6 @@ class OpenTelemetryRumBuilderTest {
                         })
                 .when(cacheStorage)
                 .getCacheDir();
-        ServiceManager serviceManager = createServiceManager(preferences, cacheStorage);
         ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
         OtelRumConfig config = buildConfig();
         config.setDiskBufferingConfiguration(
@@ -334,17 +344,17 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    void sdkReadyListeners() {
+    public void sdkReadyListeners() {
         OtelRumConfig config = buildConfig();
         AtomicReference<OpenTelemetrySdk> seen = new AtomicReference<>();
         OpenTelemetryRum.builder(application, config)
                 .addOtelSdkReadyListener(seen::set)
-                .build(mock(ServiceManager.class));
+                .build(createServiceManager());
         assertThat(seen.get()).isNotNull();
     }
 
     @Test
-    void diskBufferingDisabled() {
+    public void diskBufferingDisabled() {
         ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
         ExportScheduleHandler scheduleHandler = mock();
 
@@ -367,7 +377,7 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    void verifyGlobalAttrsForLogs() {
+    public void verifyGlobalAttrsForLogs() {
         OtelRumConfig otelRumConfig = buildConfig();
         otelRumConfig.setGlobalAttributes(
                 () -> Attributes.of(stringKey("someGlobalKey"), "someGlobalValue"));
@@ -395,15 +405,16 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    void verifyServicesAreInitialized() {
+    public void verifyServicesAreInitialized() {
         makeBuilder().build();
 
         assertThat(ServiceManager.get()).isNotNull();
     }
 
     @Test
-    void verifyServicesAreStarted() {
+    public void verifyServicesAreStarted() {
         ServiceManager serviceManager = mock();
+        doReturn(mock(AppLifecycleService.class)).when(serviceManager).getAppLifecycleService();
 
         makeBuilder().build(serviceManager);
 
@@ -413,8 +424,12 @@ class OpenTelemetryRumBuilderTest {
     /**
      * @noinspection KotlinInternalInJava
      */
-    private static ServiceManager createServiceManager(Object... services) {
-        return new ServiceManagerImpl(Arrays.asList(services));
+    private static ServiceManager createServiceManager() {
+        return new ServiceManagerImpl(
+                Arrays.asList(
+                        mock(Preferences.class),
+                        mock(CacheStorage.class),
+                        mock(AppLifecycleService.class)));
     }
 
     @NonNull

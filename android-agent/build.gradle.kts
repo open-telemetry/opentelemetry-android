@@ -65,11 +65,11 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":instrumentation:activity"))
     implementation(project(":instrumentation:anr"))
-    implementation(project(":instrumentation:common-api"))
     implementation(project(":instrumentation:crash"))
     implementation(project(":instrumentation:slowrendering"))
     implementation(libs.androidx.core)
     implementation(libs.androidx.navigation.fragment)
+    implementation(libs.androidx.lifecycle.process)
 
     api(platform(libs.opentelemetry.platform))
     api(libs.opentelemetry.api)

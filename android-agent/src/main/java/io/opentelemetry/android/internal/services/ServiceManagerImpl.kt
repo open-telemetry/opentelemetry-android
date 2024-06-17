@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.internal.services
 
+import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService
 import java.util.Collections
@@ -34,6 +35,10 @@ internal class ServiceManagerImpl(services: List<Any>) : ServiceManager {
 
     override fun getCurrentNetworkProvider(): CurrentNetworkProvider {
         return getService(CurrentNetworkProvider::class.java)
+    }
+
+    override fun getAppLifecycleService(): AppLifecycleService {
+        return getService(AppLifecycleService::class.java)
     }
 
     override fun start() {

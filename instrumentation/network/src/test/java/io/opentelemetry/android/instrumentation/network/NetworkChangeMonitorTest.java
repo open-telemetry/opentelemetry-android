@@ -18,7 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 
 import android.os.Build;
-import io.opentelemetry.android.instrumentation.common.ApplicationStateListener;
+import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
+import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.android.internal.services.network.NetworkChangeListener;
 import io.opentelemetry.android.internal.services.network.data.Carrier;
@@ -51,6 +52,7 @@ public class NetworkChangeMonitorTest {
     @Captor ArgumentCaptor<NetworkChangeListener> networkChangeListenerCaptor;
 
     @Mock CurrentNetworkProvider currentNetworkProvider;
+    @Mock AppLifecycleService appLifecycleService;
 
     AutoCloseable mocks;
 
@@ -141,10 +143,7 @@ public class NetworkChangeMonitorTest {
                 .addNetworkChangeListener(networkChangeListenerCaptor.capture());
         NetworkChangeListener networkListener = networkChangeListenerCaptor.getValue();
 
-        //        verify(instrumentedApplication)
-        //
-        // .registerApplicationStateListener(applicationStateListenerCaptor.capture()); TODO
-        // uncomment in part 3
+        verify(appLifecycleService).registerListener(applicationStateListenerCaptor.capture());
         ApplicationStateListener applicationListener = applicationStateListenerCaptor.getValue();
 
         applicationListener.onApplicationBackgrounded();
@@ -165,6 +164,9 @@ public class NetworkChangeMonitorTest {
 
     private NetworkChangeMonitor create() {
         return new NetworkChangeMonitor(
-                otelTesting.getOpenTelemetry(), currentNetworkProvider, Collections.emptyList());
+                otelTesting.getOpenTelemetry(),
+                appLifecycleService,
+                currentNetworkProvider,
+                Collections.emptyList());
     }
 }

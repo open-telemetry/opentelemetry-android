@@ -6,6 +6,7 @@
 package io.opentelemetry.android.internal.services
 
 import android.app.Application
+import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService
 
@@ -20,6 +21,8 @@ interface ServiceManager : Startable {
     fun getPeriodicWorkService(): PeriodicWorkService
 
     fun getCurrentNetworkProvider(): CurrentNetworkProvider
+
+    fun getAppLifecycleService(): AppLifecycleService
 
     companion object {
         private var instance: ServiceManager? = null
@@ -38,6 +41,7 @@ interface ServiceManager : Startable {
                         ),
                         PeriodicWorkService(),
                         CurrentNetworkProvider.create(application),
+                        AppLifecycleService.create(),
                     ),
                 )
         }

@@ -7,7 +7,7 @@ package io.opentelemetry.android.instrumentation.network;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import io.opentelemetry.android.instrumentation.common.ApplicationStateListener;
+import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.android.internal.services.network.NetworkChangeListener;
 import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
