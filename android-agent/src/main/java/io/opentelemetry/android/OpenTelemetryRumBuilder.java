@@ -22,7 +22,6 @@ import io.opentelemetry.android.instrumentation.anr.AnrDetectorBuilder;
 import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.crash.CrashReporter;
 import io.opentelemetry.android.instrumentation.crash.CrashReporterBuilder;
-import io.opentelemetry.android.instrumentation.slowrendering.SlowRenderingDetector;
 import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
 import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents;
 import io.opentelemetry.android.internal.features.networkattrs.NetworkAttributesSpanAppender;
@@ -472,19 +471,6 @@ public final class OpenTelemetryRumBuilder {
                         anrCustomizer.accept(builder);
                         builder.build().installOn(instrumentedApplication);
                         initializationEvents.anrMonitorInitialized();
-                    });
-        }
-
-        // Enable slow rendering detection if enabled
-        if (config.isSlowRenderingDetectionEnabled()) {
-            addInstrumentation(
-                    instrumentedApplication -> {
-                        SlowRenderingDetector.builder()
-                                .setSlowRenderingDetectionPollInterval(
-                                        config.getSlowRenderingDetectionPollInterval())
-                                .build()
-                                .installOn(instrumentedApplication);
-                        initializationEvents.slowRenderingDetectorInitialized();
                     });
         }
 

@@ -66,7 +66,6 @@ dependencies {
     implementation(project(":instrumentation:activity"))
     implementation(project(":instrumentation:anr"))
     implementation(project(":instrumentation:crash"))
-    implementation(project(":instrumentation:slowrendering"))
     implementation(libs.androidx.core)
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.androidx.lifecycle.process)
