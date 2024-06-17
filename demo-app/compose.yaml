@@ -1,0 +1,16 @@
+services:
+  collector:
+    image: "otel/opentelemetry-collector-contrib"
+    volumes:
+      - ./collector.yaml:/etc/demo-collector.yaml
+    entrypoint: ["/otelcol-contrib"]
+    command: ["--config", "/etc/demo-collector.yaml"]
+    ports:
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+  jaeger:
+    image: "jaegertracing/all-in-one:1.57"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686" # UI

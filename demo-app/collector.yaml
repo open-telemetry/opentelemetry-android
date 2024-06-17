@@ -1,0 +1,21 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+extensions:
+exporters:
+  otlphttp:
+    traces_endpoint: "http://jaeger:4318/v1/traces"
+  logging:
+    verbosity: normal
+  logging/debug:
+    verbosity: detailed
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [logging/debug, otlphttp]
+    logs:
+      receivers: [otlp]
+      exporters: [logging/debug]

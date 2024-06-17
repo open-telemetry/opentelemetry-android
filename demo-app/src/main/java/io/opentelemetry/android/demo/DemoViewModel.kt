@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 class DemoViewModel : ViewModel() {
     val sessionIdState = MutableStateFlow("? unknown ?")
-    private val tracer = OtelSampleApplication.tracer("otel.demo")!!
+    private val tracer = OtelDemoApplication.tracer("otel.demo")!!
 
     init {
         viewModelScope.launch {
