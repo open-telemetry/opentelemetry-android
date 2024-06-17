@@ -5,15 +5,14 @@
 
 package io.opentelemetry.instrumentation.library.httpurlconnection;
 
+import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceResolver;
+import io.opentelemetry.instrumentation.api.internal.HttpConstants;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceResolver;
-import io.opentelemetry.instrumentation.api.internal.HttpConstants;
 
 /** Configuration for automatic instrumentation of HttpURLConnection/HttpsURLConnection requests. */
 public final class HttpUrlInstrumentationConfig {
