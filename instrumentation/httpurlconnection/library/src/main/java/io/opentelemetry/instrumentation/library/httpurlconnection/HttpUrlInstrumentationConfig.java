@@ -5,14 +5,15 @@
 
 package io.opentelemetry.instrumentation.library.httpurlconnection;
 
-import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceResolver;
-import io.opentelemetry.instrumentation.api.internal.HttpConstants;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceResolver;
+import io.opentelemetry.instrumentation.api.internal.HttpConstants;
 
 /** Configuration for automatic instrumentation of HttpURLConnection/HttpsURLConnection requests. */
 public final class HttpUrlInstrumentationConfig {
@@ -24,7 +25,7 @@ public final class HttpUrlInstrumentationConfig {
 
     // Time (ms) to wait before assuming that an idle connection is no longer
     // in use and should be reported.
-    private static final long CONNECTION_INACTIVITY_TIMEOUT = 10000;
+    private static final long CONNECTION_INACTIVITY_TIMEOUT_MS = 10000;
 
     private HttpUrlInstrumentationConfig() {}
 
@@ -131,7 +132,8 @@ public final class HttpUrlInstrumentationConfig {
         return new Runnable() {
             @Override
             public void run() {
-                HttpUrlReplacements.reportIdleConnectionsOlderThan(CONNECTION_INACTIVITY_TIMEOUT);
+                HttpUrlReplacements.reportIdleConnectionsOlderThan(
+                        CONNECTION_INACTIVITY_TIMEOUT_MS);
             }
 
             @Override
@@ -148,6 +150,6 @@ public final class HttpUrlInstrumentationConfig {
      * @return The fixed interval duration in ms
      */
     public static long getReportIdleConnectionInterval() {
-        return CONNECTION_INACTIVITY_TIMEOUT;
+        return CONNECTION_INACTIVITY_TIMEOUT_MS;
     }
 }
