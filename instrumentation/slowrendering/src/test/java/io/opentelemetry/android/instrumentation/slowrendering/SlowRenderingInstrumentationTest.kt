@@ -6,6 +6,7 @@
 package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.app.Application
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.Called
 import io.mockk.Runs
 import io.mockk.every
@@ -19,11 +20,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.time.Duration
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
 class SlowRenderingInstrumentationTest {
     private lateinit var slowRenderingInstrumentation: SlowRenderingInstrumentation
     private lateinit var application: Application
