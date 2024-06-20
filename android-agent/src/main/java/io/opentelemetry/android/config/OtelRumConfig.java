@@ -25,7 +25,6 @@ public class OtelRumConfig {
     private boolean includeScreenAttributes = true;
     private DiskBufferingConfiguration diskBufferingConfiguration =
             DiskBufferingConfiguration.builder().build();
-    private boolean anrDetectionEnabled = true;
     private boolean crashReportingEnabled = true;
     private Duration sessionTimeout = Duration.ofMinutes(15);
 
@@ -111,21 +110,6 @@ public class OtelRumConfig {
     public OtelRumConfig setDiskBufferingConfiguration(
             DiskBufferingConfiguration diskBufferingConfiguration) {
         this.diskBufferingConfiguration = diskBufferingConfiguration;
-        return this;
-    }
-
-    /** Returns true if ANR (application not responding) detection is enabled (default = true). */
-    public boolean isAnrDetectionEnabled() {
-        return anrDetectionEnabled;
-    }
-
-    /**
-     * Call this method to disable ANR (application not responding) detection.
-     *
-     * @return this
-     */
-    public OtelRumConfig disableAnrDetection() {
-        anrDetectionEnabled = false;
         return this;
     }
 
