@@ -10,11 +10,12 @@ import static io.opentelemetry.instrumentation.api.instrumenter.AttributesExtrac
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import android.os.Looper;
-import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
+import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import java.util.Collections;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -27,27 +28,26 @@ class AnrDetectorTest {
 
     @Mock Looper mainLooper;
     @Mock ScheduledExecutorService scheduler;
-    @Mock InstrumentedApplication instrumentedApplication;
+    @Mock AppLifecycleService appLifecycleService;
 
     @Test
     void shouldInstallInstrumentation() {
-        when(instrumentedApplication.getOpenTelemetrySdk())
-                .thenReturn(OpenTelemetrySdk.builder().build());
+        OpenTelemetry openTelemetry = OpenTelemetrySdk.builder().build();
 
         AnrDetector anrDetector =
-                AnrDetector.builder()
-                        .setMainLooper(mainLooper)
-                        .setScheduler(scheduler)
-                        .addAttributesExtractor(constant(stringKey("test.key"), "abc"))
-                        .build();
-        anrDetector.installOn(instrumentedApplication);
+                new AnrDetector(
+                        Collections.singletonList(constant(stringKey("test.key"), "abc")),
+                        mainLooper,
+                        scheduler,
+                        appLifecycleService,
+                        openTelemetry);
+        anrDetector.start();
 
         // verify that the ANR scheduler was started
         verify(scheduler)
                 .scheduleWithFixedDelay(
                         isA(AnrWatcher.class), eq(1L), eq(1L), eq(TimeUnit.SECONDS));
         // verify that an application listener was installed
-        verify(instrumentedApplication)
-                .registerApplicationStateListener(isA(AnrDetectorToggler.class));
+        verify(appLifecycleService).registerListener(isA(AnrDetectorToggler.class));
     }
 }
