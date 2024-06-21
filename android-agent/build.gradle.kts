@@ -64,13 +64,14 @@ android {
 dependencies {
     implementation(project(":common"))
     implementation(project(":instrumentation:crash"))
+    implementation(project(":instrumentation:startup")) // todo remove during the initializationevents adaptation work.
     implementation(libs.androidx.core)
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.androidx.lifecycle.process)
 
     api(platform(libs.opentelemetry.platform))
     api(libs.opentelemetry.api)
-    implementation(libs.opentelemetry.sdk)
+    api(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.exporter.logging)
     implementation(libs.opentelemetry.instrumentation.api)
     implementation(libs.opentelemetry.semconv.incubating)

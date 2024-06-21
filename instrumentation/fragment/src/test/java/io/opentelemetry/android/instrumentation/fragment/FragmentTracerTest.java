@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 
 import androidx.fragment.app.Fragment;
 import io.opentelemetry.android.common.ActiveSpan;
-import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -31,8 +31,8 @@ class FragmentTracerTest {
     @BeforeEach
     void setup() {
         tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
-        VisibleScreenTracker visibleScreenTracker = Mockito.mock(VisibleScreenTracker.class);
-        activeSpan = new ActiveSpan(visibleScreenTracker::getPreviouslyVisibleScreen);
+        VisibleScreenService visibleScreenService = Mockito.mock(VisibleScreenService.class);
+        activeSpan = new ActiveSpan(visibleScreenService::getPreviouslyVisibleScreen);
     }
 
     @Test
@@ -50,7 +50,7 @@ class FragmentTracerTest {
 
     @Test
     void addPreviousScreen_noPrevious() {
-        VisibleScreenTracker visibleScreenTracker = Mockito.mock(VisibleScreenTracker.class);
+        VisibleScreenService visibleScreenService = Mockito.mock(VisibleScreenService.class);
 
         FragmentTracer trackableTracer =
                 FragmentTracer.builder(mock(Fragment.class))
@@ -68,8 +68,8 @@ class FragmentTracerTest {
 
     @Test
     void addPreviousScreen_currentSameAsPrevious() {
-        VisibleScreenTracker visibleScreenTracker = Mockito.mock(VisibleScreenTracker.class);
-        when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("Fragment");
+        VisibleScreenService visibleScreenService = Mockito.mock(VisibleScreenService.class);
+        when(visibleScreenService.getPreviouslyVisibleScreen()).thenReturn("Fragment");
 
         FragmentTracer trackableTracer =
                 FragmentTracer.builder(mock(Fragment.class))
@@ -87,10 +87,9 @@ class FragmentTracerTest {
 
     @Test
     void addPreviousScreen() {
-
-        VisibleScreenTracker visibleScreenTracker = Mockito.mock(VisibleScreenTracker.class);
-        when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
-        activeSpan = new ActiveSpan(visibleScreenTracker::getPreviouslyVisibleScreen);
+        VisibleScreenService visibleScreenService = Mockito.mock(VisibleScreenService.class);
+        when(visibleScreenService.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
+        activeSpan = new ActiveSpan(visibleScreenService::getPreviouslyVisibleScreen);
 
         FragmentTracer fragmentTracer =
                 FragmentTracer.builder(mock(Fragment.class))

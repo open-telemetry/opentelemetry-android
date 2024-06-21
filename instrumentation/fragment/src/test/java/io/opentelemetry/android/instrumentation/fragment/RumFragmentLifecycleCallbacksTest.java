@@ -16,8 +16,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import androidx.fragment.app.Fragment;
-import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor;
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -35,8 +35,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class RumFragmentLifecycleCallbacksTest {
     @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
-    private final VisibleScreenTracker visibleScreenTracker =
-            Mockito.mock(VisibleScreenTracker.class);
+    private final VisibleScreenService visibleScreenService =
+            Mockito.mock(VisibleScreenService.class);
     private Tracer tracer;
     @Mock private ScreenNameExtractor screenNameExtractor;
 
@@ -51,7 +51,7 @@ class RumFragmentLifecycleCallbacksTest {
         FragmentCallbackTestHarness testHarness =
                 new FragmentCallbackTestHarness(
                         new RumFragmentLifecycleCallbacks(
-                                tracer, visibleScreenTracker, screenNameExtractor));
+                                tracer, visibleScreenService, screenNameExtractor));
 
         Fragment fragment = mock(Fragment.class);
         testHarness.runFragmentCreationLifecycle(fragment);
@@ -82,11 +82,11 @@ class RumFragmentLifecycleCallbacksTest {
 
     @Test
     void fragmentRestored() {
-        when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
+        when(visibleScreenService.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
         FragmentCallbackTestHarness testHarness =
                 new FragmentCallbackTestHarness(
                         new RumFragmentLifecycleCallbacks(
-                                tracer, visibleScreenTracker, screenNameExtractor));
+                                tracer, visibleScreenService, screenNameExtractor));
 
         Fragment fragment = mock(Fragment.class);
         testHarness.runFragmentRestoredLifecycle(fragment);
@@ -116,7 +116,7 @@ class RumFragmentLifecycleCallbacksTest {
         FragmentCallbackTestHarness testHarness =
                 new FragmentCallbackTestHarness(
                         new RumFragmentLifecycleCallbacks(
-                                tracer, visibleScreenTracker, screenNameExtractor));
+                                tracer, visibleScreenService, screenNameExtractor));
 
         Fragment fragment = mock(Fragment.class);
         testHarness.runFragmentResumedLifecycle(fragment);
@@ -142,7 +142,7 @@ class RumFragmentLifecycleCallbacksTest {
         FragmentCallbackTestHarness testHarness =
                 new FragmentCallbackTestHarness(
                         new RumFragmentLifecycleCallbacks(
-                                tracer, visibleScreenTracker, screenNameExtractor));
+                                tracer, visibleScreenService, screenNameExtractor));
 
         Fragment fragment = mock(Fragment.class);
         testHarness.runFragmentPausedLifecycle(fragment);
@@ -171,7 +171,7 @@ class RumFragmentLifecycleCallbacksTest {
         FragmentCallbackTestHarness testHarness =
                 new FragmentCallbackTestHarness(
                         new RumFragmentLifecycleCallbacks(
-                                tracer, visibleScreenTracker, screenNameExtractor));
+                                tracer, visibleScreenService, screenNameExtractor));
 
         Fragment fragment = mock(Fragment.class);
         testHarness.runFragmentDetachedFromActiveLifecycle(fragment);
@@ -227,7 +227,7 @@ class RumFragmentLifecycleCallbacksTest {
         FragmentCallbackTestHarness testHarness =
                 new FragmentCallbackTestHarness(
                         new RumFragmentLifecycleCallbacks(
-                                tracer, visibleScreenTracker, screenNameExtractor));
+                                tracer, visibleScreenService, screenNameExtractor));
 
         Fragment fragment = mock(Fragment.class);
         testHarness.runFragmentViewDestroyedFromStoppedLifecycle(fragment);
@@ -255,7 +255,7 @@ class RumFragmentLifecycleCallbacksTest {
         FragmentCallbackTestHarness testHarness =
                 new FragmentCallbackTestHarness(
                         new RumFragmentLifecycleCallbacks(
-                                tracer, visibleScreenTracker, screenNameExtractor));
+                                tracer, visibleScreenService, screenNameExtractor));
 
         Fragment fragment = mock(Fragment.class);
         testHarness.runFragmentDetachedFromStoppedLifecycle(fragment);
@@ -297,7 +297,7 @@ class RumFragmentLifecycleCallbacksTest {
         FragmentCallbackTestHarness testHarness =
                 new FragmentCallbackTestHarness(
                         new RumFragmentLifecycleCallbacks(
-                                tracer, visibleScreenTracker, screenNameExtractor));
+                                tracer, visibleScreenService, screenNameExtractor));
 
         Fragment fragment = mock(Fragment.class);
         testHarness.runFragmentDetachedLifecycle(fragment);
