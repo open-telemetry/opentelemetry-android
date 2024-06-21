@@ -6,7 +6,7 @@
 package io.opentelemetry.android.instrumentation.anr;
 
 import androidx.annotation.Nullable;
-import io.opentelemetry.android.instrumentation.common.ApplicationStateListener;
+import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;

@@ -5,17 +5,20 @@
 
 package io.opentelemetry.android.instrumentation.anr;
 
+import android.app.Application;
 import android.os.Looper;
+import androidx.annotation.NonNull;
+import io.opentelemetry.android.OpenTelemetryRum;
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
+import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-/** A builder of {@link AnrDetector}. */
-public final class AnrDetectorBuilder {
-
-    AnrDetectorBuilder() {}
+/** Entry point for {@link AnrDetector}. */
+public final class AnrInstrumentation implements AndroidInstrumentation {
 
     final List<AttributesExtractor<StackTraceElement[], Void>> additionalExtractors =
             new ArrayList<>();
@@ -23,26 +26,34 @@ public final class AnrDetectorBuilder {
     ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     /** Adds an {@link AttributesExtractor} that will extract additional attributes. */
-    public AnrDetectorBuilder addAttributesExtractor(
+    public AnrInstrumentation addAttributesExtractor(
             AttributesExtractor<StackTraceElement[], Void> extractor) {
         additionalExtractors.add(extractor);
         return this;
     }
 
     /** Sets a custom {@link Looper} to run on. Useful for testing. */
-    public AnrDetectorBuilder setMainLooper(Looper looper) {
+    public AnrInstrumentation setMainLooper(Looper looper) {
         mainLooper = looper;
         return this;
     }
 
     // visible for tests
-    AnrDetectorBuilder setScheduler(ScheduledExecutorService scheduler) {
+    AnrInstrumentation setScheduler(ScheduledExecutorService scheduler) {
         this.scheduler = scheduler;
         return this;
     }
 
-    /** Returns a new {@link AnrDetector} with the settings of this {@link AnrDetectorBuilder}. */
-    public AnrDetector build() {
-        return new AnrDetector(this);
+    @Override
+    public void install(
+            @NonNull Application application, @NonNull OpenTelemetryRum openTelemetryRum) {
+        AnrDetector anrDetector =
+                new AnrDetector(
+                        additionalExtractors,
+                        mainLooper,
+                        scheduler,
+                        ServiceManager.get().getAppLifecycleService(),
+                        openTelemetryRum.getOpenTelemetry());
+        anrDetector.start();
     }
 }

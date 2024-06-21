@@ -64,7 +64,6 @@ android {
 dependencies {
     implementation(project(":common"))
     implementation(project(":instrumentation:activity"))
-    implementation(project(":instrumentation:anr"))
     implementation(project(":instrumentation:crash"))
     implementation(libs.androidx.core)
     implementation(libs.androidx.navigation.fragment)

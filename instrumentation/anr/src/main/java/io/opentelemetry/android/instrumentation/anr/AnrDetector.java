@@ -7,7 +7,7 @@ package io.opentelemetry.android.instrumentation.anr;
 
 import android.os.Handler;
 import android.os.Looper;
-import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
+import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
@@ -17,50 +17,44 @@ import java.util.concurrent.ScheduledExecutorService;
 
 /** Entrypoint for installing the ANR (application not responding) detection instrumentation. */
 public final class AnrDetector {
-
-    /** Returns a new {@link AnrDetector} with the default settings. */
-    public static AnrDetector create() {
-        return builder().build();
-    }
-
-    /** Returns a new {@link AnrDetectorBuilder}. */
-    public static AnrDetectorBuilder builder() {
-        return new AnrDetectorBuilder();
-    }
-
     private final List<AttributesExtractor<StackTraceElement[], Void>> additionalExtractors;
     private final Looper mainLooper;
     private final ScheduledExecutorService scheduler;
+    private final AppLifecycleService appLifecycleService;
+    private final OpenTelemetry openTelemetry;
 
-    AnrDetector(AnrDetectorBuilder builder) {
-        this.additionalExtractors = builder.additionalExtractors;
-        this.mainLooper = builder.mainLooper;
-        this.scheduler = builder.scheduler;
+    AnrDetector(
+            List<AttributesExtractor<StackTraceElement[], Void>> additionalExtractors,
+            Looper mainLooper,
+            ScheduledExecutorService scheduler,
+            AppLifecycleService appLifecycleService,
+            OpenTelemetry openTelemetry) {
+        this.additionalExtractors = additionalExtractors;
+        this.mainLooper = mainLooper;
+        this.scheduler = scheduler;
+        this.appLifecycleService = appLifecycleService;
+        this.openTelemetry = openTelemetry;
     }
 
     /**
-     * Installs the ANR detection instrumentation on the given {@link InstrumentedApplication}.
+     * Starts the ANR detection instrumentation.
      *
      * <p>When the main thread is unresponsive for 5 seconds or more, an event including the main
      * thread's stack trace will be reported to the RUM system.
      */
-    public void installOn(InstrumentedApplication instrumentedApplication) {
+    public void start() {
         Handler uiHandler = new Handler(mainLooper);
         AnrWatcher anrWatcher =
-                new AnrWatcher(
-                        uiHandler,
-                        mainLooper.getThread(),
-                        buildAnrInstrumenter(instrumentedApplication.getOpenTelemetrySdk()));
+                new AnrWatcher(uiHandler, mainLooper.getThread(), buildAnrInstrumenter());
 
         AnrDetectorToggler listener = new AnrDetectorToggler(anrWatcher, scheduler);
         // call it manually the first time to enable the ANR detection
         listener.onApplicationForegrounded();
 
-        instrumentedApplication.registerApplicationStateListener(listener);
+        appLifecycleService.registerListener(listener);
     }
 
-    private Instrumenter<StackTraceElement[], Void> buildAnrInstrumenter(
-            OpenTelemetry openTelemetry) {
+    private Instrumenter<StackTraceElement[], Void> buildAnrInstrumenter() {
         return Instrumenter.<StackTraceElement[], Void>builder(
                         openTelemetry, "io.opentelemetry.anr", stackTrace -> "ANR")
                 // it's always an error

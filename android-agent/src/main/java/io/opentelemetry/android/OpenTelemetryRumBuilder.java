@@ -9,7 +9,6 @@ import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
 import android.content.Context;
-import android.os.Looper;
 import android.util.Log;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
@@ -17,8 +16,6 @@ import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguratio
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
-import io.opentelemetry.android.instrumentation.anr.AnrDetector;
-import io.opentelemetry.android.instrumentation.anr.AnrDetectorBuilder;
 import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.crash.CrashReporter;
 import io.opentelemetry.android.instrumentation.crash.CrashReporterBuilder;
@@ -98,7 +95,6 @@ public final class OpenTelemetryRumBuilder {
 
     private Resource resource;
     private InitializationEvents initializationEvents = InitializationEvents.NO_OP;
-    private Consumer<AnrDetectorBuilder> anrCustomizer = x -> {};
     private Consumer<CrashReporterBuilder> crashReporterCustomizer = x -> {};
 
     private static TextMapPropagator buildDefaultPropagator() {
@@ -155,19 +151,6 @@ public final class OpenTelemetryRumBuilder {
             BiFunction<SdkTracerProviderBuilder, Application, SdkTracerProviderBuilder>
                     customizer) {
         tracerProviderCustomizers.add(customizer);
-        return this;
-    }
-
-    /**
-     * Pass a Consumer that will receive the AnrDetectorBuilder in order to perform additional
-     * specific customizations. If ANR detection is disabled, this method is effectively a no-op.
-     *
-     * @param customizer A Consumer that will receive the {@link AnrDetectorBuilder} before the
-     *     {@link AnrDetector} is built.
-     * @return this.
-     */
-    public OpenTelemetryRumBuilder addAnrCustomization(Consumer<AnrDetectorBuilder> customizer) {
-        this.anrCustomizer = customizer;
         return this;
     }
 
@@ -458,19 +441,6 @@ public final class OpenTelemetryRumBuilder {
                         SpanProcessor screenAttributesAppender =
                                 new ScreenAttributesSpanProcessor(visibleScreenTracker);
                         return tracerProviderBuilder.addSpanProcessor(screenAttributesAppender);
-                    });
-        }
-
-        // Add ANR detection if enabled
-        if (config.isAnrDetectionEnabled()) {
-            Looper mainLooper = application.getMainLooper();
-            addInstrumentation(
-                    instrumentedApplication -> {
-                        AnrDetectorBuilder builder =
-                                AnrDetector.builder().setMainLooper(mainLooper);
-                        anrCustomizer.accept(builder);
-                        builder.build().installOn(instrumentedApplication);
-                        initializationEvents.anrMonitorInitialized();
                     });
         }
 
