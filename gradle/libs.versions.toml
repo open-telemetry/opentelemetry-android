@@ -39,7 +39,7 @@ volley = "com.android.volley:volley:1.2.1"
 #Test tools
 opentelemetry-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-testing", version.ref = "opentelemetry" }
 androidx-test-core = "androidx.test:core:1.6.0"
-androidx-test-runner = "androidx.test:runner:1.5.2"
+androidx-test-runner = "androidx.test:runner:1.6.0"
 androidx-junit = "androidx.test.ext:junit:1.2.0"
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
