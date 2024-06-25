@@ -8,16 +8,12 @@ package io.opentelemetry.instrumentation.library.okhttp.v3_0;
 import static org.junit.Assert.assertEquals;
 
 import androidx.annotation.NonNull;
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.android.test.common.OpenTelemetryTestUtils;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import okhttp3.Call;
@@ -49,10 +45,10 @@ public class InstrumentationTest {
 
     @Test
     public void okhttpTraces() throws IOException {
-        setUpSpanExporter(inMemorySpanExporter);
+        OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter);
         server.enqueue(new MockResponse().setResponseCode(200));
 
-        Span span = getSpan();
+        Span span = OpenTelemetryTestUtils.getSpan();
 
         try (Scope ignored = span.makeCurrent()) {
             OkHttpClient client =
@@ -76,9 +72,9 @@ public class InstrumentationTest {
 
     @Test
     public void okhttpTraces_with_callback() throws InterruptedException {
-        setUpSpanExporter(inMemorySpanExporter);
+        OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter);
         CountDownLatch lock = new CountDownLatch(1);
-        Span span = getSpan();
+        Span span = OpenTelemetryTestUtils.getSpan();
 
         try (Scope ignored = span.makeCurrent()) {
             server.enqueue(new MockResponse().setResponseCode(200));
@@ -125,13 +121,13 @@ public class InstrumentationTest {
         // so it should be run isolated to actually get it to fail when it's expected to fail.
         OtlpHttpSpanExporter exporter =
                 OtlpHttpSpanExporter.builder().setEndpoint(server.url("").toString()).build();
-        setUpSpanExporter(exporter);
+        OpenTelemetryTestUtils.setUpSpanExporter(exporter);
 
         server.enqueue(new MockResponse().setResponseCode(200));
 
         // This span should trigger 1 export okhttp call, which is the only okhttp call expected
         // for this test case.
-        getSpan().end();
+        OpenTelemetryTestUtils.getSpan().end();
 
         // Wait for unwanted extra okhttp requests.
         int loop = 0;
@@ -147,28 +143,8 @@ public class InstrumentationTest {
         assertEquals(1, server.getRequestCount());
     }
 
-    private static Span getSpan() {
-        return GlobalOpenTelemetry.getTracer("TestTracer").spanBuilder("A Span").startSpan();
-    }
-
-    private void setUpSpanExporter(SpanExporter spanExporter) {
-        OpenTelemetrySdk openTelemetry =
-                OpenTelemetrySdk.builder()
-                        .setTracerProvider(getSimpleTracerProvider(spanExporter))
-                        .build();
-        GlobalOpenTelemetry.resetForTest();
-        GlobalOpenTelemetry.set(openTelemetry);
-    }
-
     private Call createCall(OkHttpClient client, String urlPath) {
         Request request = new Request.Builder().url(server.url(urlPath)).build();
         return client.newCall(request);
-    }
-
-    @NonNull
-    private SdkTracerProvider getSimpleTracerProvider(SpanExporter spanExporter) {
-        return SdkTracerProvider.builder()
-                .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-                .build();
     }
 }
