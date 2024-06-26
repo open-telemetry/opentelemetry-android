@@ -80,26 +80,32 @@ public class InstrumentationTest {
     public void
             testHttpUrlConnectionGetRequest_WhenFourConcurrentRequestsAreMade_AllShouldBeTraced() {
         ExecutorService executor = Executors.newFixedThreadPool(4);
-        executor.submit(() -> HttpUrlConnectionTestUtil.executeGet("http://httpbin.org/get"));
-        executor.submit(() -> HttpUrlConnectionTestUtil.executeGet("http://google.com"));
-        executor.submit(() -> HttpUrlConnectionTestUtil.executeGet("http://android.com"));
-        executor.submit(() -> HttpUrlConnectionTestUtil.executeGet("http://httpbin.org/headers"));
-
-        executor.shutdown();
-
         try {
+            executor.submit(() -> HttpUrlConnectionTestUtil.executeGet("http://httpbin.org/get"));
+            executor.submit(() -> HttpUrlConnectionTestUtil.executeGet("http://google.com"));
+            executor.submit(() -> HttpUrlConnectionTestUtil.executeGet("http://android.com"));
+            executor.submit(
+                    () -> HttpUrlConnectionTestUtil.executeGet("http://httpbin.org/headers"));
+
+            executor.shutdown();
             // Wait for all tasks to finish execution or timeout
             if (executor.awaitTermination(2, TimeUnit.SECONDS)) {
-                // if all tasks finished
+                // if all tasks finish before timeout
                 assertEquals(4, inMemorySpanExporter.getFinishedSpanItems().size());
             } else {
+                // if all tasks don't finish before timeout
                 Assert.fail(
                         "Test could not be completed as tasks did not complete within the 2s timeout period.");
             }
         } catch (InterruptedException e) {
-            executor.shutdownNow();
-            Assert.fail(
-                    "Test could not be completed as executor service was interrupted while waiting for task completion.");
+            // print stack trace to decipher lines that threw InterruptedException as it can be
+            // possibly thrown by multiple calls above.
+            e.printStackTrace();
+            Assert.fail("Test could not be completed due to an interrupted exception.");
+        } finally {
+            if (!executor.isShutdown()) {
+                executor.shutdownNow();
+            }
         }
     }
 
