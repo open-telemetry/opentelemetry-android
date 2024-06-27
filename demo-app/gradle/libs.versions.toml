@@ -12,7 +12,7 @@ opentelemetry-api-incubator = { module = "io.opentelemetry:opentelemetry-api-inc
 gson = "com.google.code.gson:gson:2.11.0"
 
 #Test tools
-androidx-junit = "androidx.test.ext:junit:1.2.0"
+androidx-junit = "androidx.test.ext:junit:1.2.1"
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "junit" }
