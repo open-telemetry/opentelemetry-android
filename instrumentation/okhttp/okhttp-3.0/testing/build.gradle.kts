@@ -9,4 +9,5 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.opentelemetry.exporter.otlp)
     androidTestImplementation(libs.okhttp.mockwebserver)
+    implementation(project(":test-common"))
 }
