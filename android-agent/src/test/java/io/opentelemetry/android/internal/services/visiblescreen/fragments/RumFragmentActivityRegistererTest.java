@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.activity;
+package io.opentelemetry.android.internal.services.visiblescreen.fragments;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;

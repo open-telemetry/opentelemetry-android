@@ -16,8 +16,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
+import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer;
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor;
-import io.opentelemetry.android.instrumentation.startup.AppStartupTimer;
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -33,16 +34,16 @@ class ActivityCallbacksTest {
     @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
     private ActivityTracerCache tracers;
-    private VisibleScreenTracker visibleScreenTracker;
+    private VisibleScreenService visibleScreenService;
 
     @BeforeEach
     public void setup() {
         Tracer tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
         AppStartupTimer startupTimer = new AppStartupTimer();
-        visibleScreenTracker = Mockito.mock(VisibleScreenTracker.class);
+        visibleScreenService = Mockito.mock(VisibleScreenService.class);
         ScreenNameExtractor extractor = mock(ScreenNameExtractor.class);
         when(extractor.extract(isA(Activity.class))).thenReturn("Activity");
-        tracers = new ActivityTracerCache(tracer, visibleScreenTracker, startupTimer, extractor);
+        tracers = new ActivityTracerCache(tracer, visibleScreenService, startupTimer, extractor);
     }
 
     @Test
@@ -173,7 +174,7 @@ class ActivityCallbacksTest {
 
     @Test
     void activityResumed() {
-        when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
+        when(visibleScreenService.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
         ActivityCallbacks activityCallbacks = new ActivityCallbacks(tracers);
 
         ActivityCallbackTestHarness testHarness =

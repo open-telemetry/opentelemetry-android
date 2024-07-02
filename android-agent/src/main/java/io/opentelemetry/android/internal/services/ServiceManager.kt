@@ -9,6 +9,7 @@ import android.app.Application
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService
 
 /**
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
@@ -23,6 +24,8 @@ interface ServiceManager : Startable {
     fun getCurrentNetworkProvider(): CurrentNetworkProvider
 
     fun getAppLifecycleService(): AppLifecycleService
+
+    fun getVisibleScreenService(): VisibleScreenService
 
     companion object {
         private var instance: ServiceManager? = null
@@ -42,6 +45,7 @@ interface ServiceManager : Startable {
                         PeriodicWorkService(),
                         CurrentNetworkProvider.create(application),
                         AppLifecycleService.create(),
+                        VisibleScreenService.create(application),
                     ),
                 )
         }

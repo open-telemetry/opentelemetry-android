@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.common;
+package io.opentelemetry.android.internal.services.visiblescreen.activities;
 
 import android.app.Activity;
 import android.app.Application;

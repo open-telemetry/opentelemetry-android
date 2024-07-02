@@ -8,6 +8,7 @@ package io.opentelemetry.android.internal.services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService
 import java.util.Collections
 
 internal class ServiceManagerImpl(services: List<Any>) : ServiceManager {
@@ -39,6 +40,10 @@ internal class ServiceManagerImpl(services: List<Any>) : ServiceManager {
 
     override fun getAppLifecycleService(): AppLifecycleService {
         return getService(AppLifecycleService::class.java)
+    }
+
+    override fun getVisibleScreenService(): VisibleScreenService {
+        return getService(VisibleScreenService::class.java)
     }
 
     override fun start() {

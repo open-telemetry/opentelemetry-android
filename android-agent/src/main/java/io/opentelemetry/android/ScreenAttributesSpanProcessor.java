@@ -7,7 +7,7 @@ package io.opentelemetry.android;
 
 import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
 
-import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -15,15 +15,15 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 
 public final class ScreenAttributesSpanProcessor implements SpanProcessor {
 
-    private final VisibleScreenTracker visibleScreenTracker;
+    private final VisibleScreenService visibleScreenService;
 
-    public ScreenAttributesSpanProcessor(VisibleScreenTracker visibleScreenTracker) {
-        this.visibleScreenTracker = visibleScreenTracker;
+    public ScreenAttributesSpanProcessor(VisibleScreenService visibleScreenService) {
+        this.visibleScreenService = visibleScreenService;
     }
 
     @Override
     public void onStart(Context parentContext, ReadWriteSpan span) {
-        String currentScreen = visibleScreenTracker.getCurrentlyVisibleScreen();
+        String currentScreen = visibleScreenService.getCurrentlyVisibleScreen();
         span.setAttribute(SCREEN_NAME_KEY, currentScreen);
     }
 

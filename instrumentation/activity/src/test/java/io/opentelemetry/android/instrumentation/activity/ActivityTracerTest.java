@@ -15,7 +15,8 @@ import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import io.opentelemetry.android.common.ActiveSpan;
-import io.opentelemetry.android.instrumentation.startup.AppStartupTimer;
+import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer;
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -29,15 +30,15 @@ public class ActivityTracerTest {
     @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
     private Tracer tracer;
-    private final VisibleScreenTracker visibleScreenTracker =
-            Mockito.mock(VisibleScreenTracker.class);
+    private final VisibleScreenService visibleScreenService =
+            Mockito.mock(VisibleScreenService.class);
     private final AppStartupTimer appStartupTimer = new AppStartupTimer();
     private ActiveSpan activeSpan;
 
     @BeforeEach
     public void setup() {
         tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
-        activeSpan = new ActiveSpan(visibleScreenTracker::getPreviouslyVisibleScreen);
+        activeSpan = new ActiveSpan(visibleScreenService::getPreviouslyVisibleScreen);
     }
 
     @Test
@@ -164,8 +165,8 @@ public class ActivityTracerTest {
 
     @Test
     public void addPreviousScreen_currentSameAsPrevious() {
-        VisibleScreenTracker visibleScreenTracker = Mockito.mock(VisibleScreenTracker.class);
-        when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("Activity");
+        VisibleScreenService visibleScreenService = Mockito.mock(VisibleScreenService.class);
+        when(visibleScreenService.getPreviouslyVisibleScreen()).thenReturn("Activity");
 
         ActivityTracer trackableTracer =
                 ActivityTracer.builder(mock(Activity.class))
@@ -184,7 +185,7 @@ public class ActivityTracerTest {
 
     @Test
     public void addPreviousScreen() {
-        when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
+        when(visibleScreenService.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
 
         ActivityTracer trackableTracer =
                 ActivityTracer.builder(mock(Activity.class))
