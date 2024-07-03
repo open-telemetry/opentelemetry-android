@@ -63,8 +63,8 @@ android {
 
 dependencies {
     implementation(project(":common"))
-    implementation(project(":instrumentation:activity"))
     implementation(project(":instrumentation:crash"))
+    implementation(project(":instrumentation:startup")) // todo remove during the initializationevents adaptation work.
     implementation(libs.androidx.core)
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.androidx.lifecycle.process)

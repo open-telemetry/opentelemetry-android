@@ -16,8 +16,10 @@ android {
 dependencies {
     api(platform(libs.opentelemetry.platform))
     api(libs.opentelemetry.api)
+    api(project(":common"))
     api(project(":instrumentation:common-api"))
-    api(project(":instrumentation:startup")) // TODO: This is a coupling smell between instrumentations
+    api(project(":android-agent"))
+    implementation(libs.opentelemetry.sdk)
     implementation(libs.androidx.core)
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.opentelemetry.instrumentation.api)

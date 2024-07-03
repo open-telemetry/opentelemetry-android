@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.activity;
+package io.opentelemetry.android.internal.services.visiblescreen.activities;
 
 import android.app.Activity;
 import androidx.annotation.NonNull;
-import io.opentelemetry.android.instrumentation.common.DefaultingActivityLifecycleCallbacks;
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
 
 /**
  * An ActivityLifecycleCallbacks that is responsible for telling the VisibleScreenTracker when an
@@ -15,19 +15,19 @@ import io.opentelemetry.android.instrumentation.common.DefaultingActivityLifecyc
  */
 public class VisibleScreenLifecycleBinding implements DefaultingActivityLifecycleCallbacks {
 
-    private final VisibleScreenTracker visibleScreenTracker;
+    private final VisibleScreenService visibleScreenService;
 
-    public VisibleScreenLifecycleBinding(VisibleScreenTracker visibleScreenTracker) {
-        this.visibleScreenTracker = visibleScreenTracker;
+    public VisibleScreenLifecycleBinding(VisibleScreenService visibleScreenService) {
+        this.visibleScreenService = visibleScreenService;
     }
 
     @Override
     public void onActivityPostResumed(@NonNull Activity activity) {
-        visibleScreenTracker.activityResumed(activity);
+        visibleScreenService.activityResumed(activity);
     }
 
     @Override
     public void onActivityPrePaused(@NonNull Activity activity) {
-        visibleScreenTracker.activityPaused(activity);
+        visibleScreenService.activityPaused(activity);
     }
 }

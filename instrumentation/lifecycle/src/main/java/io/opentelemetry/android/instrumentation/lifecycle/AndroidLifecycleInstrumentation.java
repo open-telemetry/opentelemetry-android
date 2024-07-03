@@ -18,7 +18,7 @@ import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor;
 import io.opentelemetry.android.instrumentation.fragment.RumFragmentLifecycleCallbacks;
-import io.opentelemetry.android.instrumentation.startup.AppStartupTimer;
+import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer;
 import io.opentelemetry.api.trace.Tracer;
 import java.util.function.Function;
 

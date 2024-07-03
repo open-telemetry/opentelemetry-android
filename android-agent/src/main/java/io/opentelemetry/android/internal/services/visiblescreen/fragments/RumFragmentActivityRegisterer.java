@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.activity;
+package io.opentelemetry.android.internal.services.visiblescreen.fragments;
 
 import android.app.Activity;
 import android.app.Application;
@@ -12,7 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
-import io.opentelemetry.android.instrumentation.common.DefaultingActivityLifecycleCallbacks;
+import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks;
 
 /**
  * Registers the RumFragmentLifecycleCallbacks when an activity is created. There are just 2 factory

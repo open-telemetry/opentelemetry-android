@@ -15,7 +15,6 @@ import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
-import io.opentelemetry.android.instrumentation.activity.VisibleScreenTracker;
 import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.android.instrumentation.crash.CrashReporter;
 import io.opentelemetry.android.instrumentation.crash.CrashReporterBuilder;
@@ -81,7 +80,6 @@ public final class OpenTelemetryRumBuilder {
     private final List<BiFunction<SdkLoggerProviderBuilder, Application, SdkLoggerProviderBuilder>>
             loggerProviderCustomizers = new ArrayList<>();
     private final OtelRumConfig config;
-    private final VisibleScreenTracker visibleScreenTracker = new VisibleScreenTracker();
 
     private final List<Consumer<InstrumentedApplication>> instrumentationInstallers =
             new ArrayList<>();
@@ -439,7 +437,8 @@ public final class OpenTelemetryRumBuilder {
             addTracerProviderCustomizer(
                     (tracerProviderBuilder, app) -> {
                         SpanProcessor screenAttributesAppender =
-                                new ScreenAttributesSpanProcessor(visibleScreenTracker);
+                                new ScreenAttributesSpanProcessor(
+                                        ServiceManager.get().getVisibleScreenService());
                         return tracerProviderBuilder.addSpanProcessor(screenAttributesAppender);
                     });
         }
