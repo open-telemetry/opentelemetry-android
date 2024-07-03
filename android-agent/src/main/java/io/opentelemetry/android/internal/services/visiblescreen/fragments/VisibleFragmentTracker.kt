@@ -22,7 +22,6 @@ class VisibleFragmentTracker(private val visibleScreenService: VisibleScreenServ
         fm: FragmentManager,
         f: Fragment,
     ) {
-        super.onFragmentPaused(fm, f)
         visibleScreenService.fragmentPaused(f)
     }
 }
