@@ -6,6 +6,7 @@
 package io.opentelemetry.android;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -69,7 +70,7 @@ class SessionIdTest {
         String firstSessionId = sessionId.getSessionId();
         clock.advance(3, TimeUnit.HOURS);
         sessionId.getSessionId();
-        verify(timeoutHandler, times(2)).bump();
+        verify(timeoutHandler, times(0)).bump();
         verify(listener, never()).onChange(anyString(), anyString());
 
         clock.advance(1, TimeUnit.HOURS);
@@ -85,14 +86,32 @@ class SessionIdTest {
         SessionId sessionId = new SessionId(timeoutHandler);
 
         String value = sessionId.getSessionId();
-        verify(timeoutHandler).bump();
 
         assertEquals(value, sessionId.getSessionId());
-        verify(timeoutHandler, times(2)).bump();
+        verify(timeoutHandler, times(0)).bump();
 
         when(timeoutHandler.hasTimedOut()).thenReturn(true);
 
         assertNotEquals(value, sessionId.getSessionId());
-        verify(timeoutHandler, times(3)).bump();
+        verify(timeoutHandler, times(1)).bump();
+    }
+
+    @Test
+    void shouldNotUpdateSessionIdInForeground() {
+        timeoutHandler.onApplicationForegrounded();
+        SessionId sessionId = new SessionId(timeoutHandler);
+        String value = sessionId.getSessionId();
+        assertEquals(value, sessionId.getSessionId());
+        assertFalse(timeoutHandler.hasTimedOut());
+    }
+
+    @Test
+    void shouldUpdateSessionIdIfTimeoutAndInBackground() {
+        timeoutHandler.onApplicationBackgrounded();
+        SessionId sessionId = new SessionId(timeoutHandler);
+        when(timeoutHandler.hasTimedOut()).thenReturn(true);
+        String value = sessionId.getSessionId();
+        assertTrue(timeoutHandler.hasTimedOut());
+        assertNotEquals(value, sessionId.getSessionId());
     }
 }
