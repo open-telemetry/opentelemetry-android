@@ -4,5 +4,9 @@
     200,
     403
   ],
-  "ignorePatterns": []
+  "ignorePatterns": [
+    {
+      "pattern": "^http://localhost:16686$"
+    }
+  ]
 }
