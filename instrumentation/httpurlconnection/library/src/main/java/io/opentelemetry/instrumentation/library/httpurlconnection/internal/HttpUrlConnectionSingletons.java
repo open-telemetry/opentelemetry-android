@@ -6,6 +6,7 @@
 package io.opentelemetry.instrumentation.library.httpurlconnection.internal;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpClientExperimentalMetrics;
 import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpClientPeerServiceAttributesExtractor;
 import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpExperimentalAttributesExtractor;
@@ -22,11 +23,15 @@ import java.net.URLConnection;
 
 public final class HttpUrlConnectionSingletons {
 
-    private static final Instrumenter<URLConnection, Integer> INSTRUMENTER;
+    private static volatile Instrumenter<URLConnection, Integer> instrumenter;
     private static final String INSTRUMENTATION_NAME =
             "io.opentelemetry.android.http-url-connection";
+    private static final Object lock = new Object();
+    private static OpenTelemetry openTelemetryInstance;
 
-    static {
+    public static Instrumenter<URLConnection, Integer> createInstrumenter(
+            OpenTelemetry opentelemetry) {
+
         HttpUrlHttpAttributesGetter httpAttributesGetter = new HttpUrlHttpAttributesGetter();
 
         HttpSpanNameExtractorBuilder<URLConnection> httpSpanNameExtractorBuilder =
@@ -48,9 +53,11 @@ public final class HttpUrlConnectionSingletons {
                                 httpAttributesGetter,
                                 HttpUrlInstrumentationConfig.newPeerServiceResolver());
 
+        openTelemetryInstance = (opentelemetry == null) ? GlobalOpenTelemetry.get() : opentelemetry;
+
         InstrumenterBuilder<URLConnection, Integer> builder =
                 Instrumenter.<URLConnection, Integer>builder(
-                                GlobalOpenTelemetry.get(),
+                                openTelemetryInstance,
                                 INSTRUMENTATION_NAME,
                                 httpSpanNameExtractorBuilder.build())
                         .setSpanStatusExtractor(
@@ -65,11 +72,27 @@ public final class HttpUrlConnectionSingletons {
                     .addOperationMetrics(HttpClientExperimentalMetrics.get());
         }
 
-        INSTRUMENTER = builder.buildClientInstrumenter(RequestPropertySetter.INSTANCE);
+        return builder.buildClientInstrumenter(RequestPropertySetter.INSTANCE);
     }
 
     public static Instrumenter<URLConnection, Integer> instrumenter() {
-        return INSTRUMENTER;
+        if (instrumenter == null) {
+            synchronized (lock) {
+                if (instrumenter == null) {
+                    instrumenter = createInstrumenter(null);
+                }
+            }
+        }
+        return instrumenter;
+    }
+
+    public static OpenTelemetry openTelemetryInstance() {
+        return openTelemetryInstance;
+    }
+
+    // Used for setting the instrumenter for testing purposes only.
+    public static void setInstrumenterForTesting(OpenTelemetry opentelemetry) {
+        instrumenter = createInstrumenter(opentelemetry);
     }
 
     private HttpUrlConnectionSingletons() {}

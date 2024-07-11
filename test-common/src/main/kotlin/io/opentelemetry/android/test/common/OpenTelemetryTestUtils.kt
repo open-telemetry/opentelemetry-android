@@ -6,6 +6,7 @@
 package io.opentelemetry.android.test.common
 
 import io.opentelemetry.api.GlobalOpenTelemetry
+import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.trace.SdkTracerProvider
@@ -13,19 +14,25 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.export.SpanExporter
 
 object OpenTelemetryTestUtils {
+    lateinit var openTelemetry: OpenTelemetry
+
     @JvmStatic
     fun getSpan(): Span {
-        return GlobalOpenTelemetry.getTracer("TestTracer").spanBuilder("A Span").startSpan()
+        return openTelemetry.getTracer("TestTracer").spanBuilder("A Span").startSpan()
     }
 
     @JvmStatic
-    fun setUpSpanExporter(spanExporter: SpanExporter) {
-        val openTelemetry =
+    fun setUpSpanExporter(spanExporter: SpanExporter): OpenTelemetry {
+        openTelemetry =
             OpenTelemetrySdk.builder()
                 .setTracerProvider(getSimpleTracerProvider(spanExporter))
                 .build()
+
+        // TODO: Remove the bottom two lines after making okhttp3 androidTests parallel too.
         GlobalOpenTelemetry.resetForTest()
         GlobalOpenTelemetry.set(openTelemetry)
+
+        return openTelemetry
     }
 
     private fun getSimpleTracerProvider(spanExporter: SpanExporter): SdkTracerProvider {

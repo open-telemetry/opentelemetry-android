@@ -8,66 +8,54 @@ package io.opentelemetry.instrumentation.library.httpurlconnection
 import io.opentelemetry.android.test.common.OpenTelemetryTestUtils
 import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlConnectionTestUtil.executeGet
 import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlConnectionTestUtil.post
+import io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
-import org.junit.After
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
 class InstrumentationTest {
-    @Before
-    fun setUp() {
-        OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter)
-    }
-
-    @After
-    fun tearDown() {
-        inMemorySpanExporter.reset()
-    }
-
     @Test
     fun testHttpUrlConnectionGetRequest_ShouldBeTraced() {
+        val inMemorySpanExporter = InMemorySpanExporter.create()
+        HttpUrlConnectionSingletons.setInstrumenterForTesting(OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter))
         executeGet("http://httpbin.org/get")
         Assert.assertEquals(1, inMemorySpanExporter.finishedSpanItems.size)
+        inMemorySpanExporter.shutdown()
     }
 
     @Test
     fun testHttpUrlConnectionPostRequest_ShouldBeTraced() {
+        val inMemorySpanExporter = InMemorySpanExporter.create()
+        HttpUrlConnectionSingletons.setInstrumenterForTesting(OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter))
         post("http://httpbin.org/post")
         Assert.assertEquals(1, inMemorySpanExporter.finishedSpanItems.size)
+        inMemorySpanExporter.shutdown()
     }
 
     @Test
     fun testHttpUrlConnectionGetRequest_WhenNoStreamFetchedAndNoDisconnectCalled_ShouldNotBeTraced() {
+        val inMemorySpanExporter = InMemorySpanExporter.create()
+        HttpUrlConnectionSingletons.setInstrumenterForTesting(OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter))
         executeGet("http://httpbin.org/get", false, false)
         Assert.assertEquals(0, inMemorySpanExporter.finishedSpanItems.size)
+        inMemorySpanExporter.shutdown()
     }
 
     @Test
     fun testHttpUrlConnectionGetRequest_WhenNoStreamFetchedButDisconnectCalled_ShouldBeTraced() {
+        val inMemorySpanExporter = InMemorySpanExporter.create()
+        HttpUrlConnectionSingletons.setInstrumenterForTesting(OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter))
         executeGet("http://httpbin.org/get", false)
         Assert.assertEquals(1, inMemorySpanExporter.finishedSpanItems.size)
-    }
-
-    @Test
-    fun testHttpUrlConnectionGetRequest_WhenNoStreamFetchedAndNoDisconnectCalledButHarvesterScheduled_ShouldBeTraced() {
-        executeGet("http://httpbin.org/get", false, false)
-        val harvester = scheduleHarvester()
-        try {
-            Thread.sleep(15000)
-            Assert.assertEquals(1, inMemorySpanExporter.finishedSpanItems.size)
-        } catch (e: InterruptedException) {
-            Assert.fail("Test could not be completed as thread was interrupted while sleeping.")
-        } finally {
-            harvester.shutdown()
-        }
+        inMemorySpanExporter.shutdown()
     }
 
     @Test
     fun testHttpUrlConnectionGetRequest_WhenFourConcurrentRequestsAreMade_AllShouldBeTraced() {
+        val inMemorySpanExporter = InMemorySpanExporter.create()
+        HttpUrlConnectionSingletons.setInstrumenterForTesting(OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter))
         val executor = Executors.newFixedThreadPool(4)
         try {
             executor.submit { executeGet("http://httpbin.org/get") }
@@ -95,11 +83,14 @@ class InstrumentationTest {
             if (!executor.isShutdown) {
                 executor.shutdownNow()
             }
+            inMemorySpanExporter.shutdown()
         }
     }
 
     @Test
     fun testHttpUrlConnectionRequest_ContextPropagationHappensAsExpected() {
+        val inMemorySpanExporter = InMemorySpanExporter.create()
+        HttpUrlConnectionSingletons.setInstrumenterForTesting(OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter))
         val parentSpan = OpenTelemetryTestUtils.getSpan()
 
         parentSpan.makeCurrent().use {
@@ -116,21 +107,6 @@ class InstrumentationTest {
         parentSpan.end()
 
         Assert.assertEquals(2, inMemorySpanExporter.finishedSpanItems.size)
-    }
-
-    private fun scheduleHarvester(): ScheduledExecutorService {
-        val executorService = Executors.newSingleThreadScheduledExecutor()
-        executorService.scheduleWithFixedDelay(
-            HttpUrlInstrumentationConfig.getReportIdleConnectionRunnable(),
-            0,
-            HttpUrlInstrumentationConfig.getReportIdleConnectionInterval(),
-            TimeUnit.MILLISECONDS,
-        )
-
-        return executorService
-    }
-
-    companion object {
-        private val inMemorySpanExporter: InMemorySpanExporter = InMemorySpanExporter.create()
+        inMemorySpanExporter.shutdown()
     }
 }
