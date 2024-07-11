@@ -3,22 +3,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.activity
+package io.opentelemetry.android.instrumentation.fragment
 
 import android.app.Application
+import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Build
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.Constants.INSTRUMENTATION_SCOPE
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.internal.services.ServiceManager
-import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
+import io.opentelemetry.android.internal.services.visiblescreen.fragments.RumFragmentActivityRegisterer
 import io.opentelemetry.api.trace.Tracer
 
-class ActivityLifecycleInstrumentation : AndroidInstrumentation {
-    private val startupTimer: AppStartupTimer by lazy { AppStartupTimer() }
-    private var screenNameExtractor: ScreenNameExtractor = ScreenNameExtractor.DEFAULT
+class FragmentLifecycleInstrumentation : AndroidInstrumentation {
+    private var screenNameExtractor = ScreenNameExtractor.DEFAULT
     private var tracerCustomizer: (Tracer) -> Tracer = { it }
 
     fun setTracerCustomizer(customizer: (Tracer) -> Tracer) {
@@ -33,24 +32,22 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
         application: Application,
         openTelemetryRum: OpenTelemetryRum,
     ) {
-        application.registerActivityLifecycleCallbacks(startupTimer.createLifecycleCallback())
-        application.registerActivityLifecycleCallbacks(buildActivityLifecycleTracer(openTelemetryRum))
+        application.registerActivityLifecycleCallbacks(buildFragmentRegisterer(openTelemetryRum))
     }
 
-    private fun buildActivityLifecycleTracer(openTelemetryRum: OpenTelemetryRum): DefaultingActivityLifecycleCallbacks {
+    private fun buildFragmentRegisterer(openTelemetryRum: OpenTelemetryRum): ActivityLifecycleCallbacks {
         val visibleScreenService = ServiceManager.get().getVisibleScreenService()
         val delegateTracer: Tracer = openTelemetryRum.openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
-        val tracers =
-            ActivityTracerCache(
+        val fragmentLifecycle =
+            RumFragmentLifecycleCallbacks(
                 tracerCustomizer.invoke(delegateTracer),
-                visibleScreenService,
-                startupTimer,
+                visibleScreenService::previouslyVisibleScreen,
                 screenNameExtractor,
             )
         return if (Build.VERSION.SDK_INT < 29) {
-            Pre29ActivityCallbacks(tracers)
+            RumFragmentActivityRegisterer.createPre29(fragmentLifecycle)
         } else {
-            ActivityCallbacks(tracers)
+            RumFragmentActivityRegisterer.create(fragmentLifecycle)
         }
     }
 }
