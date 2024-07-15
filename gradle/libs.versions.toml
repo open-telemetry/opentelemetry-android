@@ -44,7 +44,7 @@ androidx-test-runner = "androidx.test:runner:1.6.1"
 androidx-junit = "androidx.test.ext:junit:1.2.1"
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
-mockk = "io.mockk:mockk:1.13.11"
+mockk = "io.mockk:mockk:1.13.12"
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "junit" }
