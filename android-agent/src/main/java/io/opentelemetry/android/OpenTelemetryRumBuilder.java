@@ -277,7 +277,7 @@ public final class OpenTelemetryRumBuilder {
     }
 
     OpenTelemetryRum build(ServiceManager serviceManager) {
-        applyConfiguration();
+        applyConfiguration(serviceManager);
 
         DiskBufferingConfiguration diskBufferingConfiguration =
                 config.getDiskBufferingConfiguration();
@@ -374,7 +374,7 @@ public final class OpenTelemetryRumBuilder {
     }
 
     /** Leverage the configuration to wire up various instrumentation components. */
-    private void applyConfiguration() {
+    private void applyConfiguration(ServiceManager serviceManager) {
         if (config.shouldGenerateSdkInitializationEvents()) {
             if (initializationEvents == InitializationEvents.NO_OP) {
                 SdkInitializationEvents sdkInitEvents = new SdkInitializationEvents();
@@ -406,7 +406,7 @@ public final class OpenTelemetryRumBuilder {
                     (tracerProviderBuilder, app) -> {
                         SpanProcessor networkAttributesSpanAppender =
                                 NetworkAttributesSpanAppender.create(
-                                        ServiceManager.get().getCurrentNetworkProvider());
+                                        serviceManager.getCurrentNetworkProvider());
                         return tracerProviderBuilder.addSpanProcessor(
                                 networkAttributesSpanAppender);
                     });
@@ -419,7 +419,7 @@ public final class OpenTelemetryRumBuilder {
                     (tracerProviderBuilder, app) -> {
                         SpanProcessor screenAttributesAppender =
                                 new ScreenAttributesSpanProcessor(
-                                        ServiceManager.get().getVisibleScreenService());
+                                        serviceManager.getVisibleScreenService());
                         return tracerProviderBuilder.addSpanProcessor(screenAttributesAppender);
                     });
         }

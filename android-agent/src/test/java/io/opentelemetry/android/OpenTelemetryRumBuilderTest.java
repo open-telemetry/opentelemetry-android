@@ -37,6 +37,7 @@ import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.android.internal.services.ServiceManagerImpl;
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.events.EventLogger;
 import io.opentelemetry.api.incubator.logs.AnyValue;
@@ -429,7 +430,8 @@ public class OpenTelemetryRumBuilderTest {
                 Arrays.asList(
                         mock(Preferences.class),
                         mock(CacheStorage.class),
-                        mock(AppLifecycleService.class)));
+                        mock(AppLifecycleService.class),
+                        mock(VisibleScreenService.class)));
     }
 
     @NonNull
