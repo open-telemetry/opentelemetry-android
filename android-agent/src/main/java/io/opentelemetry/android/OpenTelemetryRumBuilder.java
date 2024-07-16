@@ -8,7 +8,6 @@ package io.opentelemetry.android;
 import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
-import android.content.Context;
 import android.util.Log;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
@@ -16,8 +15,6 @@ import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguratio
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
-import io.opentelemetry.android.instrumentation.crash.CrashReporter;
-import io.opentelemetry.android.instrumentation.crash.CrashReporterBuilder;
 import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
 import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents;
 import io.opentelemetry.android.internal.features.networkattrs.NetworkAttributesSpanAppender;
@@ -93,7 +90,6 @@ public final class OpenTelemetryRumBuilder {
 
     private Resource resource;
     private InitializationEvents initializationEvents = InitializationEvents.NO_OP;
-    private Consumer<CrashReporterBuilder> crashReporterCustomizer = x -> {};
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
@@ -149,21 +145,6 @@ public final class OpenTelemetryRumBuilder {
             BiFunction<SdkTracerProviderBuilder, Application, SdkTracerProviderBuilder>
                     customizer) {
         tracerProviderCustomizers.add(customizer);
-        return this;
-    }
-
-    /**
-     * Pass a Consumer that will receive the CrashReporterBuilder in order to perform additional
-     * specific customizations. If crash reporting is disabled via config, this method is
-     * effectively a no-op.
-     *
-     * @param customizer A Consumer that will recieve the {@link CrashReporterBuilder} before the
-     *     {@link CrashReporter} is built.
-     * @return this.
-     */
-    public OpenTelemetryRumBuilder addCrashReportingCustomization(
-            Consumer<CrashReporterBuilder> customizer) {
-        this.crashReporterCustomizer = customizer;
         return this;
     }
 
@@ -440,23 +421,6 @@ public final class OpenTelemetryRumBuilder {
                                 new ScreenAttributesSpanProcessor(
                                         ServiceManager.get().getVisibleScreenService());
                         return tracerProviderBuilder.addSpanProcessor(screenAttributesAppender);
-                    });
-        }
-
-        // Enable crash reporting instrumentation
-        if (config.isCrashReportingEnabled()) {
-            addInstrumentation(
-                    instrumentedApplication -> {
-                        Context context =
-                                instrumentedApplication.getApplication().getApplicationContext();
-                        CrashReporterBuilder builder =
-                                CrashReporter.builder()
-                                        .addAttributesExtractor(
-                                                RuntimeDetailsExtractor.create(context));
-                        crashReporterCustomizer.accept(builder);
-                        builder.build().installOn(instrumentedApplication);
-
-                        initializationEvents.crashReportingInitialized();
                     });
         }
     }
