@@ -5,15 +5,15 @@
 
 package io.opentelemetry.android;
 
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.TraceId;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 
 enum NoopOpenTelemetryRum implements OpenTelemetryRum {
     INSTANCE;
 
     @Override
-    public OpenTelemetrySdk getOpenTelemetry() {
-        return OpenTelemetrySdk.builder().build();
+    public OpenTelemetry getOpenTelemetry() {
+        return OpenTelemetry.noop();
     }
 
     @Override

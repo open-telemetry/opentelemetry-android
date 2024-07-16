@@ -11,6 +11,7 @@ import io.opentelemetry.android.OpenTelemetryRum;
 import io.opentelemetry.android.RuntimeDetailsExtractor;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +30,6 @@ public final class CrashReporterInstrumentation implements AndroidInstrumentatio
             @NonNull Application application, @NonNull OpenTelemetryRum openTelemetryRum) {
         addAttributesExtractor(RuntimeDetailsExtractor.create(application));
         CrashReporter crashReporter = new CrashReporter(additionalExtractors);
-        crashReporter.install(openTelemetryRum.getOpenTelemetry());
+        crashReporter.install((OpenTelemetrySdk) openTelemetryRum.getOpenTelemetry());
     }
 }

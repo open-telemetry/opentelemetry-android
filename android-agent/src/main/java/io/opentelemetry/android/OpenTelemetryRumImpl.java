@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android;
 
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 
 final class OpenTelemetryRumImpl implements OpenTelemetryRum {
@@ -18,7 +19,7 @@ final class OpenTelemetryRumImpl implements OpenTelemetryRum {
     }
 
     @Override
-    public OpenTelemetrySdk getOpenTelemetry() {
+    public OpenTelemetry getOpenTelemetry() {
         return openTelemetrySdk;
     }
 
