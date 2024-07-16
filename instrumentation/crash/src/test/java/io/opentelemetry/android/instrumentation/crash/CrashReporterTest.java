@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
+import io.opentelemetry.android.OpenTelemetryRum;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -46,14 +46,13 @@ class CrashReporterTest {
 
     @Test
     void integrationTest() throws InterruptedException {
-        InstrumentedApplication instrumentedApplication = mock(InstrumentedApplication.class);
-        when(instrumentedApplication.getOpenTelemetrySdk())
+        OpenTelemetryRum openTelemetryRum = mock();
+        when(openTelemetryRum.getOpenTelemetry())
                 .thenReturn((OpenTelemetrySdk) testing.getOpenTelemetry());
 
-        CrashReporter.builder()
-                .addAttributesExtractor(constant(stringKey("test.key"), "abc"))
-                .build()
-                .installOn(instrumentedApplication);
+        CrashReporterInstrumentation instrumentation = new CrashReporterInstrumentation();
+        instrumentation.addAttributesExtractor(constant(stringKey("test.key"), "abc"));
+        instrumentation.install(mock(), openTelemetryRum);
 
         String exceptionMessage = "boooom!";
         RuntimeException crash = new RuntimeException(exceptionMessage);

@@ -9,15 +9,16 @@ import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_ESCAPED;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_MESSAGE;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_TYPE;
-import static io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.*;
+import static io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.THREAD_ID;
+import static io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.THREAD_NAME;
 
-import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
@@ -25,36 +26,22 @@ import java.util.function.Consumer;
 
 /** Entrypoint for installing the crash reporting instrumentation. */
 public final class CrashReporter {
-
-    /** Returns a new {@link CrashReporter} with the default settings. */
-    public static CrashReporter create() {
-        return builder().build();
-    }
-
-    /** Returns a new {@link CrashReporterBuilder}. */
-    public static CrashReporterBuilder builder() {
-        return new CrashReporterBuilder();
-    }
-
     private final List<AttributesExtractor<CrashDetails, Void>> additionalExtractors;
 
-    CrashReporter(CrashReporterBuilder builder) {
-        this.additionalExtractors = builder.additionalExtractors;
+    public CrashReporter(List<AttributesExtractor<CrashDetails, Void>> additionalExtractors) {
+        this.additionalExtractors = additionalExtractors;
     }
 
-    /**
-     * Installs the crash reporting instrumentation on the given {@link InstrumentedApplication}.
-     */
-    public void installOn(InstrumentedApplication instrumentedApplication) {
+    /** Installs the crash reporting instrumentation. */
+    public void install(OpenTelemetrySdk openTelemetry) {
         Thread.UncaughtExceptionHandler existingHandler =
                 Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(
                 new CrashReportingExceptionHandler(
-                        buildInstrumenter(
-                                instrumentedApplication
-                                        .getOpenTelemetrySdk()
-                                        .getSdkLoggerProvider()),
-                        instrumentedApplication.getOpenTelemetrySdk().getSdkLoggerProvider(),
+                        buildInstrumenter(openTelemetry.getLogsBridge()),
+                        openTelemetry.getSdkLoggerProvider(), // TODO avoid using OpenTelemetrySdk
+                        // methods, only use the ones from
+                        // OpenTelemetry api.
                         existingHandler));
     }
 
