@@ -14,7 +14,7 @@ import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import java.util.ArrayList;
 import java.util.List;
 
-/** A builder of {@link CrashReporter}. */
+/** Entrypoint for installing the crash reporting instrumentation. */
 public final class CrashReporterInstrumentation implements AndroidInstrumentation {
     private final List<AttributesExtractor<CrashDetails, Void>> additionalExtractors =
             new ArrayList<>();

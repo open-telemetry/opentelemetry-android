@@ -24,7 +24,6 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.function.Consumer;
 
-/** Entrypoint for installing the crash reporting instrumentation. */
 public final class CrashReporter {
     private final List<AttributesExtractor<CrashDetails, Void>> additionalExtractors;
 
@@ -38,7 +37,7 @@ public final class CrashReporter {
                 Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(
                 new CrashReportingExceptionHandler(
-                        buildInstrumenter(openTelemetry.getLogsBridge()),
+                        buildInstrumenter(openTelemetry.getSdkLoggerProvider()),
                         openTelemetry.getSdkLoggerProvider(), // TODO avoid using OpenTelemetrySdk
                         // methods, only use the ones from
                         // OpenTelemetry api.

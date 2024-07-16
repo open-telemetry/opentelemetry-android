@@ -15,7 +15,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.sdk.OpenTelemetrySdk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -28,7 +28,7 @@ class SlowRenderingInstrumentationTest {
     private lateinit var slowRenderingInstrumentation: SlowRenderingInstrumentation
     private lateinit var application: Application
     private lateinit var openTelemetryRum: OpenTelemetryRum
-    private lateinit var openTelemetry: OpenTelemetry
+    private lateinit var openTelemetry: OpenTelemetrySdk
 
     @Before
     fun setUp() {
