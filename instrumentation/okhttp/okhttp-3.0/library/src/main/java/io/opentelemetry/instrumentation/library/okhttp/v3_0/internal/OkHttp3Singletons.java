@@ -30,34 +30,34 @@ public final class OkHttp3Singletons {
 
     private static final Supplier<Instrumenter<Request, Response>> INSTRUMENTER =
             CachedSupplier.create(
-                    () -> {
-                        return OkHttpClientInstrumenterBuilderFactory.create(
-                                        GlobalOpenTelemetry.get())
-                                .setCapturedRequestHeaders(
-                                        OkHttpInstrumentationConfig.getCapturedRequestHeaders())
-                                .setCapturedResponseHeaders(
-                                        OkHttpInstrumentationConfig.getCapturedResponseHeaders())
-                                .setKnownMethods(OkHttpInstrumentationConfig.getKnownMethods())
-                                // TODO: Do we really need to set the known methods on the span name
-                                // extractor as well?
-                                .setSpanNameExtractor(
-                                        x ->
-                                                HttpSpanNameExtractor.builder(
-                                                                OkHttpAttributesGetter.INSTANCE)
-                                                        .setKnownMethods(
-                                                                OkHttpInstrumentationConfig
-                                                                        .getKnownMethods())
-                                                        .build())
-                                .addAttributeExtractor(
-                                        PeerServiceAttributesExtractor.create(
-                                                OkHttpAttributesGetter.INSTANCE,
-                                                OkHttpInstrumentationConfig
-                                                        .newPeerServiceResolver()))
-                                .setEmitExperimentalHttpClientMetrics(
-                                        OkHttpInstrumentationConfig
-                                                .emitExperimentalHttpClientMetrics())
-                                .build();
-                    });
+                    () ->
+                            OkHttpClientInstrumenterBuilderFactory.create(GlobalOpenTelemetry.get())
+                                    .setCapturedRequestHeaders(
+                                            OkHttpInstrumentationConfig.getCapturedRequestHeaders())
+                                    .setCapturedResponseHeaders(
+                                            OkHttpInstrumentationConfig
+                                                    .getCapturedResponseHeaders())
+                                    .setKnownMethods(OkHttpInstrumentationConfig.getKnownMethods())
+                                    // TODO: Do we really need to set the known methods on the span
+                                    // name
+                                    // extractor as well?
+                                    .setSpanNameExtractor(
+                                            x ->
+                                                    HttpSpanNameExtractor.builder(
+                                                                    OkHttpAttributesGetter.INSTANCE)
+                                                            .setKnownMethods(
+                                                                    OkHttpInstrumentationConfig
+                                                                            .getKnownMethods())
+                                                            .build())
+                                    .addAttributeExtractor(
+                                            PeerServiceAttributesExtractor.create(
+                                                    OkHttpAttributesGetter.INSTANCE,
+                                                    OkHttpInstrumentationConfig
+                                                            .newPeerServiceResolver()))
+                                    .setEmitExperimentalHttpClientMetrics(
+                                            OkHttpInstrumentationConfig
+                                                    .emitExperimentalHttpClientMetrics())
+                                    .build());
 
     public static final Interceptor CALLBACK_CONTEXT_INTERCEPTOR =
             chain -> {

@@ -17,5 +17,4 @@ dependencies {
     compileOnly(libs.okhttp)
     api(libs.opentelemetry.instrumentation.okhttp)
     implementation(libs.opentelemetry.instrumentation.apiSemconv)
-    implementation(libs.opentelemetry.instrumentation.javaagent.extension.api)
 }
