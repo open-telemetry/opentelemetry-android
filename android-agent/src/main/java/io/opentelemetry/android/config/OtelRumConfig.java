@@ -25,7 +25,6 @@ public class OtelRumConfig {
     private boolean includeScreenAttributes = true;
     private DiskBufferingConfiguration diskBufferingConfiguration =
             DiskBufferingConfiguration.builder().build();
-    private boolean crashReportingEnabled = true;
     private Duration sessionTimeout = Duration.ofMinutes(15);
 
     /**
@@ -110,17 +109,6 @@ public class OtelRumConfig {
     public OtelRumConfig setDiskBufferingConfiguration(
             DiskBufferingConfiguration diskBufferingConfiguration) {
         this.diskBufferingConfiguration = diskBufferingConfiguration;
-        return this;
-    }
-
-    /** Returns true if crash reporting is enabled. */
-    public boolean isCrashReportingEnabled() {
-        return crashReportingEnabled;
-    }
-
-    /** Call this method to disable crash reporting. */
-    public OtelRumConfig disableCrashReporting() {
-        crashReportingEnabled = false;
         return this;
     }
 

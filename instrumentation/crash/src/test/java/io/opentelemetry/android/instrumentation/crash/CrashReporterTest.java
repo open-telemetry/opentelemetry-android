@@ -11,49 +11,59 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import io.opentelemetry.android.OpenTelemetryRum;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
-import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
+import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.semconv.ExceptionAttributes;
 import io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes;
 import java.util.List;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 
-class CrashReporterTest {
+@RunWith(AndroidJUnit4.class)
+public class CrashReporterTest {
+    private OpenTelemetrySdk openTelemetrySdk;
+    private InMemoryLogRecordExporter logRecordExporter;
+    private Thread.UncaughtExceptionHandler existingHandler;
 
-    @RegisterExtension
-    static final OpenTelemetryExtension testing = OpenTelemetryExtension.create();
-
-    static Thread.UncaughtExceptionHandler existingHandler;
-
-    @BeforeAll
-    static void setUp() {
+    @Before
+    public void setUp() {
+        logRecordExporter = InMemoryLogRecordExporter.create();
+        openTelemetrySdk =
+                OpenTelemetrySdk.builder()
+                        .setLoggerProvider(
+                                SdkLoggerProvider.builder()
+                                        .addLogRecordProcessor(
+                                                SimpleLogRecordProcessor.create(logRecordExporter))
+                                        .build())
+                        .build();
         existingHandler = Thread.getDefaultUncaughtExceptionHandler();
         // disable the handler installed by junit
         Thread.setDefaultUncaughtExceptionHandler(null);
     }
 
-    @AfterAll
-    static void tearDown() {
+    @After
+    public void tearDown() {
         Thread.setDefaultUncaughtExceptionHandler(existingHandler);
     }
 
     @Test
-    void integrationTest() throws InterruptedException {
-        InstrumentedApplication instrumentedApplication = mock(InstrumentedApplication.class);
-        when(instrumentedApplication.getOpenTelemetrySdk())
-                .thenReturn((OpenTelemetrySdk) testing.getOpenTelemetry());
+    public void integrationTest() throws InterruptedException {
+        OpenTelemetryRum openTelemetryRum = mock();
+        when(openTelemetryRum.getOpenTelemetry()).thenReturn(openTelemetrySdk);
 
-        CrashReporter.builder()
-                .addAttributesExtractor(constant(stringKey("test.key"), "abc"))
-                .build()
-                .installOn(instrumentedApplication);
+        CrashReporterInstrumentation instrumentation = new CrashReporterInstrumentation();
+        instrumentation.addAttributesExtractor(constant(stringKey("test.key"), "abc"));
+        instrumentation.install(RuntimeEnvironment.getApplication(), openTelemetryRum);
 
         String exceptionMessage = "boooom!";
         RuntimeException crash = new RuntimeException(exceptionMessage);
@@ -66,7 +76,7 @@ class CrashReporterTest {
         crashingThread.start();
         crashingThread.join();
 
-        List<LogRecordData> logRecords = testing.getLogRecords();
+        List<LogRecordData> logRecords = logRecordExporter.getFinishedLogRecordItems();
         assertThat(logRecords).hasSize(1);
 
         Attributes crashAttributes = logRecords.get(0).getAttributes();
