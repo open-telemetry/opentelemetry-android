@@ -5,20 +5,18 @@
 
 package io.opentelemetry.instrumentation.library.okhttp.v3_0.internal;
 
-import static java.util.Collections.singletonList;
-
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.instrumentation.api.semconv.http.HttpClientRequestResendCount;
+import io.opentelemetry.instrumentation.api.semconv.http.HttpSpanNameExtractor;
 import io.opentelemetry.instrumentation.library.okhttp.v3_0.OkHttpInstrumentationConfig;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.ConnectionErrorSpanInterceptor;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpAttributesGetter;
-import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpInstrumenterFactory;
+import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpClientInstrumenterBuilderFactory;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.TracingInterceptor;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import okhttp3.Interceptor;
 import okhttp3.Request;
@@ -33,29 +31,33 @@ public final class OkHttp3Singletons {
     private static final Supplier<Instrumenter<Request, Response>> INSTRUMENTER =
             CachedSupplier.create(
                     () ->
-                            OkHttpInstrumenterFactory.create(
-                                    GlobalOpenTelemetry.get(),
-                                    builder ->
-                                            builder.setCapturedRequestHeaders(
-                                                            OkHttpInstrumentationConfig
-                                                                    .getCapturedRequestHeaders())
-                                                    .setCapturedResponseHeaders(
-                                                            OkHttpInstrumentationConfig
-                                                                    .getCapturedResponseHeaders())
-                                                    .setKnownMethods(
-                                                            OkHttpInstrumentationConfig
-                                                                    .getKnownMethods()),
-                                    spanNameExtractorConfigurer ->
-                                            spanNameExtractorConfigurer.setKnownMethods(
-                                                    OkHttpInstrumentationConfig.getKnownMethods()),
-                                    Function.identity(),
-                                    singletonList(
+                            OkHttpClientInstrumenterBuilderFactory.create(GlobalOpenTelemetry.get())
+                                    .setCapturedRequestHeaders(
+                                            OkHttpInstrumentationConfig.getCapturedRequestHeaders())
+                                    .setCapturedResponseHeaders(
+                                            OkHttpInstrumentationConfig
+                                                    .getCapturedResponseHeaders())
+                                    .setKnownMethods(OkHttpInstrumentationConfig.getKnownMethods())
+                                    // TODO: Do we really need to set the known methods on the span
+                                    // name
+                                    // extractor as well?
+                                    .setSpanNameExtractor(
+                                            x ->
+                                                    HttpSpanNameExtractor.builder(
+                                                                    OkHttpAttributesGetter.INSTANCE)
+                                                            .setKnownMethods(
+                                                                    OkHttpInstrumentationConfig
+                                                                            .getKnownMethods())
+                                                            .build())
+                                    .addAttributeExtractor(
                                             PeerServiceAttributesExtractor.create(
                                                     OkHttpAttributesGetter.INSTANCE,
                                                     OkHttpInstrumentationConfig
-                                                            .newPeerServiceResolver())),
-                                    OkHttpInstrumentationConfig
-                                            .emitExperimentalHttpClientMetrics()));
+                                                            .newPeerServiceResolver()))
+                                    .setEmitExperimentalHttpClientMetrics(
+                                            OkHttpInstrumentationConfig
+                                                    .emitExperimentalHttpClientMetrics())
+                                    .build());
 
     public static final Interceptor CALLBACK_CONTEXT_INTERCEPTOR =
             chain -> {
