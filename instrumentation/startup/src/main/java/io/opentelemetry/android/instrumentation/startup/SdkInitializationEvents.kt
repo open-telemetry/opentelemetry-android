@@ -6,6 +6,7 @@
 package io.opentelemetry.android.instrumentation.startup
 
 import io.opentelemetry.android.common.RumConstants
+import io.opentelemetry.android.instrumentation.initialization.InitializationEvents
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.incubator.logs.AnyValue
@@ -16,7 +17,8 @@ import java.time.Instant
 import java.util.function.Consumer
 import java.util.function.Supplier
 
-class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { Instant.now() }) : InitializationEvents {
+class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { Instant.now() }) :
+    InitializationEvents {
     private val events = mutableListOf<Event>()
 
     override fun sdkInitializationStarted() {

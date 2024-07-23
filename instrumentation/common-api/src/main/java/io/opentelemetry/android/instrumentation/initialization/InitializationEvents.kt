@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.startup
+package io.opentelemetry.android.instrumentation.initialization
 
 import io.opentelemetry.sdk.trace.export.SpanExporter
 

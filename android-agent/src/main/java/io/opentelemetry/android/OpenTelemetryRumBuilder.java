@@ -15,7 +15,7 @@ import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguratio
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
-import io.opentelemetry.android.instrumentation.startup.InitializationEvents;
+import io.opentelemetry.android.instrumentation.initialization.InitializationEvents;
 import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents;
 import io.opentelemetry.android.internal.features.networkattrs.NetworkAttributesSpanAppender;
 import io.opentelemetry.android.internal.features.persistence.DiskManager;
