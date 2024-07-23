@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.instrumentation.startup
 
+import com.google.auto.service.AutoService
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.instrumentation.initialization.InitializationEvents
 import io.opentelemetry.api.common.AttributeKey
@@ -17,6 +18,7 @@ import java.time.Instant
 import java.util.function.Consumer
 import java.util.function.Supplier
 
+@AutoService(InitializationEvents::class)
 class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { Instant.now() }) :
     InitializationEvents {
     private val events = mutableListOf<Event>()
