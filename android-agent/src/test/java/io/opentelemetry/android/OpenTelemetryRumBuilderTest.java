@@ -30,7 +30,7 @@ import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
-import io.opentelemetry.android.instrumentation.initialization.InitializationEvents;
+import io.opentelemetry.android.initialization.InitializationEvents;
 import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.ServiceManager;
@@ -105,12 +105,14 @@ public class OpenTelemetryRumBuilderTest {
         mocks = MockitoAnnotations.openMocks(this);
         when(application.getApplicationContext()).thenReturn(applicationContext);
         when(application.getMainLooper()).thenReturn(looper);
+        InitializationEvents.set(initializationEvents);
     }
 
     @After
     public void tearDown() throws Exception {
         SignalFromDiskExporter.resetForTesting();
         mocks.close();
+        InitializationEvents.resetForTest();
     }
 
     @Test
@@ -302,9 +304,7 @@ public class OpenTelemetryRumBuilderTest {
                         .build());
         ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
 
-        OpenTelemetryRum.builder(application, config)
-                .setInitializationEvents(initializationEvents)
-                .build(serviceManager);
+        OpenTelemetryRum.builder(application, config).build(serviceManager);
 
         assertThat(SignalFromDiskExporter.get()).isNotNull();
         verify(scheduleHandler).enable();
@@ -333,9 +333,7 @@ public class OpenTelemetryRumBuilderTest {
                         .setExportScheduleHandler(scheduleHandler)
                         .build());
 
-        OpenTelemetryRum.builder(application, config)
-                .setInitializationEvents(initializationEvents)
-                .build(serviceManager);
+        OpenTelemetryRum.builder(application, config).build(serviceManager);
 
         verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
         verify(scheduleHandler, never()).enable();
@@ -366,9 +364,7 @@ public class OpenTelemetryRumBuilderTest {
                         .setExportScheduleHandler(scheduleHandler)
                         .build());
 
-        OpenTelemetryRum.builder(application, config)
-                .setInitializationEvents(initializationEvents)
-                .build();
+        OpenTelemetryRum.builder(application, config).build();
 
         verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
         verify(scheduleHandler, never()).enable();

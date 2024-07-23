@@ -12,13 +12,11 @@ import io.mockk.verify
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.incubator.logs.AnyValue
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.logs.LogRecordProcessor
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord
 import io.opentelemetry.sdk.logs.SdkLoggerProvider
 import io.opentelemetry.sdk.logs.data.Body
-import io.opentelemetry.sdk.logs.internal.AnyValueBody
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import org.junit.jupiter.api.Test
@@ -37,11 +35,7 @@ class SdkInitializationEventsTest {
             Supplier {
                 Instant.ofEpochMilli(fakeTime.getAndAdd(50))
             }
-        val config = mapOf(Pair("foo", "bar"), Pair("bar", "baz"))
         val seen: MutableList<ReadWriteLogRecord> = ArrayList()
-        val expectedConfig =
-            AnyValueBody.create(AnyValue.of(config.mapValues { AnyValue.of(it.value) }))
-
         val exporter = mockk<SpanExporter>()
         val processor = mockk<LogRecordProcessor>()
         val loggerProvider =
@@ -64,7 +58,6 @@ class SdkInitializationEventsTest {
         events.crashReportingInitialized()
         events.currentNetworkProviderInitialized()
         events.networkMonitorInitialized()
-        events.recordConfiguration(config)
         events.slowRenderingDetectorInitialized()
         events.spanExporterInitialized(exporter)
 
@@ -79,9 +72,8 @@ class SdkInitializationEventsTest {
             time(now + 100).named(RumConstants.Events.INIT_EVENT_CRASH_REPORTER),
             time(now + 150).named(RumConstants.Events.INIT_EVENT_NET_PROVIDER),
             time(now + 200).named(RumConstants.Events.INIT_EVENT_NET_MONITOR),
-            time(now + 250).named(RumConstants.Events.INIT_EVENT_CONFIG).withBody(expectedConfig),
-            time(now + 300).named(RumConstants.Events.INIT_EVENT_JANK_MONITOR),
-            time(now + 350).named(RumConstants.Events.INIT_EVENT_SPAN_EXPORTER).withAttributes(
+            time(now + 250).named(RumConstants.Events.INIT_EVENT_JANK_MONITOR),
+            time(now + 300).named(RumConstants.Events.INIT_EVENT_SPAN_EXPORTER).withAttributes(
                 "span.exporter",
                 "com.cool.Exporter",
             ),

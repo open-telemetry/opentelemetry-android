@@ -5,12 +5,14 @@
 
 package io.opentelemetry.android.initialization
 
+import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.sdk.trace.export.SpanExporter
+import java.util.ServiceLoader.load
 
 interface InitializationEvents {
     fun sdkInitializationStarted()
 
-    fun recordConfiguration(config: Map<String, String>)
+    fun recordConfiguration(config: OtelRumConfig)
 
     fun currentNetworkProviderInitialized()
 
@@ -25,12 +27,38 @@ interface InitializationEvents {
     fun spanExporterInitialized(spanExporter: SpanExporter)
 
     companion object {
-        @JvmField
+        private var instance: InitializationEvents? = null
+
+        @JvmStatic
+        fun get(): InitializationEvents {
+            if (instance == null) {
+                val initializationEvents = load(InitializationEvents::class.java).firstOrNull()
+                if (initializationEvents != null) {
+                    set(initializationEvents)
+                }
+                set(NO_OP)
+            }
+
+            return instance!!
+        }
+
+        @JvmStatic
+        fun set(initializationEvents: InitializationEvents) {
+            if (instance == null) {
+                instance = initializationEvents
+            }
+        }
+
+        @JvmStatic
+        fun resetForTest() {
+            instance = null
+        }
+
         val NO_OP: InitializationEvents =
             object : InitializationEvents {
                 override fun sdkInitializationStarted() {}
 
-                override fun recordConfiguration(config: Map<String, String>) {}
+                override fun recordConfiguration(config: OtelRumConfig) {}
 
                 override fun currentNetworkProviderInitialized() {}
 

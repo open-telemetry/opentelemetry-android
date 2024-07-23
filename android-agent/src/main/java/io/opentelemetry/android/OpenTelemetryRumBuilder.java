@@ -50,9 +50,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -88,7 +86,6 @@ public final class OpenTelemetryRumBuilder {
             (a) -> a;
 
     private Resource resource;
-    private InitializationEvents initializationEvents = InitializationEvents.NO_OP;
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
@@ -276,7 +273,8 @@ public final class OpenTelemetryRumBuilder {
     }
 
     OpenTelemetryRum build(ServiceManager serviceManager) {
-        applyConfiguration(serviceManager);
+        InitializationEvents initializationEvents = InitializationEvents.get();
+        applyConfiguration(serviceManager, initializationEvents);
 
         DiskBufferingConfiguration diskBufferingConfiguration =
                 config.getDiskBufferingConfiguration();
@@ -373,18 +371,10 @@ public final class OpenTelemetryRumBuilder {
     }
 
     /** Leverage the configuration to wire up various instrumentation components. */
-    private void applyConfiguration(ServiceManager serviceManager) {
+    private void applyConfiguration(
+            ServiceManager serviceManager, InitializationEvents initializationEvents) {
         if (config.shouldGenerateSdkInitializationEvents()) {
-            if (initializationEvents == InitializationEvents.NO_OP) {
-                SdkInitializationEvents sdkInitEvents = new SdkInitializationEvents();
-                addOtelSdkReadyListener(sdkInitEvents::finish);
-                initializationEvents = sdkInitEvents;
-            }
-            Map<String, String> configMap = new HashMap<>();
-            // TODO: Convert config to map
-            // breedx-splk: Left incomplete for now, because I think Cesar is making changes around
-            // this
-            initializationEvents.recordConfiguration(configMap);
+            initializationEvents.recordConfiguration(config);
         }
         initializationEvents.sdkInitializationStarted();
 
@@ -483,10 +473,5 @@ public final class OpenTelemetryRumBuilder {
     private ContextPropagators buildFinalPropagators() {
         TextMapPropagator defaultPropagator = buildDefaultPropagator();
         return ContextPropagators.create(propagatorCustomizer.apply(defaultPropagator));
-    }
-
-    OpenTelemetryRumBuilder setInitializationEvents(InitializationEvents initializationEvents) {
-        this.initializationEvents = initializationEvents;
-        return this;
     }
 }
