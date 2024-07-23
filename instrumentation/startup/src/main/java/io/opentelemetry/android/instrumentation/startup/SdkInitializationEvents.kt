@@ -7,7 +7,7 @@ package io.opentelemetry.android.instrumentation.startup
 
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.common.RumConstants
-import io.opentelemetry.android.instrumentation.initialization.InitializationEvents
+import io.opentelemetry.android.initialization.InitializationEvents
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.incubator.logs.AnyValue
