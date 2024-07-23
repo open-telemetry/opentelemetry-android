@@ -6,10 +6,10 @@
 package io.opentelemetry.instrumentation.library.httpurlconnection;
 
 import static io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons.instrumenter;
+import static io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons.openTelemetryInstance;
 
 import android.annotation.SuppressLint;
 import android.os.SystemClock;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.library.httpurlconnection.internal.RequestPropertySetter;
 import java.io.IOException;
@@ -301,7 +301,8 @@ public class HttpUrlReplacements {
     }
 
     private static void injectContextToRequest(URLConnection connection, Context context) {
-        GlobalOpenTelemetry.getPropagators()
+        openTelemetryInstance()
+                .getPropagators()
                 .getTextMapPropagator()
                 .inject(context, connection, RequestPropertySetter.INSTANCE);
     }
