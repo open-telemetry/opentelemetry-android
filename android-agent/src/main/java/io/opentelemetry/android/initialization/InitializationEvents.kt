@@ -35,8 +35,9 @@ interface InitializationEvents {
                 val initializationEvents = load(InitializationEvents::class.java).firstOrNull()
                 if (initializationEvents != null) {
                     set(initializationEvents)
+                } else {
+                    set(NO_OP)
                 }
-                set(NO_OP)
             }
 
             return instance!!
