@@ -49,6 +49,13 @@
         "^androidx.compose.compiler"
       ],
       "groupName": "kotlin"
+    },
+    {
+      "includePaths": ["demo-app/"],
+      "matchPackagePatterns": [
+        "^androidx.lifecycle"
+      ],
+      "groupName": "androidx.lifecycle"
     }
   ]
 }
