@@ -5,7 +5,6 @@ import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
 plugins {
     id("java-library")
     id("org.jetbrains.kotlin.jvm")
-    id("kotlin-kapt")
     id("otel.errorprone-conventions")
     id("ru.vyarus.animalsniffer")
 }
@@ -36,8 +35,6 @@ kotlin {
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 dependencies {
     implementation(libs.findLibrary("findbugs-jsr305").get())
-    compileOnly(libs.findLibrary("auto-service-annotations").get())
-    kapt(libs.findLibrary("auto-service-processor").get())
 }
 
 animalsniffer {
