@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.initialization
+package io.opentelemetry.android.internal.initialization
 
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat

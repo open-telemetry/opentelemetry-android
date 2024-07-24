@@ -7,8 +7,8 @@ package io.opentelemetry.android.instrumentation.startup
 
 import android.app.Application
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.initialization.InitializationEvents
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.internal.initialization.InitializationEvents
 
 class StartupInstrumentation : AndroidInstrumentation {
     override fun install(
