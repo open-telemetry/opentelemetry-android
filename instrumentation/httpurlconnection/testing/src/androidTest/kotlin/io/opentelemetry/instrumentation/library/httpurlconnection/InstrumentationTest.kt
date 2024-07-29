@@ -10,8 +10,9 @@ import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlConnect
 import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlConnectionTestUtil.post
 import io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.fail
 import org.junit.After
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.Executors
@@ -37,25 +38,25 @@ class InstrumentationTest {
     @Test
     fun testHttpUrlConnectionGetRequest_ShouldBeTraced() {
         executeGet("http://httpbin.org/get")
-        Assert.assertEquals(1, inMemorySpanExporter.finishedSpanItems.size)
+        assertThat(inMemorySpanExporter.finishedSpanItems.size).isEqualTo(1)
     }
 
     @Test
     fun testHttpUrlConnectionPostRequest_ShouldBeTraced() {
         post("http://httpbin.org/post")
-        Assert.assertEquals(1, inMemorySpanExporter.finishedSpanItems.size)
+        assertThat(inMemorySpanExporter.finishedSpanItems.size).isEqualTo(1)
     }
 
     @Test
     fun testHttpUrlConnectionGetRequest_WhenNoStreamFetchedAndNoDisconnectCalled_ShouldNotBeTraced() {
         executeGet("http://httpbin.org/get", false, false)
-        Assert.assertEquals(0, inMemorySpanExporter.finishedSpanItems.size)
+        assertThat(inMemorySpanExporter.finishedSpanItems.size).isEqualTo(0)
     }
 
     @Test
     fun testHttpUrlConnectionGetRequest_WhenNoStreamFetchedButDisconnectCalled_ShouldBeTraced() {
         executeGet("http://httpbin.org/get", false)
-        Assert.assertEquals(1, inMemorySpanExporter.finishedSpanItems.size)
+        assertThat(inMemorySpanExporter.finishedSpanItems.size).isEqualTo(1)
     }
 
     @Test
@@ -71,10 +72,10 @@ class InstrumentationTest {
             // Wait for all tasks to finish execution or timeout
             if (executor.awaitTermination(2, TimeUnit.SECONDS)) {
                 // if all tasks finish before timeout
-                Assert.assertEquals(4, inMemorySpanExporter.finishedSpanItems.size)
+                assertThat(inMemorySpanExporter.finishedSpanItems.size).isEqualTo(4)
             } else {
                 // if all tasks don't finish before timeout
-                Assert.fail(
+                fail(
                     "Test could not be completed as tasks did not complete within the 2s timeout period.",
                 )
             }
@@ -82,7 +83,7 @@ class InstrumentationTest {
             // print stack trace to decipher lines that threw InterruptedException as it can be
             // possibly thrown by multiple calls above.
             e.printStackTrace()
-            Assert.fail("Test could not be completed due to an interrupted exception.")
+            fail("Test could not be completed due to an interrupted exception.")
         } finally {
             if (!executor.isShutdown) {
                 executor.shutdownNow()
@@ -99,14 +100,11 @@ class InstrumentationTest {
             val spanDataList = inMemorySpanExporter.finishedSpanItems
             if (spanDataList.isNotEmpty()) {
                 val currentSpanData = spanDataList[0]
-                Assert.assertEquals(
-                    parentSpan.spanContext.traceId,
-                    currentSpanData.traceId,
-                )
+                assertThat(currentSpanData.traceId).isEqualTo(parentSpan.spanContext.traceId)
             }
         }
         parentSpan.end()
 
-        Assert.assertEquals(2, inMemorySpanExporter.finishedSpanItems.size)
+        assertThat(inMemorySpanExporter.finishedSpanItems.size).isEqualTo(2)
     }
 }
