@@ -13,6 +13,7 @@ spotless = "6.25.0"
 kotlin = "2.0.0"
 androidPlugin = "8.5.1"
 junitKtx = "1.2.1"
+autoService = "1.1.1"
 
 [libraries]
 opentelemetry-platform = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom", version.ref = "opentelemetry-instrumentation" }
@@ -36,6 +37,8 @@ opentelemetry-exporter-logging = { module = "io.opentelemetry:opentelemetry-expo
 opentelemetry-diskBuffering = { module = "io.opentelemetry.contrib:opentelemetry-disk-buffering", version.ref = "opentelemetry-contrib" }
 opentelemetry-exporter-otlp = { module = "io.opentelemetry:opentelemetry-exporter-otlp", version.ref = "opentelemetry" }
 volley = "com.android.volley:volley:1.2.1"
+auto-service-annotations = { module = "com.google.auto.service:auto-service-annotations", version.ref = "autoService" }
+auto-service-processor = { module = "com.google.auto.service:auto-service", version.ref = "autoService" }
 
 #Test tools
 opentelemetry-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-testing", version.ref = "opentelemetry" }

@@ -5,33 +5,30 @@
 
 package io.opentelemetry.android.instrumentation.startup
 
+import com.google.auto.service.AutoService
 import io.opentelemetry.android.common.RumConstants
+import io.opentelemetry.android.config.OtelRumConfig
+import io.opentelemetry.android.internal.initialization.InitializationEvents
+import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.incubator.logs.AnyValue
-import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import java.time.Instant
-import java.util.function.Consumer
 import java.util.function.Supplier
 
-class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { Instant.now() }) : InitializationEvents {
+@AutoService(InitializationEvents::class)
+class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { Instant.now() }) :
+    InitializationEvents {
     private val events = mutableListOf<Event>()
 
     override fun sdkInitializationStarted() {
         addEvent(RumConstants.Events.INIT_EVENT_STARTED)
     }
 
-    override fun recordConfiguration(config: Map<String, String>) {
-        val map = mutableMapOf<String, AnyValue<*>>()
-        config.entries.forEach(
-            Consumer { e: Map.Entry<String, String> ->
-                map[e.key] = AnyValue.of(e.value)
-            },
-        )
-        val body = AnyValue.of(map)
-        addEvent(RumConstants.Events.INIT_EVENT_CONFIG, body = body)
+    override fun recordConfiguration(config: OtelRumConfig) {
+        // TODO convert config to AnyValue and add an event for it named RumConstants.Events.INIT_EVENT_CONFIG
     }
 
     override fun currentNetworkProviderInitialized() {
@@ -60,8 +57,8 @@ class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { 
         addEvent(RumConstants.Events.INIT_EVENT_SPAN_EXPORTER, attr = attributes)
     }
 
-    fun finish(sdk: OpenTelemetrySdk) {
-        val loggerProvider = sdk.sdkLoggerProvider
+    internal fun finish(openTelemetry: OpenTelemetry) {
+        val loggerProvider = openTelemetry.logsBridge
         val eventLogger =
             SdkEventLoggerProvider.create(loggerProvider).get("otel.initialization.events")
         events.forEach { event: Event ->
