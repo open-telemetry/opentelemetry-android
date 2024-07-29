@@ -6,11 +6,11 @@
 package io.opentelemetry.android
 
 import android.app.Application
-import io.opentelemetry.android.instrumentation.common.InstrumentedApplication
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.instrumentation.AndroidInstrumentationRegistry
 import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService
 import io.opentelemetry.sdk.OpenTelemetrySdk
-import java.util.function.Consumer
 
 class SdkPreconfiguredRumBuilder
     @JvmOverloads
@@ -24,18 +24,18 @@ class SdkPreconfiguredRumBuilder
         appLifecycleServiceProvider: () -> AppLifecycleService = {
             ServiceManager.get().getAppLifecycleService()
         },
+        private val discoverInstrumentations: Boolean,
     ) {
-        private val instrumentationInstallers: MutableList<Consumer<InstrumentedApplication>> =
-            ArrayList()
+        private val instrumentations = mutableListOf<AndroidInstrumentation>()
         private val appLifecycleService by lazy { appLifecycleServiceProvider.invoke() }
 
         /**
-         * Adds an instrumentation installer function that will be run on an [ ] instance as a part of the [.build] method call.
+         * Adds an instrumentation to be applied as a part of the [build] method call.
          *
          * @return `this`
          */
-        fun addInstrumentation(instrumentationInstaller: Consumer<InstrumentedApplication>): SdkPreconfiguredRumBuilder {
-            instrumentationInstallers.add(instrumentationInstaller)
+        fun addInstrumentation(instrumentation: AndroidInstrumentation): SdkPreconfiguredRumBuilder {
+            instrumentations.add(instrumentation)
             return this
         }
 
@@ -56,13 +56,21 @@ class SdkPreconfiguredRumBuilder
             val tracer = sdk.getTracer(OpenTelemetryRum::class.java.simpleName)
             sessionId.setSessionIdChangeListener(SessionIdChangeTracer(tracer))
 
-            //        InstrumentedApplication instrumentedApplication =
-            //                new InstrumentedApplicationImpl(application, sdk,
-            // applicationStateWatcher);
-            //        for (Consumer<InstrumentedApplication> installer : instrumentationInstallers) {
-            //            installer.accept(instrumentedApplication); TODO to be replaced by calls to
-            // AndroidInstrumentation.install
-            //        }
-            return OpenTelemetryRumImpl(sdk, sessionId)
+            val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionId)
+
+            // Install instrumentations
+            for (instrumentation in getInstrumentations()) {
+                instrumentation.install(application, openTelemetryRum)
+            }
+
+            return openTelemetryRum
+        }
+
+        private fun getInstrumentations(): List<AndroidInstrumentation> {
+            if (discoverInstrumentations) {
+                instrumentations.addAll(AndroidInstrumentationRegistry.get().getAll())
+            }
+
+            return instrumentations
         }
     }
