@@ -6,7 +6,7 @@
 package io.opentelemetry.android.features.diskbuffering.scheduler
 
 import android.util.Log
-import io.opentelemetry.android.common.RumConstants.OTEL_RUM_LOG_TAG
+import io.opentelemetry.android.config.RumConstants.OTEL_RUM_LOG_TAG
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicRunnable

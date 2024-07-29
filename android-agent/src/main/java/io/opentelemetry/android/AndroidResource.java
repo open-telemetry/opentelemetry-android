@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android;
 
-import static io.opentelemetry.android.common.RumConstants.RUM_SDK_VERSION;
+import static io.opentelemetry.android.config.RumConstants.RUM_SDK_VERSION;
 import static io.opentelemetry.semconv.ServiceAttributes.SERVICE_NAME;
 import static io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MANUFACTURER;
 import static io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER;

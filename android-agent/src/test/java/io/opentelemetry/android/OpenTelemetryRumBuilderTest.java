@@ -5,8 +5,8 @@
 
 package io.opentelemetry.android;
 
-import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
-import static io.opentelemetry.android.common.RumConstants.SESSION_ID_KEY;
+import static io.opentelemetry.android.config.RumConstants.SCREEN_NAME_KEY;
+import static io.opentelemetry.android.config.RumConstants.SESSION_ID_KEY;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;

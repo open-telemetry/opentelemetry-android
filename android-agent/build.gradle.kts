@@ -62,8 +62,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":common"))
-    implementation(project(":instrumentation:common-api"))
     implementation(libs.androidx.core)
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.androidx.lifecycle.process)

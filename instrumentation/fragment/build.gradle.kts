@@ -18,7 +18,6 @@ dependencies {
     api(libs.opentelemetry.api)
     api(project(":instrumentation:common-api"))
     api(project(":android-agent"))
-    api(project(":common"))
     implementation(libs.androidx.core)
     api(libs.androidx.navigation.fragment)
     implementation(libs.opentelemetry.sdk)

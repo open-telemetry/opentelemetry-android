@@ -9,8 +9,8 @@ import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
 import android.util.Log;
-import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
+import io.opentelemetry.android.config.RumConstants;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;

@@ -14,6 +14,7 @@ android {
 }
 
 dependencies {
+    api(project(":android-agent"))
     api(platform(libs.opentelemetry.platform))
     api(libs.opentelemetry.api)
     implementation(libs.androidx.navigation.fragment)

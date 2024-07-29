@@ -5,17 +5,17 @@
 
 package io.opentelemetry.android.instrumentation.activity;
 
-import static io.opentelemetry.android.common.RumConstants.LAST_SCREEN_NAME_KEY;
-import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
-import static io.opentelemetry.android.common.RumConstants.START_TYPE_KEY;
+import static io.opentelemetry.android.config.RumConstants.LAST_SCREEN_NAME_KEY;
+import static io.opentelemetry.android.config.RumConstants.SCREEN_NAME_KEY;
+import static io.opentelemetry.android.config.RumConstants.START_TYPE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
-import io.opentelemetry.android.common.ActiveSpan;
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer;
+import io.opentelemetry.android.instrumentation.common.ActiveSpan;
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;

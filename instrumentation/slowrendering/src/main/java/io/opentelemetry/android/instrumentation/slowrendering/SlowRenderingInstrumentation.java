@@ -11,7 +11,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import io.opentelemetry.android.OpenTelemetryRum;
-import io.opentelemetry.android.common.RumConstants;
+import io.opentelemetry.android.config.RumConstants;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import java.time.Duration;
 
