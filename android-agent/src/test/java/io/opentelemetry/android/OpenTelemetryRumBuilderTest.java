@@ -211,7 +211,7 @@ public class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    public void shouldInstallInstrumentation_excludingClasspathImplWhenRequestedInConfig() {
+    public void shouldInstallInstrumentation_excludingClasspathImplsWhenRequestedInConfig() {
         ServiceManager serviceManager = createServiceManager();
         SessionIdTimeoutHandler timeoutHandler = mock();
         AndroidInstrumentation localInstrumentation = mock();
