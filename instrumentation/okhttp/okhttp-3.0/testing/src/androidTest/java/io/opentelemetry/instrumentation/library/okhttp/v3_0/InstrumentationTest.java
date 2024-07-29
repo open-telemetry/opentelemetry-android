@@ -30,6 +30,8 @@ import org.junit.Test;
 public class InstrumentationTest {
     private MockWebServer server;
     private static final InMemorySpanExporter inMemorySpanExporter = InMemorySpanExporter.create();
+    private static final OpenTelemetryTestUtils openTelemetryTestUtils =
+            new OpenTelemetryTestUtils();
 
     @Before
     public void setUp() throws IOException {
@@ -45,10 +47,10 @@ public class InstrumentationTest {
 
     @Test
     public void okhttpTraces() throws IOException {
-        OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter);
+        openTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter);
         server.enqueue(new MockResponse().setResponseCode(200));
 
-        Span span = OpenTelemetryTestUtils.getSpan();
+        Span span = openTelemetryTestUtils.getSpan();
 
         try (Scope ignored = span.makeCurrent()) {
             OkHttpClient client =
@@ -72,9 +74,9 @@ public class InstrumentationTest {
 
     @Test
     public void okhttpTraces_with_callback() throws InterruptedException {
-        OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter);
+        openTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter);
         CountDownLatch lock = new CountDownLatch(1);
-        Span span = OpenTelemetryTestUtils.getSpan();
+        Span span = openTelemetryTestUtils.getSpan();
 
         try (Scope ignored = span.makeCurrent()) {
             server.enqueue(new MockResponse().setResponseCode(200));
@@ -121,13 +123,13 @@ public class InstrumentationTest {
         // so it should be run isolated to actually get it to fail when it's expected to fail.
         OtlpHttpSpanExporter exporter =
                 OtlpHttpSpanExporter.builder().setEndpoint(server.url("").toString()).build();
-        OpenTelemetryTestUtils.setUpSpanExporter(exporter);
+        openTelemetryTestUtils.setUpSpanExporter(exporter);
 
         server.enqueue(new MockResponse().setResponseCode(200));
 
         // This span should trigger 1 export okhttp call, which is the only okhttp call expected
         // for this test case.
-        OpenTelemetryTestUtils.getSpan().end();
+        openTelemetryTestUtils.getSpan().end();
 
         // Wait for unwanted extra okhttp requests.
         int loop = 0;

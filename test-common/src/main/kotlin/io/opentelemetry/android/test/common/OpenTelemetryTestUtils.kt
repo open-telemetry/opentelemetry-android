@@ -13,15 +13,13 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.export.SpanExporter
 
-object OpenTelemetryTestUtils {
+class OpenTelemetryTestUtils {
     lateinit var openTelemetry: OpenTelemetry
 
-    @JvmStatic
     fun getSpan(): Span {
         return openTelemetry.getTracer("TestTracer").spanBuilder("A Span").startSpan()
     }
 
-    @JvmStatic
     fun setUpSpanExporter(spanExporter: SpanExporter): OpenTelemetry {
         openTelemetry =
             OpenTelemetrySdk.builder()

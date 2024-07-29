@@ -23,11 +23,17 @@ import java.net.URLConnection;
 
 public final class HttpUrlConnectionSingletons {
 
-    private static volatile Instrumenter<URLConnection, Integer> instrumenter;
     private static final String INSTRUMENTATION_NAME =
             "io.opentelemetry.android.http-url-connection";
-    private static final Object lock = new Object();
+
     private static OpenTelemetry openTelemetryInstance;
+    private static volatile Instrumenter<URLConnection, Integer> instrumenter;
+    private static final Object lock = new Object();
+
+    // ThreadLocal instances for parallel test execution.
+    private static ThreadLocal<OpenTelemetry> testOpentelemetryInstance = new ThreadLocal<>();
+    private static ThreadLocal<Instrumenter<URLConnection, Integer>> testInstrumenter =
+            new ThreadLocal<>();
 
     public static Instrumenter<URLConnection, Integer> createInstrumenter(
             OpenTelemetry opentelemetry) {
@@ -53,11 +59,9 @@ public final class HttpUrlConnectionSingletons {
                                 httpAttributesGetter,
                                 HttpUrlInstrumentationConfig.newPeerServiceResolver());
 
-        openTelemetryInstance = (opentelemetry == null) ? GlobalOpenTelemetry.get() : opentelemetry;
-
         InstrumenterBuilder<URLConnection, Integer> builder =
                 Instrumenter.<URLConnection, Integer>builder(
-                                openTelemetryInstance,
+                                opentelemetry,
                                 INSTRUMENTATION_NAME,
                                 httpSpanNameExtractorBuilder.build())
                         .setSpanStatusExtractor(
@@ -76,23 +80,41 @@ public final class HttpUrlConnectionSingletons {
     }
 
     public static Instrumenter<URLConnection, Integer> instrumenter() {
-        if (instrumenter == null) {
-            synchronized (lock) {
-                if (instrumenter == null) {
-                    instrumenter = createInstrumenter(null);
+        Instrumenter<URLConnection, Integer> testInstrumenter =
+                HttpUrlConnectionSingletons.testInstrumenter.get();
+        if (testInstrumenter != null) {
+            return testInstrumenter;
+        } else {
+            if (instrumenter == null) {
+                synchronized (lock) {
+                    if (instrumenter == null) {
+                        openTelemetryInstance = GlobalOpenTelemetry.get();
+                        instrumenter = createInstrumenter(openTelemetryInstance);
+                    }
                 }
             }
+            return instrumenter;
         }
-        return instrumenter;
     }
 
     public static OpenTelemetry openTelemetryInstance() {
-        return openTelemetryInstance;
+        OpenTelemetry testOpenTelemetry = testOpentelemetryInstance.get();
+        if (testOpenTelemetry != null) {
+            return testOpenTelemetry;
+        } else {
+            return openTelemetryInstance;
+        }
     }
 
     // Used for setting the instrumenter for testing purposes only.
-    public static void setInstrumenterForTesting(OpenTelemetry opentelemetry) {
-        instrumenter = createInstrumenter(opentelemetry);
+    public static void setThreadLocalInstrumenterForTesting(OpenTelemetry opentelemetry) {
+        testOpentelemetryInstance.set(opentelemetry);
+        testInstrumenter.set(createInstrumenter(opentelemetry));
+    }
+
+    public static void removeThreadLocalInstrumenterForTesting() {
+        testOpentelemetryInstance.remove();
+        testInstrumenter.remove();
     }
 
     private HttpUrlConnectionSingletons() {}

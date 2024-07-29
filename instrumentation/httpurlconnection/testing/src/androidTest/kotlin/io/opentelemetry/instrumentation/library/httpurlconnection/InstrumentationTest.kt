@@ -10,52 +10,56 @@ import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlConnect
 import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlConnectionTestUtil.post
 import io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
+import org.junit.After
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class InstrumentationTest {
+    private lateinit var inMemorySpanExporter: InMemorySpanExporter
+    private lateinit var openTelemetryTestUtils: OpenTelemetryTestUtils
+
+    @Before
+    fun setUp() {
+        inMemorySpanExporter = InMemorySpanExporter.create()
+        openTelemetryTestUtils = OpenTelemetryTestUtils()
+        HttpUrlConnectionSingletons.setThreadLocalInstrumenterForTesting(openTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter))
+    }
+
+    @After
+    fun tearDown() {
+        inMemorySpanExporter.shutdown()
+        HttpUrlConnectionSingletons.removeThreadLocalInstrumenterForTesting()
+    }
+
     @Test
     fun testHttpUrlConnectionGetRequest_ShouldBeTraced() {
-        val inMemorySpanExporter = InMemorySpanExporter.create()
-        HttpUrlConnectionSingletons.setInstrumenterForTesting(OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter))
         executeGet("http://httpbin.org/get")
         Assert.assertEquals(1, inMemorySpanExporter.finishedSpanItems.size)
-        inMemorySpanExporter.shutdown()
     }
 
     @Test
     fun testHttpUrlConnectionPostRequest_ShouldBeTraced() {
-        val inMemorySpanExporter = InMemorySpanExporter.create()
-        HttpUrlConnectionSingletons.setInstrumenterForTesting(OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter))
         post("http://httpbin.org/post")
         Assert.assertEquals(1, inMemorySpanExporter.finishedSpanItems.size)
-        inMemorySpanExporter.shutdown()
     }
 
     @Test
     fun testHttpUrlConnectionGetRequest_WhenNoStreamFetchedAndNoDisconnectCalled_ShouldNotBeTraced() {
-        val inMemorySpanExporter = InMemorySpanExporter.create()
-        HttpUrlConnectionSingletons.setInstrumenterForTesting(OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter))
         executeGet("http://httpbin.org/get", false, false)
         Assert.assertEquals(0, inMemorySpanExporter.finishedSpanItems.size)
-        inMemorySpanExporter.shutdown()
     }
 
     @Test
     fun testHttpUrlConnectionGetRequest_WhenNoStreamFetchedButDisconnectCalled_ShouldBeTraced() {
-        val inMemorySpanExporter = InMemorySpanExporter.create()
-        HttpUrlConnectionSingletons.setInstrumenterForTesting(OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter))
         executeGet("http://httpbin.org/get", false)
         Assert.assertEquals(1, inMemorySpanExporter.finishedSpanItems.size)
-        inMemorySpanExporter.shutdown()
     }
 
     @Test
     fun testHttpUrlConnectionGetRequest_WhenFourConcurrentRequestsAreMade_AllShouldBeTraced() {
-        val inMemorySpanExporter = InMemorySpanExporter.create()
-        HttpUrlConnectionSingletons.setInstrumenterForTesting(OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter))
         val executor = Executors.newFixedThreadPool(4)
         try {
             executor.submit { executeGet("http://httpbin.org/get") }
@@ -83,15 +87,12 @@ class InstrumentationTest {
             if (!executor.isShutdown) {
                 executor.shutdownNow()
             }
-            inMemorySpanExporter.shutdown()
         }
     }
 
     @Test
     fun testHttpUrlConnectionRequest_ContextPropagationHappensAsExpected() {
-        val inMemorySpanExporter = InMemorySpanExporter.create()
-        HttpUrlConnectionSingletons.setInstrumenterForTesting(OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter))
-        val parentSpan = OpenTelemetryTestUtils.getSpan()
+        val parentSpan = openTelemetryTestUtils.getSpan()
 
         parentSpan.makeCurrent().use {
             executeGet("http://httpbin.org/get")
@@ -107,6 +108,5 @@ class InstrumentationTest {
         parentSpan.end()
 
         Assert.assertEquals(2, inMemorySpanExporter.finishedSpanItems.size)
-        inMemorySpanExporter.shutdown()
     }
 }
