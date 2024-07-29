@@ -10,12 +10,14 @@ import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import com.google.auto.service.AutoService;
 import io.opentelemetry.android.OpenTelemetryRum;
 import io.opentelemetry.android.config.RumConstants;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import java.time.Duration;
 
 /** Entrypoint for installing the slow rendering detection instrumentation. */
+@AutoService(AndroidInstrumentation.class)
 public final class SlowRenderingInstrumentation implements AndroidInstrumentation {
 
     Duration slowRenderingDetectionPollInterval = Duration.ofSeconds(1);

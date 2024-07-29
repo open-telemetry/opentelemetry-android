@@ -8,6 +8,7 @@ package io.opentelemetry.android.instrumentation.fragment
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Build
+import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.common.Constants.INSTRUMENTATION_SCOPE
@@ -16,6 +17,7 @@ import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.internal.services.visiblescreen.fragments.RumFragmentActivityRegisterer
 import io.opentelemetry.api.trace.Tracer
 
+@AutoService(AndroidInstrumentation::class)
 class FragmentLifecycleInstrumentation : AndroidInstrumentation {
     private var screenNameExtractor = ScreenNameExtractor.DEFAULT
     private var tracerCustomizer: (Tracer) -> Tracer = { it }
