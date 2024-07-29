@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.instrumentation.activity.startup;
 
-import static io.opentelemetry.android.config.RumConstants.START_TYPE_KEY;
+import static io.opentelemetry.android.common.RumConstants.START_TYPE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;

@@ -6,8 +6,8 @@
 package io.opentelemetry.android.instrumentation.startup
 
 import com.google.auto.service.AutoService
+import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.config.OtelRumConfig
-import io.opentelemetry.android.config.RumConstants
 import io.opentelemetry.android.internal.initialization.InitializationEvents
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey

@@ -5,9 +5,9 @@
 
 package io.opentelemetry.android.instrumentation.activity;
 
-import static io.opentelemetry.android.config.RumConstants.APP_START_SPAN_NAME;
-import static io.opentelemetry.android.config.RumConstants.SCREEN_NAME_KEY;
-import static io.opentelemetry.android.config.RumConstants.START_TYPE_KEY;
+import static io.opentelemetry.android.common.RumConstants.APP_START_SPAN_NAME;
+import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
+import static io.opentelemetry.android.common.RumConstants.START_TYPE_KEY;
 
 import android.app.Activity;
 import androidx.annotation.NonNull;

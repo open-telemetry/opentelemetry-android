@@ -5,9 +5,9 @@
 
 package io.opentelemetry.android;
 
-import static io.opentelemetry.android.config.RumConstants.BATTERY_PERCENT_KEY;
-import static io.opentelemetry.android.config.RumConstants.HEAP_FREE_KEY;
-import static io.opentelemetry.android.config.RumConstants.STORAGE_SPACE_FREE_KEY;
+import static io.opentelemetry.android.common.RumConstants.BATTERY_PERCENT_KEY;
+import static io.opentelemetry.android.common.RumConstants.HEAP_FREE_KEY;
+import static io.opentelemetry.android.common.RumConstants.STORAGE_SPACE_FREE_KEY;
 import static io.opentelemetry.context.Context.root;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.when;

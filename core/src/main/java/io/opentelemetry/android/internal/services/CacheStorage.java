@@ -11,7 +11,7 @@ import android.os.storage.StorageManager;
 import android.util.Log;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.WorkerThread;
-import io.opentelemetry.android.config.RumConstants;
+import io.opentelemetry.android.common.RumConstants;
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;

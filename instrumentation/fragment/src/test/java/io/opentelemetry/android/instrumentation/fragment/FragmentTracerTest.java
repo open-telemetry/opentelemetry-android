@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.instrumentation.fragment;
 
-import static io.opentelemetry.android.config.RumConstants.LAST_SCREEN_NAME_KEY;
+import static io.opentelemetry.android.common.RumConstants.LAST_SCREEN_NAME_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;

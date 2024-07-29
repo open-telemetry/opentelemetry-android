@@ -12,7 +12,7 @@ import android.os.Handler;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import io.opentelemetry.android.config.RumConstants;
+import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;

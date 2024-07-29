@@ -6,7 +6,7 @@
 package io.opentelemetry.android.instrumentation.common;
 
 import androidx.annotation.Nullable;
-import io.opentelemetry.android.config.RumConstants;
+import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import java.util.function.Supplier;

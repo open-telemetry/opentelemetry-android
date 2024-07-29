@@ -5,9 +5,9 @@
 
 package io.opentelemetry.android.instrumentation.activity;
 
-import static io.opentelemetry.android.config.RumConstants.LAST_SCREEN_NAME_KEY;
-import static io.opentelemetry.android.config.RumConstants.SCREEN_NAME_KEY;
-import static io.opentelemetry.android.config.RumConstants.START_TYPE_KEY;
+import static io.opentelemetry.android.common.RumConstants.LAST_SCREEN_NAME_KEY;
+import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
+import static io.opentelemetry.android.common.RumConstants.START_TYPE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
