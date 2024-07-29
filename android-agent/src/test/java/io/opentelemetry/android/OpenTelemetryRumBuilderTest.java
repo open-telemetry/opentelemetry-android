@@ -115,8 +115,9 @@ public class OpenTelemetryRumBuilderTest {
     @After
     public void tearDown() throws Exception {
         SignalFromDiskExporter.resetForTesting();
-        mocks.close();
         InitializationEvents.resetForTest();
+        AndroidInstrumentationRegistry.resetForTest();
+        mocks.close();
     }
 
     @Test
