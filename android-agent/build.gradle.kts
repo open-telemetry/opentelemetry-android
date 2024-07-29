@@ -23,4 +23,5 @@ dependencies {
 
 extra["pomName"] = "OpenTelemetry Android Agent"
 description =
-    "A library that contains all the commonly needed instrumentation for Android apps in a convenient way for minimum configuration."
+    "A library that contains all the commonly needed instrumentation for Android apps in a " +
+    "convenient way with minimum configuration needed."
