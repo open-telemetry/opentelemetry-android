@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "io.opentelemetry.android"
+    namespace = "io.opentelemetry.android.core"
 
     buildToolsVersion = "34.0.0"
 
