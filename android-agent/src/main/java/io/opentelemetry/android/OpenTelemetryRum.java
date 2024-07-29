@@ -43,7 +43,7 @@ public interface OpenTelemetryRum {
      * SDK as a parameter.
      */
     static OpenTelemetryRumBuilder builder(Application application, OtelRumConfig config) {
-        return new OpenTelemetryRumBuilder(application, config);
+        return OpenTelemetryRumBuilder.create(application, config);
     }
 
     /**

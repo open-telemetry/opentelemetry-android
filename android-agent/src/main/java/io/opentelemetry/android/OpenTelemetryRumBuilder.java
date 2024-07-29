@@ -89,10 +89,14 @@ public final class OpenTelemetryRumBuilder {
                 W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance());
     }
 
-    OpenTelemetryRumBuilder(Application application, OtelRumConfig config) {
+    public static OpenTelemetryRumBuilder create(Application application, OtelRumConfig config) {
+        return new OpenTelemetryRumBuilder(
+                application, config, new SessionIdTimeoutHandler(config.getSessionTimeout()));
+    }
+
+    OpenTelemetryRumBuilder(
+            Application application, OtelRumConfig config, SessionIdTimeoutHandler timeoutHandler) {
         this.application = application;
-        final SessionIdTimeoutHandler timeoutHandler =
-                new SessionIdTimeoutHandler(config.getSessionTimeout());
         this.sessionId = new SessionId(timeoutHandler);
         this.resource = AndroidResource.createDefault(application);
         this.config = config;
