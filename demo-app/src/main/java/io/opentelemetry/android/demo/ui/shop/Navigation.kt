@@ -28,38 +28,6 @@ sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: 
     object Cart : BottomNavItem("cart", Icons.Filled.ShoppingCart, "Cart")
 }
 
-@Composable
-fun BottomNavigationBar(navController: NavController,  onExitClicked: () -> Unit) {
-    NavigationBar {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
-
-
-        val items = listOf(
-            BottomNavItem.Exit,
-            BottomNavItem.List,
-            BottomNavItem.Cart
-        )
-
-        items.forEach { item ->
-            NavigationBarItem(
-                selected = currentRoute == item.route,
-                onClick = {
-                    if (item.route == BottomNavItem.Exit.route) {
-                       onExitClicked()
-                    } else {
-                        navController.navigate(item.route) {
-                            popUpTo(navController.graph.startDestinationId)
-                            launchSingleTop = true
-                        }
-                    }
-                },
-                icon = { Icon(item.icon, contentDescription = item.label) },
-                label = { Text(item.label) }
-            )
-        }
-    }
-}
 
 object MainDestinations {
     const val HOME_ROUTE = "prod-list"
@@ -74,9 +42,7 @@ fun rememberAstronomyShopNavController(navController: NavHostController = rememb
     AstronomyShopNavController(navController)
 }
 
-/**
- * Responsible for holding UI Navigation logic.
- */
+
 @Stable
 class AstronomyShopNavController(
     val navController: NavHostController,
@@ -88,19 +54,6 @@ class AstronomyShopNavController(
         navController.navigateUp()
     }
 
-    fun navigateToBottomBarRoute(route: String) {
-        if (route != currentRoute) {
-            navController.navigate(route) {
-                launchSingleTop = true
-                restoreState = true
-                // Pop up backstack to the first destination and save state. This makes going back
-                // to the start destination when pressing back in any other bottom tab.
-                popUpTo(findStartDestination(navController.graph).id) {
-                    saveState = true
-                }
-            }
-        }
-    }
     fun navigateToProductDetail(productId: String, from: NavBackStackEntry) {
         // In order to discard duplicated navigation events, we check the Lifecycle
         if (from.lifecycleIsResumed()) {
@@ -128,5 +81,30 @@ private val NavGraph.startDestination: NavDestination?
  */
 private tailrec fun findStartDestination(graph: NavDestination): NavDestination {
     return if (graph is NavGraph) findStartDestination(graph.startDestination!!) else graph
+}
+
+@Composable
+fun BottomNavigationBar(
+    items: List<BottomNavItem>,
+    currentRoute: String?,
+    onItemClicked: (String) -> Unit,
+    onExitClicked: () -> Unit
+) {
+    NavigationBar {
+        items.forEach { item ->
+            NavigationBarItem(
+                selected = currentRoute == item.route,
+                onClick = {
+                    if (item.route == BottomNavItem.Exit.route) {
+                        onExitClicked()
+                    } else {
+                        onItemClicked(item.route)
+                    }
+                },
+                icon = { Icon(item.icon, contentDescription = item.label) },
+                label = { Text(item.label) }
+            )
+        }
+    }
 }
 

@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,7 +33,6 @@ import io.opentelemetry.android.demo.ui.shop.products.ProductList
 
 
 class AstronomyShopActivity : AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -42,40 +42,43 @@ class AstronomyShopActivity : AppCompatActivity() {
 }
 
 @Composable
-fun AstronomyShopScreen(){
+fun AstronomyShopScreen() {
     val productsClient = ProductCatalogClient(LocalContext.current)
     val products by remember { mutableStateOf(productsClient.get()) }
+    val context = LocalContext.current
+    val astronomyShopNavController = rememberAstronomyShopNavController()
 
     DemoAppTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            val astronomyShopNavController = rememberAstronomyShopNavController()
             Scaffold(
                 bottomBar = {
-                    BottomNavigationBar(navController = astronomyShopNavController.navController,
+                    BottomNavigationBar(
+                        items = listOf(BottomNavItem.Exit, BottomNavItem.List, BottomNavItem.Cart),
+                        currentRoute = astronomyShopNavController.currentRoute,
+                        onItemClicked = { route ->
+                            astronomyShopNavController.navController.navigate(route) {
+                                popUpTo(astronomyShopNavController.navController.graph.startDestinationId)
+                                launchSingleTop = true
+                            }
+                        },
                         onExitClicked = {
-//                          TODO
+                            val intent = Intent(context, MainActivity::class.java)
+                            context.startActivity(intent)
+                            (context as? Activity)?.finish()
                         }
                     )
-
                 }
             ) { innerPadding ->
                 NavHost(
                     navController = astronomyShopNavController.navController,
-                    startDestination = "prod-list",
-                    Modifier.padding(innerPadding) // Ensure proper padding with Scaffold
+                    startDestination = MainDestinations.HOME_ROUTE,
+                    Modifier.padding(innerPadding)
                 ) {
-                    composable("prod-list") {
-                        ProductList(
-                            products = products
-                        )
-                    }
                     composable(BottomNavItem.List.route) {
-                        ProductList(
-                            products = products
-                        )
+                        ProductList(products = products)
                     }
                     composable(BottomNavItem.Cart.route) {
                         CartScreen()
@@ -85,6 +88,3 @@ fun AstronomyShopScreen(){
         }
     }
 }
-
-
-
