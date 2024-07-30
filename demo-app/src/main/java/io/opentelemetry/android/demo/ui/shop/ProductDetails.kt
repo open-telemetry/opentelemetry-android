@@ -2,6 +2,8 @@ package io.opentelemetry.android.demo.ui.shop
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +30,7 @@ fun ProductDetails(product:Product){
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .verticalScroll(rememberScrollState())
     ) {
         Image(
             bitmap = sourceProductImage.asImageBitmap(),
@@ -70,21 +73,5 @@ fun ProductDetails(product:Product){
         ) {
             Text(text = "Add to Cart")
         }
-    }
-}
-
-@Preview(showBackground = true, widthDp = 320)
-@Composable
-fun ProductDetailsPreview() {
-    val price = PriceUsd("USD", 349, 950000000)
-    val categories = listOf("telescopes")
-    val product = Product("66VCHSJNUP",
-        "Starsense Explorer Refractor Telescope",
-        "The first telescope that uses your smartphone to analyze the night sky and calculate its position in real time. StarSense Explorer is ideal for beginners thanks to the app’s user-friendly interface and detailed tutorials. It’s like having your own personal tour guide of the night sky",
-     "StarsenseExplorer.jpg",
-        price,
-        categories)
-    DemoAppTheme {
-        ProductDetails(product)
     }
 }

@@ -24,13 +24,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import io.opentelemetry.android.demo.TAG
 import io.opentelemetry.android.demo.clients.ImageLoader
 import io.opentelemetry.android.demo.gothamFont
 import io.opentelemetry.android.demo.model.Product
 
 @Composable
-fun ProductCard(product: Product) {
+fun ProductCard(product: Product, navController: NavController) {
     val imageLoader = ImageLoader(LocalContext.current)
     val sourceProductImage = imageLoader.load(product.picture)
     Bitmap.createScaledBitmap(sourceProductImage, 120, 120, false)
@@ -47,7 +48,8 @@ fun ProductCard(product: Product) {
         .wrapContentHeight()
         .padding(20.dp),
         onClick = {
-            Log.d(TAG, "TODO: Implement me!")
+            navController.navigate("prod-details/${product.id}")
+//            Log.d(TAG, "TODO: Implement me!")
         }
     ) {
         Row(modifier = Modifier.fillMaxSize().padding(20.dp)) {

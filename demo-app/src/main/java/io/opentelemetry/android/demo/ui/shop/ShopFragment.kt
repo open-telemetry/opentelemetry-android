@@ -17,6 +17,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import io.opentelemetry.android.demo.clients.ProductCatalogClient
 import io.opentelemetry.android.demo.theme.DemoAppTheme
 
@@ -34,17 +39,38 @@ class ShopFragment : Fragment() {
 
         return ComposeView(requireContext()).apply {
             setContent {
+
+                val navController = rememberNavController()
+
                 DemoAppTheme {
                     // A surface container using the 'background' color from the theme
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background,
                     ) {
-                        ProductList(productState)
+                        NavHost(navController = navController, startDestination = "prod-list") {
+                            composable("prod-list") {
+                                ProductList(
+                                    products = productState,
+                                    navController = navController
+                                )
+                            }
+                            composable(
+                                "prod-details/{productId}",
+                                arguments = listOf(navArgument("productId") {
+                                    type = NavType.StringType
+                                })
+                            ) { backStackEntry ->
+                                val productId = backStackEntry.arguments?.getString("productId")
+                                val product = products.find { it.id == productId }
+                                product?.let {
+                                    ProductDetails(product = it)
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
-
 }
