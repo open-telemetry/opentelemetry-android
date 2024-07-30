@@ -3,8 +3,6 @@ package io.opentelemetry.android.demo.ui.shop
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -13,19 +11,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavGraph
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.material3.*
-import androidx.compose.runtime.getValue
-import androidx.navigation.compose.currentBackStackEntryAsState
+
 
 sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
-    object Exit : BottomNavItem("home", Icons.AutoMirrored.Filled.ExitToApp, "Exit")
-    object List : BottomNavItem("prod-list", Icons.AutoMirrored.Filled.List, "List")
-    object Cart : BottomNavItem("cart", Icons.Filled.ShoppingCart, "Cart")
+    data object Exit : BottomNavItem("home", Icons.AutoMirrored.Filled.ExitToApp, "Exit")
+    data object List : BottomNavItem("prod-list", Icons.AutoMirrored.Filled.List, "List")
+    data object Cart : BottomNavItem("cart", Icons.Filled.ShoppingCart, "Cart")
 }
 
 object MainDestinations {
@@ -64,7 +60,7 @@ class AstronomyShopNavController(
 //    }
 }
 
-//some stuff copied from android samples
+//some stuff copied from android samples commented for now
 //
 ///**
 // * If the lifecycle is not resumed it means this NavBackStackEntry already processed a nav event.
