@@ -1,7 +1,6 @@
-package io.opentelemetry.android.demo.ui.shop
+package io.opentelemetry.android.demo.ui.shop.products
 
 import android.graphics.Bitmap
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,7 +14,6 @@ import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -25,13 +23,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import io.opentelemetry.android.demo.TAG
 import io.opentelemetry.android.demo.clients.ImageLoader
 import io.opentelemetry.android.demo.gothamFont
 import io.opentelemetry.android.demo.model.Product
 
 @Composable
-fun ProductCard(product: Product, navController: NavController) {
+fun ProductCard(product: Product) {
     val imageLoader = ImageLoader(LocalContext.current)
     val sourceProductImage = imageLoader.load(product.picture)
     Bitmap.createScaledBitmap(sourceProductImage, 120, 120, false)
@@ -48,7 +45,6 @@ fun ProductCard(product: Product, navController: NavController) {
         .wrapContentHeight()
         .padding(20.dp),
         onClick = {
-            navController.navigate("prod-details/${product.id}")
 //            Log.d(TAG, "TODO: Implement me!")
         }
     ) {

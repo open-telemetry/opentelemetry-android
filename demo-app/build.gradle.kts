@@ -67,9 +67,6 @@ dependencies {
     implementation(libs.opentelemetry.api.incubator)
     implementation(libs.androidx.navigation.compose)
 
-//    val nav_version = "2.7.7"
-//    implementation("androidx.navigation:navigation-compose:$nav_version")
-
     coreLibraryDesugaring(libs.desugarJdkLibs)
 
     implementation("io.opentelemetry.android:android-agent")    //parent dir
