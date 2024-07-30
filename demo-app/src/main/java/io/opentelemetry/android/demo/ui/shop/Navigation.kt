@@ -28,7 +28,6 @@ sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: 
     object Cart : BottomNavItem("cart", Icons.Filled.ShoppingCart, "Cart")
 }
 
-
 object MainDestinations {
     const val HOME_ROUTE = "prod-list"
     const val PRODUCT_DETAIL_ROUTE = "product"
@@ -42,7 +41,6 @@ fun rememberAstronomyShopNavController(navController: NavHostController = rememb
     AstronomyShopNavController(navController)
 }
 
-
 @Stable
 class AstronomyShopNavController(
     val navController: NavHostController,
@@ -54,34 +52,39 @@ class AstronomyShopNavController(
         navController.navigateUp()
     }
 
-    fun navigateToProductDetail(productId: String, from: NavBackStackEntry) {
-        // In order to discard duplicated navigation events, we check the Lifecycle
-        if (from.lifecycleIsResumed()) {
-            navController.navigate("${MainDestinations.PRODUCT_DETAIL_ROUTE}/$productId")
-        }
+    fun navigateToProductDetail(productId: String) {
+        navController.navigate("${MainDestinations.PRODUCT_DETAIL_ROUTE}/$productId")
     }
+
+//    fun navigateToProductDetail(productId: String, from: NavBackStackEntry) {
+//        // In order to discard duplicated navigation events, we check the Lifecycle
+//        if (from.lifecycleIsResumed()) {
+//            navController.navigate("${MainDestinations.PRODUCT_DETAIL_ROUTE}/$productId")
+//        }
+//    }
 }
 
-
-/**
- * If the lifecycle is not resumed it means this NavBackStackEntry already processed a nav event.
- *
- * This is used to de-duplicate navigation events.
- */
-private fun NavBackStackEntry.lifecycleIsResumed() =
-    this.lifecycle.currentState == Lifecycle.State.RESUMED
-
-private val NavGraph.startDestination: NavDestination?
-    get() = findNode(startDestinationId)
-
-/**
- * Copied from similar function in NavigationUI.kt
- *
- * https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:navigation/navigation-ui/src/main/java/androidx/navigation/ui/NavigationUI.kt
- */
-private tailrec fun findStartDestination(graph: NavDestination): NavDestination {
-    return if (graph is NavGraph) findStartDestination(graph.startDestination!!) else graph
-}
+//some stuff copied from android samples
+//
+///**
+// * If the lifecycle is not resumed it means this NavBackStackEntry already processed a nav event.
+// *
+// * This is used to de-duplicate navigation events.
+// */
+//private fun NavBackStackEntry.lifecycleIsResumed() =
+//    this.lifecycle.currentState == Lifecycle.State.RESUMED
+//
+//private val NavGraph.startDestination: NavDestination?
+//    get() = findNode(startDestinationId)
+//
+///**
+// * Copied from similar function in NavigationUI.kt
+// *
+// * https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:navigation/navigation-ui/src/main/java/androidx/navigation/ui/NavigationUI.kt
+// */
+//private tailrec fun findStartDestination(graph: NavDestination): NavDestination {
+//    return if (graph is NavGraph) findStartDestination(graph.startDestination!!) else graph
+//}
 
 @Composable
 fun BottomNavigationBar(

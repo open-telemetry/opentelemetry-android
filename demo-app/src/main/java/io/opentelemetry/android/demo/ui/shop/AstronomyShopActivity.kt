@@ -16,7 +16,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,7 +29,6 @@ import io.opentelemetry.android.demo.theme.DemoAppTheme
 import io.opentelemetry.android.demo.ui.shop.cart.CartScreen
 import io.opentelemetry.android.demo.ui.shop.products.ProductDetails
 import io.opentelemetry.android.demo.ui.shop.products.ProductList
-
 
 class AstronomyShopActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,10 +76,17 @@ fun AstronomyShopScreen() {
                     Modifier.padding(innerPadding)
                 ) {
                     composable(BottomNavItem.List.route) {
-                        ProductList(products = products)
+                        ProductList(products = products) { productId ->
+                            astronomyShopNavController.navigateToProductDetail(productId)
+                        }
                     }
                     composable(BottomNavItem.Cart.route) {
                         CartScreen()
+                    }
+                    composable("${MainDestinations.PRODUCT_DETAIL_ROUTE}/{${MainDestinations.PRODUCT_ID_KEY}}") { backStackEntry ->
+                        val productId = backStackEntry.arguments?.getString(MainDestinations.PRODUCT_ID_KEY)
+                        val product = products.find { it.id == productId }
+                        product?.let { ProductDetails(product = it) }
                     }
                 }
             }

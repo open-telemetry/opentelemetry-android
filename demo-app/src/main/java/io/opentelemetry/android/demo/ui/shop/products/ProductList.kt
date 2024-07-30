@@ -12,11 +12,11 @@ import androidx.navigation.NavController
 import io.opentelemetry.android.demo.model.Product
 
 @Composable
-fun ProductList(products: List<Product>) {
+fun ProductList(products: List<Product>, onProductClick: (String) -> Unit) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(products.size) { index ->
-            Row() {
-                ProductCard(products[index])
+            Row {
+                ProductCard(products[index], onClick = onProductClick)
             }
         }
         item {
