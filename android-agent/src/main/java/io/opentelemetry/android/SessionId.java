@@ -62,9 +62,9 @@ class SessionId {
             }
             // value will never be null
             currentValue = requireNonNull(value.get());
+            timeoutHandler.bump();
         }
 
-        timeoutHandler.bump();
         // sessionId change listener needs to be called after bumping the timer because it may
         // create a new span
         SessionIdChangeListener sessionIdChangeListener = this.sessionIdChangeListener;
