@@ -29,6 +29,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.opentelemetry.android.demo.theme.DemoAppTheme
+import io.opentelemetry.android.demo.ui.shop.AstronomyShopActivity
 
 class MainActivity : ComponentActivity() {
     private val viewModel by viewModels<DemoViewModel>()

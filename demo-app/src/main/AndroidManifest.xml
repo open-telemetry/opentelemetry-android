@@ -18,7 +18,7 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".AstronomyShopActivity"
+            android:name=".ui.shop.AstronomyShopActivity"
             android:exported="true"
             android:label="@string/title_activity_astronomy_shop"
             />
