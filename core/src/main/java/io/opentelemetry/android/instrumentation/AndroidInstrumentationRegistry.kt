@@ -34,13 +34,19 @@ interface AndroidInstrumentationRegistry {
     fun register(instrumentation: AndroidInstrumentation)
 
     companion object {
-        private val instance: AndroidInstrumentationRegistry by lazy {
-            AndroidInstrumentationRegistryImpl()
-        }
+        private var instance: AndroidInstrumentationRegistry? = null
 
         @JvmStatic
         fun get(): AndroidInstrumentationRegistry {
-            return instance
+            if (instance == null) {
+                instance = AndroidInstrumentationRegistryImpl()
+            }
+            return instance!!
+        }
+
+        @JvmStatic
+        fun resetForTest() {
+            instance = null
         }
     }
 }

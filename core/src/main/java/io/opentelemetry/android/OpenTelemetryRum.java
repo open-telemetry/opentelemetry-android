@@ -43,7 +43,7 @@ public interface OpenTelemetryRum {
      * SDK as a parameter.
      */
     static OpenTelemetryRumBuilder builder(Application application, OtelRumConfig config) {
-        return new OpenTelemetryRumBuilder(application, config);
+        return OpenTelemetryRumBuilder.create(application, config);
     }
 
     /**
@@ -58,10 +58,15 @@ public interface OpenTelemetryRum {
      *
      * @param application The {@link Application} that is being instrumented.
      * @param openTelemetrySdk The {@link OpenTelemetrySdk} that the user has already created.
+     * @param discoverInstrumentations TRUE to look for instrumentations in the classpath and
+     *     applying them automatically.
      */
     static SdkPreconfiguredRumBuilder builder(
-            Application application, OpenTelemetrySdk openTelemetrySdk) {
-        return new SdkPreconfiguredRumBuilder(application, openTelemetrySdk);
+            Application application,
+            OpenTelemetrySdk openTelemetrySdk,
+            boolean discoverInstrumentations) {
+        return new SdkPreconfiguredRumBuilder(
+                application, openTelemetrySdk, discoverInstrumentations);
     }
 
     /** Returns a no-op implementation of {@link OpenTelemetryRum}. */

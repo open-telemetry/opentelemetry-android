@@ -23,6 +23,7 @@ public class OtelRumConfig {
     private boolean includeNetworkAttributes = true;
     private boolean generateSdkInitializationEvents = true;
     private boolean includeScreenAttributes = true;
+    private boolean discoverInstrumentations = true;
     private DiskBufferingConfiguration diskBufferingConfiguration =
             DiskBufferingConfiguration.builder().build();
     private Duration sessionTimeout = Duration.ofMinutes(15);
@@ -99,6 +100,24 @@ public class OtelRumConfig {
 
     public DiskBufferingConfiguration getDiskBufferingConfiguration() {
         return diskBufferingConfiguration;
+    }
+
+    /**
+     * Return {@link Boolean#TRUE} if the RUM initialization should look for instrumentations in the
+     * classpath and apply them automatically.
+     */
+    public boolean shouldDiscoverInstrumentations() {
+        return discoverInstrumentations;
+    }
+
+    /**
+     * Call this to disable the automatic search for instrumentations in the classpath.
+     *
+     * @return this
+     */
+    public OtelRumConfig disableInstrumentationDiscovery() {
+        discoverInstrumentations = false;
+        return this;
     }
 
     /**

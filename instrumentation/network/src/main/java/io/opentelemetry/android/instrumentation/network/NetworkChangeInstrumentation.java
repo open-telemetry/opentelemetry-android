@@ -7,6 +7,7 @@ package io.opentelemetry.android.instrumentation.network;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
+import com.google.auto.service.AutoService;
 import io.opentelemetry.android.OpenTelemetryRum;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.internal.services.ServiceManager;
@@ -17,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 /** Generates telemetry for when the network status changes. */
+@AutoService(AndroidInstrumentation.class)
 public final class NetworkChangeInstrumentation implements AndroidInstrumentation {
 
     final List<AttributesExtractor<CurrentNetwork, Void>> additionalExtractors = new ArrayList<>();

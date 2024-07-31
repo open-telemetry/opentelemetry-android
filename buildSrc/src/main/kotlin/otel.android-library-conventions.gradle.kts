@@ -45,7 +45,7 @@ tasks.withType<Test> {
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 dependencies {
     implementation(libs.findLibrary("findbugs-jsr305").get())
-    compileOnly(libs.findLibrary("auto-service-annotations").get())
+    implementation(libs.findLibrary("auto-service-annotations").get())
     kapt(libs.findLibrary("auto-service-processor").get())
     testImplementation(libs.findLibrary("assertj-core").get())
     testImplementation(libs.findBundle("mocking").get())

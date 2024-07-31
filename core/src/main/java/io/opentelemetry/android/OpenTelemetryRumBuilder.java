@@ -14,7 +14,7 @@ import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
-import io.opentelemetry.android.instrumentation.common.InstrumentedApplication;
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.internal.features.networkattrs.NetworkAttributesSpanAppender;
 import io.opentelemetry.android.internal.features.persistence.DiskManager;
 import io.opentelemetry.android.internal.features.persistence.SimpleTemporaryFileProvider;
@@ -74,10 +74,7 @@ public final class OpenTelemetryRumBuilder {
     private final List<BiFunction<SdkLoggerProviderBuilder, Application, SdkLoggerProviderBuilder>>
             loggerProviderCustomizers = new ArrayList<>();
     private final OtelRumConfig config;
-
-    private final List<Consumer<InstrumentedApplication>> instrumentationInstallers =
-            new ArrayList<>();
-
+    private final List<AndroidInstrumentation> instrumentations = new ArrayList<>();
     private final List<Consumer<OpenTelemetrySdk>> otelSdkReadyListeners = new ArrayList<>();
     private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
     private Function<? super LogRecordExporter, ? extends LogRecordExporter>
@@ -92,10 +89,14 @@ public final class OpenTelemetryRumBuilder {
                 W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance());
     }
 
-    OpenTelemetryRumBuilder(Application application, OtelRumConfig config) {
+    public static OpenTelemetryRumBuilder create(Application application, OtelRumConfig config) {
+        return new OpenTelemetryRumBuilder(
+                application, config, new SessionIdTimeoutHandler(config.getSessionTimeout()));
+    }
+
+    OpenTelemetryRumBuilder(
+            Application application, OtelRumConfig config, SessionIdTimeoutHandler timeoutHandler) {
         this.application = application;
-        final SessionIdTimeoutHandler timeoutHandler =
-                new SessionIdTimeoutHandler(config.getSessionTimeout());
         this.sessionId = new SessionId(timeoutHandler);
         this.resource = AndroidResource.createDefault(application);
         this.config = config;
@@ -184,14 +185,12 @@ public final class OpenTelemetryRumBuilder {
     }
 
     /**
-     * Adds an instrumentation installer function that will be run on an {@link
-     * InstrumentedApplication} instance as a part of the {@link #build()} method call.
+     * Adds an instrumentation to be applied as a part of the {@link #build()} method call.
      *
      * @return {@code this}
      */
-    public OpenTelemetryRumBuilder addInstrumentation(
-            Consumer<InstrumentedApplication> instrumentationInstaller) {
-        instrumentationInstallers.add(instrumentationInstaller);
+    public OpenTelemetryRumBuilder addInstrumentation(AndroidInstrumentation instrumentation) {
+        instrumentations.add(instrumentation);
         return this;
     }
 
@@ -319,8 +318,12 @@ public final class OpenTelemetryRumBuilder {
 
         SdkPreconfiguredRumBuilder delegate =
                 new SdkPreconfiguredRumBuilder(
-                        application, sdk, sessionId, serviceManager::getAppLifecycleService);
-        instrumentationInstallers.forEach(delegate::addInstrumentation);
+                        application,
+                        sdk,
+                        sessionId,
+                        serviceManager::getAppLifecycleService,
+                        config.shouldDiscoverInstrumentations());
+        instrumentations.forEach(delegate::addInstrumentation);
         serviceManager.start();
         return delegate.build();
     }

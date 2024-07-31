@@ -13,12 +13,15 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equal
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
@@ -30,6 +33,8 @@ import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
+import io.opentelemetry.android.instrumentation.AndroidInstrumentationRegistry;
 import io.opentelemetry.android.internal.initialization.InitializationEvents;
 import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.Preferences;
@@ -73,7 +78,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -111,8 +115,9 @@ public class OpenTelemetryRumBuilderTest {
     @After
     public void tearDown() throws Exception {
         SignalFromDiskExporter.resetForTesting();
-        mocks.close();
         InitializationEvents.resetForTest();
+        AndroidInstrumentationRegistry.resetForTest();
+        mocks.close();
     }
 
     @Test
@@ -187,27 +192,43 @@ public class OpenTelemetryRumBuilderTest {
         assertThat(payload.get(0)).isEqualTo(expected);
     }
 
-    @Ignore("To be updated once AndroidInstrumentation is fully implemented")
     @Test
     public void shouldInstallInstrumentation() {
-        OpenTelemetryRum.builder(application, buildConfig())
-                .addInstrumentation(
-                        instrumentedApplication -> {
-                            assertThat(instrumentedApplication.getApplication())
-                                    .isSameAs(application);
-                            //
-                            // instrumentedApplication.registerApplicationStateListener(listener);
-                            // TODO update with AndroidInstrumentation
-                        })
-                .build();
+        ServiceManager serviceManager = createServiceManager();
+        SessionIdTimeoutHandler timeoutHandler = mock();
+        AndroidInstrumentation localInstrumentation = mock();
+        AndroidInstrumentation classpathInstrumentation = mock();
+        AndroidInstrumentationRegistry.get().register(classpathInstrumentation);
 
-        verify(application).registerActivityLifecycleCallbacks(activityCallbacksCaptor.capture());
+        new OpenTelemetryRumBuilder(application, buildConfig(), timeoutHandler)
+                .addInstrumentation(localInstrumentation)
+                .build(serviceManager);
 
-        activityCallbacksCaptor.getValue().onActivityStarted(activity);
-        verify(listener).onApplicationForegrounded();
+        verify(serviceManager.getAppLifecycleService()).registerListener(timeoutHandler);
 
-        activityCallbacksCaptor.getValue().onActivityStopped(activity);
-        verify(listener).onApplicationBackgrounded();
+        verify(localInstrumentation).install(eq(application), notNull());
+        verify(classpathInstrumentation).install(eq(application), notNull());
+    }
+
+    @Test
+    public void shouldInstallInstrumentation_excludingClasspathImplsWhenRequestedInConfig() {
+        ServiceManager serviceManager = createServiceManager();
+        SessionIdTimeoutHandler timeoutHandler = mock();
+        AndroidInstrumentation localInstrumentation = mock();
+        AndroidInstrumentation classpathInstrumentation = mock();
+        AndroidInstrumentationRegistry.get().register(classpathInstrumentation);
+
+        new OpenTelemetryRumBuilder(
+                        application,
+                        buildConfig().disableInstrumentationDiscovery(),
+                        timeoutHandler)
+                .addInstrumentation(localInstrumentation)
+                .build(serviceManager);
+
+        verify(serviceManager.getAppLifecycleService()).registerListener(timeoutHandler);
+
+        verify(localInstrumentation).install(eq(application), notNull());
+        verifyNoInteractions(classpathInstrumentation);
     }
 
     @Test
