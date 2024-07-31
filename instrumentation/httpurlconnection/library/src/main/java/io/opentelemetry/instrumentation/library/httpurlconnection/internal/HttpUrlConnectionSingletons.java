@@ -29,8 +29,7 @@ public final class HttpUrlConnectionSingletons {
     private static final Object lock = new Object();
     private static OpenTelemetry openTelemetryInstance;
 
-    public static Instrumenter<URLConnection, Integer> createInstrumenter(
-            OpenTelemetry opentelemetry) {
+    public static Instrumenter<URLConnection, Integer> createInstrumenter() {
 
         HttpUrlHttpAttributesGetter httpAttributesGetter = new HttpUrlHttpAttributesGetter();
 
@@ -53,7 +52,7 @@ public final class HttpUrlConnectionSingletons {
                                 httpAttributesGetter,
                                 HttpUrlInstrumentationConfig.newPeerServiceResolver());
 
-        openTelemetryInstance = (opentelemetry == null) ? GlobalOpenTelemetry.get() : opentelemetry;
+        openTelemetryInstance = GlobalOpenTelemetry.get();
 
         InstrumenterBuilder<URLConnection, Integer> builder =
                 Instrumenter.<URLConnection, Integer>builder(
@@ -79,7 +78,7 @@ public final class HttpUrlConnectionSingletons {
         if (instrumenter == null) {
             synchronized (lock) {
                 if (instrumenter == null) {
-                    instrumenter = createInstrumenter(null);
+                    instrumenter = createInstrumenter();
                 }
             }
         }
@@ -88,11 +87,6 @@ public final class HttpUrlConnectionSingletons {
 
     public static OpenTelemetry openTelemetryInstance() {
         return openTelemetryInstance;
-    }
-
-    // Used for setting the instrumenter for testing purposes only.
-    public static void setInstrumenterForTesting(OpenTelemetry opentelemetry) {
-        instrumenter = createInstrumenter(opentelemetry);
     }
 
     private HttpUrlConnectionSingletons() {}
