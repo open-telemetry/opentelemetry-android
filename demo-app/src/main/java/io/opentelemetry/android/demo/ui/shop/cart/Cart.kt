@@ -15,7 +15,7 @@ import io.opentelemetry.android.demo.model.Product
 
 @Composable
 fun CartScreen() {
-//    val products
+    val products : List<Product> = listOf()
     Scaffold(
         content = { innerPadding ->
             Column(
@@ -27,10 +27,9 @@ fun CartScreen() {
                 LazyColumn(
                     modifier = Modifier.weight(1f)
                 ) {
-//                    this.items(products) { product -> CartItem(product) }
+                    items(products.size) { index -> CartItem(products[index]) }
                 }
-//                CheckoutButton(totalPrice = products.sumOf { it.price })
-                CheckoutButton(totalPrice = 100.0)
+                CheckoutButton(totalPrice = products.sumOf { it.priceValue() })
             }
         }
     )

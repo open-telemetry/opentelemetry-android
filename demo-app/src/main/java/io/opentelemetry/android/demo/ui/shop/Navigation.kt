@@ -52,6 +52,8 @@ class AstronomyShopNavController(
         navController.navigate("${MainDestinations.PRODUCT_DETAIL_ROUTE}/$productId")
     }
 
+}
+
 @Composable
 fun BottomNavigationBar(
     items: List<BottomNavItem>,
@@ -76,4 +78,3 @@ fun BottomNavigationBar(
         }
     }
 }
-
