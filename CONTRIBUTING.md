@@ -78,5 +78,5 @@ instrumentation/
 │  ├─ testing/
 ```
 
-You can take a look at how it's been done for the OkHttp
+You can take a look at how it's done for the OkHttp
 instrumentation [here](./instrumentation/okhttp/okhttp-3.0) for reference.
