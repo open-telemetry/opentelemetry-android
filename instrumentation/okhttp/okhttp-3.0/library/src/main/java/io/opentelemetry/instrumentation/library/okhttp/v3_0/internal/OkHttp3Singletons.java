@@ -6,7 +6,6 @@
 package io.opentelemetry.instrumentation.library.okhttp.v3_0.internal;
 
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationRegistry;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceAttributesExtractor;
@@ -32,14 +31,9 @@ public final class OkHttp3Singletons {
     private static final Supplier<Instrumenter<Request, Response>> INSTRUMENTER =
             CachedSupplier.create(
                     () -> {
-                        OkHttpInstrumentation instrumentation =
-                                AndroidInstrumentationRegistry.get()
-                                        .get(OkHttpInstrumentation.class);
-                        if (instrumentation == null) {
-                            throw new IllegalStateException("OkHttpInstrumentation not found.");
-                        }
+                        OkHttpInstrumentation instrumentation = getInstrumentation();
                         return OkHttpClientInstrumenterBuilderFactory.create(
-                                        GlobalOpenTelemetry.get())
+                                        instrumentation.getOpenTelemetryRum().getOpenTelemetry())
                                 .setCapturedRequestHeaders(
                                         instrumentation.getCapturedRequestHeaders())
                                 .setCapturedResponseHeaders(
@@ -94,10 +88,24 @@ public final class OkHttp3Singletons {
     public static final Interceptor TRACING_INTERCEPTOR =
             new LazyInterceptor<>(
                     CachedSupplier.create(
-                            () ->
-                                    new TracingInterceptor(
-                                            INSTRUMENTER.get(),
-                                            GlobalOpenTelemetry.getPropagators())));
+                            () -> {
+                                OkHttpInstrumentation instrumentation = getInstrumentation();
+                                return new TracingInterceptor(
+                                        INSTRUMENTER.get(),
+                                        instrumentation
+                                                .getOpenTelemetryRum()
+                                                .getOpenTelemetry()
+                                                .getPropagators());
+                            }));
 
     private OkHttp3Singletons() {}
+
+    private static OkHttpInstrumentation getInstrumentation() {
+        OkHttpInstrumentation instrumentation =
+                AndroidInstrumentationRegistry.get().get(OkHttpInstrumentation.class);
+        if (instrumentation == null) {
+            throw new IllegalStateException("OkHttpInstrumentation not found.");
+        }
+        return instrumentation;
+    }
 }
