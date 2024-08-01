@@ -6,6 +6,7 @@
 package io.opentelemetry.instrumentation.library.okhttp.v3_0;
 
 import android.app.Application;
+import com.google.auto.service.AutoService;
 import io.opentelemetry.android.OpenTelemetryRum;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceResolver;
@@ -19,6 +20,7 @@ import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
 /** Instrumentation for okhttp requests. */
+@AutoService(AndroidInstrumentation.class)
 public class OkHttpInstrumentation implements AndroidInstrumentation {
     private List<String> capturedRequestHeaders = new ArrayList<>();
     private List<String> capturedResponseHeaders = new ArrayList<>();
