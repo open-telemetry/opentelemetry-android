@@ -9,10 +9,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-public class OkHttpInstrumentationConfigTest {
+public class OkHttpInstrumentationTest {
     @Test
     void validateDefaultHttpMethods() {
-        assertThat(OkHttpInstrumentationConfig.getKnownMethods())
+        assertThat(OkHttpInstrumentation.getKnownMethods())
                 .containsExactlyInAnyOrder(
                         "CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT",
                         "TRACE");

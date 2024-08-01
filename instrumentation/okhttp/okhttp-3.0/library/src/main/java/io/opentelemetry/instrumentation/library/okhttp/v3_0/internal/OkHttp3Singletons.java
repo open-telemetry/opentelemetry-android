@@ -12,7 +12,7 @@ import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceAtt
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.instrumentation.api.semconv.http.HttpClientRequestResendCount;
 import io.opentelemetry.instrumentation.api.semconv.http.HttpSpanNameExtractor;
-import io.opentelemetry.instrumentation.library.okhttp.v3_0.OkHttpInstrumentationConfig;
+import io.opentelemetry.instrumentation.library.okhttp.v3_0.OkHttpInstrumentation;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.ConnectionErrorSpanInterceptor;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpAttributesGetter;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpClientInstrumenterBuilderFactory;
@@ -33,11 +33,10 @@ public final class OkHttp3Singletons {
                     () ->
                             OkHttpClientInstrumenterBuilderFactory.create(GlobalOpenTelemetry.get())
                                     .setCapturedRequestHeaders(
-                                            OkHttpInstrumentationConfig.getCapturedRequestHeaders())
+                                            OkHttpInstrumentation.getCapturedRequestHeaders())
                                     .setCapturedResponseHeaders(
-                                            OkHttpInstrumentationConfig
-                                                    .getCapturedResponseHeaders())
-                                    .setKnownMethods(OkHttpInstrumentationConfig.getKnownMethods())
+                                            OkHttpInstrumentation.getCapturedResponseHeaders())
+                                    .setKnownMethods(OkHttpInstrumentation.getKnownMethods())
                                     // TODO: Do we really need to set the known methods on the span
                                     // name
                                     // extractor as well?
@@ -46,16 +45,15 @@ public final class OkHttp3Singletons {
                                                     HttpSpanNameExtractor.builder(
                                                                     OkHttpAttributesGetter.INSTANCE)
                                                             .setKnownMethods(
-                                                                    OkHttpInstrumentationConfig
+                                                                    OkHttpInstrumentation
                                                                             .getKnownMethods())
                                                             .build())
                                     .addAttributeExtractor(
                                             PeerServiceAttributesExtractor.create(
                                                     OkHttpAttributesGetter.INSTANCE,
-                                                    OkHttpInstrumentationConfig
-                                                            .newPeerServiceResolver()))
+                                                    OkHttpInstrumentation.newPeerServiceResolver()))
                                     .setEmitExperimentalHttpClientMetrics(
-                                            OkHttpInstrumentationConfig
+                                            OkHttpInstrumentation
                                                     .emitExperimentalHttpClientMetrics())
                                     .build());
 

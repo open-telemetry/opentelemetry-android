@@ -18,8 +18,8 @@ import java.util.Map;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
-/** Configuration for automatic instrumentation of okhttp requests. */
-public class OkHttpInstrumentationConfig implements AndroidInstrumentation {
+/** Instrumentation for okhttp requests. */
+public class OkHttpInstrumentation implements AndroidInstrumentation {
     private List<String> capturedRequestHeaders = new ArrayList<>();
     private List<String> capturedResponseHeaders = new ArrayList<>();
     private Set<String> knownMethods = HttpConstants.KNOWN_METHODS;
