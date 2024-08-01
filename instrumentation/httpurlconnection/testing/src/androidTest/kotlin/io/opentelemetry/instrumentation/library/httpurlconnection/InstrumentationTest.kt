@@ -10,7 +10,6 @@ import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlConnect
 import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlConnectionTestUtil.post
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.fail
 import org.junit.After
 import org.junit.BeforeClass
 import org.junit.Test
@@ -67,21 +66,13 @@ class InstrumentationTest {
             executor.submit { executeGet("http://httpbin.org/headers") }
 
             executor.shutdown()
+
             // Wait for all tasks to finish execution or timeout
-            if (executor.awaitTermination(2, TimeUnit.SECONDS)) {
-                // if all tasks finish before timeout
-                assertThat(inMemorySpanExporter.finishedSpanItems.size).isEqualTo(4)
-            } else {
-                // if all tasks don't finish before timeout
-                fail(
-                    "Test could not be completed as tasks did not complete within the 2s timeout period.",
-                )
-            }
-        } catch (e: InterruptedException) {
-            // print stack trace to decipher lines that threw InterruptedException as it can be
-            // possibly thrown by multiple calls above.
-            e.printStackTrace()
-            fail("Test could not be completed due to an interrupted exception.")
+            assertThat(executor.awaitTermination(2, TimeUnit.SECONDS))
+                .withFailMessage("Test could not be completed as tasks did not complete within the 2s timeout period.")
+                .isTrue()
+
+            assertThat(inMemorySpanExporter.finishedSpanItems.size).isEqualTo(4)
         } finally {
             if (!executor.isShutdown) {
                 executor.shutdownNow()
