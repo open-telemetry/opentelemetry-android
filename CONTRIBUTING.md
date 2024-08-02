@@ -19,12 +19,14 @@ API levels 21 to 25 require desugaring of the core library.
 ## Building opentelemetry-android
 
 1. Clone the repository
+
 ```
 git clone https://github.com/open-telemetry/opentelemetry-android.git
 cd opentelemetry-android
 ```
 
 2. To build the android artifact, run the gradle wrapper with `assemble`:
+
 ```
 ./gradlew assemble
 ```
@@ -32,6 +34,7 @@ cd opentelemetry-android
 The output artifacts will be in `instrumentation/build/outputs/`.
 
 3. To run the tests and code checks:
+
 ```
 ./gradlew check
 ```
@@ -43,3 +46,37 @@ throughout the project. This includes reformatting (linting) of both source code
 
 Before submitting a PR, you should ensure that your code is linted by
 running `./gradlew spotlessApply` and committing your changes.
+
+### Tests
+
+#### Framework
+
+By default we use JUnit 5, with some exceptions:
+
+- When writing [Android tests](https://developer.android.com/training/testing/instrumented-tests).
+- When writing [Robolectric tests](https://robolectric.org/).
+
+For both, Android and Robolectric tests, we use JUnit 4 as they currently don't support JUnit 5.
+
+#### Instrumentation tests
+
+For instrumentations that require bytecode weaving we create a test application
+with [Android tests](https://developer.android.com/training/testing/instrumented-tests) as those are
+the only kind of tests that
+support library bytecode weaving. Ideally we should be able to validate bytecode weaving only by
+creating tests using Robolectric, but that's not supported for now (for more info on the matter take
+a look at [this google issue](https://issuetracker.google.com/issues/249940660) about it).
+
+The test application module should be placed in the same directory as the instrumentation agent and
+library modules and should be named `testing`, as shown below:
+
+```text
+instrumentation/
+├─ my-instrumentation/
+│  ├─ agent/
+│  ├─ library/
+│  ├─ testing/
+```
+
+You can take a look at how it's done for the OkHttp
+instrumentation [here](./instrumentation/okhttp/okhttp-3.0) for reference.
