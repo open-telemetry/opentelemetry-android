@@ -17,8 +17,8 @@ a quick and dirty example of how to get the agent initialized.
 First, start up the collector and jaeger with docker-compose:
 
 ```bash
-$ docker-compose build
-$ docker-compose up
+$ docker compose build
+$ docker compose up
 ```
 
 Then run the demo app in the Android emulator and navigate to http://localhost:16686
