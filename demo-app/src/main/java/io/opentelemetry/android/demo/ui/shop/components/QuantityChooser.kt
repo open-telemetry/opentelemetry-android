@@ -14,7 +14,10 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.ui.graphics.Color
 
 @Composable
-fun QuantityChooser(quantityState: MutableState<Int>) {
+fun QuantityChooser(
+    quantity: Int,
+    onQuantityChange: (Int) -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
 
     Row(
@@ -33,13 +36,13 @@ fun QuantityChooser(quantityState: MutableState<Int>) {
         Box(
             modifier = Modifier.weight(1f)
         ) {
-            QuantityButton(quantity = quantityState.value, onClick = { expanded = true })
+            QuantityButton(quantity = quantity, onClick = { expanded = true })
             QuantityDropdown(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
-                selectedQuantity = quantityState.value,
+                selectedQuantity = quantity,
                 onQuantitySelected = { selectedQuantity ->
-                    quantityState.value = selectedQuantity
+                    onQuantityChange(selectedQuantity)
                     expanded = false
                 }
             )

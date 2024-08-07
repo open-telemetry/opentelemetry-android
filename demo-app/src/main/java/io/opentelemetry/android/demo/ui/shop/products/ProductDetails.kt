@@ -65,7 +65,7 @@ fun ProductDetails(product:Product, cartViewModel: CartViewModel = viewModel()){
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(32.dp))
-        QuantityChooser(quantityState = remember { mutableIntStateOf(quantity) })
+        QuantityChooser(quantity = quantity, onQuantityChange = { quantity = it })
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = { cartViewModel.addProduct(product, quantity) },

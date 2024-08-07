@@ -1,11 +1,9 @@
 package io.opentelemetry.android.demo.ui.shop.cart
+
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import io.opentelemetry.android.demo.model.Product
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-
 
 data class CartItem(
     val product: Product,
@@ -13,7 +11,6 @@ data class CartItem(
 ) {
     fun totalPrice() = product.priceValue() * quantity
 }
-
 
 class CartViewModel : ViewModel() {
     private val _cartItems = MutableStateFlow<List<CartItem>>(emptyList())
@@ -32,5 +29,9 @@ class CartViewModel : ViewModel() {
 
     fun getTotalPrice(): Double {
         return _cartItems.value.sumOf { it.totalPrice() }
+    }
+
+    fun clearCart() {
+        _cartItems.value = emptyList()
     }
 }
