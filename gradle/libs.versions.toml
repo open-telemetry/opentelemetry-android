@@ -53,7 +53,7 @@ junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", vers
 junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "junit" }
 robolectric = "org.robolectric:robolectric:4.13"
 assertj-core = "org.assertj:assertj-core:3.26.3"
-awaitility = "org.awaitility:awaitility:4.2.1"
+awaitility = "org.awaitility:awaitility:4.2.2"
 mockwebserver = "com.google.mockwebserver:mockwebserver:20130706"
 okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp" }
 
