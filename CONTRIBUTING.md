@@ -3,7 +3,7 @@
 Welcome to OpenTelemetry Android repository!
 
 Before you start - see OpenTelemetry general
-[contributing](https://github.com/open-telemetry/community/blob/main/CONTRIBUTING.md)
+[contributor guide](https://github.com/open-telemetry/community/tree/main/guides/contributor)
 requirements and recommendations.
 
 Make sure to review the projects [license](LICENSE) and sign the
