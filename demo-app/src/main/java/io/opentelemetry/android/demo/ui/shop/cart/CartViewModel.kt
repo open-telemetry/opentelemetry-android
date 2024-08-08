@@ -34,4 +34,8 @@ class CartViewModel : ViewModel() {
     fun clearCart() {
         _cartItems.value = emptyList()
     }
+
+    fun isEmpty(): Boolean {
+        return _cartItems.value.isEmpty()
+    }
 }

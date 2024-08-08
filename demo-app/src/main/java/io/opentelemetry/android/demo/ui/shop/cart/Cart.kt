@@ -16,17 +16,21 @@ import androidx.compose.ui.graphics.Color
 @Composable
 fun CartScreen(cartViewModel: CartViewModel = viewModel()) {
     val cartItems by cartViewModel.cartItems.collectAsState()
+    val isCartEmpty by remember { derivedStateOf { cartItems.isEmpty() } }
 
-
-        Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
-
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         Box(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.TopEnd
         ) {
-            OutlinedButton(onClick = { cartViewModel.clearCart() }, modifier = Modifier ) {
+            OutlinedButton(
+                onClick = { cartViewModel.clearCart() },
+                modifier = Modifier
+            ) {
                 Text("Empty Cart", color = Color.Red)
             }
         }
@@ -56,7 +60,13 @@ fun CartScreen(cartViewModel: CartViewModel = viewModel()) {
 
         Button(
             onClick = { /* TODO: Handle checkout */ },
-            modifier = Modifier.fillMaxWidth().padding(16.dp)
+            enabled = !isCartEmpty,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isCartEmpty) Color.Gray else MaterialTheme.colorScheme.primary
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
             Text("Checkout")
         }
