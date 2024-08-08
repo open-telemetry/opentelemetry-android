@@ -24,7 +24,7 @@ import io.opentelemetry.android.OpenTelemetryRum
  * options depending on the use-case.
  *
  * Access to an implementation, either to configure it or to install it, must be made through
- * [AndroidInstrumentationRegistry.get] or [AndroidInstrumentationRegistry.getAll].
+ * [AndroidInstrumentationServices.getByType] or [AndroidInstrumentationServices.getAll].
  */
 interface AndroidInstrumentation {
     /**

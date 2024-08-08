@@ -3,34 +3,35 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation
+package io.opentelemetry.android.internal.instrumentation
 
 import android.app.Application
 import io.mockk.mockk
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.internal.instrumentation.AndroidInstrumentationRegistryImpl
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.instrumentation.TestAndroidInstrumentation
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class AndroidInstrumentationRegistryImplTest {
-    private lateinit var registry: AndroidInstrumentationRegistryImpl
+class AndroidInstrumentationServicesImplTest {
+    private lateinit var registry: AndroidInstrumentationServicesImpl
 
     @BeforeEach
     fun setUp() {
-        registry = AndroidInstrumentationRegistryImpl()
+        registry = AndroidInstrumentationServicesImpl()
     }
 
     @Test
     fun `Find and register implementations available in the classpath when querying an instrumentation`() {
-        val instrumentation = registry.get(TestAndroidInstrumentation::class.java)!!
+        val instrumentation = registry.getByType(TestAndroidInstrumentation::class.java)!!
 
         assertThat(instrumentation.installed).isFalse()
 
         instrumentation.install(mockk(), mockk())
 
-        assertThat(registry.get(TestAndroidInstrumentation::class.java)!!.installed).isTrue()
+        assertThat(registry.getByType(TestAndroidInstrumentation::class.java)!!.installed).isTrue()
     }
 
     @Test
@@ -47,7 +48,7 @@ class AndroidInstrumentationRegistryImplTest {
 
         registry.register(instrumentation)
 
-        assertThat(registry.get(DummyInstrumentation::class.java)!!.name).isEqualTo("test")
+        assertThat(registry.getByType(DummyInstrumentation::class.java)!!.name).isEqualTo("test")
     }
 
     @Test
