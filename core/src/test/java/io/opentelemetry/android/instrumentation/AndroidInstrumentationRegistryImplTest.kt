@@ -8,6 +8,7 @@ package io.opentelemetry.android.instrumentation
 import android.app.Application
 import io.mockk.mockk
 import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.android.internal.instrumentation.AndroidInstrumentationRegistryImpl
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach

@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.instrumentation
 
+import io.opentelemetry.android.internal.instrumentation.AndroidInstrumentationRegistryImpl
+
 /**
  * Stores and provides all the available instrumentations.
  */

@@ -3,11 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation
+package io.opentelemetry.android.internal.instrumentation
 
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.instrumentation.AndroidInstrumentationRegistry
 import java.util.ServiceLoader
 
-internal class AndroidInstrumentationRegistryImpl : AndroidInstrumentationRegistry {
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+class AndroidInstrumentationRegistryImpl : AndroidInstrumentationRegistry {
     private val instrumentations: MutableMap<Class<out AndroidInstrumentation>, AndroidInstrumentation> by lazy {
         ServiceLoader.load(AndroidInstrumentation::class.java).associateBy { it.javaClass }
             .toMutableMap()
