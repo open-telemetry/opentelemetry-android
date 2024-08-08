@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 @Composable
 fun CartScreen(cartViewModel: CartViewModel = viewModel()) {
     val cartItems by cartViewModel.cartItems.collectAsState()
-    val isCartEmpty by remember { derivedStateOf { cartItems.isEmpty() } }
+    val isCartEmpty = cartItems.isEmpty()
 
     Column(
         modifier = Modifier

@@ -35,7 +35,4 @@ class CartViewModel : ViewModel() {
         _cartItems.value = emptyList()
     }
 
-    fun isEmpty(): Boolean {
-        return _cartItems.value.isEmpty()
-    }
 }
