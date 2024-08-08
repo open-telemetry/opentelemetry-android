@@ -23,7 +23,7 @@ import io.opentelemetry.android.OpenTelemetryRum
  * implementations should expose configurable options whenever possible to allow users to customize relevant
  * options depending on the use-case.
  *
- * Access to an implementation, either to configure it or to install it, must be made through
+ * Any access to an implementation, either to configure it or to install it, must be made through
  * [AndroidInstrumentationServices.getByType] or [AndroidInstrumentationServices.getAll].
  */
 interface AndroidInstrumentation {
