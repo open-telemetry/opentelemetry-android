@@ -36,6 +36,7 @@ import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleH
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationServices;
 import io.opentelemetry.android.internal.initialization.InitializationEvents;
+import io.opentelemetry.android.internal.instrumentation.AndroidInstrumentationServicesImpl;
 import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.ServiceManager;
@@ -198,7 +199,9 @@ public class OpenTelemetryRumBuilderTest {
         SessionIdTimeoutHandler timeoutHandler = mock();
         AndroidInstrumentation localInstrumentation = mock();
         AndroidInstrumentation classpathInstrumentation = mock();
-        AndroidInstrumentationServices.get().register(classpathInstrumentation);
+        AndroidInstrumentationServicesImpl androidInstrumentationServices =
+                (AndroidInstrumentationServicesImpl) AndroidInstrumentationServices.get();
+        androidInstrumentationServices.register(classpathInstrumentation);
 
         new OpenTelemetryRumBuilder(application, buildConfig(), timeoutHandler)
                 .addInstrumentation(localInstrumentation)
@@ -216,7 +219,9 @@ public class OpenTelemetryRumBuilderTest {
         SessionIdTimeoutHandler timeoutHandler = mock();
         AndroidInstrumentation localInstrumentation = mock();
         AndroidInstrumentation classpathInstrumentation = mock();
-        AndroidInstrumentationServices.get().register(classpathInstrumentation);
+        AndroidInstrumentationServicesImpl androidInstrumentationServices =
+                (AndroidInstrumentationServicesImpl) AndroidInstrumentationServices.get();
+        androidInstrumentationServices.register(classpathInstrumentation);
 
         new OpenTelemetryRumBuilder(
                         application,
