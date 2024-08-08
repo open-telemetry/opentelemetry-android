@@ -37,6 +37,9 @@ interface AndroidInstrumentationServices {
             return instance!!
         }
 
+        /**
+         * Convenience method for [AndroidInstrumentationServices.getByType].
+         */
         @JvmStatic
         fun <T : AndroidInstrumentation> getService(type: Class<out T>): T? {
             return get().getByType(type)
