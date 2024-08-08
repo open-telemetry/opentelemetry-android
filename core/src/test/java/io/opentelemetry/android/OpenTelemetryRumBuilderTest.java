@@ -201,7 +201,7 @@ public class OpenTelemetryRumBuilderTest {
         AndroidInstrumentation classpathInstrumentation = mock();
         AndroidInstrumentationServicesImpl androidInstrumentationServices =
                 (AndroidInstrumentationServicesImpl) AndroidInstrumentationServices.get();
-        androidInstrumentationServices.register(classpathInstrumentation);
+        androidInstrumentationServices.registerForTest(classpathInstrumentation);
 
         new OpenTelemetryRumBuilder(application, buildConfig(), timeoutHandler)
                 .addInstrumentation(localInstrumentation)
@@ -221,7 +221,7 @@ public class OpenTelemetryRumBuilderTest {
         AndroidInstrumentation classpathInstrumentation = mock();
         AndroidInstrumentationServicesImpl androidInstrumentationServices =
                 (AndroidInstrumentationServicesImpl) AndroidInstrumentationServices.get();
-        androidInstrumentationServices.register(classpathInstrumentation);
+        androidInstrumentationServices.registerForTest(classpathInstrumentation);
 
         new OpenTelemetryRumBuilder(
                         application,
