@@ -40,4 +40,12 @@ automatically.
 ### Configuration
 
 You can configure the automatic instrumentation by using the setters
-in [OkHttpInstrumentationConfig](library/src/main/java/io/opentelemetry/instrumentation/library/okhttp/v3_0/OkHttpInstrumentationConfig.java)).
+from
+the [OkHttpInstrumentation](library/src/main/java/io/opentelemetry/instrumentation/library/okhttp/v3_0/OkHttpInstrumentation.java))
+instance provided via the AndroidInstrumentationRegistry as shown below:
+
+```java
+OkHttpInstrumentation instrumentation = AndroidInstrumentationRegistry.get().get(OkHttpInstrumentation.class);
+
+// Call `instrumentation` setters.
+```
