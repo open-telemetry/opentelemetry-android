@@ -41,7 +41,7 @@ interface AndroidInstrumentationLoader {
          * Convenience method for [AndroidInstrumentationLoader.getByType].
          */
         @JvmStatic
-        fun <T : AndroidInstrumentation> getService(type: Class<out T>): T? {
+        fun <T : AndroidInstrumentation> getInstrumentation(type: Class<out T>): T? {
             return get().getByType(type)
         }
 

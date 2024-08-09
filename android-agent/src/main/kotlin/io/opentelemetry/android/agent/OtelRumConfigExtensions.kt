@@ -32,49 +32,49 @@ import java.time.Duration
  */
 
 fun OtelRumConfig.setActivityTracerCustomizer(customizer: (Tracer) -> Tracer): OtelRumConfig {
-    AndroidInstrumentationLoader.getService(ActivityLifecycleInstrumentation::class.java)
+    AndroidInstrumentationLoader.getInstrumentation(ActivityLifecycleInstrumentation::class.java)
         ?.setTracerCustomizer(customizer)
     return this
 }
 
 fun OtelRumConfig.setActivityNameExtractor(screenNameExtractor: ScreenNameExtractor): OtelRumConfig {
-    AndroidInstrumentationLoader.getService(ActivityLifecycleInstrumentation::class.java)
+    AndroidInstrumentationLoader.getInstrumentation(ActivityLifecycleInstrumentation::class.java)
         ?.setScreenNameExtractor(screenNameExtractor)
     return this
 }
 
 fun OtelRumConfig.setFragmentTracerCustomizer(customizer: (Tracer) -> Tracer): OtelRumConfig {
-    AndroidInstrumentationLoader.getService(FragmentLifecycleInstrumentation::class.java)
+    AndroidInstrumentationLoader.getInstrumentation(FragmentLifecycleInstrumentation::class.java)
         ?.setTracerCustomizer(customizer)
     return this
 }
 
 fun OtelRumConfig.setFragmentNameExtractor(screenNameExtractor: ScreenNameExtractor): OtelRumConfig {
-    AndroidInstrumentationLoader.getService(FragmentLifecycleInstrumentation::class.java)
+    AndroidInstrumentationLoader.getInstrumentation(FragmentLifecycleInstrumentation::class.java)
         ?.setScreenNameExtractor(screenNameExtractor)
     return this
 }
 
 fun OtelRumConfig.addAnrAttributesExtractor(extractor: AttributesExtractor<Array<StackTraceElement>, Void>): OtelRumConfig {
-    AndroidInstrumentationLoader.getService(AnrInstrumentation::class.java)
+    AndroidInstrumentationLoader.getInstrumentation(AnrInstrumentation::class.java)
         ?.addAttributesExtractor(extractor)
     return this
 }
 
 fun OtelRumConfig.addCrashAttributesExtractor(extractor: AttributesExtractor<CrashDetails, Void>): OtelRumConfig {
-    AndroidInstrumentationLoader.getService(CrashReporterInstrumentation::class.java)
+    AndroidInstrumentationLoader.getInstrumentation(CrashReporterInstrumentation::class.java)
         ?.addAttributesExtractor(extractor)
     return this
 }
 
 fun OtelRumConfig.addNetworkChangeAttributesExtractor(extractor: AttributesExtractor<CurrentNetwork, Void>): OtelRumConfig {
-    AndroidInstrumentationLoader.getService(NetworkChangeInstrumentation::class.java)
+    AndroidInstrumentationLoader.getInstrumentation(NetworkChangeInstrumentation::class.java)
         ?.addAttributesExtractor(extractor)
     return this
 }
 
 fun OtelRumConfig.setSlowRenderingDetectionPollInterval(interval: Duration): OtelRumConfig {
-    AndroidInstrumentationLoader.getService(SlowRenderingInstrumentation::class.java)
+    AndroidInstrumentationLoader.getInstrumentation(SlowRenderingInstrumentation::class.java)
         ?.setSlowRenderingDetectionPollInterval(interval)
     return this
 }
