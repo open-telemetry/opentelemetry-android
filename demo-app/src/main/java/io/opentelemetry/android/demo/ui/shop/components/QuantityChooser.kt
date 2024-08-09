@@ -88,27 +88,37 @@ fun QuantityDropdown(
         onDismissRequest = onDismissRequest
     ) {
         for (i in 1..10) {
-            DropdownMenuItem(
-                text = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (i == selectedQuantity) {
-                            Icon(
-                                imageVector = Icons.Filled.Check,
-                                contentDescription = "Selected",
-                                tint = Color.Black,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                        }
-                        Text(
-                            text = i.toString(),
-                        )
-                    }
-                },
-                onClick = { onQuantitySelected(i) }
-            )
+            QuantityDropDownItem(i, i == selectedQuantity, onClick = {onQuantitySelected(i)})
         }
     }
+}
+
+@Composable
+fun QuantityDropDownItem(
+    quantity: Int,
+    isSelected: Boolean,
+    onClick: () -> Unit
+){
+    DropdownMenuItem(
+        text = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (isSelected) {
+                    Icon(
+                        imageVector = Icons.Filled.Check,
+                        contentDescription = "Selected",
+                        tint = Color.Black,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                Text(
+                    text = quantity.toString(),
+                )
+            }
+        },
+        onClick = onClick
+    )
+
 }
