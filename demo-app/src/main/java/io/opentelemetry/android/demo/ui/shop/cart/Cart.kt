@@ -14,7 +14,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 
 @Composable
-fun CartScreen(cartViewModel: CartViewModel = viewModel()) {
+fun CartScreen(cartViewModel: CartViewModel = viewModel(),
+               onCheckoutClick: () -> Unit
+) {
     val cartItems by cartViewModel.cartItems.collectAsState()
     val isCartEmpty = cartItems.isEmpty()
 
@@ -59,7 +61,7 @@ fun CartScreen(cartViewModel: CartViewModel = viewModel()) {
         )
 
         Button(
-            onClick = { /* TODO: Handle checkout */ },
+            onClick = onCheckoutClick,
             enabled = !isCartEmpty,
             colors = ButtonDefaults.buttonColors(
                 containerColor = if (isCartEmpty) Color.Gray else MaterialTheme.colorScheme.primary
