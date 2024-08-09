@@ -29,6 +29,8 @@ import io.opentelemetry.android.demo.theme.DemoAppTheme
 import io.opentelemetry.android.demo.ui.shop.cart.CartScreen
 import io.opentelemetry.android.demo.ui.shop.products.ProductDetails
 import io.opentelemetry.android.demo.ui.shop.products.ProductList
+import io.opentelemetry.android.demo.ui.shop.cart.CartViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 class AstronomyShopActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,7 +47,7 @@ fun AstronomyShopScreen() {
     val products by remember { mutableStateOf(productsClient.get()) }
     val context = LocalContext.current
     val astronomyShopNavController = rememberAstronomyShopNavController()
-
+    val cartViewModel: CartViewModel = viewModel()
     DemoAppTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -81,12 +83,12 @@ fun AstronomyShopScreen() {
                         }
                     }
                     composable(BottomNavItem.Cart.route) {
-                        CartScreen()
+                        CartScreen(cartViewModel = cartViewModel)
                     }
                     composable("${MainDestinations.PRODUCT_DETAIL_ROUTE}/{${MainDestinations.PRODUCT_ID_KEY}}") { backStackEntry ->
                         val productId = backStackEntry.arguments?.getString(MainDestinations.PRODUCT_ID_KEY)
                         val product = products.find { it.id == productId }
-                        product?.let { ProductDetails(product = it) }
+                        product?.let { ProductDetails(product = it, cartViewModel) }
                     }
                 }
             }
