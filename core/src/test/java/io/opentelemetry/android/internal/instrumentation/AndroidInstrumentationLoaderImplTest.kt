@@ -12,27 +12,27 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class AndroidInstrumentationLoaderImplTest {
-    private lateinit var registry: AndroidInstrumentationLoaderImpl
+    private lateinit var loader: AndroidInstrumentationLoaderImpl
 
     @BeforeEach
     fun setUp() {
-        registry = AndroidInstrumentationLoaderImpl()
+        loader = AndroidInstrumentationLoaderImpl()
     }
 
     @Test
     fun `Find implementations available in the classpath when querying an instrumentation`() {
-        val instrumentation = registry.getByType(TestAndroidInstrumentation::class.java)!!
+        val instrumentation = loader.getByType(TestAndroidInstrumentation::class.java)!!
 
         assertThat(instrumentation.installed).isFalse()
 
         instrumentation.install(mockk(), mockk())
 
-        assertThat(registry.getByType(TestAndroidInstrumentation::class.java)!!.installed).isTrue()
+        assertThat(loader.getByType(TestAndroidInstrumentation::class.java)!!.installed).isTrue()
     }
 
     @Test
     fun `Find implementations available in the classpath when querying all instrumentations`() {
-        val instrumentations = registry.getAll()
+        val instrumentations = loader.getAll()
 
         assertThat(instrumentations).hasSize(1)
         assertThat(instrumentations.first()).isInstanceOf(TestAndroidInstrumentation::class.java)
