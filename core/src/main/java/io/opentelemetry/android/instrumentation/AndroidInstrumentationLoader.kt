@@ -5,17 +5,19 @@
 
 package io.opentelemetry.android.instrumentation
 
+import io.opentelemetry.android.internal.instrumentation.AndroidInstrumentationLoaderImpl
+
 /**
- * Stores and provides all the available instrumentations.
+ * Loads and provides [AndroidInstrumentation] instances from the runtime classpath.
  */
-interface AndroidInstrumentationRegistry {
+interface AndroidInstrumentationLoader {
     /**
      * Provides a single instrumentation if available.
      *
      * @param type The type of the instrumentation to retrieve.
      * @return The instrumentation instance if available, null otherwise.
      */
-    fun <T : AndroidInstrumentation> get(type: Class<out T>): T?
+    fun <T : AndroidInstrumentation> getByType(type: Class<out T>): T?
 
     /**
      * Provides all registered instrumentations.
@@ -24,24 +26,23 @@ interface AndroidInstrumentationRegistry {
      */
     fun getAll(): Collection<AndroidInstrumentation>
 
-    /**
-     * Stores an instrumentation as long as there is not other instrumentation already registered with the same
-     * type.
-     *
-     * @param instrumentation The instrumentation to register.
-     * @throws IllegalStateException If the instrumentation couldn't be registered.
-     */
-    fun register(instrumentation: AndroidInstrumentation)
-
     companion object {
-        private var instance: AndroidInstrumentationRegistry? = null
+        private var instance: AndroidInstrumentationLoader? = null
 
         @JvmStatic
-        fun get(): AndroidInstrumentationRegistry {
+        fun get(): AndroidInstrumentationLoader {
             if (instance == null) {
-                instance = AndroidInstrumentationRegistryImpl()
+                instance = AndroidInstrumentationLoaderImpl()
             }
             return instance!!
+        }
+
+        /**
+         * Convenience method for [AndroidInstrumentationLoader.getByType].
+         */
+        @JvmStatic
+        fun <T : AndroidInstrumentation> getInstrumentation(type: Class<out T>): T? {
+            return get().getByType(type)
         }
 
         @JvmStatic

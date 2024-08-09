@@ -22,9 +22,6 @@ import io.opentelemetry.android.OpenTelemetryRum
  * Even though users shouldn't have to write code to make an AndroidInstrumentation implementation work,
  * implementations should expose configurable options whenever possible to allow users to customize relevant
  * options depending on the use-case.
- *
- * Access to an implementation, either to configure it or to install it, must be made through
- * [AndroidInstrumentationRegistry.get] or [AndroidInstrumentationRegistry.getAll].
  */
 interface AndroidInstrumentation {
     /**
