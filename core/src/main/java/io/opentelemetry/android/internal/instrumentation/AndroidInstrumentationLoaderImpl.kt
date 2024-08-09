@@ -6,14 +6,14 @@
 package io.opentelemetry.android.internal.instrumentation
 
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import io.opentelemetry.android.instrumentation.AndroidInstrumentationServices
+import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import java.util.ServiceLoader
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-class AndroidInstrumentationServicesImpl : AndroidInstrumentationServices {
+class AndroidInstrumentationLoaderImpl : AndroidInstrumentationLoader {
     private val instrumentations: MutableMap<Class<out AndroidInstrumentation>, AndroidInstrumentation> by lazy {
         ServiceLoader.load(AndroidInstrumentation::class.java).associateBy { it.javaClass }
             .toMutableMap()

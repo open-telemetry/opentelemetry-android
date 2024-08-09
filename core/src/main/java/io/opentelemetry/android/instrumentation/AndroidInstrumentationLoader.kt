@@ -5,12 +5,12 @@
 
 package io.opentelemetry.android.instrumentation
 
-import io.opentelemetry.android.internal.instrumentation.AndroidInstrumentationServicesImpl
+import io.opentelemetry.android.internal.instrumentation.AndroidInstrumentationLoaderImpl
 
 /**
- * Loads and provides Java SPI services of type [AndroidInstrumentation] from the runtime classpath.
+ * Loads and provides [AndroidInstrumentation] instances from the runtime classpath.
  */
-interface AndroidInstrumentationServices {
+interface AndroidInstrumentationLoader {
     /**
      * Provides a single instrumentation if available.
      *
@@ -27,18 +27,18 @@ interface AndroidInstrumentationServices {
     fun getAll(): Collection<AndroidInstrumentation>
 
     companion object {
-        private var instance: AndroidInstrumentationServices? = null
+        private var instance: AndroidInstrumentationLoader? = null
 
         @JvmStatic
-        fun get(): AndroidInstrumentationServices {
+        fun get(): AndroidInstrumentationLoader {
             if (instance == null) {
-                instance = AndroidInstrumentationServicesImpl()
+                instance = AndroidInstrumentationLoaderImpl()
             }
             return instance!!
         }
 
         /**
-         * Convenience method for [AndroidInstrumentationServices.getByType].
+         * Convenience method for [AndroidInstrumentationLoader.getByType].
          */
         @JvmStatic
         fun <T : AndroidInstrumentation> getService(type: Class<out T>): T? {

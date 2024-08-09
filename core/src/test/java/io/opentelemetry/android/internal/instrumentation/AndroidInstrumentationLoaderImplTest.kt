@@ -11,12 +11,12 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class AndroidInstrumentationServicesImplTest {
-    private lateinit var registry: AndroidInstrumentationServicesImpl
+class AndroidInstrumentationLoaderImplTest {
+    private lateinit var registry: AndroidInstrumentationLoaderImpl
 
     @BeforeEach
     fun setUp() {
-        registry = AndroidInstrumentationServicesImpl()
+        registry = AndroidInstrumentationLoaderImpl()
     }
 
     @Test
