@@ -52,5 +52,5 @@ OkHttpInstrumentation instrumentation = AndroidInstrumentationLoader.getInstrume
 
 > [!NOTE]
 > You must make sure to apply any configurations **before** initializing your OpenTelemetryRum
-> instance (i.e. calling OpenTelemetryRun.builder()...build()). Otherwise your configs won't be
+> instance (i.e. calling OpenTelemetryRum.builder()...build()). Otherwise your configs won't be
 > taken into account during the RUM initialization process.
