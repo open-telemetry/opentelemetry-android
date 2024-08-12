@@ -7,7 +7,7 @@ package io.opentelemetry.android
 
 import android.app.Application
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import io.opentelemetry.android.instrumentation.AndroidInstrumentationRegistry
+import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService
 import io.opentelemetry.sdk.OpenTelemetrySdk
@@ -68,7 +68,7 @@ class SdkPreconfiguredRumBuilder
 
         private fun getInstrumentations(): List<AndroidInstrumentation> {
             if (discoverInstrumentations) {
-                instrumentations.addAll(AndroidInstrumentationRegistry.get().getAll())
+                instrumentations.addAll(AndroidInstrumentationLoader.get().getAll())
             }
 
             return instrumentations

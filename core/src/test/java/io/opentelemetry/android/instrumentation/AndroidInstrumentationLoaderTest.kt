@@ -8,11 +8,11 @@ package io.opentelemetry.android.instrumentation
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-class AndroidInstrumentationRegistryTest {
+class AndroidInstrumentationLoaderTest {
     @Test
     fun `Verify singleton`() {
-        val registry = AndroidInstrumentationRegistry.get()
+        val registry = AndroidInstrumentationLoader.get()
 
-        assertThat(registry).isEqualTo(AndroidInstrumentationRegistry.get())
+        assertThat(registry).isEqualTo(AndroidInstrumentationLoader.get())
     }
 }
