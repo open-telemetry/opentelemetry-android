@@ -113,6 +113,7 @@ public class OpenTelemetryRumBuilderTest {
         SignalFromDiskExporter.resetForTesting();
         InitializationEvents.resetForTest();
         AndroidInstrumentationLoader.resetForTest();
+        ServiceManager.resetForTest();
         mocks.close();
     }
 
@@ -166,7 +167,6 @@ public class OpenTelemetryRumBuilderTest {
                         .build();
 
         OpenTelemetrySdk sdk = (OpenTelemetrySdk) openTelemetryRum.getOpenTelemetry();
-        String sessionId = openTelemetryRum.getRumSessionId();
         EventLogger eventLogger =
                 SdkEventLoggerProvider.create(sdk.getSdkLoggerProvider())
                         .get("otel.initialization.events");
@@ -437,6 +437,15 @@ public class OpenTelemetryRumBuilderTest {
         makeBuilder().build(serviceManager);
 
         verify(serviceManager).start();
+    }
+
+    @Test
+    public void verifyPreconfiguredServicesInitialization() {
+        OpenTelemetrySdk openTelemetrySdk = mock();
+
+        OpenTelemetryRum.builder(application, openTelemetrySdk, true).build();
+
+        assertThat(ServiceManager.get()).isNotNull();
     }
 
     /**
