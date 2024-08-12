@@ -1,3 +1,4 @@
+import gradle.kotlin.dsl.accessors._54b5f06035b3934113c4ba6e81f303be.testImplementation
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
@@ -32,6 +33,8 @@ android {
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 dependencies {
+    androidTestImplementation(libs.findLibrary("androidx-test-core").get())
+    androidTestImplementation(libs.findLibrary("androidx-test-rules").get())
     androidTestImplementation(libs.findLibrary("androidx-test-runner").get())
     androidTestImplementation(libs.findLibrary("opentelemetry-sdk-testing").get())
     coreLibraryDesugaring(libs.findLibrary("desugarJdkLibs").get())

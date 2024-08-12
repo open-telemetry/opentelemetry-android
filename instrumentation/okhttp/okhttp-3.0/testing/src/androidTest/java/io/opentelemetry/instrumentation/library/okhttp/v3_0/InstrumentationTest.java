@@ -8,6 +8,9 @@ package io.opentelemetry.instrumentation.library.okhttp.v3_0;
 import static org.junit.Assert.assertEquals;
 
 import androidx.annotation.NonNull;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.platform.app.InstrumentationRegistry;
+import io.opentelemetry.android.OpenTelemetryRum;
 import io.opentelemetry.android.test.common.OpenTelemetryTestUtils;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -45,6 +48,7 @@ public class InstrumentationTest {
 
     @Test
     public void okhttpTraces() throws IOException {
+        initializeRum();
         OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter);
         server.enqueue(new MockResponse().setResponseCode(200));
 
@@ -72,6 +76,7 @@ public class InstrumentationTest {
 
     @Test
     public void okhttpTraces_with_callback() throws InterruptedException {
+        initializeRum();
         OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter);
         CountDownLatch lock = new CountDownLatch(1);
         Span span = OpenTelemetryTestUtils.getSpan();
@@ -146,5 +151,14 @@ public class InstrumentationTest {
     private Call createCall(OkHttpClient client, String urlPath) {
         Request request = new Request.Builder().url(server.url(urlPath)).build();
         return client.newCall(request);
+    }
+
+    private static void initializeRum() {
+        InstrumentationRegistry.getInstrumentation()
+                .runOnMainSync(
+                        () ->
+                                OpenTelemetryRum.builder(
+                                                ApplicationProvider.getApplicationContext())
+                                        .build());
     }
 }
