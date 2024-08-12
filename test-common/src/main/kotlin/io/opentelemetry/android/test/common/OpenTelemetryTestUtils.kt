@@ -22,17 +22,14 @@ object OpenTelemetryTestUtils {
     }
 
     @JvmStatic
-    fun setUpSpanExporter(spanExporter: SpanExporter): OpenTelemetry {
+    fun setUpSpanExporter(spanExporter: SpanExporter) {
         openTelemetry =
             OpenTelemetrySdk.builder()
                 .setTracerProvider(getSimpleTracerProvider(spanExporter))
                 .build()
 
-        // TODO: Remove the bottom two lines after making okhttp3 androidTests parallel too.
         GlobalOpenTelemetry.resetForTest()
         GlobalOpenTelemetry.set(openTelemetry)
-
-        return openTelemetry
     }
 
     private fun getSimpleTracerProvider(spanExporter: SpanExporter): SdkTracerProvider {

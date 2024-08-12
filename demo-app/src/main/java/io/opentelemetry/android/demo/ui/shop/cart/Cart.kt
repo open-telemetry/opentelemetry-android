@@ -1,62 +1,75 @@
 package io.opentelemetry.android.demo.ui.shop.cart
 
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import java.util.Locale
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import io.opentelemetry.android.demo.model.Product
-
+import io.opentelemetry.android.demo.ui.shop.products.ProductCard
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 
 @Composable
-fun CartScreen() {
-    val products : List<Product> = listOf()
-    Scaffold(
-        content = { innerPadding ->
-            Column(
+fun CartScreen(cartViewModel: CartViewModel = viewModel()) {
+    val cartItems by cartViewModel.cartItems.collectAsState()
+    val isCartEmpty = cartItems.isEmpty()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.TopEnd
+        ) {
+            OutlinedButton(
+                onClick = { cartViewModel.clearCart() },
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                LazyColumn(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    items(products.size) { index -> CartItem(products[index]) }
-                }
-                CheckoutButton(totalPrice = products.sumOf { it.priceValue() })
+                Text("Empty Cart", color = Color.Red)
             }
         }
-    )
-}
 
-@Composable
-fun CartItem(product: Product) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(text = product.name, fontSize = 20.sp)
-        Text(text = "$${product.priceUsd}", fontSize = 20.sp)
+        LazyColumn(modifier = Modifier.weight(1f)) {
+            items(cartItems.size) { index ->
+                ProductCard(product = cartItems[index].product, onClick = {})
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Quantity: ${cartItems[index].quantity}",
+                    modifier = Modifier.padding(start = 16.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Total: \$${String.format(Locale.US, "%.2f", cartItems[index].totalPrice())}",
+                    modifier = Modifier.padding(start = 16.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Total Price: \$${String.format(Locale.US, "%.2f", cartViewModel.getTotalPrice())}",
+            modifier = Modifier.padding(16.dp)
+        )
+
+        Button(
+            onClick = { /* TODO: Handle checkout */ },
+            enabled = !isCartEmpty,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isCartEmpty) Color.Gray else MaterialTheme.colorScheme.primary
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text("Checkout")
+        }
     }
 }
 
-@Composable
-fun CheckoutButton(totalPrice: Double) {
-    Button(
-        onClick = { /* TODO: Add checkout logic */ },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 16.dp)
-    ) {
-        Text(text = "Checkout ($${String.format("%.2f", totalPrice)})")
-    }
-}

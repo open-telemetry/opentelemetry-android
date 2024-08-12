@@ -16,11 +16,15 @@ import androidx.compose.ui.unit.sp
 import io.opentelemetry.android.demo.clients.ImageLoader
 import io.opentelemetry.android.demo.gothamFont
 import io.opentelemetry.android.demo.model.Product
+import io.opentelemetry.android.demo.ui.shop.components.QuantityChooser
+import androidx.lifecycle.viewmodel.compose.viewModel
+import io.opentelemetry.android.demo.ui.shop.cart.CartViewModel
 
 @Composable
-fun ProductDetails(product:Product){
+fun ProductDetails(product:Product, cartViewModel: CartViewModel = viewModel()){
     val imageLoader = ImageLoader(LocalContext.current)
     val sourceProductImage = imageLoader.load(product.picture)
+    var quantity by remember { mutableIntStateOf(1) }
 
     Column(
         modifier = Modifier
@@ -61,8 +65,10 @@ fun ProductDetails(product:Product){
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(32.dp))
+        QuantityChooser(quantity = quantity, onQuantityChange = { quantity = it })
+        Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = { /* TODO: Handle add to cart */ },
+            onClick = { cartViewModel.addProduct(product, quantity) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
@@ -71,3 +77,5 @@ fun ProductDetails(product:Product){
         }
     }
 }
+
+
