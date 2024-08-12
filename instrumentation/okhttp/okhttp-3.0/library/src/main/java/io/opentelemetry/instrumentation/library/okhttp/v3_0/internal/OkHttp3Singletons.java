@@ -26,8 +26,9 @@ import okhttp3.Response;
  * any time.
  */
 public final class OkHttp3Singletons {
-    public static Interceptor CONNECTION_ERROR_INTERCEPTOR;
-    public static Interceptor TRACING_INTERCEPTOR;
+    private static final Interceptor NOOP_INTERCEPTOR = (chain -> chain.proceed(chain.request()));
+    public static Interceptor CONNECTION_ERROR_INTERCEPTOR = NOOP_INTERCEPTOR;
+    public static Interceptor TRACING_INTERCEPTOR = NOOP_INTERCEPTOR;
 
     public static void configure(
             OkHttpInstrumentation instrumentation, OpenTelemetry openTelemetry) {
