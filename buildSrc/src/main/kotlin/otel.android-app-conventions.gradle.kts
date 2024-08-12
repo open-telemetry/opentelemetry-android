@@ -1,4 +1,3 @@
-import gradle.kotlin.dsl.accessors._54b5f06035b3934113c4ba6e81f303be.testImplementation
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
