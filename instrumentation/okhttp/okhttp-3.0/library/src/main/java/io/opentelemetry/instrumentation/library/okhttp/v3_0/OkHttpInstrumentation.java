@@ -11,6 +11,7 @@ import io.opentelemetry.android.OpenTelemetryRum;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceResolver;
 import io.opentelemetry.instrumentation.api.internal.HttpConstants;
+import io.opentelemetry.instrumentation.library.okhttp.v3_0.internal.OkHttp3Singletons;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,7 +28,6 @@ public class OkHttpInstrumentation implements AndroidInstrumentation {
     private Set<String> knownMethods = HttpConstants.KNOWN_METHODS;
     private Map<String, String> peerServiceMapping = new HashMap<>();
     private boolean emitExperimentalHttpClientMetrics;
-    private OpenTelemetryRum openTelemetryRum = OpenTelemetryRum.noop();
 
     /**
      * Configures the HTTP request headers that will be captured as span attributes as described in
@@ -122,13 +122,9 @@ public class OkHttpInstrumentation implements AndroidInstrumentation {
         return emitExperimentalHttpClientMetrics;
     }
 
-    public OpenTelemetryRum getOpenTelemetryRum() {
-        return openTelemetryRum;
-    }
-
     @Override
     public void install(
             @NotNull Application application, @NotNull OpenTelemetryRum openTelemetryRum) {
-        this.openTelemetryRum = openTelemetryRum;
+        OkHttp3Singletons.configure(this, openTelemetryRum.getOpenTelemetry());
     }
 }
