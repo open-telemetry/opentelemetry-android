@@ -8,15 +8,15 @@ package io.opentelemetry.instrumentation.library.okhttp.v3_0;
 import static org.junit.Assert.assertEquals;
 
 import androidx.annotation.NonNull;
-import androidx.test.core.app.ApplicationProvider;
-import androidx.test.platform.app.InstrumentationRegistry;
-import io.opentelemetry.android.OpenTelemetryRum;
-import io.opentelemetry.android.test.common.OpenTelemetryTestUtils;
+import io.opentelemetry.android.test.common.OpenTelemetryRumRule;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
-import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import okhttp3.Call;
@@ -28,11 +28,13 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 public class InstrumentationTest {
     private MockWebServer server;
-    private static final InMemorySpanExporter inMemorySpanExporter = InMemorySpanExporter.create();
+
+    @Rule public OpenTelemetryRumRule openTelemetryRumRule = new OpenTelemetryRumRule();
 
     @Before
     public void setUp() throws IOException {
@@ -43,16 +45,13 @@ public class InstrumentationTest {
     @After
     public void tearDown() throws IOException {
         server.shutdown();
-        inMemorySpanExporter.reset();
     }
 
     @Test
     public void okhttpTraces() throws IOException {
-        initializeRum();
-        OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter);
         server.enqueue(new MockResponse().setResponseCode(200));
 
-        Span span = OpenTelemetryTestUtils.getSpan();
+        Span span = openTelemetryRumRule.getSpan();
 
         try (Scope ignored = span.makeCurrent()) {
             OkHttpClient client =
@@ -71,15 +70,13 @@ public class InstrumentationTest {
 
         span.end();
 
-        assertEquals(2, inMemorySpanExporter.getFinishedSpanItems().size());
+        assertEquals(2, openTelemetryRumRule.inMemorySpanExporter.getFinishedSpanItems().size());
     }
 
     @Test
     public void okhttpTraces_with_callback() throws InterruptedException {
-        initializeRum();
-        OpenTelemetryTestUtils.setUpSpanExporter(inMemorySpanExporter);
         CountDownLatch lock = new CountDownLatch(1);
-        Span span = OpenTelemetryTestUtils.getSpan();
+        Span span = openTelemetryRumRule.getSpan();
 
         try (Scope ignored = span.makeCurrent()) {
             server.enqueue(new MockResponse().setResponseCode(200));
@@ -116,7 +113,7 @@ public class InstrumentationTest {
         lock.await();
         span.end();
 
-        assertEquals(2, inMemorySpanExporter.getFinishedSpanItems().size());
+        assertEquals(2, openTelemetryRumRule.inMemorySpanExporter.getFinishedSpanItems().size());
     }
 
     @Test
@@ -126,13 +123,24 @@ public class InstrumentationTest {
         // so it should be run isolated to actually get it to fail when it's expected to fail.
         OtlpHttpSpanExporter exporter =
                 OtlpHttpSpanExporter.builder().setEndpoint(server.url("").toString()).build();
-        OpenTelemetryTestUtils.setUpSpanExporter(exporter);
+        OpenTelemetry openTelemetry =
+                OpenTelemetrySdk.builder()
+                        .setTracerProvider(
+                                SdkTracerProvider.builder()
+                                        .addSpanProcessor(SimpleSpanProcessor.create(exporter))
+                                        .build())
+                        .build();
 
         server.enqueue(new MockResponse().setResponseCode(200));
 
         // This span should trigger 1 export okhttp call, which is the only okhttp call expected
         // for this test case.
-        OpenTelemetryTestUtils.getSpan().end();
+        openTelemetry
+                .tracerBuilder("Some Scope")
+                .build()
+                .spanBuilder("Some Span")
+                .startSpan()
+                .end();
 
         // Wait for unwanted extra okhttp requests.
         int loop = 0;
@@ -151,14 +159,5 @@ public class InstrumentationTest {
     private Call createCall(OkHttpClient client, String urlPath) {
         Request request = new Request.Builder().url(server.url(urlPath)).build();
         return client.newCall(request);
-    }
-
-    private static void initializeRum() {
-        InstrumentationRegistry.getInstrumentation()
-                .runOnMainSync(
-                        () ->
-                                OpenTelemetryRum.builder(
-                                                ApplicationProvider.getApplicationContext())
-                                        .build());
     }
 }
