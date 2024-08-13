@@ -321,10 +321,9 @@ public final class OpenTelemetryRumBuilder {
                         application,
                         sdk,
                         sessionId,
-                        serviceManager::getAppLifecycleService,
-                        config.shouldDiscoverInstrumentations());
+                        config.shouldDiscoverInstrumentations(),
+                        serviceManager);
         instrumentations.forEach(delegate::addInstrumentation);
-        serviceManager.start();
         return delegate.build();
     }
 
