@@ -2,8 +2,44 @@
 
 ## Unreleased
 
-* Logs are now exported to stdout by default.
-* New method to customize log exporter: addLogRecordExporterCustomizer()
+### 🌟 New instrumentation
+
+- Http/sURLConnection auto instrumentation.
+  ([#133](https://github.com/open-telemetry/opentelemetry-android/pull/133))
+
+### 📈 Enhancements
+
+- Logs are now exported to stdout by
+  default. ([#424](https://github.com/open-telemetry/opentelemetry-android/pull/424))
+- New method to customize log exporter:
+  addLogRecordExporterCustomizer() ([#424](https://github.com/open-telemetry/opentelemetry-android/pull/424))
+- Adding RUM initialization
+  events. ([#397](https://github.com/open-telemetry/opentelemetry-android/pull/397))
+- Upgrading Kotlin to 2.0.0
+  ([#388](https://github.com/open-telemetry/opentelemetry-android/pull/388))
+- Implementing an instrumentation API to handle auto instrumentations.
+  ([#396](https://github.com/open-telemetry/opentelemetry-android/pull/396))
+- Adding Hanson and Manoel as approvers.
+  ([#413](https://github.com/open-telemetry/opentelemetry-android/pull/413))
+
+### 🛠️ Bug fixes
+
+### 🧰 Tooling
+
+- Not adding artifacts to the GH release page.
+  ([#385](https://github.com/open-telemetry/opentelemetry-android/pull/385))
+- Populating the session id on screen for the demo app.
+  ([#402](https://github.com/open-telemetry/opentelemetry-android/pull/402))
+- Setting up docker compose files for the demo app.
+  ([#426](https://github.com/open-telemetry/opentelemetry-android/pull/426))
+- Running android tests as part of daily checks.
+  ([#509](https://github.com/open-telemetry/opentelemetry-android/pull/509))
+- Adding a cart to the demo app.
+  ([#518](https://github.com/open-telemetry/opentelemetry-android/pull/518))
+- Demo app improvements.
+  ([#497](https://github.com/open-telemetry/opentelemetry-android/pull/497),
+  [#507](https://github.com/open-telemetry/opentelemetry-android/pull/507),
+  [#414](https://github.com/open-telemetry/opentelemetry-android/pull/414))
 
 ## Version 0.6.0 (2024-05-22)
 
