@@ -22,8 +22,6 @@
 - Adding Hanson and Manoel as approvers.
   ([#413](https://github.com/open-telemetry/opentelemetry-android/pull/413))
 
-### 🛠️ Bug fixes
-
 ### 🧰 Tooling
 
 - Not adding artifacts to the GH release page.
