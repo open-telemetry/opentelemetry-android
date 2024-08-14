@@ -5,19 +5,18 @@
 
 package io.opentelemetry.instrumentation.library.okhttp.v3_0.internal;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.instrumentation.api.semconv.http.HttpClientRequestResendCount;
 import io.opentelemetry.instrumentation.api.semconv.http.HttpSpanNameExtractor;
-import io.opentelemetry.instrumentation.library.okhttp.v3_0.OkHttpInstrumentationConfig;
+import io.opentelemetry.instrumentation.library.okhttp.v3_0.OkHttpInstrumentation;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.ConnectionErrorSpanInterceptor;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpAttributesGetter;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpClientInstrumenterBuilderFactory;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.TracingInterceptor;
-import java.util.function.Supplier;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -27,37 +26,36 @@ import okhttp3.Response;
  * any time.
  */
 public final class OkHttp3Singletons {
+    private static final Interceptor NOOP_INTERCEPTOR = (chain -> chain.proceed(chain.request()));
+    public static Interceptor CONNECTION_ERROR_INTERCEPTOR = NOOP_INTERCEPTOR;
+    public static Interceptor TRACING_INTERCEPTOR = NOOP_INTERCEPTOR;
 
-    private static final Supplier<Instrumenter<Request, Response>> INSTRUMENTER =
-            CachedSupplier.create(
-                    () ->
-                            OkHttpClientInstrumenterBuilderFactory.create(GlobalOpenTelemetry.get())
-                                    .setCapturedRequestHeaders(
-                                            OkHttpInstrumentationConfig.getCapturedRequestHeaders())
-                                    .setCapturedResponseHeaders(
-                                            OkHttpInstrumentationConfig
-                                                    .getCapturedResponseHeaders())
-                                    .setKnownMethods(OkHttpInstrumentationConfig.getKnownMethods())
-                                    // TODO: Do we really need to set the known methods on the span
-                                    // name
-                                    // extractor as well?
-                                    .setSpanNameExtractor(
-                                            x ->
-                                                    HttpSpanNameExtractor.builder(
-                                                                    OkHttpAttributesGetter.INSTANCE)
-                                                            .setKnownMethods(
-                                                                    OkHttpInstrumentationConfig
-                                                                            .getKnownMethods())
-                                                            .build())
-                                    .addAttributeExtractor(
-                                            PeerServiceAttributesExtractor.create(
-                                                    OkHttpAttributesGetter.INSTANCE,
-                                                    OkHttpInstrumentationConfig
-                                                            .newPeerServiceResolver()))
-                                    .setEmitExperimentalHttpClientMetrics(
-                                            OkHttpInstrumentationConfig
-                                                    .emitExperimentalHttpClientMetrics())
-                                    .build());
+    public static void configure(
+            OkHttpInstrumentation instrumentation, OpenTelemetry openTelemetry) {
+        Instrumenter<Request, Response> instrumenter =
+                OkHttpClientInstrumenterBuilderFactory.create(openTelemetry)
+                        .setCapturedRequestHeaders(instrumentation.getCapturedRequestHeaders())
+                        .setCapturedResponseHeaders(instrumentation.getCapturedResponseHeaders())
+                        .setKnownMethods(instrumentation.getKnownMethods())
+                        // TODO: Do we really need to set the known methods on the span
+                        // name
+                        // extractor as well?
+                        .setSpanNameExtractor(
+                                x ->
+                                        HttpSpanNameExtractor.builder(
+                                                        OkHttpAttributesGetter.INSTANCE)
+                                                .setKnownMethods(instrumentation.getKnownMethods())
+                                                .build())
+                        .addAttributeExtractor(
+                                PeerServiceAttributesExtractor.create(
+                                        OkHttpAttributesGetter.INSTANCE,
+                                        instrumentation.newPeerServiceResolver()))
+                        .setEmitExperimentalHttpClientMetrics(
+                                instrumentation.emitExperimentalHttpClientMetrics())
+                        .build();
+        CONNECTION_ERROR_INTERCEPTOR = new ConnectionErrorSpanInterceptor(instrumenter);
+        TRACING_INTERCEPTOR = new TracingInterceptor(instrumenter, openTelemetry.getPropagators());
+    }
 
     public static final Interceptor CALLBACK_CONTEXT_INTERCEPTOR =
             chain -> {
@@ -80,19 +78,6 @@ public final class OkHttp3Singletons {
                     return chain.proceed(chain.request());
                 }
             };
-
-    public static final Interceptor CONNECTION_ERROR_INTERCEPTOR =
-            new LazyInterceptor<>(
-                    CachedSupplier.create(
-                            () -> new ConnectionErrorSpanInterceptor(INSTRUMENTER.get())));
-
-    public static final Interceptor TRACING_INTERCEPTOR =
-            new LazyInterceptor<>(
-                    CachedSupplier.create(
-                            () ->
-                                    new TracingInterceptor(
-                                            INSTRUMENTER.get(),
-                                            GlobalOpenTelemetry.getPropagators())));
 
     private OkHttp3Singletons() {}
 }

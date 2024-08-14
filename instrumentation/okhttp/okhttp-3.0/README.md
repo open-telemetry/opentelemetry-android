@@ -40,4 +40,17 @@ automatically.
 ### Configuration
 
 You can configure the automatic instrumentation by using the setters
-in [OkHttpInstrumentationConfig](library/src/main/java/io/opentelemetry/instrumentation/library/okhttp/v3_0/OkHttpInstrumentationConfig.java)).
+from
+the [OkHttpInstrumentation](library/src/main/java/io/opentelemetry/instrumentation/library/okhttp/v3_0/OkHttpInstrumentation.java))
+instance provided via the AndroidInstrumentationLoader as shown below:
+
+```java
+OkHttpInstrumentation instrumentation = AndroidInstrumentationLoader.getInstrumentation(OkHttpInstrumentation.class);
+
+// Call `instrumentation` setters.
+```
+
+> [!NOTE]
+> You must make sure to apply any configurations **before** initializing your OpenTelemetryRum
+> instance (i.e. calling OpenTelemetryRum.builder()...build()). Otherwise your configs won't be
+> taken into account during the RUM initialization process.

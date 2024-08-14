@@ -5,24 +5,29 @@
 
 package io.opentelemetry.instrumentation.library.okhttp.v3_0;
 
+import android.app.Application;
+import com.google.auto.service.AutoService;
+import io.opentelemetry.android.OpenTelemetryRum;
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceResolver;
 import io.opentelemetry.instrumentation.api.internal.HttpConstants;
+import io.opentelemetry.instrumentation.library.okhttp.v3_0.internal.OkHttp3Singletons;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.jetbrains.annotations.NotNull;
 
-/** Configuration for automatic instrumentation of okhttp requests. */
-public final class OkHttpInstrumentationConfig {
-    private static List<String> capturedRequestHeaders = new ArrayList<>();
-    private static List<String> capturedResponseHeaders = new ArrayList<>();
-    private static Set<String> knownMethods = HttpConstants.KNOWN_METHODS;
-    private static Map<String, String> peerServiceMapping = new HashMap<>();
-    private static boolean emitExperimentalHttpClientMetrics;
-
-    private OkHttpInstrumentationConfig() {}
+/** Instrumentation for okhttp requests. */
+@AutoService(AndroidInstrumentation.class)
+public class OkHttpInstrumentation implements AndroidInstrumentation {
+    private List<String> capturedRequestHeaders = new ArrayList<>();
+    private List<String> capturedResponseHeaders = new ArrayList<>();
+    private Set<String> knownMethods = HttpConstants.KNOWN_METHODS;
+    private Map<String, String> peerServiceMapping = new HashMap<>();
+    private boolean emitExperimentalHttpClientMetrics;
 
     /**
      * Configures the HTTP request headers that will be captured as span attributes as described in
@@ -36,11 +41,11 @@ public final class OkHttpInstrumentationConfig {
      *
      * @param requestHeaders A list of HTTP header names.
      */
-    public static void setCapturedRequestHeaders(List<String> requestHeaders) {
-        OkHttpInstrumentationConfig.capturedRequestHeaders = new ArrayList<>(requestHeaders);
+    public void setCapturedRequestHeaders(List<String> requestHeaders) {
+        capturedRequestHeaders = new ArrayList<>(requestHeaders);
     }
 
-    public static List<String> getCapturedRequestHeaders() {
+    public List<String> getCapturedRequestHeaders() {
         return capturedRequestHeaders;
     }
 
@@ -56,11 +61,11 @@ public final class OkHttpInstrumentationConfig {
      *
      * @param responseHeaders A list of HTTP header names.
      */
-    public static void setCapturedResponseHeaders(List<String> responseHeaders) {
-        OkHttpInstrumentationConfig.capturedResponseHeaders = new ArrayList<>(responseHeaders);
+    public void setCapturedResponseHeaders(List<String> responseHeaders) {
+        capturedResponseHeaders = new ArrayList<>(responseHeaders);
     }
 
-    public static List<String> getCapturedResponseHeaders() {
+    public List<String> getCapturedResponseHeaders() {
         return capturedResponseHeaders;
     }
 
@@ -79,11 +84,11 @@ public final class OkHttpInstrumentationConfig {
      *
      * @param knownMethods A set of recognized HTTP request methods.
      */
-    public static void setKnownMethods(Set<String> knownMethods) {
-        OkHttpInstrumentationConfig.knownMethods = new HashSet<>(knownMethods);
+    public void setKnownMethods(Set<String> knownMethods) {
+        this.knownMethods = new HashSet<>(knownMethods);
     }
 
-    public static Set<String> getKnownMethods() {
+    public Set<String> getKnownMethods() {
         return knownMethods;
     }
 
@@ -92,11 +97,11 @@ public final class OkHttpInstrumentationConfig {
      * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/span-general.md#general-remote-service-attributes">the
      * specification</a>.
      */
-    public static void setPeerServiceMapping(Map<String, String> peerServiceMapping) {
-        OkHttpInstrumentationConfig.peerServiceMapping = new HashMap<>(peerServiceMapping);
+    public void setPeerServiceMapping(Map<String, String> peerServiceMapping) {
+        this.peerServiceMapping = new HashMap<>(peerServiceMapping);
     }
 
-    public static PeerServiceResolver newPeerServiceResolver() {
+    public PeerServiceResolver newPeerServiceResolver() {
         return PeerServiceResolver.create(peerServiceMapping);
     }
 
@@ -109,13 +114,17 @@ public final class OkHttpInstrumentationConfig {
      * href="https://github.com/open-telemetry/semantic-conventions/blob/main/specification/metrics/semantic_conventions/http-metrics.md#metric-httpclientresponsesize">
      * the response size</a>.
      */
-    public static void setEmitExperimentalHttpClientMetrics(
-            boolean emitExperimentalHttpClientMetrics) {
-        OkHttpInstrumentationConfig.emitExperimentalHttpClientMetrics =
-                emitExperimentalHttpClientMetrics;
+    public void setEmitExperimentalHttpClientMetrics(boolean emitExperimentalHttpClientMetrics) {
+        this.emitExperimentalHttpClientMetrics = emitExperimentalHttpClientMetrics;
     }
 
-    public static boolean emitExperimentalHttpClientMetrics() {
+    public boolean emitExperimentalHttpClientMetrics() {
         return emitExperimentalHttpClientMetrics;
+    }
+
+    @Override
+    public void install(
+            @NotNull Application application, @NotNull OpenTelemetryRum openTelemetryRum) {
+        OkHttp3Singletons.configure(this, openTelemetryRum.getOpenTelemetry());
     }
 }

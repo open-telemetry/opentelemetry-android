@@ -32,6 +32,8 @@ android {
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 dependencies {
+    androidTestImplementation(libs.findLibrary("androidx-test-core").get())
+    androidTestImplementation(libs.findLibrary("androidx-test-rules").get())
     androidTestImplementation(libs.findLibrary("androidx-test-runner").get())
     androidTestImplementation(libs.findLibrary("opentelemetry-sdk-testing").get())
     coreLibraryDesugaring(libs.findLibrary("desugarJdkLibs").get())
