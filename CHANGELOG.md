@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+### 🚧 Refactorings
+
+- Implementing an instrumentation API to handle auto instrumentations.
+  ([#396](https://github.com/open-telemetry/opentelemetry-android/pull/396)) This change included:
+    - The old module `android-agent` was renamed to `core` and a new `android-agent` module was
+      created to bring together the core functionalities plus the default instrumentations.
+    - The following modules were refactored to implement the new `AndroidInstrumentation` api and to
+      invert their dependency with the `core` module so that the `core` isn't aware of
+      them: `activity`, `anr`, `crash`, `fragment`, `network`, `slowrendering`, `startup`.
+    - (Breaking) The config options related to auto instrumentations that used to live
+      in `OtelRumConfig` were move to each instrumentation's `AndroidInstrumentation`
+      implementation. This means that the way to configure auto instrumentations now must be done
+      via
+      the `AndroidInstrumentationLoader.getInstrumentation(AndroidInstrumentationImpl::class.java)`
+      method where `AndroidInstrumentationImpl` must be replaced by the implementation type that
+      will be configured. Each implementation should contain helper functions (setters, adders, etc)
+      to allow configuring itself whenever needed.
+
 ### 🌟 New instrumentation
 
 - Http/sURLConnection auto instrumentation.
@@ -17,8 +35,6 @@
   events. ([#397](https://github.com/open-telemetry/opentelemetry-android/pull/397))
 - Upgrading Kotlin to 2.0.0
   ([#388](https://github.com/open-telemetry/opentelemetry-android/pull/388))
-- Implementing an instrumentation API to handle auto instrumentations.
-  ([#396](https://github.com/open-telemetry/opentelemetry-android/pull/396))
 - Adding Hanson and Manoel as approvers.
   ([#413](https://github.com/open-telemetry/opentelemetry-android/pull/413))
 
@@ -42,24 +58,33 @@
 ## Version 0.6.0 (2024-05-22)
 
 This version of OpenTelemetry Android is built on:
-* OpenTelemetry Java Instrumentation [2.4.0](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v2.4.0)
-* OpenTelemetry Java Contrib [1.34.0-alpha](https://github.com/open-telemetry/opentelemetry-java-contrib/releases/tag/v1.35.0)
-* OpenTelemetry SDK [1.38.0](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.38.0)
+
+* OpenTelemetry Java
+  Instrumentation [2.4.0](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v2.4.0)
+* OpenTelemetry Java
+  Contrib [1.34.0-alpha](https://github.com/open-telemetry/opentelemetry-java-contrib/releases/tag/v1.35.0)
+* OpenTelemetry
+  SDK [1.38.0](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.38.0)
 
 ### 🌟 New instrumentation
 
-- Experimental Volley http client instrumentation [#291](https://github.com/open-telemetry/opentelemetry-android/pull/291).
+- Experimental Volley http client
+  instrumentation [#291](https://github.com/open-telemetry/opentelemetry-android/pull/291).
 
 ### 📈 Enhancements
 
-- There is now an initial version of an OpenTelemetry Android demo app. [#338](https://github.com/open-telemetry/opentelemetry-android/pull/338)
-- Session timeout duration is now configurable beyond the 15 minute default [#330](https://github.com/open-telemetry/opentelemetry-android/pull/330)
+- There is now an initial version of an OpenTelemetry Android demo
+  app. [#338](https://github.com/open-telemetry/opentelemetry-android/pull/338)
+- Session timeout duration is now configurable beyond the 15 minute
+  default [#330](https://github.com/open-telemetry/opentelemetry-android/pull/330)
 
 ### 🛠️ Bug fixes
 
-- Scheduled components now use fixed delay instead of fixed rate [#332](https://github.com/open-telemetry/opentelemetry-android/pull/332).
+- Scheduled components now use fixed delay instead of fixed
+  rate [#332](https://github.com/open-telemetry/opentelemetry-android/pull/332).
 
 ### 🧰 Tooling
+
 - A variety of small tweaks to the build process to make it smoother and more consistent with other
   OpenTelemetry Java repos.
 
@@ -67,7 +92,10 @@ This version of OpenTelemetry Android is built on:
 
 ⚠️⚠️⚠️ There are considerable breaking changes in this release.
 
-Breaking changes include considerable restructuring of the overall project layout. This provides a much more modularized project that publishes more granular instrumentation modules. Note that as a result of this, the topmost dependency is changing its name to `io.opentelemetry.android:android-agent`.
+Breaking changes include considerable restructuring of the overall project layout. This provides a
+much more modularized project that publishes more granular instrumentation modules. Note that as a
+result of this, the topmost dependency is changing its name
+to `io.opentelemetry.android:android-agent`.
 
 ### 📈 Enhancements
 
@@ -100,16 +128,21 @@ Breaking changes include considerable restructuring of the overall project layou
 
 ## Version 0.4.0 (2024-03-04)
 
-- Update to [opentelemetry-java-instrumentation 1.32.1](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.32.1)
-- Update to [opentelemetry-java sdk 1.35.0](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.35.0)
-- Wire up support for ANRs, crash reporting, and slow rendering detection, with configurability support (#192)
+- Update
+  to [opentelemetry-java-instrumentation 1.32.1](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.32.1)
+- Update
+  to [opentelemetry-java sdk 1.35.0](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.35.0)
+- Wire up support for ANRs, crash reporting, and slow rendering detection, with configurability
+  support (#192)
 - Fix okhttp instrumentation to include known http methods (#215)
 - Finish adding initial implementation of through-disk buffering support (#194, #221)
 
 ## Version 0.3.0 (2023-12-13)
 
-- Update to [opentelemetry-java-instrumentation 1.32.0](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.32.0)
-- Update to [opentelemetry-java sdk 1.33.0](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.33.0)
+- Update
+  to [opentelemetry-java-instrumentation 1.32.0](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.32.0)
+- Update
+  to [opentelemetry-java sdk 1.33.0](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.33.0)
 - Stabilizing support for okhttp automatic build-time instrumentation (#159)
 
 ## Version 0.2.0 (2023-10-20)
@@ -117,8 +150,10 @@ Breaking changes include considerable restructuring of the overall project layou
 This is a regular monthly cadence release, which follows the releases of
 opentelemetry-java-instrumentation and opentelemetry-java (core/sdk).
 
-- Update to [opentelemetry-java-instrumentation 1.31.0](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.31.0)
-- Update to [opentelemetry-java sdk 1.31.0](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.31.0)
+- Update
+  to [opentelemetry-java-instrumentation 1.31.0](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v1.31.0)
+- Update
+  to [opentelemetry-java sdk 1.31.0](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.31.0)
 - BREAKING - Update to latest java semantic conventions (#114)
     - `net.host.connection.type` -> `network.connection.type`
     - `net.host.carrier.icc` -> `network.carrier.icc`
@@ -137,4 +172,5 @@ This project is classified as experimental.
 ## 📈 Enhancements
 
 * Update to upstream otel sdk 1.29.0 (#75)
-* Add `OpenTelemetryRumBuilder.addPropagatorCustomizer()` to allow user to customize trace propagation (#71)
+* Add `OpenTelemetryRumBuilder.addPropagatorCustomizer()` to allow user to customize trace
+  propagation (#71)
