@@ -2,6 +2,8 @@
 
 ## Version 0.7.0 (2024-08-14)
 
+## Version 0.7.0 (2024-08-14)
+
 ### 🚧 Refactorings
 
 - Implementing an instrumentation API to handle auto instrumentations.
