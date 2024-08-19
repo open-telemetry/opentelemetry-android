@@ -1,7 +1,7 @@
 [versions]
 opentelemetry = "1.41.0"
 opentelemetry-alpha = "1.39.0-alpha"
-junit = "5.10.3"
+junit = "5.11.0"
 spotless = "6.25.0"
 kotlin = "2.0.10"
 navigation-compose = "2.7.7"
