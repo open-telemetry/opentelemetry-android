@@ -12,7 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.isAccessible
 
 data class ShippingInfo(
     var email: String = "",
@@ -36,14 +40,16 @@ fun InfoField(
     onValueChange: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
-    keyboardType: KeyboardType = KeyboardType.Text
+    keyboardType: KeyboardType = KeyboardType.Text,
+    isPassword: Boolean = false
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
         modifier = modifier.fillMaxWidth(),
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
     )
 }
 
@@ -70,7 +76,8 @@ fun InfoFieldsSection(
                 keyboardType = when (label) {
                     "Zip Code", "Credit Card Number", "Month", "Year", "CVV" -> KeyboardType.Number
                     else -> KeyboardType.Text
-                }
+                },
+                isPassword = label == "CVV"
             )
         }
     }
@@ -82,6 +89,9 @@ fun InfoScreen() {
     var paymentInfo by remember { mutableStateOf(PaymentInfo()) }
 
     val focusManager = LocalFocusManager.current
+
+
+    val canProceed = shippingInfo.allFieldsNotBlank() && paymentInfo.allFieldsNotBlank()
 
     Column(
         modifier = Modifier
@@ -121,9 +131,20 @@ fun InfoScreen() {
 
         Button(
             onClick = { /*TODO Handle*/ },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = canProceed
         ) {
             Text("Proceed")
         }
     }
 }
+
+fun <T : Any> T.allFieldsNotBlank(): Boolean {
+    return this::class.memberProperties.all { property ->
+        property.isAccessible = true
+        val value = property.call(this)
+        value is String && value.isNotBlank()
+    }
+}
+
+
