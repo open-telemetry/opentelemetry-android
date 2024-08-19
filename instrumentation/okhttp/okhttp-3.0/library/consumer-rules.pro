@@ -1,1 +1,0 @@
--keep class io.opentelemetry.exporter.internal.InstrumentationUtil { *; }
