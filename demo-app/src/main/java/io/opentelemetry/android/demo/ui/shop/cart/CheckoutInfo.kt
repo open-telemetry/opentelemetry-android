@@ -31,6 +31,52 @@ data class PaymentInfo(
 )
 
 @Composable
+fun InfoField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    keyboardType: KeyboardType = KeyboardType.Text
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        modifier = modifier.fillMaxWidth(),
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
+    )
+}
+
+@Composable
+fun SectionHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleLarge,
+        modifier = Modifier.padding(vertical = 8.dp)
+    )
+}
+
+@Composable
+fun InfoFieldsSection(
+    fields: List<Triple<String, String, (String) -> Unit>>,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        fields.forEach { (label, value, onValueChange) ->
+            InfoField(
+                value = value,
+                onValueChange = onValueChange,
+                label = label,
+                keyboardType = when (label) {
+                    "Zip Code", "Credit Card Number", "Month", "Year", "CVV" -> KeyboardType.Number
+                    else -> KeyboardType.Text
+                }
+            )
+        }
+    }
+}
+
+@Composable
 fun InfoScreen() {
     var shippingInfo by remember { mutableStateOf(ShippingInfo()) }
     var paymentInfo by remember { mutableStateOf(PaymentInfo()) }
@@ -45,102 +91,30 @@ fun InfoScreen() {
             .clickable { focusManager.clearFocus() }
             .verticalScroll(rememberScrollState())
     ) {
-        Text(
-            text = "Shipping Address",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+        SectionHeader(title = "Shipping Address")
 
-        OutlinedTextField(
-            value = shippingInfo.email,
-            onValueChange = { shippingInfo = shippingInfo.copy(email = it) },
-            label = { Text("E-mail Address") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = shippingInfo.streetAddress,
-            onValueChange = { shippingInfo = shippingInfo.copy(streetAddress = it) },
-            label = { Text("Street Address") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = shippingInfo.zipCode,
-            onValueChange = { shippingInfo = shippingInfo.copy(zipCode = it) },
-            label = { Text("Zip Code") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-
-        OutlinedTextField(
-            value = shippingInfo.city,
-            onValueChange = { shippingInfo = shippingInfo.copy(city = it) },
-            label = { Text("City") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = shippingInfo.state,
-            onValueChange = { shippingInfo = shippingInfo.copy(state = it) },
-            label = { Text("State") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = shippingInfo.country,
-            onValueChange = { shippingInfo = shippingInfo.copy(country = it) },
-            label = { Text("Country") },
-            modifier = Modifier.fillMaxWidth()
+        InfoFieldsSection(
+            fields = listOf(
+                Triple("E-mail Address", shippingInfo.email) { shippingInfo = shippingInfo.copy(email = it) },
+                Triple("Street Address", shippingInfo.streetAddress) { shippingInfo = shippingInfo.copy(streetAddress = it) },
+                Triple("Zip Code", shippingInfo.zipCode) { shippingInfo = shippingInfo.copy(zipCode = it) },
+                Triple("City", shippingInfo.city) { shippingInfo = shippingInfo.copy(city = it) },
+                Triple("State", shippingInfo.state) { shippingInfo = shippingInfo.copy(state = it) },
+                Triple("Country", shippingInfo.country) { shippingInfo = shippingInfo.copy(country = it) }
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "Payment Method",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+        SectionHeader(title = "Payment Method")
 
-        OutlinedTextField(
-            value = paymentInfo.creditCardNumber,
-            onValueChange = { paymentInfo = paymentInfo.copy(creditCardNumber = it) },
-            label = { Text("Credit Card Number") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            OutlinedTextField(
-                value = paymentInfo.expiryMonth,
-                onValueChange = { paymentInfo = paymentInfo.copy(expiryMonth = it) },
-                label = { Text("Month") },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        InfoFieldsSection(
+            fields = listOf(
+                Triple("Credit Card Number", paymentInfo.creditCardNumber) { paymentInfo = paymentInfo.copy(creditCardNumber = it) },
+                Triple("Month", paymentInfo.expiryMonth) { paymentInfo = paymentInfo.copy(expiryMonth = it) },
+                Triple("Year", paymentInfo.expiryYear) { paymentInfo = paymentInfo.copy(expiryYear = it) },
+                Triple("CVV", paymentInfo.cvv) { paymentInfo = paymentInfo.copy(cvv = it) }
             )
-
-            OutlinedTextField(
-                value = paymentInfo.expiryYear,
-                onValueChange = { paymentInfo = paymentInfo.copy(expiryYear = it) },
-                label = { Text("Year") },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 8.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
-        }
-
-        OutlinedTextField(
-            value = paymentInfo.cvv,
-            onValueChange = { paymentInfo = paymentInfo.copy(cvv = it) },
-            label = { Text("CVV") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
