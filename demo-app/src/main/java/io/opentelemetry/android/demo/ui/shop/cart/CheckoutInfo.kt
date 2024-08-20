@@ -15,6 +15,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import io.opentelemetry.android.demo.ui.shop.components.UpPressButton
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextAlign
 
 data class ShippingInfo(
     var email: String = "",
@@ -66,7 +69,10 @@ fun SectionHeader(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier.padding(vertical = 8.dp)
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .padding(vertical = 8.dp)
+            .fillMaxWidth()
     )
 }
 
@@ -92,56 +98,70 @@ fun InfoFieldsSection(
 }
 
 @Composable
-fun InfoScreen() {
+fun InfoScreen(
+    upPress: () -> Unit
+) {
     var shippingInfo by remember { mutableStateOf(ShippingInfo()) }
     var paymentInfo by remember { mutableStateOf(PaymentInfo()) }
 
     val focusManager = LocalFocusManager.current
-
     val canProceed = shippingInfo.isComplete() && paymentInfo.isComplete()
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
             .background(Color.White)
-            .clickable { focusManager.clearFocus() }
-            .verticalScroll(rememberScrollState())
     ) {
-        SectionHeader(title = "Shipping Address")
-
-        InfoFieldsSection(
-            fields = listOf(
-                Triple("E-mail Address", shippingInfo.email) { shippingInfo = shippingInfo.copy(email = it) },
-                Triple("Street Address", shippingInfo.streetAddress) { shippingInfo = shippingInfo.copy(streetAddress = it) },
-                Triple("Zip Code", shippingInfo.zipCode) { shippingInfo = shippingInfo.copy(zipCode = it) },
-                Triple("City", shippingInfo.city) { shippingInfo = shippingInfo.copy(city = it) },
-                Triple("State", shippingInfo.state) { shippingInfo = shippingInfo.copy(state = it) },
-                Triple("Country", shippingInfo.country) { shippingInfo = shippingInfo.copy(country = it) }
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        SectionHeader(title = "Payment Method")
-
-        InfoFieldsSection(
-            fields = listOf(
-                Triple("Credit Card Number", paymentInfo.creditCardNumber) { paymentInfo = paymentInfo.copy(creditCardNumber = it) },
-                Triple("Month", paymentInfo.expiryMonth) { paymentInfo = paymentInfo.copy(expiryMonth = it) },
-                Triple("Year", paymentInfo.expiryYear) { paymentInfo = paymentInfo.copy(expiryYear = it) },
-                Triple("CVV", paymentInfo.cvv) { paymentInfo = paymentInfo.copy(cvv = it) }
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = { /*TODO Handle*/ },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = canProceed
+        // Content inside a Column
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .clickable { focusManager.clearFocus() }
+                .verticalScroll(rememberScrollState())
         ) {
-            Text("Proceed")
+            SectionHeader(title = "Shipping Address")
+
+            InfoFieldsSection(
+                fields = listOf(
+                    Triple("E-mail Address", shippingInfo.email) { shippingInfo = shippingInfo.copy(email = it) },
+                    Triple("Street Address", shippingInfo.streetAddress) { shippingInfo = shippingInfo.copy(streetAddress = it) },
+                    Triple("Zip Code", shippingInfo.zipCode) { shippingInfo = shippingInfo.copy(zipCode = it) },
+                    Triple("City", shippingInfo.city) { shippingInfo = shippingInfo.copy(city = it) },
+                    Triple("State", shippingInfo.state) { shippingInfo = shippingInfo.copy(state = it) },
+                    Triple("Country", shippingInfo.country) { shippingInfo = shippingInfo.copy(country = it) }
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            SectionHeader(title = "Payment Method")
+
+            InfoFieldsSection(
+                fields = listOf(
+                    Triple("Credit Card Number", paymentInfo.creditCardNumber) { paymentInfo = paymentInfo.copy(creditCardNumber = it) },
+                    Triple("Month", paymentInfo.expiryMonth) { paymentInfo = paymentInfo.copy(expiryMonth = it) },
+                    Triple("Year", paymentInfo.expiryYear) { paymentInfo = paymentInfo.copy(expiryYear = it) },
+                    Triple("CVV", paymentInfo.cvv) { paymentInfo = paymentInfo.copy(cvv = it) }
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { /*TODO Handle*/ },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = canProceed
+            ) {
+                Text("Proceed")
+            }
         }
+
+        UpPressButton(
+            upPress = upPress,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(8.dp)
+        )
     }
 }
