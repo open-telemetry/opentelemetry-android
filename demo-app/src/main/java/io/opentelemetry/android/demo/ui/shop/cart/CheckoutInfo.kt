@@ -15,8 +15,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.isAccessible
 
 data class ShippingInfo(
     var email: String = "",
@@ -25,14 +23,24 @@ data class ShippingInfo(
     var city: String = "",
     var state: String = "",
     var country: String = ""
-)
+) {
+    fun isComplete(): Boolean {
+        return arrayOf(email, streetAddress, zipCode, city, state, country)
+            .all { it.isNotBlank() }
+    }
+}
 
 data class PaymentInfo(
     var creditCardNumber: String = "",
     var expiryMonth: String = "",
     var expiryYear: String = "",
     var cvv: String = ""
-)
+) {
+    fun isComplete(): Boolean {
+        return arrayOf(creditCardNumber, expiryMonth, expiryYear, cvv)
+            .all { it.isNotBlank() }
+    }
+}
 
 @Composable
 fun InfoField(
@@ -90,8 +98,7 @@ fun InfoScreen() {
 
     val focusManager = LocalFocusManager.current
 
-
-    val canProceed = shippingInfo.allFieldsNotBlank() && paymentInfo.allFieldsNotBlank()
+    val canProceed = shippingInfo.isComplete() && paymentInfo.isComplete()
 
     Column(
         modifier = Modifier
@@ -138,13 +145,3 @@ fun InfoScreen() {
         }
     }
 }
-
-fun <T : Any> T.allFieldsNotBlank(): Boolean {
-    return this::class.memberProperties.all { property ->
-        property.isAccessible = true
-        val value = property.call(this)
-        value is String && value.isNotBlank()
-    }
-}
-
-
