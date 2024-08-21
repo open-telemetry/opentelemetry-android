@@ -9,10 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.lifecycle.Lifecycle
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavDestination
-import androidx.navigation.NavGraph
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.material3.*
@@ -28,6 +24,7 @@ object MainDestinations {
     const val HOME_ROUTE = "prod-list"
     const val PRODUCT_DETAIL_ROUTE = "product"
     const val PRODUCT_ID_KEY = "productId"
+    const val CHECKOUT_INFO_ROUTE = "checkout-info"
 }
 
 @Composable
@@ -50,6 +47,10 @@ class AstronomyShopNavController(
 
     fun navigateToProductDetail(productId: String) {
         navController.navigate("${MainDestinations.PRODUCT_DETAIL_ROUTE}/$productId")
+    }
+
+    fun navigateToCheckoutInfo(){
+        navController.navigate(MainDestinations.CHECKOUT_INFO_ROUTE)
     }
 
 }
