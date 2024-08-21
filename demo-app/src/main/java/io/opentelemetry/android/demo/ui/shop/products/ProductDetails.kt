@@ -21,10 +21,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.opentelemetry.android.demo.ui.shop.cart.CartViewModel
 import io.opentelemetry.android.demo.ui.shop.components.UpPressButton
 import androidx.compose.ui.Alignment
+import io.opentelemetry.android.demo.model.PriceUsd
 
 @Composable
 fun ProductDetails(product:Product,
                    cartViewModel: CartViewModel = viewModel(),
+                   onProductClick: (String) -> Unit,
                    upPress: () -> Unit
 ){
     val imageLoader = ImageLoader(LocalContext.current)
@@ -83,6 +85,50 @@ fun ProductDetails(product:Product,
             ) {
                 Text(text = "Add to Cart")
             }
+            val recommendedProducts = listOf(
+                Product(
+                    id = "66VCHSJNUP",
+                    name = "Starsense Explorer Refractor Telescope",
+                    description = "The first telescope that uses your smartphone to analyze the night sky and calculate its position in real time.",
+                    picture = "StarsenseExplorer.jpg",
+                    priceUsd = PriceUsd(currencyCode = "USD", units = 349, nanos = 950000000),
+                    categories = listOf("telescopes")
+                ),
+                Product(
+                    id = "0PUK6V6EV0",
+                    name = "Solar System Color Imager",
+                    description = "The NexImage 10 Solar System Imager is the perfect solution for capturing impressive deep-sky astroimages.",
+                    picture = "SolarSystemColorImager.jpg",
+                    priceUsd = PriceUsd(currencyCode = "USD", units = 175, nanos = 0),
+                    categories = listOf("accessories", "telescopes")
+                ),
+                Product(
+                    id = "LS4PSXUNUM",
+                    name = "Red Flashlight",
+                    description = "A 3-in-1 device featuring a red flashlight, hand warmer, and portable power bank, perfect for nighttime activities.",
+                    picture = "RedFlashlight.jpg",
+                    priceUsd = PriceUsd(currencyCode = "USD", units = 57, nanos = 80000000),
+                    categories = listOf("accessories", "flashlights")
+                ),
+                Product(
+                    id = "2ZYFJ3GM2N",
+                    name = "Roof Binoculars",
+                    description = "This versatile binocular is a great choice for nature observation and bird watching.",
+                    picture = "RoofBinoculars.jpg",
+                    priceUsd = PriceUsd(currencyCode = "USD", units = 209, nanos = 950000000),
+                    categories = listOf("binoculars")
+                ),
+                Product(
+                    id = "L9ECAV7KIM",
+                    name = "Lens Cleaning Kit",
+                    description = "A cleaning kit for all glass and optical surfaces, perfect for maintaining clear optics.",
+                    picture = "LensCleaningKit.jpg",
+                    priceUsd = PriceUsd(currencyCode = "USD", units = 21, nanos = 950000000),
+                    categories = listOf("accessories")
+                )
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            RecommendedSection(recommendedProducts = recommendedProducts, onProductClick = onProductClick)
         }
 
         UpPressButton(
@@ -93,3 +139,4 @@ fun ProductDetails(product:Product,
         )
     }
 }
+

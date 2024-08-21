@@ -90,7 +90,15 @@ fun AstronomyShopScreen() {
                     composable("${MainDestinations.PRODUCT_DETAIL_ROUTE}/{${MainDestinations.PRODUCT_ID_KEY}}") { backStackEntry ->
                         val productId = backStackEntry.arguments?.getString(MainDestinations.PRODUCT_ID_KEY)
                         val product = products.find { it.id == productId }
-                        product?.let { ProductDetails(product = it, cartViewModel, upPress = {astronomyShopNavController.upPress()}) }
+                        product?.let { ProductDetails(
+                            product = it,
+                            cartViewModel,
+                            upPress = {astronomyShopNavController.upPress()},
+                            onProductClick = { productId ->
+                                astronomyShopNavController.navigateToProductDetail(productId)
+                            }
+                        )
+                        }
                     }
                     composable(MainDestinations.CHECKOUT_INFO_ROUTE) {
                         InfoScreen(upPress = {astronomyShopNavController.upPress()})
