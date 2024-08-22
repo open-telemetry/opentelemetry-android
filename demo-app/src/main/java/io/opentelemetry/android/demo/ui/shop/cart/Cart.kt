@@ -12,13 +12,24 @@ import io.opentelemetry.android.demo.model.Product
 import io.opentelemetry.android.demo.ui.shop.products.ProductCard
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import io.opentelemetry.android.demo.clients.ImageLoader
+import io.opentelemetry.android.demo.clients.ProductCatalogClient
+import io.opentelemetry.android.demo.clients.RecommendationService
+import io.opentelemetry.android.demo.ui.shop.products.RecommendedSection
 
 @Composable
 fun CartScreen(cartViewModel: CartViewModel = viewModel(),
-               onCheckoutClick: () -> Unit
+               onCheckoutClick: () -> Unit,
+               onProductClick: (String) -> Unit
 ) {
+    val context = LocalContext.current
+    val productsClient = ProductCatalogClient(context)
+    val allProducts = remember { productsClient.get() }
     val cartItems by cartViewModel.cartItems.collectAsState()
     val isCartEmpty = cartItems.isEmpty()
+    val recommendationService = RecommendationService()
+    val recommendedProducts = remember { recommendationService.getRecommendedProducts(cartItems, allProducts) }
 
     Column(
         modifier = Modifier
@@ -72,6 +83,9 @@ fun CartScreen(cartViewModel: CartViewModel = viewModel(),
         ) {
             Text("Checkout")
         }
+        Spacer(modifier = Modifier.height(32.dp))
+        RecommendedSection(recommendedProducts = recommendedProducts, onProductClick = onProductClick)
+
     }
 }
 

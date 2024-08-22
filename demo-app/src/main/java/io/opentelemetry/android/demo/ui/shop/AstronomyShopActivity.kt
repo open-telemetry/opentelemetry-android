@@ -85,7 +85,9 @@ fun AstronomyShopScreen() {
                         }
                     }
                     composable(BottomNavItem.Cart.route) {
-                        CartScreen(cartViewModel = cartViewModel) { astronomyShopNavController.navigateToCheckoutInfo() }
+                        CartScreen(cartViewModel = cartViewModel, onCheckoutClick = {astronomyShopNavController.navigateToCheckoutInfo()},  onProductClick = { productId ->
+                            astronomyShopNavController.navigateToProductDetail(productId)
+                        })
                     }
                     composable("${MainDestinations.PRODUCT_DETAIL_ROUTE}/{${MainDestinations.PRODUCT_ID_KEY}}") { backStackEntry ->
                         val productId = backStackEntry.arguments?.getString(MainDestinations.PRODUCT_ID_KEY)
