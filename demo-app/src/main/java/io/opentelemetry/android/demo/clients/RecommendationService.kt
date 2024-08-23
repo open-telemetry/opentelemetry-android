@@ -1,7 +1,6 @@
 package io.opentelemetry.android.demo.clients
 
 import io.opentelemetry.android.demo.model.Product
-import io.opentelemetry.android.demo.ui.shop.cart.CartItem
 import io.opentelemetry.android.demo.ui.shop.cart.CartViewModel
 
 class RecommendationService(
