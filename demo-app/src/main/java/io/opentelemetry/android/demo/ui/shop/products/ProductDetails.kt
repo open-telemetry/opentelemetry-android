@@ -23,7 +23,6 @@ import io.opentelemetry.android.demo.ui.shop.components.UpPressButton
 import androidx.compose.ui.Alignment
 import io.opentelemetry.android.demo.clients.ProductCatalogClient
 import io.opentelemetry.android.demo.clients.RecommendationService
-import io.opentelemetry.android.demo.model.PriceUsd
 
 @Composable
 fun ProductDetails(

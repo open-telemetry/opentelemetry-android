@@ -45,7 +45,7 @@ fun RecommendedSection(
             items(recommendedProducts) { product ->
                 ProductCard(
                     product = product,
-                    onClick = onProductClick,
+                    onProductClick = onProductClick,
                     modifier = Modifier.width(300.dp).height(160.dp)
                 )
             }

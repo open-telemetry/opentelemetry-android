@@ -29,7 +29,7 @@ import io.opentelemetry.android.demo.model.Product
 @Composable
 fun ProductCard(
     product: Product,
-    onClick: (String) -> Unit,
+    onProductClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val imageLoader = ImageLoader(LocalContext.current)
@@ -48,7 +48,7 @@ fun ProductCard(
             .height(200.dp)
             .wrapContentHeight()
             .padding(20.dp),
-        onClick = { onClick(product.id) }
+        onClick = { onProductClick(product.id) }
     ) {
         Row(
             modifier = Modifier
