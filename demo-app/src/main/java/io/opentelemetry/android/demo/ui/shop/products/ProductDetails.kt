@@ -37,12 +37,8 @@ fun ProductDetails(
     var quantity by remember { mutableIntStateOf(1) }
 
     val productsClient = ProductCatalogClient(context)
-    val allProducts = remember { productsClient.get() }
-    val cartItems by cartViewModel.cartItems.collectAsState()
-
-    val recommendationService = RecommendationService()
-    val recommendedProducts = remember { recommendationService.getRecommendedProducts(product, cartItems, allProducts) }
-
+    val recommendationService = remember { RecommendationService(productsClient, cartViewModel) }
+    val recommendedProducts = remember { recommendationService.getRecommendedProducts(product) }
     Box(
         modifier = Modifier.fillMaxSize()
     ) {

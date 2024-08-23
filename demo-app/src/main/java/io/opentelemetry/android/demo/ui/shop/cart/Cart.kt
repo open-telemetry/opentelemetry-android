@@ -24,11 +24,11 @@ fun CartScreen(
 ) {
     val context = LocalContext.current
     val productsClient = ProductCatalogClient(context)
-    val allProducts = remember { productsClient.get() }
+    val recommendationService = remember { RecommendationService(productsClient, cartViewModel) }
     val cartItems by cartViewModel.cartItems.collectAsState()
     val isCartEmpty = cartItems.isEmpty()
-    val recommendationService = RecommendationService()
-    val recommendedProducts = remember { recommendationService.getRecommendedProducts(cartItems, allProducts) }
+    val recommendedProducts = remember { recommendationService.getRecommendedProducts() }
+
 
     LazyColumn(
         modifier = Modifier
