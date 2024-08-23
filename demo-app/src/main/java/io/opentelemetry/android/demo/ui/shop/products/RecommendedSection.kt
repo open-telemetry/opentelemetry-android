@@ -46,7 +46,8 @@ fun RecommendedSection(
                 ProductCard(
                     product = product,
                     onProductClick = onProductClick,
-                    modifier = Modifier.width(300.dp).height(160.dp)
+                    modifier = Modifier.width(300.dp).height(170.dp),
+                    isNarrow = true
                 )
             }
         }

@@ -30,7 +30,8 @@ import io.opentelemetry.android.demo.model.Product
 fun ProductCard(
     product: Product,
     onProductClick: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isNarrow: Boolean = false
 ) {
     val imageLoader = ImageLoader(LocalContext.current)
     val sourceProductImage = imageLoader.load(product.picture)
@@ -50,34 +51,28 @@ fun ProductCard(
             .padding(20.dp),
         onClick = { onProductClick(product.id) }
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(10.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
+        Row(modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp)) {
+            Row(modifier = Modifier.fillMaxWidth()) {
                 Column {
                     Image(
                         bitmap = sourceProductImage.asImageBitmap(),
                         contentDescription = product.name,
-                        modifier = Modifier.padding(end = 10.dp)
                     )
                 }
-                Column(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        product.name + "\n\n$" + product.priceValue(),
+                        text = "${product.name}\n\n$${product.priceValue()}",
                         fontFamily = gothamFont,
                         style = TextStyle.Default.copy(textAlign = TextAlign.Right),
-                        fontSize = 18.sp,
+                        fontSize = if (isNarrow) 13.sp else 18.sp,
                         modifier = Modifier
-                            .padding(start = 15.dp, top = 25.dp)
+                            .padding(start = 15.dp, top = 15.dp)
                             .fillMaxWidth()
                     )
                 }
+
             }
         }
     }
