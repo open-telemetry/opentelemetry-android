@@ -15,7 +15,7 @@ fun ProductList(products: List<Product>, onProductClick: (String) -> Unit) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(products.size) { index ->
             Row {
-                ProductCard(products[index], onProductClick= onProductClick)
+                ProductCard(products[index], onProductClick = onProductClick)
             }
         }
         item {
