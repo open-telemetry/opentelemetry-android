@@ -8,22 +8,20 @@ class RecommendationService(
     private val cartViewModel: CartViewModel
 ) {
 
-    fun getRecommendedProducts(currentProduct: Product): List<Product> {
+    private fun getAllNonCartProducts(): List<Product>{
         val allProducts = productCatalogClient.get()
         val cartItems = cartViewModel.cartItems.value
 
-        return allProducts.filter { product ->
-            product.id != currentProduct.id && cartItems.none { it.product.id == product.id }
-        }.shuffled().take(4)
+        return allProducts.filter { product -> cartItems.none { it.product.id == product.id } }
     }
 
-    fun getRecommendedProducts(): List<Product> {
-        val allProducts = productCatalogClient.get()
-        val cartItems = cartViewModel.cartItems.value
+    fun getRecommendedProducts(currentProduct: Product, numberOfProducts: Int = 4): List<Product> {
+        return getAllNonCartProducts().filter { it.id != currentProduct.id }
+        .shuffled().take(numberOfProducts)
+    }
 
-        return allProducts.filter { product ->
-            cartItems.none { it.product.id == product.id }
-        }.shuffled().take(4)
+    fun getRecommendedProducts(numberOfProducts: Int = 4): List<Product> {
+        return getAllNonCartProducts().shuffled().take(numberOfProducts)
     }
 }
 
