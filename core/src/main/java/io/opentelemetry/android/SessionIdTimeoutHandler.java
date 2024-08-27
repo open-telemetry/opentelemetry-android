@@ -23,7 +23,8 @@ import java.time.Duration;
  * <p>Consequently, when the app spent >15 minutes without any activity (spans) in the background,
  * after moving to the foreground the first span should trigger the sessionId timeout.
  */
-final class SessionIdTimeoutHandler implements ApplicationStateListener {
+//TODO: Migrate to kotlin and make internal?
+public final class SessionIdTimeoutHandler implements ApplicationStateListener {
 
     static final Duration DEFAULT_SESSION_TIMEOUT = Duration.ofMinutes(15);
     private final Duration sessionTimeout;
@@ -56,7 +57,7 @@ final class SessionIdTimeoutHandler implements ApplicationStateListener {
         state = State.BACKGROUND;
     }
 
-    boolean hasTimedOut() {
+    public boolean hasTimedOut() {
         // don't apply sessionId timeout to apps in the foreground
         if (state == State.FOREGROUND) {
             return false;
@@ -65,7 +66,7 @@ final class SessionIdTimeoutHandler implements ApplicationStateListener {
         return elapsedTime >= sessionTimeout.toNanos();
     }
 
-    void bump() {
+    public void bump() {
         timeoutStartNanos = clock.nanoTime();
 
         // move from the temporary transition state to foreground after the first span
