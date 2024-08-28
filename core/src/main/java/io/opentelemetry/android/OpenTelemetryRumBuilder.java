@@ -67,7 +67,6 @@ import javax.annotation.Nullable;
  */
 public final class OpenTelemetryRumBuilder {
 
-    private final SessionManager sessionManager;
     private final Application application;
     private final List<BiFunction<SdkTracerProviderBuilder, Application, SdkTracerProviderBuilder>>
             tracerProviderCustomizers = new ArrayList<>();
@@ -101,7 +100,6 @@ public final class OpenTelemetryRumBuilder {
             Application application, OtelRumConfig config, SessionIdTimeoutHandler timeoutHandler) {
         this.application = application;
         this.timeoutHandler = timeoutHandler;
-        this.sessionManager = SessionManager.create(timeoutHandler);
         this.resource = AndroidResource.createDefault(application);
         this.config = config;
     }
@@ -257,10 +255,6 @@ public final class OpenTelemetryRumBuilder {
         return this;
     }
 
-    public SessionManager getSessionManager() {
-        return sessionManager;
-    }
-
     /**
      * Creates a new instance of {@link OpenTelemetryRum} with the settings of this {@link
      * OpenTelemetryRumBuilder}.
@@ -306,6 +300,9 @@ public final class OpenTelemetryRumBuilder {
             }
         }
         initializationEvents.spanExporterInitialized(spanExporter);
+
+        SessionManager sessionManager =
+                SessionManager.create(timeoutHandler, config.getSessionTimeout().toNanos());
 
         OpenTelemetrySdk sdk =
                 OpenTelemetrySdk.builder()

@@ -60,14 +60,20 @@ internal class SessionManager(
     }
 
     private fun sessionHasExpired(): Boolean {
-        val elapsedTime = clock.nanoTime() - session.getsStartTimestamp()
+        val elapsedTime = clock.now() - session.getsStartTimestamp()
         return elapsedTime >= sessionLifetimeNanos
     }
 
     companion object {
         @JvmStatic
-        fun create(timeoutHandler: SessionIdTimeoutHandler): SessionManager {
-            return SessionManager(timeoutHandler = timeoutHandler)
+        fun create(
+            timeoutHandler: SessionIdTimeoutHandler,
+            sessionLifetimeNanos: Long,
+        ): SessionManager {
+            return SessionManager(
+                timeoutHandler = timeoutHandler,
+                sessionLifetimeNanos = sessionLifetimeNanos,
+            )
         }
     }
 }
