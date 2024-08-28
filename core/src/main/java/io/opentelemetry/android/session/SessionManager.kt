@@ -18,7 +18,7 @@ internal class SessionManager(
     private val sessionLifetimeNanos: Long = TimeUnit.HOURS.toNanos(4),
 ) : SessionProvider, SessionPublisher {
     // TODO: Make thread safe / wrap with AtomicReference?
-    private var session: Session = Session.DefaultSession(idGenerator.generateSessionId(), clock.now())
+    private var session: Session = Session.NONE
     private val observers = synchronizedList(ArrayList<SessionObserver>())
 
     init {

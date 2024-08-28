@@ -56,6 +56,8 @@ class SdkPreconfiguredRumBuilder
                     .get(OpenTelemetryRum::class.java.simpleName)
 
             sessionManager.addObserver(SessionIdEventSender(eventLogger))
+            // After addObserver(), we call getSessionId() to trigger a session.start event
+            sessionManager.getSessionId()
 
             val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionManager)
 
