@@ -8,7 +8,7 @@ package io.opentelemetry.android.session
 interface Session {
     fun getId(): String
 
-    fun getsStartTimestamp(): Long
+    fun getStartTimestamp(): Long
 
     companion object {
         val NONE = DefaultSession("", -1)
@@ -19,7 +19,7 @@ interface Session {
             return id
         }
 
-        override fun getsStartTimestamp(): Long {
+        override fun getStartTimestamp(): Long {
             return timestamp
         }
 
