@@ -23,6 +23,8 @@ import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordApp
 import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.ServiceManager;
+import io.opentelemetry.android.session.SessionManager;
+import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -65,7 +67,7 @@ import javax.annotation.Nullable;
  */
 public final class OpenTelemetryRumBuilder {
 
-    private final SessionId sessionId;
+    private final SessionManager sessionManager;
     private final Application application;
     private final List<BiFunction<SdkTracerProviderBuilder, Application, SdkTracerProviderBuilder>>
             tracerProviderCustomizers = new ArrayList<>();
@@ -76,6 +78,7 @@ public final class OpenTelemetryRumBuilder {
     private final OtelRumConfig config;
     private final List<AndroidInstrumentation> instrumentations = new ArrayList<>();
     private final List<Consumer<OpenTelemetrySdk>> otelSdkReadyListeners = new ArrayList<>();
+    private final SessionIdTimeoutHandler timeoutHandler;
     private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
     private Function<? super LogRecordExporter, ? extends LogRecordExporter>
             logRecordExporterCustomizer = a -> a;
@@ -97,7 +100,8 @@ public final class OpenTelemetryRumBuilder {
     OpenTelemetryRumBuilder(
             Application application, OtelRumConfig config, SessionIdTimeoutHandler timeoutHandler) {
         this.application = application;
-        this.sessionId = new SessionId(timeoutHandler);
+        this.timeoutHandler = timeoutHandler;
+        this.sessionManager = SessionManager.create(timeoutHandler);
         this.resource = AndroidResource.createDefault(application);
         this.config = config;
     }
@@ -253,8 +257,8 @@ public final class OpenTelemetryRumBuilder {
         return this;
     }
 
-    public SessionId getSessionId() {
-        return sessionId;
+    public SessionManager getSessionManager() {
+        return sessionManager;
     }
 
     /**
@@ -306,7 +310,7 @@ public final class OpenTelemetryRumBuilder {
         OpenTelemetrySdk sdk =
                 OpenTelemetrySdk.builder()
                         .setTracerProvider(
-                                buildTracerProvider(sessionId, application, spanExporter))
+                                buildTracerProvider(sessionManager, application, spanExporter))
                         .setMeterProvider(buildMeterProvider(application))
                         .setLoggerProvider(buildLoggerProvider(application, logsExporter))
                         .setPropagators(buildFinalPropagators())
@@ -320,7 +324,8 @@ public final class OpenTelemetryRumBuilder {
                 new SdkPreconfiguredRumBuilder(
                         application,
                         sdk,
-                        sessionId,
+                        timeoutHandler,
+                        sessionManager,
                         config.shouldDiscoverInstrumentations(),
                         serviceManager);
         instrumentations.forEach(delegate::addInstrumentation);
@@ -417,11 +422,11 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private SdkTracerProvider buildTracerProvider(
-            SessionId sessionId, Application application, SpanExporter spanExporter) {
+            SessionProvider sessionProvider, Application application, SpanExporter spanExporter) {
         SdkTracerProviderBuilder tracerProviderBuilder =
                 SdkTracerProvider.builder()
                         .setResource(resource)
-                        .addSpanProcessor(new SessionIdSpanAppender(sessionId));
+                        .addSpanProcessor(new SessionIdSpanAppender(sessionProvider));
 
         BatchSpanProcessor batchSpanProcessor = BatchSpanProcessor.builder(spanExporter).build();
         tracerProviderBuilder.addSpanProcessor(batchSpanProcessor);

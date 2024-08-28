@@ -62,7 +62,7 @@ class SessionIdTest {
     @Test
     void shouldCallSessionIdChangeListener() {
         TestClock clock = TestClock.create();
-        SessionIdChangeListener listener = mock(SessionIdChangeListener.class);
+        SessionChangeObserver listener = mock(SessionChangeObserver.class);
         SessionId sessionId = new SessionId(clock, timeoutHandler);
         sessionId.setSessionIdChangeListener(listener);
 

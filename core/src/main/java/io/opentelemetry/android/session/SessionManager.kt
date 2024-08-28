@@ -52,7 +52,7 @@ internal class SessionManager(
         if(newSession != session){
             observers.forEach {
                 it.onSessionEnded(session)
-                it.onSessionStarted(newSession)
+                it.onSessionStarted(newSession, session)
             }
             session = newSession
         }
@@ -62,5 +62,12 @@ internal class SessionManager(
     private fun sessionHasExpired(): Boolean {
         val elapsedTime = clock.nanoTime() - session.getsStartTimestamp()
         return elapsedTime >= sessionLifetimeNanos
+    }
+
+    companion object {
+        @JvmStatic
+        fun create(timeoutHandler: SessionIdTimeoutHandler): SessionManager {
+            return SessionManager(timeoutHandler = timeoutHandler)
+        }
     }
 }

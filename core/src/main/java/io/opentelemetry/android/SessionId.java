@@ -14,6 +14,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+@Deprecated
 class SessionId {
 
     private static final long SESSION_LIFETIME_NANOS = TimeUnit.HOURS.toNanos(4);
@@ -22,7 +23,7 @@ class SessionId {
     private final AtomicReference<String> value = new AtomicReference<>();
     private final SessionIdTimeoutHandler timeoutHandler;
     private volatile long createTimeNanos;
-    @Nullable private volatile SessionIdChangeListener sessionIdChangeListener;
+    @Nullable private volatile SessionChangeObserver sessionIdChangeListener;
 
     SessionId(SessionIdTimeoutHandler timeoutHandler) {
         this(Clock.getDefault(), timeoutHandler);
@@ -67,7 +68,7 @@ class SessionId {
         timeoutHandler.bump();
         // sessionId change listener needs to be called after bumping the timer because it may
         // create a new span
-        SessionIdChangeListener sessionIdChangeListener = this.sessionIdChangeListener;
+        SessionChangeObserver sessionIdChangeListener = this.sessionIdChangeListener;
         if (sessionIdChanged && sessionIdChangeListener != null) {
             sessionIdChangeListener.onChange(oldValue, currentValue);
         }
@@ -80,7 +81,7 @@ class SessionId {
         return elapsedTime >= SESSION_LIFETIME_NANOS;
     }
 
-    void setSessionIdChangeListener(SessionIdChangeListener sessionIdChangeListener) {
+    void setSessionIdChangeListener(SessionChangeObserver sessionIdChangeListener) {
         this.sessionIdChangeListener = sessionIdChangeListener;
     }
 
