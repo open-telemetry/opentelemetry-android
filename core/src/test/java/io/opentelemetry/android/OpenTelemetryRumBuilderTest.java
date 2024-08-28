@@ -10,7 +10,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static org.awaitility.Awaitility.await;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -48,8 +47,6 @@ import io.opentelemetry.api.incubator.events.EventLogger;
 import io.opentelemetry.api.incubator.logs.AnyValue;
 import io.opentelemetry.api.incubator.logs.KeyAnyValue;
 import io.opentelemetry.api.logs.Logger;
-import io.opentelemetry.api.logs.LoggerBuilder;
-import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
@@ -58,13 +55,13 @@ import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.contrib.disk.buffering.SpanToDiskExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.logs.internal.AnyValueBody;
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -75,6 +72,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -178,14 +176,16 @@ public class OpenTelemetryRumBuilderTest {
         eventLogger.builder("test.event").put("body.field", "foo").setAttributes(attrs).emit();
 
         List<LogRecordData> logs = logsExporter.getFinishedLogRecordItems();
-        assertThat(logs).hasSize(1);
+        assertThat(logs).hasSize(2);
         assertThat(logs.get(0))
+                .hasAttributesSatisfyingExactly(equalTo(stringKey("event.name"), "session.start"));
+        assertThat(logs.get(1))
                 .hasAttributesSatisfyingExactly(
                         equalTo(stringKey("event.name"), "test.event"),
                         equalTo(stringKey("mega"), "hit"))
                 .hasResource(resource);
 
-        AnyValue<?> bodyValue = ((AnyValueBody) logs.get(0).getBody()).asAnyValue();
+        AnyValue<?> bodyValue = ((AnyValueBody) logs.get(1).getBody()).asAnyValue();
         List<KeyAnyValue> payload = (List<KeyAnyValue>) bodyValue.getValue();
         assertThat(payload).hasSize(1);
         KeyAnyValue expected = KeyAnyValue.of("body.field", AnyValue.of("foo"));
@@ -308,8 +308,11 @@ public class OpenTelemetryRumBuilderTest {
                         () -> assertThat(logsExporter.getFinishedLogRecordItems()).isNotEmpty());
         assertThat(wasCalled.get()).isTrue();
         Collection<LogRecordData> logs = logsExporter.getFinishedLogRecordItems();
-        assertThat(logs).hasSize(1);
-        assertThat(logs.iterator().next())
+        assertThat(logs).hasSize(2);
+        Iterator<LogRecordData> iter = logs.iterator();
+        assertThat(iter.next())
+                .hasAttributesSatisfyingExactly(equalTo(stringKey("event.name"), "session.start"));
+        assertThat(iter.next())
                 .hasBody("foo")
                 .hasAttributesSatisfyingExactly(equalTo(stringKey("bing"), "bang"))
                 .hasSeverity(Severity.FATAL3);
@@ -416,14 +419,13 @@ public class OpenTelemetryRumBuilderTest {
         logger.logRecordBuilder().setAttribute(stringKey("localAttrKey"), "localAttrValue").emit();
 
         List<LogRecordData> recordedLogs = logRecordExporter.getFinishedLogRecordItems();
-        assertThat(recordedLogs).hasSize(1);
-        LogRecordData logRecordData = recordedLogs.get(0);
-        OpenTelemetryAssertions.assertThat(logRecordData)
-                .hasAttributes(
-                        Attributes.builder()
-                                .put("someGlobalKey", "someGlobalValue")
-                                .put("localAttrKey", "localAttrValue")
-                                .build());
+        assertThat(recordedLogs).hasSize(2);
+        assertThat(recordedLogs.get(0))
+                .hasAttributesSatisfying(equalTo(stringKey("event.name"), "session.start"));
+        assertThat(recordedLogs.get(1))
+                .hasAttributesSatisfyingExactly(
+                        equalTo(stringKey("someGlobalKey"), "someGlobalValue"),
+                        equalTo(stringKey("localAttrKey"), "localAttrValue"));
     }
 
     @Test
@@ -446,11 +448,11 @@ public class OpenTelemetryRumBuilderTest {
     @Test
     public void verifyPreconfiguredServicesInitialization() {
         OpenTelemetrySdk openTelemetrySdk = mock();
-        // Work around sdk EventLogger api limitations
-        LoggerProvider logsBridge = mock(LoggerProvider.class);
-        LoggerBuilder loggerBuilder = mock();
-        when(openTelemetrySdk.getLogsBridge()).thenReturn(logsBridge);
-        when(logsBridge.loggerBuilder(any())).thenReturn(loggerBuilder);
+        SdkLoggerProvider loggerProvider =
+                SdkLoggerProvider.builder()
+                        .addLogRecordProcessor(SimpleLogRecordProcessor.create(logsExporter))
+                        .build();
+        when(openTelemetrySdk.getLogsBridge()).thenReturn(loggerProvider);
 
         OpenTelemetryRum.builder(application, openTelemetrySdk, true).build();
 
