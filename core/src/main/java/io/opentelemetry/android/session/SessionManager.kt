@@ -49,14 +49,13 @@ internal class SessionManager(
 
         // observers need to be called after bumping the timer because it may
         // create a new span
-        if (newSession != session)
-            {
-                observers.forEach {
-                    it.onSessionEnded(session)
-                    it.onSessionStarted(newSession, session)
-                }
-                session = newSession
+        if (newSession != session) {
+            observers.forEach {
+                it.onSessionEnded(session)
+                it.onSessionStarted(newSession, session)
             }
+            session = newSession
+        }
         return session.getId()
     }
 

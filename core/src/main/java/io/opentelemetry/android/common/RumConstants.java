@@ -42,6 +42,10 @@ public class RumConstants {
         public static final String INIT_EVENT_CRASH_REPORTER = "rum.sdk.init.crash.reporter";
         public static final String INIT_EVENT_SPAN_EXPORTER = "rum.sdk.init.span.exporter";
 
+        // TODO: Use the semconv when available
+        public static final String EVENT_SESSION_START = "session.start";
+        public static final String EVENT_SESSION_END = "session.end";
+
         private Events() {}
     }
 

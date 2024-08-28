@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android;
 
+import static io.opentelemetry.android.common.RumConstants.Events.EVENT_SESSION_END;
+import static io.opentelemetry.android.common.RumConstants.Events.EVENT_SESSION_START;
 import static io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_ID;
 import static io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_PREVIOUS_ID;
 
@@ -23,9 +25,8 @@ final class SessionIdEventSender implements SessionObserver {
 
     @Override
     public void onSessionStarted(@NonNull Session newSession, @NonNull Session previousSession) {
-        // TODO: Use event name from semconv
         eventLogger
-                .builder("session.start")
+                .builder(EVENT_SESSION_START)
                 .put(SESSION_ID, newSession.getId())
                 .put(SESSION_PREVIOUS_ID, previousSession.getId())
                 .emit();
@@ -33,7 +34,6 @@ final class SessionIdEventSender implements SessionObserver {
 
     @Override
     public void onSessionEnded(@NonNull Session session) {
-        // TODO: Use event name from semconv
-        eventLogger.builder("session.end").put(SESSION_ID, session.getId()).emit();
+        eventLogger.builder(EVENT_SESSION_END).put(SESSION_ID, session.getId()).emit();
     }
 }
