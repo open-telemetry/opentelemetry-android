@@ -2,42 +2,49 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+package io.opentelemetry.android
 
-package io.opentelemetry.android;
+import io.mockk.Awaits
+import io.mockk.MockKAnnotations
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.impl.annotations.MockK
+import io.mockk.just
+import io.mockk.verify
+import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.context.Context
+import io.opentelemetry.sdk.trace.ReadWriteSpan
+import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static io.opentelemetry.android.common.RumConstants.SESSION_ID_KEY;
+internal class SessionIdSpanAppenderTest {
+    @MockK
+    lateinit var sessionProvider: SessionProvider
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+    @MockK
+    lateinit var span: ReadWriteSpan
 
-import io.opentelemetry.android.session.SessionManager;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.ReadWriteSpan;
-
-@ExtendWith(MockitoExtension.class)
-class SessionIdSpanAppenderTest {
-
-    @Mock
-    SessionManager sessionManager;
-    @Mock ReadWriteSpan span;
+    @BeforeEach
+    fun setUp() {
+        MockKAnnotations.init(this)
+        every { sessionProvider.getSessionId() }.returns("42")
+        every { span.setAttribute(any<AttributeKey<String>>(), any<String>())} returns span
+    }
 
     @Test
-    void shouldSetSessionIdAsSpanAttribute() {
-        when(sessionManager.getSessionId()).thenReturn("42");
+    fun `should set sessionId as span attribute`() {
 
-        SessionIdSpanAppender underTest = new SessionIdSpanAppender(sessionManager);
+        val underTest = SessionIdSpanAppender(sessionProvider)
 
-        assertTrue(underTest.isStartRequired());
-        underTest.onStart(Context.root(), span);
+        assertTrue(underTest.isStartRequired)
+        underTest.onStart(Context.root(), span)
 
-        verify(span).setAttribute(SESSION_ID_KEY, "42");
+        verify { span.setAttribute(SessionIncubatingAttributes.SESSION_ID, "42") }
 
-        assertFalse(underTest.isEndRequired());
+        assertFalse(underTest.isEndRequired)
     }
 }

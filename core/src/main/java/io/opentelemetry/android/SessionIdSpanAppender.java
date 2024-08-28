@@ -5,12 +5,14 @@
 
 package io.opentelemetry.android;
 
-import io.opentelemetry.android.common.RumConstants;
+import static io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_ID;
+
 import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes;
 
 final class SessionIdSpanAppender implements SpanProcessor {
 
@@ -22,7 +24,7 @@ final class SessionIdSpanAppender implements SpanProcessor {
 
     @Override
     public void onStart(Context parentContext, ReadWriteSpan span) {
-        span.setAttribute(RumConstants.SESSION_ID_KEY, sessionProvider.getSessionId());
+        span.setAttribute(SESSION_ID, sessionProvider.getSessionId());
     }
 
     @Override
