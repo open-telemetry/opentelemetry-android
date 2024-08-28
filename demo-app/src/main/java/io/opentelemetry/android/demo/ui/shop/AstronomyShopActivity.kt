@@ -36,6 +36,7 @@ import io.opentelemetry.android.demo.ui.shop.cart.InfoScreen
 class AstronomyShopActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        title = "Astronomy Shop"
         setContent {
             AstronomyShopScreen()
         }
@@ -84,15 +85,25 @@ fun AstronomyShopScreen() {
                         }
                     }
                     composable(BottomNavItem.Cart.route) {
-                        CartScreen(cartViewModel = cartViewModel) { astronomyShopNavController.navigateToCheckoutInfo() }
+                        CartScreen(cartViewModel = cartViewModel, onCheckoutClick = {astronomyShopNavController.navigateToCheckoutInfo()},  onProductClick = { productId ->
+                            astronomyShopNavController.navigateToProductDetail(productId)
+                        })
                     }
                     composable("${MainDestinations.PRODUCT_DETAIL_ROUTE}/{${MainDestinations.PRODUCT_ID_KEY}}") { backStackEntry ->
                         val productId = backStackEntry.arguments?.getString(MainDestinations.PRODUCT_ID_KEY)
                         val product = products.find { it.id == productId }
-                        product?.let { ProductDetails(product = it, cartViewModel) }
+                        product?.let { ProductDetails(
+                            product = it,
+                            cartViewModel,
+                            upPress = {astronomyShopNavController.upPress()},
+                            onProductClick = { productId ->
+                                astronomyShopNavController.navigateToProductDetail(productId)
+                            }
+                        )
+                        }
                     }
                     composable(MainDestinations.CHECKOUT_INFO_ROUTE) {
-                        InfoScreen()
+                        InfoScreen(upPress = {astronomyShopNavController.upPress()})
                     }
                 }
             }

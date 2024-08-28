@@ -19,62 +19,88 @@ import io.opentelemetry.android.demo.model.Product
 import io.opentelemetry.android.demo.ui.shop.components.QuantityChooser
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.opentelemetry.android.demo.ui.shop.cart.CartViewModel
+import io.opentelemetry.android.demo.ui.shop.components.UpPressButton
+import androidx.compose.ui.Alignment
+import io.opentelemetry.android.demo.clients.ProductCatalogClient
+import io.opentelemetry.android.demo.clients.RecommendationService
 
 @Composable
-fun ProductDetails(product:Product, cartViewModel: CartViewModel = viewModel()){
-    val imageLoader = ImageLoader(LocalContext.current)
+fun ProductDetails(
+    product: Product,
+    cartViewModel: CartViewModel = viewModel(),
+    onProductClick: (String) -> Unit,
+    upPress: () -> Unit
+) {
+    val context = LocalContext.current
+    val imageLoader = ImageLoader(context)
     val sourceProductImage = imageLoader.load(product.picture)
     var quantity by remember { mutableIntStateOf(1) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
+    val productsClient = ProductCatalogClient(context)
+    val recommendationService = remember { RecommendationService(productsClient, cartViewModel) }
+    val recommendedProducts = remember { recommendationService.getRecommendedProducts(product) }
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
-        Image(
-            bitmap = sourceProductImage.asImageBitmap(),
-            contentDescription = product.name,
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = product.name,
-            fontFamily = gothamFont,
-            fontSize = 24.sp,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = product.description,
-            color = Color.Gray,
-            textAlign = TextAlign.Justify,
-            fontFamily = gothamFont,
-            fontSize = 16.sp,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "$${product.priceValue()}",
-            fontFamily = gothamFont,
-            fontSize = 24.sp,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-        QuantityChooser(quantity = quantity, onQuantityChange = { quantity = it })
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = { cartViewModel.addProduct(product, quantity) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Text(text = "Add to Cart")
+            Image(
+                bitmap = sourceProductImage.asImageBitmap(),
+                contentDescription = product.name,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = product.name,
+                fontFamily = gothamFont,
+                fontSize = 24.sp,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = product.description,
+                color = Color.Gray,
+                textAlign = TextAlign.Justify,
+                fontFamily = gothamFont,
+                fontSize = 16.sp,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "$${product.priceValue()}",
+                fontFamily = gothamFont,
+                fontSize = 24.sp,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            QuantityChooser(quantity = quantity, onQuantityChange = { quantity = it })
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { cartViewModel.addProduct(product, quantity) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text(text = "Add to Cart")
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+            RecommendedSection(recommendedProducts = recommendedProducts, onProductClick = onProductClick)
         }
+
+        UpPressButton(
+            upPress = upPress,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(8.dp)
+        )
     }
 }
 

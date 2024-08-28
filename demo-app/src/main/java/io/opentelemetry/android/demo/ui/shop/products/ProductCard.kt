@@ -27,7 +27,12 @@ import io.opentelemetry.android.demo.gothamFont
 import io.opentelemetry.android.demo.model.Product
 
 @Composable
-fun ProductCard(product: Product, onClick: (String) -> Unit) {
+fun ProductCard(
+    product: Product,
+    onProductClick: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    isNarrow: Boolean = false
+) {
     val imageLoader = ImageLoader(LocalContext.current)
     val sourceProductImage = imageLoader.load(product.picture)
     Bitmap.createScaledBitmap(sourceProductImage, 120, 120, false)
@@ -39,12 +44,12 @@ fun ProductCard(product: Product, onClick: (String) -> Unit) {
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
         colors = cardColors,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .height(200.dp)
             .wrapContentHeight()
             .padding(20.dp),
-        onClick = { onClick(product.id) }
+        onClick = { onProductClick(product.id) }
     ) {
         Row(modifier = Modifier
             .fillMaxSize()
@@ -58,15 +63,16 @@ fun ProductCard(product: Product, onClick: (String) -> Unit) {
                 }
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        product.name + "\n\n$" + product.priceValue(),
+                        text = "${product.name}\n\n$${product.priceValue()}",
                         fontFamily = gothamFont,
                         style = TextStyle.Default.copy(textAlign = TextAlign.Right),
-                        fontSize = 18.sp,
+                        fontSize = if (isNarrow) 13.sp else 18.sp,
                         modifier = Modifier
-                            .padding(start = 15.dp, top = 25.dp)
+                            .padding(start = 15.dp, top = 15.dp)
                             .fillMaxWidth()
                     )
                 }
+
             }
         }
     }
