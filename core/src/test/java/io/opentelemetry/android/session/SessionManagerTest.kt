@@ -72,25 +72,34 @@ internal class SessionManagerTest {
         val sessionManager = SessionManager(clock, timeoutHandler = timeoutHandler)
         sessionManager.addObserver(observer)
 
+        // The first call expires the Session.NONE initial session and notifies
         val firstSessionId = sessionManager.getSessionId()
+        verify(exactly = 1) { timeoutHandler.bump() }
+        verify(exactly = 0) { timeoutHandler.hasTimedOut() }
+        verify(exactly = 1) { observer.onSessionStarted(any<Session>(), eq(Session.NONE)) }
+        verify(exactly = 1) { observer.onSessionEnded(eq(Session.NONE)) }
+
         clock.advance(3, TimeUnit.HOURS)
-        sessionManager.getSessionId()
-
-        verify(exactly = 2) { timeoutHandler.bump() }
-        verify(exactly = 2) { timeoutHandler.hasTimedOut() }
-        verify(exactly = 0) { observer.onSessionStarted(any<Session>(), any<Session>()) }
-        verify(exactly = 0) { observer.onSessionEnded(any<Session>()) }
-
-        clock.advance(1, TimeUnit.HOURS)
         val secondSessionId = sessionManager.getSessionId()
 
-        assertThat(secondSessionId).isNotEqualTo(firstSessionId)
+        assertThat(firstSessionId).isEqualTo(secondSessionId)
+        verify(exactly = 2) { timeoutHandler.bump() }
+        verify(exactly = 1) { timeoutHandler.hasTimedOut() }
+        verify(exactly = 1) { observer.onSessionStarted(any<Session>(), any<Session>()) }
+        verify(exactly = 1) { observer.onSessionEnded(any<Session>()) }
+
+        clock.advance(1, TimeUnit.HOURS)
+        val thirdSessionId = sessionManager.getSessionId()
+
+        verify(exactly = 3) { timeoutHandler.bump() }
+        verify(exactly = 1) { timeoutHandler.hasTimedOut() }
+        assertThat(thirdSessionId).isNotEqualTo(secondSessionId)
         verifyOrder {
             timeoutHandler.bump()
-            observer.onSessionEnded(match { it.getId() == firstSessionId })
+            observer.onSessionEnded(match { it.getId() == secondSessionId })
             observer.onSessionStarted(
+                match { it.getId() == thirdSessionId },
                 match { it.getId() == secondSessionId },
-                match { it.getId() == firstSessionId },
             )
         }
         confirmVerified(observer)
