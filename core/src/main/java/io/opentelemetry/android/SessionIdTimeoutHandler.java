@@ -23,7 +23,7 @@ import java.time.Duration;
  * <p>Consequently, when the app spent >15 minutes without any activity (spans) in the background,
  * after moving to the foreground the first span should trigger the sessionId timeout.
  */
-//TODO: Migrate to kotlin and make internal?
+// TODO: Migrate to kotlin and make internal?
 public final class SessionIdTimeoutHandler implements ApplicationStateListener {
 
     static final Duration DEFAULT_SESSION_TIMEOUT = Duration.ofMinutes(15);

@@ -2,6 +2,7 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package io.opentelemetry.android.session
 
 import io.mockk.MockKAnnotations
@@ -22,7 +23,6 @@ import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 internal class SessionManagerTest {
-
     @MockK
     lateinit var timeoutHandler: SessionIdTimeoutHandler
 
@@ -39,7 +39,7 @@ internal class SessionManagerTest {
         val sessionId = sessionManager.getSessionId()
         assertThat(sessionId).isNotNull()
         assertThat(sessionId).hasSize(32)
-        assertThat(Pattern.compile("[a-f0-9]+").matcher(sessionId).matches()).isTrue();
+        assertThat(Pattern.compile("[a-f0-9]+").matcher(sessionId).matches()).isTrue()
     }
 
     @Test
@@ -59,7 +59,7 @@ internal class SessionManagerTest {
         clock.advance(1, TimeUnit.SECONDS)
         val newSessionId = sessionManager.getSessionId()
         assertThat(newSessionId).isNotNull()
-        assertThat(value).isNotEqualTo(newSessionId);
+        assertThat(value).isNotEqualTo(newSessionId)
     }
 
     @Test
@@ -90,7 +90,8 @@ internal class SessionManagerTest {
             observer.onSessionEnded(match { it.getId() == firstSessionId })
             observer.onSessionStarted(
                 match { it.getId() == secondSessionId },
-                match { it.getId() == firstSessionId })
+                match { it.getId() == firstSessionId },
+            )
         }
         confirmVerified(observer)
         confirmVerified(timeoutHandler)

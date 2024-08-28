@@ -2,6 +2,7 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package io.opentelemetry.android.session
 
 import io.opentelemetry.android.SessionIdTimeoutHandler
@@ -14,10 +15,9 @@ internal class SessionManager(
     private val sessionStorage: SessionStorage = SessionStorage.InMemory(),
     private val timeoutHandler: SessionIdTimeoutHandler,
     private val idGenerator: SessionIdGenerator = SessionIdGenerator.DEFAULT,
-    private val sessionLifetimeNanos: Long = TimeUnit.HOURS.toNanos(4)
+    private val sessionLifetimeNanos: Long = TimeUnit.HOURS.toNanos(4),
 ) : SessionProvider, SessionPublisher {
-
-    //TODO: Make thread safe / wrap with AtomicReference?
+    // TODO: Make thread safe / wrap with AtomicReference?
     private var session: Session = Session.DefaultSession(idGenerator.generateSessionId(), clock.now())
     private val observers = synchronizedList(ArrayList<SessionObserver>())
 
@@ -36,10 +36,10 @@ internal class SessionManager(
         if (sessionHasExpired() || timeoutHandler.hasTimedOut()) {
             val newId = idGenerator.generateSessionId()
 
-            //TODO FIXME: This is not threadsafe -- if two threads call getSessionId()
-            //at the same time while timed out, two new sessions are created
-            //Could require SessionStorage impls to be atomic/threadsafe or
-            //do the locking in this class?
+            // TODO FIXME: This is not threadsafe -- if two threads call getSessionId()
+            // at the same time while timed out, two new sessions are created
+            // Could require SessionStorage impls to be atomic/threadsafe or
+            // do the locking in this class?
 
             newSession = Session.DefaultSession(newId, clock.now())
             sessionStorage.save(newSession)
@@ -49,13 +49,14 @@ internal class SessionManager(
 
         // observers need to be called after bumping the timer because it may
         // create a new span
-        if(newSession != session){
-            observers.forEach {
-                it.onSessionEnded(session)
-                it.onSessionStarted(newSession, session)
+        if (newSession != session)
+            {
+                observers.forEach {
+                    it.onSessionEnded(session)
+                    it.onSessionStarted(newSession, session)
+                }
+                session = newSession
             }
-            session = newSession
-        }
         return session.getId()
     }
 

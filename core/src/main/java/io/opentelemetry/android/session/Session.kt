@@ -5,8 +5,6 @@
 
 package io.opentelemetry.android.session
 
-import java.time.Instant
-
 interface Session {
     fun getId(): String
 
@@ -16,9 +14,9 @@ interface Session {
         val NONE = DefaultSession("", -1)
     }
 
-    data class DefaultSession(private val id: String, private val timestamp: Long): Session {
+    data class DefaultSession(private val id: String, private val timestamp: Long) : Session {
         override fun getId(): String {
-            return id;
+            return id
         }
 
         override fun getsStartTimestamp(): Long {
@@ -37,7 +35,5 @@ interface Session {
         override fun hashCode(): Int {
             return id.hashCode()
         }
-
-
     }
 }

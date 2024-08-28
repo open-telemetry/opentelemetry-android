@@ -31,8 +31,7 @@ class SessionIdRatioBasedSamplerTest {
     private static final String LOW_ID = "00000000000000000000000000000000";
     private static final IdGenerator idsGenerator = IdGenerator.random();
 
-    @Mock
-    SessionProvider sessionProvider;
+    @Mock SessionProvider sessionProvider;
     private final String traceId = idsGenerator.generateTraceId();
     private final Context parentContext = Context.root().with(Span.getInvalid());
     private final List<LinkData> parentLinks =
@@ -61,12 +60,14 @@ class SessionIdRatioBasedSamplerTest {
     void zeroRatioDropsAll() {
         when(sessionProvider.getSessionId()).thenReturn(HIGH_ID);
 
-        SessionIdRatioBasedSampler samplerHigh = new SessionIdRatioBasedSampler(0.0, sessionProvider);
+        SessionIdRatioBasedSampler samplerHigh =
+                new SessionIdRatioBasedSampler(0.0, sessionProvider);
         assertEquals(shouldSample(samplerHigh), SamplingDecision.DROP);
 
         when(sessionProvider.getSessionId()).thenReturn(LOW_ID);
 
-        SessionIdRatioBasedSampler samplerLow = new SessionIdRatioBasedSampler(0.0, sessionProvider);
+        SessionIdRatioBasedSampler samplerLow =
+                new SessionIdRatioBasedSampler(0.0, sessionProvider);
         assertEquals(shouldSample(samplerLow), SamplingDecision.DROP);
     }
 
@@ -74,12 +75,14 @@ class SessionIdRatioBasedSamplerTest {
     void oneRatioAcceptsAll() {
         when(sessionProvider.getSessionId()).thenReturn(HIGH_ID);
 
-        SessionIdRatioBasedSampler samplerHigh = new SessionIdRatioBasedSampler(1.0, sessionProvider);
+        SessionIdRatioBasedSampler samplerHigh =
+                new SessionIdRatioBasedSampler(1.0, sessionProvider);
         assertEquals(shouldSample(samplerHigh), SamplingDecision.RECORD_AND_SAMPLE);
 
         when(sessionProvider.getSessionId()).thenReturn(LOW_ID);
 
-        SessionIdRatioBasedSampler samplerLow = new SessionIdRatioBasedSampler(1.0, sessionProvider);
+        SessionIdRatioBasedSampler samplerLow =
+                new SessionIdRatioBasedSampler(1.0, sessionProvider);
         assertEquals(shouldSample(samplerLow), SamplingDecision.RECORD_AND_SAMPLE);
     }
 

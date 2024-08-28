@@ -9,7 +9,6 @@ import static io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SE
 import static io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_PREVIOUS_ID;
 
 import androidx.annotation.NonNull;
-
 import io.opentelemetry.android.session.Session;
 import io.opentelemetry.android.session.SessionObserver;
 import io.opentelemetry.api.incubator.events.EventLogger;
@@ -22,11 +21,11 @@ final class SessionIdEventSender implements SessionObserver {
         this.eventLogger = eventLogger;
     }
 
-
     @Override
     public void onSessionStarted(@NonNull Session newSession, @NonNull Session previousSession) {
-        //TODO: Use event name from semconv
-        eventLogger.builder("session.start")
+        // TODO: Use event name from semconv
+        eventLogger
+                .builder("session.start")
                 .put(SESSION_ID, newSession.getId())
                 .put(SESSION_PREVIOUS_ID, previousSession.getId())
                 .emit();
@@ -34,9 +33,7 @@ final class SessionIdEventSender implements SessionObserver {
 
     @Override
     public void onSessionEnded(@NonNull Session session) {
-        //TODO: Use event name from semconv
-        eventLogger.builder("session.end")
-                .put(SESSION_ID, session.getId())
-                .emit();
+        // TODO: Use event name from semconv
+        eventLogger.builder("session.end").put(SESSION_ID, session.getId()).emit();
     }
 }

@@ -71,7 +71,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes;
-
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
@@ -156,7 +155,8 @@ public class OpenTelemetryRumBuilderTest {
                 .hasName("test span")
                 .hasResource(resource)
                 .hasAttributesSatisfyingExactly(
-                        equalTo(SessionIncubatingAttributes.SESSION_ID, sessionId), equalTo(SCREEN_NAME_KEY, "unknown"));
+                        equalTo(SessionIncubatingAttributes.SESSION_ID, sessionId),
+                        equalTo(SCREEN_NAME_KEY, "unknown"));
     }
 
     @Test

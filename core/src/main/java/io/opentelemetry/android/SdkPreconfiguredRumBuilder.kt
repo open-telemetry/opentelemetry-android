@@ -11,7 +11,6 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.session.SessionManager
 import io.opentelemetry.sdk.OpenTelemetrySdk
-import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider
 
 class SdkPreconfiguredRumBuilder
@@ -52,8 +51,9 @@ class SdkPreconfiguredRumBuilder
             // might turn off/on additional telemetry depending on whether the app is active or not
             appLifecycleService.registerListener(timeoutHandler)
 
-            val eventLogger = SdkEventLoggerProvider.create(sdk.logsBridge)
-                .get(OpenTelemetryRum::class.java.simpleName)
+            val eventLogger =
+                SdkEventLoggerProvider.create(sdk.logsBridge)
+                    .get(OpenTelemetryRum::class.java.simpleName)
 
             sessionManager.addObserver(SessionIdEventSender(eventLogger))
 

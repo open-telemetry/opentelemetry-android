@@ -2,14 +2,12 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package io.opentelemetry.android
 
-import io.mockk.Awaits
 import io.mockk.MockKAnnotations
-import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.just
 import io.mockk.verify
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey
@@ -32,12 +30,11 @@ internal class SessionIdSpanAppenderTest {
     fun setUp() {
         MockKAnnotations.init(this)
         every { sessionProvider.getSessionId() }.returns("42")
-        every { span.setAttribute(any<AttributeKey<String>>(), any<String>())} returns span
+        every { span.setAttribute(any<AttributeKey<String>>(), any<String>()) } returns span
     }
 
     @Test
     fun `should set sessionId as span attribute`() {
-
         val underTest = SessionIdSpanAppender(sessionProvider)
 
         assertTrue(underTest.isStartRequired)

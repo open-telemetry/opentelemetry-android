@@ -41,7 +41,12 @@ public class SessionIdRatioBasedSampler implements Sampler {
             List<LinkData> parentLinks) {
         // Replace traceId with sessionId
         return ratioBasedSampler.shouldSample(
-                parentContext, sessionProvider.getSessionId(), name, spanKind, attributes, parentLinks);
+                parentContext,
+                sessionProvider.getSessionId(),
+                name,
+                spanKind,
+                attributes,
+                parentLinks);
     }
 
     @Override

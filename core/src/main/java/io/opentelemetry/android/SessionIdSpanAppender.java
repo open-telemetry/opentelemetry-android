@@ -12,7 +12,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes;
 
 final class SessionIdSpanAppender implements SpanProcessor {
 

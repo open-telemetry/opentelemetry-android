@@ -8,7 +8,6 @@ package io.opentelemetry.android;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
-import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.android.session.Session;
@@ -18,16 +17,15 @@ import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.internal.AnyValueBody;
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
-
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class SessionIdEventSenderTest {
-    @RegisterExtension static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+    @RegisterExtension
+    static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
     private SessionIdEventSender underTest;
 
@@ -48,7 +46,8 @@ class SessionIdEventSenderTest {
         assertEquals(1, logs.size());
         LogRecordData log = logs.get(0);
         // TODO: Use new event body assertions when available.
-        assertThat(log).hasAttributesSatisfyingExactly( equalTo(stringKey("event.name"), "session.start"));
+        assertThat(log)
+                .hasAttributesSatisfyingExactly(equalTo(stringKey("event.name"), "session.start"));
 
         AnyValueBody body = (AnyValueBody) log.getBody();
         List<KeyAnyValue> kvBody = (List<KeyAnyValue>) body.asAnyValue().getValue();
@@ -67,7 +66,8 @@ class SessionIdEventSenderTest {
         assertEquals(1, logs.size());
         LogRecordData log = logs.get(0);
         // TODO: Use new event body assertions when available.
-        assertThat(log).hasAttributesSatisfyingExactly( equalTo(stringKey("event.name"), "session.end"));
+        assertThat(log)
+                .hasAttributesSatisfyingExactly(equalTo(stringKey("event.name"), "session.end"));
 
         AnyValueBody body = (AnyValueBody) log.getBody();
         List<KeyAnyValue> kvBody = (List<KeyAnyValue>) body.asAnyValue().getValue();
