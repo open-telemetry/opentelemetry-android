@@ -9,9 +9,42 @@ a quick and dirty example of how to get the agent initialized.
 
 ## Features
 
-* TBD
+The OpenTelemetry Android Demo App currently supports the following features:
 
+[//]: # (Are those too long/the info too basic? Should it be saying that its automatic?)
+* Android Activity Lifecycle Monitoring
+  - Automatically captures spans for key lifecycle events:
+    - **Created**: Includes `onCreate`, `onStart`, `onResume`
+    - **Paused**: Includes `onPause`
+    - **Stopped**: Includes `onStop`
+    - **Destroyed**: Includes `onDestroy`
+  - This covers the entire Activity lifecycle, providing detailed insights into each phase.
 
+* ANR Detection
+  - Automatically detects and reports ANRs in the app.
+  - ANR events are captured as spans with detailed stack traces, providing insights into the exact operations that caused the ANR.
+  - The span includes key attributes such as `screen.name`, `session.id`, and network information to assist in diagnosing the issue.
+  - Note: The app currently does not have any features designed to intentionally trigger an ANR.
+
+* Slow Render Detection
+  - Automatically detects instances of slow rendering within the app.
+  - Slow render events are captured as spans, providing information on when and where rendering delays occurred.
+  - The span includes attributes such as `activity.name`, `screen.name`, `count`, and network details to help diagnose performance issues.
+  - Note: The app currently does not have any features designed to intentionally trigger slow rendering.
+
+* Manual Instrumentation
+- Provides access to the OpenTelemetry APIs for manual instrumentation, allowing developers to create custom spans and events as needed.
+
+### Known Gaps
+As of now, there are a few areas where the instrumentation might not be fully comprehensive:
+
+* Crash Reporting
+App crashes are automatically reported, but the app currently does not include any features that intentionally trigger crashes.
+
+  * Fragment Lifecycle Monitoring 
+The Android agent supports monitoring fragment lifecycles, but the current demo app does not include any fragments, so this feature is not demonstrated.
+
+    
 ## How to use
 
 First, start up the collector and jaeger with docker-compose:
