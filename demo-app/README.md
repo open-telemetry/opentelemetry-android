@@ -34,6 +34,7 @@ The OpenTelemetry Android Demo App currently supports the following features:
 
 * Manual Instrumentation
 - Provides access to the OpenTelemetry APIs for manual instrumentation, allowing developers to create custom spans and events as needed.
+- Note: No manual instrumentation has been added to the demo app so far.
 
 ### Known Gaps
 As of now, there are a few areas where the instrumentation might not be fully comprehensive:
