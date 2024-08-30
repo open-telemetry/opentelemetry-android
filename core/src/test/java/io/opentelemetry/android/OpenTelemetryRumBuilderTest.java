@@ -6,11 +6,11 @@
 package io.opentelemetry.android;
 
 import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
-import static io.opentelemetry.android.common.RumConstants.SESSION_ID_KEY;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static org.awaitility.Awaitility.await;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -48,6 +48,8 @@ import io.opentelemetry.api.incubator.events.EventLogger;
 import io.opentelemetry.api.incubator.logs.AnyValue;
 import io.opentelemetry.api.incubator.logs.KeyAnyValue;
 import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.logs.LoggerBuilder;
+import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
@@ -68,6 +70,7 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
@@ -152,7 +155,8 @@ public class OpenTelemetryRumBuilderTest {
                 .hasName("test span")
                 .hasResource(resource)
                 .hasAttributesSatisfyingExactly(
-                        equalTo(SESSION_ID_KEY, sessionId), equalTo(SCREEN_NAME_KEY, "unknown"));
+                        equalTo(SessionIncubatingAttributes.SESSION_ID, sessionId),
+                        equalTo(SCREEN_NAME_KEY, "unknown"));
     }
 
     @Test
@@ -442,6 +446,11 @@ public class OpenTelemetryRumBuilderTest {
     @Test
     public void verifyPreconfiguredServicesInitialization() {
         OpenTelemetrySdk openTelemetrySdk = mock();
+        // Work around sdk EventLogger api limitations
+        LoggerProvider logsBridge = mock(LoggerProvider.class);
+        LoggerBuilder loggerBuilder = mock();
+        when(openTelemetrySdk.getLogsBridge()).thenReturn(logsBridge);
+        when(logsBridge.loggerBuilder(any())).thenReturn(loggerBuilder);
 
         OpenTelemetryRum.builder(application, openTelemetrySdk, true).build();
 

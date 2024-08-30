@@ -15,8 +15,6 @@ public class RumConstants {
 
     public static final String OTEL_RUM_LOG_TAG = "OpenTelemetryRum";
 
-    public static final AttributeKey<String> SESSION_ID_KEY = stringKey("session.id");
-
     public static final AttributeKey<String> LAST_SCREEN_NAME_KEY =
             AttributeKey.stringKey("last.screen.name");
     public static final AttributeKey<String> SCREEN_NAME_KEY =
@@ -43,6 +41,10 @@ public class RumConstants {
         public static final String INIT_EVENT_JANK_MONITOR = "rum.sdk.init.jank_monitor";
         public static final String INIT_EVENT_CRASH_REPORTER = "rum.sdk.init.crash.reporter";
         public static final String INIT_EVENT_SPAN_EXPORTER = "rum.sdk.init.span.exporter";
+
+        // TODO: Use the semconv when available
+        public static final String EVENT_SESSION_START = "session.start";
+        public static final String EVENT_SESSION_END = "session.end";
 
         private Events() {}
     }

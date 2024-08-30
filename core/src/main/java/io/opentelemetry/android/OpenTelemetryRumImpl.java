@@ -5,17 +5,18 @@
 
 package io.opentelemetry.android;
 
+import io.opentelemetry.android.session.SessionManager;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 
 final class OpenTelemetryRumImpl implements OpenTelemetryRum {
 
     private final OpenTelemetrySdk openTelemetrySdk;
-    private final SessionId sessionId;
+    private final SessionManager sessionManager;
 
-    OpenTelemetryRumImpl(OpenTelemetrySdk openTelemetrySdk, SessionId sessionId) {
+    OpenTelemetryRumImpl(OpenTelemetrySdk openTelemetrySdk, SessionManager sessionManager) {
         this.openTelemetrySdk = openTelemetrySdk;
-        this.sessionId = sessionId;
+        this.sessionManager = sessionManager;
     }
 
     @Override
@@ -25,6 +26,6 @@ final class OpenTelemetryRumImpl implements OpenTelemetryRum {
 
     @Override
     public String getRumSessionId() {
-        return sessionId.getSessionId();
+        return sessionManager.getSessionId();
     }
 }

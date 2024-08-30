@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android;
 
+import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
@@ -22,10 +23,10 @@ import java.util.List;
  */
 public class SessionIdRatioBasedSampler implements Sampler {
     private final Sampler ratioBasedSampler;
-    private final SessionId sessionId;
+    private final SessionProvider sessionProvider;
 
-    public SessionIdRatioBasedSampler(double ratio, SessionId sessionId) {
-        this.sessionId = sessionId;
+    public SessionIdRatioBasedSampler(double ratio, SessionProvider sessionProvider) {
+        this.sessionProvider = sessionProvider;
         // SessionId uses the same format as TraceId, so we can reuse trace ID ratio sampler.
         this.ratioBasedSampler = Sampler.traceIdRatioBased(ratio);
     }
@@ -40,7 +41,12 @@ public class SessionIdRatioBasedSampler implements Sampler {
             List<LinkData> parentLinks) {
         // Replace traceId with sessionId
         return ratioBasedSampler.shouldSample(
-                parentContext, sessionId.getSessionId(), name, spanKind, attributes, parentLinks);
+                parentContext,
+                sessionProvider.getSessionId(),
+                name,
+                spanKind,
+                attributes,
+                parentLinks);
     }
 
     @Override

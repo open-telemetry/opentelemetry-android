@@ -9,6 +9,7 @@ import android.app.Application
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.internal.services.ServiceManager
+import io.opentelemetry.android.session.SessionManager
 import io.opentelemetry.sdk.OpenTelemetrySdk
 
 class SdkPreconfiguredRumBuilder
@@ -16,10 +17,8 @@ class SdkPreconfiguredRumBuilder
     internal constructor(
         private val application: Application,
         private val sdk: OpenTelemetrySdk,
-        private val sessionId: SessionId =
-            SessionId(
-                SessionIdTimeoutHandler(),
-            ),
+        private val timeoutHandler: SessionIdTimeoutHandler = SessionIdTimeoutHandler(),
+        private val sessionManager: SessionManager = SessionManager(timeoutHandler = timeoutHandler),
         private val discoverInstrumentations: Boolean,
         private val serviceManager: ServiceManager,
     ) {
@@ -49,12 +48,9 @@ class SdkPreconfiguredRumBuilder
             serviceManager.start()
             // the app state listeners need to be run in the first ActivityLifecycleCallbacks since they
             // might turn off/on additional telemetry depending on whether the app is active or not
-            appLifecycleService.registerListener(sessionId.timeoutHandler)
+            appLifecycleService.registerListener(timeoutHandler)
 
-            val tracer = sdk.getTracer(OpenTelemetryRum::class.java.simpleName)
-            sessionId.setSessionIdChangeListener(SessionIdChangeTracer(tracer))
-
-            val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionId)
+            val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionManager)
 
             // Install instrumentations
             for (instrumentation in getInstrumentations()) {
