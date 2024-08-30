@@ -1,4 +1,4 @@
-package io.opentelemetry.android.demo.model
+package io.opentelemetry.android.demo.shop.model
 
 data class Product(
     val id: String,

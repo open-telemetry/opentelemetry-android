@@ -1,4 +1,4 @@
-package io.opentelemetry.android.demo.ui.shop.products
+package io.opentelemetry.android.demo.shop.ui.products
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
@@ -22,9 +22,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.opentelemetry.android.demo.clients.ImageLoader
+import io.opentelemetry.android.demo.shop.clients.ImageLoader
 import io.opentelemetry.android.demo.gothamFont
-import io.opentelemetry.android.demo.model.Product
+import io.opentelemetry.android.demo.shop.model.Product
 
 @Composable
 fun ProductCard(

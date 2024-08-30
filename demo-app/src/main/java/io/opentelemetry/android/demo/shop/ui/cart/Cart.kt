@@ -1,4 +1,4 @@
-package io.opentelemetry.android.demo.ui.shop.cart
+package io.opentelemetry.android.demo.shop.ui.cart
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,13 +8,13 @@ import androidx.compose.ui.Modifier
 import java.util.Locale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.opentelemetry.android.demo.ui.shop.products.ProductCard
+import io.opentelemetry.android.demo.shop.ui.products.ProductCard
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import io.opentelemetry.android.demo.clients.ProductCatalogClient
-import io.opentelemetry.android.demo.clients.RecommendationService
-import io.opentelemetry.android.demo.ui.shop.products.RecommendedSection
+import io.opentelemetry.android.demo.shop.clients.ProductCatalogClient
+import io.opentelemetry.android.demo.shop.clients.RecommendationService
+import io.opentelemetry.android.demo.shop.ui.products.RecommendedSection
 
 @Composable
 fun CartScreen(

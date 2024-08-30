@@ -1,10 +1,10 @@
-package io.opentelemetry.android.demo.clients
+package io.opentelemetry.android.demo.shop.clients
 
 import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import io.opentelemetry.android.demo.model.Product
-import io.opentelemetry.android.demo.model.ProductDeserializationWrapper
+import io.opentelemetry.android.demo.shop.model.Product
+import io.opentelemetry.android.demo.shop.model.ProductDeserializationWrapper
 
 const val PRODUCTS_FILE = "products.json"
 

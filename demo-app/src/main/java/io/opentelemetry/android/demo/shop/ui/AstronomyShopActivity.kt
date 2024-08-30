@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.demo.ui.shop
+package io.opentelemetry.android.demo.shop.ui
 
 import android.app.Activity
 import android.content.Intent
@@ -24,14 +24,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import io.opentelemetry.android.demo.MainActivity
-import io.opentelemetry.android.demo.clients.ProductCatalogClient
+import io.opentelemetry.android.demo.shop.clients.ProductCatalogClient
 import io.opentelemetry.android.demo.theme.DemoAppTheme
-import io.opentelemetry.android.demo.ui.shop.cart.CartScreen
-import io.opentelemetry.android.demo.ui.shop.products.ProductDetails
-import io.opentelemetry.android.demo.ui.shop.products.ProductList
-import io.opentelemetry.android.demo.ui.shop.cart.CartViewModel
+import io.opentelemetry.android.demo.shop.ui.cart.CartScreen
+import io.opentelemetry.android.demo.shop.ui.products.ProductDetails
+import io.opentelemetry.android.demo.shop.ui.products.ProductList
+import io.opentelemetry.android.demo.shop.ui.cart.CartViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.opentelemetry.android.demo.ui.shop.cart.InfoScreen
+import io.opentelemetry.android.demo.shop.ui.cart.InfoScreen
 
 class AstronomyShopActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,4 +1,4 @@
-package io.opentelemetry.android.demo.ui.shop
+package io.opentelemetry.android.demo.shop.ui
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
