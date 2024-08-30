@@ -13,10 +13,10 @@ The OpenTelemetry Android Demo App currently supports the following features:
 
 * Android Activity Lifecycle Monitoring
   - Automatically captures spans for key lifecycle events:
-    - **Created**: Includes `onCreate`, `onStart`, `onResume`
-    - **Paused**: Includes `onPause`
-    - **Stopped**: Includes `onStop`
-    - **Destroyed**: Includes `onDestroy`
+    - Created: Includes `onCreate`, `onStart`, `onResume`,
+    - Paused: Includes `onPause`,
+    - Stopped: Includes `onStop`,
+    - Destroyed: Includes `onDestroy`.
   - This covers the entire Activity lifecycle, providing detailed insights into each phase.
 
 * ANR Detection
