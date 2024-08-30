@@ -11,7 +11,6 @@ a quick and dirty example of how to get the agent initialized.
 
 The OpenTelemetry Android Demo App currently supports the following features:
 
-[//]: # (Are those too long/the info too basic? Should it be saying that its automatic?)
 * Android Activity Lifecycle Monitoring
   - Automatically captures spans for key lifecycle events:
     - **Created**: Includes `onCreate`, `onStart`, `onResume`
@@ -42,12 +41,12 @@ As of now, there are a few areas where the instrumentation might not be fully co
 * Crash Reporting
 App crashes are automatically reported, but the app currently does not include any features that intentionally trigger crashes.
 
-  * Fragment Lifecycle Monitoring 
+* Fragment Lifecycle Monitoring 
 The Android agent supports monitoring fragment lifecycles, but the current demo app does not include any fragments, so this feature is not demonstrated.
 
-  * HTTP client
-[//]: # (  TODO)
-  * Auto-instrumentation
+* HTTP Client Instrumentation
+  OpenTelemetry Android supports automatic instrumentation for HTTP client libraries. This feature captures spans for HTTP requests with details. However, the demo app does not currently demonstrate this feature as it doesn't make any network requests.
+
 ## How to use
 
 First, start up the collector and jaeger with docker-compose:
@@ -58,4 +57,4 @@ $ docker compose up
 ```
 
 Then run the demo app in the Android emulator and navigate to http://localhost:16686
-to see the Jaeger UI.
+to see the Jaeger UI. 
