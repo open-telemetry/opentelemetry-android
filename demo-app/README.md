@@ -34,7 +34,7 @@ The OpenTelemetry Android Demo App currently supports the following features:
 
 * Manual Instrumentation
 - Provides access to the OpenTelemetry APIs for manual instrumentation, allowing developers to create custom spans and events as needed.
-- Note: No manual instrumentation has been added to the demo app so far.
+- Note: The only manual instrumentation that has been added to the demo app so far is an event after clicking on the OpenTelemetry logo.
 
 ### Known Gaps
 As of now, there are a few areas where the instrumentation might not be fully comprehensive:
@@ -45,7 +45,9 @@ App crashes are automatically reported, but the app currently does not include a
   * Fragment Lifecycle Monitoring 
 The Android agent supports monitoring fragment lifecycles, but the current demo app does not include any fragments, so this feature is not demonstrated.
 
-    
+  * HTTP client
+[//]: # (  TODO)
+  * Auto-instrumentation
 ## How to use
 
 First, start up the collector and jaeger with docker-compose:
