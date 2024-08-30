@@ -38,13 +38,13 @@ The OpenTelemetry Android Demo App currently supports the following features:
 ### Known Gaps
 As of now, there are a few areas where the instrumentation might not be fully comprehensive:
 
-* Crash Reporting
+* Crash Reporting  
 App crashes are automatically reported, but the app currently does not include any features that intentionally trigger crashes.
 
-* Fragment Lifecycle Monitoring 
+* Fragment Lifecycle Monitoring  
 The Android agent supports monitoring fragment lifecycles, but the current demo app does not include any fragments, so this feature is not demonstrated.
 
-* HTTP Client Instrumentation
+* HTTP Client Instrumentation  
   OpenTelemetry Android supports automatic instrumentation for HTTP client libraries. This feature captures spans for HTTP requests with details. However, the demo app does not currently demonstrate this feature as it doesn't make any network requests.
 
 ## How to use
