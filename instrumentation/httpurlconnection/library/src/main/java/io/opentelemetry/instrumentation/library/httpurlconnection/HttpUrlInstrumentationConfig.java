@@ -24,7 +24,7 @@ public final class HttpUrlInstrumentationConfig {
 
     // Time (ms) to wait before assuming that an idle connection is no longer
     // in use and should be reported.
-    private static final long CONNECTION_INACTIVITY_TIMEOUT_MS = 10000;
+    private static long connectionInactivityTimeoutMs = 10000;
 
     private HttpUrlInstrumentationConfig() {}
 
@@ -120,10 +120,23 @@ public final class HttpUrlInstrumentationConfig {
     }
 
     /**
+     * Configures the timeout in ms that defines the time that should have elapsed since the
+     * connection was last active. It is used by the idle connection harvester thread to find idle
+     * connections that should be reported. To schedule the idle connection harvester follow
+     * instructions defined in the <a
+     * href="https://github.com/open-telemetry/opentelemetry-android/blob/96ea4aa9fe709838a91811deeb85b0f1baceb8cd/instrumentation/httpurlconnection/README.md#scheduling-harvester-thread">
+     * README</a>.
+     *
+     * <p>Default value: "10000"
+     */
+    public static void setConnectionInactivityTimeoutMs(long timeoutMs) {
+        HttpUrlInstrumentationConfig.connectionInactivityTimeoutMs = timeoutMs;
+    }
+
+    /**
      * Returns a runnable that can be scheduled to run periodically at a fixed interval to close
-     * open spans if connection is left idle for CONNECTION_INACTIVITY_TIMEOUT duration. Runnable
-     * interval is same as CONNECTION_INACTIVITY_TIMEOUT. CONNECTION_INACTIVITY_TIMEOUT in milli
-     * seconds can be obtained from getReportIdleConnectionInterval() API.
+     * open spans if connection is left idle for connectionInactivityTimeoutMs duration.
+     * connectionInactivityTimeoutMs can be obtained via getReportIdleConnectionInterval() API.
      *
      * @return The idle connection reporting runnable
      */
@@ -131,8 +144,7 @@ public final class HttpUrlInstrumentationConfig {
         return new Runnable() {
             @Override
             public void run() {
-                HttpUrlReplacements.reportIdleConnectionsOlderThan(
-                        CONNECTION_INACTIVITY_TIMEOUT_MS);
+                HttpUrlReplacements.reportIdleConnectionsOlderThan(connectionInactivityTimeoutMs);
             }
 
             @Override
@@ -143,12 +155,12 @@ public final class HttpUrlInstrumentationConfig {
     }
 
     /**
-     * The fixed interval duration in milli seconds that the runnable from
+     * The interval duration in milli seconds that the runnable from
      * getReportIdleConnectionRunnable() API should be scheduled to periodically run at.
      *
-     * @return The fixed interval duration in ms
+     * @return The interval duration in ms
      */
     public static long getReportIdleConnectionInterval() {
-        return CONNECTION_INACTIVITY_TIMEOUT_MS;
+        return connectionInactivityTimeoutMs;
     }
 }
