@@ -57,4 +57,4 @@ $ docker compose up
 ```
 
 Then run the demo app in the Android emulator and navigate to http://localhost:16686
-to see the Jaeger UI. 
+to see the Jaeger UI.
