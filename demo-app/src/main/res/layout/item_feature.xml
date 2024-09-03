@@ -19,6 +19,7 @@
 
         <ImageView
             android:id="@+id/arrowImageView"
+            android:contentDescription="@string/expand_or_collapse_content"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"

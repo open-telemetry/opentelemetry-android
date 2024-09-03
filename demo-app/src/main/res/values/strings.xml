@@ -8,4 +8,5 @@
     <string name="exit">Exit</string>
     <string name="app_features">App Features</string>
     <string name="about_opentelemetry">About OpenTelemetry</string>
+    <string name="expand_or_collapse_content">Expand or collapse content</string>
 </resources>
