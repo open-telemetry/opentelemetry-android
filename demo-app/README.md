@@ -32,8 +32,8 @@ The OpenTelemetry Android Demo App currently supports the following features:
   - Note: The app currently does not have any features designed to intentionally trigger slow rendering.
 
 * Manual Instrumentation
-- Provides access to the OpenTelemetry APIs for manual instrumentation, allowing developers to create custom spans and events as needed.
-- Note: The only manual instrumentation that has been added to the demo app so far is an event after clicking on the OpenTelemetry logo.
+  - Provides access to the OpenTelemetry APIs for manual instrumentation, allowing developers to create custom spans and events as needed.
+  - Note: The only manual instrumentation that has been added to the demo app so far is an event after clicking on the OpenTelemetry logo.
 
 ### Known Gaps
 As of now, there are a few areas where the instrumentation might not be fully comprehensive:
