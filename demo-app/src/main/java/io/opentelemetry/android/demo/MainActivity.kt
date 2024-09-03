@@ -28,6 +28,9 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import io.opentelemetry.android.demo.about.AboutActivity
 import io.opentelemetry.android.demo.theme.DemoAppTheme
 import io.opentelemetry.android.demo.shop.ui.AstronomyShopActivity
 
@@ -73,9 +76,13 @@ class MainActivity : ComponentActivity() {
                             painterResource(id = R.drawable.otel_icon),
                         )
                         val context = LocalContext.current
-                        OpenStoreButton(text = "Click to begin", onClick = {
+                        OpenStoreButton(text = "Go shopping", onClick = {
                             context.startActivity(Intent(this@MainActivity, AstronomyShopActivity::class.java))
                         })
+                        OpenStoreButton(text = "Learn more", onClick = {
+                            context.startActivity(Intent(this@MainActivity, AboutActivity::class.java))
+                        })
+
                     }
                 }
                 Log.d(TAG, "Main Activity started ")
