@@ -74,10 +74,10 @@ class MainActivity : ComponentActivity() {
                             painterResource(id = R.drawable.otel_icon),
                         )
                         val context = LocalContext.current
-                        OpenStoreButton(text = "Go shopping", onClick = {
+                        LauncherButton(text = "Go shopping", onClick = {
                             context.startActivity(Intent(this@MainActivity, AstronomyShopActivity::class.java))
                         })
-                        OpenStoreButton(text = "Learn more", onClick = {
+                        LauncherButton(text = "Learn more", onClick = {
                             context.startActivity(Intent(this@MainActivity, AboutActivity::class.java))
                         })
 
