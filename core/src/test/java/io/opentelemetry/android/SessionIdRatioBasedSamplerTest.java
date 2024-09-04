@@ -8,6 +8,7 @@ package io.opentelemetry.android;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -30,7 +31,7 @@ class SessionIdRatioBasedSamplerTest {
     private static final String LOW_ID = "00000000000000000000000000000000";
     private static final IdGenerator idsGenerator = IdGenerator.random();
 
-    @Mock SessionId sessionId;
+    @Mock SessionProvider sessionProvider;
     private final String traceId = idsGenerator.generateTraceId();
     private final Context parentContext = Context.root().with(Span.getInvalid());
     private final List<LinkData> parentLinks =
@@ -38,9 +39,9 @@ class SessionIdRatioBasedSamplerTest {
 
     @Test
     void samplerDropsHigh() {
-        when(sessionId.getSessionId()).thenReturn(HIGH_ID);
+        when(sessionProvider.getSessionId()).thenReturn(HIGH_ID);
 
-        SessionIdRatioBasedSampler sampler = new SessionIdRatioBasedSampler(0.5, sessionId);
+        SessionIdRatioBasedSampler sampler = new SessionIdRatioBasedSampler(0.5, sessionProvider);
 
         // Sampler drops if TraceIdRatioBasedSampler would drop this sessionId
         assertEquals(shouldSample(sampler), SamplingDecision.DROP);
@@ -49,35 +50,39 @@ class SessionIdRatioBasedSamplerTest {
     @Test
     void samplerKeepsLowestId() {
         // Sampler accepts if TraceIdRatioBasedSampler would accept this sessionId
-        when(sessionId.getSessionId()).thenReturn(LOW_ID);
+        when(sessionProvider.getSessionId()).thenReturn(LOW_ID);
 
-        SessionIdRatioBasedSampler sampler = new SessionIdRatioBasedSampler(0.5, sessionId);
+        SessionIdRatioBasedSampler sampler = new SessionIdRatioBasedSampler(0.5, sessionProvider);
         assertEquals(shouldSample(sampler), SamplingDecision.RECORD_AND_SAMPLE);
     }
 
     @Test
     void zeroRatioDropsAll() {
-        when(sessionId.getSessionId()).thenReturn(HIGH_ID);
+        when(sessionProvider.getSessionId()).thenReturn(HIGH_ID);
 
-        SessionIdRatioBasedSampler samplerHigh = new SessionIdRatioBasedSampler(0.0, sessionId);
+        SessionIdRatioBasedSampler samplerHigh =
+                new SessionIdRatioBasedSampler(0.0, sessionProvider);
         assertEquals(shouldSample(samplerHigh), SamplingDecision.DROP);
 
-        when(sessionId.getSessionId()).thenReturn(LOW_ID);
+        when(sessionProvider.getSessionId()).thenReturn(LOW_ID);
 
-        SessionIdRatioBasedSampler samplerLow = new SessionIdRatioBasedSampler(0.0, sessionId);
+        SessionIdRatioBasedSampler samplerLow =
+                new SessionIdRatioBasedSampler(0.0, sessionProvider);
         assertEquals(shouldSample(samplerLow), SamplingDecision.DROP);
     }
 
     @Test
     void oneRatioAcceptsAll() {
-        when(sessionId.getSessionId()).thenReturn(HIGH_ID);
+        when(sessionProvider.getSessionId()).thenReturn(HIGH_ID);
 
-        SessionIdRatioBasedSampler samplerHigh = new SessionIdRatioBasedSampler(1.0, sessionId);
+        SessionIdRatioBasedSampler samplerHigh =
+                new SessionIdRatioBasedSampler(1.0, sessionProvider);
         assertEquals(shouldSample(samplerHigh), SamplingDecision.RECORD_AND_SAMPLE);
 
-        when(sessionId.getSessionId()).thenReturn(LOW_ID);
+        when(sessionProvider.getSessionId()).thenReturn(LOW_ID);
 
-        SessionIdRatioBasedSampler samplerLow = new SessionIdRatioBasedSampler(1.0, sessionId);
+        SessionIdRatioBasedSampler samplerLow =
+                new SessionIdRatioBasedSampler(1.0, sessionProvider);
         assertEquals(shouldSample(samplerLow), SamplingDecision.RECORD_AND_SAMPLE);
     }
 

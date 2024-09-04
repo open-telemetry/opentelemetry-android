@@ -2,24 +2,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/navigation_home"
-        android:icon="@drawable/ic_home_black_24dp"
-        android:title="@string/title_shop" />
-
-    <item
-        android:id="@+id/navigation_dashboard"
-        android:icon="@drawable/ic_dashboard_black_24dp"
-        android:title="@string/title_dashboard" />
-
-    <item
-        android:id="@+id/navigation_cart"
-        android:icon="@drawable/ic_cart_foreground"
-        android:title="@string/title_cart" />
-
-    <item
-        android:id="@+id/exit_shop"
+        android:id="@+id/navigation_exit"
         android:icon="@drawable/exit_to_main"
-        android:title="@string/title_exit_to_main"
-        android:onClick="onExitToMainClicked"/>
+        android:title="@string/exit" />
+
+    <item
+        android:id="@+id/navigation_app_features"
+        android:title="@string/app_features" />
+
+    <item
+        android:id="@+id/navigation_about_opentelemetry"
+        android:title="@string/about_opentelemetry" />
 
 </menu>
