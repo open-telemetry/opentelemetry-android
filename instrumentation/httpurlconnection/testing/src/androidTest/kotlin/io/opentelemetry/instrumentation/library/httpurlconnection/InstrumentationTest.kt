@@ -104,7 +104,7 @@ class InstrumentationTest {
         // and we don't have to include any wait timers in the test. 0ms does not work as the time difference
         // between last connection activity and harvester time elapsed check is much lesser than 1ms due to
         // our high speed modern CPUs.
-        HttpUrlInstrumentationConfig.setConnectionInactivityTimeoutMs(-1)
+        HttpUrlInstrumentationConfig.setConnectionInactivityTimeoutMsForTesting(-1)
         // Running the harvester runnable once instead of scheduling it to run periodically,
         // so we can synchronously assert instead of waiting for another threads execution to finish
         HttpUrlInstrumentationConfig.getReportIdleConnectionRunnable().run()

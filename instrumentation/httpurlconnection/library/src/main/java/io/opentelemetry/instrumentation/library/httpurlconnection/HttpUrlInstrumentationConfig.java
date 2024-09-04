@@ -120,17 +120,38 @@ public final class HttpUrlInstrumentationConfig {
     }
 
     /**
-     * Configures the timeout in ms that defines the time that should have elapsed since the
-     * connection was last active. It is used by the idle connection harvester thread to find idle
-     * connections that should be reported. To schedule the idle connection harvester follow
-     * instructions defined in the <a
+     * Configures the connection inactivity timeout in milliseconds.
+     *
+     * <p>This timeout defines the time that should have elapsed since the connection was last
+     * active. It is used by the idle connection harvester thread to find idle connections that
+     * should be reported. To schedule the idle connection harvester follow instructions defined in
+     * the <a
      * href="https://github.com/open-telemetry/opentelemetry-android/blob/96ea4aa9fe709838a91811deeb85b0f1baceb8cd/instrumentation/httpurlconnection/README.md#scheduling-harvester-thread">
-     * README</a>.
+     * README</a>. If the specified timeout is negative, an {@code IllegalArgumentException} will be
+     * thrown.
      *
      * <p>Default value: "10000"
+     *
+     * @param timeoutMs the timeout period in milliseconds. Must be non-negative.
+     * @throws IllegalArgumentException if {@code timeoutMs} is negative.
      */
     public static void setConnectionInactivityTimeoutMs(long timeoutMs) {
+        if (timeoutMs < 0) {
+            throw new IllegalArgumentException("timeoutMs must be non-negative");
+        }
         HttpUrlInstrumentationConfig.connectionInactivityTimeoutMs = timeoutMs;
+    }
+
+    /**
+     * Configures the connection inactivity timeout in milliseconds for testing purposes only.
+     *
+     * <p>This test only API allows you to set negative values for timeout. For production
+     * workflows, {@code setConnectionInactivityTimeoutMs} API should be used.
+     *
+     * @param timeoutMsForTesting the timeout period in milliseconds.
+     */
+    public static void setConnectionInactivityTimeoutMsForTesting(long timeoutMsForTesting) {
+        HttpUrlInstrumentationConfig.connectionInactivityTimeoutMs = timeoutMsForTesting;
     }
 
     /**
