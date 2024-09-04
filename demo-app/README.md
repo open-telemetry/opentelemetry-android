@@ -45,7 +45,7 @@ App crashes are automatically reported, but the app currently does not include a
 The Android agent supports monitoring fragment lifecycles, but the current demo app does not include any fragments, so this feature is not demonstrated.
 
 * HTTP Client Instrumentation  
-  OpenTelemetry Android supports automatic instrumentation for HTTP client libraries. This feature captures spans for HTTP requests with details. However, the demo app does not currently demonstrate this feature as it doesn't make any network requests.
+OpenTelemetry Android supports automatic instrumentation for HTTP client libraries. This feature captures spans for HTTP requests with details. However, the demo app does not currently demonstrate this feature as it doesn't make any network requests.
 
 ## How to use
 
