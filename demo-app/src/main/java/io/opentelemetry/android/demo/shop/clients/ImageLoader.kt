@@ -1,4 +1,4 @@
-package io.opentelemetry.android.demo.clients
+package io.opentelemetry.android.demo.shop.clients
 
 import android.content.Context
 import android.graphics.Bitmap

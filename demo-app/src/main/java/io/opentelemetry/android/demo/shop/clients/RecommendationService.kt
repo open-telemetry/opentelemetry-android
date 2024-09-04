@@ -1,7 +1,7 @@
-package io.opentelemetry.android.demo.clients
+package io.opentelemetry.android.demo.shop.clients
 
-import io.opentelemetry.android.demo.model.Product
-import io.opentelemetry.android.demo.ui.shop.cart.CartViewModel
+import io.opentelemetry.android.demo.shop.model.Product
+import io.opentelemetry.android.demo.shop.ui.cart.CartViewModel
 
 class RecommendationService(
     private val productCatalogClient: ProductCatalogClient,

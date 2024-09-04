@@ -1,4 +1,4 @@
-package io.opentelemetry.android.demo.ui.shop.cart
+package io.opentelemetry.android.demo.shop.ui.cart
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,7 +15,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import io.opentelemetry.android.demo.ui.shop.components.UpPressButton
+import io.opentelemetry.android.demo.shop.ui.components.UpPressButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
 

@@ -5,4 +5,8 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_cart">Cart</string>
     <string name="title_exit_to_main">Exit</string>
+    <string name="exit">Exit</string>
+    <string name="app_features">App Features</string>
+    <string name="about_opentelemetry">About OpenTelemetry</string>
+    <string name="expand_or_collapse_content">Expand or collapse content</string>
 </resources>

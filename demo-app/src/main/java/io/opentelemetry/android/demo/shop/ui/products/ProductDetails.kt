@@ -1,4 +1,4 @@
-package io.opentelemetry.android.demo.ui.shop.products
+package io.opentelemetry.android.demo.shop.ui.products
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -13,16 +13,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.opentelemetry.android.demo.clients.ImageLoader
+import io.opentelemetry.android.demo.shop.clients.ImageLoader
 import io.opentelemetry.android.demo.gothamFont
-import io.opentelemetry.android.demo.model.Product
-import io.opentelemetry.android.demo.ui.shop.components.QuantityChooser
+import io.opentelemetry.android.demo.shop.model.Product
+import io.opentelemetry.android.demo.shop.ui.components.QuantityChooser
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.opentelemetry.android.demo.ui.shop.cart.CartViewModel
-import io.opentelemetry.android.demo.ui.shop.components.UpPressButton
+import io.opentelemetry.android.demo.shop.ui.cart.CartViewModel
+import io.opentelemetry.android.demo.shop.ui.components.UpPressButton
 import androidx.compose.ui.Alignment
-import io.opentelemetry.android.demo.clients.ProductCatalogClient
-import io.opentelemetry.android.demo.clients.RecommendationService
+import io.opentelemetry.android.demo.shop.clients.ProductCatalogClient
+import io.opentelemetry.android.demo.shop.clients.RecommendationService
 
 @Composable
 fun ProductDetails(

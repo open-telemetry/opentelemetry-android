@@ -1,7 +1,7 @@
-package io.opentelemetry.android.demo.ui.shop.cart
+package io.opentelemetry.android.demo.shop.ui.cart
 
 import androidx.lifecycle.ViewModel
-import io.opentelemetry.android.demo.model.Product
+import io.opentelemetry.android.demo.shop.model.Product
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 

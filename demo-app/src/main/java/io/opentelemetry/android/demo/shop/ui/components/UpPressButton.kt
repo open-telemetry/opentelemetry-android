@@ -1,4 +1,4 @@
-package io.opentelemetry.android.demo.ui.shop.components
+package io.opentelemetry.android.demo.shop.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
