@@ -36,7 +36,7 @@ The OpenTelemetry Android Demo App currently supports the following features:
   - Note: The only manual instrumentation that has been added to the demo app so far is an event after clicking on the OpenTelemetry logo.
 
 ### Known Gaps
-As of now, there are a few areas where the instrumentation might not be fully comprehensive:
+As of now, there are a few areas where the instrumentation might not be comprehensive:
 
 * Crash Reporting  
 App crashes are automatically reported, but the app currently does not include any features that intentionally trigger crashes.
