@@ -38,14 +38,15 @@ The OpenTelemetry Android Demo App currently supports the following features:
 ### Known Gaps
 As of now, there are a few areas where the instrumentation might not be comprehensive:
 
-* Crash Reporting  
-App crashes are automatically reported, but the app currently does not include any features that intentionally trigger crashes.
+* Crash Reporting
+  - App crashes are automatically reported, but the app currently does not include any features that intentionally trigger crashes.
 
 * Fragment Lifecycle Monitoring  
-The Android agent supports monitoring fragment lifecycles, but the current demo app does not include any fragments, so this feature is not demonstrated.
+  - The Android agent supports monitoring fragment lifecycles, but the current demo app does not include any fragments, so this feature is not demonstrated.
 
-* HTTP Client Instrumentation  
-OpenTelemetry Android supports automatic instrumentation for HTTP client libraries. This feature captures spans for HTTP requests with details. However, the demo app does not currently demonstrate this feature as it doesn't make any network requests.
+* HTTP Client Instrumentation
+  - OpenTelemetry Android supports automatic instrumentation for HTTP client libraries. This feature captures spans for HTTP requests with details. However, the demo app does not currently demonstrate this feature as it doesn't make any network requests.
+  - Additionally, disk buffering is enabled in the app, allowing telemetry data from HTTP requests to be temporarily stored on disk when the network is unavailable. Although this feature is configured, it isn't actively demonstrated due to the absence of network activity.
 
 ## How to use
 
