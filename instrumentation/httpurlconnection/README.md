@@ -70,7 +70,7 @@ Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(HttpUrlInstr
 
 - `HttpUrlInstrumentationConfig.getReportIdleConnectionRunnable()` is the API to get the runnable.
 - By default, connections inactive for 10000ms are reported. To optionally change the connection inactivity timeout call `HttpUrlInstrumentationConfig.setConnectionInactivityTimeoutMs(customTimeoutValue)` API as shown in above code snippet.
-- It is efficient to run the harvester thread at the same time interval as the connection inactivity timeout used to identify the connections to be reported. `HttpUrlInstrumentationConfig.getReportIdleConnectionInterval()` is the API to get the same connection inactivity timeout interval (milli seconds) you have configured or the default value of 10000ms if not configured.
+- It is efficient to run the harvester thread at the same time interval as the connection inactivity timeout used to identify the connections to be reported. `HttpUrlInstrumentationConfig.getReportIdleConnectionInterval()` is the API to get the same connection inactivity timeout interval (milliseconds) you have configured or the default value of 10000ms if not configured.
 
 #### Other Optional Configurations
 You can optionally configure the automatic instrumentation by using the setters in [HttpUrlInstrumentationConfig](library/src/main/java/io/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlInstrumentationConfig.java).
