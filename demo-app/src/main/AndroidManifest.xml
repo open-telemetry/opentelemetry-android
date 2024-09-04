@@ -20,12 +20,12 @@
         <activity
             android:name=".shop.ui.AstronomyShopActivity"
             android:exported="true"
-            android:label="@string/title_activity_astronomy_shop"
+            android:label="Astronomy Shop"
             />
         <activity
             android:name=".about.AboutActivity"
             android:exported="true"
-            android:label="AboutActivity"
+            android:label="About OpenTelemetry Android"
             />
         <activity
             android:name=".MainActivity"

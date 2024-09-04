@@ -36,7 +36,6 @@ import io.opentelemetry.android.demo.shop.ui.cart.InfoScreen
 class AstronomyShopActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        title = "Astronomy Shop"
         setContent {
             AstronomyShopScreen()
         }
