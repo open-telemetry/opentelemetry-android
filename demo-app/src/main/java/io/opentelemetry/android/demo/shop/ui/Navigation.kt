@@ -12,6 +12,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.material3.*
+import io.opentelemetry.android.demo.OtelDemoApplication
+import io.opentelemetry.android.demo.shop.ui.cart.CartViewModel
 
 
 sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
@@ -57,7 +59,7 @@ class AstronomyShopNavController(
 class InstrumentedAstronomyShopNavController(
     private val delegate : AstronomyShopNavController
 ){
-    val navController : NavHostController
+    val navController: NavHostController
         get() = delegate.navController
 
     val currentRoute: String?
@@ -69,10 +71,26 @@ class InstrumentedAstronomyShopNavController(
 
     fun navigateToProductDetail(productId: String) {
         delegate.navigateToProductDetail(productId)
+        generateNavigationEvent(
+            eventName = "navigate.to.product.details",
+            payload = mapOf("product.id" to productId)
+        )
     }
 
-    fun navigateToCheckoutInfo(){
+    fun navigateToCheckoutInfo() {
         delegate.navigateToCheckoutInfo()
+        generateNavigationEvent(
+            eventName = "navigate.to.checkout.info",
+            payload = emptyMap()
+        )
+    }
+
+    private fun generateNavigationEvent(eventName: String, payload: Map<String, String>) {
+        val eventBuilder = OtelDemoApplication.eventBuilder("otel.demo.app.navigation", eventName)
+        payload.forEach { (key, value) ->
+            eventBuilder.put(key, value)
+        }
+        eventBuilder.emit()
     }
 }
 
