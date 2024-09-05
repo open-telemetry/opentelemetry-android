@@ -13,7 +13,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.material3.*
 import io.opentelemetry.android.demo.OtelDemoApplication
-import io.opentelemetry.android.demo.shop.ui.cart.CartViewModel
 
 
 sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
