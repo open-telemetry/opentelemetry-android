@@ -32,6 +32,7 @@ The OpenTelemetry Android Demo App currently supports the following features:
     - Destroyed: `onDestroy`,
     - Detached: `onDetach` (fragment disconnected).
   - Provides detailed insights into each lifecycle phase.
+  - Can be observed in the "About OpenTelemetry Android" activity, entered via "Learn more" on the main screen.
 
 * ANR Detection
   - Automatically detects and reports ANRs in the app.
