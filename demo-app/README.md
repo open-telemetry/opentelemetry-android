@@ -20,7 +20,18 @@ The OpenTelemetry Android Demo App currently supports the following features:
   - This covers the entire Activity lifecycle, providing detailed insights into each phase.
 
 * Fragment Lifecycle Monitoring
-
+  - Automatically captures spans for key lifecycle events:
+    - Attached: `onAttach` (fragment attached to context),
+    - Created: `onCreate`,
+    - View Created: `onViewCreated` (UI created),
+    - Started: `onStart`,
+    - Resumed: `onResume` (fragment active),
+    - Paused: `onPause`,
+    - Stopped: `onStop`,
+    - View Destroyed: `onDestroyView` (UI removed),
+    - Destroyed: `onDestroy`,
+    - Detached: `onDetach` (fragment disconnected).
+  - Provides detailed insights into each lifecycle phase.
 
 * ANR Detection
   - Automatically detects and reports ANRs in the app.
