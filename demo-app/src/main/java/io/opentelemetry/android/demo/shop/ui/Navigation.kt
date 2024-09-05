@@ -29,9 +29,9 @@ object MainDestinations {
 
 @Composable
 fun rememberAstronomyShopNavController(navController: NavHostController = rememberNavController())
-: AstronomyShopNavController = remember(navController)
+        : InstrumentedAstronomyShopNavController = remember(navController)
 {
-    AstronomyShopNavController(navController)
+    InstrumentedAstronomyShopNavController(AstronomyShopNavController(navController))
 }
 
 @Stable
@@ -52,7 +52,28 @@ class AstronomyShopNavController(
     fun navigateToCheckoutInfo(){
         navController.navigate(MainDestinations.CHECKOUT_INFO_ROUTE)
     }
+}
 
+class InstrumentedAstronomyShopNavController(
+    private val delegate : AstronomyShopNavController
+){
+    val navController : NavHostController
+        get() = delegate.navController
+
+    val currentRoute: String?
+        get() = delegate.currentRoute
+
+    fun upPress() {
+        delegate.upPress()
+    }
+
+    fun navigateToProductDetail(productId: String) {
+        delegate.navigateToProductDetail(productId)
+    }
+
+    fun navigateToCheckoutInfo(){
+        delegate.navigateToCheckoutInfo()
+    }
 }
 
 @Composable
