@@ -12,6 +12,7 @@ import io.opentelemetry.android.demo.shop.ui.products.ProductCard
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import io.opentelemetry.android.demo.OtelDemoApplication
 import io.opentelemetry.android.demo.shop.clients.ProductCatalogClient
 import io.opentelemetry.android.demo.shop.clients.RecommendationService
 import io.opentelemetry.android.demo.shop.ui.products.RecommendedSection
@@ -41,7 +42,7 @@ fun CartScreen(
                 contentAlignment = Alignment.TopEnd
             ) {
                 OutlinedButton(
-                    onClick = { cartViewModel.clearCart() },
+                    onClick = { clearCart(cartViewModel) },
                     modifier = Modifier
                 ) {
                     Text("Empty Cart", color = Color.Red)
@@ -89,4 +90,15 @@ fun CartScreen(
             RecommendedSection(recommendedProducts = recommendedProducts, onProductClick = onProductClick)
         }
     }
+}
+
+private fun clearCart(cartViewModel: CartViewModel) {
+    generateEmptiedCartEvent(cartViewModel)
+    cartViewModel.clearCart()
+}
+
+private fun generateEmptiedCartEvent(cartViewModel: CartViewModel) {
+    val eventBuilder = OtelDemoApplication.eventBuilder("otel.demo.app", "cart.emptied")
+    eventBuilder.put("cart.total.value", cartViewModel.getTotalPrice())
+        .emit()
 }
