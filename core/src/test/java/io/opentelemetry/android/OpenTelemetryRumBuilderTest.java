@@ -44,9 +44,9 @@ import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleServi
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.incubator.events.EventLogger;
-import io.opentelemetry.api.incubator.logs.AnyValue;
-import io.opentelemetry.api.incubator.logs.KeyAnyValue;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerBuilder;
 import io.opentelemetry.api.logs.LoggerProvider;
@@ -61,7 +61,6 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
-import io.opentelemetry.sdk.logs.internal.AnyValueBody;
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
@@ -185,10 +184,10 @@ public class OpenTelemetryRumBuilderTest {
                         equalTo(stringKey("mega"), "hit"))
                 .hasResource(resource);
 
-        AnyValue<?> bodyValue = ((AnyValueBody) logs.get(0).getBody()).asAnyValue();
-        List<KeyAnyValue> payload = (List<KeyAnyValue>) bodyValue.getValue();
+        Value<?> bodyValue = logs.get(0).getBodyValue();
+        List<KeyValue> payload = (List<KeyValue>) bodyValue.getValue();
         assertThat(payload).hasSize(1);
-        KeyAnyValue expected = KeyAnyValue.of("body.field", AnyValue.of("foo"));
+        KeyValue expected = KeyValue.of("body.field", Value.of("foo"));
         assertThat(payload.get(0)).isEqualTo(expected);
     }
 
