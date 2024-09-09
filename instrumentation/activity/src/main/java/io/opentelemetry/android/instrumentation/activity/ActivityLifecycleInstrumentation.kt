@@ -35,6 +35,7 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
         application: Application,
         openTelemetryRum: OpenTelemetryRum,
     ) {
+        startupTimer.start(openTelemetryRum.openTelemetry.getTracer(INSTRUMENTATION_SCOPE))
         application.registerActivityLifecycleCallbacks(startupTimer.createLifecycleCallback())
         application.registerActivityLifecycleCallbacks(buildActivityLifecycleTracer(openTelemetryRum))
     }

@@ -22,4 +22,5 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.opentelemetry.instrumentation.api)
+    testImplementation(libs.robolectric)
 }
