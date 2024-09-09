@@ -20,7 +20,7 @@ A span associated with a given request is concluded in the following scenarios:
 - When the getInputStream()/getErrorStream() APIs are called, the span concludes after the stream is fully read, an IOException is encountered, or the stream is closed.
 - When the disconnect API is called.
 
-Spans won't be automatically ended and reported otherwise. If any of your URLConnection requests do not call the span concluding APIs mentioned above, refer the section entitled ["Scheduling Harvester Thread"](#scheduling-harvester-thread). This section provides guidance on setting up a recurring thread that identifies unreported, idle connections (those that have been read from but have been inactive for more than 10 seconds) and concludes any open spans associated with them.
+Spans won't be automatically ended and reported otherwise. If any of your URLConnection requests do not call the span concluding APIs mentioned above, refer the section entitled ["Scheduling Harvester Thread"](#scheduling-harvester-thread). This section provides guidance on setting up a recurring thread that identifies unreported, idle connections and ends/reports any open spans associated with them. Idle connections are those that have been read from previously but have been inactive for a particular configurable time interval (defaults to 10 seconds).
 
 > The minimum supported Android SDK version is 21, though it will also instrument APIs added in the Android SDK version 24 when running on devices with API level 24 and above.
 
@@ -62,12 +62,15 @@ byteBuddy("io.opentelemetry.android:httpurlconnection-agent:AUTO_HTTP_URL_INSTRU
 
 #### Scheduling Harvester Thread
 
-To schedule a periodically running thread to conclude spans on any unreported, idle connections, add the below code in the function where your application starts ( that could be onCreate() method of first Activity/Fragment/Service):
+To schedule a periodically running thread to conclude/report spans on any unreported, idle connections, add the below code in the function where your application starts ( that could be onCreate() method of first Activity/Fragment/Service):
 ```Java
+HttpUrlInstrumentationConfig.setConnectionInactivityTimeoutMs(customTimeoutValue); //This is optional. Replace customTimeoutValue with a long data type value which denotes the connection inactivity timeout in milli seconds. Defaults to 10000ms
 Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(HttpUrlInstrumentationConfig.getReportIdleConnectionRunnable(), 0, HttpUrlInstrumentationConfig.getReportIdleConnectionInterval(), TimeUnit.MILLISECONDS);
 ```
 
-`HttpUrlInstrumentationConfig.getReportIdleConnectionRunnable()` is the API to get the runnable. `HttpUrlInstrumentationConfig.getReportIdleConnectionInterval()` is the API to get the fixed interval (10s) in milli seconds.
+- `HttpUrlInstrumentationConfig.getReportIdleConnectionRunnable()` is the API to get the runnable.
+- By default, connections inactive for 10000ms are reported. To optionally change the connection inactivity timeout call `HttpUrlInstrumentationConfig.setConnectionInactivityTimeoutMs(customTimeoutValue)` API as shown in above code snippet.
+- It is efficient to run the harvester thread at the same time interval as the connection inactivity timeout used to identify the connections to be reported. `HttpUrlInstrumentationConfig.getReportIdleConnectionInterval()` is the API to get the same connection inactivity timeout interval (milliseconds) you have configured or the default value of 10000ms if not configured.
 
 #### Other Optional Configurations
 You can optionally configure the automatic instrumentation by using the setters in [HttpUrlInstrumentationConfig](library/src/main/java/io/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlInstrumentationConfig.java).

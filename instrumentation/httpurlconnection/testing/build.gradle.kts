@@ -3,6 +3,10 @@ plugins {
     id("net.bytebuddy.byte-buddy-gradle-plugin")
 }
 
+android {
+    namespace = "io.opentelemetry.android.httpurlconnection.test"
+}
+
 dependencies {
     byteBuddy(project(":instrumentation:httpurlconnection:agent"))
     implementation(project(":instrumentation:httpurlconnection:library"))
