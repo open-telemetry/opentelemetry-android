@@ -12,7 +12,7 @@ import io.opentelemetry.android.internal.initialization.InitializationEvents
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.incubator.logs.AnyValue
+import io.opentelemetry.api.common.Value
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import java.time.Instant
@@ -78,7 +78,7 @@ class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { 
     private fun addEvent(
         name: String,
         attr: Attributes? = null,
-        body: AnyValue<*>? = null,
+        body: Value<*>? = null,
     ) {
         events.add(Event(clock.get(), name, attr, body))
     }
@@ -87,6 +87,6 @@ class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { 
         val timestamp: Instant,
         val name: String,
         val attributes: Attributes?,
-        val body: AnyValue<*>? = null,
+        val body: Value<*>? = null,
     )
 }
