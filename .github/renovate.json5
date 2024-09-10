@@ -18,6 +18,15 @@
       "allowedVersions": "!/\\-SNAPSHOT$/"
     },
     {
+      // Group updates from otel java core repo, so that x.y.z and x.y.z-alpha
+      // are updated together.
+      "matchPackageNames": [
+        "io.opentelemetry:opentelemetry-*",
+      ],
+      "extractVersion": "^(?<version>\\d+\\.\\d+\\.\\d+)(-alpha)?",
+      "groupName": "otel-core"
+    },
+    {
       // navigation-fragment 2.7.0 and above require android api 34+, which we are not ready for
       // yet due to android gradle plugin only supporting min 33.
       "matchPackagePrefixes": ["androidx.navigation"],
