@@ -1,6 +1,6 @@
 [versions]
 opentelemetry = "1.42.1"
-opentelemetry-alpha = "1.42.1-alpha"
+opentelemetry-alpha = "1.42.1"
 opentelemetry-instrumentation = "2.7.0"
 opentelemetry-instrumentation-alpha = "2.7.0-alpha"
 opentelemetry-semconv = "1.25.0-alpha"
