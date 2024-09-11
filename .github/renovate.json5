@@ -29,6 +29,7 @@
         "io.opentelemetry:opentelemetry-sdk-testing",
         "io.opentelemetry:opentelemetry-sdk-extension-incubator"
       ],
+      "ignoreUnstable": false,
       "groupName": "otel-core"
     },
     {
