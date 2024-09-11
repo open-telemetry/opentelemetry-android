@@ -23,6 +23,9 @@ import io.opentelemetry.android.demo.shop.ui.components.UpPressButton
 import androidx.compose.ui.Alignment
 import io.opentelemetry.android.demo.shop.clients.ProductCatalogClient
 import io.opentelemetry.android.demo.shop.clients.RecommendationService
+import io.opentelemetry.android.demo.shop.ui.components.ConfirmCrashPopup
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 @Composable
 fun ProductDetails(
@@ -83,14 +86,7 @@ fun ProductDetails(
             Spacer(modifier = Modifier.height(32.dp))
             QuantityChooser(quantity = quantity, onQuantityChange = { quantity = it })
             Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = { cartViewModel.addProduct(product, quantity) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                Text(text = "Add to Cart")
-            }
+            AddToCartButton(cartViewModel = cartViewModel, product = product, quantity = quantity)
             Spacer(modifier = Modifier.height(32.dp))
             RecommendedSection(recommendedProducts = recommendedProducts, onProductClick = onProductClick)
         }
@@ -103,5 +99,69 @@ fun ProductDetails(
         )
     }
 }
+
+@Composable
+fun AddToCartButton(
+    cartViewModel: CartViewModel,
+    product: Product,
+    quantity: Int
+) {
+
+    var showPopup by remember { mutableStateOf(false) }
+
+    Button(
+        onClick = {
+            if (product.id == "OLJCESPC7Z" && quantity == 10) {
+                showPopup = true
+            } else {
+                cartViewModel.addProduct(product, quantity)
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        Text(text = "Add to Cart")
+    }
+
+    if (showPopup) {
+        ConfirmCrashPopup(
+            onConfirm = {
+                multiThreadCrashing()
+            },
+            onDismiss = {
+                showPopup = false
+            }
+        )
+    }
+}
+
+fun multiThreadCrashing(numThreads : Int = 4) {
+    val latch = CountDownLatch(1)
+
+    for (i in 0..numThreads) {
+        val thread = Thread {
+            try {
+                if (latch.await(10, TimeUnit.SECONDS)) {
+                    throw IllegalStateException("Failure from thread ${Thread.currentThread().name}")
+                }
+            } catch (e: InterruptedException) {
+                throw RuntimeException(e)
+            }
+        }
+        thread.name = "crash-thread-$i"
+        thread.start()
+    }
+
+    try {
+        Thread.sleep(100)
+    } catch (e: InterruptedException) {
+        Thread.currentThread().interrupt()
+        return
+    }
+    latch.countDown()
+}
+
+
 
 
