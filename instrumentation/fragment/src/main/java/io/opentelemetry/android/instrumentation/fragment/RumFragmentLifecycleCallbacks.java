@@ -92,7 +92,7 @@ public class RumFragmentLifecycleCallbacks extends FragmentManager.FragmentLifec
     @Override
     public void onFragmentPaused(@NonNull FragmentManager fm, @NonNull Fragment f) {
         super.onFragmentPaused(fm, f);
-        getTracer(f).startSpanIfNoneInProgress("Paused").addEvent("fragmentPaused");
+        getTracer(f).startSpanIfNoneInProgress("Paused").addEvent("fragmentPaused").endActiveSpan();
     }
 
     @Override
