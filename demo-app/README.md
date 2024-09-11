@@ -35,7 +35,7 @@ The OpenTelemetry Android Demo App currently supports the following features:
   - Can be observed in the "About OpenTelemetry Android" activity, entered via "Learn more" on the main screen.
 
 * Crash Reporting  
-  - App crashes are automatically reported.
+  - Automatically detects and reports a crash of the application.
   - In order to crash the demo app, try to add to cart exactly 10 National Park Foundation Explorascopes (first product on the list after clicking "Go shopping") and click "Yes, I'm sure." on the alert pop-up. This will cause a multi-threaded crash of the app.
   - Note: The crash is reported as an event and isn't visible in the Jaeger UI, only in the collector output.
 
