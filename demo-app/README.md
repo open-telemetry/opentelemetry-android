@@ -34,6 +34,11 @@ The OpenTelemetry Android Demo App currently supports the following features:
   - Provides detailed insights into each lifecycle phase.
   - Can be observed in the "About OpenTelemetry Android" activity, entered via "Learn more" on the main screen.
 
+* Crash Reporting  
+  - App crashes are automatically reported.
+  - In order to crash the demo app, try to add to cart exactly 10 National Park Foundation Explorascopes (first product on the list after clicking "Go shopping") and click "Yes, I'm sure." on the alert pop-up. This will cause a multi-threaded crash of the app.
+  - Note: The crash is reported as an event and isn't visible in the Jaeger UI, only in the collector output.
+
 * ANR Detection
   - Automatically detects and reports ANRs in the app.
   - ANR events are captured as spans with detailed stack traces, providing insights into the exact operations that caused the ANR.
@@ -52,9 +57,6 @@ The OpenTelemetry Android Demo App currently supports the following features:
 
 ### Known Gaps
 As of now, there are a few areas where the instrumentation might not be comprehensive:
-
-* Crash Reporting  
-App crashes are automatically reported, but the app currently does not include any features that intentionally trigger crashes.
 
 * HTTP Client Instrumentation  
 OpenTelemetry Android supports automatic instrumentation for HTTP client libraries. This feature captures spans for HTTP requests with details. However, the demo app does not currently demonstrate this feature as it doesn't make any network requests.
