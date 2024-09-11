@@ -18,12 +18,17 @@
       "allowedVersions": "!/\\-SNAPSHOT$/"
     },
     {
-      // Group updates from otel java core repo, so that x.y.z and x.y.z-alpha
-      // are updated together.
+      // Group updates from otel java core repo
       "matchPackageNames": [
-        "io.opentelemetry:opentelemetry-*",
+        "io.opentelemetry:opentelemetry-api",
+        "io.opentelemetry:opentelemetry-api-incubator",
+        "io.opentelemetry:opentelemetry-context",
+        "io.opentelemetry:opentelemetry-exporter-logging",
+        "io.opentelemetry:opentelemetry-exporter-otlp",
+        "io.opentelemetry:opentelemetry-sdk",
+        "io.opentelemetry:opentelemetry-sdk-testing",
+        "io.opentelemetry:opentelemetry-sdk-extension-incubator"
       ],
-      "extractVersion": "^(?<version>\\d+\\.\\d+\\.\\d+)(-alpha)?",
       "groupName": "otel-core"
     },
     {
