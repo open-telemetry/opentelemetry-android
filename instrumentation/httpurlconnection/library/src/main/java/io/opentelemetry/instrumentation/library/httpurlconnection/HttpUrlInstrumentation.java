@@ -5,28 +5,33 @@
 
 package io.opentelemetry.instrumentation.library.httpurlconnection;
 
+import android.app.Application;
+import com.google.auto.service.AutoService;
+import io.opentelemetry.android.OpenTelemetryRum;
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceResolver;
 import io.opentelemetry.instrumentation.api.internal.HttpConstants;
+import io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.jetbrains.annotations.NotNull;
 
-/** Configuration for automatic instrumentation of HttpURLConnection/HttpsURLConnection requests. */
-public final class HttpUrlInstrumentationConfig {
-    private static List<String> capturedRequestHeaders = new ArrayList<>();
-    private static List<String> capturedResponseHeaders = new ArrayList<>();
-    private static Set<String> knownMethods = HttpConstants.KNOWN_METHODS;
-    private static Map<String, String> peerServiceMapping = new HashMap<>();
-    private static boolean emitExperimentalHttpClientMetrics;
+/** Instrumentation for HttpURLConnection requests. */
+@AutoService(AndroidInstrumentation.class)
+public class HttpUrlInstrumentation implements AndroidInstrumentation {
+    private List<String> capturedRequestHeaders = new ArrayList<>();
+    private List<String> capturedResponseHeaders = new ArrayList<>();
+    private Set<String> knownMethods = HttpConstants.KNOWN_METHODS;
+    private Map<String, String> peerServiceMapping = new HashMap<>();
+    private boolean emitExperimentalHttpClientMetrics;
 
     // Time (ms) to wait before assuming that an idle connection is no longer
     // in use and should be reported.
-    private static long connectionInactivityTimeoutMs = 10000;
-
-    private HttpUrlInstrumentationConfig() {}
+    private long connectionInactivityTimeoutMs = 10000;
 
     /**
      * Configures the HTTP request headers that will be captured as span attributes as described in
@@ -40,11 +45,11 @@ public final class HttpUrlInstrumentationConfig {
      *
      * @param requestHeaders A list of HTTP header names.
      */
-    public static void setCapturedRequestHeaders(List<String> requestHeaders) {
-        HttpUrlInstrumentationConfig.capturedRequestHeaders = new ArrayList<>(requestHeaders);
+    public void setCapturedRequestHeaders(List<String> requestHeaders) {
+        capturedRequestHeaders = new ArrayList<>(requestHeaders);
     }
 
-    public static List<String> getCapturedRequestHeaders() {
+    public List<String> getCapturedRequestHeaders() {
         return capturedRequestHeaders;
     }
 
@@ -60,11 +65,11 @@ public final class HttpUrlInstrumentationConfig {
      *
      * @param responseHeaders A list of HTTP header names.
      */
-    public static void setCapturedResponseHeaders(List<String> responseHeaders) {
-        HttpUrlInstrumentationConfig.capturedResponseHeaders = new ArrayList<>(responseHeaders);
+    public void setCapturedResponseHeaders(List<String> responseHeaders) {
+        capturedResponseHeaders = new ArrayList<>(responseHeaders);
     }
 
-    public static List<String> getCapturedResponseHeaders() {
+    public List<String> getCapturedResponseHeaders() {
         return capturedResponseHeaders;
     }
 
@@ -83,11 +88,11 @@ public final class HttpUrlInstrumentationConfig {
      *
      * @param knownMethods A set of recognized HTTP request methods.
      */
-    public static void setKnownMethods(Set<String> knownMethods) {
-        HttpUrlInstrumentationConfig.knownMethods = new HashSet<>(knownMethods);
+    public void setKnownMethods(Set<String> knownMethods) {
+        this.knownMethods = new HashSet<>(knownMethods);
     }
 
-    public static Set<String> getKnownMethods() {
+    public Set<String> getKnownMethods() {
         return knownMethods;
     }
 
@@ -96,11 +101,11 @@ public final class HttpUrlInstrumentationConfig {
      * href="https://github.com/open-telemetry/opentelemetry-specification/blob/4f23dce407b6fcaba34a049df7c3d41cdd58cb77/specification/trace/semantic_conventions/span-general.md#general-remote-service-attributes">the
      * specification</a>.
      */
-    public static void setPeerServiceMapping(Map<String, String> peerServiceMapping) {
-        HttpUrlInstrumentationConfig.peerServiceMapping = new HashMap<>(peerServiceMapping);
+    public void setPeerServiceMapping(Map<String, String> peerServiceMapping) {
+        this.peerServiceMapping = new HashMap<>(peerServiceMapping);
     }
 
-    public static PeerServiceResolver newPeerServiceResolver() {
+    public PeerServiceResolver newPeerServiceResolver() {
         return PeerServiceResolver.create(peerServiceMapping);
     }
 
@@ -109,14 +114,18 @@ public final class HttpUrlInstrumentationConfig {
      * href="https://github.com/open-telemetry/opentelemetry-specification/blob/4f23dce407b6fcaba34a049df7c3d41cdd58cb77/specification/metrics/semantic_conventions/http-metrics.md#http-client">the
      * experimental HTTP client metrics</a>.
      */
-    public static void setEmitExperimentalHttpClientMetrics(
-            boolean emitExperimentalHttpClientMetrics) {
-        HttpUrlInstrumentationConfig.emitExperimentalHttpClientMetrics =
-                emitExperimentalHttpClientMetrics;
+    public void setEmitExperimentalHttpClientMetrics(boolean emitExperimentalHttpClientMetrics) {
+        this.emitExperimentalHttpClientMetrics = emitExperimentalHttpClientMetrics;
     }
 
-    public static boolean emitExperimentalHttpClientMetrics() {
+    public boolean emitExperimentalHttpClientMetrics() {
         return emitExperimentalHttpClientMetrics;
+    }
+
+    @Override
+    public void install(
+            @NotNull Application application, @NotNull OpenTelemetryRum openTelemetryRum) {
+        HttpUrlConnectionSingletons.configure(this, openTelemetryRum.getOpenTelemetry());
     }
 
     /**
@@ -135,11 +144,11 @@ public final class HttpUrlInstrumentationConfig {
      * @param timeoutMs the timeout period in milliseconds. Must be non-negative.
      * @throws IllegalArgumentException if {@code timeoutMs} is negative.
      */
-    public static void setConnectionInactivityTimeoutMs(long timeoutMs) {
+    public void setConnectionInactivityTimeoutMs(long timeoutMs) {
         if (timeoutMs < 0) {
             throw new IllegalArgumentException("timeoutMs must be non-negative");
         }
-        HttpUrlInstrumentationConfig.connectionInactivityTimeoutMs = timeoutMs;
+        connectionInactivityTimeoutMs = timeoutMs;
     }
 
     /**
@@ -150,8 +159,8 @@ public final class HttpUrlInstrumentationConfig {
      *
      * @param timeoutMsForTesting the timeout period in milliseconds.
      */
-    public static void setConnectionInactivityTimeoutMsForTesting(long timeoutMsForTesting) {
-        HttpUrlInstrumentationConfig.connectionInactivityTimeoutMs = timeoutMsForTesting;
+    public void setConnectionInactivityTimeoutMsForTesting(long timeoutMsForTesting) {
+        connectionInactivityTimeoutMs = timeoutMsForTesting;
     }
 
     /**
@@ -161,7 +170,7 @@ public final class HttpUrlInstrumentationConfig {
      *
      * @return The idle connection reporting runnable
      */
-    public static Runnable getReportIdleConnectionRunnable() {
+    public Runnable getReportIdleConnectionRunnable() {
         return new Runnable() {
             @Override
             public void run() {
@@ -181,7 +190,7 @@ public final class HttpUrlInstrumentationConfig {
      *
      * @return The interval duration in ms
      */
-    public static long getReportIdleConnectionInterval() {
+    public long getReportIdleConnectionInterval() {
         return connectionInactivityTimeoutMs;
     }
 }

@@ -5,12 +5,10 @@
 
 package io.opentelemetry.instrumentation.library.httpurlconnection;
 
-import static io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons.instrumenter;
-import static io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons.openTelemetryInstance;
-
 import android.annotation.SuppressLint;
 import android.os.SystemClock;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons;
 import io.opentelemetry.instrumentation.library.httpurlconnection.internal.RequestPropertySetter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -268,7 +266,8 @@ public class HttpUrlReplacements {
         HttpURLConnectionInfo info = activeURLConnections.get(connection);
         if (info != null && !info.reported) {
             Context context = info.context;
-            instrumenter().end(context, connection, responseCode, error);
+            HttpUrlConnectionSingletons.instrumenter()
+                    .end(context, connection, responseCode, error);
             info.reported = true;
             activeURLConnections.remove(connection);
         }
@@ -276,12 +275,13 @@ public class HttpUrlReplacements {
 
     private static void startTracingAtFirstConnection(URLConnection connection) {
         Context parentContext = Context.current();
-        if (!instrumenter().shouldStart(parentContext, connection)) {
+        if (!HttpUrlConnectionSingletons.instrumenter().shouldStart(parentContext, connection)) {
             return;
         }
 
         if (!activeURLConnections.containsKey(connection)) {
-            Context context = instrumenter().start(parentContext, connection);
+            Context context =
+                    HttpUrlConnectionSingletons.instrumenter().start(parentContext, connection);
             activeURLConnections.put(connection, new HttpURLConnectionInfo(context));
             try {
                 injectContextToRequest(connection, context);
@@ -301,7 +301,7 @@ public class HttpUrlReplacements {
     }
 
     private static void injectContextToRequest(URLConnection connection, Context context) {
-        openTelemetryInstance()
+        HttpUrlConnectionSingletons.openTelemetryInstance()
                 .getPropagators()
                 .getTextMapPropagator()
                 .inject(context, connection, RequestPropertySetter.INSTANCE);
