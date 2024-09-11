@@ -11,11 +11,11 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equal
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.android.session.Session;
+import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.incubator.events.EventLogger;
-import io.opentelemetry.api.incubator.logs.KeyAnyValue;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.logs.internal.AnyValueBody;
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import java.util.List;
@@ -49,12 +49,12 @@ class SessionIdEventSenderTest {
         assertThat(log)
                 .hasAttributesSatisfyingExactly(equalTo(stringKey("event.name"), "session.start"));
 
-        AnyValueBody body = (AnyValueBody) log.getBody();
-        List<KeyAnyValue> kvBody = (List<KeyAnyValue>) body.asAnyValue().getValue();
+        Value<List<KeyValue>> body = (Value<List<KeyValue>>) log.getBodyValue();
+        List<KeyValue> kvBody = body.getValue();
         assertThat(kvBody.get(0).getKey()).isEqualTo("session.previous_id");
-        assertThat(kvBody.get(0).getAnyValue().asString()).isEqualTo("666");
+        assertThat(kvBody.get(0).getValue().asString()).isEqualTo("666");
         assertThat(kvBody.get(1).getKey()).isEqualTo("session.id");
-        assertThat(kvBody.get(1).getAnyValue().asString()).isEqualTo("123");
+        assertThat(kvBody.get(1).getValue().asString()).isEqualTo("123");
     }
 
     @Test
@@ -69,9 +69,9 @@ class SessionIdEventSenderTest {
         assertThat(log)
                 .hasAttributesSatisfyingExactly(equalTo(stringKey("event.name"), "session.end"));
 
-        AnyValueBody body = (AnyValueBody) log.getBody();
-        List<KeyAnyValue> kvBody = (List<KeyAnyValue>) body.asAnyValue().getValue();
+        Value<List<KeyValue>> body = (Value<List<KeyValue>>) log.getBodyValue();
+        List<KeyValue> kvBody = body.getValue();
         assertThat(kvBody.get(0).getKey()).isEqualTo("session.id");
-        assertThat(kvBody.get(0).getAnyValue().asString()).isEqualTo("123");
+        assertThat(kvBody.get(0).getValue().asString()).isEqualTo("123");
     }
 }
