@@ -74,20 +74,20 @@ fun InfoFieldsSection(
 @Composable
 fun InfoScreen(
     onPlaceOrderClick: () -> Unit,
-    upPress: () -> Unit,
-    checkoutInfoViewModel: CheckoutInfoViewModel
+    upPress: () -> Unit
 ) {
-    val shippingInfo = checkoutInfoViewModel.shippingInfo
-    val paymentInfo = checkoutInfoViewModel.paymentInfo
+    var shippingInfo by remember { mutableStateOf(ShippingInfo()) }
+    var paymentInfo by remember { mutableStateOf(PaymentInfo()) }
 
     val focusManager = LocalFocusManager.current
-    val canProceed = checkoutInfoViewModel.canProceedToCheckout()
+    val canProceed = shippingInfo.isComplete() && paymentInfo.isComplete()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -99,12 +99,12 @@ fun InfoScreen(
 
             InfoFieldsSection(
                 fields = listOf(
-                    Triple("E-mail Address", shippingInfo.email) { checkoutInfoViewModel.updateShippingInfo(shippingInfo.copy(email = it)) },
-                    Triple("Street Address", shippingInfo.streetAddress) { checkoutInfoViewModel.updateShippingInfo(shippingInfo.copy(streetAddress = it)) },
-                    Triple("Zip Code", shippingInfo.zipCode) { checkoutInfoViewModel.updateShippingInfo(shippingInfo.copy(zipCode = it)) },
-                    Triple("City", shippingInfo.city) { checkoutInfoViewModel.updateShippingInfo(shippingInfo.copy(city = it)) },
-                    Triple("State", shippingInfo.state) { checkoutInfoViewModel.updateShippingInfo(shippingInfo.copy(state = it)) },
-                    Triple("Country", shippingInfo.country) { checkoutInfoViewModel.updateShippingInfo(shippingInfo.copy(country = it)) }
+                    Triple("E-mail Address", shippingInfo.email) { shippingInfo = shippingInfo.copy(email = it) },
+                    Triple("Street Address", shippingInfo.streetAddress) { shippingInfo = shippingInfo.copy(streetAddress = it) },
+                    Triple("Zip Code", shippingInfo.zipCode) { shippingInfo = shippingInfo.copy(zipCode = it) },
+                    Triple("City", shippingInfo.city) { shippingInfo = shippingInfo.copy(city = it) },
+                    Triple("State", shippingInfo.state) { shippingInfo = shippingInfo.copy(state = it) },
+                    Triple("Country", shippingInfo.country) { shippingInfo = shippingInfo.copy(country = it) }
                 )
             )
 
@@ -114,19 +114,17 @@ fun InfoScreen(
 
             InfoFieldsSection(
                 fields = listOf(
-                    Triple("Credit Card Number", paymentInfo.creditCardNumber) { checkoutInfoViewModel.updatePaymentInfo(paymentInfo.copy(creditCardNumber = it)) },
-                    Triple("Month", paymentInfo.expiryMonth) { checkoutInfoViewModel.updatePaymentInfo(paymentInfo.copy(expiryMonth = it)) },
-                    Triple("Year", paymentInfo.expiryYear) { checkoutInfoViewModel.updatePaymentInfo(paymentInfo.copy(expiryYear = it)) },
-                    Triple("CVV", paymentInfo.cvv) { checkoutInfoViewModel.updatePaymentInfo(paymentInfo.copy(cvv = it)) }
+                    Triple("Credit Card Number", paymentInfo.creditCardNumber) { paymentInfo = paymentInfo.copy(creditCardNumber = it) },
+                    Triple("Month", paymentInfo.expiryMonth) { paymentInfo = paymentInfo.copy(expiryMonth = it) },
+                    Triple("Year", paymentInfo.expiryYear) { paymentInfo = paymentInfo.copy(expiryYear = it) },
+                    Triple("CVV", paymentInfo.cvv) { paymentInfo = paymentInfo.copy(cvv = it) }
                 )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = {
-                    onPlaceOrderClick()
-                },
+                onClick = onPlaceOrderClick,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = canProceed
             ) {
