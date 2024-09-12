@@ -17,7 +17,7 @@ fun ConfirmCrashPopup(
             Text(text = "Are you sure?")
         },
         text = {
-            Text(text = "This may crash the app.")
+            Text(text = "This will crash the app.")
         },
         confirmButton = {
             TextButton(onClick = { onConfirm() }) {
