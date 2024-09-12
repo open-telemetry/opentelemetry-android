@@ -19,32 +19,6 @@ import io.opentelemetry.android.demo.shop.ui.components.UpPressButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
 
-data class ShippingInfo(
-    var email: String = "",
-    var streetAddress: String = "",
-    var zipCode: String = "",
-    var city: String = "",
-    var state: String = "",
-    var country: String = ""
-) {
-    fun isComplete(): Boolean {
-        return arrayOf(email, streetAddress, zipCode, city, state, country)
-            .all { it.isNotBlank() }
-    }
-}
-
-data class PaymentInfo(
-    var creditCardNumber: String = "",
-    var expiryMonth: String = "",
-    var expiryYear: String = "",
-    var cvv: String = ""
-) {
-    fun isComplete(): Boolean {
-        return arrayOf(creditCardNumber, expiryMonth, expiryYear, cvv)
-            .all { it.isNotBlank() }
-    }
-}
-
 @Composable
 fun InfoField(
     value: String,
@@ -99,6 +73,7 @@ fun InfoFieldsSection(
 
 @Composable
 fun InfoScreen(
+    onPlaceOrderClick: () -> Unit,
     upPress: () -> Unit
 ) {
     var shippingInfo by remember { mutableStateOf(ShippingInfo()) }
@@ -112,7 +87,7 @@ fun InfoScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // Content inside a Column
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -149,11 +124,11 @@ fun InfoScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { /*TODO Handle*/ },
+                onClick = onPlaceOrderClick,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = canProceed
             ) {
-                Text("Proceed")
+                Text("Place Order")
             }
         }
 
