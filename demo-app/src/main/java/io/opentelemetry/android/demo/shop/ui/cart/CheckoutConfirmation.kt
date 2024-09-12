@@ -16,8 +16,9 @@ import io.opentelemetry.android.demo.shop.ui.products.ProductCard
 @Composable
 fun CheckoutConfirmationScreen(
     cartViewModel: CartViewModel,
-//    shippingInfo: ShippingInfo
+    checkoutInfoViewModel: CheckoutInfoViewModel
 ) {
+    val shippingInfo = checkoutInfoViewModel.shippingInfo
 
     Column(
         modifier = Modifier
@@ -79,31 +80,31 @@ fun CheckoutConfirmationScreen(
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color.Black
                 )
-//                Text(
-//                    text = "Street: ${shippingInfo.streetAddress}",
-//                    style = MaterialTheme.typography.bodyMedium,
-//                    color = Color.Black
-//                )
-//                Text(
-//                    text = "City: ${shippingInfo.city}",
-//                    style = MaterialTheme.typography.bodyMedium,
-//                    color = Color.Black
-//                )
-//                Text(
-//                    text = "State: ${shippingInfo.state}",
-//                    style = MaterialTheme.typography.bodyMedium,
-//                    color = Color.Black
-//                )
-//                Text(
-//                    text = "Zip Code: ${shippingInfo.zipCode}",
-//                    style = MaterialTheme.typography.bodyMedium,
-//                    color = Color.Black
-//                )
-//                Text(
-//                    text = "Country: ${shippingInfo.country}",
-//                    style = MaterialTheme.typography.bodyMedium,
-//                    color = Color.Black
-//                )
+                Text(
+                    text = "Street: ${shippingInfo.streetAddress}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Black
+                )
+                Text(
+                    text = "City: ${shippingInfo.city}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Black
+                )
+                Text(
+                    text = "State: ${shippingInfo.state}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Black
+                )
+                Text(
+                    text = "Zip Code: ${shippingInfo.zipCode}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Black
+                )
+                Text(
+                    text = "Country: ${shippingInfo.country}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Black
+                )
             }
         }
 
