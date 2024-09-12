@@ -76,7 +76,7 @@ fun InfoFieldsSection(
 fun InfoScreen(
     onPlaceOrderClick: () -> Unit,
     upPress: () -> Unit,
-    checkoutInfoViewModel: CheckoutInfoViewModel = viewModel()
+    checkoutInfoViewModel: CheckoutInfoViewModel
 ) {
     val shippingInfo by remember { mutableStateOf(checkoutInfoViewModel.shippingInfo) }
     val paymentInfo by remember { mutableStateOf(checkoutInfoViewModel.paymentInfo) }
