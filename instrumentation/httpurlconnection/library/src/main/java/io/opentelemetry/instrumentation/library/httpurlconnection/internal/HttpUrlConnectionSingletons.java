@@ -24,7 +24,7 @@ public final class HttpUrlConnectionSingletons {
 
     private static Instrumenter<URLConnection, Integer> instrumenter;
     private static final String INSTRUMENTATION_NAME =
-            "io.opentelemetry.android.http-urHttpClientPeerServiceAttributesExtractorl-connection";
+            "io.opentelemetry.android.http-url-connection";
     private static OpenTelemetry openTelemetryInstance;
 
     public static void configure(

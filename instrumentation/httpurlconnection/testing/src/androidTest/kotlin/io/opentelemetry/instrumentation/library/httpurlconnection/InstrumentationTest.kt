@@ -88,18 +88,24 @@ class InstrumentationTest {
     @Test
     fun testHttpUrlConnectionGetRequest_WhenNoStreamFetchedAndNoDisconnectCalledButHarvesterScheduled_ShouldBeTraced() {
         executeGet("http://httpbin.org/get", false, false)
-        // setting a -1ms connection inactivity timeout for testing to ensure harvester sees it as 1ms elapsed
-        // and we don't have to include any wait timers in the test. 0ms does not work as the time difference
-        // between last connection activity and harvester time elapsed check is much lesser than 1ms due to
-        // our high speed modern CPUs.
+
+        // no span created without harvester thread
+        assertThat(openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size).isEqualTo(0)
+
         val instrumentation =
             getInstrumentation(
                 HttpUrlInstrumentation::class.java,
             )
+        // setting a -1ms connection inactivity timeout for testing to ensure harvester sees it as 1ms elapsed
+        // and we don't have to include any wait timers in the test. 0ms does not work as the time difference
+        // between last connection activity and harvester time elapsed check is much lesser than 1ms due to
+        // our high speed modern CPUs.
         instrumentation?.setConnectionInactivityTimeoutMsForTesting(-1)
         // Running the harvester runnable once instead of scheduling it to run periodically,
         // so we can synchronously assert instead of waiting for another threads execution to finish
         instrumentation?.getReportIdleConnectionRunnable()?.run()
+
+        // span created with harvester thread
         assertThat(openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size).isEqualTo(1)
     }
 }
