@@ -5,11 +5,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.opentelemetry.android.demo.shop.ui.products.ProductCard
 
@@ -26,7 +26,6 @@ fun CheckoutConfirmationScreen(
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-
         Text(
             text = "Your order is complete!",
             style = MaterialTheme.typography.titleLarge.copy(fontSize = 24.sp),
@@ -45,18 +44,27 @@ fun CheckoutConfirmationScreen(
                 .padding(bottom = 32.dp)
         )
 
-        cartViewModel.cartItems.collectAsState().value.firstOrNull()?.let { cartItem ->
+        val cartItems = cartViewModel.cartItems.collectAsState().value
+        cartItems.forEach { cartItem ->
             ProductCard(
                 product = cartItem.product,
                 onProductClick = {},
                 isNarrow = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp)
+                    .padding(vertical = 8.dp)
             )
 
             Text(
-                text = "Total: $${cartViewModel.getTotalPrice()}",
+                text = "Quantity: ${cartItem.quantity}",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
+            )
+
+            Text(
+                text = "Total: $${String.format("%.2f", cartItem.totalPrice())}",
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -64,6 +72,15 @@ fun CheckoutConfirmationScreen(
                 textAlign = TextAlign.End
             )
         }
+
+        Text(
+            text = "Grand Total: $${cartViewModel.getTotalPrice()}",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp, bottom = 16.dp),
+            textAlign = TextAlign.End
+        )
 
         Card(
             modifier = Modifier

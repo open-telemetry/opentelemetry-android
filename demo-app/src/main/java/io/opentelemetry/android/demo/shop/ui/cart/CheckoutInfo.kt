@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import io.opentelemetry.android.demo.shop.ui.components.UpPressButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun InfoField(
@@ -126,7 +125,6 @@ fun InfoScreen(
 
             Button(
                 onClick = {
-                    // Proceed to the next screen when clicked
                     onPlaceOrderClick()
                 },
                 modifier = Modifier.fillMaxWidth(),
