@@ -6,6 +6,7 @@
   "packageRules": [
     {
       "matchPackageNames": [
+        "io.opentelemetry.contrib:opentelemetry-disk-buffering",
         "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha",
         "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator",
         "io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0"
@@ -18,12 +19,18 @@
       "allowedVersions": "!/\\-SNAPSHOT$/"
     },
     {
-      // Group updates from otel java core repo, so that x.y.z and x.y.z-alpha
-      // are updated together.
+      // Group updates from otel java core repo
       "matchPackageNames": [
-        "io.opentelemetry:opentelemetry-*",
+        "io.opentelemetry:opentelemetry-api",
+        "io.opentelemetry:opentelemetry-api-incubator",
+        "io.opentelemetry:opentelemetry-context",
+        "io.opentelemetry:opentelemetry-exporter-logging",
+        "io.opentelemetry:opentelemetry-exporter-otlp",
+        "io.opentelemetry:opentelemetry-sdk",
+        "io.opentelemetry:opentelemetry-sdk-testing",
+        "io.opentelemetry:opentelemetry-sdk-extension-incubator"
       ],
-      "extractVersion": "^(?<version>\\d+\\.\\d+\\.\\d+)(-alpha)?",
+      "ignoreUnstable": false,
       "groupName": "otel-core"
     },
     {
