@@ -64,15 +64,28 @@ byteBuddy("io.opentelemetry.android:httpurlconnection-agent:AUTO_HTTP_URL_INSTRU
 
 To schedule a periodically running thread to conclude/report spans on any unreported, idle connections, add the below code in the function where your application starts ( that could be onCreate() method of first Activity/Fragment/Service):
 ```Java
-HttpUrlInstrumentationConfig.setConnectionInactivityTimeoutMs(customTimeoutValue); //This is optional. Replace customTimeoutValue with a long data type value which denotes the connection inactivity timeout in milli seconds. Defaults to 10000ms
-Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(HttpUrlInstrumentationConfig.getReportIdleConnectionRunnable(), 0, HttpUrlInstrumentationConfig.getReportIdleConnectionInterval(), TimeUnit.MILLISECONDS);
+HttpUrlInstrumentation instrumentation = AndroidInstrumentationLoader.getInstrumentation(HttpUrlInstrumentation.class);
+instrumentation.setConnectionInactivityTimeoutMs(customTimeoutValue); //This is optional. Replace customTimeoutValue with a long data type value which denotes the connection inactivity timeout in milli seconds. Defaults to 10000ms
+Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(instrumentation.getReportIdleConnectionRunnable(), 0, instrumentation.getReportIdleConnectionInterval(), TimeUnit.MILLISECONDS);
 ```
 
-- `HttpUrlInstrumentationConfig.getReportIdleConnectionRunnable()` is the API to get the runnable.
-- By default, connections inactive for 10000ms are reported. To optionally change the connection inactivity timeout call `HttpUrlInstrumentationConfig.setConnectionInactivityTimeoutMs(customTimeoutValue)` API as shown in above code snippet.
-- It is efficient to run the harvester thread at the same time interval as the connection inactivity timeout used to identify the connections to be reported. `HttpUrlInstrumentationConfig.getReportIdleConnectionInterval()` is the API to get the same connection inactivity timeout interval (milliseconds) you have configured or the default value of 10000ms if not configured.
+- `instrumentation.getReportIdleConnectionRunnable()` is the API to get the runnable.
+- By default, connections inactive for 10000ms are reported. To optionally change the connection inactivity timeout call `instrumentation.setConnectionInactivityTimeoutMs(customTimeoutValue)` API as shown in above code snippet.
+- It is efficient to run the harvester thread at the same time interval as the connection inactivity timeout used to identify the connections to be reported. `instrumentation.getReportIdleConnectionInterval()` is the API to get the same connection inactivity timeout interval (milliseconds) you have configured or the default value of 10000ms if not configured.
 
 #### Other Optional Configurations
-You can optionally configure the automatic instrumentation by using the setters in [HttpUrlInstrumentationConfig](library/src/main/java/io/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlInstrumentationConfig.java).
+You can optionally configure the automatic instrumentation by using the setters from [HttpUrlInstrumentation](library/src/main/java/io/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlInstrumentation.java)
+instance provided via the AndroidInstrumentationLoader as shown below:
+
+```java
+HttpUrlInstrumentation instrumentation = AndroidInstrumentationLoader.getInstrumentation(HttpUrlInstrumentation.class);
+
+// Call `instrumentation` setters.
+```
+
+> [!NOTE]
+> You must make sure to apply any configurations **before** initializing your OpenTelemetryRum
+> instance (i.e. calling OpenTelemetryRum.builder()...build()). Otherwise your configs won't be
+> taken into account during the RUM initialization process.
 
 After adding the plugin and the dependencies to your project, and after doing the required configurations, your requests will be traced automatically.
