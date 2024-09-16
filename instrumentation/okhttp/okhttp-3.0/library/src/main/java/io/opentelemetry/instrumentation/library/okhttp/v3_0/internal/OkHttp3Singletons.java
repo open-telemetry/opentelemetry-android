@@ -32,7 +32,7 @@ public final class OkHttp3Singletons {
 
     public static void configure(
             OkHttpInstrumentation instrumentation, OpenTelemetry openTelemetry) {
-        Instrumenter<Request, Response> instrumenter =
+        Instrumenter<Interceptor.Chain, Response> instrumenter =
                 OkHttpClientInstrumenterBuilderFactory.create(openTelemetry)
                         .setCapturedRequestHeaders(instrumentation.getCapturedRequestHeaders())
                         .setCapturedResponseHeaders(instrumentation.getCapturedResponseHeaders())
