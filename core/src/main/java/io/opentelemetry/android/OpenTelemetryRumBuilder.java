@@ -334,8 +334,7 @@ public final class OpenTelemetryRumBuilder {
         Preferences preferences = serviceManager.getPreferences();
         CacheStorage storage = serviceManager.getCacheStorage();
         DiskBufferingConfiguration config = this.config.getDiskBufferingConfiguration();
-        DiskManager diskManager =
-                new DiskManager(storage, preferences, config);
+        DiskManager diskManager = new DiskManager(storage, preferences, config);
         return StorageConfiguration.builder()
                 .setRootDir(diskManager.getSignalsBufferDir())
                 .setMaxFileSize(diskManager.getMaxCacheFileSize())

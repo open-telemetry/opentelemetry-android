@@ -5,12 +5,11 @@
 
 package io.opentelemetry.android.features.diskbuffering;
 
+import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduleHandler;
+import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduleHandler;
-import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 
 /** Configuration for disk buffering. */
 public final class DiskBufferingConfiguration {
@@ -80,27 +79,24 @@ public final class DiskBufferingConfiguration {
             return this;
         }
 
-        /**
-         * Sets the max amount of time a file can receive new data. Default is 30 seconds.
-         */
+        /** Sets the max amount of time a file can receive new data. Default is 30 seconds. */
         public Builder setMaxFileAgeForWriteMillis(long maxFileAgeForWriteMillis) {
             this.maxFileAgeForWriteMillis = maxFileAgeForWriteMillis;
             return this;
         }
 
         /**
-         * Sets the min amount of time that must pass before a file is read. This value
-         * must be greater than maxFileAgeForWriteMillis.
+         * Sets the min amount of time that must pass before a file is read. This value must be
+         * greater than maxFileAgeForWriteMillis.
          */
         public Builder setMinFileAgeForReadMillis(long minFileAgeForReadMillis) {
             this.minFileAgeForReadMillis = minFileAgeForReadMillis;
             return this;
         }
 
-
         /**
-         * Sets the max age in ms for which a file is considered not-stale. Files
-         * older than this will be dropped.
+         * Sets the max age in ms for which a file is considered not-stale. Files older than this
+         * will be dropped.
          */
         public Builder setMaxFileAgeForReadMillis(long maxFileAgeForReadMillis) {
             this.maxFileAgeForReadMillis = maxFileAgeForReadMillis;
@@ -128,10 +124,18 @@ public final class DiskBufferingConfiguration {
 
         public DiskBufferingConfiguration build() {
             // See note in StorageConfiguration.getMinFileAgeForReadMillis()
-            if(minFileAgeForReadMillis <= maxFileAgeForWriteMillis){
+            if (minFileAgeForReadMillis <= maxFileAgeForWriteMillis) {
                 Logger logger = Logger.getLogger(DiskBufferingConfiguration.class.getName());
-                logger.log(Level.WARNING, "minFileAgeForReadMillis must be greater than maxFileAgeForWriteMillis");
-                logger.log(Level.WARNING, "overriding minFileAgeForReadMillis from " + minFileAgeForReadMillis + " to " + minFileAgeForReadMillis + 5);
+                logger.log(
+                        Level.WARNING,
+                        "minFileAgeForReadMillis must be greater than maxFileAgeForWriteMillis");
+                logger.log(
+                        Level.WARNING,
+                        "overriding minFileAgeForReadMillis from "
+                                + minFileAgeForReadMillis
+                                + " to "
+                                + minFileAgeForReadMillis
+                                + 5);
                 minFileAgeForReadMillis = maxFileAgeForWriteMillis + 5;
             }
             return new DiskBufferingConfiguration(this);
