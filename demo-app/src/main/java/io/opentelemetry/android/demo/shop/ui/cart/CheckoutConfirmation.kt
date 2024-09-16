@@ -7,17 +7,34 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import io.opentelemetry.android.demo.shop.ui.products.ProductCard
+import java.util.Locale
 
 @Composable
 fun CheckoutConfirmationScreen(
     cartViewModel: CartViewModel,
     checkoutInfoViewModel: CheckoutInfoViewModel
 ) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE || event == Lifecycle.Event.ON_STOP) {
+                cartViewModel.clearCart()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
     val shippingInfo = checkoutInfoViewModel.shippingInfo
 
     Column(
@@ -28,7 +45,7 @@ fun CheckoutConfirmationScreen(
     ) {
         Text(
             text = "Your order is complete!",
-            style = MaterialTheme.typography.titleLarge.copy(fontSize = 24.sp),
+            fontSize = 24.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()
@@ -37,7 +54,7 @@ fun CheckoutConfirmationScreen(
 
         Text(
             text = "We've sent you a confirmation email.",
-            style = MaterialTheme.typography.bodyMedium,
+            fontSize = 18.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()
@@ -46,36 +63,43 @@ fun CheckoutConfirmationScreen(
 
         val cartItems = cartViewModel.cartItems.collectAsState().value
         cartItems.forEach { cartItem ->
-            ProductCard(
-                product = cartItem.product,
-                onProductClick = {},
-                isNarrow = true,
+            Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            )
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ProductCard(
+                    product = cartItem.product,
+                    onProductClick = {},
+                    modifier = Modifier
+                        .width(300.dp)
+                        .height(170.dp),
+                    isNarrow = true
+                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Quantity: ${cartItem.quantity}",
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                    )
 
-            Text(
-                text = "Quantity: ${cartItem.quantity}",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
-            )
-
-            Text(
-                text = "Total: $${String.format("%.2f", cartItem.totalPrice())}",
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                textAlign = TextAlign.End
-            )
+                    Text(
+                        text = "Total: \$${String.format(Locale.US, "%.2f", cartItem.totalPrice())}",
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .padding(8.dp),
+                    )
+                }
+            }
         }
 
         Text(
-            text = "Grand Total: $${cartViewModel.getTotalPrice()}",
-            style = MaterialTheme.typography.titleMedium,
+            text = "Total Price: \$${String.format(Locale.US, "%.2f", cartViewModel.getTotalPrice())}",
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp, bottom = 16.dp),
@@ -86,7 +110,6 @@ fun CheckoutConfirmationScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.LightGray)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -94,45 +117,24 @@ fun CheckoutConfirmationScreen(
             ) {
                 Text(
                     text = "Shipping Data",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Black
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "Street: ${shippingInfo.streetAddress}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Black
                 )
                 Text(
                     text = "City: ${shippingInfo.city}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Black
                 )
                 Text(
                     text = "State: ${shippingInfo.state}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Black
                 )
                 Text(
                     text = "Zip Code: ${shippingInfo.zipCode}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Black
                 )
                 Text(
                     text = "Country: ${shippingInfo.country}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Black
                 )
             }
-        }
-
-        Button(
-            onClick = { /* TODO Handle continue shopping action */ },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-                .align(Alignment.CenterHorizontally)
-        ) {
-            Text(text = "Continue Shopping")
         }
     }
 }
