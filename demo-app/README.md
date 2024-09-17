@@ -55,7 +55,7 @@ The OpenTelemetry Android Demo App currently supports the following features:
   - Provides access to the OpenTelemetry APIs for manual instrumentation, allowing developers to create custom spans and events as needed.
   - See `OtelDemoApplication.kt` for an example of a tracer and an event builder initialization.
   - In the app, custom span is emitted in `MainOtelButton.kt` after clicking on the OpenTelemetry logo button.
-  - Custom spans are emitted:
+  - Custom events are emitted:
     - in `MainOtelButton.kt` after clicking on the OpenTelemetry logo button,
     - in `Navigation.kt` for screen changes in the app,
     - in `AstronomyShopActivity.kt` after placing an order in the shop,
