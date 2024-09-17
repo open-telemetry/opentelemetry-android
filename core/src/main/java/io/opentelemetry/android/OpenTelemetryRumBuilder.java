@@ -333,12 +333,15 @@ public final class OpenTelemetryRumBuilder {
             throws IOException {
         Preferences preferences = serviceManager.getPreferences();
         CacheStorage storage = serviceManager.getCacheStorage();
-        DiskManager diskManager =
-                new DiskManager(storage, preferences, config.getDiskBufferingConfiguration());
+        DiskBufferingConfiguration config = this.config.getDiskBufferingConfiguration();
+        DiskManager diskManager = new DiskManager(storage, preferences, config);
         return StorageConfiguration.builder()
+                .setRootDir(diskManager.getSignalsBufferDir())
                 .setMaxFileSize(diskManager.getMaxCacheFileSize())
                 .setMaxFolderSize(diskManager.getMaxFolderSize())
-                .setRootDir(diskManager.getSignalsBufferDir())
+                .setMaxFileAgeForWriteMillis(config.getMaxFileAgeForWriteMillis())
+                .setMaxFileAgeForReadMillis(config.getMaxFileAgeForReadMillis())
+                .setMinFileAgeForReadMillis(config.getMinFileAgeForReadMillis())
                 .setTemporaryFileProvider(
                         new SimpleTemporaryFileProvider(diskManager.getTemporaryDir()))
                 .build();
