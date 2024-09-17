@@ -77,8 +77,8 @@ fun InfoScreen(
     upPress: () -> Unit,
     checkoutInfoViewModel: CheckoutInfoViewModel
 ) {
-    val shippingInfo by remember { mutableStateOf(checkoutInfoViewModel.shippingInfo) }
-    val paymentInfo by remember { mutableStateOf(checkoutInfoViewModel.paymentInfo) }
+    val shippingInfo = checkoutInfoViewModel.shippingInfo
+    val paymentInfo = checkoutInfoViewModel.paymentInfo
 
     val focusManager = LocalFocusManager.current
     val canProceed = checkoutInfoViewModel.canProceedToCheckout()
