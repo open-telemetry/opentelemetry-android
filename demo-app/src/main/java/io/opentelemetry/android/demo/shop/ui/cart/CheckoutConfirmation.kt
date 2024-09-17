@@ -35,6 +35,7 @@ fun CheckoutConfirmationScreen(
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
+
     val shippingInfo = checkoutInfoViewModel.shippingInfo
 
     Column(
@@ -53,7 +54,7 @@ fun CheckoutConfirmationScreen(
         )
 
         Text(
-            text = "We've sent you a confirmation email.",
+            text = "We've sent a confirmation email to ${shippingInfo.email}.",
             fontSize = 18.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier
