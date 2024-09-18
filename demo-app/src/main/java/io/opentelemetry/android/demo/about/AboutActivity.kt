@@ -1,10 +1,8 @@
 package io.opentelemetry.android.demo.about
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import io.opentelemetry.android.demo.MainActivity
 import io.opentelemetry.android.demo.R
 
 class AboutActivity : AppCompatActivity() {
