@@ -26,6 +26,7 @@ object MainDestinations {
     const val PRODUCT_DETAIL_ROUTE = "product"
     const val PRODUCT_ID_KEY = "productId"
     const val CHECKOUT_INFO_ROUTE = "checkout-info"
+    const val CHECKOUT_CONFIRMATION_ROUTE = "checkout-confirmation"
 }
 
 @Composable
@@ -52,6 +53,10 @@ class AstronomyShopNavController(
 
     fun navigateToCheckoutInfo(){
         navController.navigate(MainDestinations.CHECKOUT_INFO_ROUTE)
+    }
+
+    fun navigateToCheckoutConfirmation(){
+        navController.navigate(MainDestinations.CHECKOUT_CONFIRMATION_ROUTE)
     }
 }
 
@@ -80,6 +85,14 @@ class InstrumentedAstronomyShopNavController(
         delegate.navigateToCheckoutInfo()
         generateNavigationEvent(
             eventName = "navigate.to.checkout.info",
+            payload = emptyMap()
+        )
+    }
+
+    fun navigateToCheckoutConfirmation() {
+        delegate.navigateToCheckoutConfirmation()
+        generateNavigationEvent(
+            eventName = "navigate.to.checkout.confirmation",
             payload = emptyMap()
         )
     }

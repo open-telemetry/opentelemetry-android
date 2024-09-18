@@ -31,6 +31,8 @@ import io.opentelemetry.android.demo.shop.ui.products.ProductDetails
 import io.opentelemetry.android.demo.shop.ui.products.ProductList
 import io.opentelemetry.android.demo.shop.ui.cart.CartViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.opentelemetry.android.demo.shop.ui.cart.CheckoutConfirmationScreen
+import io.opentelemetry.android.demo.shop.ui.cart.CheckoutInfoViewModel
 import io.opentelemetry.android.demo.shop.ui.cart.InfoScreen
 
 class AstronomyShopActivity : AppCompatActivity() {
@@ -49,6 +51,8 @@ fun AstronomyShopScreen() {
     val context = LocalContext.current
     val astronomyShopNavController = rememberAstronomyShopNavController()
     val cartViewModel: CartViewModel = viewModel()
+    val checkoutInfoViewModel: CheckoutInfoViewModel = viewModel()
+
     DemoAppTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -102,7 +106,17 @@ fun AstronomyShopScreen() {
                         }
                     }
                     composable(MainDestinations.CHECKOUT_INFO_ROUTE) {
-                        InfoScreen(upPress = {astronomyShopNavController.upPress()})
+                        InfoScreen(
+                            onPlaceOrderClick = {astronomyShopNavController.navigateToCheckoutConfirmation()},
+                            upPress = {astronomyShopNavController.upPress()},
+                            checkoutInfoViewModel = checkoutInfoViewModel
+                        )
+                    }
+                    composable(MainDestinations.CHECKOUT_CONFIRMATION_ROUTE){
+                        CheckoutConfirmationScreen(
+                            cartViewModel = cartViewModel,
+                            checkoutInfoViewModel = checkoutInfoViewModel
+                        )
                     }
                 }
             }
