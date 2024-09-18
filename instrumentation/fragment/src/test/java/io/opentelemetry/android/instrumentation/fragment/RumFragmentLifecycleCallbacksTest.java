@@ -134,10 +134,12 @@ class RumFragmentLifecycleCallbacksTest {
         FragmentCallbackTestHarness testHarness = getFragmentCallbackTestHarness();
 
         Fragment fragment = mock(Fragment.class);
+        // calls onFragmentPaused() and onFragmentStopped()
         testHarness.runFragmentPausedLifecycle(fragment);
 
         List<SpanData> spans = otelTesting.getSpans();
-        assertEquals(1, spans.size());
+        // one paused, one stopped
+        assertEquals(2, spans.size());
 
         SpanData spanData = spans.get(0);
 
@@ -150,9 +152,22 @@ class RumFragmentLifecycleCallbacksTest {
         assertNull(spanData.getAttributes().get(LAST_SCREEN_NAME_KEY));
 
         List<EventData> events = spanData.getEvents();
-        assertEquals(2, events.size());
+        assertEquals(1, events.size());
         checkEventExists(events, "fragmentPaused");
-        checkEventExists(events, "fragmentStopped");
+
+        SpanData stopSpan = spans.get(1);
+
+        assertEquals("Stopped", stopSpan.getName());
+        assertEquals(
+                fragment.getClass().getSimpleName(),
+                stopSpan.getAttributes().get(FragmentTracer.FRAGMENT_NAME_KEY));
+        assertEquals(
+                fragment.getClass().getSimpleName(), stopSpan.getAttributes().get(SCREEN_NAME_KEY));
+        assertNull(stopSpan.getAttributes().get(LAST_SCREEN_NAME_KEY));
+
+        List<EventData> stopEvents = stopSpan.getEvents();
+        assertEquals(1, stopEvents.size());
+        checkEventExists(stopEvents, "fragmentStopped");
     }
 
     @Test
@@ -163,9 +178,11 @@ class RumFragmentLifecycleCallbacksTest {
         testHarness.runFragmentDetachedFromActiveLifecycle(fragment);
 
         List<SpanData> spans = otelTesting.getSpans();
-        assertEquals(3, spans.size());
+
+        assertEquals(4, spans.size());
 
         SpanData pauseSpan = spans.get(0);
+        SpanData stopSpan = spans.get(1);
 
         assertEquals("Paused", pauseSpan.getName());
         assertEquals(
@@ -177,11 +194,22 @@ class RumFragmentLifecycleCallbacksTest {
         assertNull(pauseSpan.getAttributes().get(LAST_SCREEN_NAME_KEY));
 
         List<EventData> events = pauseSpan.getEvents();
-        assertEquals(2, events.size());
+        assertEquals(1, events.size());
         checkEventExists(events, "fragmentPaused");
-        checkEventExists(events, "fragmentStopped");
 
-        SpanData destroyViewSpan = spans.get(1);
+        assertEquals("Stopped", stopSpan.getName());
+        assertEquals(
+                fragment.getClass().getSimpleName(),
+                stopSpan.getAttributes().get(FragmentTracer.FRAGMENT_NAME_KEY));
+        assertEquals(
+                fragment.getClass().getSimpleName(), stopSpan.getAttributes().get(SCREEN_NAME_KEY));
+        assertNull(stopSpan.getAttributes().get(LAST_SCREEN_NAME_KEY));
+
+        List<EventData> stopEvents = stopSpan.getEvents();
+        assertEquals(1, stopEvents.size());
+        checkEventExists(stopEvents, "fragmentStopped");
+
+        SpanData destroyViewSpan = spans.get(2);
 
         assertEquals("ViewDestroyed", destroyViewSpan.getName());
         assertEquals(
@@ -196,7 +224,7 @@ class RumFragmentLifecycleCallbacksTest {
         assertEquals(1, events.size());
         checkEventExists(events, "fragmentViewDestroyed");
 
-        SpanData detachSpan = spans.get(2);
+        SpanData detachSpan = spans.get(3);
 
         assertEquals("Destroyed", detachSpan.getName());
         assertNotNull(detachSpan.getAttributes().get(FragmentTracer.FRAGMENT_NAME_KEY));
