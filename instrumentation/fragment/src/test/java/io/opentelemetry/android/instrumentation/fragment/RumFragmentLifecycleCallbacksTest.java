@@ -202,8 +202,7 @@ class RumFragmentLifecycleCallbacksTest {
                 fragment.getClass().getSimpleName(),
                 stopSpan.getAttributes().get(FragmentTracer.FRAGMENT_NAME_KEY));
         assertEquals(
-                fragment.getClass().getSimpleName(),
-                stopSpan.getAttributes().get(SCREEN_NAME_KEY));
+                fragment.getClass().getSimpleName(), stopSpan.getAttributes().get(SCREEN_NAME_KEY));
         assertNull(stopSpan.getAttributes().get(LAST_SCREEN_NAME_KEY));
 
         List<EventData> stopEvents = stopSpan.getEvents();
