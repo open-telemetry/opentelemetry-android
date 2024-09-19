@@ -6,7 +6,6 @@
 package io.opentelemetry.android.demo.shop.ui
 
 import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -23,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import io.opentelemetry.android.demo.MainActivity
 import io.opentelemetry.android.demo.shop.clients.ProductCatalogClient
 import io.opentelemetry.android.demo.theme.DemoAppTheme
 import io.opentelemetry.android.demo.shop.ui.cart.CartScreen
@@ -70,8 +68,6 @@ fun AstronomyShopScreen() {
                             }
                         },
                         onExitClicked = {
-                            val intent = Intent(context, MainActivity::class.java)
-                            context.startActivity(intent)
                             (context as? Activity)?.finish()
                         }
                     )
