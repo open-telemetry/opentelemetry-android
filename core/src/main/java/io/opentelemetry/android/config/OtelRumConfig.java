@@ -6,11 +6,8 @@
 package io.opentelemetry.android.config;
 
 import io.opentelemetry.android.ScreenAttributesSpanProcessor;
-import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
-import io.opentelemetry.api.common.Attributes;
 import java.time.Duration;
-import java.util.function.Supplier;
 
 /**
  * Configuration object for OpenTelemetry Android. The configuration items in this class will be
@@ -19,36 +16,11 @@ import java.util.function.Supplier;
  */
 public class OtelRumConfig {
 
-    private Supplier<Attributes> globalAttributesSupplier = Attributes::empty;
     private boolean includeNetworkAttributes = true;
     private boolean generateSdkInitializationEvents = true;
     private boolean includeScreenAttributes = true;
     private boolean discoverInstrumentations = true;
-    private DiskBufferingConfiguration diskBufferingConfiguration =
-            DiskBufferingConfiguration.builder().build();
     private Duration sessionTimeout = Duration.ofMinutes(15);
-
-    /**
-     * Configures the set of global attributes to emit with every span and event. Any existing
-     * configured attributes will be dropped. Default = none.
-     */
-    public OtelRumConfig setGlobalAttributes(Attributes attributes) {
-        return setGlobalAttributes(() -> attributes);
-    }
-
-    public OtelRumConfig setGlobalAttributes(Supplier<Attributes> globalAttributesSupplier) {
-        this.globalAttributesSupplier = globalAttributesSupplier;
-        return this;
-    }
-
-    public boolean hasGlobalAttributes() {
-        Attributes attributes = globalAttributesSupplier.get();
-        return attributes != null && !attributes.isEmpty();
-    }
-
-    public Supplier<Attributes> getGlobalAttributesSupplier() {
-        return globalAttributesSupplier;
-    }
 
     /**
      * Disables the collection of runtime network attributes. See {@link CurrentNetworkProvider} for
@@ -98,10 +70,6 @@ public class OtelRumConfig {
         return includeScreenAttributes;
     }
 
-    public DiskBufferingConfiguration getDiskBufferingConfiguration() {
-        return diskBufferingConfiguration;
-    }
-
     /**
      * Return {@link Boolean#TRUE} if the RUM initialization should look for instrumentations in the
      * classpath and apply them automatically.
@@ -117,17 +85,6 @@ public class OtelRumConfig {
      */
     public OtelRumConfig disableInstrumentationDiscovery() {
         discoverInstrumentations = false;
-        return this;
-    }
-
-    /**
-     * Sets the parameters for caching signals in disk in order to export them later.
-     *
-     * @return this
-     */
-    public OtelRumConfig setDiskBufferingConfiguration(
-            DiskBufferingConfiguration diskBufferingConfiguration) {
-        this.diskBufferingConfiguration = diskBufferingConfiguration;
         return this;
     }
 

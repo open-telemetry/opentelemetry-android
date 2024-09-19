@@ -26,6 +26,7 @@ import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.android.session.SessionManager;
 import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -56,6 +57,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
@@ -83,6 +85,9 @@ public final class OpenTelemetryRumBuilder {
             logRecordExporterCustomizer = a -> a;
     private Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer =
             (a) -> a;
+    private Supplier<Attributes> globalAttributesSupplier = Attributes::empty;
+    private DiskBufferingConfiguration diskBufferingConfiguration =
+            DiskBufferingConfiguration.builder().build();
 
     private Resource resource;
 
@@ -124,6 +129,36 @@ public final class OpenTelemetryRumBuilder {
      */
     public OpenTelemetryRumBuilder mergeResource(Resource resource) {
         this.resource = this.resource.merge(resource);
+        return this;
+    }
+
+    /**
+     * Configures the set of global attributes to emit with every span and event. Any existing
+     * configured attributes will be dropped. Default = none.
+     */
+    public OpenTelemetryRumBuilder setGlobalAttributes(Attributes attributes) {
+        return setGlobalAttributes(() -> attributes);
+    }
+
+    public OpenTelemetryRumBuilder setGlobalAttributes(
+            Supplier<Attributes> globalAttributesSupplier) {
+        this.globalAttributesSupplier = globalAttributesSupplier;
+        return this;
+    }
+
+    private boolean hasGlobalAttributes() {
+        Attributes attributes = globalAttributesSupplier.get();
+        return attributes != null && !attributes.isEmpty();
+    }
+
+    /**
+     * Sets the parameters for caching signals in disk in order to export them later.
+     *
+     * @return this
+     */
+    public OpenTelemetryRumBuilder setDiskBufferingConfiguration(
+            DiskBufferingConfiguration diskBufferingConfiguration) {
+        this.diskBufferingConfiguration = diskBufferingConfiguration;
         return this;
     }
 
@@ -273,8 +308,6 @@ public final class OpenTelemetryRumBuilder {
         InitializationEvents initializationEvents = InitializationEvents.get();
         applyConfiguration(serviceManager, initializationEvents);
 
-        DiskBufferingConfiguration diskBufferingConfiguration =
-                config.getDiskBufferingConfiguration();
         SpanExporter spanExporter = buildSpanExporter();
         LogRecordExporter logsExporter = buildLogsExporter();
         SignalFromDiskExporter signalFromDiskExporter = null;
@@ -333,15 +366,15 @@ public final class OpenTelemetryRumBuilder {
             throws IOException {
         Preferences preferences = serviceManager.getPreferences();
         CacheStorage storage = serviceManager.getCacheStorage();
-        DiskBufferingConfiguration config = this.config.getDiskBufferingConfiguration();
-        DiskManager diskManager = new DiskManager(storage, preferences, config);
+        DiskManager diskManager = new DiskManager(storage, preferences, diskBufferingConfiguration);
         return StorageConfiguration.builder()
                 .setRootDir(diskManager.getSignalsBufferDir())
                 .setMaxFileSize(diskManager.getMaxCacheFileSize())
                 .setMaxFolderSize(diskManager.getMaxFolderSize())
-                .setMaxFileAgeForWriteMillis(config.getMaxFileAgeForWriteMillis())
-                .setMaxFileAgeForReadMillis(config.getMaxFileAgeForReadMillis())
-                .setMinFileAgeForReadMillis(config.getMinFileAgeForReadMillis())
+                .setMaxFileAgeForWriteMillis(
+                        diskBufferingConfiguration.getMaxFileAgeForWriteMillis())
+                .setMaxFileAgeForReadMillis(diskBufferingConfiguration.getMaxFileAgeForReadMillis())
+                .setMinFileAgeForReadMillis(diskBufferingConfiguration.getMinFileAgeForReadMillis())
                 .setTemporaryFileProvider(
                         new SimpleTemporaryFileProvider(diskManager.getTemporaryDir()))
                 .build();
@@ -386,10 +419,10 @@ public final class OpenTelemetryRumBuilder {
         initializationEvents.sdkInitializationStarted();
 
         // Global attributes
-        if (config.hasGlobalAttributes()) {
+        if (hasGlobalAttributes()) {
             // Add span processor that appends global attributes.
             GlobalAttributesSpanAppender appender =
-                    GlobalAttributesSpanAppender.create(config.getGlobalAttributesSupplier());
+                    GlobalAttributesSpanAppender.create(globalAttributesSupplier);
             addTracerProviderCustomizer(
                     (tracerProviderBuilder, app) ->
                             tracerProviderBuilder.addSpanProcessor(appender));
@@ -443,8 +476,7 @@ public final class OpenTelemetryRumBuilder {
         SdkLoggerProviderBuilder loggerProviderBuilder =
                 SdkLoggerProvider.builder()
                         .addLogRecordProcessor(
-                                new GlobalAttributesLogRecordAppender(
-                                        config.getGlobalAttributesSupplier()))
+                                new GlobalAttributesLogRecordAppender(globalAttributesSupplier))
                         .setResource(resource);
         LogRecordProcessor batchLogsProcessor =
                 BatchLogRecordProcessor.builder(logsExporter).build();
