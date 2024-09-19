@@ -293,11 +293,16 @@ public final class OpenTelemetryRumBuilder {
                 StorageConfiguration storageConfiguration =
                         createStorageConfiguration(serviceManager);
                 final SpanExporter originalSpanExporter = spanExporter;
-                spanExporter =
-                        SpanToDiskExporter.create(originalSpanExporter, storageConfiguration);
+                if (originalSpanExporter != null) {
+                    spanExporter =
+                            SpanToDiskExporter.create(originalSpanExporter, storageConfiguration);
+                }
                 final LogRecordExporter originalLogsExporter = logsExporter;
-                logsExporter =
-                        LogRecordToDiskExporter.create(originalLogsExporter, storageConfiguration);
+                if (originalLogsExporter != null) {
+                    logsExporter =
+                            LogRecordToDiskExporter.create(
+                                    originalLogsExporter, storageConfiguration);
+                }
                 final MetricExporter originalMetricExporter = metricExporter;
                 if (originalMetricExporter != null) {
                     metricExporter =
@@ -307,15 +312,11 @@ public final class OpenTelemetryRumBuilder {
                                     metricExporter::getAggregationTemporality);
                 }
                 signalFromDiskExporter =
-                        new SignalFromDiskExporter(
-                                SpanFromDiskExporter.create(
-                                        originalSpanExporter, storageConfiguration),
-                                (originalMetricExporter != null)
-                                        ? MetricFromDiskExporter.create(
-                                                originalMetricExporter, storageConfiguration)
-                                        : null,
-                                LogRecordFromDiskExporter.create(
-                                        originalLogsExporter, storageConfiguration));
+                        getSignalFromDiskExporter(
+                                storageConfiguration,
+                                originalSpanExporter,
+                                originalMetricExporter,
+                                originalLogsExporter);
             } catch (IOException e) {
                 Log.e(RumConstants.OTEL_RUM_LOG_TAG, "Could not initialize disk exporters.", e);
             }
@@ -348,6 +349,24 @@ public final class OpenTelemetryRumBuilder {
                         serviceManager);
         instrumentations.forEach(delegate::addInstrumentation);
         return delegate.build();
+    }
+
+    private static SignalFromDiskExporter getSignalFromDiskExporter(
+            StorageConfiguration storageConfiguration,
+            @Nullable SpanExporter spanExporter,
+            @Nullable MetricExporter metricExporter,
+            @Nullable LogRecordExporter logRecordExporter)
+            throws IOException {
+        return new SignalFromDiskExporter(
+                (spanExporter != null)
+                        ? SpanFromDiskExporter.create(spanExporter, storageConfiguration)
+                        : null,
+                (metricExporter != null)
+                        ? MetricFromDiskExporter.create(metricExporter, storageConfiguration)
+                        : null,
+                (logRecordExporter != null)
+                        ? LogRecordFromDiskExporter.create(logRecordExporter, storageConfiguration)
+                        : null);
     }
 
     private StorageConfiguration createStorageConfiguration(ServiceManager serviceManager)
@@ -443,14 +462,19 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private SdkTracerProvider buildTracerProvider(
-            SessionProvider sessionProvider, Application application, SpanExporter spanExporter) {
+            SessionProvider sessionProvider,
+            Application application,
+            @Nullable SpanExporter spanExporter) {
         SdkTracerProviderBuilder tracerProviderBuilder =
                 SdkTracerProvider.builder()
                         .setResource(resource)
                         .addSpanProcessor(new SessionIdSpanAppender(sessionProvider));
 
-        BatchSpanProcessor batchSpanProcessor = BatchSpanProcessor.builder(spanExporter).build();
-        tracerProviderBuilder.addSpanProcessor(batchSpanProcessor);
+        if (spanExporter != null) {
+            BatchSpanProcessor batchSpanProcessor =
+                    BatchSpanProcessor.builder(spanExporter).build();
+            tracerProviderBuilder.addSpanProcessor(batchSpanProcessor);
+        }
 
         for (BiFunction<SdkTracerProviderBuilder, Application, SdkTracerProviderBuilder>
                 customizer : tracerProviderCustomizers) {
@@ -460,15 +484,17 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private SdkLoggerProvider buildLoggerProvider(
-            Application application, LogRecordExporter logsExporter) {
+            Application application, @Nullable LogRecordExporter logsExporter) {
         SdkLoggerProviderBuilder loggerProviderBuilder =
                 SdkLoggerProvider.builder()
                         .addLogRecordProcessor(
                                 new GlobalAttributesLogRecordAppender(globalAttributesSupplier))
                         .setResource(resource);
-        LogRecordProcessor batchLogsProcessor =
-                BatchLogRecordProcessor.builder(logsExporter).build();
-        loggerProviderBuilder.addLogRecordProcessor(batchLogsProcessor);
+        if (logsExporter != null) {
+            LogRecordProcessor batchLogsProcessor =
+                    BatchLogRecordProcessor.builder(logsExporter).build();
+            loggerProviderBuilder.addLogRecordProcessor(batchLogsProcessor);
+        }
         for (BiFunction<SdkLoggerProviderBuilder, Application, SdkLoggerProviderBuilder>
                 customizer : loggerProviderCustomizers) {
             loggerProviderBuilder = customizer.apply(loggerProviderBuilder, application);
