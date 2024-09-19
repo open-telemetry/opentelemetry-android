@@ -6,5 +6,15 @@
 package io.opentelemetry.android.session
 
 interface SessionProvider {
-    fun getSessionId(): String
+    companion object {
+        @JvmStatic
+        val noop: SessionProvider =
+            object : SessionProvider {
+                override fun getSessionId(): String? {
+                    return null
+                }
+            }
+    }
+
+    fun getSessionId(): String?
 }

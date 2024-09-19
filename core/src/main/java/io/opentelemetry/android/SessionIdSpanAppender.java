@@ -23,7 +23,10 @@ final class SessionIdSpanAppender implements SpanProcessor {
 
     @Override
     public void onStart(Context parentContext, ReadWriteSpan span) {
-        span.setAttribute(SESSION_ID, sessionProvider.getSessionId());
+        String sessionId = sessionProvider.getSessionId();
+        if (sessionId != null) {
+            span.setAttribute(SESSION_ID, sessionId);
+        }
     }
 
     @Override

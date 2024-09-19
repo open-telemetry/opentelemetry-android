@@ -23,7 +23,6 @@ import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordApp
 import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.ServiceManager;
-import io.opentelemetry.android.session.SessionManager;
 import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.common.Attributes;
@@ -81,10 +80,10 @@ public final class OpenTelemetryRumBuilder {
     private final OtelRumConfig config;
     private final List<AndroidInstrumentation> instrumentations = new ArrayList<>();
     private final List<Consumer<OpenTelemetrySdk>> otelSdkReadyListeners = new ArrayList<>();
-    private final SessionIdTimeoutHandler timeoutHandler;
-    private SpanExporter spanExporter;
-    private LogRecordExporter logRecordExporter;
-    private MetricExporter metricExporter;
+    private SessionProvider sessionProvider = SessionProvider.getNoop();
+    @Nullable private SpanExporter spanExporter;
+    @Nullable private LogRecordExporter logRecordExporter;
+    @Nullable private MetricExporter metricExporter;
     private Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer =
             (a) -> a;
     private Supplier<Attributes> globalAttributesSupplier = Attributes::empty;
@@ -99,14 +98,11 @@ public final class OpenTelemetryRumBuilder {
     }
 
     public static OpenTelemetryRumBuilder create(Application application, OtelRumConfig config) {
-        return new OpenTelemetryRumBuilder(
-                application, config, new SessionIdTimeoutHandler(config.getSessionTimeout()));
+        return new OpenTelemetryRumBuilder(application, config);
     }
 
-    OpenTelemetryRumBuilder(
-            Application application, OtelRumConfig config, SessionIdTimeoutHandler timeoutHandler) {
+    OpenTelemetryRumBuilder(Application application, OtelRumConfig config) {
         this.application = application;
-        this.timeoutHandler = timeoutHandler;
         this.resource = AndroidResource.createDefault(application);
         this.config = config;
     }
@@ -120,6 +116,10 @@ public final class OpenTelemetryRumBuilder {
     public OpenTelemetryRumBuilder setResource(Resource resource) {
         this.resource = resource;
         return this;
+    }
+
+    public void setSessionProvider(SessionProvider sessionProvider) {
+        this.sessionProvider = sessionProvider;
     }
 
     /**
@@ -309,7 +309,7 @@ public final class OpenTelemetryRumBuilder {
                             MetricToDiskExporter.create(
                                     metricExporter,
                                     storageConfiguration,
-                                    metricExporter::getAggregationTemporality);
+                                    originalMetricExporter::getAggregationTemporality);
                 }
                 signalFromDiskExporter =
                         getSignalFromDiskExporter(
@@ -323,13 +323,9 @@ public final class OpenTelemetryRumBuilder {
         }
         initializationEvents.spanExporterInitialized(spanExporter);
 
-        SessionManager sessionManager =
-                SessionManager.create(timeoutHandler, config.getSessionTimeout().toNanos());
-
         OpenTelemetrySdk sdk =
                 OpenTelemetrySdk.builder()
-                        .setTracerProvider(
-                                buildTracerProvider(sessionManager, application, spanExporter))
+                        .setTracerProvider(buildTracerProvider(application, spanExporter))
                         .setMeterProvider(buildMeterProvider(application, metricExporter))
                         .setLoggerProvider(buildLoggerProvider(application, logsExporter))
                         .setPropagators(buildFinalPropagators())
@@ -343,8 +339,7 @@ public final class OpenTelemetryRumBuilder {
                 new SdkPreconfiguredRumBuilder(
                         application,
                         sdk,
-                        timeoutHandler,
-                        sessionManager,
+                        sessionProvider,
                         config.shouldDiscoverInstrumentations(),
                         serviceManager);
         instrumentations.forEach(delegate::addInstrumentation);
@@ -462,9 +457,7 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private SdkTracerProvider buildTracerProvider(
-            SessionProvider sessionProvider,
-            Application application,
-            @Nullable SpanExporter spanExporter) {
+            Application application, @Nullable SpanExporter spanExporter) {
         SdkTracerProviderBuilder tracerProviderBuilder =
                 SdkTracerProvider.builder()
                         .setResource(resource)

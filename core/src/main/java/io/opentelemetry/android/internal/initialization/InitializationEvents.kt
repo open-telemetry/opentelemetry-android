@@ -27,7 +27,7 @@ interface InitializationEvents {
 
     fun crashReportingInitialized()
 
-    fun spanExporterInitialized(spanExporter: SpanExporter)
+    fun spanExporterInitialized(spanExporter: SpanExporter?)
 
     companion object {
         private var instance: InitializationEvents? = null
@@ -74,7 +74,7 @@ interface InitializationEvents {
 
                 override fun crashReportingInitialized() {}
 
-                override fun spanExporterInitialized(spanExporter: SpanExporter) {}
+                override fun spanExporterInitialized(spanExporter: SpanExporter?) {}
             }
     }
 }

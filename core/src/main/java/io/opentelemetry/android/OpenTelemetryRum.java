@@ -8,11 +8,13 @@ package io.opentelemetry.android;
 import android.app.Application;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.internal.services.ServiceManager;
+import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import javax.annotation.Nullable;
 
 /**
  * Entrypoint for the OpenTelemetry Real User Monitoring library for Android.
@@ -65,10 +67,15 @@ public interface OpenTelemetryRum {
     static SdkPreconfiguredRumBuilder builder(
             Application application,
             OpenTelemetrySdk openTelemetrySdk,
+            SessionProvider sessionProvider,
             boolean discoverInstrumentations) {
         ServiceManager.initialize(application);
         return new SdkPreconfiguredRumBuilder(
-                application, openTelemetrySdk, discoverInstrumentations, ServiceManager.get());
+                application,
+                openTelemetrySdk,
+                sessionProvider,
+                discoverInstrumentations,
+                ServiceManager.get());
     }
 
     /** Returns a no-op implementation of {@link OpenTelemetryRum}. */
@@ -87,5 +94,6 @@ public interface OpenTelemetryRum {
      * Note: this value will change throughout the lifetime of an application instance, so it is
      * recommended that you do not cache this value, but always retrieve it from here when needed.
      */
+    @Nullable
     String getRumSessionId();
 }

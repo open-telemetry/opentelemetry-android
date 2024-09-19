@@ -51,7 +51,7 @@ class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { 
         addEvent(RumConstants.Events.INIT_EVENT_CRASH_REPORTER)
     }
 
-    override fun spanExporterInitialized(spanExporter: SpanExporter) {
+    override fun spanExporterInitialized(spanExporter: SpanExporter?) {
         val attributes =
             Attributes.of(AttributeKey.stringKey("span.exporter"), spanExporter.toString())
         addEvent(RumConstants.Events.INIT_EVENT_SPAN_EXPORTER, attr = attributes)
