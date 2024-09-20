@@ -9,15 +9,15 @@ extensions:
 exporters:
   otlphttp:
     traces_endpoint: "http://jaeger:4318/v1/traces"
-  logging:
+  debug:
     verbosity: normal
-  logging/debug:
+  debug/detailed:
     verbosity: detailed
 service:
   pipelines:
     traces:
       receivers: [otlp]
-      exporters: [logging/debug, otlphttp]
+      exporters: [debug/detailed, otlphttp]
     logs:
       receivers: [otlp]
-      exporters: [logging/debug]
+      exporters: [debug/detailed]
