@@ -53,7 +53,14 @@ The OpenTelemetry Android Demo App currently supports the following features:
 
 * Manual Instrumentation
   - Provides access to the OpenTelemetry APIs for manual instrumentation, allowing developers to create custom spans and events as needed.
-  - Note: The only manual instrumentation that has been added to the demo app so far is an event after clicking on the OpenTelemetry logo.
+  - See `OtelDemoApplication.kt` for an example of a tracer and an event builder initialization.
+  - In the app, a custom span is emitted in `MainOtelButton.kt` after clicking on the OpenTelemetry logo button.
+  - Custom events are emitted:
+    - in `MainOtelButton.kt` after clicking on the OpenTelemetry logo button,
+    - in `Navigation.kt` for screen changes in the app,
+    - in `AstronomyShopActivity.kt` after placing an order in the shop,
+    - in `Cart.kt` after emptying a cart in the shop.
+  - Note: Events aren't visible in the Jaeger UI, only in the collector output.
 
 ### Known Gaps
 As of now, there are a few areas where the instrumentation might not be comprehensive:

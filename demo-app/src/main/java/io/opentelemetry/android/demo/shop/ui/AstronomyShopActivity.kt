@@ -29,6 +29,7 @@ import io.opentelemetry.android.demo.shop.ui.products.ProductDetails
 import io.opentelemetry.android.demo.shop.ui.products.ProductList
 import io.opentelemetry.android.demo.shop.ui.cart.CartViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.opentelemetry.android.demo.OtelDemoApplication
 import io.opentelemetry.android.demo.shop.ui.cart.CheckoutConfirmationScreen
 import io.opentelemetry.android.demo.shop.ui.cart.CheckoutInfoViewModel
 import io.opentelemetry.android.demo.shop.ui.cart.InfoScreen
@@ -103,7 +104,11 @@ fun AstronomyShopScreen() {
                     }
                     composable(MainDestinations.CHECKOUT_INFO_ROUTE) {
                         InfoScreen(
-                            onPlaceOrderClick = {astronomyShopNavController.navigateToCheckoutConfirmation()},
+                            onPlaceOrderClick = {instrumentedPlaceOrder(
+                                astronomyShopNavController = astronomyShopNavController,
+                                cartViewModel = cartViewModel,
+                                checkoutInfoViewModel = checkoutInfoViewModel
+                            )},
                             upPress = {astronomyShopNavController.upPress()},
                             checkoutInfoViewModel = checkoutInfoViewModel
                         )
@@ -119,3 +124,24 @@ fun AstronomyShopScreen() {
         }
     }
 }
+
+private fun instrumentedPlaceOrder(
+    astronomyShopNavController: InstrumentedAstronomyShopNavController,
+    cartViewModel: CartViewModel,
+    checkoutInfoViewModel: CheckoutInfoViewModel
+){
+    generateOrderPlacedEvent(cartViewModel, checkoutInfoViewModel)
+    astronomyShopNavController.navigateToCheckoutConfirmation()
+}
+
+private fun generateOrderPlacedEvent(
+    cartViewModel: CartViewModel,
+    checkoutInfoViewModel: CheckoutInfoViewModel
+) {
+    val eventBuilder = OtelDemoApplication.eventBuilder("otel.demo.app", "order.placed")
+    eventBuilder
+        .put("order.total.value", cartViewModel.getTotalPrice())
+        .put("buyer.state", checkoutInfoViewModel.shippingInfo.state)
+        .emit()
+}
+
