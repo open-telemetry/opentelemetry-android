@@ -80,7 +80,7 @@ public final class OpenTelemetryRumBuilder {
     private final OtelRumConfig config;
     private final List<AndroidInstrumentation> instrumentations = new ArrayList<>();
     private final List<Consumer<OpenTelemetrySdk>> otelSdkReadyListeners = new ArrayList<>();
-    private SessionProvider sessionProvider = SessionProvider.getNoop();
+    private SessionProvider sessionProvider = SessionProvider.NO_OP;
     @Nullable private SpanExporter spanExporter;
     @Nullable private LogRecordExporter logRecordExporter;
     @Nullable private MetricExporter metricExporter;
