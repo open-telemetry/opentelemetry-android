@@ -6,17 +6,19 @@
 package io.opentelemetry.android.agent.endpoint
 
 interface EndpointConfig {
-    fun getUrl(): String
+    fun getSpanExporterUrl(): String
+
+    fun getLogRecordExporterUrl(): String
 
     fun getHeaders(): Map<String, String>
 
     companion object {
         @JvmStatic
         fun getDefault(
-            url: String,
+            baseUrl: String,
             headers: Map<String, String> = emptyMap(),
         ): EndpointConfig {
-            return DefaultEndpointConfig(url, headers)
+            return DefaultHttpEndpointConfig(baseUrl.trimEnd('/'), headers)
         }
     }
 }

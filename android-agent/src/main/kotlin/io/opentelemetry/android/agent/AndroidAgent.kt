@@ -8,6 +8,7 @@ package io.opentelemetry.android.agent
 import android.app.Application
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.OpenTelemetryRumBuilder
+import io.opentelemetry.android.agent.endpoint.EndpointConfig
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.agent.session.SessionManager
 import io.opentelemetry.android.config.OtelRumConfig
@@ -23,6 +24,8 @@ import io.opentelemetry.android.instrumentation.slowrendering.SlowRenderingInstr
 import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.internal.services.network.data.CurrentNetwork
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor
 import io.opentelemetry.sdk.common.Clock
 import java.time.Duration
@@ -68,6 +71,7 @@ object AndroidAgent {
     fun createRumBuilder(
         application: Application,
         otelRumConfig: OtelRumConfig = OtelRumConfig(),
+        endpointConfig: EndpointConfig = EndpointConfig.getDefault("http://10.0.2.2:4318"),
         sessionTimeout: Duration = Duration.ofMinutes(15),
         activityTracerCustomizer: ((Tracer) -> Tracer)? = null,
         activityNameExtractor: ScreenNameExtractor? = null,
@@ -81,6 +85,7 @@ object AndroidAgent {
         val rumBuilder = OpenTelemetryRum.builder(application, otelRumConfig)
 
         configureSessionProvider(rumBuilder, sessionTimeout)
+        configureExporters(rumBuilder, endpointConfig)
 
         applyInstrumentationConfigs(
             activityTracerCustomizer,
@@ -106,6 +111,30 @@ object AndroidAgent {
         rumBuilder.addOtelSdkReadyListener {
             ServiceManager.get().getAppLifecycleService().registerListener(sessionIdTimeoutHandler)
         }
+    }
+
+    private fun configureExporters(
+        rumBuilder: OpenTelemetryRumBuilder,
+        endpointConfig: EndpointConfig,
+    ) {
+        // Creating span exporter builder
+        val spanExporterBuilder =
+            OtlpHttpSpanExporter.builder().setEndpoint(endpointConfig.getSpanExporterUrl())
+        // Creating log exporter builder
+        val logRecordExporterBuilder =
+            OtlpHttpLogRecordExporter.builder()
+                .setEndpoint(endpointConfig.getLogRecordExporterUrl())
+
+        // Adding headers
+        endpointConfig.getHeaders()
+            .forEach { (key, value) ->
+                spanExporterBuilder.addHeader(key, value)
+                logRecordExporterBuilder.addHeader(key, value)
+            }
+
+        // Adding exporters to the rum builder
+        rumBuilder.setSpanExporter(spanExporterBuilder.build())
+        rumBuilder.setLogRecordExporter(logRecordExporterBuilder.build())
     }
 
     private fun applyInstrumentationConfigs(
