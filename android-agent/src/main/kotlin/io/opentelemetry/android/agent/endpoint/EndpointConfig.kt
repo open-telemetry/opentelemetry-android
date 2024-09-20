@@ -11,6 +11,7 @@ interface EndpointConfig {
     fun getHeaders(): Map<String, String>
 
     companion object {
+        @JvmStatic
         fun getDefault(
             url: String,
             headers: Map<String, String> = emptyMap(),
