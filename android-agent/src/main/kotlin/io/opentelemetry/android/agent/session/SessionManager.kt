@@ -11,11 +11,11 @@ import java.util.Collections.synchronizedList
 import java.util.concurrent.TimeUnit
 
 internal class SessionManager(
-    private val clock: Clock = Clock.getDefault(),
-    private val sessionStorage: SessionStorage = SessionStorage.InMemory(),
     private val timeoutHandler: SessionIdTimeoutHandler,
+    private val clock: Clock,
+    private val sessionLifetimeNanos: Long,
+    private val sessionStorage: SessionStorage = SessionStorage.InMemory(),
     private val idGenerator: SessionIdGenerator = SessionIdGenerator.DEFAULT,
-    private val sessionLifetimeNanos: Long = TimeUnit.HOURS.toNanos(4),
 ) : SessionProvider, SessionPublisher {
     // TODO: Make thread safe / wrap with AtomicReference?
     private var session: Session = Session.NONE
@@ -67,12 +67,14 @@ internal class SessionManager(
     companion object {
         @JvmStatic
         fun create(
+            clock: Clock,
             timeoutHandler: SessionIdTimeoutHandler,
-            sessionLifetimeNanos: Long,
+            sessionLifetimeNanos: Long = TimeUnit.HOURS.toNanos(4),
         ): SessionManager {
             return SessionManager(
                 timeoutHandler = timeoutHandler,
                 sessionLifetimeNanos = sessionLifetimeNanos,
+                clock = clock,
             )
         }
     }

@@ -7,7 +7,6 @@ package io.opentelemetry.android.config;
 
 import io.opentelemetry.android.ScreenAttributesSpanProcessor;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
-import java.time.Duration;
 
 /**
  * Configuration object for OpenTelemetry Android. The configuration items in this class will be
@@ -20,7 +19,6 @@ public class OtelRumConfig {
     private boolean generateSdkInitializationEvents = true;
     private boolean includeScreenAttributes = true;
     private boolean discoverInstrumentations = true;
-    private Duration sessionTimeout = Duration.ofMinutes(15);
 
     /**
      * Disables the collection of runtime network attributes. See {@link CurrentNetworkProvider} for
@@ -86,16 +84,5 @@ public class OtelRumConfig {
     public OtelRumConfig disableInstrumentationDiscovery() {
         discoverInstrumentations = false;
         return this;
-    }
-
-    /** Call this method to set session timeout in minutes */
-    public OtelRumConfig setSessionTimeout(Duration sessionTimeout) {
-        this.sessionTimeout = sessionTimeout;
-        return this;
-    }
-
-    /** Call this method to retrieve session timeout */
-    public Duration getSessionTimeout() {
-        return sessionTimeout;
     }
 }

@@ -8,6 +8,8 @@ package io.opentelemetry.android.agent
 import android.app.Application
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.OpenTelemetryRumBuilder
+import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
+import io.opentelemetry.android.agent.session.SessionManager
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.activity.ActivityLifecycleInstrumentation
@@ -18,9 +20,11 @@ import io.opentelemetry.android.instrumentation.crash.CrashReporterInstrumentati
 import io.opentelemetry.android.instrumentation.fragment.FragmentLifecycleInstrumentation
 import io.opentelemetry.android.instrumentation.network.NetworkChangeInstrumentation
 import io.opentelemetry.android.instrumentation.slowrendering.SlowRenderingInstrumentation
+import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.internal.services.network.data.CurrentNetwork
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor
+import io.opentelemetry.sdk.common.Clock
 import java.time.Duration
 
 /**
@@ -64,6 +68,7 @@ object AndroidAgent {
     fun createRumBuilder(
         application: Application,
         otelRumConfig: OtelRumConfig = OtelRumConfig(),
+        sessionTimeout: Duration = Duration.ofMinutes(15),
         activityTracerCustomizer: ((Tracer) -> Tracer)? = null,
         activityNameExtractor: ScreenNameExtractor? = null,
         fragmentTracerCustomizer: ((Tracer) -> Tracer)? = null,
@@ -74,6 +79,8 @@ object AndroidAgent {
         slowRenderingDetectionPollInterval: Duration? = null,
     ): OpenTelemetryRumBuilder {
         val rumBuilder = OpenTelemetryRum.builder(application, otelRumConfig)
+
+        configureSessionProvider(rumBuilder, sessionTimeout)
 
         applyInstrumentationConfigs(
             activityTracerCustomizer,
@@ -87,6 +94,18 @@ object AndroidAgent {
         )
 
         return rumBuilder
+    }
+
+    private fun configureSessionProvider(
+        rumBuilder: OpenTelemetryRumBuilder,
+        sessionTimeout: Duration,
+    ) {
+        val clock = Clock.getDefault()
+        val sessionIdTimeoutHandler = SessionIdTimeoutHandler(clock, sessionTimeout)
+        rumBuilder.setSessionProvider(SessionManager.create(clock, sessionIdTimeoutHandler))
+        rumBuilder.addOtelSdkReadyListener {
+            ServiceManager.get().getAppLifecycleService().registerListener(sessionIdTimeoutHandler)
+        }
     }
 
     private fun applyInstrumentationConfigs(

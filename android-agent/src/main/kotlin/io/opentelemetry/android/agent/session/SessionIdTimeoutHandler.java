@@ -42,7 +42,7 @@ public final class SessionIdTimeoutHandler implements ApplicationStateListener {
         this(Clock.getDefault(), sessionTimeout);
     }
 
-    SessionIdTimeoutHandler(Clock clock, Duration sessionTimeout) {
+    public SessionIdTimeoutHandler(Clock clock, Duration sessionTimeout) {
         this.clock = clock;
         this.sessionTimeout = sessionTimeout;
     }
