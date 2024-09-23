@@ -73,7 +73,7 @@ object AndroidAgent {
         application: Application,
         otelRumConfig: OtelRumConfig = OtelRumConfig(),
         endpointConfig: EndpointConfig = EndpointConfig.getDefault("http://localhost"),
-        sessionTimeout: Duration = Duration.ofMinutes(15),
+        sessionTimeout: Duration = SessionIdTimeoutHandler.DEFAULT_SESSION_TIMEOUT,
         activityTracerCustomizer: ((Tracer) -> Tracer)? = null,
         activityNameExtractor: ScreenNameExtractor? = null,
         fragmentTracerCustomizer: ((Tracer) -> Tracer)? = null,
