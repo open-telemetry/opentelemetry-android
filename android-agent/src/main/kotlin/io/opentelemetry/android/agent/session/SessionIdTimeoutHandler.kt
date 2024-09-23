@@ -23,8 +23,7 @@ import java.time.Duration
 internal class SessionIdTimeoutHandler(
     private val clock: Clock = Clock.getDefault(),
     private val sessionTimeout: Duration = DEFAULT_SESSION_TIMEOUT,
-) :
-    ApplicationStateListener {
+) : ApplicationStateListener {
     @Volatile
     private var timeoutStartNanos: Long = 0
 
