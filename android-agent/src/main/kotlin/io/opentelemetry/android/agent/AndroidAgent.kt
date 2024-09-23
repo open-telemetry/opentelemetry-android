@@ -31,16 +31,6 @@ import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor
 import io.opentelemetry.sdk.common.Clock
 import java.time.Duration
 
-/**
- * Convenience functions to allow configuring the default instrumentations through the [OtelRumConfig] object, for example:
- *
- * ```
- * OtelRumConfig()
- *  .setSessionTimeout(Duration.ofSeconds(10)) // Real OtelRumConfig function
- *  .setSlowRenderingDetectionPollInterval(Duration.ofSeconds(5)) // Extension function
- *  .disableScreenAttributes() // Real OtelRumConfig function
- * ```
- */
 object AndroidAgent {
     private val activityLifecycleInstrumentation by lazy {
         AndroidInstrumentationLoader.getInstrumentation(
