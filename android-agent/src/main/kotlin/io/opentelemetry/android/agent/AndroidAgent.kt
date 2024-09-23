@@ -12,6 +12,7 @@ import io.opentelemetry.android.agent.endpoint.EndpointConfig
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.agent.session.SessionManager
 import io.opentelemetry.android.config.OtelRumConfig
+import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.activity.ActivityLifecycleInstrumentation
 import io.opentelemetry.android.instrumentation.anr.AnrInstrumentation
@@ -71,7 +72,7 @@ object AndroidAgent {
     fun createRumBuilder(
         application: Application,
         otelRumConfig: OtelRumConfig = OtelRumConfig(),
-        endpointConfig: EndpointConfig = EndpointConfig.getDefault("http://10.0.2.2:4318"),
+        endpointConfig: EndpointConfig = EndpointConfig.getDefault("http://localhost"),
         sessionTimeout: Duration = Duration.ofMinutes(15),
         activityTracerCustomizer: ((Tracer) -> Tracer)? = null,
         activityNameExtractor: ScreenNameExtractor? = null,
@@ -86,6 +87,7 @@ object AndroidAgent {
 
         configureSessionProvider(rumBuilder, sessionTimeout)
         configureExporters(rumBuilder, endpointConfig)
+        configureDiskBuffering(rumBuilder)
 
         applyInstrumentationConfigs(
             activityTracerCustomizer,
@@ -135,6 +137,14 @@ object AndroidAgent {
         // Adding exporters to the rum builder
         rumBuilder.setSpanExporter(spanExporterBuilder.build())
         rumBuilder.setLogRecordExporter(logRecordExporterBuilder.build())
+    }
+
+    private fun configureDiskBuffering(rumBuilder: OpenTelemetryRumBuilder) {
+        rumBuilder.setDiskBufferingConfiguration(
+            DiskBufferingConfiguration.builder()
+                .setEnabled(true)
+                .setMaxCacheSize(10_000_000).build(),
+        )
     }
 
     private fun applyInstrumentationConfigs(

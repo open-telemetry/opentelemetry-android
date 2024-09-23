@@ -68,10 +68,10 @@ dependencies {
 
     api(platform(libs.opentelemetry.platform))
     api(libs.opentelemetry.api)
+    api(libs.opentelemetry.instrumentation.api)
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.api.incubator)
     implementation(libs.opentelemetry.exporter.logging)
-    implementation(libs.opentelemetry.instrumentation.api)
     implementation(libs.opentelemetry.semconv.incubating)
     implementation(libs.opentelemetry.diskBuffering)
     testImplementation(libs.opentelemetry.api.incubator)
