@@ -21,8 +21,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.opentelemetry.android.demo.shop.ui.cart.CartViewModel
 import io.opentelemetry.android.demo.shop.ui.components.UpPressButton
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.zIndex
 import io.opentelemetry.android.demo.shop.clients.ProductCatalogClient
 import io.opentelemetry.android.demo.shop.clients.RecommendationService
+import io.opentelemetry.android.demo.shop.ui.components.CometAnimation
 import io.opentelemetry.android.demo.shop.ui.components.ConfirmCrashPopup
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -38,6 +40,8 @@ fun ProductDetails(
     val imageLoader = ImageLoader(context)
     val sourceProductImage = imageLoader.load(product.picture)
     var quantity by remember { mutableIntStateOf(1) }
+
+    var slowRender by remember { mutableStateOf(false) }
 
     val productsClient = ProductCatalogClient(context)
     val recommendationService = remember { RecommendationService(productsClient, cartViewModel) }
@@ -86,7 +90,11 @@ fun ProductDetails(
             Spacer(modifier = Modifier.height(32.dp))
             QuantityChooser(quantity = quantity, onQuantityChange = { quantity = it })
             Spacer(modifier = Modifier.height(16.dp))
-            AddToCartButton(cartViewModel = cartViewModel, product = product, quantity = quantity)
+            AddToCartButton(
+                cartViewModel = cartViewModel,
+                product = product,
+                quantity = quantity,
+                onSlowRenderChange = { slowRender = it })
             Spacer(modifier = Modifier.height(32.dp))
             RecommendedSection(recommendedProducts = recommendedProducts, onProductClick = onProductClick)
         }
@@ -97,6 +105,13 @@ fun ProductDetails(
                 .align(Alignment.TopStart)
                 .padding(8.dp)
         )
+        if (slowRender) {
+            CometAnimation(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .zIndex(1f)
+            )
+        }
     }
 }
 
@@ -104,9 +119,9 @@ fun ProductDetails(
 fun AddToCartButton(
     cartViewModel: CartViewModel,
     product: Product,
-    quantity: Int
+    quantity: Int,
+    onSlowRenderChange: (Boolean) -> Unit
 ) {
-
     var showPopup by remember { mutableStateOf(false) }
 
     Button(
@@ -114,6 +129,9 @@ fun AddToCartButton(
             if (product.id == "OLJCESPC7Z" && quantity == 10) {
                 showPopup = true
             } else {
+                if (product.id == "HQTGWGPNH4") {
+                    onSlowRenderChange(true)
+                }
                 cartViewModel.addProduct(product, quantity)
             }
         },
@@ -161,7 +179,3 @@ fun multiThreadCrashing(numThreads : Int = 4) {
     }
     latch.countDown()
 }
-
-
-
-
