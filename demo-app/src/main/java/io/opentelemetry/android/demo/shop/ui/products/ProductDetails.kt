@@ -24,7 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.zIndex
 import io.opentelemetry.android.demo.shop.clients.ProductCatalogClient
 import io.opentelemetry.android.demo.shop.clients.RecommendationService
-import io.opentelemetry.android.demo.shop.ui.components.CometAnimation
+import io.opentelemetry.android.demo.shop.ui.components.SlowCometAnimation
 import io.opentelemetry.android.demo.shop.ui.components.ConfirmCrashPopup
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -106,7 +106,7 @@ fun ProductDetails(
                 .padding(8.dp)
         )
         if (slowRender) {
-            CometAnimation(
+            SlowCometAnimation(
                 modifier = Modifier
                     .fillMaxSize()
                     .zIndex(1f)
