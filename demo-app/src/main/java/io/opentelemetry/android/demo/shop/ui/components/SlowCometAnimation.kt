@@ -89,10 +89,12 @@ fun SlowSingleCometAnimation(
     }
 
     LaunchedEffect(animatedX.value, animatedY.value) {
+//        Thread.sleep(50)
+//        delay(15)
         val currentPosition = Offset(animatedX.value, animatedY.value)
         tailPositions.add(currentPosition)
 
-        if (tailPositions.size > 25) {
+        if (tailPositions.size > 30) {
             tailPositions.removeAt(0)
         }
     }
@@ -100,10 +102,10 @@ fun SlowSingleCometAnimation(
 //    2. randomly choosing a number of floats -- i believe this is the only thing done in the splunk sample app?
 //    doing only this creates slow renders in the app, but there is only one slow render span with a count of 1
 
-    val random = SecureRandom()
-    repeat(50_000) {
-        random.nextFloat()
-    }
+//    val random = SecureRandom()
+//    repeat(50_000) {
+//        random.nextFloat()
+//    }
 
     ExpensiveCometShape(
         modifier = modifier,
@@ -136,7 +138,7 @@ fun ExpensiveCometShape(
             val tailAlpha = 0.3f * (1 - progress)
 
 //          3.  those repeats are the only(?) thing that causes multiple spans with high count
-            repeat(100) {
+            repeat(1) {
                 drawCircle(
                     color = Color(0xFFFFD700).copy(alpha = tailAlpha),
                     radius = tailRadius,
@@ -145,7 +147,7 @@ fun ExpensiveCometShape(
             }
         }
 
-        repeat(100) {
+        repeat(1) {
             drawCircle(
                 color = Color(0x80FFFF00),
                 radius = headRadius * 2,
