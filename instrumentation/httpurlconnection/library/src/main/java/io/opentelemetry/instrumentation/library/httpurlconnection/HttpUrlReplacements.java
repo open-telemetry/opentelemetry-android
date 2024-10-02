@@ -336,10 +336,10 @@ public class HttpUrlReplacements {
     }
 
     private static class HttpURLConnectionInfo {
+        private final Context context;
         private long lastSeenTime;
         private boolean reported;
         private boolean harvestable;
-        private Context context;
 
         private HttpURLConnectionInfo(Context context) {
             this.context = context;
