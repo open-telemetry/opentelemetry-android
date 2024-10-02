@@ -26,7 +26,7 @@ import okhttp3.Response;
  * any time.
  */
 public final class OkHttp3Singletons {
-    private static final Interceptor NOOP_INTERCEPTOR = (chain -> chain.proceed(chain.request()));
+    private static final Interceptor NOOP_INTERCEPTOR = chain -> chain.proceed(chain.request());
     public static Interceptor CONNECTION_ERROR_INTERCEPTOR = NOOP_INTERCEPTOR;
     public static Interceptor TRACING_INTERCEPTOR = NOOP_INTERCEPTOR;
 
