@@ -38,6 +38,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -61,6 +63,7 @@ public class TracingHurlStackTest {
         testQueue = TestRequestQueue.create(tracingHurlStack);
         stuckTestHelper = StuckTestHelper.start();
 
+        Logger.getLogger(MockWebServer.class.getName()).setLevel(Level.WARNING);
         // setup test server
         server = new MockWebServer();
     }

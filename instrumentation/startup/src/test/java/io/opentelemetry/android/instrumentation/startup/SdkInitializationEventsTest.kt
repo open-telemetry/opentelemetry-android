@@ -12,11 +12,11 @@ import io.mockk.verify
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.common.Value
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.logs.LogRecordProcessor
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord
 import io.opentelemetry.sdk.logs.SdkLoggerProvider
-import io.opentelemetry.sdk.logs.data.Body
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import org.junit.jupiter.api.Test
@@ -86,7 +86,7 @@ class SdkInitializationEventsTest {
 
     class EventAssert(val timeNs: Long) : Consumer<ReadWriteLogRecord> {
         lateinit var name: String
-        var body: Body? = null
+        var body: Value<*>? = null
         var attrs: Attributes? = null
 
         override fun accept(log: ReadWriteLogRecord) {
@@ -94,9 +94,9 @@ class SdkInitializationEventsTest {
             assertThat(logData.timestampEpochNanos).isEqualTo(timeNs)
             assertThat(logData.attributes.get(stringKey("event.name"))).isEqualTo(name)
             if (body == null) {
-                assertThat(logData.body.type).isEqualTo(Body.Type.EMPTY)
+                assertThat(logData.bodyValue).isNull()
             } else {
-                assertThat(logData.body.type).isNotEqualTo(Body.Type.EMPTY)
+                assertThat(logData.bodyValue).isNotNull()
             }
             if (attrs != null) {
                 assertThat(logData.attributes).isEqualTo(attrs)
@@ -108,7 +108,7 @@ class SdkInitializationEventsTest {
             return this
         }
 
-        fun withBody(body: Body): EventAssert {
+        fun withBody(body: Value<*>): EventAssert {
             this.body = body
             return this
         }
