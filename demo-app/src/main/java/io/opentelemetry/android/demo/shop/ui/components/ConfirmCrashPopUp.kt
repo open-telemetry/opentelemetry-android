@@ -6,7 +6,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 
 @Composable
-fun ConfirmCrashPopup(
+fun ConfirmPopup(
+    text : String,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -17,7 +18,7 @@ fun ConfirmCrashPopup(
             Text(text = "Are you sure?")
         },
         text = {
-            Text(text = "This will crash the app.")
+            Text(text = text)
         },
         confirmButton = {
             TextButton(onClick = { onConfirm() }) {

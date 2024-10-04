@@ -25,7 +25,7 @@ import androidx.compose.ui.zIndex
 import io.opentelemetry.android.demo.shop.clients.ProductCatalogClient
 import io.opentelemetry.android.demo.shop.clients.RecommendationService
 import io.opentelemetry.android.demo.shop.ui.components.SlowCometAnimation
-import io.opentelemetry.android.demo.shop.ui.components.ConfirmCrashPopup
+import io.opentelemetry.android.demo.shop.ui.components.ConfirmPopup
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -122,12 +122,14 @@ fun AddToCartButton(
     quantity: Int,
     onSlowRenderChange: (Boolean) -> Unit
 ) {
-    var showPopup by remember { mutableStateOf(false) }
+    var showCrashPopup by remember { mutableStateOf(false) }
+    var showANRPopup by remember { mutableStateOf(false) }
 
     Button(
         onClick = {
-            if (product.id == "OLJCESPC7Z" && quantity == 10) {
-                showPopup = true
+            if (product.id == "OLJCESPC7Z") {
+                if (quantity == 10) showCrashPopup = true
+                if (quantity == 9) showANRPopup = true
             } else {
                 if (product.id == "HQTGWGPNH4") {
                     onSlowRenderChange(true)
@@ -142,13 +144,25 @@ fun AddToCartButton(
         Text(text = "Add to Cart")
     }
 
-    if (showPopup) {
-        ConfirmCrashPopup(
+    if (showCrashPopup) {
+        ConfirmPopup(
+            text = "This will crash the app",
             onConfirm = {
                 multiThreadCrashing()
             },
             onDismiss = {
-                showPopup = false
+                showCrashPopup = false
+            }
+        )
+    }
+    if (showANRPopup) {
+        ConfirmPopup(
+            text = "This will freeze the app",
+            onConfirm = {
+                multiThreadCrashing()
+            },
+            onDismiss = {
+                showCrashPopup = false
             }
         )
     }
