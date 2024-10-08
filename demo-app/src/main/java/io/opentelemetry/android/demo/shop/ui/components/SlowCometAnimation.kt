@@ -72,14 +72,14 @@ fun SlowSingleCometAnimation(
     LaunchedEffect(Unit) {
         scope.launch {
             launch {
-                delay(500) /* 1. forced delay */
+                delay(500)
                 animatedX.animateTo(
                     targetValue = targetX,
                     animationSpec = tween(durationMillis = 3000, easing = LinearEasing)
                 )
             }
             launch {
-                delay(500) /*1. forced delay */
+                delay(500)
                 animatedY.animateTo(
                     targetValue = targetY,
                     animationSpec = tween(durationMillis = 3000, easing = LinearEasing)
@@ -89,8 +89,7 @@ fun SlowSingleCometAnimation(
     }
 
     LaunchedEffect(animatedX.value, animatedY.value) {
-//        Thread.sleep(50)
-//        delay(15)
+        delay(15)
         val currentPosition = Offset(animatedX.value, animatedY.value)
         tailPositions.add(currentPosition)
 
@@ -99,13 +98,10 @@ fun SlowSingleCometAnimation(
         }
     }
 
-//    2. randomly choosing a number of floats -- i believe this is the only thing done in the splunk sample app?
-//    doing only this creates slow renders in the app, but there is only one slow render span with a count of 1
-
-//    val random = SecureRandom()
-//    repeat(50_000) {
-//        random.nextFloat()
-//    }
+    val random = SecureRandom()
+    repeat(50_000) {
+        random.nextFloat()
+    }
 
     ExpensiveCometShape(
         modifier = modifier,
@@ -137,8 +133,7 @@ fun ExpensiveCometShape(
             val tailRadius = headRadius * (1 - progress)
             val tailAlpha = 0.3f * (1 - progress)
 
-//          3.  those repeats are the only(?) thing that causes multiple spans with high count
-            repeat(1) {
+            repeat(100) {
                 drawCircle(
                     color = Color(0xFFFFD700).copy(alpha = tailAlpha),
                     radius = tailRadius,
@@ -147,7 +142,7 @@ fun ExpensiveCometShape(
             }
         }
 
-        repeat(1) {
+        repeat(100) {
             drawCircle(
                 color = Color(0x80FFFF00),
                 radius = headRadius * 2,
