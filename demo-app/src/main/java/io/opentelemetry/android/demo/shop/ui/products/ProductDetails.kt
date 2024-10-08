@@ -159,7 +159,7 @@ fun AddToCartButton(
         ConfirmPopup(
             text = "This will freeze the app",
             onConfirm = {
-                multiThreadCrashing()
+                appFreezing()
             },
             onDismiss = {
                 showCrashPopup = false
@@ -192,4 +192,15 @@ fun multiThreadCrashing(numThreads : Int = 4) {
         return
     }
     latch.countDown()
+}
+
+fun appFreezing(){
+    try {
+        for (i in 0 until 20) {
+            Thread.sleep(1_000)
+        }
+    } catch (e: InterruptedException) {
+        e.printStackTrace()
+    }
+
 }
