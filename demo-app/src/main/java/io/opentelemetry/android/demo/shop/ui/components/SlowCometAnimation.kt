@@ -89,7 +89,6 @@ fun SlowSingleCometAnimation(
     }
 
     LaunchedEffect(animatedX.value, animatedY.value) {
-        delay(15)
         val currentPosition = Offset(animatedX.value, animatedY.value)
         tailPositions.add(currentPosition)
 
@@ -99,7 +98,7 @@ fun SlowSingleCometAnimation(
     }
 
     val random = SecureRandom()
-    repeat(50_000) {
+    repeat(10_000) {
         random.nextFloat()
     }
 
