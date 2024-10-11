@@ -70,9 +70,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 ## Approvers ([@open-telemetry/android-approvers](https://github.com/orgs/open-telemetry/teams/android-approvers)):
 
 - [Hanson Ho](https://github.com/bidetofevil), Embrace
-- [Jack Berg](https://github.com/jack-berg), New Relic
 - [Manoel Aranda Neto](https://github.com/marandaneto), PostHog
-- [Trask Stalnaker](https://github.com/trask), Microsoft
 
 ## Maintainers ([@open-telemetry/android-maintainers](https://github.com/orgs/open-telemetry/teams/android-maintainers)):
 
