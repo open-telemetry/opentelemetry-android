@@ -49,7 +49,7 @@ The OpenTelemetry Android Demo App currently supports the following features:
   - Automatically detects instances of slow rendering within the app.
   - Slow render events are captured as spans, providing information on when and where rendering delays occurred.
   - The span includes attributes such as `activity.name`, `screen.name`, `count`, and network details to help diagnose performance issues.
-  - Note: The app currently does not have any features designed to intentionally trigger slow rendering.
+  - To trigger a slowly rendering animation in the demo app, add any quantity of The Comet Book (the last product on the product list) to the cart. Note that the number of `slow-render` spans and their respective `count` attributes may vary between runs or across different machines.
 
 * Manual Instrumentation
   - Provides access to the OpenTelemetry APIs for manual instrumentation, allowing developers to create custom spans and events as needed.
