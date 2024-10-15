@@ -196,7 +196,7 @@ fun multiThreadCrashing(numThreads : Int = 4) {
 
 fun appFreezing(){
     try {
-        for (i in 0 until 20) {
+        for (i in 0 .. 20) {
             Thread.sleep(1_000)
         }
     } catch (e: InterruptedException) {
