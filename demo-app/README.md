@@ -43,7 +43,8 @@ The OpenTelemetry Android Demo App currently supports the following features:
   - Automatically detects and reports ANRs in the app.
   - ANR events are captured as spans with detailed stack traces, providing insights into the exact operations that caused the ANR.
   - The span includes key attributes such as `screen.name`, `session.id`, and network information to assist in diagnosing the issue.
-  - Note: The app currently does not have any features designed to intentionally trigger an ANR.
+  - In order to crash the demo app, try to add to cart exactly 9 National Park Foundation Explorascopes (first product on the product list) and click "Yes, I'm sure." on the alert pop-up.
+
 
 * Slow Render Detection
   - Automatically detects instances of slow rendering within the app.
