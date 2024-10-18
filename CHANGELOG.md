@@ -1,6 +1,35 @@
 # OpenTelemetry Android Changelog
 
-## Version 0.7.0 (2024-08-14)
+## Unreleased
+
+### 📈 Enhancements
+
+- HttpURLConnection instrumentation migration to AutoService API
+  ([#592](https://github.com/open-telemetry/opentelemetry-android/pull/592))
+- Make HttpURLConnection connection inactivity timeout configurable and add test for harvester code
+  ([#569](https://github.com/open-telemetry/opentelemetry-android/pull/569))
+- Expose additional disk buffering configuration
+  ([#596](https://github.com/open-telemetry/opentelemetry-android/pull/596))
+- Many enhancements to the Android
+  [demo-app](https://github.com/open-telemetry/opentelemetry-android/tree/main/demo-app).
+  [#545](https://github.com/open-telemetry/opentelemetry-android/pull/545),
+  [#554](https://github.com/open-telemetry/opentelemetry-android/pull/554),
+  [#568](https://github.com/open-telemetry/opentelemetry-android/pull/568),
+  [#570](https://github.com/open-telemetry/opentelemetry-android/pull/570),
+  [#577](https://github.com/open-telemetry/opentelemetry-android/pull/577),
+  [#584](https://github.com/open-telemetry/opentelemetry-android/pull/584),
+  [#598](https://github.com/open-telemetry/opentelemetry-android/pull/598),
+  [#604](https://github.com/open-telemetry/opentelemetry-android/pull/604),
+  [#605](https://github.com/open-telemetry/opentelemetry-android/pull/605),
+  [#627](https://github.com/open-telemetry/opentelemetry-android/pull/627),
+  [#634](https://github.com/open-telemetry/opentelemetry-android/pull/634)
+
+### 🛠️ Bug fixes
+- Ending "Paused" span for a fragment.
+  ([#591](https://github.com/open-telemetry/opentelemetry-android/pull/591))
+- start AppStart span when installing activity instrumentation
+  ([#578](https://github.com/open-telemetry/opentelemetry-android/pull/578))
+
 
 ## Version 0.7.0 (2024-08-14)
 
