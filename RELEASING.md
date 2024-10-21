@@ -22,13 +22,16 @@ We first need to prepare the release. This creates a versioned release branch, T
 
 Ensure that the preparation PR (created above) has been first merged into the release branch.
 
+- The "prepare" step above should have created a PR that updates the version number in
+  `gradle.properties`. This PR must be approved and merged before the release workflow is started, 
+  otherwise the release job will fail (the process explicitly checks for the version in the 
+  CHANGELOG.md). Because the release workflow runs against a release branch, it is safe to 
+  merge the `gradle.properties` into `main`.
 - Run the [Release workflow](https://github.com/open-telemetry/opentelemetry-android/actions/workflows/release.yml).
   - Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `release/v0.6.x`, and click the "Run workflow" button below that.
   - This workflow will publish the artifacts to maven central and will publish a GitHub release
     with release notes based on the change log and with the javaagent jar attached.
-- The "prepare" step above should have created a PR that updates the version number in
-  `gradle.properties`. Once the release is complete, approve and merge that PR.
 
 > Please note that the artifacts are published into maven central, which tends to have a delay of
 > roughly half an hour, more or less, before making the newly published artifacts actually available

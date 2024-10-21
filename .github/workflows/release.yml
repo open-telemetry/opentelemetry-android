@@ -38,7 +38,7 @@ jobs:
           else
             prior_version="$major.$minor.$((patch - 1))"
           fi
-          inst_version=$(grep ^opentelemetry-alpha gradle/libs.versions.toml | sed -E "s/^.*\"(.*)\"/\1/")
+          inst_version=$(grep '^opentelemetry-instrumentation ' gradle/libs.versions.toml | sed -E "s/^.*\"(.*)\"/\1/")
           sdk_version=$(cat gradle/libs.versions.toml  | grep "^opentelemetry =" | sed -E "s/^.*\"(.*)\"/\1/")
           
           echo "VERSION=$version" >> $GITHUB_ENV
