@@ -14,6 +14,8 @@ import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 
+import java.util.Map;
+
 /**
  * Entrypoint for the OpenTelemetry Real User Monitoring library for Android.
  *
@@ -88,4 +90,13 @@ public interface OpenTelemetryRum {
      * recommended that you do not cache this value, but always retrieve it from here when needed.
      */
     String getRumSessionId();
+
+    /**
+     * Emits a custom event.
+     *
+     * @param eventName The name of the event.
+     * @param body The body content of the event (optional).
+     * @param attributes Additional attributes for the event (optional).
+     */
+    void emitEvent(String eventName, String body, Map<String, String> attributes);
 }
