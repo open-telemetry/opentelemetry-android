@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 0.8.0 (2024-10-18)
+
 ### 📈 Enhancements
 
 - HttpURLConnection instrumentation migration to AutoService API
