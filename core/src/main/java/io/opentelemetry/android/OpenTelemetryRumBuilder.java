@@ -11,6 +11,8 @@ import android.app.Application;
 import android.util.Log;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
+import io.opentelemetry.android.export.InMemoryBufferDelegatingLogExporter;
+import io.opentelemetry.android.export.InMemoryBufferDelegatingSpanExporter;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
@@ -53,6 +55,8 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -85,6 +89,8 @@ public final class OpenTelemetryRumBuilder {
             (a) -> a;
 
     private Resource resource;
+
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
@@ -273,11 +279,69 @@ public final class OpenTelemetryRumBuilder {
         InitializationEvents initializationEvents = InitializationEvents.get();
         applyConfiguration(serviceManager, initializationEvents);
 
+        InMemoryBufferDelegatingLogExporter inMemoryBufferDelegatingLogExporter =
+                new InMemoryBufferDelegatingLogExporter();
+
+        InMemoryBufferDelegatingSpanExporter inMemoryBufferDelegatingSpanExporter =
+                new InMemoryBufferDelegatingSpanExporter();
+
+        SessionManager sessionManager =
+                SessionManager.create(timeoutHandler, config.getSessionTimeout().toNanos());
+
+        OpenTelemetrySdk sdk =
+                OpenTelemetrySdk.builder()
+                        .setTracerProvider(
+                                buildTracerProvider(
+                                        sessionManager,
+                                        application,
+                                        inMemoryBufferDelegatingSpanExporter))
+                        .setMeterProvider(buildMeterProvider(application))
+                        .setLoggerProvider(
+                                buildLoggerProvider(
+                                        application, inMemoryBufferDelegatingLogExporter))
+                        .setPropagators(buildFinalPropagators())
+                        .build();
+
+        otelSdkReadyListeners.forEach(listener -> listener.accept(sdk));
+
+        SdkPreconfiguredRumBuilder delegate =
+                new SdkPreconfiguredRumBuilder(
+                        application,
+                        sdk,
+                        timeoutHandler,
+                        sessionManager,
+                        config.shouldDiscoverInstrumentations(),
+                        serviceManager);
+
+        executorService.execute(
+                () -> {
+                    initializeExporters(
+                            serviceManager,
+                            initializationEvents,
+                            inMemoryBufferDelegatingSpanExporter,
+                            inMemoryBufferDelegatingLogExporter);
+                });
+
+        instrumentations.forEach(delegate::addInstrumentation);
+
+        return delegate.build();
+    }
+
+    private void initializeExporters(
+            ServiceManager serviceManager,
+            InitializationEvents initializationEvents,
+            InMemoryBufferDelegatingSpanExporter inMemoryBufferDelegatingSpanExporter,
+            InMemoryBufferDelegatingLogExporter inMemoryBufferDelegatingLogExporter) {
+
         DiskBufferingConfiguration diskBufferingConfiguration =
                 config.getDiskBufferingConfiguration();
+
         SpanExporter spanExporter = buildSpanExporter();
+
         LogRecordExporter logsExporter = buildLogsExporter();
+
         SignalFromDiskExporter signalFromDiskExporter = null;
+
         if (diskBufferingConfiguration.isEnabled()) {
             try {
                 StorageConfiguration storageConfiguration =
@@ -299,34 +363,14 @@ public final class OpenTelemetryRumBuilder {
                 Log.e(RumConstants.OTEL_RUM_LOG_TAG, "Could not initialize disk exporters.", e);
             }
         }
+
         initializationEvents.spanExporterInitialized(spanExporter);
 
-        SessionManager sessionManager =
-                SessionManager.create(timeoutHandler, config.getSessionTimeout().toNanos());
+        inMemoryBufferDelegatingLogExporter.setDelegateAndFlush(logsExporter);
 
-        OpenTelemetrySdk sdk =
-                OpenTelemetrySdk.builder()
-                        .setTracerProvider(
-                                buildTracerProvider(sessionManager, application, spanExporter))
-                        .setMeterProvider(buildMeterProvider(application))
-                        .setLoggerProvider(buildLoggerProvider(application, logsExporter))
-                        .setPropagators(buildFinalPropagators())
-                        .build();
-
-        otelSdkReadyListeners.forEach(listener -> listener.accept(sdk));
+        inMemoryBufferDelegatingSpanExporter.setDelegateAndFlush(spanExporter);
 
         scheduleDiskTelemetryReader(signalFromDiskExporter, diskBufferingConfiguration);
-
-        SdkPreconfiguredRumBuilder delegate =
-                new SdkPreconfiguredRumBuilder(
-                        application,
-                        sdk,
-                        timeoutHandler,
-                        sessionManager,
-                        config.shouldDiscoverInstrumentations(),
-                        serviceManager);
-        instrumentations.forEach(delegate::addInstrumentation);
-        return delegate.build();
     }
 
     private StorageConfiguration createStorageConfiguration(ServiceManager serviceManager)

@@ -140,22 +140,28 @@ public class OpenTelemetryRumBuilderTest {
                                                 SimpleSpanProcessor.create(spanExporter)))
                         .build();
 
-        String sessionId = openTelemetryRum.getRumSessionId();
-        openTelemetryRum
-                .getOpenTelemetry()
-                .getTracer("test")
-                .spanBuilder("test span")
-                .startSpan()
-                .end();
+        await().atMost(Duration.ofSeconds(30))
+                .untilAsserted(
+                        () -> {
+                            String sessionId = openTelemetryRum.getRumSessionId();
+                            openTelemetryRum
+                                    .getOpenTelemetry()
+                                    .getTracer("test")
+                                    .spanBuilder("test span")
+                                    .startSpan()
+                                    .end();
 
-        List<SpanData> spans = spanExporter.getFinishedSpanItems();
-        assertThat(spans).hasSize(1);
-        assertThat(spans.get(0))
-                .hasName("test span")
-                .hasResource(resource)
-                .hasAttributesSatisfyingExactly(
-                        equalTo(SessionIncubatingAttributes.SESSION_ID, sessionId),
-                        equalTo(SCREEN_NAME_KEY, "unknown"));
+                            List<SpanData> spans = spanExporter.getFinishedSpanItems();
+                            assertThat(spans).hasSize(1);
+                            assertThat(spans.get(0))
+                                    .hasName("test span")
+                                    .hasResource(resource)
+                                    .hasAttributesSatisfyingExactly(
+                                            equalTo(
+                                                    SessionIncubatingAttributes.SESSION_ID,
+                                                    sessionId),
+                                            equalTo(SCREEN_NAME_KEY, "unknown"));
+                        });
     }
 
     @Test
@@ -330,11 +336,17 @@ public class OpenTelemetryRumBuilderTest {
 
         OpenTelemetryRum.builder(application, config).build(serviceManager);
 
-        assertThat(SignalFromDiskExporter.get()).isNotNull();
-        verify(scheduleHandler).enable();
-        verify(scheduleHandler, never()).disable();
-        verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
-        assertThat(exporterCaptor.getValue()).isInstanceOf(SpanToDiskExporter.class);
+        await().atMost(Duration.ofSeconds(30))
+                .untilAsserted(
+                        () -> {
+                            assertThat(SignalFromDiskExporter.get()).isNotNull();
+                            verify(scheduleHandler).enable();
+                            verify(scheduleHandler, never()).disable();
+                            verify(initializationEvents)
+                                    .spanExporterInitialized(exporterCaptor.capture());
+                            assertThat(exporterCaptor.getValue())
+                                    .isInstanceOf(SpanToDiskExporter.class);
+                        });
     }
 
     @Test
@@ -359,11 +371,17 @@ public class OpenTelemetryRumBuilderTest {
 
         OpenTelemetryRum.builder(application, config).build(serviceManager);
 
-        verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
-        verify(scheduleHandler, never()).enable();
-        verify(scheduleHandler).disable();
-        assertThat(exporterCaptor.getValue()).isNotInstanceOf(SpanToDiskExporter.class);
-        assertThat(SignalFromDiskExporter.get()).isNull();
+        await().atMost(Duration.ofSeconds(30))
+                .untilAsserted(
+                        () -> {
+                            verify(initializationEvents)
+                                    .spanExporterInitialized(exporterCaptor.capture());
+                            verify(scheduleHandler, never()).enable();
+                            verify(scheduleHandler).disable();
+                            assertThat(exporterCaptor.getValue())
+                                    .isNotInstanceOf(SpanToDiskExporter.class);
+                            assertThat(SignalFromDiskExporter.get()).isNull();
+                        });
     }
 
     @Test
@@ -390,11 +408,17 @@ public class OpenTelemetryRumBuilderTest {
 
         OpenTelemetryRum.builder(application, config).build();
 
-        verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
-        verify(scheduleHandler, never()).enable();
-        verify(scheduleHandler).disable();
-        assertThat(exporterCaptor.getValue()).isNotInstanceOf(SpanToDiskExporter.class);
-        assertThat(SignalFromDiskExporter.get()).isNull();
+        await().atMost(Duration.ofSeconds(30))
+                .untilAsserted(
+                        () -> {
+                            verify(initializationEvents)
+                                    .spanExporterInitialized(exporterCaptor.capture());
+                            verify(scheduleHandler, never()).enable();
+                            verify(scheduleHandler).disable();
+                            assertThat(exporterCaptor.getValue())
+                                    .isNotInstanceOf(SpanToDiskExporter.class);
+                            assertThat(SignalFromDiskExporter.get()).isNull();
+                        });
     }
 
     @Test
