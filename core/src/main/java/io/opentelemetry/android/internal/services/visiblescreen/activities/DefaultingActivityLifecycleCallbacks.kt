@@ -3,42 +3,36 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.services.visiblescreen.activities;
+package io.opentelemetry.android.internal.services.visiblescreen.activities
 
-import android.app.Activity;
-import android.app.Application;
-import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.app.Activity
+import android.app.Application.ActivityLifecycleCallbacks
+import android.os.Bundle
 
 /**
  * Interface helper for implementations that don't need/want all the extra baggage of the full
  * Application.ActivityLifecycleCallbacks interface. Implementations can choose which methods to
  * implement.
  */
-public interface DefaultingActivityLifecycleCallbacks
-        extends Application.ActivityLifecycleCallbacks {
+interface DefaultingActivityLifecycleCallbacks : ActivityLifecycleCallbacks {
+    override fun onActivityCreated(
+        activity: Activity,
+        savedInstanceState: Bundle?,
+    ) { }
 
-    @Override
-    default void onActivityCreated(
-            @NonNull Activity activity, @Nullable Bundle savedInstanceState) {}
+    override fun onActivityStarted(activity: Activity) {}
 
-    @Override
-    default void onActivityStarted(@NonNull Activity activity) {}
+    override fun onActivityResumed(activity: Activity) {}
 
-    @Override
-    default void onActivityResumed(@NonNull Activity activity) {}
+    override fun onActivityPaused(activity: Activity) {}
 
-    @Override
-    default void onActivityPaused(@NonNull Activity activity) {}
+    override fun onActivityStopped(activity: Activity) {}
 
-    @Override
-    default void onActivityStopped(@NonNull Activity activity) {}
+    override fun onActivitySaveInstanceState(
+        activity: Activity,
+        outState: Bundle,
+    ) {
+    }
 
-    @Override
-    default void onActivitySaveInstanceState(
-            @NonNull Activity activity, @NonNull Bundle outState) {}
-
-    @Override
-    default void onActivityDestroyed(@NonNull Activity activity) {}
+    override fun onActivityDestroyed(activity: Activity) {}
 }
