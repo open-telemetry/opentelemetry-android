@@ -15,6 +15,7 @@ android {
 
 dependencies {
     api(platform(libs.opentelemetry.platform))
+    api(platform(libs.opentelemetry.platform.alpha))
     api(libs.opentelemetry.api)
     api(project(":core"))
     implementation(libs.androidx.core)
