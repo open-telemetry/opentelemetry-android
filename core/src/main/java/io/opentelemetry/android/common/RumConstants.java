@@ -27,9 +27,6 @@ public class RumConstants {
     public static final AttributeKey<Long> HEAP_FREE_KEY = longKey("heap.free");
     public static final AttributeKey<Double> BATTERY_PERCENT_KEY = doubleKey("battery.percent");
 
-    public static final AttributeKey<String> PREVIOUS_SESSION_ID_KEY =
-            stringKey("session.previous_id");
-
     public static final String APP_START_SPAN_NAME = "AppStart";
 
     public static final class Events {
