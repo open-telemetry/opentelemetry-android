@@ -44,8 +44,13 @@ The output artifacts will be in `instrumentation/build/outputs/`.
 We use [spotless](https://github.com/diffplug/spotless) to enforce a consistent code style
 throughout the project. This includes reformatting (linting) of both source code and markdown.
 
-Before submitting a PR, you should ensure that your code is linted by
-running `./gradlew spotlessApply` and committing your changes.
+Before submitting a PR, you should ensure that your code is linted. We use the 
+[spotless gradle plugin](https://github.com/diffplug/spotless/tree/main/plugin-gradle) to 
+make this easy. You should run it like this:
+
+```
+./gradlew spotlessApply
+```
 
 ### Tests
 
