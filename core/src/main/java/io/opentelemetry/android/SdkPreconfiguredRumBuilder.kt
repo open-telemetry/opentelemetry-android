@@ -54,7 +54,7 @@ class SdkPreconfiguredRumBuilder
 
             // Install instrumentations
             for (instrumentation in getInstrumentations()) {
-                instrumentation.install(application, openTelemetryRum)
+                instrumentation.install(application, openTelemetryRum.openTelemetry)
             }
 
             return openTelemetryRum
