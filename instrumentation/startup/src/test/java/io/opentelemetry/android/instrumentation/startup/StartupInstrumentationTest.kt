@@ -38,12 +38,10 @@ class StartupInstrumentationTest {
     @Test
     fun `Call finish on SdkInitializationEvents`() {
         val sdkInitializationEvents = mockk<SdkInitializationEvents>()
-        val openTelemetryRum = mockk<OpenTelemetryRum>()
-        every { openTelemetryRum.openTelemetry }.returns(otelTesting.openTelemetry)
         every { sdkInitializationEvents.finish(any()) } just Runs
         InitializationEvents.set(sdkInitializationEvents)
 
-        instrumentation.install(mockk(), openTelemetryRum)
+        instrumentation.install(mockk(), otelTesting.openTelemetry)
 
         verify {
             sdkInitializationEvents.finish(otelTesting.openTelemetry)
@@ -56,7 +54,7 @@ class StartupInstrumentationTest {
         val openTelemetryRum = mockk<OpenTelemetryRum>()
         InitializationEvents.set(initializationEvents)
 
-        instrumentation.install(mockk(), openTelemetryRum)
+        instrumentation.install(mockk(), otelTesting.openTelemetry)
 
         verify { initializationEvents wasNot Called }
     }

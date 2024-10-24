@@ -9,12 +9,12 @@ import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Build
 import com.google.auto.service.AutoService
-import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.common.Constants.INSTRUMENTATION_SCOPE
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.internal.services.visiblescreen.fragments.RumFragmentActivityRegisterer
+import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.Tracer
 
 @AutoService(AndroidInstrumentation::class)
@@ -32,14 +32,14 @@ class FragmentLifecycleInstrumentation : AndroidInstrumentation {
 
     override fun install(
         application: Application,
-        openTelemetryRum: OpenTelemetryRum,
+        openTelemetry: OpenTelemetry,
     ) {
-        application.registerActivityLifecycleCallbacks(buildFragmentRegisterer(openTelemetryRum))
+        application.registerActivityLifecycleCallbacks(buildFragmentRegisterer(openTelemetry))
     }
 
-    private fun buildFragmentRegisterer(openTelemetryRum: OpenTelemetryRum): ActivityLifecycleCallbacks {
+    private fun buildFragmentRegisterer(openTelemetry: OpenTelemetry): ActivityLifecycleCallbacks {
         val visibleScreenService = ServiceManager.get().getVisibleScreenService()
-        val delegateTracer: Tracer = openTelemetryRum.openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
+        val delegateTracer: Tracer = openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
         val fragmentLifecycle =
             RumFragmentLifecycleCallbacks(
                 tracerCustomizer.invoke(delegateTracer),

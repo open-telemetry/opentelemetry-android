@@ -7,19 +7,19 @@ package io.opentelemetry.android.instrumentation.startup
 
 import android.app.Application
 import com.google.auto.service.AutoService
-import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.internal.initialization.InitializationEvents
+import io.opentelemetry.api.OpenTelemetry
 
 @AutoService(AndroidInstrumentation::class)
 class StartupInstrumentation : AndroidInstrumentation {
     override fun install(
         application: Application,
-        openTelemetryRum: OpenTelemetryRum,
+        openTelemetry: OpenTelemetry,
     ) {
         val events = InitializationEvents.get()
         if (events is SdkInitializationEvents) {
-            events.finish(openTelemetryRum.openTelemetry)
+            events.finish(openTelemetry)
         }
     }
 }

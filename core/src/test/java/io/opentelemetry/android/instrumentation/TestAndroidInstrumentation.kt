@@ -6,7 +6,7 @@
 package io.opentelemetry.android.instrumentation
 
 import android.app.Application
-import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.api.OpenTelemetry
 
 class TestAndroidInstrumentation : AndroidInstrumentation {
     var installed = false
@@ -14,7 +14,7 @@ class TestAndroidInstrumentation : AndroidInstrumentation {
 
     override fun install(
         application: Application,
-        openTelemetryRum: OpenTelemetryRum,
+        openTelemetry: OpenTelemetry,
     ) {
         installed = true
     }

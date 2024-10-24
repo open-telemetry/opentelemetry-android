@@ -14,7 +14,6 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -27,15 +26,12 @@ import java.time.Duration
 class SlowRenderingInstrumentationTest {
     private lateinit var slowRenderingInstrumentation: SlowRenderingInstrumentation
     private lateinit var application: Application
-    private lateinit var openTelemetryRum: OpenTelemetryRum
     private lateinit var openTelemetry: OpenTelemetrySdk
 
     @Before
     fun setUp() {
         application = mockk()
         openTelemetry = mockk()
-        openTelemetryRum = mockk()
-        every { openTelemetryRum.openTelemetry }.returns(openTelemetry)
         slowRenderingInstrumentation = SlowRenderingInstrumentation()
     }
 
@@ -67,13 +63,13 @@ class SlowRenderingInstrumentationTest {
     @Config(sdk = [23])
     @Test
     fun `Not installing instrumentation on devices with API level lower than 24`() {
-        slowRenderingInstrumentation.install(application, openTelemetryRum)
+        slowRenderingInstrumentation.install(application, openTelemetry)
 
         verify {
             application wasNot Called
         }
         verify {
-            openTelemetryRum wasNot Called
+            openTelemetry wasNot Called
         }
     }
 
@@ -84,7 +80,7 @@ class SlowRenderingInstrumentationTest {
         every { openTelemetry.getTracer(any()) }.returns(mockk())
         every { application.registerActivityLifecycleCallbacks(any()) } just Runs
 
-        slowRenderingInstrumentation.install(application, openTelemetryRum)
+        slowRenderingInstrumentation.install(application, openTelemetry)
 
         verify { openTelemetry.getTracer("io.opentelemetry.slow-rendering") }
         verify { application.registerActivityLifecycleCallbacks(capture(capturedListener)) }

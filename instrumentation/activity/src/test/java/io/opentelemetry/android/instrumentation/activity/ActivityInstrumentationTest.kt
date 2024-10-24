@@ -33,8 +33,6 @@ class ActivityInstrumentationTest {
     fun setUp() {
         application = RuntimeEnvironment.getApplication()
         openTelemetry = mockk()
-        openTelemetryRum = mockk()
-        every { openTelemetryRum.openTelemetry }.returns(openTelemetry)
         activityLifecycleInstrumentation = ActivityLifecycleInstrumentation()
 
         Companion.initialize(application)
@@ -54,7 +52,7 @@ class ActivityInstrumentationTest {
         )
         every { startupSpanBuilder.startSpan() }.returns(startupSpan)
 
-        activityLifecycleInstrumentation.install(application, openTelemetryRum)
+        activityLifecycleInstrumentation.install(application, openTelemetry)
 
         verify {
             tracer.spanBuilder("AppStart")
