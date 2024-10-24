@@ -15,7 +15,7 @@ android {
 
 dependencies {
     api(project(":core"))
-    api(platform(libs.opentelemetry.platform))
+    api(platform(libs.opentelemetry.platform.alpha))
     api(libs.opentelemetry.api)
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.opentelemetry.sdk)
