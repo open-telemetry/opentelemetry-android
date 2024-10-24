@@ -40,7 +40,7 @@ dependencies {
     implementation(libs.opentelemetry.semconv.incubating)
     compileOnly(libs.volley)
 
-    api(platform(libs.opentelemetry.platform))
+    api(platform(libs.opentelemetry.platform.alpha))
     api(libs.opentelemetry.api)
 
     testImplementation(libs.volley)
