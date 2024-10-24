@@ -38,7 +38,12 @@ jobs:
           else
             prior_version="$major.$minor.$((patch - 1))"
           fi
-          inst_version=$(grep ^opentelemetry-alpha gradle/libs.versions.toml | sed -E "s/^.*\"(.*)\"/\1/")
+          # otel instrumentation version comes in through alpha bom
+#          inst_version=$(grep ^opentelemetry-alpha gradle/libs.versions.toml | sed -E "s/^.*\"(.*)\"/\1/")
+          inst_version=$(./gradlew --console=plain android-agent:dependencies | \
+                        grep 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom ' | \
+                        sed -e "s/.* -> //" | sed -e "s/ .*//" | \
+                        sort | head -1)
           # otel-java core libs are transient deps thru instrumentation boms
           sdk_version=$(./gradlew --console=plain android-agent:dependencies | \
                         grep 'io.opentelemetry:opentelemetry-api ' | \
