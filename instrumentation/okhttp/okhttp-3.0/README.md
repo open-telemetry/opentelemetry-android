@@ -19,7 +19,7 @@ release](https://search.maven.org/search?q=g:net.bytebuddy%20AND%20a:byte-buddy)
 This plugin leverages
 Android's [Transform API](https://developer.android.com/reference/tools/gradle-api/current/com/android/build/api/variant/ScopedArtifactsOperation#toTransform(com.android.build.api.artifact.ScopedArtifact,kotlin.Function1,kotlin.Function1,kotlin.Function1))
 to instrument bytecode at compile time. You can find more info on
-its [repo page](https://github.com/raphw/byte-buddy/tree/master/byte-buddy-gradle-plugin/android-plugin.
+its [repo page](https://github.com/raphw/byte-buddy/tree/master/byte-buddy-gradle-plugin/android-plugin).
 
 ```groovy
 plugins {
@@ -41,7 +41,7 @@ automatically.
 
 You can configure the automatic instrumentation by using the setters
 from
-the [OkHttpInstrumentation](library/src/main/java/io/opentelemetry/instrumentation/library/okhttp/v3_0/OkHttpInstrumentation.java))
+the [OkHttpInstrumentation](library/src/main/java/io/opentelemetry/instrumentation/library/okhttp/v3_0/OkHttpInstrumentation.java)
 instance provided via the AndroidInstrumentationLoader as shown below:
 
 ```java
