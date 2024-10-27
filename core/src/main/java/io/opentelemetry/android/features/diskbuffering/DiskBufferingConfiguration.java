@@ -30,7 +30,7 @@ public final class DiskBufferingConfiguration {
         maxFileAgeForWriteMillis = builder.maxFileAgeForWriteMillis;
         minFileAgeForReadMillis = builder.minFileAgeForReadMillis;
         maxFileAgeForReadMillis = builder.maxFileAgeForReadMillis;
-        this.enableDebugMode = builder.enableDebugMode; 
+        this.enableDebugMode = builder.enableDebugMode;
     }
 
     public static Builder builder() {
@@ -78,9 +78,12 @@ public final class DiskBufferingConfiguration {
         // Sets the debug mode for disk buffering, enabling additional logging.
         public Builder setDebugMode(boolean enableDebugMode) {
             this.enableDebugMode = enableDebugMode;
-            Logger.getLogger(DiskBufferingConfiguration.class.getName()).log(Level.INFO, 
-                "Disk buffering has been " + (enabled ? "enabled." : "disabled.") + 
-                    (enableDebugMode ? " Debug mode is active." : ""));
+            Logger.getLogger(DiskBufferingConfiguration.class.getName())
+                    .log(
+                            Level.INFO,
+                            "Disk buffering has been "
+                                    + (enabled ? "enabled." : "disabled.")
+                                    + (enableDebugMode ? " Debug mode is active." : ""));
             return this;
         }
 
@@ -88,9 +91,10 @@ public final class DiskBufferingConfiguration {
         public Builder setEnabled(boolean enabled) {
             this.enabled = enabled;
             if (enableDebugMode) {
-                Logger.getLogger(DiskBufferingConfiguration.class.getName()).log(Level.INFO, "Debug log message here");
+                Logger.getLogger(DiskBufferingConfiguration.class.getName())
+                        .log(Level.INFO, "Debug log message here");
             }
-            
+
             return this;
         }
 
