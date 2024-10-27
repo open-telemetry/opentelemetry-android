@@ -22,6 +22,7 @@ public final class DiskBufferingConfiguration {
     private final long maxFileAgeForWriteMillis;
     private final long minFileAgeForReadMillis;
     private final long maxFileAgeForReadMillis;
+    private final boolean enableDebugMode;
 
     private DiskBufferingConfiguration(Builder builder) {
         enabled = builder.enabled;
@@ -30,7 +31,7 @@ public final class DiskBufferingConfiguration {
         maxFileAgeForWriteMillis = builder.maxFileAgeForWriteMillis;
         minFileAgeForReadMillis = builder.minFileAgeForReadMillis;
         maxFileAgeForReadMillis = builder.maxFileAgeForReadMillis;
-        this.enableDebugMode = builder.enableDebugMode;
+        enableDebugMode = builder.enableDebugMode;
     }
 
     public static Builder builder() {
