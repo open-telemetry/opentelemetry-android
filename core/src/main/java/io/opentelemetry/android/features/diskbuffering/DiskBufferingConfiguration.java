@@ -30,6 +30,7 @@ public final class DiskBufferingConfiguration {
         maxFileAgeForWriteMillis = builder.maxFileAgeForWriteMillis;
         minFileAgeForReadMillis = builder.minFileAgeForReadMillis;
         maxFileAgeForReadMillis = builder.maxFileAgeForReadMillis;
+        this.enableDebugMode = builder.enableDebugMode; 
     }
 
     public static Builder builder() {
@@ -70,12 +71,26 @@ public final class DiskBufferingConfiguration {
         private long maxFileAgeForWriteMillis = TimeUnit.SECONDS.toMillis(30);
         private long minFileAgeForReadMillis = TimeUnit.SECONDS.toMillis(33);
         private long maxFileAgeForReadMillis = TimeUnit.HOURS.toMillis(18);
+        private boolean enableDebugMode = false;
 
         private ExportScheduleHandler exportScheduleHandler = DefaultExportScheduleHandler.create();
+
+        // Sets the debug mode for disk buffering, enabling additional logging.
+        public Builder setDebugMode(boolean enableDebugMode) {
+            this.enableDebugMode = enableDebugMode;
+            Logger.getLogger(DiskBufferingConfiguration.class.getName()).log(Level.INFO, 
+                "Disk buffering has been " + (enabled ? "enabled." : "disabled.") + 
+                    (enableDebugMode ? " Debug mode is active." : ""));
+            return this;
+        }
 
         /** Enables or disables disk buffering. */
         public Builder setEnabled(boolean enabled) {
             this.enabled = enabled;
+            if (enableDebugMode) {
+                Logger.getLogger(DiskBufferingConfiguration.class.getName()).log(Level.INFO, "Debug log message here");
+            }
+            
             return this;
         }
 
