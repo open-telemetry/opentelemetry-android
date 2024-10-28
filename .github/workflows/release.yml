@@ -38,7 +38,6 @@ jobs:
             prior_version="$major.$minor.$((patch - 1))"
           fi
           # otel instrumentation version comes in through alpha bom
-#          inst_version=$(grep ^opentelemetry-alpha gradle/libs.versions.toml | sed -E "s/^.*\"(.*)\"/\1/")
           inst_version=$(./gradlew --console=plain android-agent:dependencies | \
                         grep 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom ' | \
                         sed -e "s/.* -> //" | sed -e "s/ .*//" | \
