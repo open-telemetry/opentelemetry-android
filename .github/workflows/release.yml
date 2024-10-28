@@ -15,7 +15,6 @@ jobs:
             exit 1
           fi
       - uses: actions/checkout@v4
-
       - name: Set environment variables
         run: |
           version=$(.github/scripts/get-version.sh)
