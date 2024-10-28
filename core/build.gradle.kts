@@ -66,7 +66,7 @@ dependencies {
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.androidx.lifecycle.process)
 
-    api(platform(libs.opentelemetry.platform))
+    api(platform(libs.opentelemetry.platform.alpha))
     api(libs.opentelemetry.api)
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.api.incubator)

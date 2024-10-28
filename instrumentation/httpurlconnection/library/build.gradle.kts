@@ -10,7 +10,7 @@ android {
 }
 
 dependencies {
-    api(platform(libs.opentelemetry.platform))
+    api(platform(libs.opentelemetry.platform.alpha))
     api(libs.opentelemetry.api)
     api(libs.opentelemetry.context)
     api(project(":core"))
