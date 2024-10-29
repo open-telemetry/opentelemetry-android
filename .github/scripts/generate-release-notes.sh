@@ -13,8 +13,7 @@ the OpenTelemetry Java Core (sdk/api/exporters) $SDK_VER.
 
 Note that many artifacts have the \`-alpha\` suffix attached to their version number, reflecting
 that they are still alpha quality and will continue to have breaking changes. Please see the
-[VERSIONING.md](https://github.com/open-telemetry/opentelemetry-android/blob/main/VERSIONING.md#opentelemetry-android-versioning)
-for more details.
+[VERSIONING.md](https://github.com/open-telemetry/opentelemetry-android/blob/main/VERSIONING.md#opentelemetry-android-versioning) for more details.
 
 EOF
 
