@@ -76,7 +76,7 @@ public final class DiskBufferingConfiguration {
 
         private ExportScheduleHandler exportScheduleHandler = DefaultExportScheduleHandler.create();
 
-        // Sets the debug mode for disk buffering, enabling additional logging.
+        /** Sets the debug mode for disk buffering, enabling additional logging. */
         public Builder setDebugMode(boolean enableDebugMode) {
             this.enableDebugMode = enableDebugMode;
             Logger.getLogger(DiskBufferingConfiguration.class.getName())
