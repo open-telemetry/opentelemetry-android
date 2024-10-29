@@ -5,14 +5,16 @@
 
 package io.opentelemetry.android.instrumentation.startup
 
+import android.app.Application
 import io.mockk.Called
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
-import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.internal.initialization.InitializationEvents
+import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -41,7 +43,7 @@ class StartupInstrumentationTest {
         every { sdkInitializationEvents.finish(any()) } just Runs
         InitializationEvents.set(sdkInitializationEvents)
 
-        instrumentation.install(mockk(), otelTesting.openTelemetry)
+        instrumentation.install(makeContext())
 
         verify {
             sdkInitializationEvents.finish(otelTesting.openTelemetry)
@@ -51,11 +53,18 @@ class StartupInstrumentationTest {
     @Test
     fun `No action when the InitializationEvents instance is not SdkInitializationEvents`() {
         val initializationEvents = mockk<InitializationEvents>()
-        val openTelemetryRum = mockk<OpenTelemetryRum>()
         InitializationEvents.set(initializationEvents)
 
-        instrumentation.install(mockk(), otelTesting.openTelemetry)
+        instrumentation.install(makeContext())
 
         verify { initializationEvents wasNot Called }
+    }
+
+    private fun makeContext(): InstallationContext {
+        return InstallationContext(
+            mockk<Application>(),
+            otelTesting.openTelemetry,
+            mockk<ServiceManager>(),
+        )
     }
 }

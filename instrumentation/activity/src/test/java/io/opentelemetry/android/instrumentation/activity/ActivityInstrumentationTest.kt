@@ -12,6 +12,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.common.RumConstants
+import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.internal.services.ServiceManager.Companion
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanBuilder
@@ -52,7 +53,8 @@ class ActivityInstrumentationTest {
         )
         every { startupSpanBuilder.startSpan() }.returns(startupSpan)
 
-        activityLifecycleInstrumentation.install(application, openTelemetry)
+        val ctx = InstallationContext(application, openTelemetry, mockk())
+        activityLifecycleInstrumentation.install(ctx)
 
         verify {
             tracer.spanBuilder("AppStart")

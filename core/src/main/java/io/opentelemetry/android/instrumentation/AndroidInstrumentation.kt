@@ -5,9 +5,7 @@
 
 package io.opentelemetry.android.instrumentation
 
-import android.app.Application
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.api.OpenTelemetry
 
 /**
  * This interface defines a tool that automatically generates telemetry for a specific use-case,
@@ -30,11 +28,7 @@ interface AndroidInstrumentation {
      * only be called from [OpenTelemetryRum]'s builder once the [OpenTelemetryRum] instance is initialized and ready
      * to use for generating telemetry.
      *
-     * @param application The Android application being instrumented.
-     * @param openTelemetry The [OpenTelemetry] instance to use for creating signals.
+     * @param ctx The InstallationContext under which the instrumentation is being installed
      */
-    fun install(
-        application: Application,
-        openTelemetry: OpenTelemetry,
-    )
+    fun install(ctx: InstallationContext)
 }

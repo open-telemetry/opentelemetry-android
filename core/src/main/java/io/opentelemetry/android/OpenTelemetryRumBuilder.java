@@ -9,9 +9,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
@@ -89,8 +87,7 @@ public final class OpenTelemetryRumBuilder {
 
     private Resource resource;
 
-    @Nullable
-    private ServiceManager serviceManager;
+    @Nullable private ServiceManager serviceManager;
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
@@ -281,8 +278,7 @@ public final class OpenTelemetryRumBuilder {
         SignalFromDiskExporter signalFromDiskExporter = null;
         if (diskBufferingConfiguration.isEnabled()) {
             try {
-                StorageConfiguration storageConfiguration =
-                        createStorageConfiguration();
+                StorageConfiguration storageConfiguration = createStorageConfiguration();
                 final SpanExporter originalSpanExporter = spanExporter;
                 spanExporter =
                         SpanToDiskExporter.create(originalSpanExporter, storageConfiguration);
@@ -332,7 +328,7 @@ public final class OpenTelemetryRumBuilder {
 
     @NonNull
     private ServiceManager getServiceManager() {
-        if(serviceManager == null){
+        if (serviceManager == null) {
             ServiceManager.initialize(application);
             serviceManager = ServiceManager.get();
         }
@@ -344,8 +340,7 @@ public final class OpenTelemetryRumBuilder {
         return this;
     }
 
-    private StorageConfiguration createStorageConfiguration()
-            throws IOException {
+    private StorageConfiguration createStorageConfiguration() throws IOException {
         Preferences preferences = getServiceManager().getPreferences();
         CacheStorage storage = getServiceManager().getCacheStorage();
         DiskBufferingConfiguration config = this.config.getDiskBufferingConfiguration();

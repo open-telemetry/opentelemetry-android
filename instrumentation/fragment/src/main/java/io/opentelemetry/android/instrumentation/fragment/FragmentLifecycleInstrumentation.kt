@@ -5,11 +5,11 @@
 
 package io.opentelemetry.android.instrumentation.fragment
 
-import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Build
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.instrumentation.common.Constants.INSTRUMENTATION_SCOPE
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.internal.services.ServiceManager
@@ -30,11 +30,8 @@ class FragmentLifecycleInstrumentation : AndroidInstrumentation {
         this.screenNameExtractor = screenNameExtractor
     }
 
-    override fun install(
-        application: Application,
-        openTelemetry: OpenTelemetry,
-    ) {
-        application.registerActivityLifecycleCallbacks(buildFragmentRegisterer(openTelemetry))
+    override fun install(ctx: InstallationContext) {
+        ctx.application.registerActivityLifecycleCallbacks(buildFragmentRegisterer(ctx.openTelemetry))
     }
 
     private fun buildFragmentRegisterer(openTelemetry: OpenTelemetry): ActivityLifecycleCallbacks {

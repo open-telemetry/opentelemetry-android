@@ -5,10 +5,10 @@
 
 package io.opentelemetry.android.instrumentation.activity
 
-import android.app.Application
 import android.os.Build
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.Constants.INSTRUMENTATION_SCOPE
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
@@ -31,13 +31,10 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
         this.screenNameExtractor = screenNameExtractor
     }
 
-    override fun install(
-        application: Application,
-        openTelemetry: OpenTelemetry,
-    ) {
-        startupTimer.start(openTelemetry.getTracer(INSTRUMENTATION_SCOPE))
-        application.registerActivityLifecycleCallbacks(startupTimer.createLifecycleCallback())
-        application.registerActivityLifecycleCallbacks(buildActivityLifecycleTracer(openTelemetry))
+    override fun install(ctx: InstallationContext) {
+        startupTimer.start(ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE))
+        ctx.application.registerActivityLifecycleCallbacks(startupTimer.createLifecycleCallback())
+        ctx.application.registerActivityLifecycleCallbacks(buildActivityLifecycleTracer(ctx.openTelemetry))
     }
 
     private fun buildActivityLifecycleTracer(openTelemetry: OpenTelemetry): DefaultingActivityLifecycleCallbacks {

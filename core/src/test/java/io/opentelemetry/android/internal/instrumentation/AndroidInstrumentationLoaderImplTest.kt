@@ -25,7 +25,7 @@ class AndroidInstrumentationLoaderImplTest {
 
         assertThat(instrumentation.installed).isFalse()
 
-        instrumentation.install(mockk(), mockk())
+        instrumentation.install(mockk())
 
         assertThat(loader.getByType(TestAndroidInstrumentation::class.java)!!.installed).isTrue()
     }

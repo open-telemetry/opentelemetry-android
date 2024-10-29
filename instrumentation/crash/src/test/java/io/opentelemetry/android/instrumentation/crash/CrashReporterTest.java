@@ -8,8 +8,11 @@ package io.opentelemetry.android.instrumentation.crash;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor.constant;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import io.opentelemetry.android.instrumentation.InstallationContext;
+import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -57,7 +60,12 @@ public class CrashReporterTest {
     public void integrationTest() throws InterruptedException {
         CrashReporterInstrumentation instrumentation = new CrashReporterInstrumentation();
         instrumentation.addAttributesExtractor(constant(stringKey("test.key"), "abc"));
-        instrumentation.install(RuntimeEnvironment.getApplication(), openTelemetrySdk);
+        InstallationContext ctx =
+                new InstallationContext(
+                        RuntimeEnvironment.getApplication(),
+                        openTelemetrySdk,
+                        mock(ServiceManager.class));
+        instrumentation.install(ctx);
 
         String exceptionMessage = "boooom!";
         RuntimeException crash = new RuntimeException(exceptionMessage);
