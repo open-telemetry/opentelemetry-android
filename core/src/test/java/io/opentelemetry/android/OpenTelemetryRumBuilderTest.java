@@ -124,7 +124,9 @@ public class OpenTelemetryRumBuilderTest {
         ServiceManager serviceManager = createServiceManager();
         AppLifecycleService appLifecycleService = serviceManager.getAppLifecycleService();
 
-        makeBuilder().build(serviceManager);
+        makeBuilder()
+                .setServiceManager(serviceManager)
+                .build();
 
         verify(appLifecycleService).registerListener(isA(ApplicationStateListener.class));
     }
@@ -203,7 +205,8 @@ public class OpenTelemetryRumBuilderTest {
 
         new OpenTelemetryRumBuilder(application, buildConfig(), timeoutHandler)
                 .addInstrumentation(localInstrumentation)
-                .build(serviceManager);
+                .setServiceManager(serviceManager)
+                .build();
 
         verify(serviceManager.getAppLifecycleService()).registerListener(timeoutHandler);
 
@@ -226,7 +229,8 @@ public class OpenTelemetryRumBuilderTest {
                         buildConfig().disableInstrumentationDiscovery(),
                         timeoutHandler)
                 .addInstrumentation(localInstrumentation)
-                .build(serviceManager);
+                .setServiceManager(serviceManager)
+                .build();
 
         verify(serviceManager.getAppLifecycleService()).registerListener(timeoutHandler);
 
@@ -328,7 +332,7 @@ public class OpenTelemetryRumBuilderTest {
                         .build());
         ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
 
-        OpenTelemetryRum.builder(application, config).build(serviceManager);
+        OpenTelemetryRum.builder(application, config).setServiceManager(serviceManager).build();
 
         assertThat(SignalFromDiskExporter.get()).isNotNull();
         verify(scheduleHandler).enable();
@@ -357,7 +361,7 @@ public class OpenTelemetryRumBuilderTest {
                         .setExportScheduleHandler(scheduleHandler)
                         .build());
 
-        OpenTelemetryRum.builder(application, config).build(serviceManager);
+        OpenTelemetryRum.builder(application, config).setServiceManager(serviceManager).build();
 
         verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
         verify(scheduleHandler, never()).enable();
@@ -372,7 +376,8 @@ public class OpenTelemetryRumBuilderTest {
         AtomicReference<OpenTelemetrySdk> seen = new AtomicReference<>();
         OpenTelemetryRum.builder(application, config)
                 .addOtelSdkReadyListener(seen::set)
-                .build(createServiceManager());
+                .setServiceManager(createServiceManager())
+                .build();
         assertThat(seen.get()).isNotNull();
     }
 
@@ -437,7 +442,7 @@ public class OpenTelemetryRumBuilderTest {
         ServiceManager serviceManager = mock();
         doReturn(mock(AppLifecycleService.class)).when(serviceManager).getAppLifecycleService();
 
-        makeBuilder().build(serviceManager);
+        makeBuilder().setServiceManager(serviceManager).build();
 
         verify(serviceManager).start();
     }
