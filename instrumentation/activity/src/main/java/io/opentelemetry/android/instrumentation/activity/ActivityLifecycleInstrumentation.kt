@@ -8,13 +8,13 @@ package io.opentelemetry.android.instrumentation.activity
 import android.app.Application
 import android.os.Build
 import com.google.auto.service.AutoService
-import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.Constants.INSTRUMENTATION_SCOPE
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
+import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.Tracer
 
 @AutoService(AndroidInstrumentation::class)
@@ -33,16 +33,16 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
 
     override fun install(
         application: Application,
-        openTelemetryRum: OpenTelemetryRum,
+        openTelemetry: OpenTelemetry,
     ) {
-        startupTimer.start(openTelemetryRum.openTelemetry.getTracer(INSTRUMENTATION_SCOPE))
+        startupTimer.start(openTelemetry.getTracer(INSTRUMENTATION_SCOPE))
         application.registerActivityLifecycleCallbacks(startupTimer.createLifecycleCallback())
-        application.registerActivityLifecycleCallbacks(buildActivityLifecycleTracer(openTelemetryRum))
+        application.registerActivityLifecycleCallbacks(buildActivityLifecycleTracer(openTelemetry))
     }
 
-    private fun buildActivityLifecycleTracer(openTelemetryRum: OpenTelemetryRum): DefaultingActivityLifecycleCallbacks {
+    private fun buildActivityLifecycleTracer(openTelemetry: OpenTelemetry): DefaultingActivityLifecycleCallbacks {
         val visibleScreenService = ServiceManager.get().getVisibleScreenService()
-        val delegateTracer: Tracer = openTelemetryRum.openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
+        val delegateTracer: Tracer = openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
         val tracers =
             ActivityTracerCache(
                 tracerCustomizer.invoke(delegateTracer),

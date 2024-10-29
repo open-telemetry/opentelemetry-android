@@ -22,10 +22,15 @@ dependencies {
 
 ## How to use VolleyTracing
 
-To use `VolleyTracing`, you must have already initialized `OpenTelemetryRum`.
+To use `VolleyTracing`, you must have already initialized an `OpenTelemetry` instance.
 To build an instrumented client HTTP call, you will first create an instance of
-`VolleyTracing` by passing in the `OpenTelemetry` instance from the `OpenTelemtryRum`
-instance to the builder:
+`VolleyTracing` by passing in the `OpenTelemetry` instance to the builder:
+
+```java
+VolleyTracing volleyTracing = VolleyTracing.builder(openTelemetry).build();
+```
+
+If you're using `OpenTelemetryRum`, you can get the `OpenTelemetry` instance from it:
 
 ```java
 VolleyTracing volleyTracing = VolleyTracing.builder(otelRum.getOpenTelemtry()).build();

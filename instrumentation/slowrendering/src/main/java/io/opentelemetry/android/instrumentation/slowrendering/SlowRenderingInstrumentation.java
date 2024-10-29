@@ -11,9 +11,9 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import com.google.auto.service.AutoService;
-import io.opentelemetry.android.OpenTelemetryRum;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
+import io.opentelemetry.api.OpenTelemetry;
 import java.time.Duration;
 
 /** Entrypoint for installing the slow rendering detection instrumentation. */
@@ -43,8 +43,7 @@ public final class SlowRenderingInstrumentation implements AndroidInstrumentatio
 
     @RequiresApi(Build.VERSION_CODES.N)
     @Override
-    public void install(
-            @NonNull Application application, @NonNull OpenTelemetryRum openTelemetryRum) {
+    public void install(@NonNull Application application, @NonNull OpenTelemetry openTelemetry) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             Log.w(
                     RumConstants.OTEL_RUM_LOG_TAG,
@@ -54,9 +53,7 @@ public final class SlowRenderingInstrumentation implements AndroidInstrumentatio
 
         SlowRenderListener detector =
                 new SlowRenderListener(
-                        openTelemetryRum
-                                .getOpenTelemetry()
-                                .getTracer("io.opentelemetry.slow-rendering"),
+                        openTelemetry.getTracer("io.opentelemetry.slow-rendering"),
                         slowRenderingDetectionPollInterval);
 
         application.registerActivityLifecycleCallbacks(detector);
