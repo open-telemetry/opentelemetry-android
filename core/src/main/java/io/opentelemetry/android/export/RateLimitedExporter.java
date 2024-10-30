@@ -29,6 +29,7 @@ class BandwidthThrottlingExporter implements SpanExporter {
         this.maxBytesPerSecond = builder.maxBytesPerSecond;
         this.timeWindowInMillis = builder.timeWindow.toMillis();
         this.lastExportTime = System.currentTimeMillis();
+
         this.bytesExportedInWindow = 0;
     }
 

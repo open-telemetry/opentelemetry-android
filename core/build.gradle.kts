@@ -12,6 +12,12 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
         buildConfigField("String", "OTEL_ANDROID_VERSION", "\"$version\"")
+
+// Enable desugaring for Java 8 features
+        compileOptions {
+            sourceCompatibility = JavaVersion.VERSION_1_8 // Set source compatibility to Java 8
+            targetCompatibility = JavaVersion.VERSION_1_8 // Set target compatibility to Java 8
+        }
     }
 
     buildTypes {
