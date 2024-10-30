@@ -327,13 +327,13 @@ public class OpenTelemetryRumBuilderTest {
         OtelRumConfig config = buildConfig();
         ExportScheduleHandler scheduleHandler = mock();
         config.setDiskBufferingConfiguration(
-                DiskBufferingConfiguration.builder()
-                        .setEnabled(true)
-                        .setExportScheduleHandler(scheduleHandler)
-                        .build());
+                DiskBufferingConfiguration.builder().setEnabled(true).build());
         ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
 
-        OpenTelemetryRum.builder(application, config).setServiceManager(serviceManager).build();
+        OpenTelemetryRum.builder(application, config)
+                .setExportScheduleHandler(scheduleHandler)
+                .setServiceManager(serviceManager)
+                .build();
 
         assertThat(SignalFromDiskExporter.get()).isNotNull();
         verify(scheduleHandler).enable();
@@ -357,12 +357,12 @@ public class OpenTelemetryRumBuilderTest {
         ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
         OtelRumConfig config = buildConfig();
         config.setDiskBufferingConfiguration(
-                DiskBufferingConfiguration.builder()
-                        .setEnabled(true)
-                        .setExportScheduleHandler(scheduleHandler)
-                        .build());
+                DiskBufferingConfiguration.builder().setEnabled(true).build());
 
-        OpenTelemetryRum.builder(application, config).setServiceManager(serviceManager).build();
+        OpenTelemetryRum.builder(application, config)
+                .setServiceManager(serviceManager)
+                .setExportScheduleHandler(scheduleHandler)
+                .build();
 
         verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
         verify(scheduleHandler, never()).enable();
@@ -389,12 +389,11 @@ public class OpenTelemetryRumBuilderTest {
 
         OtelRumConfig config = buildConfig();
         config.setDiskBufferingConfiguration(
-                DiskBufferingConfiguration.builder()
-                        .setEnabled(false)
-                        .setExportScheduleHandler(scheduleHandler)
-                        .build());
+                DiskBufferingConfiguration.builder().setEnabled(false).build());
 
-        OpenTelemetryRum.builder(application, config).build();
+        OpenTelemetryRum.builder(application, config)
+                .setExportScheduleHandler(scheduleHandler)
+                .build();
 
         verify(initializationEvents).spanExporterInitialized(exporterCaptor.capture());
         verify(scheduleHandler, never()).enable();

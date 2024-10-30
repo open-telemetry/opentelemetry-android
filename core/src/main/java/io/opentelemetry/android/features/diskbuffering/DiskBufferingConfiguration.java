@@ -5,15 +5,9 @@
 
 package io.opentelemetry.android.features.diskbuffering;
 
-import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduleHandler;
-import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduler;
-import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
-import io.opentelemetry.android.internal.services.ServiceManager;
-import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import kotlin.jvm.functions.Function0;
 
 /** Configuration for disk buffering. */
 public final class DiskBufferingConfiguration {
@@ -22,7 +16,6 @@ public final class DiskBufferingConfiguration {
 
     private final boolean enabled;
     private final int maxCacheSize;
-    private final ExportScheduleHandler exportScheduleHandler;
     private final long maxFileAgeForWriteMillis;
     private final long minFileAgeForReadMillis;
     private final long maxFileAgeForReadMillis;
@@ -30,7 +23,6 @@ public final class DiskBufferingConfiguration {
     private DiskBufferingConfiguration(Builder builder) {
         enabled = builder.enabled;
         maxCacheSize = builder.maxCacheSize;
-        exportScheduleHandler = builder.exportScheduleHandler;
         maxFileAgeForWriteMillis = builder.maxFileAgeForWriteMillis;
         minFileAgeForReadMillis = builder.minFileAgeForReadMillis;
         maxFileAgeForReadMillis = builder.maxFileAgeForReadMillis;
@@ -52,10 +44,6 @@ public final class DiskBufferingConfiguration {
         return MAX_FILE_SIZE;
     }
 
-    public ExportScheduleHandler getExportScheduleHandler() {
-        return exportScheduleHandler;
-    }
-
     public long getMaxFileAgeForWriteMillis() {
         return maxFileAgeForWriteMillis;
     }
@@ -74,12 +62,6 @@ public final class DiskBufferingConfiguration {
         private long maxFileAgeForWriteMillis = TimeUnit.SECONDS.toMillis(30);
         private long minFileAgeForReadMillis = TimeUnit.SECONDS.toMillis(33);
         private long maxFileAgeForReadMillis = TimeUnit.HOURS.toMillis(18);
-
-        private final Function0<PeriodicWorkService> getWorkService =
-                () -> ServiceManager.get().getPeriodicWorkService();
-        private ExportScheduleHandler exportScheduleHandler =
-                new DefaultExportScheduleHandler(
-                        new DefaultExportScheduler(getWorkService), getWorkService);
 
         /** Enables or disables disk buffering. */
         public Builder setEnabled(boolean enabled) {
@@ -118,15 +100,6 @@ public final class DiskBufferingConfiguration {
          */
         public Builder setMaxCacheSize(int maxCacheSize) {
             this.maxCacheSize = maxCacheSize;
-            return this;
-        }
-
-        /**
-         * Sets a scheduler that will take care of periodically read data stored in disk and export
-         * it.
-         */
-        public Builder setExportScheduleHandler(ExportScheduleHandler exportScheduleHandler) {
-            this.exportScheduleHandler = exportScheduleHandler;
             return this;
         }
 
