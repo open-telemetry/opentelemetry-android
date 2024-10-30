@@ -29,9 +29,7 @@ internal class ServiceManagerImpl(services: List<Any>) : ServiceManager {
             return ServiceManagerImpl(
                 listOf(
                     Preferences.create(application),
-                    CacheStorage(
-                        application,
-                    ),
+                    CacheStorage(application),
                     PeriodicWorkService(),
                     CurrentNetworkProvider.create(application),
                     AppLifecycleService.create(),

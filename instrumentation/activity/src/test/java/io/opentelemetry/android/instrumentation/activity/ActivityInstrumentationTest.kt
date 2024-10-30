@@ -27,7 +27,6 @@ import org.robolectric.RuntimeEnvironment
 class ActivityInstrumentationTest {
     private lateinit var activityLifecycleInstrumentation: ActivityLifecycleInstrumentation
     private lateinit var application: Application
-    private lateinit var openTelemetryRum: OpenTelemetryRum
     private lateinit var openTelemetry: OpenTelemetrySdk
 
     @Before
