@@ -26,10 +26,11 @@ class DefaultExportScheduleHandler(
     companion object {
         @JvmStatic
         fun create(): DefaultExportScheduleHandler {
+            val serviceManager = ServiceManager.get()
             return DefaultExportScheduleHandler(
-                DefaultExportScheduler.create(),
+                DefaultExportScheduler.create(serviceManager),
             ) {
-                ServiceManager.get().getPeriodicWorkService()
+                serviceManager.getPeriodicWorkService()
             }
         }
     }
