@@ -28,7 +28,7 @@ interface AndroidInstrumentation {
      * only be called from [OpenTelemetryRum]'s builder once the [OpenTelemetryRum] instance is initialized and ready
      * to use for generating telemetry.
      *
-     * @param ctx The InstallationContext under which the instrumentation is being installed
+     * @param ctx The InstallationContext under which the instrumentation is being installed.
      */
     fun install(ctx: InstallationContext)
 }
