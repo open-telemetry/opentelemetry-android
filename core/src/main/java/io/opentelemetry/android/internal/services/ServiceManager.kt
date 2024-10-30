@@ -35,19 +35,7 @@ interface ServiceManager : Startable {
             if (instance != null) {
                 return
             }
-            instance =
-                ServiceManagerImpl(
-                    listOf(
-                        Preferences.create(application),
-                        CacheStorage(
-                            application,
-                        ),
-                        PeriodicWorkService(),
-                        CurrentNetworkProvider.create(application),
-                        AppLifecycleService.create(),
-                        VisibleScreenService.create(application),
-                    ),
-                )
+            instance = ServiceManagerImpl.create(application)
         }
 
         @JvmStatic

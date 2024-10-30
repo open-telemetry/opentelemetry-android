@@ -346,8 +346,8 @@ public final class OpenTelemetryRumBuilder {
     }
 
     /**
-     * Sets a scheduler that will take care of periodically read data stored in disk and export
-     * it. If not specified, the default schedule exporter will be used.
+     * Sets a scheduler that will take care of periodically read data stored in disk and export it.
+     * If not specified, the default schedule exporter will be used.
      */
     public OpenTelemetryRumBuilder setExportScheduleHandler(
             ExportScheduleHandler exportScheduleHandler) {
@@ -374,7 +374,7 @@ public final class OpenTelemetryRumBuilder {
 
     private void scheduleDiskTelemetryReader(@Nullable SignalFromDiskExporter signalExporter) {
 
-        if(exportScheduleHandler == null){
+        if (exportScheduleHandler == null) {
             ServiceManager serviceManager = getServiceManager();
             // TODO: Is it safe to get the work service yet here? If so, we can
             // avoid all this lazy supplier stuff....
