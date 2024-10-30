@@ -22,7 +22,7 @@ junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine", vers
 desugarJdkLibs = "com.android.tools:desugar_jdk_libs:2.1.2"
 
 # demo-app
-androidx-core-ktx = "androidx.core:core-ktx:1.13.1"
+androidx-core-ktx = "androidx.core:core-ktx:1.15.0"
 androidx-lifecycle-runtime-ktx = "androidx.lifecycle:lifecycle-runtime-ktx:2.8.6"
 androidx-compose-bom = "androidx.compose:compose-bom:2024.10.00"
 androidx-activity-compose = "androidx.activity:activity-compose:1.9.3"
