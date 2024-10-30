@@ -12,9 +12,7 @@ import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.Constants.INSTRUMENTATION_SCOPE
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
-import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
-import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.Tracer
 
 @AutoService(AndroidInstrumentation::class)
@@ -34,12 +32,12 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
     override fun install(ctx: InstallationContext) {
         startupTimer.start(ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE))
         ctx.application.registerActivityLifecycleCallbacks(startupTimer.createLifecycleCallback())
-        ctx.application.registerActivityLifecycleCallbacks(buildActivityLifecycleTracer(ctx.openTelemetry))
+        ctx.application.registerActivityLifecycleCallbacks(buildActivityLifecycleTracer(ctx))
     }
 
-    private fun buildActivityLifecycleTracer(openTelemetry: OpenTelemetry): DefaultingActivityLifecycleCallbacks {
-        val visibleScreenService = ServiceManager.get().getVisibleScreenService()
-        val delegateTracer: Tracer = openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
+    private fun buildActivityLifecycleTracer(ctx: InstallationContext): DefaultingActivityLifecycleCallbacks {
+        val visibleScreenService = ctx.serviceManager.getVisibleScreenService()
+        val delegateTracer: Tracer = ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
         val tracers =
             ActivityTracerCache(
                 tracerCustomizer.invoke(delegateTracer),

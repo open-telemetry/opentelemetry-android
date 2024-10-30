@@ -457,7 +457,8 @@ public class OpenTelemetryRumBuilderTest {
         when(openTelemetrySdk.getLogsBridge()).thenReturn(logsBridge);
         when(logsBridge.loggerBuilder(any())).thenReturn(loggerBuilder);
 
-        OpenTelemetryRum.builder(application, openTelemetrySdk, true).build();
+        OpenTelemetryRum.builder(application, openTelemetrySdk, true, createServiceManager())
+                .build();
 
         assertThat(ServiceManager.get()).isNotNull();
     }
