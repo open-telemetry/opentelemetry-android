@@ -43,6 +43,10 @@ class SimpleNetworkDetector implements NetworkDetector {
                 return CurrentNetwork.builder(NetworkState.TRANSPORT_VPN)
                         .subType(activeNetwork.getSubtypeName())
                         .build();
+            case ConnectivityManager.TYPE_ETHERNET:
+                return CurrentNetwork.builder(NetworkState.TRANSPORT_WIRED)
+                        .subType(activeNetwork.getSubtypeName())
+                        .build();
         }
         // there is an active network, but it doesn't fall into the neat buckets above
         return UNKNOWN_NETWORK;

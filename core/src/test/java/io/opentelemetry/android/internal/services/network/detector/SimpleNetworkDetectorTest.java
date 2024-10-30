@@ -115,6 +115,30 @@ public class SimpleNetworkDetectorTest {
     }
 
     @Test
+    public void wired() {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager)
+                        ApplicationProvider.getApplicationContext()
+                                .getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo networkInfo =
+                ShadowNetworkInfo.newInstance(
+                        NetworkInfo.DetailedState.CONNECTED,
+                        ConnectivityManager.TYPE_ETHERNET,
+                        0,
+                        true,
+                        NetworkInfo.State.CONNECTED);
+        Shadows.shadowOf(connectivityManager).setActiveNetworkInfo(networkInfo);
+
+        SimpleNetworkDetector networkDetector = new SimpleNetworkDetector(connectivityManager);
+
+        CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
+
+        Assert.assertEquals(
+                CurrentNetwork.builder(NetworkState.TRANSPORT_WIRED).build(), currentNetwork);
+    }
+
+    @Test
     public void cellularWithSubtype() {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager)

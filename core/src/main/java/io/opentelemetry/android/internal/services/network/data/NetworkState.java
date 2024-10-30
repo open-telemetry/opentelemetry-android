@@ -14,6 +14,7 @@ public enum NetworkState {
     NO_NETWORK_AVAILABLE(NetworkConnectionTypeValues.UNAVAILABLE),
     TRANSPORT_CELLULAR(NetworkConnectionTypeValues.CELL),
     TRANSPORT_WIFI(NetworkConnectionTypeValues.WIFI),
+    TRANSPORT_WIRED(NetworkConnectionTypeValues.WIRED),
     TRANSPORT_UNKNOWN(NetworkConnectionTypeValues.UNKNOWN),
     // this one doesn't seem to have an otel value at this point.
     TRANSPORT_VPN("vpn");
