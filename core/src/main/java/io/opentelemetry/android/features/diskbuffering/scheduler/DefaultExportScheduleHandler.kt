@@ -28,7 +28,9 @@ class DefaultExportScheduleHandler(
         fun create(): DefaultExportScheduleHandler {
             val serviceManager = ServiceManager.get()
             return DefaultExportScheduleHandler(
-                DefaultExportScheduler.create(serviceManager),
+                DefaultExportScheduler {
+                    serviceManager.getPeriodicWorkService()
+                }
             ) {
                 serviceManager.getPeriodicWorkService()
             }
