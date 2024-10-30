@@ -72,6 +72,12 @@
         "^androidx.lifecycle"
       ],
       "groupName": "androidx.lifecycle"
+    },
+    {
+      "matchPackagePatterns": [
+        "^androidx.core"
+      ],
+      "groupName": "androidx.core"
     }
   ]
 }
