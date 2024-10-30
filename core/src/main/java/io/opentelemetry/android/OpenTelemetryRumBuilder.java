@@ -26,6 +26,7 @@ import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordApp
 import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.ServiceManager;
+import io.opentelemetry.android.internal.services.ServiceManagerImpl;
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService;
 import io.opentelemetry.android.session.SessionManager;
 import io.opentelemetry.android.session.SessionProvider;
@@ -334,8 +335,7 @@ public final class OpenTelemetryRumBuilder {
     @NonNull
     private ServiceManager getServiceManager() {
         if (serviceManager == null) {
-            ServiceManager.initialize(application);
-            serviceManager = ServiceManager.get();
+            serviceManager = ServiceManagerImpl.Companion.create(application);
         }
         return serviceManager;
     }

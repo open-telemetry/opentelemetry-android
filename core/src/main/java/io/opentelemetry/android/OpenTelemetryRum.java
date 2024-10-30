@@ -68,7 +68,7 @@ public interface OpenTelemetryRum {
             OpenTelemetrySdk openTelemetrySdk,
             boolean discoverInstrumentations,
             ServiceManager serviceManager) {
-        ServiceManager.initialize(application);
+
         return new SdkPreconfiguredRumBuilder(
                 application, openTelemetrySdk, discoverInstrumentations, serviceManager);
     }

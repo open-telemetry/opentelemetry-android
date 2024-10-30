@@ -10,7 +10,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static org.awaitility.Awaitility.await;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -46,8 +45,6 @@ import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.incubator.events.EventLogger;
 import io.opentelemetry.api.logs.Logger;
-import io.opentelemetry.api.logs.LoggerBuilder;
-import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
@@ -112,7 +109,6 @@ public class OpenTelemetryRumBuilderTest {
         SignalFromDiskExporter.resetForTesting();
         InitializationEvents.resetForTest();
         AndroidInstrumentationLoader.resetForTest();
-        ServiceManager.resetForTest();
         mocks.close();
     }
 
@@ -431,35 +427,25 @@ public class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    public void verifyServicesAreInitialized() {
-        makeBuilder().build();
-
-        assertThat(ServiceManager.get()).isNotNull();
+    public void verifyDefaultServicesAreCreated() {
+        AtomicReference<ServiceManager> serviceManagerHolder = new AtomicReference<>();
+        AndroidInstrumentation instrumentationTrap =
+                ctx -> serviceManagerHolder.set(ctx.getServiceManager());
+        makeBuilder().addInstrumentation(instrumentationTrap).build();
+        assertThat(serviceManagerHolder.get()).isNotNull();
+        assertThat(serviceManagerHolder.get().getAppLifecycleService()).isNotNull();
+        assertThat(serviceManagerHolder.get().getCacheStorage()).isNotNull();
+        assertThat(serviceManagerHolder.get().getCurrentNetworkProvider()).isNotNull();
+        assertThat(serviceManagerHolder.get().getPeriodicWorkService()).isNotNull();
+        assertThat(serviceManagerHolder.get().getPreferences()).isNotNull();
+        assertThat(serviceManagerHolder.get().getVisibleScreenService()).isNotNull();
     }
 
     @Test
-    public void verifyServicesAreStarted() {
-        ServiceManager serviceManager = mock();
-        doReturn(mock(AppLifecycleService.class)).when(serviceManager).getAppLifecycleService();
-
+    public void verifyServiceManagerIsStarted() {
+        ServiceManager serviceManager = createServiceManager();
         makeBuilder().setServiceManager(serviceManager).build();
-
         verify(serviceManager).start();
-    }
-
-    @Test
-    public void verifyPreconfiguredServicesInitialization() {
-        OpenTelemetrySdk openTelemetrySdk = mock();
-        // Work around sdk EventLogger api limitations
-        LoggerProvider logsBridge = mock(LoggerProvider.class);
-        LoggerBuilder loggerBuilder = mock();
-        when(openTelemetrySdk.getLogsBridge()).thenReturn(logsBridge);
-        when(logsBridge.loggerBuilder(any())).thenReturn(loggerBuilder);
-
-        OpenTelemetryRum.builder(application, openTelemetrySdk, true, createServiceManager())
-                .build();
-
-        assertThat(ServiceManager.get()).isNotNull();
     }
 
     /**
