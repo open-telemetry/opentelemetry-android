@@ -11,8 +11,8 @@ import android.app.Application;
 import android.util.Log;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
-import io.opentelemetry.android.export.InMemoryBufferDelegatingLogExporter;
-import io.opentelemetry.android.export.InMemoryBufferDelegatingSpanExporter;
+import io.opentelemetry.android.export.BufferDelegatingLogExporter;
+import io.opentelemetry.android.export.BufferDelegatingSpanExporter;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
@@ -279,11 +279,11 @@ public final class OpenTelemetryRumBuilder {
         InitializationEvents initializationEvents = InitializationEvents.get();
         applyConfiguration(serviceManager, initializationEvents);
 
-        InMemoryBufferDelegatingLogExporter inMemoryBufferDelegatingLogExporter =
-                new InMemoryBufferDelegatingLogExporter();
+        BufferDelegatingLogExporter bufferDelegatingLogExporter =
+                new BufferDelegatingLogExporter();
 
-        InMemoryBufferDelegatingSpanExporter inMemoryBufferDelegatingSpanExporter =
-                new InMemoryBufferDelegatingSpanExporter();
+        BufferDelegatingSpanExporter bufferDelegatingSpanExporter =
+                new BufferDelegatingSpanExporter();
 
         SessionManager sessionManager =
                 SessionManager.create(timeoutHandler, config.getSessionTimeout().toNanos());
@@ -294,11 +294,11 @@ public final class OpenTelemetryRumBuilder {
                                 buildTracerProvider(
                                         sessionManager,
                                         application,
-                                        inMemoryBufferDelegatingSpanExporter))
+                                        bufferDelegatingSpanExporter))
                         .setMeterProvider(buildMeterProvider(application))
                         .setLoggerProvider(
                                 buildLoggerProvider(
-                                        application, inMemoryBufferDelegatingLogExporter))
+                                        application, bufferDelegatingLogExporter))
                         .setPropagators(buildFinalPropagators())
                         .build();
 
@@ -318,8 +318,8 @@ public final class OpenTelemetryRumBuilder {
                     initializeExporters(
                             serviceManager,
                             initializationEvents,
-                            inMemoryBufferDelegatingSpanExporter,
-                            inMemoryBufferDelegatingLogExporter);
+                            bufferDelegatingSpanExporter,
+                            bufferDelegatingLogExporter);
                 });
 
         instrumentations.forEach(delegate::addInstrumentation);
@@ -330,8 +330,8 @@ public final class OpenTelemetryRumBuilder {
     private void initializeExporters(
             ServiceManager serviceManager,
             InitializationEvents initializationEvents,
-            InMemoryBufferDelegatingSpanExporter inMemoryBufferDelegatingSpanExporter,
-            InMemoryBufferDelegatingLogExporter inMemoryBufferDelegatingLogExporter) {
+            BufferDelegatingSpanExporter bufferDelegatingSpanExporter,
+            BufferDelegatingLogExporter bufferedDelegatingLogExporter) {
 
         DiskBufferingConfiguration diskBufferingConfiguration =
                 config.getDiskBufferingConfiguration();
@@ -366,9 +366,9 @@ public final class OpenTelemetryRumBuilder {
 
         initializationEvents.spanExporterInitialized(spanExporter);
 
-        inMemoryBufferDelegatingLogExporter.setDelegateAndFlush(logsExporter);
+        bufferedDelegatingLogExporter.setDelegate(logsExporter);
 
-        inMemoryBufferDelegatingSpanExporter.setDelegateAndFlush(spanExporter);
+        bufferDelegatingSpanExporter.setDelegate(spanExporter);
 
         scheduleDiskTelemetryReader(signalFromDiskExporter, diskBufferingConfiguration);
     }

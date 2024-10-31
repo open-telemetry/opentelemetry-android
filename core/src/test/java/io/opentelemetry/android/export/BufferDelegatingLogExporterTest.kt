@@ -13,24 +13,24 @@ import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter
 import org.junit.Test
 
-class InMemoryBufferDelegatingLogExporterTest {
+class BufferDelegatingLogExporterTest {
     @Test
-    fun `test setDelegateAndFlush`() {
-        val inMemoryBufferDelegatingLogExporter = InMemoryBufferDelegatingLogExporter()
+    fun `test setDelegate`() {
+        val inMemoryBufferDelegatingLogExporter = BufferDelegatingLogExporter()
         val logRecordExporter = InMemoryLogRecordExporter.create()
 
         val logRecordData: LogRecordData = mockk<LogRecordData>()
         inMemoryBufferDelegatingLogExporter.export(listOf(logRecordData))
-        inMemoryBufferDelegatingLogExporter.setDelegateAndFlush(logRecordExporter)
+        inMemoryBufferDelegatingLogExporter.setDelegate(logRecordExporter)
 
-        val logs: List<LogRecordData> = logRecordExporter.getFinishedLogRecordItems()
+        val logs: List<LogRecordData> = logRecordExporter.finishedLogRecordItems
         assertThat(logs).hasSize(1)
         assertThat(logs[0]).isEqualTo(logRecordData)
     }
 
     @Test
     fun `test buffer limit handling`() {
-        val inMemoryBufferDelegatingLogExporter = InMemoryBufferDelegatingLogExporter(10)
+        val inMemoryBufferDelegatingLogExporter = BufferDelegatingLogExporter(10)
         val logRecordExporter = InMemoryLogRecordExporter.create()
 
         for (i in 1..11) {
@@ -38,7 +38,7 @@ class InMemoryBufferDelegatingLogExporterTest {
             inMemoryBufferDelegatingLogExporter.export(listOf(logRecordData))
         }
 
-        inMemoryBufferDelegatingLogExporter.setDelegateAndFlush(logRecordExporter)
+        inMemoryBufferDelegatingLogExporter.setDelegate(logRecordExporter)
 
         val logs = logRecordExporter.getFinishedLogRecordItems()
         assertThat(logs).hasSize(10)
@@ -46,13 +46,13 @@ class InMemoryBufferDelegatingLogExporterTest {
 
     @Test
     fun `test flush with delegate`() {
-        val inMemoryBufferDelegatingLogExporter = InMemoryBufferDelegatingLogExporter()
+        val inMemoryBufferDelegatingLogExporter = BufferDelegatingLogExporter()
         val delegate = spyk<InMemoryLogRecordExporter>()
 
         val logRecordData: LogRecordData = mockk<LogRecordData>()
         inMemoryBufferDelegatingLogExporter.export(listOf(logRecordData))
 
-        inMemoryBufferDelegatingLogExporter.setDelegateAndFlush(delegate)
+        inMemoryBufferDelegatingLogExporter.setDelegate(delegate)
 
         inMemoryBufferDelegatingLogExporter.flush()
 
@@ -61,7 +61,7 @@ class InMemoryBufferDelegatingLogExporterTest {
 
     @Test
     fun `test export with delegate`() {
-        val inMemoryBufferDelegatingLogExporter = InMemoryBufferDelegatingLogExporter()
+        val inMemoryBufferDelegatingLogExporter = BufferDelegatingLogExporter()
         val delegate = spyk<InMemoryLogRecordExporter>()
 
         val logRecordData: LogRecordData = mockk<LogRecordData>()
@@ -69,7 +69,7 @@ class InMemoryBufferDelegatingLogExporterTest {
 
         verify(exactly = 0) { delegate.export(any()) }
 
-        inMemoryBufferDelegatingLogExporter.setDelegateAndFlush(delegate)
+        inMemoryBufferDelegatingLogExporter.setDelegate(delegate)
 
         verify(exactly = 1) { delegate.export(any()) }
 
@@ -81,10 +81,10 @@ class InMemoryBufferDelegatingLogExporterTest {
 
     @Test
     fun `test shutdown with delegate`() {
-        val inMemoryBufferDelegatingLogExporter = InMemoryBufferDelegatingLogExporter()
+        val inMemoryBufferDelegatingLogExporter = BufferDelegatingLogExporter()
         val delegate = spyk<InMemoryLogRecordExporter>()
 
-        inMemoryBufferDelegatingLogExporter.setDelegateAndFlush(delegate)
+        inMemoryBufferDelegatingLogExporter.setDelegate(delegate)
 
         inMemoryBufferDelegatingLogExporter.shutdown()
 
