@@ -28,8 +28,7 @@ class BandwidthThrottlingExporter implements SpanExporter {
         this.categoryFunction = builder.categoryFunction;
         this.maxBytesPerSecond = builder.maxBytesPerSecond;
         this.timeWindowInMillis = builder.timeWindow.toMillis();
-        this.lastExportTime = System.currentTimeMillis();
-
+        this.lastExportTime = SystemTime.get().getCurrentTimeMillis();
         this.bytesExportedInWindow = 0;
     }
 
@@ -88,9 +87,9 @@ class BandwidthThrottlingExporter implements SpanExporter {
 
     static class Builder {
         final SpanExporter delegate;
-        Function<SpanData, String> categoryFunction = span -> "default";
+        CategoryFunction categoryFunction = span -> "default";
         long maxBytesPerSecond = 1024; // Default to 1 KB/s
-        Duration timeWindow = Duration.ofSeconds(1); // Default to 1 second
+        long timeWindowInMillis = 1000; // Default to 1 second
 
         private Builder(SpanExporter delegate) {
             this.delegate = delegate;
