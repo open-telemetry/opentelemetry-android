@@ -34,6 +34,7 @@ android {
         }
         release {
             isMinifyEnabled = true
+            signingConfig = signingConfigs["debug"]
         }
     }
     buildFeatures {
