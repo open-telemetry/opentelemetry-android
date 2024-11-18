@@ -5,13 +5,11 @@
 
 package io.opentelemetry.android.instrumentation.network;
 
-import android.app.Application;
 import androidx.annotation.NonNull;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
-import io.opentelemetry.android.internal.services.ServiceManager;
+import io.opentelemetry.android.instrumentation.InstallationContext;
 import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,12 +29,12 @@ public final class NetworkChangeInstrumentation implements AndroidInstrumentatio
     }
 
     @Override
-    public void install(@NonNull Application application, @NonNull OpenTelemetry openTelemetry) {
+    public void install(@NonNull InstallationContext ctx) {
         NetworkChangeMonitor networkChangeMonitor =
                 new NetworkChangeMonitor(
-                        openTelemetry,
-                        ServiceManager.get().getAppLifecycleService(),
-                        ServiceManager.get().getCurrentNetworkProvider(),
+                        ctx.getOpenTelemetry(),
+                        ctx.getServiceManager().getAppLifecycleService(),
+                        ctx.getServiceManager().getCurrentNetworkProvider(),
                         Collections.unmodifiableList(additionalExtractors));
         networkChangeMonitor.start();
     }

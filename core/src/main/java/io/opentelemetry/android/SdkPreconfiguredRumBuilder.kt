@@ -8,6 +8,7 @@ package io.opentelemetry.android
 import android.app.Application
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
+import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.session.SessionManager
 import io.opentelemetry.sdk.OpenTelemetrySdk
@@ -53,8 +54,9 @@ class SdkPreconfiguredRumBuilder
             val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionManager)
 
             // Install instrumentations
+            val ctx = InstallationContext(application, openTelemetryRum.openTelemetry, serviceManager)
             for (instrumentation in getInstrumentations()) {
-                instrumentation.install(application, openTelemetryRum.openTelemetry)
+                instrumentation.install(ctx)
             }
 
             return openTelemetryRum

@@ -5,12 +5,11 @@
 
 package io.opentelemetry.android.instrumentation.crash;
 
-import android.app.Application;
 import androidx.annotation.NonNull;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.android.RuntimeDetailsExtractor;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.android.instrumentation.InstallationContext;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
@@ -28,9 +27,9 @@ public final class CrashReporterInstrumentation implements AndroidInstrumentatio
     }
 
     @Override
-    public void install(@NonNull Application application, @NonNull OpenTelemetry openTelemetry) {
-        addAttributesExtractor(RuntimeDetailsExtractor.create(application));
+    public void install(@NonNull InstallationContext ctx) {
+        addAttributesExtractor(RuntimeDetailsExtractor.create(ctx.getApplication()));
         CrashReporter crashReporter = new CrashReporter(additionalExtractors);
-        crashReporter.install((OpenTelemetrySdk) openTelemetry);
+        crashReporter.install((OpenTelemetrySdk) ctx.getOpenTelemetry());
     }
 }

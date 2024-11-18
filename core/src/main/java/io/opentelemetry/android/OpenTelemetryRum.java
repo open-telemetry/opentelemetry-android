@@ -61,14 +61,16 @@ public interface OpenTelemetryRum {
      * @param openTelemetrySdk The {@link OpenTelemetrySdk} that the user has already created.
      * @param discoverInstrumentations TRUE to look for instrumentations in the classpath and
      *     applying them automatically.
+     * @param serviceManager The ServiceManager instance
      */
     static SdkPreconfiguredRumBuilder builder(
             Application application,
             OpenTelemetrySdk openTelemetrySdk,
-            boolean discoverInstrumentations) {
-        ServiceManager.initialize(application);
+            boolean discoverInstrumentations,
+            ServiceManager serviceManager) {
+
         return new SdkPreconfiguredRumBuilder(
-                application, openTelemetrySdk, discoverInstrumentations, ServiceManager.get());
+                application, openTelemetrySdk, discoverInstrumentations, serviceManager);
     }
 
     /** Returns a no-op implementation of {@link OpenTelemetryRum}. */

@@ -5,10 +5,9 @@
 
 package io.opentelemetry.instrumentation.library.okhttp.v3_0;
 
-import android.app.Application;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.android.instrumentation.InstallationContext;
 import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceResolver;
 import io.opentelemetry.instrumentation.api.internal.HttpConstants;
 import io.opentelemetry.instrumentation.library.okhttp.v3_0.internal.OkHttp3Singletons;
@@ -123,7 +122,7 @@ public class OkHttpInstrumentation implements AndroidInstrumentation {
     }
 
     @Override
-    public void install(@NotNull Application application, @NotNull OpenTelemetry openTelemetry) {
-        OkHttp3Singletons.configure(this, openTelemetry);
+    public void install(@NotNull InstallationContext ctx) {
+        OkHttp3Singletons.configure(this, ctx.getOpenTelemetry());
     }
 }

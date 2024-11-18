@@ -9,10 +9,13 @@ import static java.util.Objects.requireNonNull;
 
 import android.app.Application;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
+import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduleHandler;
+import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduler;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.internal.features.networkattrs.NetworkAttributesSpanAppender;
@@ -23,6 +26,8 @@ import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordApp
 import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.ServiceManager;
+import io.opentelemetry.android.internal.services.ServiceManagerImpl;
+import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService;
 import io.opentelemetry.android.session.SessionManager;
 import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
@@ -57,6 +62,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import kotlin.jvm.functions.Function0;
 
 /**
  * A builder of {@link OpenTelemetryRum}. It enabled configuring the OpenTelemetry SDK and disabling
@@ -85,6 +91,9 @@ public final class OpenTelemetryRumBuilder {
             (a) -> a;
 
     private Resource resource;
+
+    @Nullable private ServiceManager serviceManager;
+    @Nullable private ExportScheduleHandler exportScheduleHandler;
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
@@ -265,13 +274,8 @@ public final class OpenTelemetryRumBuilder {
      * @return A new {@link OpenTelemetryRum} instance.
      */
     public OpenTelemetryRum build() {
-        ServiceManager.initialize(application);
-        return build(ServiceManager.get());
-    }
-
-    OpenTelemetryRum build(ServiceManager serviceManager) {
         InitializationEvents initializationEvents = InitializationEvents.get();
-        applyConfiguration(serviceManager, initializationEvents);
+        applyConfiguration(initializationEvents);
 
         DiskBufferingConfiguration diskBufferingConfiguration =
                 config.getDiskBufferingConfiguration();
@@ -280,8 +284,7 @@ public final class OpenTelemetryRumBuilder {
         SignalFromDiskExporter signalFromDiskExporter = null;
         if (diskBufferingConfiguration.isEnabled()) {
             try {
-                StorageConfiguration storageConfiguration =
-                        createStorageConfiguration(serviceManager);
+                StorageConfiguration storageConfiguration = createStorageConfiguration();
                 final SpanExporter originalSpanExporter = spanExporter;
                 spanExporter =
                         SpanToDiskExporter.create(originalSpanExporter, storageConfiguration);
@@ -315,7 +318,7 @@ public final class OpenTelemetryRumBuilder {
 
         otelSdkReadyListeners.forEach(listener -> listener.accept(sdk));
 
-        scheduleDiskTelemetryReader(signalFromDiskExporter, diskBufferingConfiguration);
+        scheduleDiskTelemetryReader(signalFromDiskExporter);
 
         SdkPreconfiguredRumBuilder delegate =
                 new SdkPreconfiguredRumBuilder(
@@ -324,15 +327,37 @@ public final class OpenTelemetryRumBuilder {
                         timeoutHandler,
                         sessionManager,
                         config.shouldDiscoverInstrumentations(),
-                        serviceManager);
+                        getServiceManager());
         instrumentations.forEach(delegate::addInstrumentation);
         return delegate.build();
     }
 
-    private StorageConfiguration createStorageConfiguration(ServiceManager serviceManager)
-            throws IOException {
-        Preferences preferences = serviceManager.getPreferences();
-        CacheStorage storage = serviceManager.getCacheStorage();
+    @NonNull
+    private ServiceManager getServiceManager() {
+        if (serviceManager == null) {
+            serviceManager = ServiceManagerImpl.Companion.create(application);
+        }
+        return serviceManager;
+    }
+
+    public OpenTelemetryRumBuilder setServiceManager(ServiceManager serviceManager) {
+        this.serviceManager = serviceManager;
+        return this;
+    }
+
+    /**
+     * Sets a scheduler that will take care of periodically read data stored in disk and export it.
+     * If not specified, the default schedule exporter will be used.
+     */
+    public OpenTelemetryRumBuilder setExportScheduleHandler(
+            ExportScheduleHandler exportScheduleHandler) {
+        this.exportScheduleHandler = exportScheduleHandler;
+        return this;
+    }
+
+    private StorageConfiguration createStorageConfiguration() throws IOException {
+        Preferences preferences = getServiceManager().getPreferences();
+        CacheStorage storage = getServiceManager().getCacheStorage();
         DiskBufferingConfiguration config = this.config.getDiskBufferingConfiguration();
         DiskManager diskManager = new DiskManager(storage, preferences, config);
         return StorageConfiguration.builder()
@@ -347,11 +372,18 @@ public final class OpenTelemetryRumBuilder {
                 .build();
     }
 
-    private void scheduleDiskTelemetryReader(
-            @Nullable SignalFromDiskExporter signalExporter,
-            DiskBufferingConfiguration diskBufferingConfiguration) {
-        ExportScheduleHandler exportScheduleHandler =
-                diskBufferingConfiguration.getExportScheduleHandler();
+    private void scheduleDiskTelemetryReader(@Nullable SignalFromDiskExporter signalExporter) {
+
+        if (exportScheduleHandler == null) {
+            ServiceManager serviceManager = getServiceManager();
+            // TODO: Is it safe to get the work service yet here? If so, we can
+            // avoid all this lazy supplier stuff....
+            Function0<PeriodicWorkService> getWorkService = serviceManager::getPeriodicWorkService;
+            exportScheduleHandler =
+                    new DefaultExportScheduleHandler(
+                            new DefaultExportScheduler(getWorkService), getWorkService);
+        }
+
         if (signalExporter == null) {
             // Disabling here allows to cancel previously scheduled exports using tools that
             // can run even after the app has been terminated (such as WorkManager).
@@ -378,8 +410,7 @@ public final class OpenTelemetryRumBuilder {
     }
 
     /** Leverage the configuration to wire up various instrumentation components. */
-    private void applyConfiguration(
-            ServiceManager serviceManager, InitializationEvents initializationEvents) {
+    private void applyConfiguration(InitializationEvents initializationEvents) {
         if (config.shouldGenerateSdkInitializationEvents()) {
             initializationEvents.recordConfiguration(config);
         }
@@ -402,7 +433,7 @@ public final class OpenTelemetryRumBuilder {
                     (tracerProviderBuilder, app) -> {
                         SpanProcessor networkAttributesSpanAppender =
                                 NetworkAttributesSpanAppender.create(
-                                        serviceManager.getCurrentNetworkProvider());
+                                        getServiceManager().getCurrentNetworkProvider());
                         return tracerProviderBuilder.addSpanProcessor(
                                 networkAttributesSpanAppender);
                     });
@@ -415,7 +446,7 @@ public final class OpenTelemetryRumBuilder {
                     (tracerProviderBuilder, app) -> {
                         SpanProcessor screenAttributesAppender =
                                 new ScreenAttributesSpanProcessor(
-                                        serviceManager.getVisibleScreenService());
+                                        getServiceManager().getVisibleScreenService());
                         return tracerProviderBuilder.addSpanProcessor(screenAttributesAppender);
                     });
         }

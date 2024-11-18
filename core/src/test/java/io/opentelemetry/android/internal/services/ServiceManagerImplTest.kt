@@ -5,7 +5,6 @@
 
 package io.opentelemetry.android.internal.services
 
-import io.opentelemetry.android.internal.services.ServiceManager.Companion.initialize
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService
 import org.assertj.core.api.Assertions.assertThat
@@ -21,10 +20,10 @@ import org.robolectric.RuntimeEnvironment
 @RunWith(RobolectricTestRunner::class)
 class ServiceManagerImplTest {
     @Test
-    fun verifyAvailableServices() {
-        initialize(RuntimeEnvironment.getApplication())
+    fun verifyAvailableDefaultServices() {
+        val app = RuntimeEnvironment.getApplication()
 
-        val serviceManager = ServiceManager.get()
+        val serviceManager = ServiceManagerImpl.create(app)
 
         assertThat(serviceManager.getPeriodicWorkService()).isInstanceOf(PeriodicWorkService::class.java)
         assertThat(serviceManager.getCacheStorage()).isInstanceOf(CacheStorage::class.java)

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.internal.services
 
+import android.app.Application
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService
@@ -20,6 +21,22 @@ internal class ServiceManagerImpl(services: List<Any>) : ServiceManager {
             map[service.javaClass] = service
         }
         this.services = Collections.unmodifiableMap(map)
+    }
+
+    companion object {
+        @JvmStatic
+        fun create(application: Application): ServiceManager {
+            return ServiceManagerImpl(
+                listOf(
+                    Preferences.create(application),
+                    CacheStorage(application),
+                    PeriodicWorkService(),
+                    CurrentNetworkProvider.create(application),
+                    AppLifecycleService.create(),
+                    VisibleScreenService.create(application),
+                ),
+            )
+        }
     }
 
     override fun getPreferences(): Preferences {
