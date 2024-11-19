@@ -9,6 +9,7 @@ import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_ESCAPED;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_MESSAGE;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_TYPE;
+import static io.opentelemetry.semconv.incubating.EventIncubatingAttributes.EVENT_NAME;
 import static io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.THREAD_ID;
 import static io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.THREAD_NAME;
 
@@ -19,6 +20,8 @@ import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.semconv.incubating.EventIncubatingAttributes;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
@@ -60,6 +63,8 @@ public final class CrashReporter {
             extractor.onStart(attributesBuilder, Context.current(), crashDetails);
         }
 
+        //TODO: use emitEvent() when available, with event name from semantic conventions.
+        attributesBuilder.put(EVENT_NAME, "device.crash");
         crashReporter.logRecordBuilder().setAllAttributes(attributesBuilder.build()).emit();
     }
 
