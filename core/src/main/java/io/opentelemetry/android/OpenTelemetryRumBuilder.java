@@ -308,7 +308,8 @@ public final class OpenTelemetryRumBuilder {
                 OpenTelemetrySdk.builder()
                         .setTracerProvider(
                                 buildTracerProvider(sessionManager, application, spanExporter))
-                        .setLoggerProvider(buildLoggerProvider(sessionManager, application, logsExporter))
+                        .setLoggerProvider(
+                                buildLoggerProvider(sessionManager, application, logsExporter))
                         .setMeterProvider(buildMeterProvider(application))
                         .setPropagators(buildFinalPropagators())
                         .build();
@@ -439,7 +440,9 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private SdkLoggerProvider buildLoggerProvider(
-            SessionProvider sessionProvider, Application application, LogRecordExporter logsExporter) {
+            SessionProvider sessionProvider,
+            Application application,
+            LogRecordExporter logsExporter) {
         SdkLoggerProviderBuilder loggerProviderBuilder =
                 SdkLoggerProvider.builder()
                         .setResource(resource)

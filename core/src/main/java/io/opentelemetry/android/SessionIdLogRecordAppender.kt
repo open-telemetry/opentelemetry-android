@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android
 
 import io.opentelemetry.android.session.SessionProvider
@@ -8,7 +13,10 @@ import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_I
 
 internal class SessionIdLogRecordAppender(private val sessionProvider: SessionProvider) :
     LogRecordProcessor {
-    override fun onEmit(context: Context, logRecord: ReadWriteLogRecord) {
+    override fun onEmit(
+        context: Context,
+        logRecord: ReadWriteLogRecord,
+    ) {
         logRecord.setAttribute(SESSION_ID, sessionProvider.getSessionId())
     }
 }

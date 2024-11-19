@@ -20,8 +20,6 @@ import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.semconv.incubating.EventIncubatingAttributes;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
@@ -63,7 +61,7 @@ public final class CrashReporter {
             extractor.onStart(attributesBuilder, Context.current(), crashDetails);
         }
 
-        //TODO: use emitEvent() when available, with event name from semantic conventions.
+        // TODO: use emitEvent() when available, with event name from semantic conventions.
         attributesBuilder.put(EVENT_NAME, "device.crash");
         crashReporter.logRecordBuilder().setAllAttributes(attributesBuilder.build()).emit();
     }
