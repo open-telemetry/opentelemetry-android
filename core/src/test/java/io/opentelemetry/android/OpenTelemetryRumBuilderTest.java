@@ -9,6 +9,7 @@ import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_ID;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -69,7 +70,6 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
@@ -154,8 +154,7 @@ public class OpenTelemetryRumBuilderTest {
                 .hasName("test span")
                 .hasResource(resource)
                 .hasAttributesSatisfyingExactly(
-                        equalTo(SessionIncubatingAttributes.SESSION_ID, sessionId),
-                        equalTo(SCREEN_NAME_KEY, "unknown"));
+                        equalTo(SESSION_ID, sessionId), equalTo(SCREEN_NAME_KEY, "unknown"));
     }
 
     @Test
@@ -180,6 +179,7 @@ public class OpenTelemetryRumBuilderTest {
         assertThat(logs).hasSize(1);
         assertThat(logs.get(0))
                 .hasAttributesSatisfyingExactly(
+                        equalTo(SESSION_ID, openTelemetryRum.getRumSessionId()),
                         equalTo(stringKey("event.name"), "test.event"),
                         equalTo(stringKey("mega"), "hit"))
                 .hasResource(resource);
@@ -310,7 +310,9 @@ public class OpenTelemetryRumBuilderTest {
         assertThat(logs).hasSize(1);
         assertThat(logs.iterator().next())
                 .hasBody("foo")
-                .hasAttributesSatisfyingExactly(equalTo(stringKey("bing"), "bang"))
+                .hasAttributesSatisfyingExactly(
+                        equalTo(stringKey("bing"), "bang"),
+                        equalTo(SESSION_ID, rum.getRumSessionId()))
                 .hasSeverity(Severity.FATAL3);
     }
 
@@ -420,6 +422,7 @@ public class OpenTelemetryRumBuilderTest {
         OpenTelemetryAssertions.assertThat(logRecordData)
                 .hasAttributes(
                         Attributes.builder()
+                                .put(SESSION_ID, rum.getRumSessionId())
                                 .put("someGlobalKey", "someGlobalValue")
                                 .put("localAttrKey", "localAttrValue")
                                 .build());
