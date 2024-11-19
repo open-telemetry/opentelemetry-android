@@ -27,7 +27,6 @@ android {
     compileOptions {
         sourceCompatibility(javaVersion)
         targetCompatibility(javaVersion)
-        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -53,5 +52,4 @@ dependencies {
     testRuntimeOnly(libs.findLibrary("junit-platform-launcher").get())
     testImplementation(libs.findLibrary("opentelemetry-sdk-testing").get())
     testImplementation(libs.findLibrary("androidx-junit").get())
-    coreLibraryDesugaring(libs.findLibrary("desugarJdkLibs").get())
 }
