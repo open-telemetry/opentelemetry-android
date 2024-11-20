@@ -300,10 +300,11 @@ public class OpenTelemetryRumBuilderTest {
                     wasCalled.set(true);
                     return logsExporter;
                 };
-        OpenTelemetryRum rum = makeBuilder()
-                .setServiceManager(serviceManager)
-                .addLogRecordExporterCustomizer(customizer)
-                .build();
+        OpenTelemetryRum rum =
+                makeBuilder()
+                        .setServiceManager(serviceManager)
+                        .addLogRecordExporterCustomizer(customizer)
+                        .build();
 
         Logger logger = rum.getOpenTelemetry().getLogsBridge().loggerBuilder("LogScope").build();
         logger.logRecordBuilder()

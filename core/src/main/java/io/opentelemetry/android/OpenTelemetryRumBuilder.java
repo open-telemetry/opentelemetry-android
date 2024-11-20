@@ -480,7 +480,9 @@ public final class OpenTelemetryRumBuilder {
                 SdkLoggerProvider.builder()
                         .setResource(resource)
                         .addLogRecordProcessor(new SessionIdLogRecordAppender(sessionProvider))
-                        .addLogRecordProcessor(new ScreenAttributesLogRecordProcessor(getServiceManager().getVisibleScreenService()))
+                        .addLogRecordProcessor(
+                                new ScreenAttributesLogRecordProcessor(
+                                        getServiceManager().getVisibleScreenService()))
                         .addLogRecordProcessor(
                                 new GlobalAttributesLogRecordAppender(
                                         config.getGlobalAttributesSupplier()));
