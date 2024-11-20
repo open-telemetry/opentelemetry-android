@@ -4,7 +4,6 @@ import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.verify
-import io.opentelemetry.android.SESSION_ID_VALUE
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.context.Context
@@ -12,6 +11,8 @@ import io.opentelemetry.sdk.logs.ReadWriteLogRecord
 import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+
+private const val SESSION_ID_VALUE = "0666"
 
 class SessionIdLogRecordAppenderTest {
     @MockK
