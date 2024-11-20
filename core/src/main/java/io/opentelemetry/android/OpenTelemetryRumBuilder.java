@@ -23,6 +23,7 @@ import io.opentelemetry.android.internal.features.persistence.DiskManager;
 import io.opentelemetry.android.internal.features.persistence.SimpleTemporaryFileProvider;
 import io.opentelemetry.android.internal.initialization.InitializationEvents;
 import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordAppender;
+import io.opentelemetry.android.internal.processors.ScreenAttributesLogRecordProcessor;
 import io.opentelemetry.android.internal.processors.SessionIdLogRecordAppender;
 import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.Preferences;
@@ -479,6 +480,7 @@ public final class OpenTelemetryRumBuilder {
                 SdkLoggerProvider.builder()
                         .setResource(resource)
                         .addLogRecordProcessor(new SessionIdLogRecordAppender(sessionProvider))
+                        .addLogRecordProcessor(new ScreenAttributesLogRecordProcessor(getServiceManager().getVisibleScreenService()))
                         .addLogRecordProcessor(
                                 new GlobalAttributesLogRecordAppender(
                                         config.getGlobalAttributesSupplier()));
