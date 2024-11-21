@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android
+package io.opentelemetry.android.internal.processors
 
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -13,7 +13,7 @@ import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.context.Context
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord
-import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_ID
+import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -39,6 +39,6 @@ class SessionIdLogRecordAppenderTest {
 
         underTest.onEmit(Context.root(), log)
 
-        verify { log.setAttribute(SESSION_ID, SESSION_ID_VALUE) }
+        verify { log.setAttribute(SessionIncubatingAttributes.SESSION_ID, SESSION_ID_VALUE) }
     }
 }

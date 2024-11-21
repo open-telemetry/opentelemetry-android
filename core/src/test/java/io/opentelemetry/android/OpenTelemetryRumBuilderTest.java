@@ -41,6 +41,7 @@ import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
@@ -83,6 +84,7 @@ import org.mockito.MockitoAnnotations;
 @RunWith(AndroidJUnit4.class)
 public class OpenTelemetryRumBuilderTest {
 
+    public static final String CUR_SCREEN_NAME = "Celebratory Token";
     final Resource resource =
             Resource.getDefault().toBuilder().put("test.attribute", "abcdef").build();
     final InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
@@ -152,8 +154,10 @@ public class OpenTelemetryRumBuilderTest {
 
     @Test
     public void shouldBuildLogRecordProvider() {
+        ServiceManager serviceManager = createServiceManager();
         OpenTelemetryRum openTelemetryRum =
                 makeBuilder()
+                        .setServiceManager(serviceManager)
                         .setResource(resource)
                         .addLoggerProviderCustomizer(
                                 (logRecordProviderBuilder, app) ->
@@ -174,6 +178,7 @@ public class OpenTelemetryRumBuilderTest {
                 .hasAttributesSatisfyingExactly(
                         equalTo(SESSION_ID, openTelemetryRum.getRumSessionId()),
                         equalTo(stringKey("event.name"), "test.event"),
+                        equalTo(SCREEN_NAME_KEY, CUR_SCREEN_NAME),
                         equalTo(stringKey("mega"), "hit"))
                 .hasResource(resource);
 
@@ -288,13 +293,18 @@ public class OpenTelemetryRumBuilderTest {
 
     @Test
     public void setLogRecordExporterCustomizer() {
+        ServiceManager serviceManager = createServiceManager();
         AtomicBoolean wasCalled = new AtomicBoolean(false);
         Function<LogRecordExporter, LogRecordExporter> customizer =
                 x -> {
                     wasCalled.set(true);
                     return logsExporter;
                 };
-        OpenTelemetryRum rum = makeBuilder().addLogRecordExporterCustomizer(customizer).build();
+        OpenTelemetryRum rum =
+                makeBuilder()
+                        .setServiceManager(serviceManager)
+                        .addLogRecordExporterCustomizer(customizer)
+                        .build();
 
         Logger logger = rum.getOpenTelemetry().getLogsBridge().loggerBuilder("LogScope").build();
         logger.logRecordBuilder()
@@ -313,6 +323,7 @@ public class OpenTelemetryRumBuilderTest {
                 .hasBody("foo")
                 .hasAttributesSatisfyingExactly(
                         equalTo(stringKey("bing"), "bang"),
+                        equalTo(SCREEN_NAME_KEY, CUR_SCREEN_NAME),
                         equalTo(SESSION_ID, rum.getRumSessionId()))
                 .hasSeverity(Severity.FATAL3);
     }
@@ -402,12 +413,14 @@ public class OpenTelemetryRumBuilderTest {
 
     @Test
     public void verifyGlobalAttrsForLogs() {
+        ServiceManager serviceManager = createServiceManager();
         OtelRumConfig otelRumConfig = buildConfig();
         otelRumConfig.setGlobalAttributes(
                 () -> Attributes.of(stringKey("someGlobalKey"), "someGlobalValue"));
 
         OpenTelemetryRum rum =
                 OpenTelemetryRum.builder(application, otelRumConfig)
+                        .setServiceManager(serviceManager)
                         .addLoggerProviderCustomizer(
                                 (sdkLoggerProviderBuilder, application) ->
                                         sdkLoggerProviderBuilder.addLogRecordProcessor(
@@ -426,6 +439,7 @@ public class OpenTelemetryRumBuilderTest {
                                 .put(SESSION_ID, rum.getRumSessionId())
                                 .put("someGlobalKey", "someGlobalValue")
                                 .put("localAttrKey", "localAttrValue")
+                                .put(SCREEN_NAME_KEY, CUR_SCREEN_NAME)
                                 .build());
     }
 
@@ -459,6 +473,9 @@ public class OpenTelemetryRumBuilderTest {
         when(serviceManager.getAppLifecycleService()).thenReturn(mock(AppLifecycleService.class));
         when(serviceManager.getCacheStorage()).thenReturn(mock(CacheStorage.class));
         when(serviceManager.getPreferences()).thenReturn(mock(Preferences.class));
+        VisibleScreenService screenService = mock(VisibleScreenService.class);
+        when(screenService.getCurrentlyVisibleScreen()).thenReturn(CUR_SCREEN_NAME);
+        when(serviceManager.getVisibleScreenService()).thenReturn(screenService);
         return serviceManager;
     }
 
