@@ -10,7 +10,6 @@ import android.app.Application
 import android.util.Log
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.OpenTelemetryRumBuilder
-import io.opentelemetry.android.agent.setSlowRenderingDetectionPollInterval
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration
 import io.opentelemetry.api.common.AttributeKey.stringKey
@@ -19,9 +18,9 @@ import io.opentelemetry.api.incubator.events.EventBuilder
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider
-import java.time.Duration
-import kotlin.math.log
 
 const val TAG = "otel.demo"
 
@@ -61,6 +60,26 @@ class OtelDemoApplication : Application() {
             Log.d(TAG, "RUM session started: " + rum!!.rumSessionId)
         } catch (e: Exception) {
             Log.e(TAG, "Oh no!", e)
+        }
+
+        // This is needed to get R8 missing rules warnings.
+        initializeOtelWithGrpc()
+    }
+
+    // This is not used but it's needed to verify that our consumer proguard rules cover this use case.
+    private fun initializeOtelWithGrpc() {
+        val builder = OpenTelemetryRum.builder(this)
+            .addSpanExporterCustomizer {
+                OtlpGrpcSpanExporter.builder().build()
+            }
+            .addLogRecordExporterCustomizer {
+                OtlpGrpcLogRecordExporter.builder().build()
+            }
+
+        // This is an overly-cautious measure to prevent R8 from discarding away the whole method
+        // in case it identifies that it's actually not doing anything meaningful.
+        if (System.currentTimeMillis() < 0) {
+            print(builder)
         }
     }
 
