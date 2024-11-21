@@ -175,7 +175,9 @@ public class OpenTelemetryRumBuilderTest {
         List<LogRecordData> logs = logsExporter.getFinishedLogRecordItems();
         assertThat(logs).hasSize(2);
         assertThat(logs.get(0))
-                .hasAttributesSatisfyingExactly(equalTo(stringKey("event.name"), "session.start"));
+                .hasAttributesSatisfyingExactly(
+                        equalTo(SESSION_ID, openTelemetryRum.getRumSessionId()),
+                        equalTo(stringKey("event.name"), "session.start"));
         assertThat(logs.get(1))
                 .hasAttributesSatisfyingExactly(
                         equalTo(SESSION_ID, openTelemetryRum.getRumSessionId()),
@@ -323,7 +325,9 @@ public class OpenTelemetryRumBuilderTest {
         assertThat(logs).hasSize(2);
         Iterator<LogRecordData> iter = logs.iterator();
         assertThat(iter.next())
-                .hasAttributesSatisfyingExactly(equalTo(stringKey("event.name"), "session.start"));
+                .hasAttributesSatisfyingExactly(
+                        equalTo(SESSION_ID, rum.getRumSessionId()),
+                        equalTo(stringKey("event.name"), "session.start"));
         assertThat(iter.next())
                 .hasBody("foo")
                 .hasAttributesSatisfyingExactly(

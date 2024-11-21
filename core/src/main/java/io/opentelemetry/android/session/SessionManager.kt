@@ -50,11 +50,12 @@ internal class SessionManager(
         // observers need to be called after bumping the timer because it may
         // create a new span
         if (newSession != session) {
-            observers.forEach {
-                it.onSessionEnded(session)
-                it.onSessionStarted(newSession, session)
-            }
+            val oldSession = session
             session = newSession
+            observers.forEach {
+                it.onSessionEnded(oldSession)
+                it.onSessionStarted(session, oldSession)
+            }
         }
         return session.getId()
     }
