@@ -5,8 +5,9 @@
 
 package io.opentelemetry.android.internal.features.networkattrs;
 
+import io.opentelemetry.android.common.internal.features.networkattrs.CurrentNetworkAttributesExtractor;
+import io.opentelemetry.android.common.internal.features.networkattrs.data.CurrentNetwork;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
-import io.opentelemetry.android.internal.services.network.data.CurrentNetwork;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
