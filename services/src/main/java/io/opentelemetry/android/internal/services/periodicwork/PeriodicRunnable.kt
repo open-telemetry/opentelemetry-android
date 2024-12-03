@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.internal.services.periodicwork
 
-import io.opentelemetry.android.internal.services.SystemTime
+import io.opentelemetry.android.common.internal.tools.time.SystemTime
 
 /**
  * Utility for creating a Runnable that needs to run multiple times.

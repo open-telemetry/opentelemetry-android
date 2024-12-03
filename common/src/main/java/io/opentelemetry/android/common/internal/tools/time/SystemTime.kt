@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.services
+package io.opentelemetry.android.common.internal.tools.time
 
 /**
  * Utility to be able to mock the current system time for testing purposes.
@@ -11,7 +11,7 @@ package io.opentelemetry.android.internal.services
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
-internal interface SystemTime {
+interface SystemTime {
     companion object {
         private var instance: SystemTime = DefaultSystemTime()
 
