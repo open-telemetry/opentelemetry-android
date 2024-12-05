@@ -17,7 +17,6 @@ import io.opentelemetry.android.internal.services.visiblescreen.activities.Visib
 import io.opentelemetry.android.internal.services.visiblescreen.fragments.RumFragmentActivityRegisterer
 import io.opentelemetry.android.internal.services.visiblescreen.fragments.VisibleFragmentTracker
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.jvm.javaClass
 
 /**
  * Wherein we do our best to figure out what "screen" is visible and what was the previously visible
