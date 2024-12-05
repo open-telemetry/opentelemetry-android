@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.internal.services.network;
 
-import io.opentelemetry.android.common.internal.features.networkattrs.data.CurrentNetwork;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
 
 /**
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.

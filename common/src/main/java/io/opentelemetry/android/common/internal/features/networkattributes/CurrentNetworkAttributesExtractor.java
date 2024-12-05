@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.common.internal.features.networkattrs;
+package io.opentelemetry.android.common.internal.features.networkattributes;
 
 import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_ICC;
 import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_MCC;
@@ -13,7 +13,7 @@ import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NE
 import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE;
 
 import androidx.annotation.Nullable;
-import io.opentelemetry.android.common.internal.features.networkattrs.data.CurrentNetwork;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;

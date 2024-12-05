@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.agent
 
-import io.opentelemetry.android.common.internal.features.networkattrs.data.CurrentNetwork
+import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.activity.ActivityLifecycleInstrumentation

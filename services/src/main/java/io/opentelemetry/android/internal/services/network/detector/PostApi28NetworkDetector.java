@@ -18,9 +18,9 @@ import android.os.Build;
 import android.telephony.TelephonyManager;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
-import io.opentelemetry.android.common.internal.features.networkattrs.data.Carrier;
-import io.opentelemetry.android.common.internal.features.networkattrs.data.CurrentNetwork;
-import io.opentelemetry.android.common.internal.features.networkattrs.data.NetworkState;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
 import io.opentelemetry.android.internal.services.network.CarrierFinder;
 
 /**

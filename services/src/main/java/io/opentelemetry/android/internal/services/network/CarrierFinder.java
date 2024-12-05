@@ -8,7 +8,7 @@ package io.opentelemetry.android.internal.services.network;
 import android.os.Build;
 import android.telephony.TelephonyManager;
 import androidx.annotation.RequiresApi;
-import io.opentelemetry.android.common.internal.features.networkattrs.data.Carrier;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier;
 
 /**
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.

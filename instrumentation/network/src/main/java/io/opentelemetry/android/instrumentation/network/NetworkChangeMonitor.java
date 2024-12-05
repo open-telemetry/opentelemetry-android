@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.instrumentation.network;
 
-import io.opentelemetry.android.common.internal.features.networkattrs.data.CurrentNetwork;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.api.OpenTelemetry;

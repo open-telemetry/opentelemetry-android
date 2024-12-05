@@ -10,8 +10,8 @@ import static io.opentelemetry.android.internal.services.network.CurrentNetworkP
 
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import io.opentelemetry.android.common.internal.features.networkattrs.data.CurrentNetwork;
-import io.opentelemetry.android.common.internal.features.networkattrs.data.NetworkState;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
 
 /**
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.

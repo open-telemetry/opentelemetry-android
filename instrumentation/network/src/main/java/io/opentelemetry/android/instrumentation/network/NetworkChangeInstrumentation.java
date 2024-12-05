@@ -7,7 +7,7 @@ package io.opentelemetry.android.instrumentation.network;
 
 import androidx.annotation.NonNull;
 import com.google.auto.service.AutoService;
-import io.opentelemetry.android.common.internal.features.networkattrs.data.CurrentNetwork;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.instrumentation.InstallationContext;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;

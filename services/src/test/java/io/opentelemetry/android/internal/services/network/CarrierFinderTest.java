@@ -10,7 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.telephony.TelephonyManager;
-import io.opentelemetry.android.common.internal.features.networkattrs.data.Carrier;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier;
 import org.junit.jupiter.api.Test;
 
 class CarrierFinderTest {

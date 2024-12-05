@@ -18,9 +18,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 
 import android.os.Build;
-import io.opentelemetry.android.common.internal.features.networkattrs.data.Carrier;
-import io.opentelemetry.android.common.internal.features.networkattrs.data.CurrentNetwork;
-import io.opentelemetry.android.common.internal.features.networkattrs.data.NetworkState;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;

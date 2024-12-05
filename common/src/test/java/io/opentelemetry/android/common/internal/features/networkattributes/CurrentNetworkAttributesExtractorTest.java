@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.common.internal.features.networkattrs;
+package io.opentelemetry.android.common.internal.features.networkattributes;
 
 import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_ICC;
 import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_MCC;
@@ -14,9 +14,9 @@ import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NE
 import static org.assertj.core.api.Assertions.entry;
 
 import android.os.Build;
-import io.opentelemetry.android.common.internal.features.networkattrs.data.Carrier;
-import io.opentelemetry.android.common.internal.features.networkattrs.data.CurrentNetwork;
-import io.opentelemetry.android.common.internal.features.networkattrs.data.NetworkState;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
