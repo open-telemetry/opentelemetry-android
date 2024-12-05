@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.agent
 
+import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.activity.ActivityLifecycleInstrumentation
@@ -15,7 +16,6 @@ import io.opentelemetry.android.instrumentation.crash.CrashReporterInstrumentati
 import io.opentelemetry.android.instrumentation.fragment.FragmentLifecycleInstrumentation
 import io.opentelemetry.android.instrumentation.network.NetworkChangeInstrumentation
 import io.opentelemetry.android.instrumentation.slowrendering.SlowRenderingInstrumentation
-import io.opentelemetry.android.internal.services.network.data.CurrentNetwork
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor
 import java.time.Duration

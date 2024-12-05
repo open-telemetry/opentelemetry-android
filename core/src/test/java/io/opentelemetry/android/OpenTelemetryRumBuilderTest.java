@@ -34,8 +34,8 @@ import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleH
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader;
 import io.opentelemetry.android.instrumentation.InstallationContext;
+import io.opentelemetry.android.instrumentation.internal.AndroidInstrumentationLoaderImpl;
 import io.opentelemetry.android.internal.initialization.InitializationEvents;
-import io.opentelemetry.android.internal.instrumentation.AndroidInstrumentationLoaderImpl;
 import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.ServiceManager;

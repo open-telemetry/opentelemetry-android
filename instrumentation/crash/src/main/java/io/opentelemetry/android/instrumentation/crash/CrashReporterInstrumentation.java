@@ -7,7 +7,7 @@ package io.opentelemetry.android.instrumentation.crash;
 
 import androidx.annotation.NonNull;
 import com.google.auto.service.AutoService;
-import io.opentelemetry.android.RuntimeDetailsExtractor;
+import io.opentelemetry.android.common.RuntimeDetailsExtractor;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.instrumentation.InstallationContext;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
