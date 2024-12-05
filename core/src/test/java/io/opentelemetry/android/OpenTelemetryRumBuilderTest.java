@@ -9,6 +9,7 @@ import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static io.opentelemetry.semconv.incubating.EventIncubatingAttributes.EVENT_NAME;
 import static io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_ID;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -42,6 +43,7 @@ import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
@@ -177,6 +179,7 @@ public class OpenTelemetryRumBuilderTest {
         assertThat(logs.get(0))
                 .hasAttributesSatisfyingExactly(
                         equalTo(SESSION_ID, openTelemetryRum.getRumSessionId()),
+                        equalTo(SCREEN_NAME_KEY, CUR_SCREEN_NAME),
                         equalTo(stringKey("event.name"), "session.start"));
         assertThat(logs.get(1))
                 .hasAttributesSatisfyingExactly(
@@ -327,6 +330,7 @@ public class OpenTelemetryRumBuilderTest {
         assertThat(iter.next())
                 .hasAttributesSatisfyingExactly(
                         equalTo(SESSION_ID, rum.getRumSessionId()),
+                        equalTo(SCREEN_NAME_KEY, CUR_SCREEN_NAME),
                         equalTo(stringKey("event.name"), "session.start"));
         assertThat(iter.next())
                 .hasBody("foo")
@@ -424,8 +428,8 @@ public class OpenTelemetryRumBuilderTest {
     public void verifyGlobalAttrsForLogs() {
         ServiceManager serviceManager = createServiceManager();
         OtelRumConfig otelRumConfig = buildConfig();
-        otelRumConfig.setGlobalAttributes(
-                () -> Attributes.of(stringKey("someGlobalKey"), "someGlobalValue"));
+        AttributeKey<String> globalKey = stringKey("someGlobalKey");
+        otelRumConfig.setGlobalAttributes(() -> Attributes.of(globalKey, "someGlobalValue"));
 
         OpenTelemetryRum rum =
                 OpenTelemetryRum.builder(application, otelRumConfig)
@@ -440,16 +444,19 @@ public class OpenTelemetryRumBuilderTest {
         logger.logRecordBuilder().setAttribute(stringKey("localAttrKey"), "localAttrValue").emit();
 
         List<LogRecordData> recordedLogs = logRecordExporter.getFinishedLogRecordItems();
-        assertThat(recordedLogs).hasSize(1);
-        LogRecordData logRecordData = recordedLogs.get(0);
-        assertThat(logRecordData)
-                .hasAttributes(
-                        Attributes.builder()
-                                .put(SESSION_ID, rum.getRumSessionId())
-                                .put("someGlobalKey", "someGlobalValue")
-                                .put("localAttrKey", "localAttrValue")
-                                .put(SCREEN_NAME_KEY, CUR_SCREEN_NAME)
-                                .build());
+        assertThat(recordedLogs).hasSize(2); // session start, the the above log
+        assertThat(recordedLogs.get(0))
+                .hasAttributesSatisfyingExactly(
+                        equalTo(EVENT_NAME, "session.start"),
+                        equalTo(globalKey, "someGlobalValue"),
+                        equalTo(SESSION_ID, rum.getRumSessionId()),
+                        equalTo(SCREEN_NAME_KEY, CUR_SCREEN_NAME));
+        assertThat(recordedLogs.get(1))
+                .hasAttributesSatisfyingExactly(
+                        equalTo(SESSION_ID, rum.getRumSessionId()),
+                        equalTo(globalKey, "someGlobalValue"),
+                        equalTo(stringKey("localAttrKey"), "localAttrValue"),
+                        equalTo(SCREEN_NAME_KEY, CUR_SCREEN_NAME));
     }
 
     @Test
