@@ -55,12 +55,12 @@ import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.contrib.disk.buffering.SpanToDiskExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -69,6 +69,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -173,8 +174,10 @@ public class OpenTelemetryRumBuilderTest {
         eventLogger.builder("test.event").put("body.field", "foo").setAttributes(attrs).emit();
 
         List<LogRecordData> logs = logsExporter.getFinishedLogRecordItems();
-        assertThat(logs).hasSize(1);
+        assertThat(logs).hasSize(2);
         assertThat(logs.get(0))
+                .hasAttributesSatisfyingExactly(equalTo(stringKey("event.name"), "session.start"));
+        assertThat(logs.get(1))
                 .hasAttributesSatisfyingExactly(
                         equalTo(SESSION_ID, openTelemetryRum.getRumSessionId()),
                         equalTo(stringKey("event.name"), "test.event"),
@@ -182,7 +185,7 @@ public class OpenTelemetryRumBuilderTest {
                         equalTo(stringKey("mega"), "hit"))
                 .hasResource(resource);
 
-        Value<?> bodyValue = logs.get(0).getBodyValue();
+        Value<?> bodyValue = logs.get(1).getBodyValue();
         List<KeyValue> payload = (List<KeyValue>) bodyValue.getValue();
         assertThat(payload).hasSize(1);
         KeyValue expected = KeyValue.of("body.field", Value.of("foo"));
@@ -318,8 +321,11 @@ public class OpenTelemetryRumBuilderTest {
                         () -> assertThat(logsExporter.getFinishedLogRecordItems()).isNotEmpty());
         assertThat(wasCalled.get()).isTrue();
         Collection<LogRecordData> logs = logsExporter.getFinishedLogRecordItems();
-        assertThat(logs).hasSize(1);
-        assertThat(logs.iterator().next())
+        assertThat(logs).hasSize(2);
+        Iterator<LogRecordData> iter = logs.iterator();
+        assertThat(iter.next())
+                .hasAttributesSatisfyingExactly(equalTo(stringKey("event.name"), "session.start"));
+        assertThat(iter.next())
                 .hasBody("foo")
                 .hasAttributesSatisfyingExactly(
                         equalTo(stringKey("bing"), "bang"),
@@ -433,7 +439,7 @@ public class OpenTelemetryRumBuilderTest {
         List<LogRecordData> recordedLogs = logRecordExporter.getFinishedLogRecordItems();
         assertThat(recordedLogs).hasSize(1);
         LogRecordData logRecordData = recordedLogs.get(0);
-        OpenTelemetryAssertions.assertThat(logRecordData)
+        assertThat(logRecordData)
                 .hasAttributes(
                         Attributes.builder()
                                 .put(SESSION_ID, rum.getRumSessionId())
