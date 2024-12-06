@@ -12,6 +12,7 @@ import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.session.SessionManager
 import io.opentelemetry.sdk.OpenTelemetrySdk
+import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider
 
 class SdkPreconfiguredRumBuilder
     @JvmOverloads
@@ -50,6 +51,14 @@ class SdkPreconfiguredRumBuilder
             // the app state listeners need to be run in the first ActivityLifecycleCallbacks since they
             // might turn off/on additional telemetry depending on whether the app is active or not
             appLifecycleService.registerListener(timeoutHandler)
+
+            val eventLogger =
+                SdkEventLoggerProvider.create(sdk.logsBridge)
+                    .get(OpenTelemetryRum::class.java.simpleName)
+
+            sessionManager.addObserver(SessionIdEventSender(eventLogger))
+            // After addObserver(), we call getSessionId() to trigger a session.start event
+            sessionManager.getSessionId()
 
             val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionManager)
 
