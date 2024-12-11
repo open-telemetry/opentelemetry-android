@@ -36,7 +36,11 @@ internal class SessionManagerImplTest {
 
     @Test
     fun valueValid() {
-        val sessionManager = SessionManagerImpl(TestClock.create(), timeoutHandler = timeoutHandler)
+        val sessionManager =
+            io.opentelemetry.android.internal.session.SessionManagerImpl(
+                TestClock.create(),
+                timeoutHandler = timeoutHandler,
+            )
         val sessionId = sessionManager.getSessionId()
         assertThat(sessionId).isNotNull()
         assertThat(sessionId).hasSize(32)
@@ -46,7 +50,11 @@ internal class SessionManagerImplTest {
     @Test
     fun valueSameUntil4Hours() {
         val clock = TestClock.create()
-        val sessionManager = SessionManagerImpl(clock, timeoutHandler = timeoutHandler)
+        val sessionManager =
+            io.opentelemetry.android.internal.session.SessionManagerImpl(
+                clock,
+                timeoutHandler = timeoutHandler,
+            )
         val value = sessionManager.getSessionId()
         assertThat(value).isEqualTo(sessionManager.getSessionId())
         clock.advance(3, TimeUnit.HOURS)
@@ -70,7 +78,11 @@ internal class SessionManagerImplTest {
         every { observer.onSessionStarted(any<Session>(), any<Session>()) } just Runs
         every { observer.onSessionEnded(any<Session>()) } just Runs
 
-        val sessionManager = SessionManagerImpl(clock, timeoutHandler = timeoutHandler)
+        val sessionManager =
+            io.opentelemetry.android.internal.session.SessionManagerImpl(
+                clock,
+                timeoutHandler = timeoutHandler,
+            )
         sessionManager.addObserver(observer)
 
         // The first call expires the Session.NONE initial session and notifies
@@ -109,7 +121,8 @@ internal class SessionManagerImplTest {
 
     @Test
     fun shouldCreateNewSessionIdAfterTimeout() {
-        val sessionId = SessionManagerImpl(timeoutHandler = timeoutHandler)
+        val sessionId =
+            io.opentelemetry.android.internal.session.SessionManagerImpl(timeoutHandler = timeoutHandler)
 
         val value = sessionId.getSessionId()
         verify { timeoutHandler.bump() }
