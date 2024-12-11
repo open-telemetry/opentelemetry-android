@@ -103,6 +103,7 @@ public final class OpenTelemetryRumBuilder {
     @Nullable private ServiceManager serviceManager;
 
     @Nullable private ExportScheduleHandler exportScheduleHandler;
+    @Nullable private SessionManager sessionManager;
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
@@ -303,7 +304,7 @@ public final class OpenTelemetryRumBuilder {
         BufferDelegatingSpanExporter bufferDelegatingSpanExporter =
                 new BufferDelegatingSpanExporter();
 
-        SessionManager sessionManager =
+        sessionManager =
                 SessionManagerImpl.create(timeoutHandler, config.getSessionTimeout().toNanos());
 
         OpenTelemetrySdk sdk =
@@ -375,9 +376,10 @@ public final class OpenTelemetryRumBuilder {
         }
         initializationEvents.spanExporterInitialized(spanExporter);
 
-        SessionManager sessionManager =
-                SessionManagerImpl.create(timeoutHandler, config.getSessionTimeout().toNanos());
-        bufferedDelegatingLogExporter.setDelegate(logsExporter);
+        if (sessionManager == null) {
+            sessionManager =
+                    SessionManagerImpl.create(timeoutHandler, config.getSessionTimeout().toNanos());
+        }
 
         bufferDelegatingSpanExporter.setDelegate(spanExporter);
 
@@ -397,6 +399,12 @@ public final class OpenTelemetryRumBuilder {
         requireNonNull(serviceManager, "serviceManager cannot be null");
         checkNotBuilt();
         this.serviceManager = serviceManager;
+        return this;
+    }
+
+    @VisibleForTesting
+    OpenTelemetryRumBuilder setSessionManager(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
         return this;
     }
 

@@ -43,6 +43,7 @@ import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleServi
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
 import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler;
+import io.opentelemetry.android.session.SessionManager;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
@@ -198,6 +199,7 @@ public class OpenTelemetryRumBuilderTest {
     @Test
     public void shouldInstallInstrumentation() {
         ServiceManager serviceManager = createServiceManager();
+        SessionManager sessionManager = mock();
         SessionIdTimeoutHandler timeoutHandler = mock();
         AndroidInstrumentation localInstrumentation = mock();
         AndroidInstrumentation classpathInstrumentation = mock();
@@ -209,12 +211,14 @@ public class OpenTelemetryRumBuilderTest {
                 new OpenTelemetryRumBuilder(application, buildConfig(), timeoutHandler)
                         .addInstrumentation(localInstrumentation)
                         .setServiceManager(serviceManager)
+                        .setSessionManager(sessionManager)
                         .build();
 
         verify(serviceManager.getAppLifecycleService()).registerListener(timeoutHandler);
 
         InstallationContext expectedCtx =
-                new InstallationContext(application, rum.getOpenTelemetry(), serviceManager);
+                new InstallationContext(
+                        application, rum.getOpenTelemetry(), sessionManager, serviceManager);
         verify(localInstrumentation).install(eq(expectedCtx));
         verify(classpathInstrumentation).install(eq(expectedCtx));
     }
@@ -222,6 +226,7 @@ public class OpenTelemetryRumBuilderTest {
     @Test
     public void shouldInstallInstrumentation_excludingClasspathImplsWhenRequestedInConfig() {
         ServiceManager serviceManager = createServiceManager();
+        SessionManager sessionManager = mock();
         SessionIdTimeoutHandler timeoutHandler = mock();
         AndroidInstrumentation localInstrumentation = mock();
         AndroidInstrumentation classpathInstrumentation = mock();
@@ -236,12 +241,14 @@ public class OpenTelemetryRumBuilderTest {
                                 timeoutHandler)
                         .addInstrumentation(localInstrumentation)
                         .setServiceManager(serviceManager)
+                        .setSessionManager(sessionManager)
                         .build();
 
         verify(serviceManager.getAppLifecycleService()).registerListener(timeoutHandler);
 
         InstallationContext expectedCtx =
-                new InstallationContext(application, rum.getOpenTelemetry(), serviceManager);
+                new InstallationContext(
+                        application, rum.getOpenTelemetry(), sessionManager, serviceManager);
         verify(localInstrumentation).install(eq(expectedCtx));
         verifyNoInteractions(classpathInstrumentation);
     }
