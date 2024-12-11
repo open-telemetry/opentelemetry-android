@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
-internal class SessionManagerTest {
+internal class SessionManagerImplTest {
     @MockK
     lateinit var timeoutHandler: SessionIdTimeoutHandler
 
@@ -35,7 +35,7 @@ internal class SessionManagerTest {
 
     @Test
     fun valueValid() {
-        val sessionManager = SessionManager(TestClock.create(), timeoutHandler = timeoutHandler)
+        val sessionManager = SessionManagerImpl(TestClock.create(), timeoutHandler = timeoutHandler)
         val sessionId = sessionManager.getSessionId()
         assertThat(sessionId).isNotNull()
         assertThat(sessionId).hasSize(32)
@@ -45,7 +45,7 @@ internal class SessionManagerTest {
     @Test
     fun valueSameUntil4Hours() {
         val clock = TestClock.create()
-        val sessionManager = SessionManager(clock, timeoutHandler = timeoutHandler)
+        val sessionManager = SessionManagerImpl(clock, timeoutHandler = timeoutHandler)
         val value = sessionManager.getSessionId()
         assertThat(value).isEqualTo(sessionManager.getSessionId())
         clock.advance(3, TimeUnit.HOURS)
@@ -69,7 +69,7 @@ internal class SessionManagerTest {
         every { observer.onSessionStarted(any<Session>(), any<Session>()) } just Runs
         every { observer.onSessionEnded(any<Session>()) } just Runs
 
-        val sessionManager = SessionManager(clock, timeoutHandler = timeoutHandler)
+        val sessionManager = SessionManagerImpl(clock, timeoutHandler = timeoutHandler)
         sessionManager.addObserver(observer)
 
         // The first call expires the Session.NONE initial session and notifies
@@ -108,7 +108,7 @@ internal class SessionManagerTest {
 
     @Test
     fun shouldCreateNewSessionIdAfterTimeout() {
-        val sessionId = SessionManager(timeoutHandler = timeoutHandler)
+        val sessionId = SessionManagerImpl(timeoutHandler = timeoutHandler)
 
         val value = sessionId.getSessionId()
         verify { timeoutHandler.bump() }

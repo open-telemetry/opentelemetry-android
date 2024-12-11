@@ -34,6 +34,7 @@ import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.android.internal.services.ServiceManagerImpl;
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService;
 import io.opentelemetry.android.session.SessionManager;
+import io.opentelemetry.android.session.SessionManagerImpl;
 import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -373,6 +374,8 @@ public final class OpenTelemetryRumBuilder {
         }
         initializationEvents.spanExporterInitialized(spanExporter);
 
+        SessionManager sessionManager =
+                SessionManagerImpl.create(timeoutHandler, config.getSessionTimeout().toNanos());
         bufferedDelegatingLogExporter.setDelegate(logsExporter);
 
         bufferDelegatingSpanExporter.setDelegate(spanExporter);
