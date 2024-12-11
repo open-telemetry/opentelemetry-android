@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android
+package io.opentelemetry.android.instrumentation.sessions
 
 import io.opentelemetry.android.common.RumConstants.Events.EVENT_SESSION_END
 import io.opentelemetry.android.common.RumConstants.Events.EVENT_SESSION_START
@@ -13,6 +13,10 @@ import io.opentelemetry.api.incubator.events.EventLogger
 import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_ID
 import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_PREVIOUS_ID
 
+/**
+ * This class is responsible for generating the session related events as
+ * specified in the OpenTelemetry semantic conventions.
+ */
 internal class SessionIdEventSender(private val eventLogger: EventLogger) : SessionObserver {
     override fun onSessionStarted(
         newSession: Session,
