@@ -63,8 +63,9 @@ android {
 
 dependencies {
     implementation(project(":instrumentation:android-instrumentation"))
-    implementation(project(":services"))
     implementation(project(":common"))
+    implementation(project(":services"))
+    implementation(project(":session"))
 
     implementation(libs.androidx.core)
 
