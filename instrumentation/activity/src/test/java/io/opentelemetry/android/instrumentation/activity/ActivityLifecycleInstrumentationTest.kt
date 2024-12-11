@@ -14,6 +14,7 @@ import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService
+import io.opentelemetry.android.session.SessionManager
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanBuilder
 import io.opentelemetry.api.trace.Tracer
@@ -29,6 +30,7 @@ class ActivityLifecycleInstrumentationTest {
     private lateinit var application: Application
     private lateinit var openTelemetry: OpenTelemetrySdk
     private lateinit var serviceManager: ServiceManager
+    private lateinit var sessionManager: SessionManager
 
     @Before
     fun setUp() {
@@ -36,6 +38,7 @@ class ActivityLifecycleInstrumentationTest {
         openTelemetry = mockk()
         activityLifecycleInstrumentation = ActivityLifecycleInstrumentation()
         serviceManager = mockk()
+        sessionManager = mockk()
         every { serviceManager.getVisibleScreenService() }.returns(mockk<VisibleScreenService>())
     }
 
@@ -53,7 +56,7 @@ class ActivityLifecycleInstrumentationTest {
         )
         every { startupSpanBuilder.startSpan() }.returns(startupSpan)
 
-        val ctx = InstallationContext(application, openTelemetry, serviceManager)
+        val ctx = InstallationContext(application, openTelemetry, sessionManager, serviceManager)
         activityLifecycleInstrumentation.install(ctx)
 
         verify {
