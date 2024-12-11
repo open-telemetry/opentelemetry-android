@@ -3,9 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.session
+package io.opentelemetry.android.internal.session
 
-import io.opentelemetry.android.SessionIdTimeoutHandler
+import io.opentelemetry.android.session.Session
+import io.opentelemetry.android.session.SessionIdGenerator
+import io.opentelemetry.android.session.SessionManager
+import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.android.session.SessionStorage
 import io.opentelemetry.sdk.common.Clock
 import java.util.Collections.synchronizedList
 import java.util.concurrent.TimeUnit

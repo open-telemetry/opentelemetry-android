@@ -42,6 +42,7 @@ import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
+import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
