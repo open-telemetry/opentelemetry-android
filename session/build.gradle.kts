@@ -1,12 +1,11 @@
 plugins {
     id("otel.android-library-conventions")
-    id("otel.publish-conventions")
 }
 
-description = "OpenTelemetry Android Instrumentation Auto Service"
+description = "OpenTelemetry android session api"
 
 android {
-    namespace = "io.opentelemetry.android.instrumentation"
+    namespace = "io.opentelemetry.android.session"
 
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")
@@ -14,9 +13,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":services"))
-    implementation(project(":session"))
-
     api(platform(libs.opentelemetry.platform.alpha))
     api(libs.opentelemetry.api)
+    implementation(libs.opentelemetry.sdk)
+    implementation(project(":services"))
 }
