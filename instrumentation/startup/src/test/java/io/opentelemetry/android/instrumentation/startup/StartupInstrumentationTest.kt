@@ -15,6 +15,7 @@ import io.mockk.verify
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.internal.initialization.InitializationEvents
 import io.opentelemetry.android.internal.services.ServiceManager
+import io.opentelemetry.android.session.SessionManager
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -64,6 +65,7 @@ class StartupInstrumentationTest {
         return InstallationContext(
             mockk<Application>(),
             otelTesting.openTelemetry,
+            mockk<SessionManager>(),
             mockk<ServiceManager>(),
         )
     }

@@ -42,6 +42,8 @@ import io.opentelemetry.android.internal.services.ServiceManager;
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
+import io.opentelemetry.android.session.SessionManager;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
@@ -60,7 +62,6 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -69,6 +70,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -192,6 +194,7 @@ public class OpenTelemetryRumBuilderTest {
     @Test
     public void shouldInstallInstrumentation() {
         ServiceManager serviceManager = createServiceManager();
+        SessionManager sessionManager = mock(SessionManager.class);
         SessionIdTimeoutHandler timeoutHandler = mock();
         AndroidInstrumentation localInstrumentation = mock();
         AndroidInstrumentation classpathInstrumentation = mock();
@@ -203,12 +206,15 @@ public class OpenTelemetryRumBuilderTest {
                 new OpenTelemetryRumBuilder(application, buildConfig(), timeoutHandler)
                         .addInstrumentation(localInstrumentation)
                         .setServiceManager(serviceManager)
+                        .setSessionManager(sessionManager)
                         .build();
 
         verify(serviceManager.getAppLifecycleService()).registerListener(timeoutHandler);
 
         InstallationContext expectedCtx =
-                new InstallationContext(application, rum.getOpenTelemetry(), serviceManager);
+                new InstallationContext(
+                        application, rum.getOpenTelemetry(), sessionManager, serviceManager);
+
         verify(localInstrumentation).install(eq(expectedCtx));
         verify(classpathInstrumentation).install(eq(expectedCtx));
     }
@@ -216,6 +222,7 @@ public class OpenTelemetryRumBuilderTest {
     @Test
     public void shouldInstallInstrumentation_excludingClasspathImplsWhenRequestedInConfig() {
         ServiceManager serviceManager = createServiceManager();
+        SessionManager sessionManager = mock(SessionManager.class);
         SessionIdTimeoutHandler timeoutHandler = mock();
         AndroidInstrumentation localInstrumentation = mock();
         AndroidInstrumentation classpathInstrumentation = mock();
@@ -230,12 +237,14 @@ public class OpenTelemetryRumBuilderTest {
                                 timeoutHandler)
                         .addInstrumentation(localInstrumentation)
                         .setServiceManager(serviceManager)
+                        .setSessionManager(sessionManager)
                         .build();
 
         verify(serviceManager.getAppLifecycleService()).registerListener(timeoutHandler);
 
         InstallationContext expectedCtx =
-                new InstallationContext(application, rum.getOpenTelemetry(), serviceManager);
+                new InstallationContext(
+                        application, rum.getOpenTelemetry(), sessionManager, serviceManager);
         verify(localInstrumentation).install(eq(expectedCtx));
         verifyNoInteractions(classpathInstrumentation);
     }
@@ -319,7 +328,8 @@ public class OpenTelemetryRumBuilderTest {
         assertThat(wasCalled.get()).isTrue();
         Collection<LogRecordData> logs = logsExporter.getFinishedLogRecordItems();
         assertThat(logs).hasSize(1);
-        assertThat(logs.iterator().next())
+        Iterator<LogRecordData> iter = logs.iterator();
+        assertThat(iter.next())
                 .hasBody("foo")
                 .hasAttributesSatisfyingExactly(
                         equalTo(stringKey("bing"), "bang"),
@@ -415,8 +425,8 @@ public class OpenTelemetryRumBuilderTest {
     public void verifyGlobalAttrsForLogs() {
         ServiceManager serviceManager = createServiceManager();
         OtelRumConfig otelRumConfig = buildConfig();
-        otelRumConfig.setGlobalAttributes(
-                () -> Attributes.of(stringKey("someGlobalKey"), "someGlobalValue"));
+        AttributeKey<String> globalKey = stringKey("someGlobalKey");
+        otelRumConfig.setGlobalAttributes(() -> Attributes.of(globalKey, "someGlobalValue"));
 
         OpenTelemetryRum rum =
                 OpenTelemetryRum.builder(application, otelRumConfig)
@@ -431,16 +441,13 @@ public class OpenTelemetryRumBuilderTest {
         logger.logRecordBuilder().setAttribute(stringKey("localAttrKey"), "localAttrValue").emit();
 
         List<LogRecordData> recordedLogs = logRecordExporter.getFinishedLogRecordItems();
-        assertThat(recordedLogs).hasSize(1);
-        LogRecordData logRecordData = recordedLogs.get(0);
-        OpenTelemetryAssertions.assertThat(logRecordData)
-                .hasAttributes(
-                        Attributes.builder()
-                                .put(SESSION_ID, rum.getRumSessionId())
-                                .put("someGlobalKey", "someGlobalValue")
-                                .put("localAttrKey", "localAttrValue")
-                                .put(SCREEN_NAME_KEY, CUR_SCREEN_NAME)
-                                .build());
+        assertThat(recordedLogs).hasSize(1); // session start, the the above log
+        assertThat(recordedLogs.get(0))
+                .hasAttributesSatisfyingExactly(
+                        equalTo(SESSION_ID, rum.getRumSessionId()),
+                        equalTo(globalKey, "someGlobalValue"),
+                        equalTo(stringKey("localAttrKey"), "localAttrValue"),
+                        equalTo(SCREEN_NAME_KEY, CUR_SCREEN_NAME));
     }
 
     @Test

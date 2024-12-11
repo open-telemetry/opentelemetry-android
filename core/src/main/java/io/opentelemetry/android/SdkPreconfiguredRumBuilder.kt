@@ -11,6 +11,7 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.session.SessionManager
+import io.opentelemetry.android.session.SessionManagerImpl
 import io.opentelemetry.sdk.OpenTelemetrySdk
 
 class SdkPreconfiguredRumBuilder
@@ -19,7 +20,7 @@ class SdkPreconfiguredRumBuilder
         private val application: Application,
         private val sdk: OpenTelemetrySdk,
         private val timeoutHandler: SessionIdTimeoutHandler = SessionIdTimeoutHandler(),
-        private val sessionManager: SessionManager = SessionManager(timeoutHandler = timeoutHandler),
+        private val sessionManager: SessionManager = SessionManagerImpl(timeoutHandler = timeoutHandler),
         private val discoverInstrumentations: Boolean,
         private val serviceManager: ServiceManager,
     ) {
@@ -54,10 +55,19 @@ class SdkPreconfiguredRumBuilder
             val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionManager)
 
             // Install instrumentations
-            val ctx = InstallationContext(application, openTelemetryRum.openTelemetry, serviceManager)
+            val ctx =
+                InstallationContext(
+                    application = application,
+                    openTelemetry = openTelemetryRum.openTelemetry,
+                    sessionManager = sessionManager,
+                    serviceManager = serviceManager,
+                )
             for (instrumentation in getInstrumentations()) {
                 instrumentation.install(ctx)
             }
+
+            // After installing all instrumentations, we call getSessionId() to trigger the session start
+            sessionManager.getSessionId()
 
             return openTelemetryRum
         }
