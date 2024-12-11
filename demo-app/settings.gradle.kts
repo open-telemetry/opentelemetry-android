@@ -19,4 +19,11 @@ dependencyResolutionManagement {
         google()
     }
 }
-includeBuild("..")
+includeBuild("..") {
+    dependencySubstitution {
+        substitute(module("io.opentelemetry.android:android-agent"))
+            .using(project(":android-agent"))
+        substitute(module("io.opentelemetry.android:instrumentation-sessions"))
+            .using(project(":instrumentation:sessions"))
+    }
+}
