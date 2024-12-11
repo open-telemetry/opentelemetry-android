@@ -25,13 +25,4 @@ dependencies {
     implementation(libs.opentelemetry.semconv.incubating)
     api(project(":instrumentation:common-api"))
     api(project(":core"))
-
-//    api(libs.opentelemetry.api)
-//    api(project(":core"))
-//    implementation(libs.androidx.core)
-//    implementation(libs.opentelemetry.semconv.incubating)
-//    implementation(libs.opentelemetry.sdk)
-//    implementation(libs.opentelemetry.instrumentation.api)
-//    testImplementation(libs.robolectric)
-//    testImplementation(libs.androidx.test.core)
 }
