@@ -17,19 +17,22 @@ import io.opentelemetry.sdk.trace.export.SpanExporter
  */
 internal class BufferDelegatingSpanExporter(
     maxBufferedSpans: Int = 5_000,
-) : BufferedDelegatingExporter<SpanData, SpanExporter>(bufferedSignals = maxBufferedSpans),
-    SpanExporter {
-    override fun exportToDelegate(
-        delegate: SpanExporter,
-        data: Collection<SpanData>,
-    ): CompletableResultCode = delegate.export(data)
+) : SpanExporter {
+    private val delegatingExporter =
+        DelegatingExporter<SpanExporter, SpanData>(
+            doExport = SpanExporter::export,
+            doFlush = SpanExporter::flush,
+            doShutdown = SpanExporter::shutdown,
+            maxBufferedData = maxBufferedSpans,
+        )
 
-    override fun shutdownDelegate(delegate: SpanExporter): CompletableResultCode = delegate.shutdown()
+    fun setDelegate(delegate: SpanExporter) {
+        delegatingExporter.setDelegate(delegate)
+    }
 
-    override fun export(spans: Collection<SpanData>): CompletableResultCode = bufferOrDelegate(spans)
+    override fun export(spans: Collection<SpanData>): CompletableResultCode = delegatingExporter.export(spans)
 
-    override fun flush(): CompletableResultCode =
-        withDelegateOrNull { delegate ->
-            delegate?.flush() ?: CompletableResultCode.ofSuccess()
-        }
+    override fun flush(): CompletableResultCode = delegatingExporter.flush()
+
+    override fun shutdown(): CompletableResultCode = delegatingExporter.shutdown()
 }

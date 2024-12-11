@@ -12,30 +12,52 @@ import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.data.SpanData
 import org.junit.Test
+import java.nio.BufferOverflowException
 
 class BufferDelegatingSpanExporterTest {
+    private val bufferDelegatingSpanExporter = BufferDelegatingSpanExporter()
+    private val delegate = spyk<InMemorySpanExporter>()
+    private val spanData = mockk<SpanData>()
+
+    @Test
+    fun `test no data`() {
+        bufferDelegatingSpanExporter.setDelegate(delegate)
+
+        verify(exactly = 0) { delegate.export(any()) }
+        verify(exactly = 0) { delegate.flush() }
+        verify(exactly = 0) { delegate.shutdown() }
+    }
+
     @Test
     fun `test setDelegate`() {
-        val bufferDelegatingSpanExporter = BufferDelegatingSpanExporter()
-        val spanExporter = InMemorySpanExporter.create()
-
-        val spanData = mockk<SpanData>()
         bufferDelegatingSpanExporter.export(listOf(spanData))
-        bufferDelegatingSpanExporter.setDelegate(spanExporter)
+        bufferDelegatingSpanExporter.setDelegate(delegate)
 
-        assertThat(spanExporter.finishedSpanItems)
+        assertThat(delegate.finishedSpanItems)
             .containsExactly(spanData)
+        verify(exactly = 0) { delegate.flush() }
+        verify(exactly = 0) { delegate.shutdown() }
+    }
+
+    @Test
+    fun `the export result should complete when the delegate is set`() {
+        val result = bufferDelegatingSpanExporter.export(listOf(spanData))
+        assertThat(result.isDone).isFalse()
+        bufferDelegatingSpanExporter.setDelegate(delegate)
+        assertThat(result.isSuccess).isTrue()
     }
 
     @Test
     fun `test buffer limit handling`() {
         val bufferDelegatingSpanExporter = BufferDelegatingSpanExporter(10)
         val spanExporter = InMemorySpanExporter.create()
+        val initialResult = bufferDelegatingSpanExporter.export(List(10) { mockk<SpanData>() })
+        assertThat(initialResult.isDone).isFalse()
 
-        repeat(11) {
-            val spanData = mockk<SpanData>()
-            bufferDelegatingSpanExporter.export(listOf(spanData))
-        }
+        val overflowResult = bufferDelegatingSpanExporter.export(listOf(mockk<SpanData>()))
+        assertThat(overflowResult.isDone).isTrue()
+        assertThat(overflowResult.isSuccess).isFalse()
+        assertThat(overflowResult.failureThrowable).isInstanceOf(BufferOverflowException::class.java)
 
         bufferDelegatingSpanExporter.setDelegate(spanExporter)
 
@@ -45,74 +67,51 @@ class BufferDelegatingSpanExporterTest {
 
     @Test
     fun `test flush with delegate`() {
-        val bufferDelegatingSpanExporter = BufferDelegatingSpanExporter()
-        val delegate = spyk<InMemorySpanExporter>()
-
-        val spanData = mockk<SpanData>()
-        bufferDelegatingSpanExporter.export(listOf(spanData))
-
         bufferDelegatingSpanExporter.setDelegate(delegate)
-
         verify(exactly = 0) { delegate.flush() }
-
-        bufferDelegatingSpanExporter.flush()
-
-        verify { delegate.flush() }
-    }
-
-    @Test
-    fun `test export with delegate`() {
-        val bufferDelegatingSpanExporter = BufferDelegatingSpanExporter()
-        val delegate = spyk<InMemorySpanExporter>()
-
-        val spanData = mockk<SpanData>()
-        bufferDelegatingSpanExporter.export(listOf(spanData))
-
-        verify(exactly = 0) { delegate.export(any()) }
-
-        bufferDelegatingSpanExporter.setDelegate(delegate)
-
-        verify(exactly = 1) { delegate.export(any()) }
-
-        val spanData2 = mockk<SpanData>()
-        bufferDelegatingSpanExporter.export(listOf(spanData2))
-
-        verify(exactly = 2) { delegate.export(any()) }
-    }
-
-    @Test
-    fun `test shutdown with delegate`() {
-        val bufferDelegatingSpanExporter = BufferDelegatingSpanExporter()
-        val delegate = spyk<InMemorySpanExporter>()
-
-        bufferDelegatingSpanExporter.setDelegate(delegate)
-
-        bufferDelegatingSpanExporter.shutdown()
-
-        verify { delegate.shutdown() }
+        val result = bufferDelegatingSpanExporter.flush()
+        verify(exactly = 1) { delegate.flush() }
+        assertThat(result.isSuccess).isTrue()
     }
 
     @Test
     fun `test flush without delegate`() {
-        val bufferDelegatingSpanExporter = BufferDelegatingSpanExporter()
+        val result = bufferDelegatingSpanExporter.flush()
+        assertThat(result.isDone).isFalse()
 
-        val spanData = mockk<SpanData>()
+        bufferDelegatingSpanExporter.setDelegate(delegate)
+        verify(exactly = 1) { delegate.flush() }
+        assertThat(result.isSuccess).isTrue()
+    }
+
+    @Test
+    fun `test export with delegate`() {
         bufferDelegatingSpanExporter.export(listOf(spanData))
+        bufferDelegatingSpanExporter.setDelegate(delegate)
 
-        val flushResult = bufferDelegatingSpanExporter.flush()
+        assertThat(delegate.finishedSpanItems).containsExactly(spanData)
 
-        assertThat(flushResult.isSuccess).isTrue()
+        val spanData2 = mockk<SpanData>()
+        val result = bufferDelegatingSpanExporter.export(listOf(spanData2))
+
+        assertThat(delegate.finishedSpanItems).containsExactly(spanData, spanData2)
+        assertThat(result.isSuccess).isTrue()
+    }
+
+    @Test
+    fun `test shutdown with delegate`() {
+        bufferDelegatingSpanExporter.setDelegate(delegate)
+        val result = bufferDelegatingSpanExporter.shutdown()
+        verify(exactly = 1) { delegate.shutdown() }
+        assertThat(result.isSuccess).isTrue()
     }
 
     @Test
     fun `test shutdown without delegate`() {
-        val bufferDelegatingSpanExporter = BufferDelegatingSpanExporter()
+        val result = bufferDelegatingSpanExporter.shutdown()
+        assertThat(result.isDone).isFalse()
 
-        val spanData = mockk<SpanData>()
-        bufferDelegatingSpanExporter.export(listOf(spanData))
-
-        val shutdownResult = bufferDelegatingSpanExporter.shutdown()
-
-        assertThat(shutdownResult.isSuccess).isTrue()
+        bufferDelegatingSpanExporter.setDelegate(delegate)
+        assertThat(result.isSuccess).isTrue()
     }
 }

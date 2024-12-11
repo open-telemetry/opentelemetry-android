@@ -96,13 +96,11 @@ public final class OpenTelemetryRumBuilder {
 
     private Resource resource;
 
-    private final Object lock = new Object();
+    private boolean isBuilt = false;
 
-    // Writes guarded by "lock"
-    @Nullable private volatile ServiceManager serviceManager;
+    @Nullable private ServiceManager serviceManager;
 
-    // Writes guarded by "lock"
-    @Nullable private volatile ExportScheduleHandler exportScheduleHandler;
+    @Nullable private ExportScheduleHandler exportScheduleHandler;
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
@@ -129,6 +127,7 @@ public final class OpenTelemetryRumBuilder {
      * @return {@code this}
      */
     public OpenTelemetryRumBuilder setResource(Resource resource) {
+        checkNotBuilt();
         this.resource = resource;
         return this;
     }
@@ -141,6 +140,7 @@ public final class OpenTelemetryRumBuilder {
      * @return {@code this}
      */
     public OpenTelemetryRumBuilder mergeResource(Resource resource) {
+        checkNotBuilt();
         this.resource = this.resource.merge(resource);
         return this;
     }
@@ -180,6 +180,7 @@ public final class OpenTelemetryRumBuilder {
      */
     public OpenTelemetryRumBuilder addMeterProviderCustomizer(
             BiFunction<SdkMeterProviderBuilder, Application, SdkMeterProviderBuilder> customizer) {
+        checkNotBuilt();
         meterProviderCustomizers.add(customizer);
         return this;
     }
@@ -200,6 +201,7 @@ public final class OpenTelemetryRumBuilder {
     public OpenTelemetryRumBuilder addLoggerProviderCustomizer(
             BiFunction<SdkLoggerProviderBuilder, Application, SdkLoggerProviderBuilder>
                     customizer) {
+        checkNotBuilt();
         loggerProviderCustomizers.add(customizer);
         return this;
     }
@@ -211,6 +213,7 @@ public final class OpenTelemetryRumBuilder {
      */
     public OpenTelemetryRumBuilder addInstrumentation(AndroidInstrumentation instrumentation) {
         instrumentations.add(instrumentation);
+        checkNotBuilt();
         return this;
     }
 
@@ -225,6 +228,7 @@ public final class OpenTelemetryRumBuilder {
     public OpenTelemetryRumBuilder addPropagatorCustomizer(
             Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer) {
         requireNonNull(propagatorCustomizer, "propagatorCustomizer");
+        checkNotBuilt();
         Function<? super TextMapPropagator, ? extends TextMapPropagator> existing =
                 this.propagatorCustomizer;
         this.propagatorCustomizer =
@@ -244,6 +248,7 @@ public final class OpenTelemetryRumBuilder {
     public OpenTelemetryRumBuilder addSpanExporterCustomizer(
             Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer) {
         requireNonNull(spanExporterCustomizer, "spanExporterCustomizer");
+        checkNotBuilt();
         Function<? super SpanExporter, ? extends SpanExporter> existing =
                 this.spanExporterCustomizer;
         this.spanExporterCustomizer =
@@ -263,6 +268,7 @@ public final class OpenTelemetryRumBuilder {
     public OpenTelemetryRumBuilder addLogRecordExporterCustomizer(
             Function<? super LogRecordExporter, ? extends LogRecordExporter>
                     logRecordExporterCustomizer) {
+        checkNotBuilt();
         Function<? super LogRecordExporter, ? extends LogRecordExporter> existing =
                 this.logRecordExporterCustomizer;
         this.logRecordExporterCustomizer =
@@ -283,6 +289,10 @@ public final class OpenTelemetryRumBuilder {
      * @return A new {@link OpenTelemetryRum} instance.
      */
     public OpenTelemetryRum build() {
+        if (isBuilt) {
+            throw new IllegalStateException("You cannot call build multiple times");
+        }
+        isBuilt = true;
         InitializationEvents initializationEvents = InitializationEvents.get();
         applyConfiguration(initializationEvents);
 
@@ -373,11 +383,7 @@ public final class OpenTelemetryRumBuilder {
     @NonNull
     private ServiceManager getServiceManager() {
         if (serviceManager == null) {
-            synchronized (lock) {
-                if (serviceManager == null) {
-                    serviceManager = ServiceManagerImpl.Companion.create(application);
-                }
-            }
+            serviceManager = ServiceManagerImpl.Companion.create(application);
         }
         // This can never be null since we never write `null` to it
         return requireNonNull(serviceManager);
@@ -385,9 +391,8 @@ public final class OpenTelemetryRumBuilder {
 
     public OpenTelemetryRumBuilder setServiceManager(@NonNull ServiceManager serviceManager) {
         requireNonNull(serviceManager, "serviceManager cannot be null");
-        synchronized (lock) {
-            this.serviceManager = serviceManager;
-        }
+        checkNotBuilt();
+        this.serviceManager = serviceManager;
         return this;
     }
 
@@ -398,9 +403,8 @@ public final class OpenTelemetryRumBuilder {
     public OpenTelemetryRumBuilder setExportScheduleHandler(
             @NonNull ExportScheduleHandler exportScheduleHandler) {
         requireNonNull(exportScheduleHandler, "exportScheduleHandler cannot be null");
-        synchronized (lock) {
-            this.exportScheduleHandler = exportScheduleHandler;
-        }
+        checkNotBuilt();
+        this.exportScheduleHandler = exportScheduleHandler;
         return this;
     }
 
@@ -423,18 +427,13 @@ public final class OpenTelemetryRumBuilder {
 
     private void scheduleDiskTelemetryReader(@Nullable SignalFromDiskExporter signalExporter) {
         if (exportScheduleHandler == null) {
-            synchronized (lock) {
-                if (exportScheduleHandler == null) {
-                    ServiceManager serviceManager = getServiceManager();
-                    // TODO: Is it safe to get the work service yet here? If so, we can
-                    // avoid all this lazy supplier stuff....
-                    Function0<PeriodicWorkService> getWorkService =
-                            serviceManager::getPeriodicWorkService;
-                    exportScheduleHandler =
-                            new DefaultExportScheduleHandler(
-                                    new DefaultExportScheduler(getWorkService), getWorkService);
-                }
-            }
+            ServiceManager serviceManager = getServiceManager();
+            // TODO: Is it safe to get the work service yet here? If so, we can
+            // avoid all this lazy supplier stuff....
+            Function0<PeriodicWorkService> getWorkService = serviceManager::getPeriodicWorkService;
+            exportScheduleHandler =
+                    new DefaultExportScheduleHandler(
+                            new DefaultExportScheduler(getWorkService), getWorkService);
         }
 
         final ExportScheduleHandler exportScheduleHandler =
@@ -461,6 +460,7 @@ public final class OpenTelemetryRumBuilder {
      * @return this
      */
     public OpenTelemetryRumBuilder addOtelSdkReadyListener(Consumer<OpenTelemetrySdk> callback) {
+        checkNotBuilt();
         otelSdkReadyListeners.add(callback);
         return this;
     }
@@ -573,5 +573,11 @@ public final class OpenTelemetryRumBuilder {
     private ContextPropagators buildFinalPropagators() {
         TextMapPropagator defaultPropagator = buildDefaultPropagator();
         return ContextPropagators.create(propagatorCustomizer.apply(defaultPropagator));
+    }
+
+    private void checkNotBuilt() {
+        if (isBuilt) {
+            throw new IllegalStateException("This method cannot be called after calling build");
+        }
     }
 }
