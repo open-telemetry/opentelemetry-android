@@ -36,6 +36,7 @@ import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkServi
 import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler;
 import io.opentelemetry.android.internal.session.SessionManagerImpl;
 import io.opentelemetry.android.session.SessionManager;
+import io.opentelemetry.android.session.SessionManagerImpl;
 import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
