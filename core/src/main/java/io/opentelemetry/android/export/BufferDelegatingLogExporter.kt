@@ -24,6 +24,7 @@ internal class BufferDelegatingLogExporter(
             doFlush = LogRecordExporter::flush,
             doShutdown = LogRecordExporter::shutdown,
             maxBufferedData = maxBufferedLogs,
+            logType = "log records",
         )
 
     fun setDelegate(delegate: LogRecordExporter) {

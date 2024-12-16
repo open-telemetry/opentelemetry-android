@@ -24,6 +24,7 @@ internal class BufferDelegatingSpanExporter(
             doFlush = SpanExporter::flush,
             doShutdown = SpanExporter::shutdown,
             maxBufferedData = maxBufferedSpans,
+            logType = "span data",
         )
 
     fun setDelegate(delegate: SpanExporter) {

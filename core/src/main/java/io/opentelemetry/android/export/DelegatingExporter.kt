@@ -5,9 +5,12 @@
 
 package io.opentelemetry.android.export
 
+import android.util.Log
+import io.opentelemetry.android.common.RumConstants.OTEL_RUM_LOG_TAG
 import io.opentelemetry.api.internal.GuardedBy
 import io.opentelemetry.sdk.common.CompletableResultCode
 import java.nio.BufferOverflowException
+import kotlin.math.log
 
 /**
  * An exporter that delegates calls to a delegate exporter. Any data exported before the delegate
@@ -21,12 +24,14 @@ import java.nio.BufferOverflowException
  * @param doFlush a lambda that handles flushing the delegate.
  * @param doShutdown a lambda that handles shutting down the delegate.
  * @param maxBufferedData the maximum number of data to buffer in memory before dropping new data.
+ * @param logType the type of data being logged. This is used for logging.
  */
 internal class DelegatingExporter<D, T>(
     private val doExport: D.(data: Collection<T>) -> CompletableResultCode,
     private val doFlush: D.() -> CompletableResultCode,
     private val doShutdown: D.() -> CompletableResultCode,
     private val maxBufferedData: Int,
+    private val logType: String,
 ) {
     private val lock = Any()
 
@@ -88,6 +93,11 @@ internal class DelegatingExporter<D, T>(
             ifNotSet = {
                 val amountToTake = maxBufferedData - buffer.size
                 buffer.addAll(data.take(amountToTake))
+                if (amountToTake < data.size) {
+                    Log.w(OTEL_RUM_LOG_TAG,"The $logType buffer was filled before export delegate set...")
+                    Log.w(OTEL_RUM_LOG_TAG,"This has resulted in a loss of $logType!")
+                }
+
                 // If all the data was dropped we return an exception
                 if (amountToTake == 0 && data.isNotEmpty()) {
                     CompletableResultCode.ofExceptionalFailure(BufferOverflowException())
