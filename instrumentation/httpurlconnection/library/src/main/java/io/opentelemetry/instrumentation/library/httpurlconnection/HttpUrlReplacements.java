@@ -76,7 +76,6 @@ public class HttpUrlReplacements {
         return replace(connection, () -> connection.getContentLength());
     }
 
-    @SuppressLint("NewApi")
     public static long replacementForContentLengthLong(URLConnection connection) {
         return replace(connection, () -> connection.getContentLengthLong());
     }
