@@ -304,7 +304,7 @@ public final class OpenTelemetryRumBuilder {
                 new BufferDelegatingSpanExporter();
 
         SessionManager sessionManager =
-                SessionManager.create(timeoutHandler, config.getSessionTimeout().toNanos());
+                SessionManagerImpl.create(timeoutHandler, config.getSessionTimeout().toNanos());
 
         OpenTelemetrySdk sdk =
                 OpenTelemetrySdk.builder()
