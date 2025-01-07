@@ -10,4 +10,6 @@ package io.opentelemetry.android.session
  * the SessionProvider and SessionPublisher interfaces under a common
  * name.
  */
-interface SessionManager : SessionProvider, SessionPublisher
+interface SessionManager :
+    SessionProvider,
+    SessionPublisher

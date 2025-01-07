@@ -73,11 +73,10 @@ internal class SessionManagerImpl(
         fun create(
             timeoutHandler: SessionIdTimeoutHandler,
             sessionLifetimeNanos: Long,
-        ): SessionManagerImpl {
-            return SessionManagerImpl(
+        ): SessionManagerImpl =
+            SessionManagerImpl(
                 timeoutHandler = timeoutHandler,
                 sessionLifetimeNanos = sessionLifetimeNanos,
             )
-        }
     }
 }
