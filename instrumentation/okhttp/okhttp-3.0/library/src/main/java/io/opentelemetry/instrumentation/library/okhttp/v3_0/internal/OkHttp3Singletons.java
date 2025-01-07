@@ -46,7 +46,7 @@ public final class OkHttp3Singletons {
                                                         OkHttpAttributesGetter.INSTANCE)
                                                 .setKnownMethods(instrumentation.getKnownMethods())
                                                 .build())
-                        .addAttributeExtractor(
+                        .addAttributesExtractor(
                                 PeerServiceAttributesExtractor.create(
                                         OkHttpAttributesGetter.INSTANCE,
                                         instrumentation.newPeerServiceResolver()))
