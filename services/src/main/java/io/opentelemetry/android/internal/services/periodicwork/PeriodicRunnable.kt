@@ -13,8 +13,9 @@ import io.opentelemetry.android.common.internal.tools.time.SystemTime
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
-abstract class PeriodicRunnable(periodicWorkServiceProvider: () -> PeriodicWorkService) :
-    Runnable {
+abstract class PeriodicRunnable(
+    periodicWorkServiceProvider: () -> PeriodicWorkService,
+) : Runnable {
     private val periodicWorkService by lazy { periodicWorkServiceProvider() }
     private var lastTimeItRan: Long? = null
 
@@ -28,11 +29,10 @@ abstract class PeriodicRunnable(periodicWorkServiceProvider: () -> PeriodicWorkS
         }
     }
 
-    private fun isReadyToRun(): Boolean {
-        return lastTimeItRan?.let {
+    private fun isReadyToRun(): Boolean =
+        lastTimeItRan?.let {
             getCurrentTimeMillis() >= (it + minimumDelayUntilNextRunInMillis())
         } ?: true
-    }
 
     private fun enqueueForNextLoop() {
         periodicWorkService.enqueue(this)

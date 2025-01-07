@@ -39,11 +39,13 @@ class SdkInitializationEventsTest {
         val exporter = mockk<SpanExporter>()
         val processor = mockk<LogRecordProcessor>()
         val loggerProvider =
-            SdkLoggerProvider.builder()
+            SdkLoggerProvider
+                .builder()
                 .addLogRecordProcessor(processor)
                 .build()
         val sdk =
-            OpenTelemetrySdk.builder()
+            OpenTelemetrySdk
+                .builder()
                 .setLoggerProvider(loggerProvider)
                 .build()
         every { processor.onEmit(any(), any()) }.answers {
@@ -80,11 +82,11 @@ class SdkInitializationEventsTest {
         )
     }
 
-    fun time(timeMs: Long): EventAssert {
-        return EventAssert(TimeUnit.MILLISECONDS.toNanos(timeMs))
-    }
+    fun time(timeMs: Long): EventAssert = EventAssert(TimeUnit.MILLISECONDS.toNanos(timeMs))
 
-    class EventAssert(val timeNs: Long) : Consumer<ReadWriteLogRecord> {
+    class EventAssert(
+        val timeNs: Long,
+    ) : Consumer<ReadWriteLogRecord> {
         lateinit var name: String
         var body: Value<*>? = null
         var attrs: Attributes? = null

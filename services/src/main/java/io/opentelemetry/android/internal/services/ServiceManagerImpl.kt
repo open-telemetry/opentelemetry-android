@@ -12,7 +12,9 @@ import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkServi
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService
 import java.util.Collections
 
-internal class ServiceManagerImpl(services: List<Any>) : ServiceManager {
+internal class ServiceManagerImpl(
+    services: List<Any>,
+) : ServiceManager {
     private val services: Map<Class<out Any>, Any>
 
     init {
@@ -25,8 +27,8 @@ internal class ServiceManagerImpl(services: List<Any>) : ServiceManager {
 
     companion object {
         @JvmStatic
-        fun create(application: Application): ServiceManager {
-            return ServiceManagerImpl(
+        fun create(application: Application): ServiceManager =
+            ServiceManagerImpl(
                 listOf(
                     Preferences.create(application),
                     CacheStorage(application),
@@ -36,32 +38,19 @@ internal class ServiceManagerImpl(services: List<Any>) : ServiceManager {
                     VisibleScreenService.create(application),
                 ),
             )
-        }
     }
 
-    override fun getPreferences(): Preferences {
-        return getService(Preferences::class.java)
-    }
+    override fun getPreferences(): Preferences = getService(Preferences::class.java)
 
-    override fun getCacheStorage(): CacheStorage {
-        return getService(CacheStorage::class.java)
-    }
+    override fun getCacheStorage(): CacheStorage = getService(CacheStorage::class.java)
 
-    override fun getPeriodicWorkService(): PeriodicWorkService {
-        return getService(PeriodicWorkService::class.java)
-    }
+    override fun getPeriodicWorkService(): PeriodicWorkService = getService(PeriodicWorkService::class.java)
 
-    override fun getCurrentNetworkProvider(): CurrentNetworkProvider {
-        return getService(CurrentNetworkProvider::class.java)
-    }
+    override fun getCurrentNetworkProvider(): CurrentNetworkProvider = getService(CurrentNetworkProvider::class.java)
 
-    override fun getAppLifecycleService(): AppLifecycleService {
-        return getService(AppLifecycleService::class.java)
-    }
+    override fun getAppLifecycleService(): AppLifecycleService = getService(AppLifecycleService::class.java)
 
-    override fun getVisibleScreenService(): VisibleScreenService {
-        return getService(VisibleScreenService::class.java)
-    }
+    override fun getVisibleScreenService(): VisibleScreenService = getService(VisibleScreenService::class.java)
 
     override fun start() {
         for (service in services.values) {

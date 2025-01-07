@@ -11,8 +11,9 @@ import io.opentelemetry.sdk.logs.LogRecordProcessor
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord
 import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_ID
 
-internal class SessionIdLogRecordAppender(private val sessionProvider: SessionProvider) :
-    LogRecordProcessor {
+internal class SessionIdLogRecordAppender(
+    private val sessionProvider: SessionProvider,
+) : LogRecordProcessor {
     override fun onEmit(
         context: Context,
         logRecord: ReadWriteLogRecord,

@@ -11,8 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class DefaultExportScheduleHandler(
     private val exportScheduler: DefaultExportScheduler,
     private val periodicWorkServiceProvider: () -> PeriodicWorkService,
-) :
-    ExportScheduleHandler {
+) : ExportScheduleHandler {
     private val periodicWorkService by lazy { periodicWorkServiceProvider() }
     private val enabled = AtomicBoolean(false)
 

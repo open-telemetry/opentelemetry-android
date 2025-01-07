@@ -60,11 +60,10 @@ class StartupInstrumentationTest {
         verify { initializationEvents wasNot Called }
     }
 
-    private fun makeContext(): InstallationContext {
-        return InstallationContext(
+    private fun makeContext(): InstallationContext =
+        InstallationContext(
             mockk<Application>(),
             otelTesting.openTelemetry,
             mockk<ServiceManager>(),
         )
-    }
 }

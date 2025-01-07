@@ -11,8 +11,9 @@ import io.opentelemetry.sdk.logs.LogRecordProcessor
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord
 import java.util.function.Supplier
 
-internal class GlobalAttributesLogRecordAppender(private val attributesSupplier: Supplier<Attributes>) :
-    LogRecordProcessor {
+internal class GlobalAttributesLogRecordAppender(
+    private val attributesSupplier: Supplier<Attributes>,
+) : LogRecordProcessor {
     override fun onEmit(
         context: Context,
         logRecord: ReadWriteLogRecord,

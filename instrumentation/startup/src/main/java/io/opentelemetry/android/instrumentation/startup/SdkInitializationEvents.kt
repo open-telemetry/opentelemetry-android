@@ -19,8 +19,9 @@ import java.time.Instant
 import java.util.function.Supplier
 
 @AutoService(InitializationEvents::class)
-class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { Instant.now() }) :
-    InitializationEvents {
+class SdkInitializationEvents(
+    private val clock: Supplier<Instant> = Supplier { Instant.now() },
+) : InitializationEvents {
     private val events = mutableListOf<Event>()
 
     override fun sdkInitializationStarted() {
@@ -63,7 +64,8 @@ class SdkInitializationEvents(private val clock: Supplier<Instant> = Supplier { 
             SdkEventLoggerProvider.create(loggerProvider).get("otel.initialization.events")
         events.forEach { event: Event ->
             val eventBuilder =
-                eventLogger.builder(event.name)
+                eventLogger
+                    .builder(event.name)
                     .setTimestamp(event.timestamp)
                     .setAttributes(event.attributes)
             if (event.body != null) {

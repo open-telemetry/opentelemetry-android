@@ -13,8 +13,9 @@ import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkServi
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-class DefaultExportScheduler(periodicWorkServiceProvider: () -> PeriodicWorkService) :
-    PeriodicRunnable(periodicWorkServiceProvider) {
+class DefaultExportScheduler(
+    periodicWorkServiceProvider: () -> PeriodicWorkService,
+) : PeriodicRunnable(periodicWorkServiceProvider) {
     companion object {
         private val DELAY_BEFORE_NEXT_EXPORT_IN_MILLIS = TimeUnit.SECONDS.toMillis(10)
     }
@@ -31,11 +32,7 @@ class DefaultExportScheduler(periodicWorkServiceProvider: () -> PeriodicWorkServ
         }
     }
 
-    override fun shouldStopRunning(): Boolean {
-        return SignalFromDiskExporter.get() == null
-    }
+    override fun shouldStopRunning(): Boolean = SignalFromDiskExporter.get() == null
 
-    override fun minimumDelayUntilNextRunInMillis(): Long {
-        return DELAY_BEFORE_NEXT_EXPORT_IN_MILLIS
-    }
+    override fun minimumDelayUntilNextRunInMillis(): Long = DELAY_BEFORE_NEXT_EXPORT_IN_MILLIS
 }

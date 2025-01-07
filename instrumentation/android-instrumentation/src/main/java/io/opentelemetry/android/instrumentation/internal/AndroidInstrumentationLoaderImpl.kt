@@ -15,18 +15,16 @@ import java.util.ServiceLoader
  */
 class AndroidInstrumentationLoaderImpl : AndroidInstrumentationLoader {
     private val instrumentations: MutableMap<Class<out AndroidInstrumentation>, AndroidInstrumentation> by lazy {
-        ServiceLoader.load(AndroidInstrumentation::class.java).associateBy { it.javaClass }
+        ServiceLoader
+            .load(AndroidInstrumentation::class.java)
+            .associateBy { it.javaClass }
             .toMutableMap()
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : AndroidInstrumentation> getByType(type: Class<out T>): T? {
-        return instrumentations[type] as? T
-    }
+    override fun <T : AndroidInstrumentation> getByType(type: Class<out T>): T? = instrumentations[type] as? T
 
-    override fun getAll(): Collection<AndroidInstrumentation> {
-        return instrumentations.values.toList()
-    }
+    override fun getAll(): Collection<AndroidInstrumentation> = instrumentations.values.toList()
 
     @Throws(IllegalStateException::class)
     fun registerForTest(instrumentation: AndroidInstrumentation) {

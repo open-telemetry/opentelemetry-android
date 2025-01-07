@@ -13,9 +13,7 @@ interface SessionStorage {
     class InMemory(
         @Volatile var session: Session = Session.NONE,
     ) : SessionStorage {
-        override fun get(): Session {
-            return session
-        }
+        override fun get(): Session = session
 
         override fun save(newSession: Session) {
             this.session = newSession
