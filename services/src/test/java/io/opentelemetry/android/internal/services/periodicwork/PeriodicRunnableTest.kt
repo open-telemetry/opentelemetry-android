@@ -108,21 +108,15 @@ class PeriodicRunnableTest {
             }
         }
 
-        override fun shouldStopRunning(): Boolean {
-            return stopRunning
-        }
+        override fun shouldStopRunning(): Boolean = stopRunning
 
-        override fun minimumDelayUntilNextRunInMillis(): Long {
-            return minimumDelayInMillis
-        }
+        override fun minimumDelayUntilNextRunInMillis(): Long = minimumDelayInMillis
     }
 
     private class TestSystemTime : SystemTime {
         var currentTime = 1000L
 
-        override fun getCurrentTimeMillis(): Long {
-            return currentTime
-        }
+        override fun getCurrentTimeMillis(): Long = currentTime
 
         fun advanceTimeByMillis(millis: Long) {
             currentTime += millis

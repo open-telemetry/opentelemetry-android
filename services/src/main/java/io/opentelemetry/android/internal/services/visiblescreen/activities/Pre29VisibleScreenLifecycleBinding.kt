@@ -13,7 +13,9 @@ import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenSer
  * activity has been resumed and when an activity has been paused. It's just a glue class designed
  * for API level before 29.
  */
-class Pre29VisibleScreenLifecycleBinding(private val visibleScreenService: VisibleScreenService) : DefaultingActivityLifecycleCallbacks {
+class Pre29VisibleScreenLifecycleBinding(
+    private val visibleScreenService: VisibleScreenService,
+) : DefaultingActivityLifecycleCallbacks {
     override fun onActivityResumed(activity: Activity) {
         visibleScreenService.activityResumed(activity)
     }

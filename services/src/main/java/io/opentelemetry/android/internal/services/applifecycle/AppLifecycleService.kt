@@ -18,12 +18,11 @@ class AppLifecycleService internal constructor(
 ) : Startable {
     companion object {
         @JvmStatic
-        fun create(): AppLifecycleService {
-            return AppLifecycleService(
+        fun create(): AppLifecycleService =
+            AppLifecycleService(
                 ApplicationStateWatcher(),
                 ProcessLifecycleOwner.get().lifecycle,
             )
-        }
     }
 
     fun registerListener(listener: ApplicationStateListener) {

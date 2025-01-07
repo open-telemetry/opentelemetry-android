@@ -14,14 +14,13 @@ interface Session {
         val NONE = DefaultSession("", -1)
     }
 
-    data class DefaultSession(private val id: String, private val timestamp: Long) : Session {
-        override fun getId(): String {
-            return id
-        }
+    data class DefaultSession(
+        private val id: String,
+        private val timestamp: Long,
+    ) : Session {
+        override fun getId(): String = id
 
-        override fun getStartTimestamp(): Long {
-            return timestamp
-        }
+        override fun getStartTimestamp(): Long = timestamp
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -32,8 +31,6 @@ interface Session {
             return id == other.id
         }
 
-        override fun hashCode(): Int {
-            return id.hashCode()
-        }
+        override fun hashCode(): Int = id.hashCode()
     }
 }

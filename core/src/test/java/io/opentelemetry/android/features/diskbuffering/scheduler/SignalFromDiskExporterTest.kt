@@ -164,8 +164,8 @@ class SignalFromDiskExporterTest {
         metricFromDiskExporter: MetricFromDiskExporter?,
         logRecordFromDiskExporter: LogRecordFromDiskExporter?,
         exportTimeoutInMillis: Long? = null,
-    ): SignalFromDiskExporter {
-        return if (exportTimeoutInMillis == null) {
+    ): SignalFromDiskExporter =
+        if (exportTimeoutInMillis == null) {
             SignalFromDiskExporter(
                 spanFromDiskExporter,
                 metricFromDiskExporter,
@@ -179,5 +179,4 @@ class SignalFromDiskExporterTest {
                 exportTimeoutInMillis,
             )
         }
-    }
 }

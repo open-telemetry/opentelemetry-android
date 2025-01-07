@@ -16,7 +16,8 @@ internal class SessionManager(
     private val timeoutHandler: SessionIdTimeoutHandler,
     private val idGenerator: SessionIdGenerator = SessionIdGenerator.DEFAULT,
     private val sessionLifetimeNanos: Long = TimeUnit.HOURS.toNanos(4),
-) : SessionProvider, SessionPublisher {
+) : SessionProvider,
+    SessionPublisher {
     // TODO: Make thread safe / wrap with AtomicReference?
     private var session: Session = Session.NONE
     private val observers = synchronizedList(ArrayList<SessionObserver>())
@@ -69,11 +70,10 @@ internal class SessionManager(
         fun create(
             timeoutHandler: SessionIdTimeoutHandler,
             sessionLifetimeNanos: Long,
-        ): SessionManager {
-            return SessionManager(
+        ): SessionManager =
+            SessionManager(
                 timeoutHandler = timeoutHandler,
                 sessionLifetimeNanos = sessionLifetimeNanos,
             )
-        }
     }
 }

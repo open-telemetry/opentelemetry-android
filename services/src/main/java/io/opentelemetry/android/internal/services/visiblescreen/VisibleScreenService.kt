@@ -30,7 +30,9 @@ import java.util.concurrent.atomic.AtomicReference
  * We have to treat DialogFragments slightly differently since they don't replace the launching
  * screen, and the launching screen never leaves visibility.
  */
-class VisibleScreenService internal constructor(private val application: Application) : Startable {
+class VisibleScreenService internal constructor(
+    private val application: Application,
+) : Startable {
     private val lastResumedActivity = AtomicReference<String>()
     private val previouslyLastResumedActivity = AtomicReference<String>()
     private val lastResumedFragment = AtomicReference<String>()
@@ -40,9 +42,7 @@ class VisibleScreenService internal constructor(private val application: Applica
 
     companion object {
         @JvmStatic
-        fun create(application: Application): VisibleScreenService {
-            return VisibleScreenService(application)
-        }
+        fun create(application: Application): VisibleScreenService = VisibleScreenService(application)
     }
 
     override fun start() {
@@ -50,13 +50,12 @@ class VisibleScreenService internal constructor(private val application: Applica
         application.registerActivityLifecycleCallbacks(fragmentLifecycleTrackerRegisterer)
     }
 
-    private fun buildActivitiesTracker(): Application.ActivityLifecycleCallbacks {
-        return if (Build.VERSION.SDK_INT < 29) {
+    private fun buildActivitiesTracker(): Application.ActivityLifecycleCallbacks =
+        if (Build.VERSION.SDK_INT < 29) {
             Pre29VisibleScreenLifecycleBinding(this)
         } else {
             VisibleScreenLifecycleBinding(this)
         }
-    }
 
     private fun buildFragmentsTrackerRegisterer(): Application.ActivityLifecycleCallbacks {
         val fragmentLifecycle = VisibleFragmentTracker(this)

@@ -11,7 +11,9 @@ import io.opentelemetry.context.Context
 import io.opentelemetry.sdk.logs.LogRecordProcessor
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord
 
-class ScreenAttributesLogRecordProcessor(val visibleScreenService: VisibleScreenService) : LogRecordProcessor {
+class ScreenAttributesLogRecordProcessor(
+    val visibleScreenService: VisibleScreenService,
+) : LogRecordProcessor {
     override fun onEmit(
         context: Context,
         logRecord: ReadWriteLogRecord,

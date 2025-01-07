@@ -9,8 +9,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService
 
-class VisibleFragmentTracker(private val visibleScreenService: VisibleScreenService) :
-    FragmentManager.FragmentLifecycleCallbacks() {
+class VisibleFragmentTracker(
+    private val visibleScreenService: VisibleScreenService,
+) : FragmentManager.FragmentLifecycleCallbacks() {
     override fun onFragmentResumed(
         fm: FragmentManager,
         f: Fragment,

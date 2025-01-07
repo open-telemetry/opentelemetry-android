@@ -15,9 +15,7 @@ interface SystemTime {
     companion object {
         private var instance: SystemTime = DefaultSystemTime()
 
-        fun get(): SystemTime {
-            return instance
-        }
+        fun get(): SystemTime = instance
 
         fun setForTest(instance: SystemTime) {
             this.instance = instance
@@ -27,8 +25,6 @@ interface SystemTime {
     fun getCurrentTimeMillis(): Long
 
     class DefaultSystemTime : SystemTime {
-        override fun getCurrentTimeMillis(): Long {
-            return System.currentTimeMillis()
-        }
+        override fun getCurrentTimeMillis(): Long = System.currentTimeMillis()
     }
 }
