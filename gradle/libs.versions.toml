@@ -9,7 +9,7 @@ byteBuddy = "1.15.11"
 okhttp = "4.12.0"
 spotless = "7.0.1"
 kotlin = "2.1.0"
-androidPlugin = "8.7.3"
+androidPlugin = "8.8.0"
 junitKtx = "1.2.1"
 autoService = "1.1.1"
 
