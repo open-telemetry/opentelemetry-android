@@ -45,17 +45,11 @@ class SimpleNetworkDetector implements NetworkDetector {
                         .subType("") // Additional details can be added
                         .build();
             } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-                return CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI)
-                        .subType("")
-                        .build();
+                return CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).subType("").build();
             } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
-                return CurrentNetwork.builder(NetworkState.TRANSPORT_VPN)
-                        .subType("")
-                        .build();
+                return CurrentNetwork.builder(NetworkState.TRANSPORT_VPN).subType("").build();
             } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-                return CurrentNetwork.builder(NetworkState.TRANSPORT_WIRED)
-                        .subType("")
-                        .build();
+                return CurrentNetwork.builder(NetworkState.TRANSPORT_WIRED).subType("").build();
             }
 
             // Default to UNKNOWN_NETWORK for other types
@@ -63,7 +57,8 @@ class SimpleNetworkDetector implements NetworkDetector {
         }
 
         // For API 28 and below, use deprecated methods
-        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo(); // Deprecated in API 29
+        NetworkInfo activeNetwork =
+                connectivityManager.getActiveNetworkInfo(); // Deprecated in API 29
         if (activeNetwork == null) {
             return NO_NETWORK;
         }
