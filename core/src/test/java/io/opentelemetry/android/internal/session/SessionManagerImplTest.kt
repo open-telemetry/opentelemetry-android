@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.session
+package io.opentelemetry.android.internal.session
 
 import io.mockk.MockKAnnotations
 import io.mockk.Runs
@@ -14,7 +14,8 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
-import io.opentelemetry.android.SessionIdTimeoutHandler
+import io.opentelemetry.android.session.Session
+import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.time.TestClock
 import org.junit.jupiter.api.BeforeEach
@@ -22,7 +23,7 @@ import org.junit.jupiter.api.Test
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
-internal class SessionManagerTest {
+internal class SessionManagerImplTest {
     @MockK
     lateinit var timeoutHandler: SessionIdTimeoutHandler
 
@@ -35,7 +36,11 @@ internal class SessionManagerTest {
 
     @Test
     fun valueValid() {
-        val sessionManager = SessionManager(TestClock.create(), timeoutHandler = timeoutHandler)
+        val sessionManager =
+            io.opentelemetry.android.internal.session.SessionManagerImpl(
+                TestClock.create(),
+                timeoutHandler = timeoutHandler,
+            )
         val sessionId = sessionManager.getSessionId()
         assertThat(sessionId).isNotNull()
         assertThat(sessionId).hasSize(32)
@@ -45,7 +50,11 @@ internal class SessionManagerTest {
     @Test
     fun valueSameUntil4Hours() {
         val clock = TestClock.create()
-        val sessionManager = SessionManager(clock, timeoutHandler = timeoutHandler)
+        val sessionManager =
+            io.opentelemetry.android.internal.session.SessionManagerImpl(
+                clock,
+                timeoutHandler = timeoutHandler,
+            )
         val value = sessionManager.getSessionId()
         assertThat(value).isEqualTo(sessionManager.getSessionId())
         clock.advance(3, TimeUnit.HOURS)
@@ -69,7 +78,11 @@ internal class SessionManagerTest {
         every { observer.onSessionStarted(any<Session>(), any<Session>()) } just Runs
         every { observer.onSessionEnded(any<Session>()) } just Runs
 
-        val sessionManager = SessionManager(clock, timeoutHandler = timeoutHandler)
+        val sessionManager =
+            io.opentelemetry.android.internal.session.SessionManagerImpl(
+                clock,
+                timeoutHandler = timeoutHandler,
+            )
         sessionManager.addObserver(observer)
 
         // The first call expires the Session.NONE initial session and notifies
@@ -108,7 +121,9 @@ internal class SessionManagerTest {
 
     @Test
     fun shouldCreateNewSessionIdAfterTimeout() {
-        val sessionId = SessionManager(timeoutHandler = timeoutHandler)
+        val sessionId =
+            io.opentelemetry.android.internal.session
+                .SessionManagerImpl(timeoutHandler = timeoutHandler)
 
         val value = sessionId.getSessionId()
         verify { timeoutHandler.bump() }
