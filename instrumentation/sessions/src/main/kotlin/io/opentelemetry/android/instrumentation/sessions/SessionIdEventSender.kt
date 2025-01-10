@@ -17,7 +17,9 @@ import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_P
  * This class is responsible for generating the session related events as
  * specified in the OpenTelemetry semantic conventions.
  */
-internal class SessionIdEventSender(private val eventLogger: EventLogger) : SessionObserver {
+internal class SessionIdEventSender(
+    private val eventLogger: EventLogger,
+) : SessionObserver {
     override fun onSessionStarted(
         newSession: Session,
         previousSession: Session,
@@ -37,7 +39,8 @@ internal class SessionIdEventSender(private val eventLogger: EventLogger) : Sess
         if (session.getId().isEmpty()) {
             return
         }
-        eventLogger.builder(EVENT_SESSION_END)
+        eventLogger
+            .builder(EVENT_SESSION_END)
             .put(SESSION_ID, session.getId())
             .emit()
     }

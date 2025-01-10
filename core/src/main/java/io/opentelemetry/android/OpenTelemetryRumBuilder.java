@@ -11,6 +11,7 @@ import android.app.Application;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.export.BufferDelegatingLogExporter;
@@ -304,8 +305,10 @@ public final class OpenTelemetryRumBuilder {
         BufferDelegatingSpanExporter bufferDelegatingSpanExporter =
                 new BufferDelegatingSpanExporter();
 
-        sessionManager =
-                SessionManagerImpl.create(timeoutHandler, config.getSessionTimeout().toNanos());
+        if (sessionManager == null) {
+            sessionManager =
+                    SessionManagerImpl.create(timeoutHandler, config.getSessionTimeout().toNanos());
+        }
 
         OpenTelemetrySdk sdk =
                 OpenTelemetrySdk.builder()
@@ -375,14 +378,8 @@ public final class OpenTelemetryRumBuilder {
             }
         }
         initializationEvents.spanExporterInitialized(spanExporter);
-
-        if (sessionManager == null) {
-            sessionManager =
-                    SessionManagerImpl.create(timeoutHandler, config.getSessionTimeout().toNanos());
-        }
-
+        bufferedDelegatingLogExporter.setDelegate(logsExporter);
         bufferDelegatingSpanExporter.setDelegate(spanExporter);
-
         scheduleDiskTelemetryReader(signalFromDiskExporter);
     }
 

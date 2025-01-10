@@ -37,7 +37,7 @@ internal class SessionManagerImplTest {
     @Test
     fun valueValid() {
         val sessionManager =
-            io.opentelemetry.android.internal.session.SessionManagerImpl(
+            SessionManagerImpl(
                 TestClock.create(),
                 timeoutHandler = timeoutHandler,
             )
@@ -51,7 +51,7 @@ internal class SessionManagerImplTest {
     fun valueSameUntil4Hours() {
         val clock = TestClock.create()
         val sessionManager =
-            io.opentelemetry.android.internal.session.SessionManagerImpl(
+            SessionManagerImpl(
                 clock,
                 timeoutHandler = timeoutHandler,
             )
@@ -79,7 +79,7 @@ internal class SessionManagerImplTest {
         every { observer.onSessionEnded(any<Session>()) } just Runs
 
         val sessionManager =
-            io.opentelemetry.android.internal.session.SessionManagerImpl(
+            SessionManagerImpl(
                 clock,
                 timeoutHandler = timeoutHandler,
             )
@@ -121,8 +121,7 @@ internal class SessionManagerImplTest {
 
     @Test
     fun shouldCreateNewSessionIdAfterTimeout() {
-        val sessionId =
-            io.opentelemetry.android.internal.session.SessionManagerImpl(timeoutHandler = timeoutHandler)
+        val sessionId = SessionManagerImpl(timeoutHandler = timeoutHandler)
 
         val value = sessionId.getSessionId()
         verify { timeoutHandler.bump() }

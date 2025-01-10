@@ -13,7 +13,8 @@ import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider
 class SessionInstrumentation : AndroidInstrumentation {
     override fun install(ctx: InstallationContext) {
         val eventLogger =
-            SdkEventLoggerProvider.create(ctx.openTelemetry.logsBridge)
+            SdkEventLoggerProvider
+                .create(ctx.openTelemetry.logsBridge)
                 .get(OpenTelemetryRum::class.java.simpleName)
 
         ctx.sessionManager.addObserver(SessionIdEventSender(eventLogger))
