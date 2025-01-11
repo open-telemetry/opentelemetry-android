@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- This version builds on opentelemetry-java-instrumentation 
+- This version builds on opentelemetry-java-instrumentation
   [v2.11.0](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v2.11.0).
 
 ### ⚠️⚠️Breaking changes
@@ -10,13 +10,13 @@
 A reminder that this project is still alpha and may contain breaking changes
 from release-to-release prior to v1.0.0.
 
-- The `AndroidInstrumentation.install()` method signature has changed. Any 3rd-party 
+- The `AndroidInstrumentation.install()` method signature has changed. Any 3rd-party
   instrumentation written to this interface will need to be updated.
   ([#671](https://github.com/open-telemetry/opentelemetry-android/pull/671))
 
 ### 📈 Enhancements
 
-- Add the current screen name to crash events. 
+- Add the current screen name to crash events.
   ([#704](https://github.com/open-telemetry/opentelemetry-android/pull/704))
 - Add R8 consumer rules.
   ([#685](https://github.com/open-telemetry/opentelemetry-android/pull/685))
@@ -25,7 +25,7 @@ from release-to-release prior to v1.0.0.
 - Add support for wired network types in the network detector.
   ([#673](https://github.com/open-telemetry/opentelemetry-android/pull/673))
 - Add ability to generate session start/end events. This feature is currently opt-in.
-  ([#719](https://github.com/open-telemetry/opentelemetry-android/pull/717), 
+  ([#719](https://github.com/open-telemetry/opentelemetry-android/pull/717),
    [#719](https://github.com/open-telemetry/opentelemetry-android/pull/719))
 - Support newer Android network APIs for API >=29.
   ([#736](https://github.com/open-telemetry/opentelemetry-android/pull/736))
