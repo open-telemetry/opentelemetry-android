@@ -12,6 +12,7 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
+import androidx.annotation.RequiresApi;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
 
@@ -27,62 +28,67 @@ class SimpleNetworkDetector implements NetworkDetector {
 
     @Override
     public CurrentNetwork detectCurrentNetwork() {
-        // For API 29 and above, use modern APIs
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-            Network network = connectivityManager.getActiveNetwork();
-            if (network == null) {
-                return NO_NETWORK;
-            }
+            return detectUsingModernApi();
+        } else {
+            return detectUsingLegacyApi();
+        }
+    }
 
-            NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
-            if (capabilities == null) {
-                return UNKNOWN_NETWORK;
-            }
+    @RequiresApi(api = android.os.Build.VERSION_CODES.Q)
+    private CurrentNetwork detectUsingModernApi() {
+        Network network = connectivityManager.getActiveNetwork();
+        if (network == null) {
+            return NO_NETWORK;
+        }
 
-            // Determine network type based on transport capabilities
-            if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-                return CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
-                        .subType("") // Additional details can be added
-                        .build();
-            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-                return CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).subType("").build();
-            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
-                return CurrentNetwork.builder(NetworkState.TRANSPORT_VPN).subType("").build();
-            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-                return CurrentNetwork.builder(NetworkState.TRANSPORT_WIRED).subType("").build();
-            }
-
-            // Default to UNKNOWN_NETWORK for other types
+        NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
+        if (capabilities == null) {
             return UNKNOWN_NETWORK;
         }
 
-        // For API 28 and below, use deprecated methods
-        NetworkInfo activeNetwork =
-                connectivityManager.getActiveNetworkInfo(); // Deprecated in API 29
+        if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+            return buildCurrentNetwork(NetworkState.TRANSPORT_CELLULAR, "");
+        }
+        if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+            return buildCurrentNetwork(NetworkState.TRANSPORT_WIFI, "");
+        }
+        if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
+            return buildCurrentNetwork(NetworkState.TRANSPORT_VPN, "");
+        }
+        if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+            return buildCurrentNetwork(NetworkState.TRANSPORT_WIRED, "");
+        }
+
+        return UNKNOWN_NETWORK;
+    }
+
+    @SuppressWarnings("deprecation")
+    private CurrentNetwork detectUsingLegacyApi() {
+        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
         if (activeNetwork == null) {
             return NO_NETWORK;
         }
 
-        // Determine network type using TYPE_* constants
-        switch (activeNetwork.getType()) { // Deprecated in API 28
+        switch (activeNetwork.getType()) {
             case ConnectivityManager.TYPE_MOBILE:
-                return CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
-                        .subType(activeNetwork.getSubtypeName())
-                        .build();
+                return buildCurrentNetwork(
+                        NetworkState.TRANSPORT_CELLULAR, activeNetwork.getSubtypeName());
             case ConnectivityManager.TYPE_WIFI:
-                return CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI)
-                        .subType(activeNetwork.getSubtypeName())
-                        .build();
+                return buildCurrentNetwork(
+                        NetworkState.TRANSPORT_WIFI, activeNetwork.getSubtypeName());
             case ConnectivityManager.TYPE_VPN:
-                return CurrentNetwork.builder(NetworkState.TRANSPORT_VPN)
-                        .subType(activeNetwork.getSubtypeName())
-                        .build();
+                return buildCurrentNetwork(
+                        NetworkState.TRANSPORT_VPN, activeNetwork.getSubtypeName());
             case ConnectivityManager.TYPE_ETHERNET:
-                return CurrentNetwork.builder(NetworkState.TRANSPORT_WIRED)
-                        .subType(activeNetwork.getSubtypeName())
-                        .build();
+                return buildCurrentNetwork(
+                        NetworkState.TRANSPORT_WIRED, activeNetwork.getSubtypeName());
+            default:
+                return UNKNOWN_NETWORK;
         }
-        // Return UNKNOWN_NETWORK if type does not match predefined cases
-        return UNKNOWN_NETWORK;
+    }
+
+    private CurrentNetwork buildCurrentNetwork(NetworkState state, String subType) {
+        return CurrentNetwork.builder(state).subType(subType).build();
     }
 }
