@@ -3,21 +3,24 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.session
+package io.opentelemetry.android.internal.session
 
-import io.opentelemetry.android.SessionIdTimeoutHandler
+import io.opentelemetry.android.session.Session
+import io.opentelemetry.android.session.SessionIdGenerator
+import io.opentelemetry.android.session.SessionManager
+import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.android.session.SessionStorage
 import io.opentelemetry.sdk.common.Clock
 import java.util.Collections.synchronizedList
 import java.util.concurrent.TimeUnit
 
-internal class SessionManager(
+internal class SessionManagerImpl(
     private val clock: Clock = Clock.getDefault(),
     private val sessionStorage: SessionStorage = SessionStorage.InMemory(),
     private val timeoutHandler: SessionIdTimeoutHandler,
     private val idGenerator: SessionIdGenerator = SessionIdGenerator.DEFAULT,
     private val sessionLifetimeNanos: Long = TimeUnit.HOURS.toNanos(4),
-) : SessionProvider,
-    SessionPublisher {
+) : SessionManager {
     // TODO: Make thread safe / wrap with AtomicReference?
     private var session: Session = Session.NONE
     private val observers = synchronizedList(ArrayList<SessionObserver>())
@@ -70,8 +73,8 @@ internal class SessionManager(
         fun create(
             timeoutHandler: SessionIdTimeoutHandler,
             sessionLifetimeNanos: Long,
-        ): SessionManager =
-            SessionManager(
+        ): SessionManagerImpl =
+            SessionManagerImpl(
                 timeoutHandler = timeoutHandler,
                 sessionLifetimeNanos = sessionLifetimeNanos,
             )
