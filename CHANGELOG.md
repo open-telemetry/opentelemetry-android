@@ -25,7 +25,7 @@ from release-to-release prior to v1.0.0.
 - Add support for wired network types in the network detector.
   ([#673](https://github.com/open-telemetry/opentelemetry-android/pull/673))
 - Add ability to generate session start/end events. This feature is currently opt-in.
-  ([#719](https://github.com/open-telemetry/opentelemetry-android/pull/717),
+  ([#717](https://github.com/open-telemetry/opentelemetry-android/pull/717),
    [#719](https://github.com/open-telemetry/opentelemetry-android/pull/719))
 - Support newer Android network APIs for API >=29.
   ([#736](https://github.com/open-telemetry/opentelemetry-android/pull/736))
