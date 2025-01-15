@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 0.9.0 (2025-01-15)
+
 ## Version 0.8.0 (2024-10-18)
 
 ### 📈 Enhancements
