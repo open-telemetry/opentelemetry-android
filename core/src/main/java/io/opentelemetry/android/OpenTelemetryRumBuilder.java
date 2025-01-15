@@ -11,6 +11,7 @@ import android.app.Application;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.export.BufferDelegatingLogExporter;
@@ -103,6 +104,7 @@ public final class OpenTelemetryRumBuilder {
     @Nullable private ServiceManager serviceManager;
 
     @Nullable private ExportScheduleHandler exportScheduleHandler;
+    @Nullable private SessionManager sessionManager;
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
@@ -303,8 +305,10 @@ public final class OpenTelemetryRumBuilder {
         BufferDelegatingSpanExporter bufferDelegatingSpanExporter =
                 new BufferDelegatingSpanExporter();
 
-        SessionManager sessionManager =
-                SessionManagerImpl.create(timeoutHandler, config.getSessionTimeout().toNanos());
+        if (sessionManager == null) {
+            sessionManager =
+                    SessionManagerImpl.create(timeoutHandler, config.getSessionTimeout().toNanos());
+        }
 
         OpenTelemetrySdk sdk =
                 OpenTelemetrySdk.builder()
@@ -374,13 +378,8 @@ public final class OpenTelemetryRumBuilder {
             }
         }
         initializationEvents.spanExporterInitialized(spanExporter);
-
-        SessionManager sessionManager =
-                SessionManagerImpl.create(timeoutHandler, config.getSessionTimeout().toNanos());
         bufferedDelegatingLogExporter.setDelegate(logsExporter);
-
         bufferDelegatingSpanExporter.setDelegate(spanExporter);
-
         scheduleDiskTelemetryReader(signalFromDiskExporter);
     }
 
@@ -397,6 +396,12 @@ public final class OpenTelemetryRumBuilder {
         requireNonNull(serviceManager, "serviceManager cannot be null");
         checkNotBuilt();
         this.serviceManager = serviceManager;
+        return this;
+    }
+
+    @VisibleForTesting
+    OpenTelemetryRumBuilder setSessionManager(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
         return this;
     }
 
