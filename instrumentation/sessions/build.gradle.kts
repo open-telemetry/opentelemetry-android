@@ -23,13 +23,4 @@ dependencies {
     api(project(":common"))
     api(project(":session"))
 
-//    implementation(project(":services"))
-//    implementation(project(":common"))
-//    api(platform(libs.opentelemetry.platform.alpha))
-//    api(libs.opentelemetry.api)
-//    implementation(libs.androidx.core)
-//    implementation(libs.opentelemetry.semconv)
-//    implementation(libs.opentelemetry.sdk)
-//    implementation(libs.opentelemetry.instrumentation.api)
-//    testImplementation(libs.robolectric)
 }
