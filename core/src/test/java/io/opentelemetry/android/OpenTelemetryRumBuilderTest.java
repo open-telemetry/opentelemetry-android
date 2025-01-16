@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import android.app.Application;
+import android.net.ConnectivityManager;
 import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -98,6 +99,7 @@ public class OpenTelemetryRumBuilderTest {
     @Mock android.content.Context applicationContext;
 
     @Mock InitializationEvents initializationEvents;
+    @Mock ConnectivityManager connectivityManager;
     private AutoCloseable mocks;
 
     @Before
@@ -105,6 +107,8 @@ public class OpenTelemetryRumBuilderTest {
         mocks = MockitoAnnotations.openMocks(this);
         when(application.getApplicationContext()).thenReturn(applicationContext);
         when(application.getMainLooper()).thenReturn(looper);
+        when(application.getSystemService(android.content.Context.CONNECTIVITY_SERVICE))
+                .thenReturn(connectivityManager);
         InitializationEvents.set(initializationEvents);
     }
 

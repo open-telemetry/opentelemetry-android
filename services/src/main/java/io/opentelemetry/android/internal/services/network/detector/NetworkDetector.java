@@ -19,6 +19,7 @@ public interface NetworkDetector {
     CurrentNetwork detectCurrentNetwork();
 
     static NetworkDetector create(Context context) {
+        // TODO: Use ServiceManager to get the ConnectivityManager (not yet managed)
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
