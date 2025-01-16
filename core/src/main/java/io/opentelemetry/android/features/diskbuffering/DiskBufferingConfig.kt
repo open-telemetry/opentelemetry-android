@@ -21,6 +21,7 @@ data class DiskBufferingConfig
         val minFileAgeForReadMillis: Long = TimeUnit.SECONDS.toMillis(33),
         val maxFileAgeForReadMillis: Long = TimeUnit.HOURS.toMillis(18),
         val maxCacheFileSize: Int = MAX_CACHE_FILE_SIZE,
+        val debugEnabled: Boolean = false,
     ) {
         companion object {
             /**
@@ -37,6 +38,7 @@ data class DiskBufferingConfig
                 minFileAgeForReadMillis: Long = TimeUnit.SECONDS.toMillis(33),
                 maxFileAgeForReadMillis: Long = TimeUnit.HOURS.toMillis(18),
                 maxCacheFileSize: Int = MAX_CACHE_FILE_SIZE,
+                debugEnabled: Boolean = false,
             ): DiskBufferingConfig {
                 var minRead = minFileAgeForReadMillis
                 if (minFileAgeForReadMillis <= maxFileAgeForWriteMillis) {
@@ -51,6 +53,7 @@ data class DiskBufferingConfig
                     minFileAgeForReadMillis = minRead,
                     maxFileAgeForReadMillis = maxFileAgeForReadMillis,
                     maxCacheFileSize = maxCacheFileSize,
+                    debugEnabled = debugEnabled,
                 )
             }
         }

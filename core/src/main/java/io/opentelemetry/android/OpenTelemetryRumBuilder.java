@@ -430,6 +430,7 @@ public final class OpenTelemetryRumBuilder {
                 .setMinFileAgeForReadMillis(config.getMinFileAgeForReadMillis())
                 .setTemporaryFileProvider(
                         new SimpleTemporaryFileProvider(diskManager.getTemporaryDir()))
+                .setDebugEnabled(config.getDebugEnabled())
                 .build();
     }
 

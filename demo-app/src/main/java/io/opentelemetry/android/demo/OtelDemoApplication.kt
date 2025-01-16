@@ -31,7 +31,8 @@ class OtelDemoApplication : Application() {
         super.onCreate()
 
         Log.i(TAG, "Initializing the opentelemetry-android-agent")
-        val diskBufferingConfig = DiskBufferingConfig(enabled = true, maxCacheSize = 10_000_000);
+        val diskBufferingConfig = DiskBufferingConfig(
+            enabled = true, maxCacheSize = 10_000_000, debugEnabled = true);
         val config =
             OtelRumConfig()
                 .setGlobalAttributes(Attributes.of(stringKey("toolkit"), "jetpack compose"))
