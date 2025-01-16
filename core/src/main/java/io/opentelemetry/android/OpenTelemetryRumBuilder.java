@@ -16,7 +16,7 @@ import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.export.BufferDelegatingLogExporter;
 import io.opentelemetry.android.export.BufferDelegatingSpanExporter;
-import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
+import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduleHandler;
 import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduler;
@@ -352,12 +352,11 @@ public final class OpenTelemetryRumBuilder {
             BufferDelegatingSpanExporter bufferDelegatingSpanExporter,
             BufferDelegatingLogExporter bufferedDelegatingLogExporter) {
 
-        DiskBufferingConfiguration diskBufferingConfiguration =
-                config.getDiskBufferingConfiguration();
+        DiskBufferingConfig diskBufferingConfig = config.getDiskBufferingConfig();
         SpanExporter spanExporter = buildSpanExporter();
         LogRecordExporter logsExporter = buildLogsExporter();
         SignalFromDiskExporter signalFromDiskExporter = null;
-        if (diskBufferingConfiguration.isEnabled()) {
+        if (diskBufferingConfig.getEnabled()) {
             try {
                 StorageConfiguration storageConfiguration = createStorageConfiguration();
                 final SpanExporter originalSpanExporter = spanExporter;
@@ -420,7 +419,7 @@ public final class OpenTelemetryRumBuilder {
     private StorageConfiguration createStorageConfiguration() throws IOException {
         Preferences preferences = getServiceManager().getPreferences();
         CacheStorage storage = getServiceManager().getCacheStorage();
-        DiskBufferingConfiguration config = this.config.getDiskBufferingConfiguration();
+        DiskBufferingConfig config = this.config.getDiskBufferingConfig();
         DiskManager diskManager = new DiskManager(storage, preferences, config);
         return StorageConfiguration.builder()
                 .setRootDir(diskManager.getSignalsBufferDir())

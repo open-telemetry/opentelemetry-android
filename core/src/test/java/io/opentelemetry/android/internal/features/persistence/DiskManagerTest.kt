@@ -14,7 +14,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.just
 import io.mockk.verify
-import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration
+import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.android.internal.services.CacheStorage
 import io.opentelemetry.android.internal.services.Preferences
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
@@ -32,7 +32,7 @@ internal class DiskManagerTest {
     lateinit var preferences: Preferences
 
     @MockK
-    lateinit var diskBufferingConfiguration: DiskBufferingConfiguration
+    lateinit var diskBufferingConfig: DiskBufferingConfig
 
     @TempDir
     lateinit var cacheDir: File
@@ -43,7 +43,7 @@ internal class DiskManagerTest {
         MockKAnnotations.init(this)
         every { cacheStorage.cacheDir }.returns(cacheDir)
         diskManager =
-            DiskManager(cacheStorage, preferences, diskBufferingConfiguration)
+            DiskManager(cacheStorage, preferences, diskBufferingConfig)
     }
 
     @Test
@@ -77,10 +77,10 @@ internal class DiskManagerTest {
     @Test
     fun `can get the max cache file size`() {
         val persistenceSize = 1024 * 1024 * 2
-        every { diskBufferingConfiguration.maxCacheFileSize }.returns(persistenceSize)
+        every { diskBufferingConfig.maxCacheFileSize }.returns(persistenceSize)
         assertThat(diskManager.maxCacheFileSize).isEqualTo(persistenceSize)
         verify {
-            diskBufferingConfiguration.maxCacheFileSize
+            diskBufferingConfig.maxCacheFileSize
         }
     }
 
@@ -88,8 +88,8 @@ internal class DiskManagerTest {
     fun `can get max signal folder size`() {
         val maxCacheSize = (10 * 1024 * 1024).toLong() // 10 MB
         val maxCacheFileSize = 1024 * 1024 // 1 MB
-        every { diskBufferingConfiguration.maxCacheSize }.returns(maxCacheSize.toInt())
-        every { diskBufferingConfiguration.maxCacheFileSize }.returns(maxCacheFileSize)
+        every { diskBufferingConfig.maxCacheSize }.returns(maxCacheSize.toInt())
+        every { diskBufferingConfig.maxCacheFileSize }.returns(maxCacheFileSize)
         every { cacheStorage.ensureCacheSpaceAvailable(maxCacheSize) }.returns(maxCacheSize)
         every { preferences.retrieveInt(MAX_FOLDER_SIZE_KEY, -1) }.returns(-1)
         every { preferences.store(any(), any()) } just Runs
@@ -103,7 +103,7 @@ internal class DiskManagerTest {
         }
 
         // On a second call, should get the value from the preferences.
-        clearMocks(cacheStorage, diskBufferingConfiguration, preferences)
+        clearMocks(cacheStorage, diskBufferingConfig, preferences)
         every { preferences.retrieveInt(MAX_FOLDER_SIZE_KEY, -1) }.returns(expected)
         assertThat(diskManager.maxFolderSize).isEqualTo(expected)
 
@@ -112,15 +112,15 @@ internal class DiskManagerTest {
         }
         confirmVerified(preferences)
         verify { cacheStorage wasNot Called }
-        verify { diskBufferingConfiguration wasNot Called }
+        verify { diskBufferingConfig wasNot Called }
     }
 
     @Test
     fun `max folder size is used when calculated size is invalid`() {
         val maxCacheSize = (1024 * 1024).toLong() // 1 MB
         val maxCacheFileSize = 1024 * 1024 // 1 MB
-        every { diskBufferingConfiguration.maxCacheSize }.returns(maxCacheSize.toInt())
-        every { diskBufferingConfiguration.maxCacheFileSize }.returns(maxCacheFileSize)
+        every { diskBufferingConfig.maxCacheSize }.returns(maxCacheSize.toInt())
+        every { diskBufferingConfig.maxCacheFileSize }.returns(maxCacheFileSize)
         every { cacheStorage.ensureCacheSpaceAvailable(maxCacheSize) }.returns(maxCacheSize)
         every { preferences.retrieveInt(MAX_FOLDER_SIZE_KEY, -1) }.returns(-1)
         // Expects the size of a single signal type folder minus the size of a cache file, to use as
