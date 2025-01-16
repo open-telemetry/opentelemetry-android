@@ -35,16 +35,16 @@ internal class SimpleNetworkDetector(
                 ?: return CurrentNetworkProvider.UNKNOWN_NETWORK
 
         if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-            return buildCurrentNetwork(NetworkState.TRANSPORT_CELLULAR, "")
+            return buildCurrentNetwork(NetworkState.TRANSPORT_CELLULAR)
         }
         if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-            return buildCurrentNetwork(NetworkState.TRANSPORT_WIFI, "")
+            return buildCurrentNetwork(NetworkState.TRANSPORT_WIFI)
         }
         if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
-            return buildCurrentNetwork(NetworkState.TRANSPORT_VPN, "")
+            return buildCurrentNetwork(NetworkState.TRANSPORT_VPN)
         }
         if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-            return buildCurrentNetwork(NetworkState.TRANSPORT_WIRED, "")
+            return buildCurrentNetwork(NetworkState.TRANSPORT_WIRED)
         }
 
         return CurrentNetworkProvider.UNKNOWN_NETWORK
@@ -87,6 +87,6 @@ internal class SimpleNetworkDetector(
 
     private fun buildCurrentNetwork(
         state: NetworkState,
-        subType: String,
+        subType: String = "",
     ): CurrentNetwork = CurrentNetwork.builder(state).subType(subType).build()
 }
