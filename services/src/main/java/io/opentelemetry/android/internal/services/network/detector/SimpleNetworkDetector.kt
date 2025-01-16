@@ -3,92 +3,90 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.services.network.detector;
+package io.opentelemetry.android.internal.services.network.detector
 
-import static io.opentelemetry.android.internal.services.network.CurrentNetworkProvider.NO_NETWORK;
-import static io.opentelemetry.android.internal.services.network.CurrentNetworkProvider.UNKNOWN_NETWORK;
-
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
-import androidx.annotation.RequiresApi;
-import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
-import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
+import androidx.annotation.RequiresApi
+import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
+import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
+import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 
 /**
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
  */
-class SimpleNetworkDetector implements NetworkDetector {
-    private final ConnectivityManager connectivityManager;
-
-    SimpleNetworkDetector(ConnectivityManager connectivityManager) {
-        this.connectivityManager = connectivityManager;
-    }
-
-    @Override
-    public CurrentNetwork detectCurrentNetwork() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-            return detectUsingModernApi();
+internal class SimpleNetworkDetector(
+    private val connectivityManager: ConnectivityManager,
+) : NetworkDetector {
+    override fun detectCurrentNetwork(): CurrentNetwork =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            detectUsingModernApi()
         } else {
-            return detectUsingLegacyApi();
-        }
-    }
-
-    @RequiresApi(api = android.os.Build.VERSION_CODES.Q)
-    private CurrentNetwork detectUsingModernApi() {
-        Network network = connectivityManager.getActiveNetwork();
-        if (network == null) {
-            return NO_NETWORK;
+            detectUsingLegacyApi()
         }
 
-        NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
-        if (capabilities == null) {
-            return UNKNOWN_NETWORK;
-        }
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private fun detectUsingModernApi(): CurrentNetwork {
+        val network = connectivityManager.activeNetwork ?: return CurrentNetworkProvider.NO_NETWORK
+
+        val capabilities =
+            connectivityManager.getNetworkCapabilities(network)
+                ?: return CurrentNetworkProvider.UNKNOWN_NETWORK
 
         if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-            return buildCurrentNetwork(NetworkState.TRANSPORT_CELLULAR, "");
+            return buildCurrentNetwork(NetworkState.TRANSPORT_CELLULAR, "")
         }
         if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-            return buildCurrentNetwork(NetworkState.TRANSPORT_WIFI, "");
+            return buildCurrentNetwork(NetworkState.TRANSPORT_WIFI, "")
         }
         if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
-            return buildCurrentNetwork(NetworkState.TRANSPORT_VPN, "");
+            return buildCurrentNetwork(NetworkState.TRANSPORT_VPN, "")
         }
         if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-            return buildCurrentNetwork(NetworkState.TRANSPORT_WIRED, "");
+            return buildCurrentNetwork(NetworkState.TRANSPORT_WIRED, "")
         }
 
-        return UNKNOWN_NETWORK;
+        return CurrentNetworkProvider.UNKNOWN_NETWORK
     }
 
-    @SuppressWarnings("deprecation")
-    private CurrentNetwork detectUsingLegacyApi() {
-        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-        if (activeNetwork == null) {
-            return NO_NETWORK;
+    @Suppress("deprecation")
+    private fun detectUsingLegacyApi(): CurrentNetwork {
+        val activeNetwork =
+            connectivityManager.activeNetworkInfo
+                ?: return CurrentNetworkProvider.NO_NETWORK
+
+        return when (activeNetwork.type) {
+            ConnectivityManager.TYPE_MOBILE ->
+                buildCurrentNetwork(
+                    NetworkState.TRANSPORT_CELLULAR,
+                    activeNetwork.subtypeName,
+                )
+
+            ConnectivityManager.TYPE_WIFI ->
+                buildCurrentNetwork(
+                    NetworkState.TRANSPORT_WIFI,
+                    activeNetwork.subtypeName,
+                )
+
+            ConnectivityManager.TYPE_VPN ->
+                buildCurrentNetwork(
+                    NetworkState.TRANSPORT_VPN,
+                    activeNetwork.subtypeName,
+                )
+
+            ConnectivityManager.TYPE_ETHERNET ->
+                buildCurrentNetwork(
+                    NetworkState.TRANSPORT_WIRED,
+                    activeNetwork.subtypeName,
+                )
+
+            else -> CurrentNetworkProvider.UNKNOWN_NETWORK
         }
-
-        switch (activeNetwork.getType()) {
-            case ConnectivityManager.TYPE_MOBILE:
-                return buildCurrentNetwork(
-                        NetworkState.TRANSPORT_CELLULAR, activeNetwork.getSubtypeName());
-            case ConnectivityManager.TYPE_WIFI:
-                return buildCurrentNetwork(
-                        NetworkState.TRANSPORT_WIFI, activeNetwork.getSubtypeName());
-            case ConnectivityManager.TYPE_VPN:
-                return buildCurrentNetwork(
-                        NetworkState.TRANSPORT_VPN, activeNetwork.getSubtypeName());
-            case ConnectivityManager.TYPE_ETHERNET:
-                return buildCurrentNetwork(
-                        NetworkState.TRANSPORT_WIRED, activeNetwork.getSubtypeName());
-            default:
-                return UNKNOWN_NETWORK;
-        }
     }
 
-    private CurrentNetwork buildCurrentNetwork(NetworkState state, String subType) {
-        return CurrentNetwork.builder(state).subType(subType).build();
-    }
+    private fun buildCurrentNetwork(
+        state: NetworkState,
+        subType: String,
+    ): CurrentNetwork = CurrentNetwork.builder(state).subType(subType).build()
 }
