@@ -116,7 +116,7 @@ public final class CurrentNetwork {
         }
 
         public Builder subType(@Nullable String subType) {
-            if((subType != null) && (subType.isEmpty())){
+            if ((subType != null) && (subType.isEmpty())) {
                 return subType(null);
             }
             this.subType = subType;

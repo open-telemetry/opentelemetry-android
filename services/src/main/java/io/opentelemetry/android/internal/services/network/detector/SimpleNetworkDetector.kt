@@ -6,12 +6,21 @@
 package io.opentelemetry.android.internal.services.network.detector
 
 import android.net.ConnectivityManager
+import android.net.ConnectivityManager.TYPE_ETHERNET
+import android.net.ConnectivityManager.TYPE_MOBILE
+import android.net.ConnectivityManager.TYPE_VPN
+import android.net.ConnectivityManager.TYPE_WIFI
 import android.net.NetworkCapabilities
 import android.os.Build
 import androidx.annotation.RequiresApi
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
+import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState.TRANSPORT_CELLULAR
+import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState.TRANSPORT_VPN
+import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState.TRANSPORT_WIFI
+import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState.TRANSPORT_WIRED
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
+import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider.UNKNOWN_NETWORK
 
 /**
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
@@ -32,22 +41,16 @@ internal class SimpleNetworkDetector(
 
         val capabilities =
             connectivityManager.getNetworkCapabilities(network)
-                ?: return CurrentNetworkProvider.UNKNOWN_NETWORK
+                ?: return UNKNOWN_NETWORK
 
-        if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-            return buildCurrentNetwork(NetworkState.TRANSPORT_CELLULAR)
+        fun hasTransport(capability: Int): Boolean = capabilities.hasCapability(capability)
+        return when {
+            hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> network(TRANSPORT_CELLULAR)
+            hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> network(TRANSPORT_WIFI)
+            hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> network(TRANSPORT_VPN)
+            hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> network(TRANSPORT_WIRED)
+            else -> UNKNOWN_NETWORK
         }
-        if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-            return buildCurrentNetwork(NetworkState.TRANSPORT_WIFI)
-        }
-        if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
-            return buildCurrentNetwork(NetworkState.TRANSPORT_VPN)
-        }
-        if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-            return buildCurrentNetwork(NetworkState.TRANSPORT_WIRED)
-        }
-
-        return CurrentNetworkProvider.UNKNOWN_NETWORK
     }
 
     @Suppress("deprecation")
@@ -56,37 +59,18 @@ internal class SimpleNetworkDetector(
             connectivityManager.activeNetworkInfo
                 ?: return CurrentNetworkProvider.NO_NETWORK
 
+        val network = buildFromSubType(activeNetwork.subtypeName)
         return when (activeNetwork.type) {
-            ConnectivityManager.TYPE_MOBILE ->
-                buildCurrentNetwork(
-                    NetworkState.TRANSPORT_CELLULAR,
-                    activeNetwork.subtypeName,
-                )
-
-            ConnectivityManager.TYPE_WIFI ->
-                buildCurrentNetwork(
-                    NetworkState.TRANSPORT_WIFI,
-                    activeNetwork.subtypeName,
-                )
-
-            ConnectivityManager.TYPE_VPN ->
-                buildCurrentNetwork(
-                    NetworkState.TRANSPORT_VPN,
-                    activeNetwork.subtypeName,
-                )
-
-            ConnectivityManager.TYPE_ETHERNET ->
-                buildCurrentNetwork(
-                    NetworkState.TRANSPORT_WIRED,
-                    activeNetwork.subtypeName,
-                )
-
-            else -> CurrentNetworkProvider.UNKNOWN_NETWORK
+            TYPE_MOBILE -> network(TRANSPORT_CELLULAR)
+            TYPE_WIFI -> network(TRANSPORT_WIFI)
+            TYPE_VPN -> network(TRANSPORT_VPN)
+            TYPE_ETHERNET -> network(TRANSPORT_WIRED)
+            else -> UNKNOWN_NETWORK
         }
     }
 
-    private fun buildCurrentNetwork(
-        state: NetworkState,
-        subType: String = "",
-    ): CurrentNetwork = CurrentNetwork.builder(state).subType(subType).build()
+    private fun buildFromSubType(subType: String?): (NetworkState) -> CurrentNetwork =
+        { CurrentNetwork.builder(it).subType(subType).build() }
+
+    private fun network(state: NetworkState): CurrentNetwork = CurrentNetwork.builder(state).build()
 }
