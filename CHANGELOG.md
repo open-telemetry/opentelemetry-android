@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 0.9.0 (2025-01-15)
+
 - This version builds on opentelemetry-java-instrumentation
   [v2.11.0](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v2.11.0).
 
