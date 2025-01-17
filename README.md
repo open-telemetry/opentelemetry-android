@@ -55,7 +55,8 @@ Some of the additional features provided include:
 * Crash reporting
 * ANR detection
 * Network change detection
-* Full Android Activity and Fragment lifecycle monitoring
+* Android [Activity lifecycle instrumentation](./instrumentation/activity/)
+* Android Fragment lifecycle monitoring
 * Access to the OpenTelemetry APIs for manual instrumentation
 * Helpers to redact any span from export, or change span attributes before export
 * Slow / frozen render detection
