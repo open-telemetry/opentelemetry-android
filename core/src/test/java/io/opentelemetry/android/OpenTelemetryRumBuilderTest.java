@@ -28,7 +28,7 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import io.opentelemetry.android.config.OtelRumConfig;
-import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
+import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
@@ -348,8 +348,7 @@ public class OpenTelemetryRumBuilderTest {
         doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
         OtelRumConfig config = buildConfig();
         ExportScheduleHandler scheduleHandler = mock();
-        config.setDiskBufferingConfiguration(
-                DiskBufferingConfiguration.builder().setEnabled(true).build());
+        config.setDiskBufferingConfig(new DiskBufferingConfig(true));
         ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
 
         OpenTelemetryRum.builder(application, config)
@@ -384,8 +383,7 @@ public class OpenTelemetryRumBuilderTest {
                 .getCacheDir();
         ArgumentCaptor<SpanExporter> exporterCaptor = ArgumentCaptor.forClass(SpanExporter.class);
         OtelRumConfig config = buildConfig();
-        config.setDiskBufferingConfiguration(
-                DiskBufferingConfiguration.builder().setEnabled(true).build());
+        config.setDiskBufferingConfig(new DiskBufferingConfig(true));
 
         OpenTelemetryRum.builder(application, config)
                 .setServiceManager(serviceManager)
@@ -422,8 +420,7 @@ public class OpenTelemetryRumBuilderTest {
         ExportScheduleHandler scheduleHandler = mock();
 
         OtelRumConfig config = buildConfig();
-        config.setDiskBufferingConfiguration(
-                DiskBufferingConfiguration.builder().setEnabled(false).build());
+        config.setDiskBufferingConfig(new DiskBufferingConfig(false));
 
         OpenTelemetryRum.builder(application, config)
                 .setExportScheduleHandler(scheduleHandler)

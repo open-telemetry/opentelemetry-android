@@ -7,7 +7,7 @@ package io.opentelemetry.android.internal.features.persistence
 
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants
-import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration
+import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.android.internal.services.CacheStorage
 import io.opentelemetry.android.internal.services.Preferences
 import java.io.File
@@ -16,7 +16,7 @@ import java.io.IOException
 internal class DiskManager(
     private val cacheStorage: CacheStorage,
     private val preferences: Preferences,
-    private val diskBufferingConfiguration: DiskBufferingConfiguration,
+    private val diskBufferingConfig: DiskBufferingConfig,
 ) {
     @get:Throws(IOException::class)
     val signalsBufferDir: File
@@ -53,7 +53,7 @@ internal class DiskManager(
                 )
                 return storedSize
             }
-            val requestedSize = diskBufferingConfiguration.maxCacheSize
+            val requestedSize = diskBufferingConfig.maxCacheSize
             val availableCacheSize =
                 cacheStorage.ensureCacheSpaceAvailable(requestedSize.toLong()).toInt()
             // Divides the available cache size by 3 (for each signal's folder) and then subtracts the
@@ -86,7 +86,7 @@ internal class DiskManager(
         }
 
     val maxCacheFileSize: Int
-        get() = diskBufferingConfiguration.maxCacheFileSize
+        get() = diskBufferingConfig.maxCacheFileSize
 
     companion object {
         private const val MAX_FOLDER_SIZE_KEY = "max_signal_folder_size"

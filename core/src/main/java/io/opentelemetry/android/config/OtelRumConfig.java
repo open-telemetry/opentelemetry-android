@@ -6,7 +6,7 @@
 package io.opentelemetry.android.config;
 
 import io.opentelemetry.android.ScreenAttributesSpanProcessor;
-import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfiguration;
+import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.api.common.Attributes;
 import java.time.Duration;
@@ -24,8 +24,7 @@ public class OtelRumConfig {
     private boolean generateSdkInitializationEvents = true;
     private boolean includeScreenAttributes = true;
     private boolean discoverInstrumentations = true;
-    private DiskBufferingConfiguration diskBufferingConfiguration =
-            DiskBufferingConfiguration.builder().build();
+    private DiskBufferingConfig diskBufferingConfig = DiskBufferingConfig.create();
     private Duration sessionTimeout = Duration.ofMinutes(15);
 
     /**
@@ -98,8 +97,8 @@ public class OtelRumConfig {
         return includeScreenAttributes;
     }
 
-    public DiskBufferingConfiguration getDiskBufferingConfiguration() {
-        return diskBufferingConfiguration;
+    public DiskBufferingConfig getDiskBufferingConfig() {
+        return diskBufferingConfig;
     }
 
     /**
@@ -125,9 +124,8 @@ public class OtelRumConfig {
      *
      * @return this
      */
-    public OtelRumConfig setDiskBufferingConfiguration(
-            DiskBufferingConfiguration diskBufferingConfiguration) {
-        this.diskBufferingConfiguration = diskBufferingConfiguration;
+    public OtelRumConfig setDiskBufferingConfig(DiskBufferingConfig diskBufferingConfig) {
+        this.diskBufferingConfig = diskBufferingConfig;
         return this;
     }
 
