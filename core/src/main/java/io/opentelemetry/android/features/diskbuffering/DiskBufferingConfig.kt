@@ -17,13 +17,17 @@ data class DiskBufferingConfig
     constructor(
         val enabled: Boolean = false,
         val maxCacheSize: Int = DEFAULT_MAX_CACHE_SIZE,
-        val maxFileAgeForWriteMillis: Long = TimeUnit.SECONDS.toMillis(30),
-        val minFileAgeForReadMillis: Long = TimeUnit.SECONDS.toMillis(33),
-        val maxFileAgeForReadMillis: Long = TimeUnit.HOURS.toMillis(18),
+        val maxFileAgeForWriteMillis: Long = DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS,
+        val minFileAgeForReadMillis: Long = DEFAULT_MIN_FILE_AGE_FOR_WRITE_MS,
+        val maxFileAgeForReadMillis: Long = DEFAULT_MAX_FILE_AGE_FOR_READ_MS,
         val maxCacheFileSize: Int = MAX_CACHE_FILE_SIZE,
         val debugEnabled: Boolean = false,
     ) {
         companion object {
+            val DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS = TimeUnit.SECONDS.toMillis(30)
+            val DEFAULT_MIN_FILE_AGE_FOR_WRITE_MS = TimeUnit.SECONDS.toMillis(33)
+            val DEFAULT_MAX_FILE_AGE_FOR_READ_MS = TimeUnit.HOURS.toMillis(18)
+
             /**
              * Convenience factory method that validates the min/max and fixes
              * those up if needed. Users should prefer this method over the
