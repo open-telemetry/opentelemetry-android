@@ -11,23 +11,22 @@ import java.util.concurrent.TimeUnit
 
 const val DEFAULT_MAX_CACHE_SIZE: Int = 60 * 1024 * 1024
 const val MAX_CACHE_FILE_SIZE: Int = 1024 * 1024
+const val DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS = 30L
+const val DEFAULT_MIN_FILE_AGE_FOR_READ_MS = 33L
+const val DEFAULT_MAX_FILE_AGE_FOR_READ_MS = 18L
 
 data class DiskBufferingConfig
     @JvmOverloads
     constructor(
         val enabled: Boolean = false,
         val maxCacheSize: Int = DEFAULT_MAX_CACHE_SIZE,
-        val maxFileAgeForWriteMillis: Long = DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS,
-        val minFileAgeForReadMillis: Long = DEFAULT_MIN_FILE_AGE_FOR_WRITE_MS,
-        val maxFileAgeForReadMillis: Long = DEFAULT_MAX_FILE_AGE_FOR_READ_MS,
+        val maxFileAgeForWriteMillis: Long = TimeUnit.SECONDS.toMillis(DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS),
+        val minFileAgeForReadMillis: Long = TimeUnit.SECONDS.toMillis(DEFAULT_MIN_FILE_AGE_FOR_READ_MS),
+        val maxFileAgeForReadMillis: Long = TimeUnit.HOURS.toMillis(DEFAULT_MAX_FILE_AGE_FOR_READ_MS),
         val maxCacheFileSize: Int = MAX_CACHE_FILE_SIZE,
         val debugEnabled: Boolean = false,
     ) {
         companion object {
-            val DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS = TimeUnit.SECONDS.toMillis(30)
-            val DEFAULT_MIN_FILE_AGE_FOR_WRITE_MS = TimeUnit.SECONDS.toMillis(33)
-            val DEFAULT_MAX_FILE_AGE_FOR_READ_MS = TimeUnit.HOURS.toMillis(18)
-
             /**
              * Convenience factory method that validates the min/max and fixes
              * those up if needed. Users should prefer this method over the
