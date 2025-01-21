@@ -1,7 +1,14 @@
 # OpenTelemetry Android Changelog
 
-## Unreleased
+## Version 0.9.1 (2025-01-21)
 
+### 🛠️ Bug fixes
+
+- Fix some artifacts missing from publication ([#761](https://github.com/open-telemetry/opentelemetry-android/pull/761))
+
+## Version 0.9.0 (2025-01-16)
+
+- NOTE: This version has a known issue with some artifacts missing from publication. Please use v0.9.1.
 - This version builds on opentelemetry-java-instrumentation
   [v2.11.0](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v2.11.0).
 
