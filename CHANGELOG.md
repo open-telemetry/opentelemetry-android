@@ -4,7 +4,7 @@
 
 ### 🛠️ Bug fixes
 
-- Fix some artifacts missing from publication ([#761](https://github.com/open-telemetry/opentelemetry-android/pull/761))  
+- Fix some artifacts missing from publication ([#761](https://github.com/open-telemetry/opentelemetry-android/pull/761))
 
 ## Version 0.9.0 (2025-01-16)
 
