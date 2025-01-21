@@ -39,7 +39,7 @@ class ActivityLifecycleInstrumentationTest {
         activityLifecycleInstrumentation = ActivityLifecycleInstrumentation()
         serviceManager = mockk()
         sessionManager = mockk()
-        every { serviceManager.getVisibleScreenService() }.returns(mockk<VisibleScreenService>())
+        every { serviceManager.visibleScreenService }.returns(mockk<VisibleScreenService>())
     }
 
     @Test

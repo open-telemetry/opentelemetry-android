@@ -5,8 +5,6 @@
 
 package io.opentelemetry.android.internal.services.network;
 
-import android.app.Application;
-import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -40,20 +38,13 @@ public final class CurrentNetworkProvider implements Startable {
     public static final CurrentNetwork UNKNOWN_NETWORK =
             CurrentNetwork.builder(NetworkState.TRANSPORT_UNKNOWN).build();
 
-    public static CurrentNetworkProvider create(Application application) {
-        return new CurrentNetworkProvider(
-                NetworkDetector.create(application),
-                (ConnectivityManager) application.getSystemService(Context.CONNECTIVITY_SERVICE));
-    }
-
     private final NetworkDetector networkDetector;
     private final ConnectivityManager connectivityManager;
 
     private volatile CurrentNetwork currentNetwork = UNKNOWN_NETWORK;
     private final List<NetworkChangeListener> listeners = new CopyOnWriteArrayList<>();
 
-    // visible for tests
-    CurrentNetworkProvider(
+    public CurrentNetworkProvider(
             NetworkDetector networkDetector, ConnectivityManager connectivityManager) {
         this.connectivityManager = connectivityManager;
         this.networkDetector = networkDetector;

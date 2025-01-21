@@ -40,11 +40,6 @@ class VisibleScreenService internal constructor(
     private val activityLifecycleTracker by lazy { buildActivitiesTracker() }
     private val fragmentLifecycleTrackerRegisterer by lazy { buildFragmentsTrackerRegisterer() }
 
-    companion object {
-        @JvmStatic
-        fun create(application: Application): VisibleScreenService = VisibleScreenService(application)
-    }
-
     override fun start() {
         application.registerActivityLifecycleCallbacks(activityLifecycleTracker)
         application.registerActivityLifecycleCallbacks(fragmentLifecycleTrackerRegisterer)

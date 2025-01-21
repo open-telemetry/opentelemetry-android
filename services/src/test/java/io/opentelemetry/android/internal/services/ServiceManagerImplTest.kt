@@ -25,10 +25,10 @@ class ServiceManagerImplTest {
 
         val serviceManager = ServiceManagerImpl.create(app)
 
-        assertThat(serviceManager.getPeriodicWorkService()).isInstanceOf(PeriodicWorkService::class.java)
-        assertThat(serviceManager.getCacheStorage()).isInstanceOf(CacheStorage::class.java)
-        assertThat(serviceManager.getPreferences()).isInstanceOf(Preferences::class.java)
-        assertThat(serviceManager.getCurrentNetworkProvider()).isInstanceOf(CurrentNetworkProvider::class.java)
+        assertThat(serviceManager.periodicWorkService).isInstanceOf(PeriodicWorkService::class.java)
+        assertThat(serviceManager.cacheStorage).isInstanceOf(CacheStorage::class.java)
+        assertThat(serviceManager.preferences).isInstanceOf(Preferences::class.java)
+        assertThat(serviceManager.currentNetworkProvider).isInstanceOf(CurrentNetworkProvider::class.java)
     }
 
     @Test

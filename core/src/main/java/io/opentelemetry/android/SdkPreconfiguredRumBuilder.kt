@@ -26,7 +26,7 @@ class SdkPreconfiguredRumBuilder
         private val serviceManager: ServiceManager,
     ) {
         private val instrumentations = mutableListOf<AndroidInstrumentation>()
-        private val appLifecycleService by lazy { serviceManager.getAppLifecycleService() }
+        private val appLifecycleService by lazy { serviceManager.appLifecycleService }
 
         /**
          * Adds an instrumentation to be applied as a part of the [build] method call.
@@ -48,7 +48,6 @@ class SdkPreconfiguredRumBuilder
          * @return A new [OpenTelemetryRum] instance.
          */
         fun build(): OpenTelemetryRum {
-            serviceManager.start()
             // the app state listeners need to be run in the first ActivityLifecycleCallbacks since they
             // might turn off/on additional telemetry depending on whether the app is active or not
             appLifecycleService.registerListener(timeoutHandler)
