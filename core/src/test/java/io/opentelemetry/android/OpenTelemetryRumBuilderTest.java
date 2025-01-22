@@ -216,8 +216,7 @@ public class OpenTelemetryRumBuilderTest {
         verify(services.getAppLifecycle()).registerListener(timeoutHandler);
 
         InstallationContext expectedCtx =
-                new InstallationContext(
-                        application, rum.getOpenTelemetry(), sessionManager, services);
+                new InstallationContext(application, rum.getOpenTelemetry(), sessionManager);
         verify(localInstrumentation).install(eq(expectedCtx));
         verify(classpathInstrumentation).install(eq(expectedCtx));
     }
@@ -245,8 +244,7 @@ public class OpenTelemetryRumBuilderTest {
         verify(services.getAppLifecycle()).registerListener(timeoutHandler);
 
         InstallationContext expectedCtx =
-                new InstallationContext(
-                        application, rum.getOpenTelemetry(), sessionManager, services);
+                new InstallationContext(application, rum.getOpenTelemetry(), sessionManager);
         verify(localInstrumentation).install(eq(expectedCtx));
         verifyNoInteractions(classpathInstrumentation);
     }

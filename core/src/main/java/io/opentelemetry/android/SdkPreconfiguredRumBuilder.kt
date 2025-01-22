@@ -55,7 +55,7 @@ class SdkPreconfiguredRumBuilder
             val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionManager)
 
             // Install instrumentations
-            val ctx = InstallationContext(application, openTelemetryRum.openTelemetry, sessionManager, services)
+            val ctx = InstallationContext(application, openTelemetryRum.openTelemetry, sessionManager)
             for (instrumentation in getInstrumentations()) {
                 instrumentation.install(ctx)
             }
