@@ -39,6 +39,7 @@ class PeriodicWorkTest {
             }
         }
 
+        fastForwardBySeconds(DELAY_BETWEEN_EXECUTIONS_IN_SECONDS)
         latch.await()
 
         // All ran in a single worker thread
@@ -58,6 +59,7 @@ class PeriodicWorkTest {
         service.enqueue {
             firstRunLatch.countDown()
         }
+        fastForwardBySeconds(DELAY_BETWEEN_EXECUTIONS_IN_SECONDS)
         service.enqueue {
             secondRunExecuted = true
             secondRunLatch.countDown()
@@ -83,6 +85,7 @@ class PeriodicWorkTest {
             timesExecutedFirstWork++
             firstRunLatch.countDown()
         }
+        fastForwardBySeconds(DELAY_BETWEEN_EXECUTIONS_IN_SECONDS)
         service.enqueue {
             timesExecutedSecondWork++
             secondRunLatch.countDown()

@@ -45,13 +45,22 @@ public final class CurrentNetworkProvider {
 
     public CurrentNetworkProvider(
             NetworkDetector networkDetector, ConnectivityManager connectivityManager) {
-        this.connectivityManager = connectivityManager;
-        this.networkDetector = networkDetector;
-        startMonitoring(CurrentNetworkProvider::createNetworkMonitoringRequest);
+        this(
+                networkDetector,
+                connectivityManager,
+                CurrentNetworkProvider::createNetworkMonitoringRequest);
     }
 
-    // visible for tests
-    void startMonitoring(Supplier<NetworkRequest> createNetworkMonitoringRequest) {
+    CurrentNetworkProvider(
+            NetworkDetector networkDetector,
+            ConnectivityManager connectivityManager,
+            Supplier<NetworkRequest> createNetworkMonitoringRequest) {
+        this.connectivityManager = connectivityManager;
+        this.networkDetector = networkDetector;
+        startMonitoring(createNetworkMonitoringRequest);
+    }
+
+    private void startMonitoring(Supplier<NetworkRequest> createNetworkMonitoringRequest) {
         refreshNetworkStatus();
         try {
             registerNetworkCallbacks(createNetworkMonitoringRequest);
