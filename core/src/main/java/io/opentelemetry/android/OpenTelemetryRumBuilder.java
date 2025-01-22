@@ -294,7 +294,7 @@ public final class OpenTelemetryRumBuilder {
             throw new IllegalStateException("You cannot call build multiple times");
         }
         isBuilt = true;
-        Services services = Services.initialize(application);
+        Services services = Services.get(application);
         InitializationEvents initializationEvents = InitializationEvents.get();
         applyConfiguration(services, initializationEvents);
 

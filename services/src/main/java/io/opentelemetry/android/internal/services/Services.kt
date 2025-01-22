@@ -50,24 +50,18 @@ class Services internal constructor(
         private var instance: Services? = null
 
         @JvmStatic
-        fun initialize(application: Application): Services =
+        fun get(application: Application): Services =
             synchronized(this) {
                 if (instance == null) {
                     set(Services(ServicesFactory(application)))
                 }
-                return get()
+                return instance!!
             }
 
         @JvmStatic
         fun set(services: Services?) =
             synchronized(this) {
                 instance = services
-            }
-
-        @JvmStatic
-        fun get(): Services =
-            synchronized(this) {
-                return instance!!
             }
     }
 

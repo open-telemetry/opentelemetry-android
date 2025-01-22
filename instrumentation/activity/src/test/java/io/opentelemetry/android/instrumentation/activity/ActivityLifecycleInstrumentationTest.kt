@@ -56,7 +56,7 @@ class ActivityLifecycleInstrumentationTest {
         )
         every { startupSpanBuilder.startSpan() }.returns(startupSpan)
 
-        val ctx = InstallationContext(application, openTelemetry, sessionManager, services)
+        val ctx = InstallationContext(application, openTelemetry, sessionManager)
         activityLifecycleInstrumentation.install(ctx)
 
         verify {

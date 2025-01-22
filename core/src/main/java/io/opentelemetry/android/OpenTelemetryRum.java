@@ -68,10 +68,7 @@ public interface OpenTelemetryRum {
             boolean discoverInstrumentations) {
 
         return new SdkPreconfiguredRumBuilder(
-                application,
-                openTelemetrySdk,
-                discoverInstrumentations,
-                Services.initialize(application));
+                application, openTelemetrySdk, discoverInstrumentations, Services.get(application));
     }
 
     /** Returns a no-op implementation of {@link OpenTelemetryRum}. */

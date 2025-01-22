@@ -64,6 +64,5 @@ class StartupInstrumentationTest {
             mockk<Application>(),
             otelTesting.openTelemetry,
             mockk(),
-            mockk(),
         )
 }
