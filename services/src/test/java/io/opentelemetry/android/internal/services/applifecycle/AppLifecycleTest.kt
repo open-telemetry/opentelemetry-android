@@ -28,13 +28,14 @@ class AppLifecycleTest {
     @BeforeEach
     fun setUp() {
         MockKAnnotations.init(this)
+        every { applicationStateWatcher.registerListener(any()) } just Runs
+        every { lifecycle.addObserver(any()) } just Runs
         lifecycleService = AppLifecycle(applicationStateWatcher, lifecycle)
     }
 
     @Test
     fun `Registering listener`() {
         val listener = mockk<ApplicationStateListener>()
-        every { applicationStateWatcher.registerListener(any()) } just Runs
 
         lifecycleService.registerListener(listener)
 
