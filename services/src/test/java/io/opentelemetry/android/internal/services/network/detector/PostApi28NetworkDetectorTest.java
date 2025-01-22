@@ -5,7 +5,9 @@
 
 package io.opentelemetry.android.internal.services.network.detector;
 
+import static io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState.NO_NETWORK_AVAILABLE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -19,7 +21,7 @@ import io.opentelemetry.android.common.internal.features.networkattributes.data.
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
 import io.opentelemetry.android.internal.services.network.CarrierFinder;
-import org.junit.Assert;
+import kotlin.jvm.functions.Function0;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,10 +38,12 @@ public class PostApi28NetworkDetectorTest {
     Context context;
     Network network;
     NetworkCapabilities networkCapabilities;
+    Carrier carrier = new Carrier(0, "flib");
     CarrierFinder carrierFinder;
 
     @Before
     public void setup() {
+
         connectivityManager = mock(ConnectivityManager.class);
         telephonyManager = mock(TelephonyManager.class);
         context = mock(Context.class);
@@ -49,6 +53,7 @@ public class PostApi28NetworkDetectorTest {
 
         when(connectivityManager.getActiveNetwork()).thenReturn(network);
         when(connectivityManager.getNetworkCapabilities(network)).thenReturn(networkCapabilities);
+        when(carrierFinder.get()).thenReturn(carrier);
     }
 
     @Test
@@ -59,8 +64,7 @@ public class PostApi28NetworkDetectorTest {
                 new PostApi28NetworkDetector(
                         connectivityManager, telephonyManager, carrierFinder, context);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        Assert.assertEquals(
-                CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build(), currentNetwork);
+        assertEquals(CurrentNetwork.builder(NO_NETWORK_AVAILABLE).build(), currentNetwork);
     }
 
     @Test
@@ -71,8 +75,9 @@ public class PostApi28NetworkDetectorTest {
                 new PostApi28NetworkDetector(
                         connectivityManager, telephonyManager, carrierFinder, context);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        Assert.assertEquals(
-                CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(), currentNetwork);
+        assertEquals(
+                CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).carrier(carrier).build(),
+                currentNetwork);
     }
 
     @Test
@@ -81,12 +86,21 @@ public class PostApi28NetworkDetectorTest {
         when(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
                 .thenReturn(true);
 
+        Function0<Boolean> readPhoneState = () -> true;
+
         PostApi28NetworkDetector networkDetector =
                 new PostApi28NetworkDetector(
-                        connectivityManager, telephonyManager, carrierFinder, context);
+                        connectivityManager,
+                        telephonyManager,
+                        carrierFinder,
+                        context,
+                        readPhoneState);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        Assert.assertEquals(
-                CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).subType("LTE").build(),
+        assertEquals(
+                CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
+                        .carrier(carrier)
+                        .subType("LTE")
+                        .build(),
                 currentNetwork);
     }
 
@@ -96,17 +110,18 @@ public class PostApi28NetworkDetectorTest {
         when(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
                 .thenReturn(true);
 
+        Function0<Boolean> readPhoneState = () -> false;
         PostApi28NetworkDetector networkDetector =
                 new PostApi28NetworkDetector(
-                        connectivityManager, telephonyManager, carrierFinder, context) {
-                    @Override
-                    boolean canReadPhoneState() {
-                        return false;
-                    }
-                };
+                        connectivityManager,
+                        telephonyManager,
+                        carrierFinder,
+                        context,
+                        readPhoneState);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        Assert.assertEquals(
-                CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).build(), currentNetwork);
+        assertEquals(
+                CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).carrier(carrier).build(),
+                currentNetwork);
     }
 
     @Test
@@ -115,7 +130,7 @@ public class PostApi28NetworkDetectorTest {
                 new PostApi28NetworkDetector(
                         connectivityManager, telephonyManager, carrierFinder, context);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        Assert.assertEquals(
+        assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_UNKNOWN).build(), currentNetwork);
     }
 
@@ -127,13 +142,13 @@ public class PostApi28NetworkDetectorTest {
                 new PostApi28NetworkDetector(
                         connectivityManager, telephonyManager, carrierFinder, context);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        Assert.assertEquals(
-                CurrentNetwork.builder(NetworkState.TRANSPORT_VPN).build(), currentNetwork);
+        assertEquals(
+                CurrentNetwork.builder(NetworkState.TRANSPORT_VPN).carrier(carrier).build(),
+                currentNetwork);
     }
 
     @Test
     public void carrierIsSet() {
-        Carrier carrier = new Carrier(0, "flib");
         when(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
                 .thenReturn(true);
         when(carrierFinder.get()).thenReturn(carrier);
