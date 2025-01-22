@@ -19,42 +19,31 @@ import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTra
 /**
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
  */
-class Services(
-    private val application: Application,
+class Services internal constructor(
+    private val factory: ServicesFactory,
 ) {
     val preferences: Preferences by lazy {
-        Preferences(
-            application.getSharedPreferences(
-                "io.opentelemetry.android" + ".prefs",
-                Context.MODE_PRIVATE,
-            ),
-        )
+        factory.createPreferences()
     }
 
     val cacheStorage: CacheStorage by lazy {
-        CacheStorage(application)
+        factory.createCacheStorage()
     }
 
     val periodicWork: PeriodicWork by lazy {
-        PeriodicWork()
+        factory.createPeriodicWork()
     }
 
     val currentNetworkProvider: CurrentNetworkProvider by lazy {
-        CurrentNetworkProvider(
-            NetworkDetector.create(application),
-            application.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager,
-        )
+        factory.createCurrentNetworkProvider()
     }
 
     val appLifecycle: AppLifecycle by lazy {
-        AppLifecycle(
-            ApplicationStateWatcher(),
-            ProcessLifecycleOwner.get().lifecycle,
-        )
+        factory.createAppLifecycle()
     }
 
     val visibleScreenTracker: VisibleScreenTracker by lazy {
-        VisibleScreenTracker(application)
+        factory.createVisibleScreenTracker()
     }
 
     companion object {
@@ -64,7 +53,7 @@ class Services(
         fun initialize(application: Application): Services =
             synchronized(this) {
                 if (instance == null) {
-                    set(Services(application))
+                    set(Services(ServicesFactory(application)))
                 }
                 return get()
             }
@@ -79,5 +68,35 @@ class Services(
             synchronized(this) {
                 return instance!!
             }
+    }
+
+    internal class ServicesFactory(
+        private val application: Application,
+    ) {
+        fun createPreferences(): Preferences =
+            Preferences(
+                application.getSharedPreferences(
+                    "io.opentelemetry.android" + ".prefs",
+                    Context.MODE_PRIVATE,
+                ),
+            )
+
+        fun createCacheStorage(): CacheStorage = CacheStorage(application)
+
+        fun createPeriodicWork(): PeriodicWork = PeriodicWork()
+
+        fun createCurrentNetworkProvider(): CurrentNetworkProvider =
+            CurrentNetworkProvider(
+                NetworkDetector.create(application),
+                application.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager,
+            )
+
+        fun createAppLifecycle(): AppLifecycle =
+            AppLifecycle(
+                ApplicationStateWatcher(),
+                ProcessLifecycleOwner.get().lifecycle,
+            )
+
+        fun createVisibleScreenTracker(): VisibleScreenTracker = VisibleScreenTracker(application)
     }
 }
