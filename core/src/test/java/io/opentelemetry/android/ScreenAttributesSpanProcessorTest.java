@@ -12,7 +12,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -23,14 +23,14 @@ class ScreenAttributesSpanProcessorTest {
     @Test
     void append() {
         String screenName = "my cool screen";
-        VisibleScreenService visibleScreenService = mock(VisibleScreenService.class);
+        VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
         Context contenxt = mock(Context.class);
         ReadWriteSpan span = mock(ReadWriteSpan.class);
 
-        when(visibleScreenService.getCurrentlyVisibleScreen()).thenReturn(screenName);
+        when(visibleScreenTracker.getCurrentlyVisibleScreen()).thenReturn(screenName);
 
         ScreenAttributesSpanProcessor testClass =
-                new ScreenAttributesSpanProcessor(visibleScreenService);
+                new ScreenAttributesSpanProcessor(visibleScreenTracker);
         assertThat(testClass.isStartRequired()).isTrue();
         assertThat(testClass.isEndRequired()).isFalse();
         assertThatCode(() -> testClass.onEnd(mock(ReadableSpan.class))).doesNotThrowAnyException();

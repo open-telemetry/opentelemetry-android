@@ -9,13 +9,13 @@ import android.util.Log
 import io.opentelemetry.android.common.RumConstants.OTEL_RUM_LOG_TAG
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicRunnable
-import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService
+import io.opentelemetry.android.internal.services.periodicwork.PeriodicWork
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 class DefaultExportScheduler(
-    periodicWorkServiceProvider: () -> PeriodicWorkService,
-) : PeriodicRunnable(periodicWorkServiceProvider) {
+    periodicWorkProvider: () -> PeriodicWork,
+) : PeriodicRunnable(periodicWorkProvider) {
     companion object {
         private val DELAY_BEFORE_NEXT_EXPORT_IN_MILLIS = TimeUnit.SECONDS.toMillis(10)
     }

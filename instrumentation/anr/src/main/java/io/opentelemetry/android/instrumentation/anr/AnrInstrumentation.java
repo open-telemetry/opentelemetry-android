@@ -51,7 +51,7 @@ public final class AnrInstrumentation implements AndroidInstrumentation {
                         additionalExtractors,
                         mainLooper,
                         scheduler,
-                        ctx.getServiceManager().getAppLifecycleService(),
+                        ctx.getServices().getAppLifecycle(),
                         ctx.getOpenTelemetry());
         anrDetector.start();
     }

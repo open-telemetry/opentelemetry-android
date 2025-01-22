@@ -31,8 +31,8 @@ import io.opentelemetry.android.internal.processors.ScreenAttributesLogRecordPro
 import io.opentelemetry.android.internal.processors.SessionIdLogRecordAppender;
 import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.Preferences;
-import io.opentelemetry.android.internal.services.ServiceManager;
-import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService;
+import io.opentelemetry.android.internal.services.Services;
+import io.opentelemetry.android.internal.services.periodicwork.PeriodicWork;
 import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler;
 import io.opentelemetry.android.internal.session.SessionManagerImpl;
 import io.opentelemetry.android.session.SessionManager;
@@ -294,7 +294,7 @@ public final class OpenTelemetryRumBuilder {
             throw new IllegalStateException("You cannot call build multiple times");
         }
         isBuilt = true;
-        ServiceManager services = ServiceManager.initialize(application);
+        Services services = Services.initialize(application);
         InitializationEvents initializationEvents = InitializationEvents.get();
         applyConfiguration(services, initializationEvents);
 
@@ -350,7 +350,7 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private void initializeExporters(
-            ServiceManager services,
+            Services services,
             InitializationEvents initializationEvents,
             BufferDelegatingSpanExporter bufferDelegatingSpanExporter,
             BufferDelegatingLogExporter bufferedDelegatingLogExporter) {
@@ -403,8 +403,7 @@ public final class OpenTelemetryRumBuilder {
         return this;
     }
 
-    private StorageConfiguration createStorageConfiguration(ServiceManager services)
-            throws IOException {
+    private StorageConfiguration createStorageConfiguration(Services services) throws IOException {
         Preferences preferences = services.getPreferences();
         CacheStorage storage = services.getCacheStorage();
         DiskBufferingConfig config = this.config.getDiskBufferingConfig();
@@ -423,11 +422,11 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private void scheduleDiskTelemetryReader(
-            ServiceManager services, @Nullable SignalFromDiskExporter signalExporter) {
+            Services services, @Nullable SignalFromDiskExporter signalExporter) {
         if (exportScheduleHandler == null) {
             // TODO: Is it safe to get the work service yet here? If so, we can
             // avoid all this lazy supplier stuff....
-            Function0<PeriodicWorkService> getWorkService = services::getPeriodicWorkService;
+            Function0<PeriodicWork> getWorkService = services::getPeriodicWork;
             exportScheduleHandler =
                     new DefaultExportScheduleHandler(
                             new DefaultExportScheduler(getWorkService), getWorkService);
@@ -463,8 +462,7 @@ public final class OpenTelemetryRumBuilder {
     }
 
     /** Leverage the configuration to wire up various instrumentation components. */
-    private void applyConfiguration(
-            ServiceManager services, InitializationEvents initializationEvents) {
+    private void applyConfiguration(Services services, InitializationEvents initializationEvents) {
         if (config.shouldGenerateSdkInitializationEvents()) {
             initializationEvents.recordConfiguration(config);
         }
@@ -500,7 +498,7 @@ public final class OpenTelemetryRumBuilder {
                     (tracerProviderBuilder, app) -> {
                         SpanProcessor screenAttributesAppender =
                                 new ScreenAttributesSpanProcessor(
-                                        services.getVisibleScreenService());
+                                        services.getVisibleScreenTracker());
                         return tracerProviderBuilder.addSpanProcessor(screenAttributesAppender);
                     });
         }
@@ -524,7 +522,7 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private SdkLoggerProvider buildLoggerProvider(
-            ServiceManager services,
+            Services services,
             SessionProvider sessionProvider,
             Application application,
             LogRecordExporter logsExporter) {
@@ -534,7 +532,7 @@ public final class OpenTelemetryRumBuilder {
                         .addLogRecordProcessor(new SessionIdLogRecordAppender(sessionProvider))
                         .addLogRecordProcessor(
                                 new ScreenAttributesLogRecordProcessor(
-                                        services.getVisibleScreenService()))
+                                        services.getVisibleScreenTracker()))
                         .addLogRecordProcessor(
                                 new GlobalAttributesLogRecordAppender(
                                         config.getGlobalAttributesSupplier()));

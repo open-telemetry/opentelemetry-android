@@ -8,7 +8,7 @@ package io.opentelemetry.android.internal.services.visiblescreen.activities;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
-import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -19,22 +19,22 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class VisibleScreenLifecycleBindingTest {
 
     @Mock Activity activity;
-    @Mock VisibleScreenService visibleScreenService;
+    @Mock VisibleScreenTracker visibleScreenTracker;
 
     @Test
     void postResumed() {
         VisibleScreenLifecycleBinding underTest =
-                new VisibleScreenLifecycleBinding(visibleScreenService);
+                new VisibleScreenLifecycleBinding(visibleScreenTracker);
         underTest.onActivityPostResumed(activity);
-        verify(visibleScreenService).activityResumed(activity);
-        Mockito.verifyNoMoreInteractions(visibleScreenService);
+        verify(visibleScreenTracker).activityResumed(activity);
+        Mockito.verifyNoMoreInteractions(visibleScreenTracker);
     }
 
     @Test
     void prePaused() {
         VisibleScreenLifecycleBinding underTest =
-                new VisibleScreenLifecycleBinding(visibleScreenService);
+                new VisibleScreenLifecycleBinding(visibleScreenTracker);
         underTest.onActivityPrePaused(activity);
-        verify(visibleScreenService).activityPaused(activity);
+        verify(visibleScreenTracker).activityPaused(activity);
     }
 }

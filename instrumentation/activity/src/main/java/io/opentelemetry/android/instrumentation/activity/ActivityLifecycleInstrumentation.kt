@@ -36,7 +36,7 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
     }
 
     private fun buildActivityLifecycleTracer(ctx: InstallationContext): DefaultingActivityLifecycleCallbacks {
-        val visibleScreenService = ctx.serviceManager.visibleScreenService
+        val visibleScreenService = ctx.services.visibleScreenTracker
         val delegateTracer: Tracer = ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
         val tracers =
             ActivityTracerCache(

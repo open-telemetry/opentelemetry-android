@@ -12,22 +12,22 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService
+import io.opentelemetry.android.internal.services.periodicwork.PeriodicWork
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class DefaultExportScheduleHandlerTest {
     private lateinit var handler: DefaultExportScheduleHandler
-    private lateinit var periodicWorkService: PeriodicWorkService
+    private lateinit var periodicWork: PeriodicWork
 
     @BeforeEach
     fun setUp() {
-        periodicWorkService = createPeriodicWorkServiceMock()
+        periodicWork = createPeriodicWorkServiceMock()
         handler =
             DefaultExportScheduleHandler(
-                DefaultExportScheduler { periodicWorkService },
-            ) { periodicWorkService }
+                DefaultExportScheduler { periodicWork },
+            ) { periodicWork }
     }
 
     @Test
@@ -37,7 +37,7 @@ class DefaultExportScheduleHandlerTest {
         // Calling enable the first time (should work)
         handler.enable()
         verify {
-            periodicWorkService.enqueue(capture(captor))
+            periodicWork.enqueue(capture(captor))
         }
         assertThat(captor.captured).isInstanceOf(DefaultExportScheduler::class.java)
         clearAllMocks()
@@ -45,13 +45,13 @@ class DefaultExportScheduleHandlerTest {
         // Calling enable a second time (should not work)
         handler.enable()
         verify(exactly = 0) {
-            periodicWorkService.enqueue(any())
+            periodicWork.enqueue(any())
         }
     }
 
-    private fun createPeriodicWorkServiceMock(): PeriodicWorkService {
-        val periodicWorkService = mockk<PeriodicWorkService>()
-        every { periodicWorkService.enqueue(any()) } just Runs
-        return periodicWorkService
+    private fun createPeriodicWorkServiceMock(): PeriodicWork {
+        val periodicWork = mockk<PeriodicWork>()
+        every { periodicWork.enqueue(any()) } just Runs
+        return periodicWork
     }
 }

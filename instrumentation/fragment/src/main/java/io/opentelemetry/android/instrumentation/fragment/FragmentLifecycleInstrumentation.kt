@@ -33,7 +33,7 @@ class FragmentLifecycleInstrumentation : AndroidInstrumentation {
     }
 
     private fun buildFragmentRegisterer(ctx: InstallationContext): ActivityLifecycleCallbacks {
-        val visibleScreenService = ctx.serviceManager.visibleScreenService
+        val visibleScreenService = ctx.services.visibleScreenTracker
         val delegateTracer: Tracer = ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
         val fragmentLifecycle =
             RumFragmentLifecycleCallbacks(

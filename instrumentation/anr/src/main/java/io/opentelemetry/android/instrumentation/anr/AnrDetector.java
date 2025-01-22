@@ -7,7 +7,7 @@ package io.opentelemetry.android.instrumentation.anr;
 
 import android.os.Handler;
 import android.os.Looper;
-import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
+import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
@@ -20,19 +20,19 @@ public final class AnrDetector {
     private final List<AttributesExtractor<StackTraceElement[], Void>> additionalExtractors;
     private final Looper mainLooper;
     private final ScheduledExecutorService scheduler;
-    private final AppLifecycleService appLifecycleService;
+    private final AppLifecycle appLifecycle;
     private final OpenTelemetry openTelemetry;
 
     AnrDetector(
             List<AttributesExtractor<StackTraceElement[], Void>> additionalExtractors,
             Looper mainLooper,
             ScheduledExecutorService scheduler,
-            AppLifecycleService appLifecycleService,
+            AppLifecycle appLifecycle,
             OpenTelemetry openTelemetry) {
         this.additionalExtractors = additionalExtractors;
         this.mainLooper = mainLooper;
         this.scheduler = scheduler;
-        this.appLifecycleService = appLifecycleService;
+        this.appLifecycle = appLifecycle;
         this.openTelemetry = openTelemetry;
     }
 
@@ -51,7 +51,7 @@ public final class AnrDetector {
         // call it manually the first time to enable the ANR detection
         listener.onApplicationForegrounded();
 
-        appLifecycleService.registerListener(listener);
+        appLifecycle.registerListener(listener);
     }
 
     private Instrumenter<StackTraceElement[], Void> buildAnrInstrumenter() {

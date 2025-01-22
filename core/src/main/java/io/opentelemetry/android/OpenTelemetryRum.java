@@ -7,7 +7,7 @@ package io.opentelemetry.android;
 
 import android.app.Application;
 import io.opentelemetry.android.config.OtelRumConfig;
-import io.opentelemetry.android.internal.services.ServiceManager;
+import io.opentelemetry.android.internal.services.Services;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -71,7 +71,7 @@ public interface OpenTelemetryRum {
                 application,
                 openTelemetrySdk,
                 discoverInstrumentations,
-                ServiceManager.initialize(application));
+                Services.initialize(application));
     }
 
     /** Returns a no-op implementation of {@link OpenTelemetryRum}. */

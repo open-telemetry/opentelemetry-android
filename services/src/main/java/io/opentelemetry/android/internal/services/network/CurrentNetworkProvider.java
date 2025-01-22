@@ -15,7 +15,7 @@ import androidx.annotation.NonNull;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
-import io.opentelemetry.android.internal.services.Startable;
+import io.opentelemetry.android.internal.services.Service;
 import io.opentelemetry.android.internal.services.network.detector.NetworkDetector;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -31,7 +31,7 @@ import java.util.function.Supplier;
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
-public final class CurrentNetworkProvider implements Startable {
+public final class CurrentNetworkProvider implements Service {
 
     public static final CurrentNetwork NO_NETWORK =
             CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build();
@@ -48,6 +48,7 @@ public final class CurrentNetworkProvider implements Startable {
             NetworkDetector networkDetector, ConnectivityManager connectivityManager) {
         this.connectivityManager = connectivityManager;
         this.networkDetector = networkDetector;
+        startMonitoring(CurrentNetworkProvider::createNetworkMonitoringRequest);
     }
 
     // visible for tests
@@ -108,11 +109,6 @@ public final class CurrentNetworkProvider implements Startable {
         for (NetworkChangeListener listener : listeners) {
             listener.onNetworkChange(activeNetwork);
         }
-    }
-
-    @Override
-    public void start() {
-        startMonitoring(CurrentNetworkProvider::createNetworkMonitoringRequest);
     }
 
     private final class ConnectionMonitor extends ConnectivityManager.NetworkCallback {

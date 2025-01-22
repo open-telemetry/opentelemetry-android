@@ -14,9 +14,9 @@ import io.opentelemetry.android.common.internal.tools.time.SystemTime
  * time.
  */
 abstract class PeriodicRunnable(
-    periodicWorkServiceProvider: () -> PeriodicWorkService,
+    periodicWorkProvider: () -> PeriodicWork,
 ) : Runnable {
-    private val periodicWorkService by lazy { periodicWorkServiceProvider() }
+    private val periodicWorkService by lazy { periodicWorkProvider() }
     private var lastTimeItRan: Long? = null
 
     final override fun run() {

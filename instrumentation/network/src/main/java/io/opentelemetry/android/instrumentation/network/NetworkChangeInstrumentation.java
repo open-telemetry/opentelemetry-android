@@ -33,8 +33,8 @@ public final class NetworkChangeInstrumentation implements AndroidInstrumentatio
         NetworkChangeMonitor networkChangeMonitor =
                 new NetworkChangeMonitor(
                         ctx.getOpenTelemetry(),
-                        ctx.getServiceManager().getAppLifecycleService(),
-                        ctx.getServiceManager().getCurrentNetworkProvider(),
+                        ctx.getServices().getAppLifecycle(),
+                        ctx.getServices().getCurrentNetworkProvider(),
                         Collections.unmodifiableList(additionalExtractors));
         networkChangeMonitor.start();
     }

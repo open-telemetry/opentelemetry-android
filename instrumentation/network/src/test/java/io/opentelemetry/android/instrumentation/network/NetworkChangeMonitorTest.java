@@ -21,7 +21,7 @@ import android.os.Build;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
-import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
+import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle;
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.android.internal.services.network.NetworkChangeListener;
@@ -52,7 +52,7 @@ public class NetworkChangeMonitorTest {
     @Captor ArgumentCaptor<NetworkChangeListener> networkChangeListenerCaptor;
 
     @Mock CurrentNetworkProvider currentNetworkProvider;
-    @Mock AppLifecycleService appLifecycleService;
+    @Mock AppLifecycle appLifecycle;
 
     AutoCloseable mocks;
 
@@ -143,7 +143,7 @@ public class NetworkChangeMonitorTest {
                 .addNetworkChangeListener(networkChangeListenerCaptor.capture());
         NetworkChangeListener networkListener = networkChangeListenerCaptor.getValue();
 
-        verify(appLifecycleService).registerListener(applicationStateListenerCaptor.capture());
+        verify(appLifecycle).registerListener(applicationStateListenerCaptor.capture());
         ApplicationStateListener applicationListener = applicationStateListenerCaptor.getValue();
 
         applicationListener.onApplicationBackgrounded();
@@ -165,7 +165,7 @@ public class NetworkChangeMonitorTest {
     private NetworkChangeMonitor create() {
         return new NetworkChangeMonitor(
                 otelTesting.getOpenTelemetry(),
-                appLifecycleService,
+                appLifecycle,
                 currentNetworkProvider,
                 Collections.emptyList());
     }

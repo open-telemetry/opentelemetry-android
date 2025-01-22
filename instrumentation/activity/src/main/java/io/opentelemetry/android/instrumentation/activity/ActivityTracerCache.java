@@ -9,7 +9,7 @@ import android.app.Activity;
 import androidx.annotation.VisibleForTesting;
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer;
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor;
-import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker;
 import io.opentelemetry.api.trace.Tracer;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,12 +28,12 @@ public class ActivityTracerCache {
 
     public ActivityTracerCache(
             Tracer tracer,
-            VisibleScreenService visibleScreenService,
+            VisibleScreenTracker visibleScreenTracker,
             AppStartupTimer startupTimer,
             ScreenNameExtractor screenNameExtractor) {
         this(
                 tracer,
-                visibleScreenService,
+                visibleScreenTracker,
                 new AtomicReference<>(),
                 startupTimer,
                 screenNameExtractor);
@@ -42,7 +42,7 @@ public class ActivityTracerCache {
     @VisibleForTesting
     ActivityTracerCache(
             Tracer tracer,
-            VisibleScreenService visibleScreenService,
+            VisibleScreenTracker visibleScreenTracker,
             AtomicReference<String> initialAppActivity,
             AppStartupTimer startupTimer,
             ScreenNameExtractor screenNameExtractor) {
@@ -53,7 +53,7 @@ public class ActivityTracerCache {
                                 .setInitialAppActivity(initialAppActivity)
                                 .setTracer(tracer)
                                 .setAppStartupTimer(startupTimer)
-                                .setVisibleScreenTracker(visibleScreenService)
+                                .setVisibleScreenTracker(visibleScreenTracker)
                                 .build());
     }
 

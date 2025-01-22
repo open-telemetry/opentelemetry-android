@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 import android.app.Activity;
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer;
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor;
-import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -34,16 +34,16 @@ class Pre29ActivityLifecycleCallbacksTest {
     @RegisterExtension final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
     private ActivityTracerCache tracers;
 
-    private VisibleScreenService visibleScreenService;
+    private VisibleScreenTracker visibleScreenTracker;
 
     @BeforeEach
     void setup() {
         AppStartupTimer appStartupTimer = new AppStartupTimer();
         Tracer tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
-        visibleScreenService = Mockito.mock(VisibleScreenService.class);
+        visibleScreenTracker = Mockito.mock(VisibleScreenTracker.class);
         ScreenNameExtractor extractor = mock(ScreenNameExtractor.class);
         when(extractor.extract(isA(Activity.class))).thenReturn("Activity");
-        tracers = new ActivityTracerCache(tracer, visibleScreenService, appStartupTimer, extractor);
+        tracers = new ActivityTracerCache(tracer, visibleScreenTracker, appStartupTimer, extractor);
     }
 
     @Test
@@ -151,7 +151,7 @@ class Pre29ActivityLifecycleCallbacksTest {
 
     @Test
     void activityResumed() {
-        when(visibleScreenService.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
+        when(visibleScreenTracker.getPreviouslyVisibleScreen()).thenReturn("previousScreen");
 
         Pre29ActivityCallbacks rumLifecycleCallbacks = new Pre29ActivityCallbacks(tracers);
         Pre29ActivityCallbackTestHarness testHarness =

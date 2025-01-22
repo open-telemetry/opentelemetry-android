@@ -6,7 +6,7 @@
 package io.opentelemetry.android.instrumentation.network;
 
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
-import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
+import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
@@ -21,15 +21,15 @@ import java.util.List;
  */
 public final class NetworkChangeMonitor {
     private final OpenTelemetry openTelemetry;
-    private final AppLifecycleService appLifecycleService;
+    private final AppLifecycle appLifecycle;
 
     public NetworkChangeMonitor(
             OpenTelemetry openTelemetry,
-            AppLifecycleService appLifecycleService,
+            AppLifecycle appLifecycle,
             CurrentNetworkProvider currentNetworkProvider,
             List<AttributesExtractor<CurrentNetwork, Void>> additionalExtractors) {
         this.openTelemetry = openTelemetry;
-        this.appLifecycleService = appLifecycleService;
+        this.appLifecycle = appLifecycle;
         this.currentNetworkProvider = currentNetworkProvider;
         this.additionalExtractors = additionalExtractors;
     }
@@ -44,7 +44,7 @@ public final class NetworkChangeMonitor {
         NetworkApplicationListener networkApplicationListener =
                 new NetworkApplicationListener(currentNetworkProvider);
         networkApplicationListener.startMonitoring(buildInstrumenter(openTelemetry));
-        appLifecycleService.registerListener(networkApplicationListener);
+        appLifecycle.registerListener(networkApplicationListener);
     }
 
     private Instrumenter<CurrentNetwork, Void> buildInstrumenter(OpenTelemetry openTelemetry) {
