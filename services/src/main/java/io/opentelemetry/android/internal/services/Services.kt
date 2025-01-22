@@ -58,11 +58,11 @@ class Services internal constructor(
                 return instance!!
             }
 
+        // Visible for tests
         @JvmStatic
-        fun set(services: Services?) =
-            synchronized(this) {
-                instance = services
-            }
+        fun set(services: Services?) {
+            instance = services
+        }
     }
 
     internal class ServicesFactory(
