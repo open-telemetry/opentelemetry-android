@@ -15,7 +15,6 @@ import androidx.annotation.NonNull;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
-import io.opentelemetry.android.internal.services.Service;
 import io.opentelemetry.android.internal.services.network.detector.NetworkDetector;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -31,7 +30,7 @@ import java.util.function.Supplier;
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
-public final class CurrentNetworkProvider implements Service {
+public final class CurrentNetworkProvider {
 
     public static final CurrentNetwork NO_NETWORK =
             CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build();
