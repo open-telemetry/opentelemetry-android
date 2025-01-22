@@ -58,7 +58,8 @@ class Services internal constructor(
                 return get()
             }
 
-        fun set(services: Services) =
+        @JvmStatic
+        fun set(services: Services?) =
             synchronized(this) {
                 instance = services
             }
