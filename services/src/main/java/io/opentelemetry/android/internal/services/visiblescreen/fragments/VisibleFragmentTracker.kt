@@ -7,22 +7,22 @@ package io.opentelemetry.android.internal.services.visiblescreen.fragments
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 
 class VisibleFragmentTracker(
-    private val visibleScreenService: VisibleScreenService,
+    private val visibleScreenTracker: VisibleScreenTracker,
 ) : FragmentManager.FragmentLifecycleCallbacks() {
     override fun onFragmentResumed(
         fm: FragmentManager,
         f: Fragment,
     ) {
-        visibleScreenService.fragmentResumed(f)
+        visibleScreenTracker.fragmentResumed(f)
     }
 
     override fun onFragmentPaused(
         fm: FragmentManager,
         f: Fragment,
     ) {
-        visibleScreenService.fragmentPaused(f)
+        visibleScreenTracker.fragmentPaused(f)
     }
 }

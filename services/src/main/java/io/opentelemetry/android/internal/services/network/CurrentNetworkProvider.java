@@ -5,8 +5,6 @@
 
 package io.opentelemetry.android.internal.services.network;
 
-import android.app.Application;
-import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -17,7 +15,6 @@ import androidx.annotation.NonNull;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
-import io.opentelemetry.android.internal.services.Startable;
 import io.opentelemetry.android.internal.services.network.detector.NetworkDetector;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -33,18 +30,12 @@ import java.util.function.Supplier;
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
-public final class CurrentNetworkProvider implements Startable {
+public final class CurrentNetworkProvider {
 
     public static final CurrentNetwork NO_NETWORK =
             CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build();
     public static final CurrentNetwork UNKNOWN_NETWORK =
             CurrentNetwork.builder(NetworkState.TRANSPORT_UNKNOWN).build();
-
-    public static CurrentNetworkProvider create(Application application) {
-        return new CurrentNetworkProvider(
-                NetworkDetector.create(application),
-                (ConnectivityManager) application.getSystemService(Context.CONNECTIVITY_SERVICE));
-    }
 
     private final NetworkDetector networkDetector;
     private final ConnectivityManager connectivityManager;
@@ -52,15 +43,24 @@ public final class CurrentNetworkProvider implements Startable {
     private volatile CurrentNetwork currentNetwork = UNKNOWN_NETWORK;
     private final List<NetworkChangeListener> listeners = new CopyOnWriteArrayList<>();
 
-    // visible for tests
-    CurrentNetworkProvider(
+    public CurrentNetworkProvider(
             NetworkDetector networkDetector, ConnectivityManager connectivityManager) {
-        this.connectivityManager = connectivityManager;
-        this.networkDetector = networkDetector;
+        this(
+                networkDetector,
+                connectivityManager,
+                CurrentNetworkProvider::createNetworkMonitoringRequest);
     }
 
-    // visible for tests
-    void startMonitoring(Supplier<NetworkRequest> createNetworkMonitoringRequest) {
+    CurrentNetworkProvider(
+            NetworkDetector networkDetector,
+            ConnectivityManager connectivityManager,
+            Supplier<NetworkRequest> createNetworkMonitoringRequest) {
+        this.connectivityManager = connectivityManager;
+        this.networkDetector = networkDetector;
+        startMonitoring(createNetworkMonitoringRequest);
+    }
+
+    private void startMonitoring(Supplier<NetworkRequest> createNetworkMonitoringRequest) {
         refreshNetworkStatus();
         try {
             registerNetworkCallbacks(createNetworkMonitoringRequest);
@@ -117,11 +117,6 @@ public final class CurrentNetworkProvider implements Startable {
         for (NetworkChangeListener listener : listeners) {
             listener.onNetworkChange(activeNetwork);
         }
-    }
-
-    @Override
-    public void start() {
-        startMonitoring(CurrentNetworkProvider::createNetworkMonitoringRequest);
     }
 
     private final class ConnectionMonitor extends ConnectivityManager.NetworkCallback {

@@ -19,12 +19,12 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class PeriodicRunnableTest {
-    private lateinit var periodicWorkService: PeriodicWorkService
+    private lateinit var periodicWork: PeriodicWork
     private lateinit var testSystemTime: TestSystemTime
 
     @Before
     fun setUp() {
-        periodicWorkService = createPeriodicWorkServiceMock()
+        periodicWork = createPeriodicWorkServiceMock()
         testSystemTime = TestSystemTime()
         SystemTime.setForTest(testSystemTime)
     }
@@ -67,7 +67,7 @@ class PeriodicRunnableTest {
 
         assertThat(runnable.timesRun).isEqualTo(1)
         verify {
-            periodicWorkService.enqueue(runnable)
+            periodicWork.enqueue(runnable)
         }
     }
 
@@ -80,23 +80,23 @@ class PeriodicRunnableTest {
 
         assertThat(runnable.timesRun).isEqualTo(1)
         verify(exactly = 0) {
-            periodicWorkService.enqueue(runnable)
+            periodicWork.enqueue(runnable)
         }
     }
 
-    private fun createRunnable(minimumDelayInMillis: Long) = TestRunnable(minimumDelayInMillis, periodicWorkService)
+    private fun createRunnable(minimumDelayInMillis: Long) = TestRunnable(minimumDelayInMillis, periodicWork)
 
-    private fun createPeriodicWorkServiceMock(): PeriodicWorkService {
-        val periodicWorkService = mockk<PeriodicWorkService>()
-        every { periodicWorkService.enqueue(any()) } just Runs
+    private fun createPeriodicWorkServiceMock(): PeriodicWork {
+        val periodicWork = mockk<PeriodicWork>()
+        every { periodicWork.enqueue(any()) } just Runs
 
-        return periodicWorkService
+        return periodicWork
     }
 
     private class TestRunnable(
         val minimumDelayInMillis: Long,
-        periodicWorkService: PeriodicWorkService,
-    ) : PeriodicRunnable({ periodicWorkService }) {
+        periodicWork: PeriodicWork,
+    ) : PeriodicRunnable({ periodicWork }) {
         var timesRun = 0
         var stopAfterRun = false
         private var stopRunning = false

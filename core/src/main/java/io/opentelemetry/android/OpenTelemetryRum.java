@@ -7,7 +7,7 @@ package io.opentelemetry.android;
 
 import android.app.Application;
 import io.opentelemetry.android.config.OtelRumConfig;
-import io.opentelemetry.android.internal.services.ServiceManager;
+import io.opentelemetry.android.internal.services.Services;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -61,16 +61,14 @@ public interface OpenTelemetryRum {
      * @param openTelemetrySdk The {@link OpenTelemetrySdk} that the user has already created.
      * @param discoverInstrumentations TRUE to look for instrumentations in the classpath and
      *     applying them automatically.
-     * @param serviceManager The ServiceManager instance
      */
     static SdkPreconfiguredRumBuilder builder(
             Application application,
             OpenTelemetrySdk openTelemetrySdk,
-            boolean discoverInstrumentations,
-            ServiceManager serviceManager) {
+            boolean discoverInstrumentations) {
 
         return new SdkPreconfiguredRumBuilder(
-                application, openTelemetrySdk, discoverInstrumentations, serviceManager);
+                application, openTelemetrySdk, discoverInstrumentations, Services.get(application));
     }
 
     /** Returns a no-op implementation of {@link OpenTelemetryRum}. */

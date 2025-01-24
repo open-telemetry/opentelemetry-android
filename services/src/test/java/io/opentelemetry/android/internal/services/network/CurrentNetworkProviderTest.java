@@ -54,8 +54,8 @@ public class CurrentNetworkProviderTest {
                                 .build());
 
         CurrentNetworkProvider currentNetworkProvider =
-                new CurrentNetworkProvider(networkDetector, connectivityManager);
-        currentNetworkProvider.startMonitoring(() -> networkRequest);
+                new CurrentNetworkProvider(
+                        networkDetector, connectivityManager, () -> networkRequest);
 
         Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
@@ -105,8 +105,8 @@ public class CurrentNetworkProviderTest {
                                 .build());
 
         CurrentNetworkProvider currentNetworkProvider =
-                new CurrentNetworkProvider(networkDetector, connectivityManager);
-        currentNetworkProvider.startMonitoring(() -> networkRequest);
+                new CurrentNetworkProvider(
+                        networkDetector, connectivityManager, () -> networkRequest);
 
         Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
@@ -167,8 +167,8 @@ public class CurrentNetworkProviderTest {
                 .registerDefaultNetworkCallback(isA(NetworkCallback.class));
 
         CurrentNetworkProvider currentNetworkProvider =
-                new CurrentNetworkProvider(networkDetector, connectivityManager);
-        currentNetworkProvider.startMonitoring(() -> mock(NetworkRequest.class));
+                new CurrentNetworkProvider(
+                        networkDetector, connectivityManager, () -> mock(NetworkRequest.class));
         Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
                 currentNetworkProvider.refreshNetworkStatus());
@@ -188,8 +188,8 @@ public class CurrentNetworkProviderTest {
                 .registerNetworkCallback(eq(networkRequest), isA(NetworkCallback.class));
 
         CurrentNetworkProvider currentNetworkProvider =
-                new CurrentNetworkProvider(networkDetector, connectivityManager);
-        currentNetworkProvider.startMonitoring(() -> networkRequest);
+                new CurrentNetworkProvider(
+                        networkDetector, connectivityManager, () -> networkRequest);
         Assert.assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
                 currentNetworkProvider.refreshNetworkStatus());
@@ -211,9 +211,7 @@ public class CurrentNetworkProviderTest {
                 .when(connectivityManager)
                 .registerNetworkCallback(eq(networkRequest), any(NetworkCallback.class));
 
-        CurrentNetworkProvider currentNetworkProvider =
-                new CurrentNetworkProvider(networkDetector, connectivityManager);
-        currentNetworkProvider.startMonitoring(() -> networkRequest);
+        new CurrentNetworkProvider(networkDetector, connectivityManager, () -> networkRequest);
     }
 
     @Test
@@ -232,8 +230,6 @@ public class CurrentNetworkProviderTest {
                 .when(connectivityManager)
                 .registerDefaultNetworkCallback(any(NetworkCallback.class));
 
-        CurrentNetworkProvider currentNetworkProvider =
-                new CurrentNetworkProvider(networkDetector, connectivityManager);
-        currentNetworkProvider.startMonitoring(() -> networkRequest);
+        new CurrentNetworkProvider(networkDetector, connectivityManager, () -> networkRequest);
     }
 }

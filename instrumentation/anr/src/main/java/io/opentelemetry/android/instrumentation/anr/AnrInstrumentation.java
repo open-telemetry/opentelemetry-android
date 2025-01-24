@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.instrumentation.InstallationContext;
+import io.opentelemetry.android.internal.services.Services;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +52,7 @@ public final class AnrInstrumentation implements AndroidInstrumentation {
                         additionalExtractors,
                         mainLooper,
                         scheduler,
-                        ctx.getServiceManager().getAppLifecycleService(),
+                        Services.get(ctx.getApplication()).getAppLifecycle(),
                         ctx.getOpenTelemetry());
         anrDetector.start();
     }

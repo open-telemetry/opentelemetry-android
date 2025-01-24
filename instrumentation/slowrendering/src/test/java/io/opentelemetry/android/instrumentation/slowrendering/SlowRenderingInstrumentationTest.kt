@@ -64,7 +64,7 @@ class SlowRenderingInstrumentationTest {
     @Config(sdk = [23])
     @Test
     fun `Not installing instrumentation on devices with API level lower than 24`() {
-        val ctx = InstallationContext(application, openTelemetry, mockk(), mockk())
+        val ctx = InstallationContext(application, openTelemetry, mockk())
         slowRenderingInstrumentation.install(ctx)
 
         verify {
@@ -81,7 +81,7 @@ class SlowRenderingInstrumentationTest {
         val capturedListener = slot<SlowRenderListener>()
         every { openTelemetry.getTracer(any()) }.returns(mockk())
         every { application.registerActivityLifecycleCallbacks(any()) } just Runs
-        val ctx = InstallationContext(application, openTelemetry, mockk(), mockk())
+        val ctx = InstallationContext(application, openTelemetry, mockk())
         slowRenderingInstrumentation.install(ctx)
 
         verify { openTelemetry.getTracer("io.opentelemetry.slow-rendering") }

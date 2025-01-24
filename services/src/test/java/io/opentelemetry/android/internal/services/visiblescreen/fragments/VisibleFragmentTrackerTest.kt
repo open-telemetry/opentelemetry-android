@@ -11,12 +11,12 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
-import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class VisibleFragmentTrackerTest {
-    private lateinit var service: VisibleScreenService
+    private lateinit var service: VisibleScreenTracker
     private lateinit var fragment: Fragment
     private lateinit var visibleFragmentTracker: VisibleFragmentTracker
 

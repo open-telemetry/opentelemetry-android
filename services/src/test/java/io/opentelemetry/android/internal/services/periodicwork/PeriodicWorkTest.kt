@@ -6,7 +6,6 @@
 package io.opentelemetry.android.internal.services.periodicwork
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -16,16 +15,16 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
-class PeriodicWorkServiceTest {
+class PeriodicWorkTest {
     companion object {
         private const val DELAY_BETWEEN_EXECUTIONS_IN_SECONDS = 10L
     }
 
-    private lateinit var service: PeriodicWorkService
+    private lateinit var service: PeriodicWork
 
     @Before
     fun setUp() {
-        service = PeriodicWorkService()
+        service = PeriodicWork()
     }
 
     @Test
@@ -40,7 +39,7 @@ class PeriodicWorkServiceTest {
             }
         }
 
-        service.start()
+        fastForwardBySeconds(DELAY_BETWEEN_EXECUTIONS_IN_SECONDS)
         latch.await()
 
         // All ran in a single worker thread
@@ -48,26 +47,6 @@ class PeriodicWorkServiceTest {
 
         // The worker thread is not the same as the main thread
         assertThat(threadIds.first()).isNotEqualTo(Thread.currentThread().id)
-    }
-
-    @Test
-    fun `Start only once`() {
-        val latch = CountDownLatch(1)
-
-        // First start (should work)
-        service.enqueue {
-            latch.countDown()
-        }
-        service.start()
-        latch.await()
-
-        // Trying to re-start (should not work)
-        service.enqueue {
-            fail("Must not execute this right away.")
-        }
-        service.start()
-
-        Thread.sleep(200) // Giving some time for the test to fail.
     }
 
     @Test
@@ -80,7 +59,7 @@ class PeriodicWorkServiceTest {
         service.enqueue {
             firstRunLatch.countDown()
         }
-        service.start()
+        fastForwardBySeconds(DELAY_BETWEEN_EXECUTIONS_IN_SECONDS)
         service.enqueue {
             secondRunExecuted = true
             secondRunLatch.countDown()
@@ -106,7 +85,7 @@ class PeriodicWorkServiceTest {
             timesExecutedFirstWork++
             firstRunLatch.countDown()
         }
-        service.start()
+        fastForwardBySeconds(DELAY_BETWEEN_EXECUTIONS_IN_SECONDS)
         service.enqueue {
             timesExecutedSecondWork++
             secondRunLatch.countDown()

@@ -6,20 +6,20 @@
 package io.opentelemetry.android.internal.services.visiblescreen.activities
 
 import android.app.Activity
-import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 
 /**
  * An ActivityLifecycleCallbacks that is responsible for telling the VisibleScreenTracker when an
  * activity has been resumed and when an activity has been paused. It's just a glue class.
  */
 class VisibleScreenLifecycleBinding(
-    private val visibleScreenService: VisibleScreenService,
+    private val visibleScreenTracker: VisibleScreenTracker,
 ) : DefaultingActivityLifecycleCallbacks {
     override fun onActivityPostResumed(activity: Activity) {
-        visibleScreenService.activityResumed(activity)
+        visibleScreenTracker.activityResumed(activity)
     }
 
     override fun onActivityPrePaused(activity: Activity) {
-        visibleScreenService.activityPaused(activity)
+        visibleScreenTracker.activityPaused(activity)
     }
 }

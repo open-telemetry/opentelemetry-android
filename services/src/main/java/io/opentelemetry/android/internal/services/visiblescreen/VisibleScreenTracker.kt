@@ -11,7 +11,6 @@ import android.os.Build
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
-import io.opentelemetry.android.internal.services.Startable
 import io.opentelemetry.android.internal.services.visiblescreen.activities.Pre29VisibleScreenLifecycleBinding
 import io.opentelemetry.android.internal.services.visiblescreen.activities.VisibleScreenLifecycleBinding
 import io.opentelemetry.android.internal.services.visiblescreen.fragments.RumFragmentActivityRegisterer
@@ -30,9 +29,9 @@ import java.util.concurrent.atomic.AtomicReference
  * We have to treat DialogFragments slightly differently since they don't replace the launching
  * screen, and the launching screen never leaves visibility.
  */
-class VisibleScreenService internal constructor(
-    private val application: Application,
-) : Startable {
+class VisibleScreenTracker internal constructor(
+    application: Application,
+) {
     private val lastResumedActivity = AtomicReference<String>()
     private val previouslyLastResumedActivity = AtomicReference<String>()
     private val lastResumedFragment = AtomicReference<String>()
@@ -40,12 +39,7 @@ class VisibleScreenService internal constructor(
     private val activityLifecycleTracker by lazy { buildActivitiesTracker() }
     private val fragmentLifecycleTrackerRegisterer by lazy { buildFragmentsTrackerRegisterer() }
 
-    companion object {
-        @JvmStatic
-        fun create(application: Application): VisibleScreenService = VisibleScreenService(application)
-    }
-
-    override fun start() {
+    init {
         application.registerActivityLifecycleCallbacks(activityLifecycleTracker)
         application.registerActivityLifecycleCallbacks(fragmentLifecycleTrackerRegisterer)
     }

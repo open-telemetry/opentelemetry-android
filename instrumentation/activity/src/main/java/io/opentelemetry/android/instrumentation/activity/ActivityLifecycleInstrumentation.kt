@@ -12,6 +12,7 @@ import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.Constants.INSTRUMENTATION_SCOPE
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
+import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
 import io.opentelemetry.api.trace.Tracer
 
@@ -36,7 +37,7 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
     }
 
     private fun buildActivityLifecycleTracer(ctx: InstallationContext): DefaultingActivityLifecycleCallbacks {
-        val visibleScreenService = ctx.serviceManager.getVisibleScreenService()
+        val visibleScreenService = Services.get(ctx.application).visibleScreenTracker
         val delegateTracer: Tracer = ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
         val tracers =
             ActivityTracerCache(

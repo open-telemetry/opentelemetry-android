@@ -6,19 +6,19 @@
 package io.opentelemetry.android.internal.processors
 
 import io.opentelemetry.android.common.RumConstants
-import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.context.Context
 import io.opentelemetry.sdk.logs.LogRecordProcessor
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord
 
 class ScreenAttributesLogRecordProcessor(
-    val visibleScreenService: VisibleScreenService,
+    val visibleScreenTracker: VisibleScreenTracker,
 ) : LogRecordProcessor {
     override fun onEmit(
         context: Context,
         logRecord: ReadWriteLogRecord,
     ) {
-        val currentScreen = visibleScreenService.currentlyVisibleScreen
+        val currentScreen = visibleScreenTracker.currentlyVisibleScreen
         logRecord.setAttribute(RumConstants.SCREEN_NAME_KEY, currentScreen)
     }
 }

@@ -12,6 +12,7 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.instrumentation.common.Constants.INSTRUMENTATION_SCOPE
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
+import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.visiblescreen.fragments.RumFragmentActivityRegisterer
 import io.opentelemetry.api.trace.Tracer
 
@@ -33,7 +34,7 @@ class FragmentLifecycleInstrumentation : AndroidInstrumentation {
     }
 
     private fun buildFragmentRegisterer(ctx: InstallationContext): ActivityLifecycleCallbacks {
-        val visibleScreenService = ctx.serviceManager.getVisibleScreenService()
+        val visibleScreenService = Services.get(ctx.application).visibleScreenTracker
         val delegateTracer: Tracer = ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
         val fragmentLifecycle =
             RumFragmentLifecycleCallbacks(

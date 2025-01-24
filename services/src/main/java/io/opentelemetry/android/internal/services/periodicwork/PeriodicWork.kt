@@ -7,12 +7,10 @@ package io.opentelemetry.android.internal.services.periodicwork
 
 import android.os.Handler
 import android.os.Looper
-import io.opentelemetry.android.internal.services.Startable
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Utility to run periodic background work.
@@ -20,14 +18,11 @@ import java.util.concurrent.atomic.AtomicBoolean
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
-class PeriodicWorkService : Startable {
+class PeriodicWork internal constructor() {
     private val delegator = WorkerDelegator()
-    private val started = AtomicBoolean(false)
 
-    override fun start() {
-        if (!started.getAndSet(true)) {
-            delegator.run()
-        }
+    init {
+        delegator.run()
     }
 
     fun enqueue(runnable: Runnable) {

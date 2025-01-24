@@ -16,25 +16,26 @@ import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class AppLifecycleServiceTest {
+class AppLifecycleTest {
     @MockK
     private lateinit var applicationStateWatcher: ApplicationStateWatcher
 
     @MockK
     private lateinit var lifecycle: Lifecycle
 
-    private lateinit var lifecycleService: AppLifecycleService
+    private lateinit var lifecycleService: AppLifecycle
 
     @BeforeEach
     fun setUp() {
         MockKAnnotations.init(this)
-        lifecycleService = AppLifecycleService(applicationStateWatcher, lifecycle)
+        every { applicationStateWatcher.registerListener(any()) } just Runs
+        every { lifecycle.addObserver(any()) } just Runs
+        lifecycleService = AppLifecycle(applicationStateWatcher, lifecycle)
     }
 
     @Test
     fun `Registering listener`() {
         val listener = mockk<ApplicationStateListener>()
-        every { applicationStateWatcher.registerListener(any()) } just Runs
 
         lifecycleService.registerListener(listener)
 
@@ -43,10 +44,6 @@ class AppLifecycleServiceTest {
 
     @Test
     fun `Starting to observe app's lifecycle`() {
-        every { lifecycle.addObserver(any()) } just Runs
-
-        lifecycleService.start()
-
         verify { lifecycle.addObserver(applicationStateWatcher) }
     }
 }

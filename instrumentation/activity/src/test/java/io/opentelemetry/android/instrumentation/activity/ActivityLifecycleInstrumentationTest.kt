@@ -12,8 +12,8 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.instrumentation.InstallationContext
-import io.opentelemetry.android.internal.services.ServiceManager
-import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService
+import io.opentelemetry.android.internal.services.Services
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.android.session.SessionManager
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanBuilder
@@ -30,16 +30,16 @@ class ActivityLifecycleInstrumentationTest {
     private lateinit var application: Application
     private lateinit var openTelemetry: OpenTelemetrySdk
     private lateinit var sessionManager: SessionManager
-    private lateinit var serviceManager: ServiceManager
+    private lateinit var services: Services
 
     @Before
     fun setUp() {
         application = RuntimeEnvironment.getApplication()
         openTelemetry = mockk()
         activityLifecycleInstrumentation = ActivityLifecycleInstrumentation()
-        serviceManager = mockk()
+        services = mockk()
         sessionManager = mockk()
-        every { serviceManager.getVisibleScreenService() }.returns(mockk<VisibleScreenService>())
+        every { services.visibleScreenTracker }.returns(mockk<VisibleScreenTracker>())
     }
 
     @Test
@@ -56,7 +56,7 @@ class ActivityLifecycleInstrumentationTest {
         )
         every { startupSpanBuilder.startSpan() }.returns(startupSpan)
 
-        val ctx = InstallationContext(application, openTelemetry, sessionManager, serviceManager)
+        val ctx = InstallationContext(application, openTelemetry, sessionManager)
         activityLifecycleInstrumentation.install(ctx)
 
         verify {
