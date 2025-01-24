@@ -53,7 +53,6 @@ import io.opentelemetry.api.incubator.events.EventLogger;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.LongCounterBuilder;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
@@ -67,11 +66,8 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
@@ -89,7 +85,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.junit.After;
 import org.junit.Before;
@@ -215,23 +210,23 @@ public class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    public void canCustomizeMetrics(){
+    public void canCustomizeMetrics() {
         InMemoryMetricReader metricReader = InMemoryMetricReader.create();
         OpenTelemetryRum openTelemetryRum =
                 makeBuilder()
                         .setResource(resource)
-                        .addMeterProviderCustomizer((sdkMeterProviderBuilder, application) -> {
-                            Attributes metricResAttrs = Attributes.of(stringKey("mmm"), "nnn");
-                            return sdkMeterProviderBuilder
-                                    .setResource(Resource.create(metricResAttrs))
-                                    .registerMetricReader(metricReader);
-                        })
+                        .addMeterProviderCustomizer(
+                                (sdkMeterProviderBuilder, application) -> {
+                                    Attributes metricResAttrs =
+                                            Attributes.of(stringKey("mmm"), "nnn");
+                                    return sdkMeterProviderBuilder
+                                            .setResource(Resource.create(metricResAttrs))
+                                            .registerMetricReader(metricReader);
+                                })
                         .build();
 
         OpenTelemetrySdk sdk = (OpenTelemetrySdk) openTelemetryRum.getOpenTelemetry();
-        Meter meter = sdk.getSdkMeterProvider()
-                .meterBuilder("myMeter")
-                .build();
+        Meter meter = sdk.getSdkMeterProvider().meterBuilder("myMeter").build();
         Attributes counterAttrs = Attributes.of(longKey("adams"), 42L);
         LongCounter counter = meter.counterBuilder("myCounter").build();
         counter.add(40, counterAttrs);
@@ -242,29 +237,30 @@ public class OpenTelemetryRumBuilderTest {
         assertThat(metrics).hasSize(1);
         assertThat(metrics.get(0))
                 .hasName("myCounter")
-                .hasLongSumSatisfying(sum ->
-                        sum.hasPointsSatisfying(
-                                pt -> pt.hasValue(42L)
-                                        .hasAttributes(counterAttrs))
-                )
+                .hasLongSumSatisfying(
+                        sum ->
+                                sum.hasPointsSatisfying(
+                                        pt -> pt.hasValue(42L).hasAttributes(counterAttrs)))
                 .hasResourceSatisfying(res -> res.hasAttribute(stringKey("mmm"), "nnn"));
     }
 
     @Test
-    public void canCustomizeMetricExport(){
-        InMemoryMetricExporter exporter = InMemoryMetricExporter.create(AggregationTemporality.DELTA); // NOT THE DEFAULT
+    public void canCustomizeMetricExport() {
+        InMemoryMetricExporter exporter =
+                InMemoryMetricExporter.create(AggregationTemporality.DELTA); // NOT THE DEFAULT
         PeriodicMetricReader periodicReader = PeriodicMetricReader.builder(exporter).build();
         OpenTelemetryRum openTelemetryRum =
                 makeBuilder()
                         .setResource(resource)
-                        .addMeterProviderCustomizer((builder, app) -> SdkMeterProvider.builder().registerMetricReader(periodicReader))
+                        .addMeterProviderCustomizer(
+                                (builder, app) ->
+                                        SdkMeterProvider.builder()
+                                                .registerMetricReader(periodicReader))
                         .addMetricExporterCustomizer(x -> exporter)
                         .build();
 
         OpenTelemetrySdk sdk = (OpenTelemetrySdk) openTelemetryRum.getOpenTelemetry();
-        Meter meter = sdk.getSdkMeterProvider()
-                .meterBuilder("FOOMETER")
-                .build();
+        Meter meter = sdk.getSdkMeterProvider().meterBuilder("FOOMETER").build();
         LongCounter counter = meter.counterBuilder("FOOCOUNTER").build();
         counter.add(22);
         periodicReader.forceFlush();
@@ -276,16 +272,10 @@ public class OpenTelemetryRumBuilderTest {
         assertThat(metrics).hasSize(2);
         assertThat(metrics.get(0))
                 .hasName("FOOCOUNTER")
-                .hasLongSumSatisfying(sum ->
-                        sum.hasPointsSatisfying(
-                                pt -> pt.hasValue(22L))
-                );
+                .hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(pt -> pt.hasValue(22L)));
         assertThat(metrics.get(1))
                 .hasName("FOOCOUNTER")
-                .hasLongSumSatisfying(sum ->
-                        sum.hasPointsSatisfying(
-                                pt -> pt.hasValue(5L))
-                );
+                .hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(pt -> pt.hasValue(5L)));
     }
 
     @Test
