@@ -61,6 +61,8 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
@@ -347,7 +349,8 @@ public final class OpenTelemetryRumBuilder {
                                         sessionManager,
                                         application,
                                         bufferDelegatingLogExporter))
-                        .setMeterProvider(buildMeterProvider(application))
+                        .setMeterProvider(
+                                buildMeterProvider(application, bufferDelegatingMetricExporter))
                         .setPropagators(buildFinalPropagators())
                         .build();
 
@@ -603,9 +606,11 @@ public final class OpenTelemetryRumBuilder {
         return logRecordExporterCustomizer.apply(defaultExporter);
     }
 
-    private SdkMeterProvider buildMeterProvider(Application application) {
+    private SdkMeterProvider buildMeterProvider(
+            Application application, MetricExporter metricExporter) {
+        MetricReader reader = PeriodicMetricReader.create(metricExporter);
         SdkMeterProviderBuilder meterProviderBuilder =
-                SdkMeterProvider.builder().setResource(resource);
+                SdkMeterProvider.builder().registerMetricReader(reader).setResource(resource);
         for (BiFunction<SdkMeterProviderBuilder, Application, SdkMeterProviderBuilder> customizer :
                 meterProviderCustomizers) {
             meterProviderBuilder = customizer.apply(meterProviderBuilder, application);
