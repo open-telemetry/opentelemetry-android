@@ -5,7 +5,6 @@ plugins {
     id("java-library")
     id("org.jetbrains.kotlin.jvm")
     id("otel.errorprone-conventions")
-    id("otel.animalsniffer-conventions")
 }
 
 val javaVersion = rootProject.extra["java_version"] as JavaVersion
@@ -25,13 +24,4 @@ kotlin {
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 dependencies {
     implementation(libs.findLibrary("findbugs-jsr305").get())
-}
-
-animalsniffer {
-    sourceSets = listOf(java.sourceSets.main.get())
-}
-
-// Attaching animalsniffer check to the compilation process.
-tasks.named("classes").configure {
-    finalizedBy("animalsnifferMain")
 }

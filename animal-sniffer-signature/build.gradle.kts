@@ -2,8 +2,13 @@ import ru.vyarus.gradle.plugin.animalsniffer.info.SignatureInfoTask
 import ru.vyarus.gradle.plugin.animalsniffer.signature.BuildSignatureTask
 
 plugins {
-    id("java-library")
+    id("com.android.library")
     id("ru.vyarus.animalsniffer")
+}
+
+android {
+    namespace = "otel.animalsniffer.signature"
+    compileSdk = (property("android.compileSdk") as String).toInt()
 }
 
 description = "Build tool to generate the Animal Sniffer Android signature"

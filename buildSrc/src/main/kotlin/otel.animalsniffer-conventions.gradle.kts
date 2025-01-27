@@ -1,7 +1,7 @@
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
 
 plugins {
-    id("java-library")
+    id("com.android.library")
     id("ru.vyarus.animalsniffer")
 }
 

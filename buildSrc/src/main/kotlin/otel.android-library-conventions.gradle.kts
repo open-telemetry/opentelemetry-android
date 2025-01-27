@@ -5,6 +5,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("otel.errorprone-conventions")
     id("kotlin-kapt")
+    id("otel.animalsniffer-conventions")
 }
 
 val javaVersion = rootProject.extra["java_version"] as JavaVersion
