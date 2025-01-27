@@ -1,3 +1,4 @@
+import java.util.Locale
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
 
 plugins {
@@ -8,6 +9,23 @@ plugins {
 dependencies {
     signature(project(path = ":animal-sniffer-signature", configuration = "generatedSignature"))
 }
+
+val capitalizedVariantNames = mutableListOf<String>()
+androidComponents.onVariants { variant ->
+    val capitalizedName =
+        variant.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+    capitalizedVariantNames.add(capitalizedName)
+}
+
+afterEvaluate {
+    capitalizedVariantNames.forEach { capitalizedName ->
+        tasks.named("pre${capitalizedName}Build").configure {
+            finalizedBy("animalsniffer$capitalizedName")
+        }
+    }
+}
+
+animalsniffer.annotation = "androidx.annotation.RequiresApi"
 
 tasks.withType<AnimalSniffer> {
     // always having declared output makes this task properly participate in tasks up-to-date checks
