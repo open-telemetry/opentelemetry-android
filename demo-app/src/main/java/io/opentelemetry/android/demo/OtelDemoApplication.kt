@@ -16,6 +16,7 @@ import io.opentelemetry.android.instrumentation.sessions.SessionInstrumentation
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.incubator.events.EventBuilder
+import io.opentelemetry.api.metrics.LongCounter
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
@@ -88,6 +89,10 @@ class OtelDemoApplication : Application() {
 
         fun tracer(name: String): Tracer? {
             return rum?.openTelemetry?.tracerProvider?.get(name)
+        }
+
+        fun counter(name: String): LongCounter? {
+            return rum?.openTelemetry?.meterProvider?.get("demo.app")?.counterBuilder(name)?.build()
         }
 
         fun eventBuilder(scopeName: String, eventName: String): EventBuilder {

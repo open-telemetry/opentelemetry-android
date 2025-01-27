@@ -6,6 +6,7 @@
 package io.opentelemetry.android;
 
 import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
@@ -51,6 +52,8 @@ import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.incubator.events.EventLogger;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -62,15 +65,22 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -92,7 +102,6 @@ public class OpenTelemetryRumBuilderTest {
             Resource.getDefault().toBuilder().put("test.attribute", "abcdef").build();
     final InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
     final InMemoryLogRecordExporter logsExporter = InMemoryLogRecordExporter.create();
-    final InMemoryLogRecordExporter logRecordExporter = InMemoryLogRecordExporter.create();
 
     @Mock Application application;
     @Mock Looper looper;
@@ -198,6 +207,75 @@ public class OpenTelemetryRumBuilderTest {
         assertThat(payload).hasSize(1);
         KeyValue expected = KeyValue.of("body.field", Value.of("foo"));
         assertThat(payload.get(0)).isEqualTo(expected);
+    }
+
+    @Test
+    public void canCustomizeMetrics() {
+        InMemoryMetricReader metricReader = InMemoryMetricReader.create();
+        OpenTelemetryRum openTelemetryRum =
+                makeBuilder()
+                        .setResource(resource)
+                        .addMeterProviderCustomizer(
+                                (sdkMeterProviderBuilder, application) -> {
+                                    Attributes metricResAttrs =
+                                            Attributes.of(stringKey("mmm"), "nnn");
+                                    return sdkMeterProviderBuilder
+                                            .setResource(Resource.create(metricResAttrs))
+                                            .registerMetricReader(metricReader);
+                                })
+                        .build();
+
+        OpenTelemetrySdk sdk = (OpenTelemetrySdk) openTelemetryRum.getOpenTelemetry();
+        Meter meter = sdk.getSdkMeterProvider().meterBuilder("myMeter").build();
+        Attributes counterAttrs = Attributes.of(longKey("adams"), 42L);
+        LongCounter counter = meter.counterBuilder("myCounter").build();
+        counter.add(40, counterAttrs);
+        metricReader.forceFlush();
+        counter.add(2, counterAttrs);
+
+        List<MetricData> metrics = new ArrayList<>(metricReader.collectAllMetrics());
+        assertThat(metrics).hasSize(1);
+        assertThat(metrics.get(0))
+                .hasName("myCounter")
+                .hasLongSumSatisfying(
+                        sum ->
+                                sum.hasPointsSatisfying(
+                                        pt -> pt.hasValue(42L).hasAttributes(counterAttrs)))
+                .hasResourceSatisfying(res -> res.hasAttribute(stringKey("mmm"), "nnn"));
+    }
+
+    @Test
+    public void canCustomizeMetricExport() {
+        InMemoryMetricExporter exporter =
+                InMemoryMetricExporter.create(AggregationTemporality.DELTA); // NOT THE DEFAULT
+        PeriodicMetricReader periodicReader = PeriodicMetricReader.builder(exporter).build();
+        OpenTelemetryRum openTelemetryRum =
+                makeBuilder()
+                        .setResource(resource)
+                        .addMeterProviderCustomizer(
+                                (builder, app) ->
+                                        SdkMeterProvider.builder()
+                                                .registerMetricReader(periodicReader))
+                        .addMetricExporterCustomizer(x -> exporter)
+                        .build();
+
+        OpenTelemetrySdk sdk = (OpenTelemetrySdk) openTelemetryRum.getOpenTelemetry();
+        Meter meter = sdk.getSdkMeterProvider().meterBuilder("FOOMETER").build();
+        LongCounter counter = meter.counterBuilder("FOOCOUNTER").build();
+        counter.add(22);
+        periodicReader.forceFlush();
+        counter.add(2);
+        counter.add(3);
+        periodicReader.forceFlush();
+        List<MetricData> metrics = exporter.getFinishedMetricItems();
+
+        assertThat(metrics).hasSize(2);
+        assertThat(metrics.get(0))
+                .hasName("FOOCOUNTER")
+                .hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(pt -> pt.hasValue(22L)));
+        assertThat(metrics.get(1))
+                .hasName("FOOCOUNTER")
+                .hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(pt -> pt.hasValue(5L)));
     }
 
     @Test
@@ -443,13 +521,13 @@ public class OpenTelemetryRumBuilderTest {
                         .addLoggerProviderCustomizer(
                                 (sdkLoggerProviderBuilder, application) ->
                                         sdkLoggerProviderBuilder.addLogRecordProcessor(
-                                                SimpleLogRecordProcessor.create(logRecordExporter)))
+                                                SimpleLogRecordProcessor.create(logsExporter)))
                         .build();
 
         Logger logger = rum.getOpenTelemetry().getLogsBridge().loggerBuilder("LogScope").build();
         logger.logRecordBuilder().setAttribute(stringKey("localAttrKey"), "localAttrValue").emit();
 
-        List<LogRecordData> recordedLogs = logRecordExporter.getFinishedLogRecordItems();
+        List<LogRecordData> recordedLogs = logsExporter.getFinishedLogRecordItems();
         assertThat(recordedLogs).hasSize(1);
         LogRecordData logRecordData = recordedLogs.get(0);
         OpenTelemetryAssertions.assertThat(logRecordData)
