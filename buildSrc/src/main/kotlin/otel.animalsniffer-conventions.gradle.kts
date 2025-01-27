@@ -25,6 +25,7 @@ afterEvaluate {
     }
 }
 
+// Any class, method or field annotated with this annotation will be ignored by animal sniffer.
 animalsniffer.annotation = "androidx.annotation.RequiresApi"
 
 tasks.withType<AnimalSniffer> {
