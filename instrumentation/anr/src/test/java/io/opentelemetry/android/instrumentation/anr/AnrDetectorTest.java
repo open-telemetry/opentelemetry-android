@@ -12,7 +12,7 @@ import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
 
 import android.os.Looper;
-import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleService;
+import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.Collections;
@@ -28,7 +28,7 @@ class AnrDetectorTest {
 
     @Mock Looper mainLooper;
     @Mock ScheduledExecutorService scheduler;
-    @Mock AppLifecycleService appLifecycleService;
+    @Mock AppLifecycle appLifecycle;
 
     @Test
     void shouldInstallInstrumentation() {
@@ -39,7 +39,7 @@ class AnrDetectorTest {
                         Collections.singletonList(constant(stringKey("test.key"), "abc")),
                         mainLooper,
                         scheduler,
-                        appLifecycleService,
+                        appLifecycle,
                         openTelemetry);
         anrDetector.start();
 
@@ -48,6 +48,6 @@ class AnrDetectorTest {
                 .scheduleWithFixedDelay(
                         isA(AnrWatcher.class), eq(1L), eq(1L), eq(TimeUnit.SECONDS));
         // verify that an application listener was installed
-        verify(appLifecycleService).registerListener(isA(AnrDetectorToggler.class));
+        verify(appLifecycle).registerListener(isA(AnrDetectorToggler.class));
     }
 }

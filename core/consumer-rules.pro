@@ -1,0 +1,12 @@
+-dontwarn com.google.auto.value.AutoValue$Builder
+-dontwarn com.google.auto.value.AutoValue$CopyAnnotations
+-dontwarn com.google.auto.value.AutoValue
+-dontwarn com.google.auto.value.extension.memoized.Memoized
+-dontwarn io.grpc.Channel
+-dontwarn io.grpc.MethodDescriptor$Builder
+-dontwarn io.grpc.MethodDescriptor$Marshaller
+-dontwarn io.grpc.MethodDescriptor$MethodType
+-dontwarn io.grpc.MethodDescriptor
+-dontwarn io.grpc.stub.AbstractFutureStub
+-dontwarn io.grpc.stub.AbstractStub$StubFactory
+-dontwarn io.grpc.stub.AbstractStub

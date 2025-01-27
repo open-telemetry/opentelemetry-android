@@ -14,7 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer;
 import io.opentelemetry.android.instrumentation.common.ActiveSpan;
-import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenService;
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
@@ -154,8 +154,8 @@ public class ActivityTracer {
             this.activity = activity;
         }
 
-        public Builder setVisibleScreenTracker(VisibleScreenService visibleScreenService) {
-            this.activeSpan = new ActiveSpan(visibleScreenService::getPreviouslyVisibleScreen);
+        public Builder setVisibleScreenTracker(VisibleScreenTracker visibleScreenTracker) {
+            this.activeSpan = new ActiveSpan(visibleScreenTracker::getPreviouslyVisibleScreen);
             return this;
         }
 

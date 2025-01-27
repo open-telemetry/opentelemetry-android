@@ -9,7 +9,9 @@ import android.app.Activity
 import android.os.Bundle
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
 
-class ActivityCallbacks(private val tracers: ActivityTracerCache) : DefaultingActivityLifecycleCallbacks {
+class ActivityCallbacks(
+    private val tracers: ActivityTracerCache,
+) : DefaultingActivityLifecycleCallbacks {
     override fun onActivityPreCreated(
         activity: Activity,
         savedInstanceState: Bundle?,
@@ -52,7 +54,8 @@ class ActivityCallbacks(private val tracers: ActivityTracerCache) : DefaultingAc
     }
 
     override fun onActivityPostResumed(activity: Activity) {
-        tracers.addEvent(activity, "activityPostResumed")
+        tracers
+            .addEvent(activity, "activityPostResumed")
             .addPreviousScreenAttribute()
             .endSpanForActivityResumed()
     }

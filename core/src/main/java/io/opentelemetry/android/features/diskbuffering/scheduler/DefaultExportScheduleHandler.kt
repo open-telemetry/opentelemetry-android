@@ -5,32 +5,19 @@
 
 package io.opentelemetry.android.features.diskbuffering.scheduler
 
-import io.opentelemetry.android.internal.services.ServiceManager
-import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService
+import io.opentelemetry.android.internal.services.periodicwork.PeriodicWork
 import java.util.concurrent.atomic.AtomicBoolean
 
 class DefaultExportScheduleHandler(
     private val exportScheduler: DefaultExportScheduler,
-    private val periodicWorkServiceProvider: () -> PeriodicWorkService,
-) :
-    ExportScheduleHandler {
-    private val periodicWorkService by lazy { periodicWorkServiceProvider() }
+    private val periodicWorkProvider: () -> PeriodicWork,
+) : ExportScheduleHandler {
+    private val periodicWorkService by lazy { periodicWorkProvider() }
     private val enabled = AtomicBoolean(false)
 
     override fun enable() {
         if (!enabled.getAndSet(true)) {
             periodicWorkService.enqueue(exportScheduler)
-        }
-    }
-
-    companion object {
-        @JvmStatic
-        fun create(): DefaultExportScheduleHandler {
-            return DefaultExportScheduleHandler(
-                DefaultExportScheduler.create(),
-            ) {
-                ServiceManager.get().getPeriodicWorkService()
-            }
         }
     }
 }

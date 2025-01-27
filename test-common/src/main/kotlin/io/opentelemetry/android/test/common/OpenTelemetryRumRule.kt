@@ -28,29 +28,29 @@ class OpenTelemetryRumRule : TestRule {
     override fun apply(
         base: Statement,
         description: Description,
-    ): Statement {
-        return object : Statement() {
+    ): Statement =
+        object : Statement() {
             override fun evaluate() {
                 setUpOpenTelemetry()
                 base.evaluate()
             }
         }
-    }
 
-    fun getSpan(): Span {
-        return openTelemetryRum.openTelemetry.getTracer("TestTracer").spanBuilder("A Span")
+    fun getSpan(): Span =
+        openTelemetryRum.openTelemetry
+            .getTracer("TestTracer")
+            .spanBuilder("A Span")
             .startSpan()
-    }
 
     private fun setUpOpenTelemetry() {
         inMemorySpanExporter = InMemorySpanExporter.create()
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             openTelemetryRum =
-                OpenTelemetryRum.builder(ApplicationProvider.getApplicationContext())
+                OpenTelemetryRum
+                    .builder(ApplicationProvider.getApplicationContext())
                     .addTracerProviderCustomizer { tracer, _ ->
                         tracer.addSpanProcessor(SimpleSpanProcessor.create(inMemorySpanExporter))
-                    }
-                    .build()
+                    }.build()
         }
     }
 }

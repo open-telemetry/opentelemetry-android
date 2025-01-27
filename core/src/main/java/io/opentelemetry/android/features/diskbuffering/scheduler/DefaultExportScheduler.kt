@@ -8,22 +8,16 @@ package io.opentelemetry.android.features.diskbuffering.scheduler
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants.OTEL_RUM_LOG_TAG
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
-import io.opentelemetry.android.internal.services.ServiceManager
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicRunnable
-import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkService
+import io.opentelemetry.android.internal.services.periodicwork.PeriodicWork
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-class DefaultExportScheduler(periodicWorkServiceProvider: () -> PeriodicWorkService) :
-    PeriodicRunnable(periodicWorkServiceProvider) {
+class DefaultExportScheduler(
+    periodicWorkProvider: () -> PeriodicWork,
+) : PeriodicRunnable(periodicWorkProvider) {
     companion object {
         private val DELAY_BEFORE_NEXT_EXPORT_IN_MILLIS = TimeUnit.SECONDS.toMillis(10)
-
-        fun create(): DefaultExportScheduler {
-            return DefaultExportScheduler {
-                ServiceManager.get().getPeriodicWorkService()
-            }
-        }
     }
 
     override fun onRun() {
@@ -38,11 +32,7 @@ class DefaultExportScheduler(periodicWorkServiceProvider: () -> PeriodicWorkServ
         }
     }
 
-    override fun shouldStopRunning(): Boolean {
-        return SignalFromDiskExporter.get() == null
-    }
+    override fun shouldStopRunning(): Boolean = SignalFromDiskExporter.get() == null
 
-    override fun minimumDelayUntilNextRunInMillis(): Long {
-        return DELAY_BEFORE_NEXT_EXPORT_IN_MILLIS
-    }
+    override fun minimumDelayUntilNextRunInMillis(): Long = DELAY_BEFORE_NEXT_EXPORT_IN_MILLIS
 }

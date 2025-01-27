@@ -34,10 +34,7 @@ android {
         }
         release {
             isMinifyEnabled = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
+            signingConfig = signingConfigs["debug"]
         }
     }
     buildFeatures {
@@ -70,6 +67,7 @@ dependencies {
     coreLibraryDesugaring(libs.desugarJdkLibs)
 
     implementation("io.opentelemetry.android:android-agent")    //parent dir
+    implementation("io.opentelemetry.android:instrumentation-sessions")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

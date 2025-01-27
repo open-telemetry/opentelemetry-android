@@ -62,9 +62,12 @@ android {
 }
 
 dependencies {
+    implementation(project(":instrumentation:android-instrumentation"))
+    implementation(project(":common"))
+    implementation(project(":services"))
+    implementation(project(":session"))
+
     implementation(libs.androidx.core)
-    implementation(libs.androidx.navigation.fragment)
-    implementation(libs.androidx.lifecycle.process)
 
     api(platform(libs.opentelemetry.platform.alpha))
     api(libs.opentelemetry.api)
@@ -74,6 +77,7 @@ dependencies {
     implementation(libs.opentelemetry.instrumentation.api)
     implementation(libs.opentelemetry.semconv.incubating)
     implementation(libs.opentelemetry.diskBuffering)
+
     testImplementation(libs.opentelemetry.api.incubator)
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.awaitility)

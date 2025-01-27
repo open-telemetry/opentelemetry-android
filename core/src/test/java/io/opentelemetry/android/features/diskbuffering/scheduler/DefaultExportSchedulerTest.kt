@@ -33,7 +33,9 @@ class DefaultExportSchedulerTest {
     @Test
     fun `Try to export all available signals when running`() {
         val signalFromDiskExporter = mockk<SignalFromDiskExporter>()
-        every { signalFromDiskExporter.exportBatchOfEach() }.returns(true).andThen(true)
+        every { signalFromDiskExporter.exportBatchOfEach() }
+            .returns(true)
+            .andThen(true)
             .andThen(false)
         SignalFromDiskExporter.set(signalFromDiskExporter)
 

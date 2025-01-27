@@ -47,7 +47,9 @@ artifacts {
         "generatedSignature",
         project.provider {
             File(
-                signatureBuilderTask.get().outputs.files.singleFile,
+                signatureBuilderTask
+                    .get()
+                    .outputs.files.singleFile,
                 signatureSimpleName,
             )
         },

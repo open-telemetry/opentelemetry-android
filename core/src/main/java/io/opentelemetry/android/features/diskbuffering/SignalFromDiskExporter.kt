@@ -33,12 +33,11 @@ class SignalFromDiskExporter
          */
         @WorkerThread
         @Throws(IOException::class)
-        fun exportBatchOfSpans(): Boolean {
-            return spanFromDiskExporter?.exportStoredBatch(
+        fun exportBatchOfSpans(): Boolean =
+            spanFromDiskExporter?.exportStoredBatch(
                 exportTimeoutInMillis,
                 TimeUnit.MILLISECONDS,
             ) ?: false
-        }
 
         /**
          * A batch contains all the signals that arrived in one call to [MetricFromDiskExporter.exportStoredBatch]. So if
@@ -50,12 +49,11 @@ class SignalFromDiskExporter
          */
         @WorkerThread
         @Throws(IOException::class)
-        fun exportBatchOfMetrics(): Boolean {
-            return metricFromDiskExporter?.exportStoredBatch(
+        fun exportBatchOfMetrics(): Boolean =
+            metricFromDiskExporter?.exportStoredBatch(
                 exportTimeoutInMillis,
                 TimeUnit.MILLISECONDS,
             ) ?: false
-        }
 
         /**
          * A batch contains all the signals that arrived in one call to [LogRecordFromDiskExporter.exportStoredBatch]. So if
@@ -67,12 +65,11 @@ class SignalFromDiskExporter
          */
         @WorkerThread
         @Throws(IOException::class)
-        fun exportBatchOfLogs(): Boolean {
-            return logRecordFromDiskExporter?.exportStoredBatch(
+        fun exportBatchOfLogs(): Boolean =
+            logRecordFromDiskExporter?.exportStoredBatch(
                 exportTimeoutInMillis,
                 TimeUnit.MILLISECONDS,
             ) ?: false
-        }
 
         /**
          * Convenience method that attempts to export all kinds of signals from disk.
@@ -97,9 +94,7 @@ class SignalFromDiskExporter
             private var instance: SignalFromDiskExporter? = null
 
             @JvmStatic
-            fun get(): SignalFromDiskExporter? {
-                return instance
-            }
+            fun get(): SignalFromDiskExporter? = instance
 
             @JvmStatic
             fun set(signalFromDiskExporter: SignalFromDiskExporter) {
