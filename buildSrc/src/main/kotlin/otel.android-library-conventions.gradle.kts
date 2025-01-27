@@ -23,6 +23,7 @@ android {
         // we rely on dependabot for dependency updates
         disable.add("GradleDependency")
         disable.add("AndroidGradlePluginVersion")
+        disable.add("NewApi")
     }
 
     compileOptions {

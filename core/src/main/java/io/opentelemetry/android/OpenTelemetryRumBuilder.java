@@ -15,6 +15,7 @@ import androidx.annotation.VisibleForTesting;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.export.BufferDelegatingLogExporter;
+import io.opentelemetry.android.export.BufferDelegatingMetricExporter;
 import io.opentelemetry.android.export.BufferDelegatingSpanExporter;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
@@ -43,9 +44,12 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.contrib.disk.buffering.LogRecordFromDiskExporter;
 import io.opentelemetry.contrib.disk.buffering.LogRecordToDiskExporter;
+import io.opentelemetry.contrib.disk.buffering.MetricFromDiskExporter;
+import io.opentelemetry.contrib.disk.buffering.MetricToDiskExporter;
 import io.opentelemetry.contrib.disk.buffering.SpanFromDiskExporter;
 import io.opentelemetry.contrib.disk.buffering.SpanToDiskExporter;
 import io.opentelemetry.contrib.disk.buffering.StorageConfiguration;
+import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -56,6 +60,9 @@ import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
@@ -91,6 +98,8 @@ public final class OpenTelemetryRumBuilder {
     private final List<Consumer<OpenTelemetrySdk>> otelSdkReadyListeners = new ArrayList<>();
     private final SessionIdTimeoutHandler timeoutHandler;
     private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
+    private Function<? super MetricExporter, ? extends MetricExporter> metricExporterCustomizer =
+            a -> a;
     private Function<? super LogRecordExporter, ? extends LogRecordExporter>
             logRecordExporterCustomizer = a -> a;
     private Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer =
@@ -261,6 +270,26 @@ public final class OpenTelemetryRumBuilder {
     }
 
     /**
+     * Adds a {@link Function} to invoke with the default {@link MetricExporter} to allow
+     * customization. The return value of the {@link Function} will replace the passed-in argument.
+     *
+     * <p>Multiple calls will execute the customizers in order.
+     */
+    public OpenTelemetryRumBuilder addMetricExporterCustomizer(
+            Function<? super MetricExporter, ? extends MetricExporter> metricExporterCustomizer) {
+        requireNonNull(metricExporterCustomizer, "metricExporterCustomizer");
+        checkNotBuilt();
+        Function<? super MetricExporter, ? extends MetricExporter> existing =
+                this.metricExporterCustomizer;
+        this.metricExporterCustomizer =
+                exporter -> {
+                    MetricExporter intermediate = existing.apply(exporter);
+                    return metricExporterCustomizer.apply(intermediate);
+                };
+        return this;
+    }
+
+    /**
      * Adds a {@link Function} to invoke with the default {@link LogRecordExporter} to allow
      * customization. The return value of the {@link Function} will replace the passed-in argument.
      *
@@ -298,10 +327,11 @@ public final class OpenTelemetryRumBuilder {
         InitializationEvents initializationEvents = InitializationEvents.get();
         applyConfiguration(services, initializationEvents);
 
-        BufferDelegatingLogExporter bufferDelegatingLogExporter = new BufferDelegatingLogExporter();
-
         BufferDelegatingSpanExporter bufferDelegatingSpanExporter =
                 new BufferDelegatingSpanExporter();
+        BufferDelegatingLogExporter bufferDelegatingLogExporter = new BufferDelegatingLogExporter();
+        BufferDelegatingMetricExporter bufferDelegatingMetricExporter =
+                new BufferDelegatingMetricExporter();
 
         if (sessionManager == null) {
             sessionManager =
@@ -319,7 +349,8 @@ public final class OpenTelemetryRumBuilder {
                                         sessionManager,
                                         application,
                                         bufferDelegatingLogExporter))
-                        .setMeterProvider(buildMeterProvider(application))
+                        .setMeterProvider(
+                                buildMeterProvider(application, bufferDelegatingMetricExporter))
                         .setPropagators(buildFinalPropagators())
                         .build();
 
@@ -342,7 +373,8 @@ public final class OpenTelemetryRumBuilder {
                                 services,
                                 initializationEvents,
                                 bufferDelegatingSpanExporter,
-                                bufferDelegatingLogExporter));
+                                bufferDelegatingLogExporter,
+                                bufferDelegatingMetricExporter));
 
         instrumentations.forEach(delegate::addInstrumentation);
 
@@ -353,11 +385,13 @@ public final class OpenTelemetryRumBuilder {
             Services services,
             InitializationEvents initializationEvents,
             BufferDelegatingSpanExporter bufferDelegatingSpanExporter,
-            BufferDelegatingLogExporter bufferedDelegatingLogExporter) {
+            BufferDelegatingLogExporter bufferedDelegatingLogExporter,
+            BufferDelegatingMetricExporter bufferDelegatingMetricExporter) {
 
         DiskBufferingConfig diskBufferingConfig = config.getDiskBufferingConfig();
         SpanExporter spanExporter = buildSpanExporter();
         LogRecordExporter logsExporter = buildLogsExporter();
+        MetricExporter metricExporter = buildMetricExporter();
         SignalFromDiskExporter signalFromDiskExporter = null;
         if (diskBufferingConfig.getEnabled()) {
             try {
@@ -368,11 +402,18 @@ public final class OpenTelemetryRumBuilder {
                 final LogRecordExporter originalLogsExporter = logsExporter;
                 logsExporter =
                         LogRecordToDiskExporter.create(originalLogsExporter, storageConfiguration);
+                final MetricExporter originalMetricExporter = metricExporter;
+                metricExporter =
+                        MetricToDiskExporter.create(
+                                originalMetricExporter,
+                                storageConfiguration,
+                                originalMetricExporter::getAggregationTemporality);
                 signalFromDiskExporter =
                         new SignalFromDiskExporter(
                                 SpanFromDiskExporter.create(
                                         originalSpanExporter, storageConfiguration),
-                                null,
+                                MetricFromDiskExporter.create(
+                                        originalMetricExporter, storageConfiguration),
                                 LogRecordFromDiskExporter.create(
                                         originalLogsExporter, storageConfiguration));
             } catch (IOException e) {
@@ -382,6 +423,7 @@ public final class OpenTelemetryRumBuilder {
         initializationEvents.spanExporterInitialized(spanExporter);
         bufferedDelegatingLogExporter.setDelegate(logsExporter);
         bufferDelegatingSpanExporter.setDelegate(spanExporter);
+        bufferDelegatingMetricExporter.setDelegate(metricExporter);
         scheduleDiskTelemetryReader(services, signalFromDiskExporter);
     }
 
@@ -552,14 +594,23 @@ public final class OpenTelemetryRumBuilder {
         return spanExporterCustomizer.apply(defaultExporter);
     }
 
+    private MetricExporter buildMetricExporter() {
+        // TODO: Default to otlp...but how can we make endpoint and auth mandatory?
+        MetricExporter defaultExporter = LoggingMetricExporter.create();
+        return metricExporterCustomizer.apply(defaultExporter);
+    }
+
     private LogRecordExporter buildLogsExporter() {
+        // TODO: Default to otlp...but how can we make endpoint and auth mandatory?
         LogRecordExporter defaultExporter = SystemOutLogRecordExporter.create();
         return logRecordExporterCustomizer.apply(defaultExporter);
     }
 
-    private SdkMeterProvider buildMeterProvider(Application application) {
+    private SdkMeterProvider buildMeterProvider(
+            Application application, MetricExporter metricExporter) {
+        MetricReader reader = PeriodicMetricReader.create(metricExporter);
         SdkMeterProviderBuilder meterProviderBuilder =
-                SdkMeterProvider.builder().setResource(resource);
+                SdkMeterProvider.builder().registerMetricReader(reader).setResource(resource);
         for (BiFunction<SdkMeterProviderBuilder, Application, SdkMeterProviderBuilder> customizer :
                 meterProviderCustomizers) {
             meterProviderBuilder = customizer.apply(meterProviderBuilder, application);

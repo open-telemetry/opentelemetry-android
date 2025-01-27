@@ -18,14 +18,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
+import io.opentelemetry.api.metrics.LongCounter
 import io.opentelemetry.api.trace.SpanKind
 
 @Composable
-fun MainOtelButton(icon: Painter) {
+fun MainOtelButton(icon: Painter,
+                   clickCounter: LongCounter? = OtelDemoApplication.counter("logo.clicks")) {
     Row {
         Spacer(modifier = Modifier.height(5.dp))
         Button(
-            onClick = { generateClickEvent() },
+            onClick = { generateClickEvent(clickCounter) },
             modifier = Modifier.padding(20.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
             content = {
@@ -41,12 +43,14 @@ fun MainOtelButton(icon: Painter) {
     }
 }
 
-fun generateClickEvent() {
+fun generateClickEvent(counter: LongCounter?) {
     val scope = "otel.demo.app"
     OtelDemoApplication.eventBuilder(scope, "logo.clicked")
         .emit()
     // For now, we also emit a span, so that we can see something in a UI
     val tracer = OtelDemoApplication.tracer(scope)
+    // And we also increment a counter, to test metrics
+    counter?.add(1)
     val span =
         tracer
             ?.spanBuilder("logo.clicked")
