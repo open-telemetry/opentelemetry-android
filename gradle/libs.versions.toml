@@ -18,6 +18,7 @@ opentelemetry-platform-alpha = { module = "io.opentelemetry.instrumentation:open
 opentelemetry-platform = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom" }
 androidx-navigation-fragment = "androidx.navigation:navigation-fragment:2.7.7"
 androidx-core = "androidx.core:core:1.15.0"
+androidx-annotation = "androidx.annotation:annotation:1.9.1"
 androidx-lifecycle-process = "androidx.lifecycle:lifecycle-process:2.8.7"
 findbugs-jsr305 = "com.google.code.findbugs:jsr305:3.0.2"
 byteBuddy = { module = "net.bytebuddy:byte-buddy", version.ref = "byteBuddy" }
