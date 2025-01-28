@@ -110,6 +110,7 @@ class SlowRenderListener implements DefaultingActivityLifecycleCallbacks {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     static class PerActivityListener implements Window.OnFrameMetricsAvailableListener {
 
         private final Activity activity;
