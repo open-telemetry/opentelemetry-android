@@ -60,14 +60,12 @@ public class CacheStorage {
         try {
             StorageManager storageManager = appContext.getSystemService(StorageManager.class);
             UUID appSpecificInternalDirUuid = storageManager.getUuidForPath(directory);
+            long availableSpace = storageManager.getAllocatableBytes(appSpecificInternalDirUuid);
             // Get the minimum amount of allocatable space.
-            long spaceToAllocate =
-                    Math.min(
-                            storageManager.getAllocatableBytes(appSpecificInternalDirUuid),
-                            maxSpaceNeeded);
+            long spaceToAllocate = Math.min(availableSpace, maxSpaceNeeded);
             // Ensure the space is available by asking the OS to clear stale cache if needed.
             storageManager.allocateBytes(appSpecificInternalDirUuid, spaceToAllocate);
-            return spaceToAllocate;
+            return availableSpace;
         } catch (IOException e) {
             Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to get available space", e);
             return getLegacyAvailableSpace(directory, maxSpaceNeeded);
@@ -80,6 +78,6 @@ public class CacheStorage {
                 String.format(
                         "Getting legacy available space for %s max needed is: %s",
                         directory, maxSpaceNeeded));
-        return Math.min(directory.getUsableSpace(), maxSpaceNeeded);
+        return directory.getUsableSpace();
     }
 }
