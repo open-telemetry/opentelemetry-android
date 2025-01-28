@@ -2,8 +2,8 @@ name: Issue management - run stale action
 
 on:
   schedule:
-    # hourly at minute 41
-    - cron: "41 * * * *"
+    # every 8 hours at 41 past
+    - cron: "41 */8 * * *"
 
 permissions:
   contents: read
