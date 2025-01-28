@@ -18,6 +18,7 @@ opentelemetry-platform-alpha = { module = "io.opentelemetry.instrumentation:open
 opentelemetry-platform = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom" }
 androidx-navigation-fragment = "androidx.navigation:navigation-fragment:2.7.7"
 androidx-core = "androidx.core:core:1.15.0"
+androidx-annotation = "androidx.annotation:annotation:1.9.1"
 androidx-lifecycle-process = "androidx.lifecycle:lifecycle-process:2.8.7"
 findbugs-jsr305 = "com.google.code.findbugs:jsr305:3.0.2"
 byteBuddy = { module = "net.bytebuddy:byte-buddy", version.ref = "byteBuddy" }
@@ -66,7 +67,7 @@ errorprone-javac = "com.google.errorprone:javac:9+181-r4173-1"
 spotless-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
 errorprone-plugin = "net.ltgt.gradle:gradle-errorprone-plugin:4.1.0"
 nullaway-plugin = "net.ltgt.gradle:gradle-nullaway-plugin:2.2.0"
-animalsniffer-plugin = "ru.vyarus:gradle-animalsniffer-plugin:1.7.2"
+animalsniffer-plugin = "ru.vyarus:gradle-animalsniffer-plugin:2.0.0"
 android-plugin = { module = "com.android.tools.build:gradle", version.ref = "androidPlugin" }
 byteBuddy-plugin = { module = "net.bytebuddy:byte-buddy-gradle-plugin", version.ref = "byteBuddy" }
 kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }

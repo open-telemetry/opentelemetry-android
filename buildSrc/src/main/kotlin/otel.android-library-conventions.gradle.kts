@@ -5,6 +5,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("otel.errorprone-conventions")
     id("kotlin-kapt")
+    id("otel.animalsniffer-conventions")
 }
 
 val javaVersion = rootProject.extra["java_version"] as JavaVersion
@@ -44,6 +45,7 @@ tasks.withType<Test> {
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 dependencies {
+    implementation(libs.findLibrary("androidx-annotation").get())
     implementation(libs.findLibrary("findbugs-jsr305").get())
     implementation(libs.findLibrary("auto-service-annotations").get())
     kapt(libs.findLibrary("auto-service-processor").get())

@@ -12,6 +12,7 @@ import android.net.NetworkRequest;
 import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
@@ -75,11 +76,16 @@ public final class CurrentNetworkProvider {
 
     private void registerNetworkCallbacks(Supplier<NetworkRequest> createNetworkMonitoringRequest) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            connectivityManager.registerDefaultNetworkCallback(new ConnectionMonitor());
+            registerNetworkCallbackApi24();
         } else {
             NetworkRequest networkRequest = createNetworkMonitoringRequest.get();
             connectivityManager.registerNetworkCallback(networkRequest, new ConnectionMonitor());
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private void registerNetworkCallbackApi24() {
+        connectivityManager.registerDefaultNetworkCallback(new ConnectionMonitor());
     }
 
     /** Returns up-to-date {@linkplain CurrentNetwork current network information}. */
