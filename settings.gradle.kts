@@ -1,5 +1,17 @@
 rootProject.name = "opentelemetry-android"
 
+plugins {
+    id("com.gradle.develocity") version "3.19"
+}
+
+develocity {
+    buildScan {
+        publishing.onlyIf { System.getenv("CI") != null }
+        termsOfUseUrl.set("https://gradle.com/help/legal-terms-of-use")
+        termsOfUseAgree.set("yes")
+    }
+}
+
 include(":core")
 include(":android-agent")
 include(":instrumentation:activity")
