@@ -78,6 +78,10 @@
         "^androidx.core"
       ],
       "groupName": "androidx.core"
+    },
+    {
+      "matchPackagePrefixes": ["com.gradle.develocity"],
+      "groupName": "gradle develocity packages"
     }
   ]
 }
