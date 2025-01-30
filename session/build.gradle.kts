@@ -17,5 +17,4 @@ dependencies {
     api(platform(libs.opentelemetry.platform.alpha))
     api(libs.opentelemetry.api)
     implementation(libs.opentelemetry.sdk)
-    implementation(project(":services"))
 }
