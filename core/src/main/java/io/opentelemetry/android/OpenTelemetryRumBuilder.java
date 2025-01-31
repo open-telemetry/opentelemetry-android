@@ -107,8 +107,6 @@ public final class OpenTelemetryRumBuilder {
 
     private Resource resource;
 
-    private boolean isBuilt = false;
-
     @Nullable private ExportScheduleHandler exportScheduleHandler;
     @Nullable private SessionManager sessionManager;
 
@@ -137,7 +135,6 @@ public final class OpenTelemetryRumBuilder {
      * @return {@code this}
      */
     public OpenTelemetryRumBuilder setResource(Resource resource) {
-        checkNotBuilt();
         this.resource = resource;
         return this;
     }
@@ -150,7 +147,6 @@ public final class OpenTelemetryRumBuilder {
      * @return {@code this}
      */
     public OpenTelemetryRumBuilder mergeResource(Resource resource) {
-        checkNotBuilt();
         this.resource = this.resource.merge(resource);
         return this;
     }
@@ -190,7 +186,6 @@ public final class OpenTelemetryRumBuilder {
      */
     public OpenTelemetryRumBuilder addMeterProviderCustomizer(
             BiFunction<SdkMeterProviderBuilder, Application, SdkMeterProviderBuilder> customizer) {
-        checkNotBuilt();
         meterProviderCustomizers.add(customizer);
         return this;
     }
@@ -211,7 +206,6 @@ public final class OpenTelemetryRumBuilder {
     public OpenTelemetryRumBuilder addLoggerProviderCustomizer(
             BiFunction<SdkLoggerProviderBuilder, Application, SdkLoggerProviderBuilder>
                     customizer) {
-        checkNotBuilt();
         loggerProviderCustomizers.add(customizer);
         return this;
     }
@@ -223,7 +217,6 @@ public final class OpenTelemetryRumBuilder {
      */
     public OpenTelemetryRumBuilder addInstrumentation(AndroidInstrumentation instrumentation) {
         instrumentations.add(instrumentation);
-        checkNotBuilt();
         return this;
     }
 
@@ -238,7 +231,6 @@ public final class OpenTelemetryRumBuilder {
     public OpenTelemetryRumBuilder addPropagatorCustomizer(
             Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer) {
         requireNonNull(propagatorCustomizer, "propagatorCustomizer");
-        checkNotBuilt();
         Function<? super TextMapPropagator, ? extends TextMapPropagator> existing =
                 this.propagatorCustomizer;
         this.propagatorCustomizer =
@@ -258,7 +250,6 @@ public final class OpenTelemetryRumBuilder {
     public OpenTelemetryRumBuilder addSpanExporterCustomizer(
             Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer) {
         requireNonNull(spanExporterCustomizer, "spanExporterCustomizer");
-        checkNotBuilt();
         Function<? super SpanExporter, ? extends SpanExporter> existing =
                 this.spanExporterCustomizer;
         this.spanExporterCustomizer =
@@ -278,7 +269,6 @@ public final class OpenTelemetryRumBuilder {
     public OpenTelemetryRumBuilder addMetricExporterCustomizer(
             Function<? super MetricExporter, ? extends MetricExporter> metricExporterCustomizer) {
         requireNonNull(metricExporterCustomizer, "metricExporterCustomizer");
-        checkNotBuilt();
         Function<? super MetricExporter, ? extends MetricExporter> existing =
                 this.metricExporterCustomizer;
         this.metricExporterCustomizer =
@@ -298,7 +288,6 @@ public final class OpenTelemetryRumBuilder {
     public OpenTelemetryRumBuilder addLogRecordExporterCustomizer(
             Function<? super LogRecordExporter, ? extends LogRecordExporter>
                     logRecordExporterCustomizer) {
-        checkNotBuilt();
         Function<? super LogRecordExporter, ? extends LogRecordExporter> existing =
                 this.logRecordExporterCustomizer;
         this.logRecordExporterCustomizer =
@@ -319,10 +308,6 @@ public final class OpenTelemetryRumBuilder {
      * @return A new {@link OpenTelemetryRum} instance.
      */
     public OpenTelemetryRum build() {
-        if (isBuilt) {
-            throw new IllegalStateException("You cannot call build multiple times");
-        }
-        isBuilt = true;
         Services services = Services.get(application);
         InitializationEvents initializationEvents = InitializationEvents.get();
         applyConfiguration(services, initializationEvents);
@@ -345,7 +330,6 @@ public final class OpenTelemetryRumBuilder {
                                         sessionManager, application, bufferDelegatingSpanExporter))
                         .setLoggerProvider(
                                 buildLoggerProvider(
-                                        services,
                                         sessionManager,
                                         application,
                                         bufferDelegatingLogExporter))
@@ -440,7 +424,6 @@ public final class OpenTelemetryRumBuilder {
     public OpenTelemetryRumBuilder setExportScheduleHandler(
             @NonNull ExportScheduleHandler exportScheduleHandler) {
         requireNonNull(exportScheduleHandler, "exportScheduleHandler cannot be null");
-        checkNotBuilt();
         this.exportScheduleHandler = exportScheduleHandler;
         return this;
     }
@@ -498,7 +481,6 @@ public final class OpenTelemetryRumBuilder {
      * @return this
      */
     public OpenTelemetryRumBuilder addOtelSdkReadyListener(Consumer<OpenTelemetrySdk> callback) {
-        checkNotBuilt();
         otelSdkReadyListeners.add(callback);
         return this;
     }
@@ -534,15 +516,19 @@ public final class OpenTelemetryRumBuilder {
             initializationEvents.currentNetworkProviderInitialized();
         }
 
-        // Add span processor that appends screen attribute(s)
+        // Add processors that append screen attribute(s)
         if (config.shouldIncludeScreenAttributes()) {
-            addTracerProviderCustomizer(
-                    (tracerProviderBuilder, app) -> {
-                        SpanProcessor screenAttributesAppender =
-                                new ScreenAttributesSpanProcessor(
-                                        services.getVisibleScreenTracker());
-                        return tracerProviderBuilder.addSpanProcessor(screenAttributesAppender);
-                    });
+            tracerProviderCustomizers.add(0, (builder, app) ->
+                    builder.addSpanProcessor(
+                            new ScreenAttributesSpanProcessor(services.getVisibleScreenTracker())
+                    )
+            );
+            loggerProviderCustomizers.add(0, (builder, app) ->
+               builder.addLogRecordProcessor(
+                        new ScreenAttributesLogRecordProcessor(
+                                services.getVisibleScreenTracker()))
+
+            );
         }
     }
 
@@ -564,7 +550,6 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private SdkLoggerProvider buildLoggerProvider(
-            Services services,
             SessionProvider sessionProvider,
             Application application,
             LogRecordExporter logsExporter) {
@@ -572,9 +557,6 @@ public final class OpenTelemetryRumBuilder {
                 SdkLoggerProvider.builder()
                         .setResource(resource)
                         .addLogRecordProcessor(new SessionIdLogRecordAppender(sessionProvider))
-                        .addLogRecordProcessor(
-                                new ScreenAttributesLogRecordProcessor(
-                                        services.getVisibleScreenTracker()))
                         .addLogRecordProcessor(
                                 new GlobalAttributesLogRecordAppender(
                                         config.getGlobalAttributesSupplier()));
@@ -621,11 +603,5 @@ public final class OpenTelemetryRumBuilder {
     private ContextPropagators buildFinalPropagators() {
         TextMapPropagator defaultPropagator = buildDefaultPropagator();
         return ContextPropagators.create(propagatorCustomizer.apply(defaultPropagator));
-    }
-
-    private void checkNotBuilt() {
-        if (isBuilt) {
-            throw new IllegalStateException("This method cannot be called after calling build");
-        }
     }
 }
