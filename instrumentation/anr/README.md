@@ -3,13 +3,13 @@
 
 Status: experimental
 
-The ANR (Application Not Responding) instrumentation helps to detect 
+The ANR (Application Not Responding) instrumentation helps to detect
 when an application becomes unresponsive. This instrumentation functions
 by polling the UI thread once every second, verifying that the main UI
 thread is still active. If 5 consecutive checks fail, then an ANR condition
 has occurred, and telemetry will be generated.
 
-The ANR instrumentation is only active when the application is in the 
+The ANR instrumentation is only active when the application is in the
 foreground.
 
 ## Telemetry
