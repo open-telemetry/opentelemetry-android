@@ -330,9 +330,7 @@ public final class OpenTelemetryRumBuilder {
                                         sessionManager, application, bufferDelegatingSpanExporter))
                         .setLoggerProvider(
                                 buildLoggerProvider(
-                                        sessionManager,
-                                        application,
-                                        bufferDelegatingLogExporter))
+                                        sessionManager, application, bufferDelegatingLogExporter))
                         .setMeterProvider(
                                 buildMeterProvider(application, bufferDelegatingMetricExporter))
                         .setPropagators(buildFinalPropagators())
@@ -518,17 +516,18 @@ public final class OpenTelemetryRumBuilder {
 
         // Add processors that append screen attribute(s)
         if (config.shouldIncludeScreenAttributes()) {
-            tracerProviderCustomizers.add(0, (builder, app) ->
-                    builder.addSpanProcessor(
-                            new ScreenAttributesSpanProcessor(services.getVisibleScreenTracker())
-                    )
-            );
-            loggerProviderCustomizers.add(0, (builder, app) ->
-               builder.addLogRecordProcessor(
-                        new ScreenAttributesLogRecordProcessor(
-                                services.getVisibleScreenTracker()))
-
-            );
+            tracerProviderCustomizers.add(
+                    0,
+                    (builder, app) ->
+                            builder.addSpanProcessor(
+                                    new ScreenAttributesSpanProcessor(
+                                            services.getVisibleScreenTracker())));
+            loggerProviderCustomizers.add(
+                    0,
+                    (builder, app) ->
+                            builder.addLogRecordProcessor(
+                                    new ScreenAttributesLogRecordProcessor(
+                                            services.getVisibleScreenTracker())));
         }
     }
 
