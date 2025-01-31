@@ -14,12 +14,12 @@ dependencies {
 
     // Default instrumentations:
     api(project(":instrumentation:activity"))
-    api(project(":instrumentation:fragment"))
-    api(project(":instrumentation:crash"))
-    api(project(":instrumentation:startup"))
-    api(project(":instrumentation:slowrendering"))
     api(project(":instrumentation:anr"))
+    api(project(":instrumentation:crash"))
+    api(project(":instrumentation:fragment"))
     api(project(":instrumentation:network"))
+    api(project(":instrumentation:slowrendering"))
+    api(project(":instrumentation:startup"))
 }
 
 extra["pomName"] = "OpenTelemetry Android Agent"
