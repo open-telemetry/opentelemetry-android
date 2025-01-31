@@ -142,6 +142,7 @@ public class OpenTelemetryRumBuilderTest {
 
     @Test
     public void shouldBuildTracerProvider() {
+        createAndSetServiceManager();
         OpenTelemetryRum openTelemetryRum =
                 makeBuilder()
                         .setResource(resource)
@@ -169,7 +170,7 @@ public class OpenTelemetryRumBuilderTest {
                                     .hasResource(resource)
                                     .hasAttributesSatisfyingExactly(
                                             equalTo(SESSION_ID, sessionId),
-                                            equalTo(SCREEN_NAME_KEY, "unknown"));
+                                            equalTo(SCREEN_NAME_KEY, CUR_SCREEN_NAME));
                         });
     }
 
