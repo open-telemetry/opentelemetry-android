@@ -54,7 +54,7 @@ Some of the additional features provided include:
 
 * Crash reporting
 * ANR detection
-* Network change detection
+* [Network change detection](./instrumentation/network/)
 * Android [Activity lifecycle instrumentation](./instrumentation/activity/)
 * Android Fragment lifecycle monitoring
 * Access to the OpenTelemetry APIs for manual instrumentation
