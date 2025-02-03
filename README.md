@@ -52,8 +52,8 @@ This android library builds on top of
 the [OpenTelemetry Java SDK](https://github.com/open-telemetry/opentelemetry-java).
 Some of the additional features provided include:
 
-* Crash reporting
-* ANR detection
+* [Crash reporting](./instrumentation/crash/)
+* [ANR detection](./instrumentation/anr/)
 * [Network change detection](./instrumentation/network/)
 * Android [Activity lifecycle instrumentation](./instrumentation/activity/)
 * Android Fragment lifecycle monitoring
