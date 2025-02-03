@@ -7,7 +7,7 @@ Android applications are typically deployed on mobile devices. These mobile devi
 have the ability to move between networks, and sometimes a network change can
 have an impact on application performance characteristics. This instrumentation
 will generate telemetry when the network changes, as detected
-via `ConnectivityManager.NetworkCallback`.
+via [ConnectivityManager.NetworkCallback](https://developer.android.com/reference/android/net/ConnectivityManager.NetworkCallback).
 
 This instrumentation only generates telemetry when the application is in the foreground,
 not when the application is backgrounded.
