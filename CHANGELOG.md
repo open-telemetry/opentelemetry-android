@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### ⚠️⚠️Breaking changes
+
+- Remove deprecated `exception.escaped` attribute from crash events ([#796](https://github.com/open-telemetry/opentelemetry-android/pull/796))
+
 ## Version 0.9.0 (2025-01-15)
 
 - This version builds on opentelemetry-java-instrumentation
