@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-### ⚠️⚠️Breaking changes
+### ⚠️⚠️ Breaking changes
 
 - New maven coordinates for http client instrumentations ([#791](https://github.com/open-telemetry/opentelemetry-android/pull/791))
   - `okhttp-3.0-library` -> `instrumentation-okhttp-3.0-library`
