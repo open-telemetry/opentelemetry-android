@@ -3,233 +3,215 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.services.network;
+package io.opentelemetry.android.internal.services.network
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import android.net.ConnectivityManager
+import android.net.ConnectivityManager.NetworkCallback
+import android.net.Network
+import android.net.NetworkRequest
+import android.os.Build
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
+import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
+import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
+import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider.UNKNOWN_NETWORK
+import io.opentelemetry.android.internal.services.network.detector.NetworkDetector
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mockito
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import java.util.concurrent.atomic.AtomicInteger
 
-import android.net.ConnectivityManager;
-import android.net.ConnectivityManager.NetworkCallback;
-import android.net.Network;
-import android.net.NetworkRequest;
-import android.os.Build;
-import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
-import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
-import io.opentelemetry.android.internal.services.network.detector.NetworkDetector;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
-
-@RunWith(RobolectricTestRunner.class)
-@Config(maxSdk = Build.VERSION_CODES.S)
-public class CurrentNetworkProviderTest {
+@RunWith(RobolectricTestRunner::class)
+@Config(
+    maxSdk = Build.VERSION_CODES.S,
+)
+internal class CurrentNetworkProviderTest {
+    private val fakeNet: Network = mockk()
+    private val wifi = CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build()
+    private val cellular =
+        CurrentNetwork
+            .builder(NetworkState.TRANSPORT_CELLULAR)
+            .subType("LTE")
+            .build()
+    private val noNetwork = CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build()
 
     @Test
     @Config(maxSdk = Build.VERSION_CODES.LOLLIPOP)
-    public void lollipop() {
-        NetworkRequest networkRequest = mock(NetworkRequest.class);
-        NetworkDetector networkDetector = Mockito.mock(NetworkDetector.class);
-        ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
+    fun lollipop() {
+        val networkRequest: NetworkRequest = mockk()
+        val networkDetector: NetworkDetector = mockk()
+        val connectivityManager: ConnectivityManager = mockk()
 
-        when(networkDetector.detectCurrentNetwork())
-                .thenReturn(
-                        CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI)
-                                .build()) // called on init
-                .thenReturn(
-                        CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
-                                .subType("LTE")
-                                .build());
+        every { networkDetector.detectCurrentNetwork() } returns wifi andThen cellular
 
-        CurrentNetworkProvider currentNetworkProvider =
-                new CurrentNetworkProvider(
-                        networkDetector, connectivityManager, () -> networkRequest);
+        val currentNetworkProvider =
+            CurrentNetworkProvider(networkDetector, connectivityManager) { networkRequest }
 
-        Assert.assertEquals(
-                CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
-                currentNetworkProvider.getCurrentNetwork());
+        assertThat(
+            CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
+        ).isEqualTo(
+            currentNetworkProvider.currentNetwork,
+        )
 
-        ArgumentCaptor<NetworkCallback> monitorCaptor =
-                ArgumentCaptor.forClass(NetworkCallback.class);
-        verify(connectivityManager)
-                .registerNetworkCallback(eq(networkRequest), monitorCaptor.capture());
+        val monitorSlot = slot<NetworkCallback>()
 
-        AtomicInteger notified = new AtomicInteger(0);
-        currentNetworkProvider.addNetworkChangeListener(
-                (currentNetwork) -> {
-                    int timesCalled = notified.incrementAndGet();
-                    if (timesCalled == 1) {
-                        Assert.assertEquals(
-                                CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
-                                        .subType("LTE")
-                                        .build(),
-                                currentNetwork);
-                    } else {
-                        Assert.assertEquals(
-                                CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build(),
-                                currentNetwork);
-                    }
-                });
+        verify {
+            connectivityManager.registerNetworkCallback(networkRequest, capture(monitorSlot))
+        }
+
+        val notified = AtomicInteger(0)
+        currentNetworkProvider.addNetworkChangeListener { currentNetwork: CurrentNetwork? ->
+            val timesCalled = notified.incrementAndGet()
+            if (timesCalled == 1) {
+                assertThat(currentNetwork).isEqualTo(cellular)
+            } else {
+                assertThat(currentNetwork).isEqualTo(noNetwork)
+            }
+        }
         // note: we ignore the network passed in and just rely on refreshing the network info when
         // this is happens
-        monitorCaptor.getValue().onAvailable(null);
-        assertEquals(1, notified.get());
-        monitorCaptor.getValue().onLost(null);
-        assertEquals(2, notified.get());
+        monitorSlot.captured.onAvailable(fakeNet)
+        assertThat(notified.get()).isEqualTo(1L)
+        monitorSlot.captured.onLost(fakeNet)
+        assertThat(notified.get()).isEqualTo(2L)
     }
 
     @Test
     @Config(maxSdk = Build.VERSION_CODES.S, minSdk = Build.VERSION_CODES.O)
-    public void modernSdks() {
-        NetworkRequest networkRequest = mock(NetworkRequest.class);
-        NetworkDetector networkDetector = Mockito.mock(NetworkDetector.class);
-        ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
+    fun `modern SDKs`() {
+        val networkRequest: NetworkRequest = mockk()
+        val networkDetector: NetworkDetector = mockk()
+        val connectivityManager: ConnectivityManager = mockk()
+        every { networkDetector.detectCurrentNetwork() } returns wifi andThen cellular
 
-        when(networkDetector.detectCurrentNetwork())
-                .thenReturn(CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build())
-                .thenReturn(
-                        CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
-                                .subType("LTE")
-                                .build());
+        val currentNetworkProvider =
+            CurrentNetworkProvider(
+                networkDetector,
+                connectivityManager,
+            ) { networkRequest }
 
-        CurrentNetworkProvider currentNetworkProvider =
-                new CurrentNetworkProvider(
-                        networkDetector, connectivityManager, () -> networkRequest);
+        assertThat(currentNetworkProvider.currentNetwork).isEqualTo(wifi)
+        verify(exactly = 0) {
+            connectivityManager.registerNetworkCallback(any(), any<NetworkCallback>())
+        }
 
-        Assert.assertEquals(
-                CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
-                currentNetworkProvider.getCurrentNetwork());
-        verify(connectivityManager, never())
-                .registerNetworkCallback(eq(networkRequest), isA(NetworkCallback.class));
+        val monitorSlot = slot<NetworkCallback>()
+        verify {
+            connectivityManager.registerDefaultNetworkCallback(capture(monitorSlot))
+        }
 
-        ArgumentCaptor<NetworkCallback> monitorCaptor =
-                ArgumentCaptor.forClass(NetworkCallback.class);
-        verify(connectivityManager).registerDefaultNetworkCallback(monitorCaptor.capture());
-
-        AtomicInteger notified = new AtomicInteger(0);
-        currentNetworkProvider.addNetworkChangeListener(
-                (currentNetwork) -> {
-                    int timesCalled = notified.incrementAndGet();
-                    if (timesCalled == 1) {
-                        Assert.assertEquals(
-                                CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
-                                        .subType("LTE")
-                                        .build(),
-                                currentNetwork);
-                    } else {
-                        Assert.assertEquals(
-                                CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build(),
-                                currentNetwork);
-                    }
-                });
+        val notified = AtomicInteger(0)
+        currentNetworkProvider.addNetworkChangeListener { currentNetwork: CurrentNetwork? ->
+            val timesCalled = notified.incrementAndGet()
+            if (timesCalled == 1) {
+                assertThat(currentNetwork).isEqualTo(cellular)
+            } else {
+                assertThat(currentNetwork).isEqualTo(noNetwork)
+            }
+        }
         // note: we ignore the network passed in and just rely on refreshing the network info when
         // this is happens
-        monitorCaptor.getValue().onAvailable(null);
-        assertEquals(1, notified.get());
-        monitorCaptor.getValue().onLost(null);
-        assertEquals(2, notified.get());
+        monitorSlot.captured.onAvailable(fakeNet)
+        assertThat(notified.get()).isEqualTo(1L)
+        monitorSlot.captured.onLost(fakeNet)
+        assertThat(notified.get()).isEqualTo(2L)
     }
 
     @Test
-    public void networkDetectorException() {
-        NetworkDetector networkDetector = Mockito.mock(NetworkDetector.class);
-        when(networkDetector.detectCurrentNetwork()).thenThrow(new SecurityException("bug"));
+    fun `network detector exception`() {
+        val networkDetector: NetworkDetector = mockk()
+        every { networkDetector.detectCurrentNetwork() }.throws(SecurityException("bug"))
 
-        CurrentNetworkProvider currentNetworkProvider =
-                new CurrentNetworkProvider(networkDetector, Mockito.mock());
-        Assert.assertEquals(
-                CurrentNetworkProvider.UNKNOWN_NETWORK,
-                currentNetworkProvider.refreshNetworkStatus());
-    }
-
-    @Test
-    @Config(maxSdk = Build.VERSION_CODES.S, minSdk = Build.VERSION_CODES.O)
-    public void networkDetectorExceptionOnCallbackRegistration() {
-        NetworkDetector networkDetector = Mockito.mock(NetworkDetector.class);
-        ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
-
-        when(networkDetector.detectCurrentNetwork())
-                .thenReturn(CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build());
-        doThrow(new SecurityException("bug"))
-                .when(connectivityManager)
-                .registerDefaultNetworkCallback(isA(NetworkCallback.class));
-
-        CurrentNetworkProvider currentNetworkProvider =
-                new CurrentNetworkProvider(
-                        networkDetector, connectivityManager, () -> mock(NetworkRequest.class));
-        Assert.assertEquals(
-                CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
-                currentNetworkProvider.refreshNetworkStatus());
-    }
-
-    @Test
-    @Config(maxSdk = Build.VERSION_CODES.LOLLIPOP)
-    public void networkDetectorExceptionOnCallbackRegistration_lollipop() {
-        NetworkDetector networkDetector = Mockito.mock(NetworkDetector.class);
-        ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
-        NetworkRequest networkRequest = mock(NetworkRequest.class);
-
-        when(networkDetector.detectCurrentNetwork())
-                .thenReturn(CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build());
-        doThrow(new SecurityException("bug"))
-                .when(connectivityManager)
-                .registerNetworkCallback(eq(networkRequest), isA(NetworkCallback.class));
-
-        CurrentNetworkProvider currentNetworkProvider =
-                new CurrentNetworkProvider(
-                        networkDetector, connectivityManager, () -> networkRequest);
-        Assert.assertEquals(
-                CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
-                currentNetworkProvider.refreshNetworkStatus());
-    }
-
-    @Test
-    @Config(maxSdk = Build.VERSION_CODES.LOLLIPOP)
-    public void shouldNotFailOnImmediateConnectionManagerCall_lollipop() {
-        NetworkRequest networkRequest = mock(NetworkRequest.class);
-        NetworkDetector networkDetector = Mockito.mock(NetworkDetector.class);
-        ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
-
-        doAnswer(
-                        invocation -> {
-                            NetworkCallback callback = invocation.getArgument(1);
-                            callback.onAvailable(mock(Network.class));
-                            return null;
-                        })
-                .when(connectivityManager)
-                .registerNetworkCallback(eq(networkRequest), any(NetworkCallback.class));
-
-        new CurrentNetworkProvider(networkDetector, connectivityManager, () -> networkRequest);
+        val currentNetworkProvider =
+            CurrentNetworkProvider(networkDetector, Mockito.mock())
+        assertThat(currentNetworkProvider.refreshNetworkStatus()).isEqualTo(UNKNOWN_NETWORK)
     }
 
     @Test
     @Config(maxSdk = Build.VERSION_CODES.S, minSdk = Build.VERSION_CODES.O)
-    public void shouldNotFailOnImmediateConnectionManagerCall() {
-        NetworkRequest networkRequest = mock(NetworkRequest.class);
-        NetworkDetector networkDetector = Mockito.mock(NetworkDetector.class);
-        ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
+    fun `network detector exception on callback registration`() {
+        val networkDetector: NetworkDetector = mockk()
+        val connectivityManager: ConnectivityManager = mockk()
+        val networkRequest: NetworkRequest = mockk()
 
-        doAnswer(
-                        invocation -> {
-                            NetworkCallback callback = invocation.getArgument(0);
-                            callback.onAvailable(mock(Network.class));
-                            return null;
-                        })
-                .when(connectivityManager)
-                .registerDefaultNetworkCallback(any(NetworkCallback.class));
+        every { networkDetector.detectCurrentNetwork() } returns wifi
+        every { connectivityManager.registerDefaultNetworkCallback(any()) }.throws(
+            SecurityException(
+                "bug",
+            ),
+        )
 
-        new CurrentNetworkProvider(networkDetector, connectivityManager, () -> networkRequest);
+        val currentNetworkProvider =
+            CurrentNetworkProvider(networkDetector, connectivityManager) { networkRequest }
+        assertThat(currentNetworkProvider.refreshNetworkStatus()).isEqualTo(wifi)
+    }
+
+    @Test
+    @Config(maxSdk = Build.VERSION_CODES.LOLLIPOP)
+    fun `network detector exception on callback registration lollipop`() {
+        val networkDetector: NetworkDetector = mockk()
+        val connectivityManager: ConnectivityManager = mockk()
+        val networkRequest: NetworkRequest = mockk()
+
+        every { networkDetector.detectCurrentNetwork() } returns wifi
+        every {
+            connectivityManager.registerNetworkCallback(
+                networkRequest,
+                any<NetworkCallback>(),
+            )
+        }.throws(SecurityException("bug"))
+
+        val currentNetworkProvider =
+            CurrentNetworkProvider(networkDetector, connectivityManager) { networkRequest }
+        assertThat(currentNetworkProvider.refreshNetworkStatus()).isEqualTo(wifi)
+    }
+
+    @Test
+    @Config(maxSdk = Build.VERSION_CODES.LOLLIPOP)
+    fun `should not fail on immediate ConnectionManager call lollipop`() {
+        val networkDetector: NetworkDetector = mockk()
+        val connectivityManager: ConnectivityManager = mockk()
+        val networkRequest: NetworkRequest = mockk()
+
+        every {
+            connectivityManager.registerNetworkCallback(
+                networkRequest,
+                any<NetworkCallback>(),
+            )
+        }.answers { a ->
+            run {
+                val x: NetworkCallback = a.invocation.args[1] as NetworkCallback
+                x.onAvailable(mockk())
+            }
+        }
+
+        val networkProvider =
+            CurrentNetworkProvider(networkDetector, connectivityManager) { networkRequest }
+        assertThat(networkProvider.refreshNetworkStatus()).isEqualTo(UNKNOWN_NETWORK)
+    }
+
+    @Test
+    @Config(maxSdk = Build.VERSION_CODES.S, minSdk = Build.VERSION_CODES.O)
+    fun `should not fail on immediate ConnectionManager call`() {
+        val networkDetector: NetworkDetector = mockk()
+        val connectivityManager: ConnectivityManager = mockk()
+        val networkRequest: NetworkRequest = mockk()
+
+        every { connectivityManager.registerDefaultNetworkCallback(any<NetworkCallback>()) }
+            .answers { a ->
+                run {
+                    val x: NetworkCallback = a.invocation.args[0] as NetworkCallback
+                    x.onAvailable(mockk())
+                }
+            }
+
+        val networkProvider =
+            CurrentNetworkProvider(networkDetector, connectivityManager) { networkRequest }
+        assertThat(networkProvider.refreshNetworkStatus()).isEqualTo(UNKNOWN_NETWORK)
     }
 }
