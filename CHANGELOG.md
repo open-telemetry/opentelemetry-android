@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### ⚠️⚠️ Breaking changes
+
+- New maven coordinates for http client instrumentations ([#791](https://github.com/open-telemetry/opentelemetry-android/pull/791))
+  - `okhttp-3.0-library` -> `instrumentation-okhttp-3.0-library`
+  - `okhttp-3.0-agent` -> `instrumentation-okhttp-3.0-agent`
+  - `httpurlconnection-library` -> `instrumentation-httpurlconnection-library`
+  - `httpurlconnection-agent` -> `instrumentation-httpurlconnection-agent`
+- Remove deprecated `exception.escaped` attribute from crash events ([#796](https://github.com/open-telemetry/opentelemetry-android/pull/796))
+
 ## Version 0.9.0 (2025-01-15)
 
 - This version builds on opentelemetry-java-instrumentation

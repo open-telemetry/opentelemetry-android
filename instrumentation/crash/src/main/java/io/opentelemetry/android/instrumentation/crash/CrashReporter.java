@@ -5,7 +5,6 @@
 
 package io.opentelemetry.android.instrumentation.crash;
 
-import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_ESCAPED;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_MESSAGE;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_TYPE;
@@ -50,7 +49,6 @@ public final class CrashReporter {
         Thread thread = crashDetails.getThread();
         AttributesBuilder attributesBuilder =
                 Attributes.builder()
-                        .put(EXCEPTION_ESCAPED, true)
                         .put(THREAD_ID, thread.getId())
                         .put(THREAD_NAME, thread.getName())
                         .put(EXCEPTION_MESSAGE, throwable.getMessage())

@@ -83,7 +83,6 @@ public class CrashReporterTest {
 
         Attributes crashAttributes = logRecords.get(0).getAttributes();
         OpenTelemetryAssertions.assertThat(crashAttributes)
-                .containsEntry(ExceptionAttributes.EXCEPTION_ESCAPED, true)
                 .containsEntry(ExceptionAttributes.EXCEPTION_MESSAGE, exceptionMessage)
                 .containsEntry(ExceptionAttributes.EXCEPTION_TYPE, "java.lang.RuntimeException")
                 .containsEntry(ThreadIncubatingAttributes.THREAD_ID, crashingThread.getId())
