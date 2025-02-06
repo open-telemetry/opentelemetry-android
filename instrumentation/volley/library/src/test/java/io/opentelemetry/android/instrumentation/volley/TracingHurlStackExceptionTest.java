@@ -7,7 +7,6 @@ package io.opentelemetry.android.instrumentation.volley;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.semconv.ExceptionAttributes.*;
-import static io.opentelemetry.semconv.SemanticAttributes.EXCEPTION_EVENT_NAME;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.android.volley.Request;
@@ -65,7 +64,7 @@ public class TracingHurlStackExceptionTest {
         assertThat(span)
                 .hasEventsSatisfyingExactly(
                         e ->
-                                e.hasName(EXCEPTION_EVENT_NAME)
+                                e.hasName("exception")
                                         .hasAttributesSatisfying(
                                                 a ->
                                                         assertThat(a)

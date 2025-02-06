@@ -24,7 +24,6 @@ import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.HttpAttributes;
-import io.opentelemetry.semconv.SemanticAttributes;
 import io.opentelemetry.semconv.ServerAttributes;
 import io.opentelemetry.semconv.UrlAttributes;
 import io.opentelemetry.semconv.incubating.HttpIncubatingAttributes;
@@ -163,7 +162,7 @@ public class TracingHurlStackTest {
 
         assertThat(span.getEvents())
                 .hasSize(1)
-                .allSatisfy(e -> e.getName().equals(SemanticAttributes.EXCEPTION_EVENT_NAME));
+                .allSatisfy(e -> assertThat(e.getName()).isEqualTo("exception"));
 
         verifyAttributes(span, url, null, null);
     }
