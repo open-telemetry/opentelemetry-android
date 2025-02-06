@@ -9,7 +9,9 @@
         "io.opentelemetry.contrib:opentelemetry-disk-buffering",
         "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha",
         "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator",
-        "io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0"
+        "io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0",
+        "io.opentelemetry.semconv:**",
+        "io.opentelemetry.proto:**"
       ],
       // Renovate's default behavior is only to update from unstable -> unstable if it's for the
       // major.minor.patch, under the assumption that you would want to update to the stable version
