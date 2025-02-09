@@ -1,0 +1,5 @@
+version: 3
+
+targets:
+  only:
+    - type: gradle
