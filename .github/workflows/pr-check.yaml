@@ -2,6 +2,9 @@ name: PR build
 
 on: pull_request
 
+permissions:
+  contents: read
+
 jobs:
   pr-checks:
     name: "pr-checks"
