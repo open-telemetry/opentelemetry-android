@@ -24,7 +24,7 @@ if (android != null) {
         }
     }
 } else {
-    extensions.configure(JavaPluginExtension::class.java) {
+    extensions.findByType(JavaPluginExtension::class.java)?.apply {
         if (isARelease) {
             withJavadocJar()
             withSourcesJar()
@@ -39,7 +39,11 @@ afterEvaluate {
             if (android != null) {
                 from(components.findByName(androidVariantToRelease))
             } else {
-                from(components.findByName("java"))
+                val javaComponent =
+                    components.findByName("java") ?: components.findByName("javaPlatform")
+                javaComponent?.let {
+                    from(it)
+                }
             }
             pom {
                 val repoUrl = "https://github.com/open-telemetry/opentelemetry-android"
@@ -90,7 +94,7 @@ fun computeArtifactId(): String {
     // For example, prepending "okhttp-3.0-" to both the "library" and "agent" subprojects inside the "okhttp-3.0" folder.
     val match = Regex("[^:]+:[^:]+\$").find(path)
     var artifactId = match!!.value.replace(":", "-")
-    if ( !artifactId.startsWith("instrumentation-")){
+    if (!artifactId.startsWith("instrumentation-")) {
         artifactId = "instrumentation-$artifactId"
     }
 
