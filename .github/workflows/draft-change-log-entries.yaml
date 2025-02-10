@@ -3,6 +3,9 @@ name: Draft CHANGELOG entries for a release
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   create_draft:
     runs-on: ubuntu-latest
