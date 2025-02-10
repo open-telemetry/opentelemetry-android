@@ -7,6 +7,10 @@ on:
       - release/*
   workflow_dispatch:
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   build:
     name: "build"
@@ -47,6 +51,9 @@ jobs:
       success: ${{ needs.build.result == 'success' }}
 
   required-status-check:
+    permissions:
+      contents: read
+      issues: write
     needs:
       - build
     runs-on: ubuntu-latest
