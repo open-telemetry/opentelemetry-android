@@ -5,16 +5,12 @@ plugins {
 
 dependencies {
     constraints {
-        rootProject.subprojects(
-            object : Action<Project> {
-                override fun execute(subproject: Project) {
-                    if (subproject != project) {
-                        subproject.plugins.withId("maven-publish") {
-                            api(subproject)
-                        }
-                    }
+        rootProject.subprojects.forEach { subproject ->
+            if (subproject != project) {
+                subproject.plugins.withId("maven-publish") {
+                    api(subproject)
                 }
-            },
-        )
+            }
+        }
     }
 }
