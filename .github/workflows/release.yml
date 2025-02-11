@@ -4,8 +4,13 @@ name: Release
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   release:
+    permissions:
+      contents: write # for creating the release
     name: "release"
     runs-on: ubuntu-latest
     steps:
@@ -104,16 +109,3 @@ jobs:
                             --title "Version $VERSION" \
                             --notes-file /tmp/release-notes.txt \
                             v$VERSION
-
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Create release tag for release builds
-        env:
-          GH_TOKEN: ${{ secrets.OPENTELEMETRYBOT_GITHUB_TOKEN }}
-        if: "${{ inputs.release_type == 'final' }}"
-        run: |
-          VERSION_NUMBER=$(grep ^version= gradle.properties  | sed -e 's/^.*=//')
-          VERSION="v${VERSION_NUMBER}"
-          git tag ${VERSION}
-          git push origin ${VERSION}
-
