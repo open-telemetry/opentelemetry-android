@@ -36,5 +36,4 @@ This instrumentation produces the following telemetry:
 * Attributes:
   * `activityName`:  <name of activity>
   * `screen.name`:  <name of screen>
-  * `last.screen.name`:  <name of screen>, when span contains the `activityPostResumed` event. 
-* Parent: null, unless it's a `Created` span created after `AppStart`. Then, `AppStart` is the parent.
+  * `last.screen.name`:  <name of screen>, only when span contains the `activityPostResumed` event.
