@@ -45,15 +45,15 @@ internal class DiskManager(
          * size is stored in the preferences and returned otherwise.
          */
         get() {
+            val requestedSize = diskBufferingConfig.maxCacheSize
             val storedSize = preferences.retrieveInt(MAX_FOLDER_SIZE_KEY, -1)
-            if (storedSize > 0) {
+            if (storedSize == requestedSize) {
                 Log.d(
                     RumConstants.OTEL_RUM_LOG_TAG,
                     String.format("Returning max folder size from preferences: %s", storedSize),
                 )
                 return storedSize
             }
-            val requestedSize = diskBufferingConfig.maxCacheSize
             val availableCacheSize =
                 cacheStorage.ensureCacheSpaceAvailable(requestedSize.toLong()).toInt()
             // Divides the available cache size by 3 (for each signal's folder) and then subtracts the
