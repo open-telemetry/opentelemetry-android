@@ -9,7 +9,7 @@ import io.opentelemetry.android.common.RumConstants.Events.EVENT_SESSION_END
 import io.opentelemetry.android.common.RumConstants.Events.EVENT_SESSION_START
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
-import io.opentelemetry.api.incubator.events.EventLogger
+import io.opentelemetry.api.incubator.logs.ExtendedLogger
 import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_ID
 import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_PREVIOUS_ID
 
@@ -18,7 +18,7 @@ import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_P
  * specified in the OpenTelemetry semantic conventions.
  */
 internal class SessionIdEventSender(
-    private val eventLogger: EventLogger,
+    private val eventLogger: ExtendedLogger,
 ) : SessionObserver {
     override fun onSessionStarted(
         newSession: Session,
@@ -26,11 +26,12 @@ internal class SessionIdEventSender(
     ) {
         val eventBuilder =
             eventLogger
-                .builder(EVENT_SESSION_START)
-                .put(SESSION_ID, newSession.getId())
+                .logRecordBuilder()
+                .setEventName(EVENT_SESSION_START)
+                .setAttribute(SESSION_ID, newSession.getId())
         val previousSessionId = previousSession.getId()
         if (previousSessionId.isNotEmpty()) {
-            eventBuilder.put(SESSION_PREVIOUS_ID, previousSessionId)
+            eventBuilder.setAttribute(SESSION_PREVIOUS_ID, previousSessionId)
         }
         eventBuilder.emit()
     }
@@ -40,8 +41,9 @@ internal class SessionIdEventSender(
             return
         }
         eventLogger
-            .builder(EVENT_SESSION_END)
-            .put(SESSION_ID, session.getId())
+            .logRecordBuilder()
+            .setEventName(EVENT_SESSION_END)
+            .setAttribute(SESSION_ID, session.getId())
             .emit()
     }
 }

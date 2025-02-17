@@ -20,19 +20,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import io.opentelemetry.android.demo.shop.clients.ProductCatalogClient
-import io.opentelemetry.android.demo.theme.DemoAppTheme
-import io.opentelemetry.android.demo.shop.ui.cart.CartScreen
-import io.opentelemetry.android.demo.shop.ui.products.ProductDetails
-import io.opentelemetry.android.demo.shop.ui.products.ProductList
-import io.opentelemetry.android.demo.shop.ui.cart.CartViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import io.opentelemetry.android.demo.OtelDemoApplication
+import io.opentelemetry.android.demo.shop.clients.ProductCatalogClient
+import io.opentelemetry.android.demo.shop.ui.cart.CartScreen
+import io.opentelemetry.android.demo.shop.ui.cart.CartViewModel
 import io.opentelemetry.android.demo.shop.ui.cart.CheckoutConfirmationScreen
 import io.opentelemetry.android.demo.shop.ui.cart.CheckoutInfoViewModel
 import io.opentelemetry.android.demo.shop.ui.cart.InfoScreen
+import io.opentelemetry.android.demo.shop.ui.products.ProductDetails
+import io.opentelemetry.android.demo.shop.ui.products.ProductList
+import io.opentelemetry.android.demo.theme.DemoAppTheme
+import io.opentelemetry.api.common.AttributeKey.doubleKey
+import io.opentelemetry.api.common.AttributeKey.stringKey
 
 class AstronomyShopActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -140,8 +142,8 @@ private fun generateOrderPlacedEvent(
 ) {
     val eventBuilder = OtelDemoApplication.eventBuilder("otel.demo.app", "order.placed")
     eventBuilder
-        .put("order.total.value", cartViewModel.getTotalPrice())
-        .put("buyer.state", checkoutInfoViewModel.shippingInfo.state)
+        .setAttribute(doubleKey("order.total.value"), cartViewModel.getTotalPrice())
+        .setAttribute(stringKey("buyer.state"), checkoutInfoViewModel.shippingInfo.state)
         .emit()
 }
 

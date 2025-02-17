@@ -15,14 +15,14 @@ import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.android.instrumentation.sessions.SessionInstrumentation
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.incubator.events.EventBuilder
+import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
+import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.metrics.LongCounter
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter
-import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider
 
 const val TAG = "otel.demo"
 
@@ -95,11 +95,10 @@ class OtelDemoApplication : Application() {
             return rum?.openTelemetry?.meterProvider?.get("demo.app")?.counterBuilder(name)?.build()
         }
 
-        fun eventBuilder(scopeName: String, eventName: String): EventBuilder {
-            val loggerProvider = rum?.openTelemetry?.logsBridge
-            val eventLogger =
-                SdkEventLoggerProvider.create(loggerProvider).get(scopeName)
-            return eventLogger.builder(eventName)
+        fun eventBuilder(scopeName: String, eventName: String): LogRecordBuilder {
+            val logger = rum?.openTelemetry?.logsBridge?.loggerBuilder(scopeName)?.build()
+            var builder: ExtendedLogRecordBuilder = logger?.logRecordBuilder() as ExtendedLogRecordBuilder
+            return builder.setEventName(eventName)
         }
     }
 }

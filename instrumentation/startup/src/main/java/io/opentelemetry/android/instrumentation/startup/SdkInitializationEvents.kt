@@ -13,7 +13,7 @@ import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.common.Value
-import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider
+import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import java.time.Instant
 import java.util.function.Supplier
@@ -60,19 +60,13 @@ class SdkInitializationEvents(
 
     internal fun finish(openTelemetry: OpenTelemetry) {
         val loggerProvider = openTelemetry.logsBridge
-        val eventLogger =
-            SdkEventLoggerProvider.create(loggerProvider).get("otel.initialization.events")
+        val logger = loggerProvider.loggerBuilder("otel.initialization.events").build()
         events.forEach { event: Event ->
-            val eventBuilder =
-                eventLogger
-                    .builder(event.name)
-                    .setTimestamp(event.timestamp)
-                    .setAttributes(event.attributes)
-            if (event.body != null) {
-                // TODO: Config is technically correct because config is the only startup event
-                // with a body, but this is ultimately clunky/fragile.
-                eventBuilder.put("config", event.body)
-            }
+            val eventBuilder: ExtendedLogRecordBuilder = logger.logRecordBuilder() as ExtendedLogRecordBuilder
+            eventBuilder
+                .setEventName(event.name)
+                .setTimestamp(event.timestamp)
+            event.attributes?.let { eventBuilder.setAllAttributes(it) }
             eventBuilder.emit()
         }
     }
@@ -80,9 +74,8 @@ class SdkInitializationEvents(
     private fun addEvent(
         name: String,
         attr: Attributes? = null,
-        body: Value<*>? = null,
     ) {
-        events.add(Event(clock.get(), name, attr, body))
+        events.add(Event(clock.get(), name, attr))
     }
 
     private data class Event(
