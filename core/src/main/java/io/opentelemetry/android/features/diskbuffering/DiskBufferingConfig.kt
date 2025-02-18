@@ -9,7 +9,7 @@ import android.util.Log
 import io.opentelemetry.android.common.RumConstants.OTEL_RUM_LOG_TAG
 import java.util.concurrent.TimeUnit
 
-const val DEFAULT_MAX_CACHE_SIZE: Int = 60 * 1024 * 1024
+const val DEFAULT_MAX_CACHE_SIZE: Int = 10 * 1024 * 1024
 const val MAX_CACHE_FILE_SIZE: Int = 1024 * 1024
 const val DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS = 30L
 const val DEFAULT_MIN_FILE_AGE_FOR_READ_MS = 33L
