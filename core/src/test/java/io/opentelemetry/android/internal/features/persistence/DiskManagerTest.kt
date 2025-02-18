@@ -90,13 +90,11 @@ internal class DiskManagerTest {
         val maxCacheFileSize = 1024 * 1024 // 1 MB
         every { diskBufferingConfig.maxCacheSize }.returns(maxCacheSize.toInt())
         every { diskBufferingConfig.maxCacheFileSize }.returns(maxCacheFileSize)
-        every { cacheStorage.ensureCacheSpaceAvailable(maxCacheSize) }.returns(maxCacheSize)
         every { preferences.retrieveInt(MAX_FOLDER_SIZE_KEY, -1) }.returns(-1)
         every { preferences.store(any(), any()) } just Runs
 
-        // Expects the size of a single signal type folder minus the size of a cache file, to use as
-        // temporary space for reading.
-        val expected = 2446677
+        // Expects the size of a single signal type folder, to use as temporary space for reading.
+        val expected = (maxCacheSize / 3).toInt()
         assertThat(diskManager.maxFolderSize).isEqualTo(expected)
         verify {
             preferences.store(MAX_FOLDER_SIZE_KEY, expected)
@@ -113,22 +111,6 @@ internal class DiskManagerTest {
         confirmVerified(preferences)
         verify { cacheStorage wasNot Called }
         verify { diskBufferingConfig wasNot Called }
-    }
-
-    @Test
-    fun `max folder size is used when calculated size is invalid`() {
-        val maxCacheSize = (1024 * 1024).toLong() // 1 MB
-        val maxCacheFileSize = 1024 * 1024 // 1 MB
-        every { diskBufferingConfig.maxCacheSize }.returns(maxCacheSize.toInt())
-        every { diskBufferingConfig.maxCacheFileSize }.returns(maxCacheFileSize)
-        every { cacheStorage.ensureCacheSpaceAvailable(maxCacheSize) }.returns(maxCacheSize)
-        every { preferences.retrieveInt(MAX_FOLDER_SIZE_KEY, -1) }.returns(-1)
-        // Expects the size of a single signal type folder minus the size of a cache file, to use as
-        // temporary space for reading.
-        assertThat(diskManager.maxFolderSize).isEqualTo(0)
-        verify(inverse = true) {
-            preferences.store(any(), any())
-        }
     }
 
     companion object {
