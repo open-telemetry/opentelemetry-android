@@ -47,9 +47,7 @@ import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTra
 import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler;
 import io.opentelemetry.android.session.SessionManager;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.KeyValue;
-import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.incubator.events.EventLogger;
+import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -62,9 +60,9 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.contrib.disk.buffering.SpanToDiskExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
-import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -186,28 +184,32 @@ public class OpenTelemetryRumBuilderTest {
                                                 SimpleLogRecordProcessor.create(logsExporter)))
                         .build();
 
-        OpenTelemetrySdk sdk = (OpenTelemetrySdk) openTelemetryRum.getOpenTelemetry();
-        EventLogger eventLogger =
-                SdkEventLoggerProvider.create(sdk.getSdkLoggerProvider())
-                        .get("otel.initialization.events");
+        Logger logger =
+                openTelemetryRum
+                        .getOpenTelemetry()
+                        .getLogsBridge()
+                        .loggerBuilder("otel.initialization.events")
+                        .build();
+        ExtendedLogRecordBuilder eventLogger = (ExtendedLogRecordBuilder) logger.logRecordBuilder();
         Attributes attrs = Attributes.of(stringKey("mega"), "hit");
-        eventLogger.builder("test.event").put("body.field", "foo").setAttributes(attrs).emit();
+        eventLogger
+                .setEventName("test.event")
+                .setAllAttributes(attrs)
+                .setAttribute(stringKey("body.field"), "foo")
+                .emit();
 
         List<LogRecordData> logs = logsExporter.getFinishedLogRecordItems();
         assertThat(logs).hasSize(1);
         assertThat(logs.get(0))
                 .hasAttributesSatisfyingExactly(
                         equalTo(SESSION_ID, openTelemetryRum.getRumSessionId()),
-                        equalTo(stringKey("event.name"), "test.event"),
                         equalTo(SCREEN_NAME_KEY, CUR_SCREEN_NAME),
-                        equalTo(stringKey("mega"), "hit"))
+                        equalTo(stringKey("mega"), "hit"),
+                        equalTo(stringKey("body.field"), "foo"))
                 .hasResource(resource);
-
-        Value<?> bodyValue = logs.get(0).getBodyValue();
-        List<KeyValue> payload = (List<KeyValue>) bodyValue.getValue();
-        assertThat(payload).hasSize(1);
-        KeyValue expected = KeyValue.of("body.field", Value.of("foo"));
-        assertThat(payload.get(0)).isEqualTo(expected);
+        // TODO: verify event name inline above when the assertions framework can handle it
+        ExtendedLogRecordData log0 = (ExtendedLogRecordData) logs.get(0);
+        assertThat(log0.getEventName()).isEqualTo("test.event");
     }
 
     @Test

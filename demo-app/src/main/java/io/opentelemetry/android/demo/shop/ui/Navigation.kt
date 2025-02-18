@@ -13,6 +13,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.material3.*
 import io.opentelemetry.android.demo.OtelDemoApplication
+import io.opentelemetry.api.common.AttributeKey.stringKey
 
 
 sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
@@ -100,7 +101,7 @@ class InstrumentedAstronomyShopNavController(
     private fun generateNavigationEvent(eventName: String, payload: Map<String, String>) {
         val eventBuilder = OtelDemoApplication.eventBuilder("otel.demo.app.navigation", eventName)
         payload.forEach { (key, value) ->
-            eventBuilder.put(key, value)
+            eventBuilder.setAttribute(stringKey(key), value)
         }
         eventBuilder.emit()
     }

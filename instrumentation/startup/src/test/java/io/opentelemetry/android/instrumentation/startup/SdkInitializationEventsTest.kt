@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.logs.LogRecordProcessor
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord
 import io.opentelemetry.sdk.logs.SdkLoggerProvider
+import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import org.junit.jupiter.api.Test
@@ -92,9 +93,9 @@ class SdkInitializationEventsTest {
         var attrs: Attributes? = null
 
         override fun accept(log: ReadWriteLogRecord) {
-            val logData = log.toLogRecordData()
+            val logData: ExtendedLogRecordData = log.toLogRecordData() as ExtendedLogRecordData
             assertThat(logData.timestampEpochNanos).isEqualTo(timeNs)
-            assertThat(logData.attributes.get(stringKey("event.name"))).isEqualTo(name)
+            assertThat(logData.getEventName()).isEqualTo(name)
             if (body == null) {
                 assertThat(logData.bodyValue).isNull()
             } else {
@@ -119,7 +120,7 @@ class SdkInitializationEventsTest {
             key: String,
             value: String,
         ): EventAssert {
-            attrs = Attributes.of(stringKey("event.name"), name, stringKey(key), value)
+            attrs = Attributes.of(stringKey(key), value)
             return this
         }
     }
