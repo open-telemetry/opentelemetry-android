@@ -47,6 +47,13 @@
       "groupName": "otel-core"
     },
     {
+      // Group updates from otel java semconv
+      "matchPackageNames": [
+        "io.opentelemetry.semconv:**"
+      ],
+      "groupName": "otel-semconv-java"
+    },
+    {
       // navigation-fragment 2.7.0 and above require android api 34+, which we are not ready for
       // yet due to android gradle plugin only supporting min 33.
       "matchPackagePrefixes": ["androidx.navigation"],
