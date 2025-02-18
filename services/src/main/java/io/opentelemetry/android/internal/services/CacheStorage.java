@@ -5,8 +5,8 @@
 
 package io.opentelemetry.android.internal.services;
 
-import android.content.*;
-import java.io.*;
+import android.content.Context;
+import java.io.File;
 
 /**
  * Utility to get information about the host app.
