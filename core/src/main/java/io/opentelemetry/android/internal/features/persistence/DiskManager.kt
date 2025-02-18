@@ -37,12 +37,10 @@ internal class DiskManager(
 
     val maxFolderSize: Int
         /**
-         * It checks for the available cache space in disk, then it attempts to divide by 3 in order to
-         * get each signal's folder max size. The resulting value is subtracted the max file size value
-         * in order to account for temp files used during the reading process.
+         * It divides the requested cache size by 3 in order to
+         * get each signal's folder max size.
          *
-         * @return If the calculated size is < the max file size value, it returns 0. The calculated
-         * size is stored in the preferences and returned otherwise.
+         * @return The calculated size is stored in the preferences and returned.
          */
         get() {
             val storedSize = preferences.retrieveInt(MAX_FOLDER_SIZE_KEY, -1)
@@ -54,31 +52,15 @@ internal class DiskManager(
                 return storedSize
             }
             val requestedSize = diskBufferingConfig.maxCacheSize
-            val availableCacheSize =
-                cacheStorage.ensureCacheSpaceAvailable(requestedSize.toLong()).toInt()
-            // Divides the available cache size by 3 (for each signal's folder) and then subtracts the
-            // size of a single file to be aware of a temp file used when reading data back from the
-            // disk.
-            val maxCacheFileSize = maxCacheFileSize
-            val calculatedSize = availableCacheSize / 3 - maxCacheFileSize
-            if (calculatedSize < maxCacheFileSize) {
-                Log.w(
-                    RumConstants.OTEL_RUM_LOG_TAG,
-                    String.format(
-                        "Insufficient folder cache size: %s, it must be at least: %s",
-                        calculatedSize,
-                        maxCacheFileSize,
-                    ),
-                )
-                return 0
-            }
+
+            // Divides the available cache size by 3 (for each signal's folder)
+            val calculatedSize = requestedSize / 3
             preferences.store(MAX_FOLDER_SIZE_KEY, calculatedSize)
             Log.d(
                 RumConstants.OTEL_RUM_LOG_TAG,
                 String.format(
-                    "Requested cache size: %s, available cache size: %s, folder size: %s",
+                    "Requested cache size: %s, folder size: %s",
                     requestedSize,
-                    availableCacheSize,
                     calculatedSize,
                 ),
             )
