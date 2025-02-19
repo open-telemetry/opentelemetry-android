@@ -367,7 +367,7 @@ public final class OpenTelemetryRumBuilder {
             Services services,
             InitializationEvents initializationEvents,
             BufferDelegatingSpanExporter bufferDelegatingSpanExporter,
-            BufferDelegatingLogExporter bufferedDelegatingLogExporter,
+            BufferDelegatingLogExporter bufferDelegatingLogExporter,
             BufferDelegatingMetricExporter bufferDelegatingMetricExporter) {
 
         DiskBufferingConfig diskBufferingConfig = config.getDiskBufferingConfig();
@@ -403,10 +403,14 @@ public final class OpenTelemetryRumBuilder {
             }
         }
         initializationEvents.spanExporterInitialized(spanExporter);
-        bufferedDelegatingLogExporter.setDelegate(logsExporter);
+        bufferDelegatingLogExporter.setDelegate(logsExporter);
         bufferDelegatingSpanExporter.setDelegate(spanExporter);
         bufferDelegatingMetricExporter.setDelegate(metricExporter);
         scheduleDiskTelemetryReader(services, signalFromDiskExporter);
+
+        bufferDelegatingSpanExporter.flush();
+        bufferDelegatingLogExporter.flush();
+        bufferDelegatingMetricExporter.flush();
     }
 
     @VisibleForTesting
