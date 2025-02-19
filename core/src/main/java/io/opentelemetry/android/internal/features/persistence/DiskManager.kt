@@ -60,7 +60,6 @@ internal class DiskManager(
         get() = diskBufferingConfig.maxCacheFileSize
 
     companion object {
-
         private fun deleteFiles(dir: File) {
             val files = dir.listFiles()
             if (files != null) {
