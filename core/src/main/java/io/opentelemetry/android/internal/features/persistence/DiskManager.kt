@@ -9,13 +9,11 @@ import android.util.Log
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.android.internal.services.CacheStorage
-import io.opentelemetry.android.internal.services.Preferences
 import java.io.File
 import java.io.IOException
 
 internal class DiskManager(
     private val cacheStorage: CacheStorage,
-    private val preferences: Preferences,
     private val diskBufferingConfig: DiskBufferingConfig,
 ) {
     @get:Throws(IOException::class)
@@ -43,19 +41,10 @@ internal class DiskManager(
          * @return The calculated size is stored in the preferences and returned.
          */
         get() {
-            val storedSize = preferences.retrieveInt(MAX_FOLDER_SIZE_KEY, -1)
-            if (storedSize > 0) {
-                Log.d(
-                    RumConstants.OTEL_RUM_LOG_TAG,
-                    String.format("Returning max folder size from preferences: %s", storedSize),
-                )
-                return storedSize
-            }
             val requestedSize = diskBufferingConfig.maxCacheSize
 
             // Divides the available cache size by 3 (for each signal's folder)
             val calculatedSize = requestedSize / 3
-            preferences.store(MAX_FOLDER_SIZE_KEY, calculatedSize)
             Log.d(
                 RumConstants.OTEL_RUM_LOG_TAG,
                 String.format(
@@ -71,7 +60,6 @@ internal class DiskManager(
         get() = diskBufferingConfig.maxCacheFileSize
 
     companion object {
-        private const val MAX_FOLDER_SIZE_KEY = "max_signal_folder_size"
 
         private fun deleteFiles(dir: File) {
             val files = dir.listFiles()
