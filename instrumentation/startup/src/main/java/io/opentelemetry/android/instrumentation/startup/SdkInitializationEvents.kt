@@ -86,6 +86,10 @@ class SdkInitializationEvents(
             }.emit()
     }
 
+    /**
+     * Add an init event with the given name and attributes. A log will be recorded synchronously if the logger has already been
+     * initialized (when [finish] is called), or it will be queued up for emission later when [finish] actually gets called.
+     */
     private fun addEvent(
         name: String,
         attr: Attributes? = null,
