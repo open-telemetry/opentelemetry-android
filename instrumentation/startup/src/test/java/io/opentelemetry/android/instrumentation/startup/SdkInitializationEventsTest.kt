@@ -62,12 +62,12 @@ class SdkInitializationEventsTest {
         events.currentNetworkProviderInitialized()
         events.networkMonitorInitialized()
         events.slowRenderingDetectorInitialized()
-        events.spanExporterInitialized(exporter)
 
         verify { listOf(processor) wasNot called }
         verify(exactly = 0) { exporter.export(any()) }
 
         events.finish(sdk)
+        events.spanExporterInitialized(exporter)
 
         assertThat(seen).satisfiesExactly(
             time(now).named(RumConstants.Events.INIT_EVENT_STARTED),
@@ -83,19 +83,19 @@ class SdkInitializationEventsTest {
         )
     }
 
-    fun time(timeMs: Long): EventAssert = EventAssert(TimeUnit.MILLISECONDS.toNanos(timeMs))
+    private fun time(timeMs: Long): EventAssert = EventAssert(TimeUnit.MILLISECONDS.toNanos(timeMs))
 
     class EventAssert(
-        val timeNs: Long,
+        private val timeNs: Long,
     ) : Consumer<ReadWriteLogRecord> {
-        lateinit var name: String
-        var body: Value<*>? = null
-        var attrs: Attributes? = null
+        private lateinit var name: String
+        private var body: Value<*>? = null
+        private var attrs: Attributes? = null
 
         override fun accept(log: ReadWriteLogRecord) {
             val logData: ExtendedLogRecordData = log.toLogRecordData() as ExtendedLogRecordData
             assertThat(logData.timestampEpochNanos).isEqualTo(timeNs)
-            assertThat(logData.getEventName()).isEqualTo(name)
+            assertThat(logData.eventName).isEqualTo(name)
             if (body == null) {
                 assertThat(logData.bodyValue).isNull()
             } else {
@@ -108,11 +108,6 @@ class SdkInitializationEventsTest {
 
         fun named(name: String): EventAssert {
             this.name = name
-            return this
-        }
-
-        fun withBody(body: Value<*>): EventAssert {
-            this.body = body
             return this
         }
 

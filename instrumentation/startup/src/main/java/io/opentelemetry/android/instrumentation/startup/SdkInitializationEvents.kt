@@ -14,15 +14,19 @@ import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.common.Value
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
+import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import java.time.Instant
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Supplier
 
 @AutoService(InitializationEvents::class)
 class SdkInitializationEvents(
     private val clock: Supplier<Instant> = Supplier { Instant.now() },
 ) : InitializationEvents {
-    private val events = mutableListOf<Event>()
+    private val events = ConcurrentLinkedQueue<Event>()
+    private val eventLogger = AtomicReference<Logger?>()
 
     override fun sdkInitializationStarted() {
         addEvent(RumConstants.Events.INIT_EVENT_STARTED)
@@ -59,23 +63,39 @@ class SdkInitializationEvents(
     }
 
     internal fun finish(openTelemetry: OpenTelemetry) {
-        val loggerProvider = openTelemetry.logsBridge
-        val logger = loggerProvider.loggerBuilder("otel.initialization.events").build()
-        events.forEach { event: Event ->
-            val eventBuilder: ExtendedLogRecordBuilder = logger.logRecordBuilder() as ExtendedLogRecordBuilder
-            eventBuilder
-                .setEventName(event.name)
-                .setTimestamp(event.timestamp)
-            event.attributes?.let { eventBuilder.setAllAttributes(it) }
-            eventBuilder.emit()
-        }
+        val logger = openTelemetry.logsBridge.loggerBuilder("otel.initialization.events").build()
+        eventLogger.set(logger)
+        logger.emitInitEvents()
     }
 
+    private fun Logger.emitInitEvents() {
+        do {
+            events.poll()?.emit(this)
+        } while (events.isNotEmpty())
+    }
+
+    private fun Event.emit(logger: Logger) {
+        val eventBuilder: ExtendedLogRecordBuilder = logger.logRecordBuilder() as ExtendedLogRecordBuilder
+        eventBuilder
+            .setEventName(name)
+            .setTimestamp(timestamp)
+            .apply {
+                if (attributes != null) {
+                    setAllAttributes(attributes)
+                }
+            }.emit()
+    }
+
+    /**
+     * Add an init event with the given name and attributes. A log will be recorded synchronously if the logger has already been
+     * initialized (when [finish] is called), or it will be queued up for emission later when [finish] actually gets called.
+     */
     private fun addEvent(
         name: String,
         attr: Attributes? = null,
     ) {
         events.add(Event(clock.get(), name, attr))
+        eventLogger.get()?.emitInitEvents()
     }
 
     private data class Event(
