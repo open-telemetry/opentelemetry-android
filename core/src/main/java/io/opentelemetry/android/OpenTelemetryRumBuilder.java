@@ -31,7 +31,6 @@ import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordApp
 import io.opentelemetry.android.internal.processors.ScreenAttributesLogRecordProcessor;
 import io.opentelemetry.android.internal.processors.SessionIdLogRecordAppender;
 import io.opentelemetry.android.internal.services.CacheStorage;
-import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.Services;
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWork;
 import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler;
@@ -427,10 +426,9 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private StorageConfiguration createStorageConfiguration(Services services) throws IOException {
-        Preferences preferences = services.getPreferences();
         CacheStorage storage = services.getCacheStorage();
         DiskBufferingConfig config = this.config.getDiskBufferingConfig();
-        DiskManager diskManager = new DiskManager(storage, preferences, config);
+        DiskManager diskManager = new DiskManager(storage, config);
         return StorageConfiguration.builder()
                 .setRootDir(diskManager.getSignalsBufferDir())
                 .setMaxFileSize(diskManager.getMaxCacheFileSize())

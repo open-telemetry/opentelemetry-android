@@ -13,11 +13,9 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equal
 import static io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_ID;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.anyCollection;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -420,9 +418,7 @@ public class OpenTelemetryRumBuilderTest {
 
     @Test
     public void diskBufferingEnabled() {
-        Services services = createAndSetServiceManager();
-        CacheStorage cacheStorage = services.getCacheStorage();
-        doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
+        createAndSetServiceManager();
         OtelRumConfig config = buildConfig();
         ExportScheduleHandler scheduleHandler = mock();
         config.setDiskBufferingConfig(new DiskBufferingConfig(true));
@@ -450,7 +446,6 @@ public class OpenTelemetryRumBuilderTest {
         Services services = createAndSetServiceManager();
         CacheStorage cacheStorage = services.getCacheStorage();
         ExportScheduleHandler scheduleHandler = mock();
-        doReturn(60 * 1024 * 1024L).when(cacheStorage).ensureCacheSpaceAvailable(anyLong());
         doAnswer(
                         invocation -> {
                             throw new IOException();
