@@ -385,10 +385,7 @@ public final class OpenTelemetryRumBuilder {
                         LogRecordToDiskExporter.create(originalLogsExporter, storageConfiguration);
                 final MetricExporter originalMetricExporter = metricExporter;
                 metricExporter =
-                        MetricToDiskExporter.create(
-                                originalMetricExporter,
-                                storageConfiguration,
-                                originalMetricExporter::getAggregationTemporality);
+                        MetricToDiskExporter.create(originalMetricExporter, storageConfiguration);
                 signalFromDiskExporter =
                         new SignalFromDiskExporter(
                                 SpanFromDiskExporter.create(
