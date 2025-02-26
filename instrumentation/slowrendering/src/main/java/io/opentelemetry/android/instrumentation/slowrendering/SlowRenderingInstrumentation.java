@@ -8,7 +8,6 @@ package io.opentelemetry.android.instrumentation.slowrendering;
 import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
@@ -40,7 +39,6 @@ public final class SlowRenderingInstrumentation implements AndroidInstrumentatio
         return this;
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     @Override
     public void install(@NonNull InstallationContext ctx) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
