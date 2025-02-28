@@ -1,2 +1,3 @@
 io.opentelemetry.instrumentation.agent.okhttp.v3_0.OkHttpClientPlugin
 io.opentelemetry.instrumentation.agent.okhttp.v3_0.callback.OkHttpCallbackPlugin
+io.opentelemetry.instrumentation.agent.okhttp.v3_0.websocket.OkHttpClientWebsocketPlugin
