@@ -16,10 +16,10 @@ This instrumentation produces the following telemetry:
   lifecycle of that state. Events are added for subsequent minor state changes.
 * SpanEvents: {
   `fragmentPreAttached` | `fragmentAttached` | `fragmentPreCreated` | `fragmentCreated` | `fragmentViewCreated`
-  `fragmentStarted` | `fragmentResumed` | `fragmentPaused` | `fragmentStopped` | 
+  `fragmentStarted` | `fragmentResumed` | `fragmentPaused` | `fragmentStopped` |
   `fragmentViewDestroyed` | `fragmentDestroyed` | `fragmentDetached`
 * Attributes:
     * `fragmentName`:  <name of fragment>
     * `screen.name`:  <name of screen>
-    * `last.screen.name`:  <name of screen>, when span contains the `fragmentResumed` event. 
+    * `last.screen.name`:  <name of screen>, when span contains the `fragmentResumed` event.
 * Parent:
