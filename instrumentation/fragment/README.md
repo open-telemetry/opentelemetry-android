@@ -22,4 +22,3 @@ This instrumentation produces the following telemetry:
     * `fragmentName`:  <name of fragment>
     * `screen.name`:  <name of screen>
     * `last.screen.name`:  <name of screen>, when span contains the `fragmentResumed` event.
-* Parent:
