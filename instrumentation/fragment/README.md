@@ -17,7 +17,7 @@ This instrumentation produces the following telemetry:
 * SpanEvents: {
   `fragmentPreAttached` | `fragmentAttached` | `fragmentPreCreated` | `fragmentCreated` | `fragmentViewCreated`
   `fragmentStarted` | `fragmentResumed` | `fragmentPaused` | `fragmentStopped` |
-  `fragmentViewDestroyed` | `fragmentDestroyed` | `fragmentDetached`
+  `fragmentViewDestroyed` | `fragmentDestroyed` | `fragmentDetached` }
 * Attributes:
     * `fragmentName`:  <name of fragment>
     * `screen.name`:  <name of screen>
