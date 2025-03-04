@@ -290,7 +290,9 @@ public class HttpUrlReplacements {
 
     private static void startTracingAtFirstConnection(URLConnection connection) {
         Context parentContext = Context.current();
-        if (!HttpUrlConnectionSingletons.instrumenter().shouldStart(parentContext, connection)) {
+        if (HttpUrlConnectionSingletons.instrumenter() == null
+                || !HttpUrlConnectionSingletons.instrumenter()
+                        .shouldStart(parentContext, connection)) {
             return;
         }
 
