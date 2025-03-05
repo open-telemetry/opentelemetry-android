@@ -21,7 +21,7 @@ class Preferences internal constructor(
         key: String,
         value: Int,
     ) {
-        preferences.edit().putInt(key, value).apply()
+        preferences.edit.putInt(key, value).apply()
     }
 
     fun retrieveInt(
