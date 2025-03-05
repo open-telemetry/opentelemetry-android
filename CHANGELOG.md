@@ -28,6 +28,7 @@
 - Default max cache size for disk buffering reduced from 60MB to 10MB ([#822](https://github.com/open-telemetry/opentelemetry-android/pull/822))
 - Improve concurrency/threading for initialization events ([#836](https://github.com/open-telemetry/opentelemetry-android/pull/836))
 - Remove minimum disk buffering cache size requirement and pre-allocation ([#828](https://github.com/open-telemetry/opentelemetry-android/pull/828))
+- Add ability to customize the directory used for disk buffering ([#871](https://github.com/open-telemetry/opentelemetry-android/pull/871))
 
 ## Version 0.9.0 (2025-01-15)
 
