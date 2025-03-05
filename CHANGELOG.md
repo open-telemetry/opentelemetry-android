@@ -16,6 +16,7 @@
 - `DiskBufferingConfiguration` renamed to `DiskBufferingConfig` ([#753](https://github.com/open-telemetry/opentelemetry-android/pull/753))
 - Remove `ServiceManager` instance from `InstallationContext` ([#763](https://github.com/open-telemetry/opentelemetry-android/pull/763))
 - Remove hard-coded `exception.escaped` attribute from crashes ([#796](https://github.com/open-telemetry/opentelemetry-android/pull/796))
+- Drop support for Kotlin 1.7 ([#869](https://github.com/open-telemetry/opentelemetry-android/pull/869))
 
 ### 📈 Enhancements
 
