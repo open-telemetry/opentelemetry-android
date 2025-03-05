@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- This version builds on opentelemetry-java-instrumentation
+  [v2.13.3](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v2.13.3).
+
 ### ⚠️⚠️ Breaking changes
 
 - New maven coordinates for http client instrumentations ([#791](https://github.com/open-telemetry/opentelemetry-android/pull/791))
@@ -10,6 +13,20 @@
   - `httpurlconnection-library` -> `instrumentation-httpurlconnection-library`
   - `httpurlconnection-agent` -> `instrumentation-httpurlconnection-agent`
 - Remove deprecated `exception.escaped` attribute from crash events ([#796](https://github.com/open-telemetry/opentelemetry-android/pull/796))
+- `DiskBufferingConfiguration` renamed to `DiskBufferingConfig` ([#753](https://github.com/open-telemetry/opentelemetry-android/pull/753))
+- Remove `ServiceManager` instance from `InstallationContext` ([#763](https://github.com/open-telemetry/opentelemetry-android/pull/763))
+- Remove hard-coded `exception.escaped` attribute from crashes ([#796](https://github.com/open-telemetry/opentelemetry-android/pull/796)) 
+
+### 📈 Enhancements
+
+- The android-agent module now publishes a Bill of Materials (BOM). 
+  This BOM can be used to coordinate platform dependency versions across the various
+  modules contained in opentelemetry-android ([#809](https://github.com/open-telemetry/opentelemetry-android/pull/809))
+- Add ability to enable verbose debug for disk buffering config ([#753](https://github.com/open-telemetry/opentelemetry-android/pull/753))
+- Ensure current screen attribute is included in logs, when configured ([#785](https://github.com/open-telemetry/opentelemetry-android/pull/785))
+- Default max cache size for disk buffering reduced from 60MB to 10MB ([#822](https://github.com/open-telemetry/opentelemetry-android/pull/822))
+- Improve concurrency/threading for initialization events ([#836](https://github.com/open-telemetry/opentelemetry-android/pull/836))
+- Remove minimum disk buffering cache size requirement and pre-allocation ([#828](https://github.com/open-telemetry/opentelemetry-android/pull/828))
 
 ## Version 0.9.0 (2025-01-15)
 
