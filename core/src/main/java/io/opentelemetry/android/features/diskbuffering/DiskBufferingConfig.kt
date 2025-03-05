@@ -7,6 +7,7 @@ package io.opentelemetry.android.features.diskbuffering
 
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants.OTEL_RUM_LOG_TAG
+import java.io.File
 import java.util.concurrent.TimeUnit
 
 const val DEFAULT_MAX_CACHE_SIZE: Int = 10 * 1024 * 1024
@@ -25,6 +26,11 @@ data class DiskBufferingConfig
         val maxFileAgeForReadMillis: Long = TimeUnit.HOURS.toMillis(DEFAULT_MAX_FILE_AGE_FOR_READ_MS),
         val maxCacheFileSize: Int = MAX_CACHE_FILE_SIZE,
         val debugEnabled: Boolean = false,
+        /**
+         * The directory where the SDK stores the buffered signals before they are exported. If
+         * `null`, a default directory inside the application's cache directory will be used.
+         */
+        val signalsBufferDir: File? = null,
     ) {
         companion object {
             /**
@@ -42,6 +48,7 @@ data class DiskBufferingConfig
                 maxFileAgeForReadMillis: Long = TimeUnit.HOURS.toMillis(18),
                 maxCacheFileSize: Int = MAX_CACHE_FILE_SIZE,
                 debugEnabled: Boolean = false,
+                signalsBufferDir: File? = null,
             ): DiskBufferingConfig {
                 var minRead = minFileAgeForReadMillis
                 if (minFileAgeForReadMillis <= maxFileAgeForWriteMillis) {
@@ -57,6 +64,7 @@ data class DiskBufferingConfig
                     maxFileAgeForReadMillis = maxFileAgeForReadMillis,
                     maxCacheFileSize = maxCacheFileSize,
                     debugEnabled = debugEnabled,
+                    signalsBufferDir = signalsBufferDir,
                 )
             }
         }

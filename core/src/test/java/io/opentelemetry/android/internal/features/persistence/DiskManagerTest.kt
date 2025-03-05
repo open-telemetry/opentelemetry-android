@@ -39,10 +39,19 @@ internal class DiskManagerTest {
     }
 
     @Test
-    fun `provides the signal buffer dir`() {
+    fun `provides the default signal buffer dir if not overridden`() {
+        every { diskBufferingConfig.signalsBufferDir } returns null
         val expected = File(cacheDir, "opentelemetry/signals")
         assertThat(diskManager.signalsBufferDir).isEqualTo(expected)
         assertThat(expected.exists()).isTrue()
+    }
+
+    @Test
+    fun `provides the overridden signal buffer dir`() {
+        val customDir = File(cacheDir, "opentelemetry/custom")
+        every { diskBufferingConfig.signalsBufferDir } returns customDir
+        assertThat(diskManager.signalsBufferDir).isEqualTo(customDir)
+        assertThat(customDir.exists()).isTrue()
     }
 
     @Test
