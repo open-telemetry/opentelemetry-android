@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.instrumentation.library.okhttp.v3_0.internal;
+package io.opentelemetry.instrumentation.library.okhttp.v3_0.websocket.internal;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;

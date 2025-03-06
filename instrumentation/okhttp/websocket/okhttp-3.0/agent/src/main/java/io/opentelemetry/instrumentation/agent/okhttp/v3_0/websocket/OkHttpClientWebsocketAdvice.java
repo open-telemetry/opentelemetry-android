@@ -5,7 +5,7 @@
 
 package io.opentelemetry.instrumentation.agent.okhttp.v3_0.websocket;
 
-import io.opentelemetry.instrumentation.library.okhttp.v3_0.internal.WebsocketListenerWrapper;
+import io.opentelemetry.instrumentation.library.okhttp.v3_0.websocket.internal.WebsocketListenerWrapper;
 import net.bytebuddy.asm.Advice;
 import okhttp3.WebSocketListener;
 
