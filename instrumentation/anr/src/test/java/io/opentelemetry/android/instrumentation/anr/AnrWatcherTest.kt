@@ -1,104 +1,99 @@
-/*
- * Copyright The OpenTelemetry Authors
- * SPDX-License-Identifier: Apache-2.0
- */
+package io.opentelemetry.android.instrumentation.anr
 
-package io.opentelemetry.android.instrumentation.anr;
+import android.os.Handler
+import io.mockk.Called
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
+import org.junit.Before
+import org.junit.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-
-import android.os.Handler;
-import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
-import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-@ExtendWith(MockitoExtension.class)
 class AnrWatcherTest {
-
+    @JvmField
     @RegisterExtension
-    static final OpenTelemetryExtension testing = OpenTelemetryExtension.create();
+    val testing = OpenTelemetryExtension.create()
 
-    @Mock Handler handler;
-    @Mock Thread mainThread;
-    @Mock Instrumenter<StackTraceElement[], Void> instrumenter;
+    private lateinit var handler: Handler
+    private lateinit var mainThread: Thread
+    private lateinit var instrumenter: Instrumenter<Array<StackTraceElement>, Void>
 
-    @Test
-    void mainThreadDisappearing() {
-        AnrWatcher anrWatcher = new AnrWatcher(handler, mainThread, instrumenter);
-        for (int i = 0; i < 5; i++) {
-            when(handler.post(isA(Runnable.class))).thenReturn(false);
-            anrWatcher.run();
-        }
-        verifyNoInteractions(instrumenter);
+    @Before
+    fun setup() {
+        handler = mockk()
+        mainThread = mockk()
+        instrumenter = mockk()
     }
 
     @Test
-    void noAnr() {
-        AnrWatcher anrWatcher = new AnrWatcher(handler, mainThread, instrumenter);
-        for (int i = 0; i < 5; i++) {
-            when(handler.post(isA(Runnable.class)))
-                    .thenAnswer(
-                            invocation -> {
-                                Runnable callback = (Runnable) invocation.getArgument(0);
-                                callback.run();
-                                return true;
-                            });
-            anrWatcher.run();
+    fun mainThreadDisappearing() {
+        val anrWatcher = AnrWatcher(handler, mainThread, instrumenter)
+        for (i in 0..4) {
+            every { handler.post(any()) } returns false
+            anrWatcher.run()
         }
-        verifyNoInteractions(instrumenter);
+        verify { instrumenter wasNot Called }
     }
 
     @Test
-    void noAnr_temporaryPause() {
-        AnrWatcher anrWatcher = new AnrWatcher(handler, mainThread, instrumenter);
-        for (int i = 0; i < 5; i++) {
-            int index = i;
-            when(handler.post(isA(Runnable.class)))
-                    .thenAnswer(
-                            invocation -> {
-                                Runnable callback = invocation.getArgument(0);
-                                // have it fail once
-                                if (index != 3) {
-                                    callback.run();
-                                }
-                                return true;
-                            });
-            anrWatcher.run();
+    fun noAnr() {
+        val anrWatcher = AnrWatcher(handler, mainThread, instrumenter)
+        for (i in 0..4) {
+            every { handler.post(any()) } answers {
+                val callback = it.invocation.args[0] as Runnable
+                callback.run()
+                true
+            }
+
+            anrWatcher.run()
         }
-        verifyNoInteractions(instrumenter);
+        verify { instrumenter wasNot Called }
     }
 
     @Test
-    void anr_detected() {
-        StackTraceElement[] stackTrace = new StackTraceElement[0];
-        when(mainThread.getStackTrace()).thenReturn(stackTrace);
-
-        AnrWatcher anrWatcher = new AnrWatcher(handler, mainThread, instrumenter);
-        when(handler.post(isA(Runnable.class))).thenReturn(true);
-        for (int i = 0; i < 5; i++) {
-            anrWatcher.run();
+    fun noAnr_temporaryPause() {
+        val anrWatcher = AnrWatcher(handler, mainThread, instrumenter)
+        for (i in 0..4) {
+            val index = i
+            every { handler.post(any()) } answers {
+                val callback = it.invocation.args[0] as Runnable
+                // have it fail once
+                if (index != 3) {
+                    callback.run()
+                }
+                true
+            }
+            anrWatcher.run()
         }
-        verify(instrumenter, times(1)).start(any(), same(stackTrace));
-        verify(instrumenter, times(1)).end(any(), same(stackTrace), isNull(), isNull());
-        for (int i = 0; i < 4; i++) {
-            anrWatcher.run();
-        }
-        verifyNoMoreInteractions(instrumenter);
+        verify { instrumenter wasNot Called }
+    }
 
-        anrWatcher.run();
-        verify(instrumenter, times(2)).start(any(), same(stackTrace));
-        verify(instrumenter, times(2)).end(any(), same(stackTrace), isNull(), isNull());
+    @Test
+    fun anr_detected() {
+        val stackTrace: Array<StackTraceElement> = arrayOf()
+        every { instrumenter.start(any(), any()) } returns mockk()
+        every { instrumenter.end(any(), any(), any(), any()) } returns mockk()
+        every { mainThread.stackTrace } returns stackTrace
+
+        val anrWatcher = AnrWatcher(handler, mainThread, instrumenter)
+        every { handler.post(any()) } returns true
+        for (i in 0..4) {
+            anrWatcher.run()
+        }
+        verify(exactly = 1) { instrumenter.start(any(), refEq(stackTrace)) }
+        verify(exactly = 1) { instrumenter.end(any(), refEq(stackTrace), isNull(), isNull()) }
+        for (i in 0..3) {
+            anrWatcher.run()
+        }
+        // Still just the 1 time
+        verify(exactly = 1) { instrumenter.start(any(), refEq(stackTrace)) }
+        verify(exactly = 1) { instrumenter.end(any(), refEq(stackTrace), isNull(), isNull()) }
+
+        anrWatcher.run()
+
+        verify(exactly = 2) { instrumenter.start(any(), refEq(stackTrace)) }
+        verify(exactly = 2) { instrumenter.end(any(), refEq(stackTrace), isNull(), isNull()) }
     }
 }
