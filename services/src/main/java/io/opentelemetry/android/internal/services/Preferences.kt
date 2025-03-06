@@ -6,6 +6,7 @@
 package io.opentelemetry.android.internal.services
 
 import android.content.SharedPreferences
+import androidx.core.content.edit
 
 /**
  * Utility to store and retrieve apps' preferences.
@@ -21,7 +22,9 @@ class Preferences internal constructor(
         key: String,
         value: Int,
     ) {
-        preferences.edit().putInt(key, value).apply()
+        preferences.edit {
+            putInt(key, value)
+        }
     }
 
     fun retrieveInt(
