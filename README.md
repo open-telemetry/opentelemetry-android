@@ -58,7 +58,7 @@ Some of the additional features provided include:
 * [ANR detection](./instrumentation/anr/)
 * [Network change detection](./instrumentation/network/)
 * Android [Activity lifecycle instrumentation](./instrumentation/activity/)
-* Android Fragment lifecycle monitoring
+* Android [Fragment lifecycle monitoring](./instrumentation/fragment)
 * Access to the OpenTelemetry APIs for manual instrumentation
 * Helpers to redact any span from export, or change span attributes before export
 * Slow / frozen render detection

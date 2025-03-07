@@ -23,15 +23,17 @@ This instrumentation produces the following telemetry:
 ### Activity state change
 
 * Type: Span
-* Name: {`Created` | `Resumed` | `Paused` | `Stopped` | `Destroyed`} (depends on the activity state transition)
+* Name: {`Created` | `Resumed` | `Paused` | `Stopped` | `Destroyed` | `Restarted` |} (depends on the activity state transition)
 * Description: As the activity transitions between states, a span will be created to represent the
   lifecycle of that state. Events are added for subsequent minor state changes.
 * SpanEvents: {
   `activityPreCreated` | `activityCreated` | `activityPostCreated` |
+  `activityPreStarted` | `activityStarted` | `activityPostStarted` |
   `activityPreResumed` | `activityResumed` | `activityPostResumed` |
   `activityPrePaused` | `activityPaused` | `activityPostPaused` |
   `activityPreStopped` | `activityStopped` | `activityPostStopped` |
   `activityPreDestroyed` | `activityDestroyed` | `activityPostDestroyed` }
 * Attributes:
-  * `activity.name`:  <name of activity>
+  * `activityName`:  <name of activity>
   * `screen.name`:  <name of screen>
+  * `last.screen.name`:  <name of screen>, only when span contains the `activityPostResumed` event.
