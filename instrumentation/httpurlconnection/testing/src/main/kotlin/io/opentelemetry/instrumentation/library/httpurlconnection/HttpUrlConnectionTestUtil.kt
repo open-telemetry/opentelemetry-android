@@ -18,6 +18,7 @@ object HttpUrlConnectionTestUtil {
         inputUrl: String,
         getInputStream: Boolean = true,
         disconnect: Boolean = true,
+        onComplete: Runnable = Runnable {},
     ) {
         var connection: HttpURLConnection? = null
         try {
@@ -33,6 +34,7 @@ object HttpUrlConnectionTestUtil {
             Log.e(TAG, "Exception occurred while executing GET request", e)
         } finally {
             connection?.takeIf { disconnect }?.disconnect()
+            onComplete.run()
         }
     }
 
