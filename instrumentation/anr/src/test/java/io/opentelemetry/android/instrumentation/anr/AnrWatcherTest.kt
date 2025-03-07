@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.instrumentation.anr
 
 import android.os.Handler
@@ -77,7 +82,7 @@ class AnrWatcherTest {
         every { instrumenter.end(any(), any(), any(), any()) } returns mockk()
         every { mainThread.stackTrace } returns stackTrace
 
-        val anrWatcher = AnrWatcher(handler, mainThread, instrumenter)
+        val anrWatcher = AnrWatcher(handler, mainThread, instrumenter, 1)
         every { handler.post(any()) } returns true
         for (i in 0..4) {
             anrWatcher.run()
