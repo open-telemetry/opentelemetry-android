@@ -6,8 +6,6 @@ plugins {
 android {
     namespace = "io.opentelemetry.android"
 
-    buildToolsVersion = "34.0.0"
-
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
