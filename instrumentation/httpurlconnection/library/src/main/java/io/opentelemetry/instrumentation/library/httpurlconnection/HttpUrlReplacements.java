@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.SystemClock;
 import androidx.annotation.RequiresApi;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons;
 import io.opentelemetry.instrumentation.library.httpurlconnection.internal.RequestPropertySetter;
 import java.io.IOException;
@@ -28,6 +29,7 @@ public class HttpUrlReplacements {
             new ConcurrentHashMap<>();
     private static final Logger logger = Logger.getLogger("HttpUrlReplacements");
     public static final int UNKNOWN_RESPONSE_CODE = -1;
+    private static Instrumenter<URLConnection, Integer> httpURLInstrumenter = null;
 
     public static void replacementForDisconnect(HttpURLConnection connection) {
         // Ensure ending of un-ended spans while connection is still alive
@@ -281,8 +283,7 @@ public class HttpUrlReplacements {
         HttpURLConnectionInfo info = activeURLConnections.get(connection);
         if (info != null && !info.reported) {
             Context context = info.context;
-            HttpUrlConnectionSingletons.instrumenter()
-                    .end(context, connection, responseCode, error);
+            httpURLInstrumenter.end(context, connection, responseCode, error);
             info.reported = true;
             activeURLConnections.remove(connection);
         }
@@ -290,15 +291,14 @@ public class HttpUrlReplacements {
 
     private static void startTracingAtFirstConnection(URLConnection connection) {
         Context parentContext = Context.current();
-        if (HttpUrlConnectionSingletons.instrumenter() == null
-                || !HttpUrlConnectionSingletons.instrumenter()
-                        .shouldStart(parentContext, connection)) {
+        httpURLInstrumenter = HttpUrlConnectionSingletons.instrumenter();
+        if (httpURLInstrumenter == null
+                || !httpURLInstrumenter.shouldStart(parentContext, connection)) {
             return;
         }
 
         if (!activeURLConnections.containsKey(connection)) {
-            Context context =
-                    HttpUrlConnectionSingletons.instrumenter().start(parentContext, connection);
+            Context context = httpURLInstrumenter.start(parentContext, connection);
             activeURLConnections.put(connection, new HttpURLConnectionInfo(context));
             try {
                 injectContextToRequest(connection, context);
