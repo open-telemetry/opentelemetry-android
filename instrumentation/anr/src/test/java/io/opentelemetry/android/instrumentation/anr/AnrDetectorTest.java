@@ -10,6 +10,7 @@ import static io.opentelemetry.instrumentation.api.instrumenter.AttributesExtrac
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.os.Looper;
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle;
@@ -32,6 +33,7 @@ class AnrDetectorTest {
 
     @Test
     void shouldInstallInstrumentation() {
+        when(mainLooper.getThread()).thenReturn(new Thread());
         OpenTelemetry openTelemetry = OpenTelemetrySdk.builder().build();
 
         AnrDetector anrDetector =
