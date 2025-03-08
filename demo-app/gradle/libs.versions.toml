@@ -1,5 +1,5 @@
 [versions]
-opentelemetry = "1.47.0"
+opentelemetry = "1.48.0"
 opentelemetry-alpha = "1.48.0-alpha"
 junit = "5.12.0"
 spotless = "7.0.2"
