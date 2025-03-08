@@ -9,6 +9,7 @@ import com.google.auto.service.AutoService;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.instrumentation.InstallationContext;
 import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceResolver;
+import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.internal.HttpConstants;
 import io.opentelemetry.instrumentation.library.okhttp.v3_0.internal.OkHttp3Singletons;
 import java.util.ArrayList;
@@ -17,16 +18,25 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import okhttp3.Interceptor;
+import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 
 /** Instrumentation for okhttp requests. */
 @AutoService(AndroidInstrumentation.class)
 public class OkHttpInstrumentation implements AndroidInstrumentation {
+    private final List<AttributesExtractor<Interceptor.Chain, Response>> additionalExtractors =
+            new ArrayList<>();
     private List<String> capturedRequestHeaders = new ArrayList<>();
     private List<String> capturedResponseHeaders = new ArrayList<>();
     private Set<String> knownMethods = HttpConstants.KNOWN_METHODS;
     private Map<String, String> peerServiceMapping = new HashMap<>();
     private boolean emitExperimentalHttpClientMetrics;
+
+    /** Adds an {@link AttributesExtractor} that will extract additional attributes. */
+    public void addAttributesExtractor(AttributesExtractor<Interceptor.Chain, Response> extractor) {
+        additionalExtractors.add(extractor);
+    }
 
     /**
      * Configures the HTTP request headers that will be captured as span attributes as described in
@@ -123,6 +133,6 @@ public class OkHttpInstrumentation implements AndroidInstrumentation {
 
     @Override
     public void install(@NotNull InstallationContext ctx) {
-        OkHttp3Singletons.configure(this, ctx.getOpenTelemetry());
+        OkHttp3Singletons.configure(this, ctx.getOpenTelemetry(), additionalExtractors);
     }
 }

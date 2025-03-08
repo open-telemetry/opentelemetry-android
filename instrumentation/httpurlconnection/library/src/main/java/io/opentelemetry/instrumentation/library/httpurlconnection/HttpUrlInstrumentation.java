@@ -9,8 +9,10 @@ import com.google.auto.service.AutoService;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.instrumentation.InstallationContext;
 import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceResolver;
+import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.internal.HttpConstants;
 import io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,6 +24,8 @@ import org.jetbrains.annotations.NotNull;
 /** Instrumentation for HttpURLConnection requests. */
 @AutoService(AndroidInstrumentation.class)
 public class HttpUrlInstrumentation implements AndroidInstrumentation {
+    private final List<AttributesExtractor<URLConnection, Integer>> additionalExtractors =
+            new ArrayList<>();
     private List<String> capturedRequestHeaders = new ArrayList<>();
     private List<String> capturedResponseHeaders = new ArrayList<>();
     private Set<String> knownMethods = HttpConstants.KNOWN_METHODS;
@@ -31,6 +35,11 @@ public class HttpUrlInstrumentation implements AndroidInstrumentation {
     // Time (ms) to wait before assuming that an idle connection is no longer
     // in use and should be reported.
     private long connectionInactivityTimeoutMs = 10000;
+
+    /** Adds an {@link AttributesExtractor} that will extract additional attributes. */
+    public void addAttributesExtractor(AttributesExtractor<URLConnection, Integer> extractor) {
+        additionalExtractors.add(extractor);
+    }
 
     /**
      * Configures the HTTP request headers that will be captured as span attributes as described in
@@ -123,7 +132,7 @@ public class HttpUrlInstrumentation implements AndroidInstrumentation {
 
     @Override
     public void install(@NotNull InstallationContext ctx) {
-        HttpUrlConnectionSingletons.configure(this, ctx.getOpenTelemetry());
+        HttpUrlConnectionSingletons.configure(this, ctx.getOpenTelemetry(), additionalExtractors);
     }
 
     /**

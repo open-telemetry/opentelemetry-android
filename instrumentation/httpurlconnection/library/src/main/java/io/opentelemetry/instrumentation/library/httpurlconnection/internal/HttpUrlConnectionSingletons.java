@@ -9,6 +9,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpClientExperimentalMetrics;
 import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpClientPeerServiceAttributesExtractor;
 import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpExperimentalAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.instrumentation.api.instrumenter.InstrumenterBuilder;
 import io.opentelemetry.instrumentation.api.semconv.http.HttpClientAttributesExtractor;
@@ -19,6 +20,7 @@ import io.opentelemetry.instrumentation.api.semconv.http.HttpSpanNameExtractorBu
 import io.opentelemetry.instrumentation.api.semconv.http.HttpSpanStatusExtractor;
 import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlInstrumentation;
 import java.net.URLConnection;
+import java.util.List;
 
 public final class HttpUrlConnectionSingletons {
 
@@ -28,7 +30,9 @@ public final class HttpUrlConnectionSingletons {
     private static OpenTelemetry openTelemetryInstance;
 
     public static void configure(
-            HttpUrlInstrumentation instrumentation, OpenTelemetry openTelemetry) {
+            HttpUrlInstrumentation instrumentation,
+            OpenTelemetry openTelemetry,
+            List<AttributesExtractor<URLConnection, Integer>> additionalExtractors) {
 
         HttpUrlHttpAttributesGetter httpAttributesGetter = new HttpUrlHttpAttributesGetter();
 
@@ -62,6 +66,10 @@ public final class HttpUrlConnectionSingletons {
                         .addAttributesExtractor(httpClientAttributesExtractorBuilder.build())
                         .addAttributesExtractor(httpClientPeerServiceAttributesExtractor)
                         .addOperationMetrics(HttpClientMetrics.get());
+
+        for (AttributesExtractor<URLConnection, Integer> extractor : additionalExtractors) {
+            builder.addAttributesExtractor(extractor);
+        }
 
         if (instrumentation.emitExperimentalHttpClientMetrics()) {
             builder.addAttributesExtractor(
