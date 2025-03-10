@@ -9,6 +9,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.api.trace.Span
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor
+import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import org.junit.rules.TestRule
@@ -24,6 +26,7 @@ import org.junit.runners.model.Statement
 class OpenTelemetryRumRule : TestRule {
     lateinit var openTelemetryRum: OpenTelemetryRum
     lateinit var inMemorySpanExporter: InMemorySpanExporter
+    lateinit var inMemoryLogExporter: InMemoryLogRecordExporter
 
     override fun apply(
         base: Statement,
@@ -44,11 +47,16 @@ class OpenTelemetryRumRule : TestRule {
 
     private fun setUpOpenTelemetry() {
         inMemorySpanExporter = InMemorySpanExporter.create()
+        inMemoryLogExporter = InMemoryLogRecordExporter.create()
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             openTelemetryRum =
                 OpenTelemetryRum
                     .builder(ApplicationProvider.getApplicationContext())
-                    .addTracerProviderCustomizer { tracer, _ ->
+                    .addLoggerProviderCustomizer { logger, _ ->
+                        logger.addLogRecordProcessor(
+                            SimpleLogRecordProcessor.create(inMemoryLogExporter),
+                        )
+                    }.addTracerProviderCustomizer { tracer, _ ->
                         tracer.addSpanProcessor(SimpleSpanProcessor.create(inMemorySpanExporter))
                     }.build()
         }
