@@ -41,6 +41,10 @@ public class HttpUrlInstrumentation implements AndroidInstrumentation {
         additionalExtractors.add(extractor);
     }
 
+    public List<AttributesExtractor<URLConnection, Integer>> getAdditionalExtractors() {
+        return additionalExtractors;
+    }
+
     /**
      * Configures the HTTP request headers that will be captured as span attributes as described in
      * <a
@@ -132,7 +136,7 @@ public class HttpUrlInstrumentation implements AndroidInstrumentation {
 
     @Override
     public void install(@NotNull InstallationContext ctx) {
-        HttpUrlConnectionSingletons.configure(this, ctx.getOpenTelemetry(), additionalExtractors);
+        HttpUrlConnectionSingletons.configure(this, ctx.getOpenTelemetry());
     }
 
     /**

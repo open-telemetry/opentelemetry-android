@@ -38,6 +38,10 @@ public class OkHttpInstrumentation implements AndroidInstrumentation {
         additionalExtractors.add(extractor);
     }
 
+    public List<AttributesExtractor<Interceptor.Chain, Response>> getAdditionalExtractors() {
+        return additionalExtractors;
+    }
+
     /**
      * Configures the HTTP request headers that will be captured as span attributes as described in
      * <a
@@ -133,6 +137,6 @@ public class OkHttpInstrumentation implements AndroidInstrumentation {
 
     @Override
     public void install(@NotNull InstallationContext ctx) {
-        OkHttp3Singletons.configure(this, ctx.getOpenTelemetry(), additionalExtractors);
+        OkHttp3Singletons.configure(this, ctx.getOpenTelemetry());
     }
 }

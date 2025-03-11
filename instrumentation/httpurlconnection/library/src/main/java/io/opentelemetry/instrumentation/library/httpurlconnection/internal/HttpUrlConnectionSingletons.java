@@ -20,7 +20,6 @@ import io.opentelemetry.instrumentation.api.semconv.http.HttpSpanNameExtractorBu
 import io.opentelemetry.instrumentation.api.semconv.http.HttpSpanStatusExtractor;
 import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlInstrumentation;
 import java.net.URLConnection;
-import java.util.List;
 
 public final class HttpUrlConnectionSingletons {
 
@@ -30,9 +29,7 @@ public final class HttpUrlConnectionSingletons {
     private static OpenTelemetry openTelemetryInstance;
 
     public static void configure(
-            HttpUrlInstrumentation instrumentation,
-            OpenTelemetry openTelemetry,
-            List<AttributesExtractor<URLConnection, Integer>> additionalExtractors) {
+            HttpUrlInstrumentation instrumentation, OpenTelemetry openTelemetry) {
 
         HttpUrlHttpAttributesGetter httpAttributesGetter = new HttpUrlHttpAttributesGetter();
 
@@ -67,7 +64,8 @@ public final class HttpUrlConnectionSingletons {
                         .addAttributesExtractor(httpClientPeerServiceAttributesExtractor)
                         .addOperationMetrics(HttpClientMetrics.get());
 
-        for (AttributesExtractor<URLConnection, Integer> extractor : additionalExtractors) {
+        for (AttributesExtractor<URLConnection, Integer> extractor :
+                instrumentation.getAdditionalExtractors()) {
             builder.addAttributesExtractor(extractor);
         }
 

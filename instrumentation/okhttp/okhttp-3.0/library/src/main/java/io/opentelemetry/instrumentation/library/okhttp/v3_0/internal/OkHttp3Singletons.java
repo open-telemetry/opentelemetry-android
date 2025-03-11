@@ -19,7 +19,6 @@ import io.opentelemetry.instrumentation.okhttp.v3_0.internal.ConnectionErrorSpan
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpAttributesGetter;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpClientInstrumenterBuilderFactory;
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.TracingInterceptor;
-import java.util.List;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -34,9 +33,7 @@ public final class OkHttp3Singletons {
     public static Interceptor TRACING_INTERCEPTOR = NOOP_INTERCEPTOR;
 
     public static void configure(
-            OkHttpInstrumentation instrumentation,
-            OpenTelemetry openTelemetry,
-            List<AttributesExtractor<Interceptor.Chain, Response>> additionalExtractors) {
+            OkHttpInstrumentation instrumentation, OpenTelemetry openTelemetry) {
         DefaultHttpClientInstrumenterBuilder<Interceptor.Chain, Response> instrumenterBuilder =
                 OkHttpClientInstrumenterBuilderFactory.create(openTelemetry)
                         .setCapturedRequestHeaders(instrumentation.getCapturedRequestHeaders())
@@ -58,7 +55,8 @@ public final class OkHttp3Singletons {
                         .setEmitExperimentalHttpClientMetrics(
                                 instrumentation.emitExperimentalHttpClientMetrics());
 
-        for (AttributesExtractor<Interceptor.Chain, Response> extractor : additionalExtractors) {
+        for (AttributesExtractor<Interceptor.Chain, Response> extractor :
+                instrumentation.getAdditionalExtractors()) {
             instrumenterBuilder = instrumenterBuilder.addAttributesExtractor(extractor);
         }
 
