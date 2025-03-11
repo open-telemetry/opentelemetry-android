@@ -2,6 +2,12 @@
 
 This documents describes the manual steps required to publish a release to maven central.
 
+## Release cadence
+
+This repository targets monthly minor releases from the `main` branch roughly a week after
+the monthly minor release
+of [opentelemetry-java-instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation)).
+
 ## Prepare the release
 
 We first need to prepare the release. This creates a versioned release branch, These are the steps to follow:
