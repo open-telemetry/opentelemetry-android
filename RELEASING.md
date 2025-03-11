@@ -6,7 +6,7 @@ This documents describes the manual steps required to publish a release to maven
 
 This repository targets monthly minor releases from the `main` branch roughly a week after
 the monthly minor release
-of [opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)).
+of [opentelemetry-java-instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation)).
 
 ## Prepare the release
 
