@@ -18,6 +18,7 @@ import java.time.Duration;
 @AutoService(AndroidInstrumentation.class)
 public final class SlowRenderingInstrumentation implements AndroidInstrumentation {
 
+    private static final String INSTRUMENTATION_NAME = "slowrendering";
     Duration slowRenderingDetectionPollInterval = Duration.ofSeconds(1);
 
     /**
@@ -55,5 +56,11 @@ public final class SlowRenderingInstrumentation implements AndroidInstrumentatio
 
         ctx.getApplication().registerActivityLifecycleCallbacks(detector);
         detector.start();
+    }
+
+    @NonNull
+    @Override
+    public String getName() {
+        return INSTRUMENTATION_NAME;
     }
 }

@@ -12,6 +12,8 @@ import io.opentelemetry.android.internal.initialization.InitializationEvents
 
 @AutoService(AndroidInstrumentation::class)
 class StartupInstrumentation : AndroidInstrumentation {
+    override val name: String = "startup"
+
     override fun install(ctx: InstallationContext) {
         val events = InitializationEvents.get()
         if (events is SdkInitializationEvents) {

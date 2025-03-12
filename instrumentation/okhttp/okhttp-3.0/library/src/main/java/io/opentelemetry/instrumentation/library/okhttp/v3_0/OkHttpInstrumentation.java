@@ -5,6 +5,8 @@
 
 package io.opentelemetry.instrumentation.library.okhttp.v3_0;
 
+import androidx.annotation.NonNull;
+
 import com.google.auto.service.AutoService;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.instrumentation.InstallationContext;
@@ -25,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 /** Instrumentation for okhttp requests. */
 @AutoService(AndroidInstrumentation.class)
 public class OkHttpInstrumentation implements AndroidInstrumentation {
+    private static final String INSTRUMENTATION_NAME = "okhttp";
     private final List<AttributesExtractor<Interceptor.Chain, Response>> additionalExtractors =
             new ArrayList<>();
     private List<String> capturedRequestHeaders = new ArrayList<>();
@@ -138,5 +141,11 @@ public class OkHttpInstrumentation implements AndroidInstrumentation {
     @Override
     public void install(@NotNull InstallationContext ctx) {
         OkHttp3Singletons.configure(this, ctx.getOpenTelemetry());
+    }
+
+    @NonNull
+    @Override
+    public String getName() {
+        return INSTRUMENTATION_NAME;
     }
 }

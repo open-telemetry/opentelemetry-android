@@ -345,7 +345,7 @@ public final class OpenTelemetryRumBuilder {
                         sdk,
                         timeoutHandler,
                         sessionManager,
-                        config.shouldDiscoverInstrumentations(),
+                        config,
                         services);
 
         // AsyncTask is deprecated but the thread pool is still used all over the Android SDK

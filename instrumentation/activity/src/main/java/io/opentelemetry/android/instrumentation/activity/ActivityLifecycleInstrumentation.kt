@@ -22,6 +22,8 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
     private var screenNameExtractor: ScreenNameExtractor = ScreenNameExtractor.DEFAULT
     private var tracerCustomizer: (Tracer) -> Tracer = { it }
 
+    override val name: String = "activity"
+
     fun setTracerCustomizer(customizer: (Tracer) -> Tracer) {
         tracerCustomizer = customizer
     }

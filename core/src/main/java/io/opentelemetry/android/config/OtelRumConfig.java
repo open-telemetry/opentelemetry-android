@@ -10,6 +10,8 @@ import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.api.common.Attributes;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -26,6 +28,7 @@ public class OtelRumConfig {
     private boolean discoverInstrumentations = true;
     private DiskBufferingConfig diskBufferingConfig = DiskBufferingConfig.create();
     private Duration sessionTimeout = Duration.ofMinutes(15);
+    private final List<String> suppressedInstrumentations = new ArrayList<>();
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -138,5 +141,21 @@ public class OtelRumConfig {
     /** Call this method to retrieve session timeout */
     public Duration getSessionTimeout() {
         return sessionTimeout;
+    }
+
+    /**
+     * Adds an instrumentation name to the list of suppressed instrumentations.
+     * Instrumentations that have been suppressed will not be installed at startup.
+     */
+    public OtelRumConfig suppressInstrumentation(String instrumentationName){
+        suppressedInstrumentations.add(instrumentationName);
+        return this;
+    }
+
+    /**
+     * Returns false when the given instrumentation has been suppressed. True otherwise.
+     */
+    public boolean isSuppressed(String instrumentationName) {
+        return suppressedInstrumentations.contains(instrumentationName);
     }
 }

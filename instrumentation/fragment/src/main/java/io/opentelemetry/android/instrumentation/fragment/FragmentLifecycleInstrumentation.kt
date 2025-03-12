@@ -29,6 +29,8 @@ class FragmentLifecycleInstrumentation : AndroidInstrumentation {
         this.screenNameExtractor = screenNameExtractor
     }
 
+    override val name: String = "fragment"
+
     override fun install(ctx: InstallationContext) {
         ctx.application.registerActivityLifecycleCallbacks(buildFragmentRegisterer(ctx))
     }
