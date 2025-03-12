@@ -286,6 +286,10 @@ public class OpenTelemetryRumBuilderTest {
         SessionIdTimeoutHandler timeoutHandler = mock();
         AndroidInstrumentation localInstrumentation = mock();
         AndroidInstrumentation classpathInstrumentation = mock();
+
+        when(localInstrumentation.getName()).thenReturn("local");
+        when(classpathInstrumentation.getName()).thenReturn("classpath");
+
         AndroidInstrumentationLoaderImpl androidInstrumentationServices =
                 (AndroidInstrumentationLoaderImpl) AndroidInstrumentationLoader.get();
         androidInstrumentationServices.registerForTest(classpathInstrumentation);
