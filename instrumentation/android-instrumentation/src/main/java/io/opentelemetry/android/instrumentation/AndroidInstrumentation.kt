@@ -29,4 +29,9 @@ interface AndroidInstrumentation {
      * @param ctx The InstallationContext under which the instrumentation is being installed.
      */
     fun install(ctx: InstallationContext)
+
+    /**
+     * The canonical short name for this instrumentation.
+     */
+    val name: String
 }

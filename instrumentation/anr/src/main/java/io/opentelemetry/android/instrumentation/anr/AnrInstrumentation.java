@@ -21,6 +21,7 @@ import java.util.concurrent.ScheduledExecutorService;
 @AutoService(AndroidInstrumentation.class)
 public final class AnrInstrumentation implements AndroidInstrumentation {
 
+    public static final String INSTRUMENTATION_NAME = "anr";
     final List<AttributesExtractor<StackTraceElement[], Void>> additionalExtractors =
             new ArrayList<>();
     Looper mainLooper = Looper.getMainLooper();
@@ -55,5 +56,11 @@ public final class AnrInstrumentation implements AndroidInstrumentation {
                         Services.get(ctx.getApplication()).getAppLifecycle(),
                         ctx.getOpenTelemetry());
         anrDetector.start();
+    }
+
+    @NonNull
+    @Override
+    public String getName() {
+        return INSTRUMENTATION_NAME;
     }
 }

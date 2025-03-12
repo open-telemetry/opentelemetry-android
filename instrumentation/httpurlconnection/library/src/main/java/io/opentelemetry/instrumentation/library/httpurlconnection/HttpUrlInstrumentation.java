@@ -5,6 +5,7 @@
 
 package io.opentelemetry.instrumentation.library.httpurlconnection;
 
+import androidx.annotation.NonNull;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.instrumentation.InstallationContext;
@@ -22,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 /** Instrumentation for HttpURLConnection requests. */
 @AutoService(AndroidInstrumentation.class)
 public class HttpUrlInstrumentation implements AndroidInstrumentation {
+    private static final String INSTRUMENTATION_NAME = "httpurlconnection";
     private List<String> capturedRequestHeaders = new ArrayList<>();
     private List<String> capturedResponseHeaders = new ArrayList<>();
     private Set<String> knownMethods = HttpConstants.KNOWN_METHODS;
@@ -190,5 +192,11 @@ public class HttpUrlInstrumentation implements AndroidInstrumentation {
      */
     public long getReportIdleConnectionInterval() {
         return connectionInactivityTimeoutMs;
+    }
+
+    @NonNull
+    @Override
+    public String getName() {
+        return INSTRUMENTATION_NAME;
     }
 }
