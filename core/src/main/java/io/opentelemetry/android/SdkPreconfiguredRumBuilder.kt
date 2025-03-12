@@ -65,7 +65,7 @@ class SdkPreconfiguredRumBuilder
         }
 
         private fun getEnabledInstrumentations(): List<AndroidInstrumentation> =
-            getInstrumentations().filter { inst -> config.isSuppressed(inst.name) }
+            getInstrumentations().filter { inst -> !config.isSuppressed(inst.name) }
 
         private fun getInstrumentations(): List<AndroidInstrumentation> {
             if (config.shouldDiscoverInstrumentations()) {
