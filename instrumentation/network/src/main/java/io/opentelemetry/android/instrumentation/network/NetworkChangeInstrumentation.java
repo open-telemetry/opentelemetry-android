@@ -20,6 +20,7 @@ import java.util.List;
 @AutoService(AndroidInstrumentation.class)
 public final class NetworkChangeInstrumentation implements AndroidInstrumentation {
 
+    private static final String INSTRUMENTATION_NAME = "network";
     final List<AttributesExtractor<CurrentNetwork, Void>> additionalExtractors = new ArrayList<>();
 
     /** Adds an {@link AttributesExtractor} that will extract additional attributes. */
@@ -39,5 +40,11 @@ public final class NetworkChangeInstrumentation implements AndroidInstrumentatio
                         services.getCurrentNetworkProvider(),
                         Collections.unmodifiableList(additionalExtractors));
         networkChangeMonitor.start();
+    }
+
+    @NonNull
+    @Override
+    public String getName() {
+        return INSTRUMENTATION_NAME;
     }
 }

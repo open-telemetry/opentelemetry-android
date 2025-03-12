@@ -18,6 +18,7 @@ import java.util.List;
 /** Entrypoint for installing the crash reporting instrumentation. */
 @AutoService(AndroidInstrumentation.class)
 public final class CrashReporterInstrumentation implements AndroidInstrumentation {
+    private static final String INSTRUMENTATION_NAME = "crash";
     private final List<AttributesExtractor<CrashDetails, Void>> additionalExtractors =
             new ArrayList<>();
 
@@ -31,5 +32,11 @@ public final class CrashReporterInstrumentation implements AndroidInstrumentatio
         addAttributesExtractor(RuntimeDetailsExtractor.create(ctx.getApplication()));
         CrashReporter crashReporter = new CrashReporter(additionalExtractors);
         crashReporter.install((OpenTelemetrySdk) ctx.getOpenTelemetry());
+    }
+
+    @NonNull
+    @Override
+    public String getName() {
+        return INSTRUMENTATION_NAME;
     }
 }

@@ -6,6 +6,8 @@
 package io.opentelemetry.android.instrumentation
 
 class TestAndroidInstrumentation : AndroidInstrumentation {
+    override val name: String = "test"
+
     var installed = false
         private set
 
