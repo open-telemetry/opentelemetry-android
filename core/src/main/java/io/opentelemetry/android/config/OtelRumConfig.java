@@ -144,17 +144,15 @@ public class OtelRumConfig {
     }
 
     /**
-     * Adds an instrumentation name to the list of suppressed instrumentations.
-     * Instrumentations that have been suppressed will not be installed at startup.
+     * Adds an instrumentation name to the list of suppressed instrumentations. Instrumentations
+     * that have been suppressed will not be installed at startup.
      */
-    public OtelRumConfig suppressInstrumentation(String instrumentationName){
+    public OtelRumConfig suppressInstrumentation(String instrumentationName) {
         suppressedInstrumentations.add(instrumentationName);
         return this;
     }
 
-    /**
-     * Returns false when the given instrumentation has been suppressed. True otherwise.
-     */
+    /** Returns false when the given instrumentation has been suppressed. True otherwise. */
     public boolean isSuppressed(String instrumentationName) {
         return suppressedInstrumentations.contains(instrumentationName);
     }

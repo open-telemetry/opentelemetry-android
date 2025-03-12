@@ -6,7 +6,6 @@
 package io.opentelemetry.instrumentation.library.httpurlconnection;
 
 import androidx.annotation.NonNull;
-
 import com.google.auto.service.AutoService;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.instrumentation.InstallationContext;
