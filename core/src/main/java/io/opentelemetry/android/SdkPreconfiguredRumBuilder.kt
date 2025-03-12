@@ -15,7 +15,6 @@ import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.internal.session.SessionManagerImpl
 import io.opentelemetry.android.session.SessionManager
 import io.opentelemetry.sdk.OpenTelemetrySdk
-import java.util.function.Predicate
 
 class SdkPreconfiguredRumBuilder
     @JvmOverloads
@@ -65,9 +64,8 @@ class SdkPreconfiguredRumBuilder
             return openTelemetryRum
         }
 
-        private fun getEnabledInstrumentations(): List<AndroidInstrumentation> {
-            return getInstrumentations().filter {inst -> config.isSuppressed(inst.name) }
-        }
+        private fun getEnabledInstrumentations(): List<AndroidInstrumentation> =
+            getInstrumentations().filter { inst -> config.isSuppressed(inst.name) }
 
         private fun getInstrumentations(): List<AndroidInstrumentation> {
             if (config.shouldDiscoverInstrumentations()) {
