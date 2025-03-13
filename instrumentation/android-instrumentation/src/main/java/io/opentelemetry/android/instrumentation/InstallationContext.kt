@@ -9,8 +9,10 @@ import android.app.Application
 import io.opentelemetry.android.session.SessionManager
 import io.opentelemetry.api.OpenTelemetry
 
-data class InstallationContext(
-    val application: Application,
-    val openTelemetry: OpenTelemetry,
-    val sessionManager: SessionManager,
-)
+data class InstallationContext
+    @JvmOverloads
+    constructor(
+        val application: Application,
+        val openTelemetry: OpenTelemetry,
+        val sessionManager: SessionManager = SessionManager.NoOp(),
+    )
