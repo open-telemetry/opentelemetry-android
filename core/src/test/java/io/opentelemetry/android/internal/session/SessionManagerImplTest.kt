@@ -78,41 +78,46 @@ internal class SessionManagerImplTest {
         every { observer.onSessionStarted(any<Session>(), any<Session>()) } just Runs
         every { observer.onSessionEnded(any<Session>()) } just Runs
 
+        // The initialization of SessionManagerImpl creates the first session for the application
+        // No observer is available on application start when first session is created
         val sessionManager =
             SessionManagerImpl(
                 clock,
                 timeoutHandler = timeoutHandler,
             )
-        sessionManager.addObserver(observer)
 
-        // The first call expires the Session.NONE initial session and notifies
-        val firstSessionId = sessionManager.getSessionId()
         verify(exactly = 1) { timeoutHandler.bump() }
         verify(exactly = 0) { timeoutHandler.hasTimedOut() }
-        verify(exactly = 1) { observer.onSessionStarted(any<Session>(), eq(Session.NONE)) }
-        verify(exactly = 1) { observer.onSessionEnded(eq(Session.NONE)) }
+        verify(exactly = 0) { observer.onSessionStarted(any<Session>(), eq(Session.NONE)) }
+        verify(exactly = 0) { observer.onSessionEnded(eq(Session.NONE)) }
+
+        // Add session change observer
+        sessionManager.addObserver(observer)
+
+        // Fetch the first session's id
+        val firstSessionId = sessionManager.getSessionId()
 
         clock.advance(3, TimeUnit.HOURS)
-        val secondSessionId = sessionManager.getSessionId()
+        val firstSessionIdContinued = sessionManager.getSessionId()
 
-        assertThat(firstSessionId).isEqualTo(secondSessionId)
-        verify(exactly = 2) { timeoutHandler.bump() }
-        verify(exactly = 1) { timeoutHandler.hasTimedOut() }
-        verify(exactly = 1) { observer.onSessionStarted(any<Session>(), any<Session>()) }
-        verify(exactly = 1) { observer.onSessionEnded(any<Session>()) }
+        assertThat(firstSessionId).isEqualTo(firstSessionIdContinued)
+        verify(exactly = 3) { timeoutHandler.bump() }
+        verify(exactly = 2) { timeoutHandler.hasTimedOut() }
+        verify(exactly = 0) { observer.onSessionStarted(any<Session>(), any<Session>()) }
+        verify(exactly = 0) { observer.onSessionEnded(any<Session>()) }
 
         clock.advance(1, TimeUnit.HOURS)
-        val thirdSessionId = sessionManager.getSessionId()
+        val secondSessionId = sessionManager.getSessionId()
 
-        verify(exactly = 3) { timeoutHandler.bump() }
-        verify(exactly = 1) { timeoutHandler.hasTimedOut() }
-        assertThat(thirdSessionId).isNotEqualTo(secondSessionId)
+        verify(exactly = 4) { timeoutHandler.bump() }
+        verify(exactly = 2) { timeoutHandler.hasTimedOut() }
+        assertThat(secondSessionId).isNotEqualTo(firstSessionId)
         verifyOrder {
             timeoutHandler.bump()
-            observer.onSessionEnded(match { it.getId() == secondSessionId })
+            observer.onSessionEnded(match { it.getId() == firstSessionId })
             observer.onSessionStarted(
-                match { it.getId() == thirdSessionId },
                 match { it.getId() == secondSessionId },
+                match { it.getId() == firstSessionId },
             )
         }
         confirmVerified(observer)
@@ -121,17 +126,18 @@ internal class SessionManagerImplTest {
 
     @Test
     fun shouldCreateNewSessionIdAfterTimeout() {
-        val sessionId = SessionManagerImpl(timeoutHandler = timeoutHandler)
-
-        val value = sessionId.getSessionId()
+        val sessionManager = SessionManagerImpl(timeoutHandler = timeoutHandler)
         verify { timeoutHandler.bump() }
 
-        assertThat(value).isEqualTo(sessionId.getSessionId())
-        verify(exactly = 2) { timeoutHandler.bump() }
+        val firstSessionId = sessionManager.getSessionId()
+        verify { timeoutHandler.bump() }
+
+        assertThat(firstSessionId).isEqualTo(sessionManager.getSessionId())
+        verify(exactly = 3) { timeoutHandler.bump() }
 
         every { timeoutHandler.hasTimedOut() } returns true
 
-        assertThat(value).isNotEqualTo(sessionId.getSessionId())
-        verify(exactly = 3) { timeoutHandler.bump() }
+        assertThat(firstSessionId).isNotEqualTo(sessionManager.getSessionId())
+        verify(exactly = 4) { timeoutHandler.bump() }
     }
 }

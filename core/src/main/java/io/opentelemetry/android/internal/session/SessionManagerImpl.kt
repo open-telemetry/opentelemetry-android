@@ -26,6 +26,8 @@ internal class SessionManagerImpl(
     private val observers = synchronizedList(ArrayList<SessionObserver>())
 
     init {
+        // Initialize the first session when this class is first loaded from OpenTelemetryRumBuilder
+        getSessionId()
         sessionStorage.save(session)
     }
 
