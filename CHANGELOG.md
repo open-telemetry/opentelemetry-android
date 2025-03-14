@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### ⚠️⚠️ Breaking changes
+
+- Remove `setSessionTimeout()` on `OtelRumConfig` in favor of new `setSessionConfig()`.([#xxx](https://github.com/open-telemetry/opentelemetry-android/pull/xxx))
+
 ## Version 0.10.0 (2025-03-06)
 
 - This version builds on opentelemetry-java-instrumentation

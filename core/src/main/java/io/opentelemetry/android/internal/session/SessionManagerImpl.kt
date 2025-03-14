@@ -6,20 +6,21 @@
 package io.opentelemetry.android.internal.session
 
 import io.opentelemetry.android.session.Session
+import io.opentelemetry.android.session.SessionConfig
 import io.opentelemetry.android.session.SessionIdGenerator
 import io.opentelemetry.android.session.SessionManager
 import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.android.session.SessionStorage
 import io.opentelemetry.sdk.common.Clock
 import java.util.Collections.synchronizedList
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
 
 internal class SessionManagerImpl(
     private val clock: Clock = Clock.getDefault(),
     private val sessionStorage: SessionStorage = SessionStorage.InMemory(),
     private val timeoutHandler: SessionIdTimeoutHandler,
     private val idGenerator: SessionIdGenerator = SessionIdGenerator.DEFAULT,
-    private val sessionLifetimeNanos: Long = TimeUnit.HOURS.toNanos(4),
+    private val maxSessionLifetime: Duration,
 ) : SessionManager {
     // TODO: Make thread safe / wrap with AtomicReference?
     private var session: Session = Session.NONE
@@ -66,18 +67,18 @@ internal class SessionManagerImpl(
 
     private fun sessionHasExpired(): Boolean {
         val elapsedTime = clock.now() - session.getStartTimestamp()
-        return elapsedTime >= sessionLifetimeNanos
+        return elapsedTime >= maxSessionLifetime.inWholeNanoseconds
     }
 
     companion object {
         @JvmStatic
         fun create(
             timeoutHandler: SessionIdTimeoutHandler,
-            sessionLifetimeNanos: Long,
+            sessionConfig: SessionConfig,
         ): SessionManagerImpl =
             SessionManagerImpl(
                 timeoutHandler = timeoutHandler,
-                sessionLifetimeNanos = sessionLifetimeNanos,
+                maxSessionLifetime = sessionConfig.maxLifetime,
             )
     }
 }
