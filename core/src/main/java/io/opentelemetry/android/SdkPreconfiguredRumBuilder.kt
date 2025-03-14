@@ -10,7 +10,7 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.internal.services.Services
-import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler
+import io.opentelemetry.android.internal.session.SessionBackgroundTimeoutHandler
 import io.opentelemetry.android.internal.session.SessionManagerImpl
 import io.opentelemetry.android.session.SessionManager
 import io.opentelemetry.sdk.OpenTelemetrySdk
@@ -20,7 +20,7 @@ class SdkPreconfiguredRumBuilder
     internal constructor(
         private val application: Application,
         private val sdk: OpenTelemetrySdk,
-        private val timeoutHandler: SessionIdTimeoutHandler = SessionIdTimeoutHandler(),
+        private val timeoutHandler: SessionBackgroundTimeoutHandler = SessionBackgroundTimeoutHandler(),
         private val sessionManager: SessionManager = SessionManagerImpl(timeoutHandler = timeoutHandler),
         private val discoverInstrumentations: Boolean,
         private val services: Services,

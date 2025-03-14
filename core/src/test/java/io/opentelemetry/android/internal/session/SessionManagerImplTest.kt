@@ -25,7 +25,7 @@ import java.util.regex.Pattern
 
 internal class SessionManagerImplTest {
     @MockK
-    lateinit var timeoutHandler: SessionIdTimeoutHandler
+    lateinit var timeoutHandler: SessionBackgroundTimeoutHandler
 
     @BeforeEach
     fun setUp() {

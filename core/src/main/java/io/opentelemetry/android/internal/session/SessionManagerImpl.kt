@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 internal class SessionManagerImpl(
     private val clock: Clock = Clock.getDefault(),
     private val sessionStorage: SessionStorage = SessionStorage.InMemory(),
-    private val timeoutHandler: SessionIdTimeoutHandler,
+    private val timeoutHandler: SessionBackgroundTimeoutHandler,
     private val idGenerator: SessionIdGenerator = SessionIdGenerator.DEFAULT,
     private val sessionLifetimeNanos: Long = TimeUnit.HOURS.toNanos(4),
 ) : SessionManager {
@@ -74,7 +74,7 @@ internal class SessionManagerImpl(
     companion object {
         @JvmStatic
         fun create(
-            timeoutHandler: SessionIdTimeoutHandler,
+            timeoutHandler: SessionBackgroundTimeoutHandler,
             sessionLifetimeNanos: Long,
         ): SessionManagerImpl =
             SessionManagerImpl(

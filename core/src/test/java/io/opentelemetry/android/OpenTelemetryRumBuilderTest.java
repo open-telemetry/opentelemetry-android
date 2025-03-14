@@ -42,7 +42,7 @@ import io.opentelemetry.android.internal.services.Services;
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle;
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker;
-import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler;
+import io.opentelemetry.android.internal.session.SessionBackgroundTimeoutHandler;
 import io.opentelemetry.android.session.SessionManager;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
@@ -283,7 +283,7 @@ public class OpenTelemetryRumBuilderTest {
     public void shouldInstallInstrumentation() {
         Services services = createAndSetServiceManager();
         SessionManager sessionManager = mock();
-        SessionIdTimeoutHandler timeoutHandler = mock();
+        SessionBackgroundTimeoutHandler timeoutHandler = mock();
         AndroidInstrumentation localInstrumentation = mock();
         AndroidInstrumentation classpathInstrumentation = mock();
         AndroidInstrumentationLoaderImpl androidInstrumentationServices =
@@ -308,7 +308,7 @@ public class OpenTelemetryRumBuilderTest {
     public void shouldInstallInstrumentation_excludingClasspathImplsWhenRequestedInConfig() {
         Services services = createAndSetServiceManager();
         SessionManager sessionManager = mock();
-        SessionIdTimeoutHandler timeoutHandler = mock();
+        SessionBackgroundTimeoutHandler timeoutHandler = mock();
         AndroidInstrumentation localInstrumentation = mock();
         AndroidInstrumentation classpathInstrumentation = mock();
         AndroidInstrumentationLoaderImpl androidInstrumentationServices =
