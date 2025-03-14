@@ -6,8 +6,9 @@
 package io.opentelemetry.android.internal.session
 
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener
+import io.opentelemetry.android.session.SessionConfig
 import io.opentelemetry.sdk.common.Clock
-import java.time.Duration
+import kotlin.time.Duration
 
 /**
  * This class encapsulates the following criteria about the sessionId timeout:
@@ -25,7 +26,7 @@ import java.time.Duration
  */
 internal class SessionIdTimeoutHandler(
     private val clock: Clock,
-    private val sessionTimeout: Duration,
+    private val sessionBackgroundInactivityTimeout: Duration,
 ) : ApplicationStateListener {
     @Volatile
     private var timeoutStartNanos: Long = 0
@@ -34,10 +35,9 @@ internal class SessionIdTimeoutHandler(
     private var state = State.FOREGROUND
 
     // for testing
-    @JvmOverloads
-    internal constructor(sessionTimeout: Duration = DEFAULT_SESSION_TIMEOUT) : this(
+    internal constructor(sessionConfig: SessionConfig) : this(
         Clock.getDefault(),
-        sessionTimeout,
+        sessionConfig.backgroundInactivityTimeout,
     )
 
     override fun onApplicationForegrounded() {
@@ -54,7 +54,7 @@ internal class SessionIdTimeoutHandler(
             return false
         }
         val elapsedTime = clock.nanoTime() - timeoutStartNanos
-        return elapsedTime >= sessionTimeout.toNanos()
+        return elapsedTime >= sessionBackgroundInactivityTimeout.inWholeNanoseconds
     }
 
     fun bump() {
@@ -72,10 +72,5 @@ internal class SessionIdTimeoutHandler(
 
         /** A temporary state representing the first event after the app has been brought back.  */
         TRANSITIONING_TO_FOREGROUND,
-    }
-
-    companion object {
-        @JvmField
-        val DEFAULT_SESSION_TIMEOUT: Duration = Duration.ofMinutes(15)
     }
 }

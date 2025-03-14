@@ -13,21 +13,54 @@ import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.internal.session.SessionManagerImpl
+import io.opentelemetry.android.session.SessionConfig
 import io.opentelemetry.android.session.SessionManager
 import io.opentelemetry.sdk.OpenTelemetrySdk
 
 class SdkPreconfiguredRumBuilder
-    @JvmOverloads
     internal constructor(
         private val application: Application,
         private val sdk: OpenTelemetrySdk,
-        private val timeoutHandler: SessionIdTimeoutHandler = SessionIdTimeoutHandler(),
-        private val sessionManager: SessionManager = SessionManagerImpl(timeoutHandler = timeoutHandler),
+        private val timeoutHandler: SessionIdTimeoutHandler,
+        private val sessionManager: SessionManager,
         private val config: OtelRumConfig,
         private val services: Services,
     ) {
         private val instrumentations = mutableListOf<AndroidInstrumentation>()
         private val appLifecycleService by lazy { services.appLifecycle }
+
+        constructor(
+            app: Application,
+            sdk: OpenTelemetrySdk,
+            sessionConfig: SessionConfig,
+            discoverInstrumentations: Boolean,
+            services: Services,
+        ) :
+            this(
+                app,
+                sdk,
+                sessionConfig,
+                SessionIdTimeoutHandler(sessionConfig),
+                discoverInstrumentations,
+                services,
+            )
+
+        internal constructor(
+            app: Application,
+            sdk: OpenTelemetrySdk,
+            sessionConfig: SessionConfig,
+            timeoutHandler: SessionIdTimeoutHandler,
+            discoverInstrumentations: Boolean,
+            services: Services,
+        ) :
+            this(
+                app,
+                sdk,
+                timeoutHandler,
+                SessionManagerImpl(timeoutHandler = timeoutHandler, maxSessionLifetime = sessionConfig.maxLifetime),
+                discoverInstrumentations,
+                services,
+            )
 
         /**
          * Adds an instrumentation to be applied as a part of the [build] method call.

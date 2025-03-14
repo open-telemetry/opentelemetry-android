@@ -22,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
+import kotlin.time.Duration.Companion.hours
 
 internal class SessionManagerImplTest {
     @MockK
@@ -40,6 +41,7 @@ internal class SessionManagerImplTest {
             SessionManagerImpl(
                 TestClock.create(),
                 timeoutHandler = timeoutHandler,
+                maxSessionLifetime = 4.hours,
             )
         val sessionId = sessionManager.getSessionId()
         assertThat(sessionId).isNotNull()
@@ -54,6 +56,7 @@ internal class SessionManagerImplTest {
             SessionManagerImpl(
                 clock,
                 timeoutHandler = timeoutHandler,
+                maxSessionLifetime = 4.hours,
             )
         val value = sessionManager.getSessionId()
         assertThat(value).isEqualTo(sessionManager.getSessionId())
@@ -82,6 +85,7 @@ internal class SessionManagerImplTest {
             SessionManagerImpl(
                 clock,
                 timeoutHandler = timeoutHandler,
+                maxSessionLifetime = 4.hours,
             )
         sessionManager.addObserver(observer)
 
@@ -121,7 +125,7 @@ internal class SessionManagerImplTest {
 
     @Test
     fun shouldCreateNewSessionIdAfterTimeout() {
-        val sessionId = SessionManagerImpl(timeoutHandler = timeoutHandler)
+        val sessionId = SessionManagerImpl(timeoutHandler = timeoutHandler, maxSessionLifetime = 4.hours)
 
         val value = sessionId.getSessionId()
         verify { timeoutHandler.bump() }
