@@ -118,7 +118,7 @@ public final class OpenTelemetryRumBuilder {
         return new OpenTelemetryRumBuilder(
                 application,
                 config,
-                new SessionBackgroundTimeoutHandler(config.getSessionTimeout()));
+                new SessionBackgroundTimeoutHandler(config.getSessionBackgroundTimeout()));
     }
 
     OpenTelemetryRumBuilder(
@@ -323,7 +323,8 @@ public final class OpenTelemetryRumBuilder {
 
         if (sessionManager == null) {
             sessionManager =
-                    SessionManagerImpl.create(timeoutHandler, config.getSessionTimeout().toNanos());
+                    SessionManagerImpl.create(
+                            timeoutHandler, config.getSessionForegroundTimeout().toNanos());
         }
 
         OpenTelemetrySdk sdk =

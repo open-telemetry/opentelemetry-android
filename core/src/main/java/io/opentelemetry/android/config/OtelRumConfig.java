@@ -25,7 +25,8 @@ public class OtelRumConfig {
     private boolean includeScreenAttributes = true;
     private boolean discoverInstrumentations = true;
     private DiskBufferingConfig diskBufferingConfig = DiskBufferingConfig.create();
-    private Duration sessionTimeout = Duration.ofMinutes(15);
+    private Duration sessionBackgroundTimeout = Duration.ofMinutes(15);
+    private Duration sessionForegroundTimeout = Duration.ofHours(4);
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -129,14 +130,25 @@ public class OtelRumConfig {
         return this;
     }
 
-    /** Call this method to set session timeout in minutes */
-    public OtelRumConfig setSessionTimeout(Duration sessionTimeout) {
-        this.sessionTimeout = sessionTimeout;
+    /** Call this method to set background session timeout */
+    public OtelRumConfig setSessionBackgroundTimeout(Duration sessionBackgroundTimeout) {
+        this.sessionBackgroundTimeout = sessionBackgroundTimeout;
         return this;
     }
 
-    /** Call this method to retrieve session timeout */
-    public Duration getSessionTimeout() {
-        return sessionTimeout;
+    /** Call this method to retrieve background session timeout */
+    public Duration getSessionBackgroundTimeout() {
+        return sessionBackgroundTimeout;
+    }
+
+    /** Call this method to set foreground session timeout */
+    public OtelRumConfig setSessionForegroundTimeout(Duration sessionForegroundTimeout) {
+        this.sessionForegroundTimeout = sessionForegroundTimeout;
+        return this;
+    }
+
+    /** Call this method to retrieve foreground session timeout */
+    public Duration getSessionForegroundTimeout() {
+        return sessionForegroundTimeout;
     }
 }
