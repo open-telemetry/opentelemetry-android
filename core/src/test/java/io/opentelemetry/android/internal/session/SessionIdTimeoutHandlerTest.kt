@@ -5,20 +5,21 @@
 
 package io.opentelemetry.android.internal.session
 
-import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler.Companion.DEFAULT_SESSION_TIMEOUT
+import io.opentelemetry.android.session.SessionConfig
 import io.opentelemetry.sdk.testing.time.TestClock
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.nanoseconds
 
 class SessionIdTimeoutHandlerTest {
     @Test
     fun shouldNeverTimeOutInForeground() {
         val clock: TestClock = TestClock.create()
         val timeoutHandler =
-            SessionIdTimeoutHandler(clock, DEFAULT_SESSION_TIMEOUT)
+            SessionIdTimeoutHandler(clock, SessionConfig.withDefaults().backgroundInactivityTimeout)
 
         assertFalse(timeoutHandler.hasTimedOut())
         timeoutHandler.bump()
@@ -32,7 +33,7 @@ class SessionIdTimeoutHandlerTest {
     fun shouldApply15MinutesTimeoutToAppsInBackground() {
         val clock: TestClock = TestClock.create()
         val timeoutHandler =
-            SessionIdTimeoutHandler(clock, DEFAULT_SESSION_TIMEOUT)
+            SessionIdTimeoutHandler(clock, SessionConfig.withDefaults().backgroundInactivityTimeout)
 
         timeoutHandler.onApplicationBackgrounded()
         timeoutHandler.bump()
@@ -64,7 +65,7 @@ class SessionIdTimeoutHandlerTest {
     fun shouldApplyTimeoutToFirstSpanAfterAppBeingMovedToForeground() {
         val clock: TestClock = TestClock.create()
         val timeoutHandler =
-            SessionIdTimeoutHandler(clock, DEFAULT_SESSION_TIMEOUT)
+            SessionIdTimeoutHandler(clock, SessionConfig.withDefaults().backgroundInactivityTimeout)
 
         timeoutHandler.onApplicationBackgrounded()
         timeoutHandler.bump()
@@ -84,7 +85,7 @@ class SessionIdTimeoutHandlerTest {
     fun shouldApplyCustomTimeoutToFirstSpanAfterAppBeingMovedToForeground() {
         val clock: TestClock = TestClock.create()
         val timeoutHandler =
-            SessionIdTimeoutHandler(clock, Duration.ofNanos(5))
+            SessionIdTimeoutHandler(clock, 5.nanoseconds)
 
         timeoutHandler.onApplicationBackgrounded()
         timeoutHandler.bump()
