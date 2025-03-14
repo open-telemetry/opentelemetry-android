@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.internal.session
 
-import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler.Companion.DEFAULT_SESSION_TIMEOUT
+import io.opentelemetry.android.internal.session.SessionBackgroundTimeoutHandler.Companion.DEFAULT_SESSION_TIMEOUT
 import io.opentelemetry.sdk.testing.time.TestClock
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -18,7 +18,7 @@ class SessionIdTimeoutHandlerTest {
     fun shouldNeverTimeOutInForeground() {
         val clock: TestClock = TestClock.create()
         val timeoutHandler =
-            SessionIdTimeoutHandler(clock, DEFAULT_SESSION_TIMEOUT)
+            SessionBackgroundTimeoutHandler(clock, DEFAULT_SESSION_TIMEOUT)
 
         assertFalse(timeoutHandler.hasTimedOut())
         timeoutHandler.bump()
@@ -32,7 +32,7 @@ class SessionIdTimeoutHandlerTest {
     fun shouldApply15MinutesTimeoutToAppsInBackground() {
         val clock: TestClock = TestClock.create()
         val timeoutHandler =
-            SessionIdTimeoutHandler(clock, DEFAULT_SESSION_TIMEOUT)
+            SessionBackgroundTimeoutHandler(clock, DEFAULT_SESSION_TIMEOUT)
 
         timeoutHandler.onApplicationBackgrounded()
         timeoutHandler.bump()
@@ -64,7 +64,7 @@ class SessionIdTimeoutHandlerTest {
     fun shouldApplyTimeoutToFirstSpanAfterAppBeingMovedToForeground() {
         val clock: TestClock = TestClock.create()
         val timeoutHandler =
-            SessionIdTimeoutHandler(clock, DEFAULT_SESSION_TIMEOUT)
+            SessionBackgroundTimeoutHandler(clock, DEFAULT_SESSION_TIMEOUT)
 
         timeoutHandler.onApplicationBackgrounded()
         timeoutHandler.bump()
@@ -84,7 +84,7 @@ class SessionIdTimeoutHandlerTest {
     fun shouldApplyCustomTimeoutToFirstSpanAfterAppBeingMovedToForeground() {
         val clock: TestClock = TestClock.create()
         val timeoutHandler =
-            SessionIdTimeoutHandler(clock, Duration.ofNanos(5))
+            SessionBackgroundTimeoutHandler(clock, Duration.ofNanos(5))
 
         timeoutHandler.onApplicationBackgrounded()
         timeoutHandler.bump()
