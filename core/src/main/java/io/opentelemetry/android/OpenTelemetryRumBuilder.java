@@ -47,7 +47,7 @@ import io.opentelemetry.contrib.disk.buffering.MetricFromDiskExporter;
 import io.opentelemetry.contrib.disk.buffering.MetricToDiskExporter;
 import io.opentelemetry.contrib.disk.buffering.SpanFromDiskExporter;
 import io.opentelemetry.contrib.disk.buffering.SpanToDiskExporter;
-import io.opentelemetry.contrib.disk.buffering.StorageConfiguration;
+import io.opentelemetry.contrib.disk.buffering.config.StorageConfiguration;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;

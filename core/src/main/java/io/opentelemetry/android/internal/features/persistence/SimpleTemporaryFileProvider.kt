@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.internal.features.persistence
 
-import io.opentelemetry.contrib.disk.buffering.internal.files.TemporaryFileProvider
+import io.opentelemetry.contrib.disk.buffering.config.TemporaryFileProvider
 import java.io.File
 import java.util.UUID
 
