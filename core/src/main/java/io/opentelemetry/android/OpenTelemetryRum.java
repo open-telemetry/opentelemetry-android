@@ -9,6 +9,7 @@ import android.app.Application;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.internal.services.Services;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -88,4 +89,52 @@ public interface OpenTelemetryRum {
      * recommended that you do not cache this value, but always retrieve it from here when needed.
      */
     String getRumSessionId();
+
+    /**
+     * Emits an event with the specified name.
+     *
+     * <p>This method serves as a convenience overload that emits an event with an empty set of
+     * attributes.
+     *
+     * @param eventName The name of the event to emit.
+     */
+    default void emitEvent(String eventName) {
+        emitEvent(eventName, Attributes.empty());
+    }
+
+    /**
+     * Emits an event with the specified name and body.
+     *
+     * <p>This method serves as a convenience overload that emits an event with an empty set of
+     * attributes.
+     *
+     * @param eventName The name of the event to emit.
+     * @param body The body of the event, typically containing additional data.
+     */
+    default void emitEvent(String eventName, String body) {
+        emitEvent(eventName, body, Attributes.empty());
+    }
+
+    /**
+     * Emits an event with the specified name and attributes.
+     *
+     * <p>This method serves as a convenience overload that emits an event with an empty body.
+     *
+     * @param eventName The name of the event to emit.
+     * @param attributes The attributes associated with the event.
+     */
+    default void emitEvent(String eventName, Attributes attributes) {
+        emitEvent(eventName, "", attributes);
+    }
+
+    /**
+     * Emits an event with the specified name, body, and attributes.
+     *
+     * <p>Implementations of this method should define how the event is handled and recorded.
+     *
+     * @param eventName The name of the event to emit.
+     * @param body The body of the event, typically containing additional data.
+     * @param attributes The attributes associated with the event, providing metadata.
+     */
+    void emitEvent(String eventName, String body, Attributes attributes);
 }
