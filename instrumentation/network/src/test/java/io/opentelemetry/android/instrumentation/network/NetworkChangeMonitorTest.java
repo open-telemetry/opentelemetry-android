@@ -25,8 +25,9 @@ import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle;
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.android.internal.services.network.NetworkChangeListener;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
-import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Collections;
 import java.util.List;
 import org.junit.After;
@@ -76,10 +77,11 @@ public class NetworkChangeMonitorTest {
 
         listener.onNetworkChange(CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build());
 
-        List<SpanData> spans = otelTesting.getSpans();
-        assertEquals(1, spans.size());
-        assertThat(spans.get(0))
-                .hasName("network.change")
+        List<LogRecordData> logs = otelTesting.getLogRecords();
+        assertEquals(1, logs.size());
+        ExtendedLogRecordData log = (ExtendedLogRecordData) logs.get(0);
+        assertThat(log.getEventName()).isEqualTo("network.change");
+        assertThat(log)
                 .hasAttributesSatisfyingExactly(
                         equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "available"),
                         equalTo(NETWORK_CONNECTION_TYPE, "wifi"));
@@ -101,10 +103,11 @@ public class NetworkChangeMonitorTest {
 
         listener.onNetworkChange(network);
 
-        List<SpanData> spans = otelTesting.getSpans();
-        assertEquals(1, spans.size());
-        assertThat(spans.get(0))
-                .hasName("network.change")
+        List<LogRecordData> logs = otelTesting.getLogRecords();
+        assertEquals(1, logs.size());
+        ExtendedLogRecordData log = (ExtendedLogRecordData) logs.get(0);
+        assertThat(log.getEventName()).isEqualTo("network.change");
+        assertThat(log)
                 .hasAttributesSatisfyingExactly(
                         equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "available"),
                         equalTo(NETWORK_CONNECTION_TYPE, "cell"),
@@ -125,10 +128,11 @@ public class NetworkChangeMonitorTest {
 
         listener.onNetworkChange(CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
 
-        List<SpanData> spans = otelTesting.getSpans();
-        assertEquals(1, spans.size());
-        assertThat(spans.get(0))
-                .hasName("network.change")
+        List<LogRecordData> events = otelTesting.getLogRecords();
+        assertEquals(1, events.size());
+        ExtendedLogRecordData log = (ExtendedLogRecordData) events.get(0);
+        assertThat(log.getEventName()).isEqualTo("network.change");
+        assertThat(log)
                 .hasAttributesSatisfyingExactly(
                         equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "lost"),
                         equalTo(NETWORK_CONNECTION_TYPE, "unavailable"));
@@ -167,6 +171,6 @@ public class NetworkChangeMonitorTest {
                 otelTesting.getOpenTelemetry(),
                 appLifecycle,
                 currentNetworkProvider,
-                Collections.emptyList());
+                Collections.singletonList(new NetworkChangeAttributesExtractor()));
     }
 }

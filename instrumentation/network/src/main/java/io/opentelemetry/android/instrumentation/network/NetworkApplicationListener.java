@@ -12,9 +12,13 @@ import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateL
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.android.internal.services.network.NetworkChangeListener;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
+import io.opentelemetry.api.logs.Logger;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
 
 class NetworkApplicationListener implements ApplicationStateListener {
     static final AttributeKey<String> NETWORK_STATUS_KEY = stringKey("network.status");
@@ -26,9 +30,12 @@ class NetworkApplicationListener implements ApplicationStateListener {
         this.currentNetworkProvider = currentNetworkProvider;
     }
 
-    void startMonitoring(Instrumenter<CurrentNetwork, Void> instrumenter) {
+    void startMonitoring(
+            Logger eventLogger,
+            List<BiConsumer<AttributesBuilder, CurrentNetwork>> additionalExtractors) {
         currentNetworkProvider.addNetworkChangeListener(
-                new TracingNetworkChangeListener(instrumenter, shouldEmitChangeEvents));
+                new TracingNetworkChangeListener(
+                        eventLogger, shouldEmitChangeEvents, additionalExtractors));
     }
 
     @Override
@@ -43,14 +50,17 @@ class NetworkApplicationListener implements ApplicationStateListener {
 
     private static final class TracingNetworkChangeListener implements NetworkChangeListener {
 
-        private final Instrumenter<CurrentNetwork, Void> instrumenter;
         private final AtomicBoolean shouldEmitChangeEvents;
+        private final Logger eventLogger;
+        private final List<BiConsumer<AttributesBuilder, CurrentNetwork>> additionalExtractors;
 
         TracingNetworkChangeListener(
-                Instrumenter<CurrentNetwork, Void> instrumenter,
-                AtomicBoolean shouldEmitChangeEvents) {
-            this.instrumenter = instrumenter;
+                Logger eventLogger,
+                AtomicBoolean shouldEmitChangeEvents,
+                List<BiConsumer<AttributesBuilder, CurrentNetwork>> additionalExtractors) {
+            this.eventLogger = eventLogger;
             this.shouldEmitChangeEvents = shouldEmitChangeEvents;
+            this.additionalExtractors = additionalExtractors;
         }
 
         @Override
@@ -58,8 +68,15 @@ class NetworkApplicationListener implements ApplicationStateListener {
             if (!shouldEmitChangeEvents.get()) {
                 return;
             }
-            Context context = instrumenter.start(Context.current(), currentNetwork);
-            instrumenter.end(context, currentNetwork, null, null);
+            AttributesBuilder attributesBuilder = Attributes.builder();
+            additionalExtractors.forEach(
+                    extractor -> extractor.accept(attributesBuilder, currentNetwork));
+
+            ExtendedLogRecordBuilder builder =
+                    (ExtendedLogRecordBuilder) eventLogger.logRecordBuilder();
+            builder.setEventName("network.change")
+                    .setAllAttributes(attributesBuilder.build())
+                    .emit();
         }
     }
 }

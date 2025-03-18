@@ -18,9 +18,9 @@ This instrumentation produces the following telemetry:
 
 ### Network Change
 
-* Type: Span
+* Type: Event
 * Name: `network.change`
-* Description: This zero-duration span is started and ended when a network change is detected.
+* Description: This event is emitted when a network change is detected.
 * Attributes:
     * `network.status`: One of `lost` or `available`.
     * `network.connection.type` (semconv) one of `cell`, `wifi`, `wired`, `unavailable`, `unknown`, `vpn`.
