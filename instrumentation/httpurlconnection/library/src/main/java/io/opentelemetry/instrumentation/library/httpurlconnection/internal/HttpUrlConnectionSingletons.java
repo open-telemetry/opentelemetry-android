@@ -9,6 +9,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpClientExperimentalMetrics;
 import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpClientPeerServiceAttributesExtractor;
 import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpExperimentalAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.instrumentation.api.instrumenter.InstrumenterBuilder;
 import io.opentelemetry.instrumentation.api.semconv.http.HttpClientAttributesExtractor;
@@ -62,6 +63,11 @@ public final class HttpUrlConnectionSingletons {
                         .addAttributesExtractor(httpClientAttributesExtractorBuilder.build())
                         .addAttributesExtractor(httpClientPeerServiceAttributesExtractor)
                         .addOperationMetrics(HttpClientMetrics.get());
+
+        for (AttributesExtractor<URLConnection, Integer> extractor :
+                instrumentation.getAdditionalExtractors()) {
+            builder.addAttributesExtractor(extractor);
+        }
 
         if (instrumentation.emitExperimentalHttpClientMetrics()) {
             builder.addAttributesExtractor(

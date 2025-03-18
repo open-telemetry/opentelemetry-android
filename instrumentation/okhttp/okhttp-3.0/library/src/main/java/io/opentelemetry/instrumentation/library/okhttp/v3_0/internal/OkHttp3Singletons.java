@@ -8,7 +8,9 @@ package io.opentelemetry.instrumentation.library.okhttp.v3_0.internal;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.api.incubator.builder.internal.DefaultHttpClientInstrumenterBuilder;
 import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.instrumentation.api.semconv.http.HttpClientRequestResendCount;
 import io.opentelemetry.instrumentation.api.semconv.http.HttpSpanNameExtractor;
@@ -32,7 +34,7 @@ public final class OkHttp3Singletons {
 
     public static void configure(
             OkHttpInstrumentation instrumentation, OpenTelemetry openTelemetry) {
-        Instrumenter<Interceptor.Chain, Response> instrumenter =
+        DefaultHttpClientInstrumenterBuilder<Interceptor.Chain, Response> instrumenterBuilder =
                 OkHttpClientInstrumenterBuilderFactory.create(openTelemetry)
                         .setCapturedRequestHeaders(instrumentation.getCapturedRequestHeaders())
                         .setCapturedResponseHeaders(instrumentation.getCapturedResponseHeaders())
@@ -51,8 +53,15 @@ public final class OkHttp3Singletons {
                                         OkHttpAttributesGetter.INSTANCE,
                                         instrumentation.newPeerServiceResolver()))
                         .setEmitExperimentalHttpClientMetrics(
-                                instrumentation.emitExperimentalHttpClientMetrics())
-                        .build();
+                                instrumentation.emitExperimentalHttpClientMetrics());
+
+        for (AttributesExtractor<Interceptor.Chain, Response> extractor :
+                instrumentation.getAdditionalExtractors()) {
+            instrumenterBuilder = instrumenterBuilder.addAttributesExtractor(extractor);
+        }
+
+        Instrumenter<Interceptor.Chain, Response> instrumenter = instrumenterBuilder.build();
+
         CONNECTION_ERROR_INTERCEPTOR = new ConnectionErrorSpanInterceptor(instrumenter);
         TRACING_INTERCEPTOR = new TracingInterceptor(instrumenter, openTelemetry.getPropagators());
     }

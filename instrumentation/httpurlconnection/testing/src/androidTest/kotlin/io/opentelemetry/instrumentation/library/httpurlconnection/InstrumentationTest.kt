@@ -12,6 +12,7 @@ import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlConnect
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Rule
 import org.junit.Test
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -47,19 +48,18 @@ class InstrumentationTest {
     @Test
     fun testHttpUrlConnectionGetRequest_WhenFourConcurrentRequestsAreMade_AllShouldBeTraced() {
         val executor = Executors.newFixedThreadPool(4)
+        val latch = CountDownLatch(4)
         try {
-            executor.submit { executeGet("http://httpbin.org/get") }
-            executor.submit { executeGet("http://google.com") }
-            executor.submit { executeGet("http://android.com") }
-            executor.submit { executeGet("http://httpbin.org/headers") }
+            executor.submit { executeGet("http://httpbin.org/get") { latch.countDown() } }
+            executor.submit { executeGet("http://google.com") { latch.countDown() } }
+            executor.submit { executeGet("http://android.com") { latch.countDown() } }
+            executor.submit { executeGet("http://httpbin.org/headers") { latch.countDown() } }
 
             executor.shutdown()
 
-            // Wait for all tasks to finish execution or timeout
-            assertThat(executor.awaitTermination(2, TimeUnit.SECONDS))
-                .withFailMessage("Test could not be completed as tasks did not complete within the 2s timeout period.")
-                .isTrue()
-
+            // Timeout large enough to allow tests to pass consistently in CI, but happy path is fast.
+            // Only in failure will this be slow. As soon as all 4 executor jobs finish, this completes.
+            assertThat(latch.await(1, TimeUnit.MINUTES)).isTrue()
             assertThat(openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size).isEqualTo(4)
         } finally {
             if (!executor.isShutdown) {
@@ -107,5 +107,9 @@ class InstrumentationTest {
 
         // span created with harvester thread
         assertThat(openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size).isEqualTo(1)
+    }
+
+    companion object {
+        private const val TAG = "HttpURLInstrumentedTest"
     }
 }
