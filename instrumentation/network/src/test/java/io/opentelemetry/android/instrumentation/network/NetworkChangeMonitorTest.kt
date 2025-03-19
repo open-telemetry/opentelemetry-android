@@ -3,174 +3,184 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.instrumentation.network
 
-import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
-import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_ICC;
-import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_MCC;
-import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_MNC;
-import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CARRIER_NAME;
-import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CONNECTION_SUBTYPE;
-import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
+import android.os.Build
+import io.mockk.MockKAnnotations
+import io.mockk.impl.annotations.MockK
+import io.mockk.junit5.MockKExtension
+import io.mockk.slot
+import io.mockk.verify
+import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier
+import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
+import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
+import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
+import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener
+import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
+import io.opentelemetry.android.internal.services.network.NetworkChangeListener
+import io.opentelemetry.android.test.common.hasEventName
+import io.opentelemetry.api.common.AttributesBuilder
+import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
+import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
+import io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes
+import org.junit.Before
+import org.junit.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import java.util.function.BiConsumer
 
-import android.os.Build;
-import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier;
-import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
-import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
-import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle;
-import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
-import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
-import io.opentelemetry.android.internal.services.network.NetworkChangeListener;
-import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
-import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
-import java.util.Collections;
-import java.util.List;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
+@Config(sdk = [Build.VERSION_CODES.P])
+@RunWith(RobolectricTestRunner::class)
+@ExtendWith(MockKExtension::class)
+class NetworkChangeMonitorTest {
+    private lateinit var otelTesting: OpenTelemetryRule
 
-@Config(sdk = Build.VERSION_CODES.P)
-@RunWith(RobolectricTestRunner.class)
-public class NetworkChangeMonitorTest {
+//    @Captor
+//    var applicationStateListenerCaptor: ArgumentCaptor<ApplicationStateListener>? = null
+//
+//    @SpyK
+//    var networkChangeListenerCaptor: ArgumentCaptor<NetworkChangeListener>? = null
 
-    @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
+    @MockK
+    lateinit var currentNetworkProvider: CurrentNetworkProvider
 
-    @Captor ArgumentCaptor<ApplicationStateListener> applicationStateListenerCaptor;
-    @Captor ArgumentCaptor<NetworkChangeListener> networkChangeListenerCaptor;
-
-    @Mock CurrentNetworkProvider currentNetworkProvider;
-    @Mock AppLifecycle appLifecycle;
-
-    AutoCloseable mocks;
+    @MockK
+    lateinit var appLifecycle: AppLifecycle
 
     @Before
-    public void setUp() {
-        mocks = MockitoAnnotations.openMocks(this);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        mocks.close();
+    fun setUp() {
+        otelTesting = OpenTelemetryRule.create()
+        MockKAnnotations.init(this, relaxUnitFun = true)
     }
 
     @Test
-    public void networkAvailable_wifi() {
-        create().start();
+    fun networkAvailable_wifi() {
+        val networkChangeListenerSlot = slot<NetworkChangeListener>()
+        create().start()
 
-        verify(currentNetworkProvider)
-                .addNetworkChangeListener(networkChangeListenerCaptor.capture());
-        NetworkChangeListener listener = networkChangeListenerCaptor.getValue();
+        verify {
+            currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
+        }
+        val listener = networkChangeListenerSlot.captured
 
-        listener.onNetworkChange(CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build());
+        listener.onNetworkChange(CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build())
 
-        List<LogRecordData> logs = otelTesting.getLogRecords();
-        assertEquals(1, logs.size());
-        ExtendedLogRecordData log = (ExtendedLogRecordData) logs.get(0);
-        assertThat(log.getEventName()).isEqualTo("network.change");
-        assertThat(log)
-                .hasAttributesSatisfyingExactly(
-                        equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "available"),
-                        equalTo(NETWORK_CONNECTION_TYPE, "wifi"));
+        val events = otelTesting.logRecords
+        assertThat(events).hasSize(1)
+        val event = events[0] as ExtendedLogRecordData
+        assertThat(event)
+            .hasEventName("network.change")
+            .hasAttributesSatisfyingExactly(
+                equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "available"),
+                equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE, "wifi"),
+            )
     }
 
     @Test
-    public void networkAvailable_cellular() {
-        create().start();
+    fun networkAvailable_cellular() {
+        val networkChangeListenerSlot = slot<NetworkChangeListener>()
+        create().start()
+        verify {
+            currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
+        }
+        val listener = networkChangeListenerSlot.captured
 
-        verify(currentNetworkProvider)
-                .addNetworkChangeListener(networkChangeListenerCaptor.capture());
-        NetworkChangeListener listener = networkChangeListenerCaptor.getValue();
+        val network =
+            CurrentNetwork
+                .builder(NetworkState.TRANSPORT_CELLULAR)
+                .subType("LTE")
+                .carrier(Carrier(206, "ShadyTel", "usa", "omg", "US"))
+                .build()
 
-        CurrentNetwork network =
-                CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
-                        .subType("LTE")
-                        .carrier(new Carrier(206, "ShadyTel", "usa", "omg", "US"))
-                        .build();
+        listener.onNetworkChange(network)
 
-        listener.onNetworkChange(network);
-
-        List<LogRecordData> logs = otelTesting.getLogRecords();
-        assertEquals(1, logs.size());
-        ExtendedLogRecordData log = (ExtendedLogRecordData) logs.get(0);
-        assertThat(log.getEventName()).isEqualTo("network.change");
-        assertThat(log)
-                .hasAttributesSatisfyingExactly(
-                        equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "available"),
-                        equalTo(NETWORK_CONNECTION_TYPE, "cell"),
-                        equalTo(NETWORK_CONNECTION_SUBTYPE, "LTE"),
-                        equalTo(NETWORK_CARRIER_NAME, "ShadyTel"),
-                        equalTo(NETWORK_CARRIER_ICC, "US"),
-                        equalTo(NETWORK_CARRIER_MCC, "usa"),
-                        equalTo(NETWORK_CARRIER_MNC, "omg"));
+        val events = otelTesting.logRecords
+        assertThat(events).hasSize(1)
+        val event = events[0] as ExtendedLogRecordData
+        assertThat(event)
+            .hasEventName("network.change")
+            .hasAttributesSatisfyingExactly(
+                equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "available"),
+                equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE, "cell"),
+                equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_SUBTYPE, "LTE"),
+                equalTo(NetworkIncubatingAttributes.NETWORK_CARRIER_NAME, "ShadyTel"),
+                equalTo(NetworkIncubatingAttributes.NETWORK_CARRIER_ICC, "US"),
+                equalTo(NetworkIncubatingAttributes.NETWORK_CARRIER_MCC, "usa"),
+                equalTo(NetworkIncubatingAttributes.NETWORK_CARRIER_MNC, "omg"),
+            )
     }
 
     @Test
-    public void networkLost() {
-        create().start();
+    fun networkLost() {
+        val networkChangeListenerSlot = slot<NetworkChangeListener>()
+        create().start()
 
-        verify(currentNetworkProvider)
-                .addNetworkChangeListener(networkChangeListenerCaptor.capture());
-        NetworkChangeListener listener = networkChangeListenerCaptor.getValue();
+        verify {
+            currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
+        }
+        val listener = networkChangeListenerSlot.captured
 
-        listener.onNetworkChange(CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
+        listener.onNetworkChange(CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build())
 
-        List<LogRecordData> events = otelTesting.getLogRecords();
-        assertEquals(1, events.size());
-        ExtendedLogRecordData log = (ExtendedLogRecordData) events.get(0);
-        assertThat(log.getEventName()).isEqualTo("network.change");
-        assertThat(log)
-                .hasAttributesSatisfyingExactly(
-                        equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "lost"),
-                        equalTo(NETWORK_CONNECTION_TYPE, "unavailable"));
+        val events = otelTesting.logRecords
+        assertThat(events).hasSize(1)
+        val event = events[0] as ExtendedLogRecordData
+        assertThat(event)
+            .hasEventName("network.change")
+            .hasAttributesSatisfyingExactly(
+                equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "lost"),
+                equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE, "unavailable"),
+            )
     }
 
     @Test
-    @Ignore("Reintroduce in part 3")
-    public void noEventsPlease() {
-        create().start();
+    fun noEventsPlease() {
+        val networkChangeListenerSlot = slot<NetworkChangeListener>()
+        val appStateListener = slot<ApplicationStateListener>()
+        create().start()
 
-        verify(currentNetworkProvider)
-                .addNetworkChangeListener(networkChangeListenerCaptor.capture());
-        NetworkChangeListener networkListener = networkChangeListenerCaptor.getValue();
+        verify {
+            currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
+            appLifecycle.registerListener(capture(appStateListener))
+        }
+        val networkListener = networkChangeListenerSlot.captured
+        val applicationListener = appStateListener.captured
 
-        verify(appLifecycle).registerListener(applicationStateListenerCaptor.capture());
-        ApplicationStateListener applicationListener = applicationStateListenerCaptor.getValue();
-
-        applicationListener.onApplicationBackgrounded();
+        applicationListener.onApplicationBackgrounded()
 
         networkListener.onNetworkChange(
-                CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
-        assertTrue(otelTesting.getSpans().isEmpty());
+            CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build(),
+        )
+        assertThat(otelTesting.logRecords).isEmpty()
         networkListener.onNetworkChange(
-                CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).subType("LTE").build());
-        assertTrue(otelTesting.getSpans().isEmpty());
+            CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).subType("LTE").build(),
+        )
+        assertThat(otelTesting.logRecords).isEmpty()
 
-        applicationListener.onApplicationForegrounded();
+        applicationListener.onApplicationForegrounded()
 
         networkListener.onNetworkChange(
-                CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build());
-        assertEquals(1, otelTesting.getSpans().size());
+            CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build(),
+        )
+        assertThat(otelTesting.logRecords).hasSize(1)
+        val event: ExtendedLogRecordData = otelTesting.logRecords[0] as ExtendedLogRecordData
+        assertThat(event)
+            .hasEventName("network.change")
+            .hasAttributesSatisfyingExactly(
+                equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "lost"),
+                equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE, "unavailable"),
+            )
     }
 
-    private NetworkChangeMonitor create() {
-        return new NetworkChangeMonitor(
-                otelTesting.getOpenTelemetry(),
-                appLifecycle,
-                currentNetworkProvider,
-                Collections.singletonList(new NetworkChangeAttributesExtractor()));
-    }
+    private fun create(): NetworkChangeMonitor =
+        NetworkChangeMonitor(
+            otelTesting.openTelemetry,
+            appLifecycle,
+            currentNetworkProvider,
+            listOf<BiConsumer<AttributesBuilder, CurrentNetwork>>(NetworkChangeAttributesExtractor()),
+        )
 }
