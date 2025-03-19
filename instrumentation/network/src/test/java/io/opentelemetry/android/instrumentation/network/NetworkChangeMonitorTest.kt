@@ -39,12 +39,6 @@ import java.util.function.BiConsumer
 class NetworkChangeMonitorTest {
     private lateinit var otelTesting: OpenTelemetryRule
 
-//    @Captor
-//    var applicationStateListenerCaptor: ArgumentCaptor<ApplicationStateListener>? = null
-//
-//    @SpyK
-//    var networkChangeListenerCaptor: ArgumentCaptor<NetworkChangeListener>? = null
-
     @MockK
     lateinit var currentNetworkProvider: CurrentNetworkProvider
 
