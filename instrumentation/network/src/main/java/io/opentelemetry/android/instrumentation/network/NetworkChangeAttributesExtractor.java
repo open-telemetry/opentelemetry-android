@@ -13,10 +13,10 @@ import io.opentelemetry.android.common.internal.features.networkattributes.data.
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
+import java.util.function.BiConsumer;
 
-final class NetworkChangeAttributesExtractor implements AttributesExtractor<CurrentNetwork, Void> {
+final class NetworkChangeAttributesExtractor
+        implements BiConsumer<AttributesBuilder, CurrentNetwork> {
 
     static final AttributeKey<String> NETWORK_STATUS_KEY = stringKey("network.status");
 
@@ -24,28 +24,17 @@ final class NetworkChangeAttributesExtractor implements AttributesExtractor<Curr
             new CurrentNetworkAttributesExtractor();
 
     @Override
-    public void onStart(
-            AttributesBuilder attributes, Context parentContext, CurrentNetwork currentNetwork) {
+    public void accept(AttributesBuilder attributesBuilder, CurrentNetwork currentNetwork) {
         String status =
                 currentNetwork.getState() == NetworkState.NO_NETWORK_AVAILABLE
                         ? "lost"
                         : "available";
-        attributes.put(NETWORK_STATUS_KEY, status);
-    }
-
-    @Override
-    public void onEnd(
-            AttributesBuilder attributes,
-            Context context,
-            CurrentNetwork currentNetwork,
-            Void unused,
-            Throwable error) {
-        // put these after span start to override what might be set in the
-        // NetworkAttributesSpanAppender.
+        attributesBuilder.put(NETWORK_STATUS_KEY, status);
         if (currentNetwork.getState() == NetworkState.NO_NETWORK_AVAILABLE) {
-            attributes.put(NETWORK_CONNECTION_TYPE, currentNetwork.getState().getHumanName());
+            attributesBuilder.put(
+                    NETWORK_CONNECTION_TYPE, currentNetwork.getState().getHumanName());
         } else {
-            attributes.putAll(networkAttributesExtractor.extract(currentNetwork));
+            attributesBuilder.putAll(networkAttributesExtractor.extract(currentNetwork));
         }
     }
 }

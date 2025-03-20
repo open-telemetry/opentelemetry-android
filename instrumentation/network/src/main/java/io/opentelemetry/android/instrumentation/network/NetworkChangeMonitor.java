@@ -9,9 +9,10 @@ import io.opentelemetry.android.common.internal.features.networkattributes.data.
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.logs.Logger;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * Entrypoint for installing the network change monitoring instrumentation.
@@ -22,20 +23,19 @@ import java.util.List;
 public final class NetworkChangeMonitor {
     private final OpenTelemetry openTelemetry;
     private final AppLifecycle appLifecycle;
+    private final CurrentNetworkProvider currentNetworkProvider;
+    private final List<BiConsumer<AttributesBuilder, CurrentNetwork>> additionalExtractors;
 
     public NetworkChangeMonitor(
             OpenTelemetry openTelemetry,
             AppLifecycle appLifecycle,
             CurrentNetworkProvider currentNetworkProvider,
-            List<AttributesExtractor<CurrentNetwork, Void>> additionalExtractors) {
+            List<BiConsumer<AttributesBuilder, CurrentNetwork>> additionalExtractors) {
         this.openTelemetry = openTelemetry;
         this.appLifecycle = appLifecycle;
         this.currentNetworkProvider = currentNetworkProvider;
         this.additionalExtractors = additionalExtractors;
     }
-
-    private final CurrentNetworkProvider currentNetworkProvider;
-    private final List<AttributesExtractor<CurrentNetwork, Void>> additionalExtractors;
 
     /**
      * Installs the network change monitoring instrumentation on the given {@link OpenTelemetry}.
@@ -43,15 +43,9 @@ public final class NetworkChangeMonitor {
     public void start() {
         NetworkApplicationListener networkApplicationListener =
                 new NetworkApplicationListener(currentNetworkProvider);
-        networkApplicationListener.startMonitoring(buildInstrumenter(openTelemetry));
-        appLifecycle.registerListener(networkApplicationListener);
-    }
 
-    private Instrumenter<CurrentNetwork, Void> buildInstrumenter(OpenTelemetry openTelemetry) {
-        return Instrumenter.<CurrentNetwork, Void>builder(
-                        openTelemetry, "io.opentelemetry.network", network -> "network.change")
-                .addAttributesExtractor(new NetworkChangeAttributesExtractor())
-                .addAttributesExtractors(additionalExtractors)
-                .buildInstrumenter();
+        Logger logger = openTelemetry.getLogsBridge().get("io.opentelemetry.network");
+        networkApplicationListener.startMonitoring(logger, additionalExtractors);
+        appLifecycle.registerListener(networkApplicationListener);
     }
 }

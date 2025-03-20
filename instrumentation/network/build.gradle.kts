@@ -27,6 +27,7 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.opentelemetry.semconv.incubating)
     implementation(libs.opentelemetry.sdk)
+    implementation(libs.opentelemetry.sdk.extension.incubator)
     implementation(libs.opentelemetry.instrumentation.api)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
