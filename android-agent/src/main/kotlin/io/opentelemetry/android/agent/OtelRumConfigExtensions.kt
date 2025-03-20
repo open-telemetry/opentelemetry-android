@@ -13,6 +13,7 @@ import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.instrumentation.crash.CrashDetails
 import io.opentelemetry.android.instrumentation.crash.CrashReporterInstrumentation
 import io.opentelemetry.android.instrumentation.fragment.FragmentLifecycleInstrumentation
+import io.opentelemetry.android.instrumentation.network.NetworkAttributesExtractor
 import io.opentelemetry.android.instrumentation.network.NetworkChangeInstrumentation
 import io.opentelemetry.android.instrumentation.slowrendering.SlowRenderingInstrumentation
 import io.opentelemetry.api.trace.Tracer
@@ -72,7 +73,7 @@ fun OtelRumConfig.addCrashAttributesExtractor(extractor: AttributesExtractor<Cra
     return this
 }
 
-fun OtelRumConfig.addNetworkChangeAttributesExtractor(attributeExtractor: NetworkChangeInstrumentation.AttributeExtractor): OtelRumConfig {
+fun OtelRumConfig.addNetworkChangeAttributesExtractor(attributeExtractor: NetworkAttributesExtractor): OtelRumConfig {
     AndroidInstrumentationLoader
         .getInstrumentation(NetworkChangeInstrumentation::class.java)
         ?.addAttributesExtractor(attributeExtractor)

@@ -11,7 +11,6 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.internal.services.Services.Companion.get
 import io.opentelemetry.api.common.AttributesBuilder
-import java.util.Collections
 
 /**
  * A tag interface for an extractor that can add attributes from the [CurrentNetwork].
