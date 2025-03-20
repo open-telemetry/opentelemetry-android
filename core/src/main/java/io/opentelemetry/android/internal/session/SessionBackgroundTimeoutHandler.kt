@@ -23,7 +23,7 @@ import java.time.Duration
  * Consequently, when the app spent >15 minutes without any activity (spans) in the background,
  * after moving to the foreground the first span should trigger the sessionId timeout.
  */
-internal class SessionIdTimeoutHandler(
+internal class SessionBackgroundTimeoutHandler(
     private val clock: Clock,
     private val sessionTimeout: Duration,
 ) : ApplicationStateListener {

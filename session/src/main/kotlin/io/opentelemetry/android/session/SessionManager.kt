@@ -12,4 +12,13 @@ package io.opentelemetry.android.session
  */
 interface SessionManager :
     SessionProvider,
-    SessionPublisher
+    SessionPublisher {
+    // No-Op SessionManager
+    class NoOp : SessionManager {
+        override fun getSessionId(): String = ""
+
+        override fun addObserver(observer: SessionObserver) {
+            // No-op implementation
+        }
+    }
+}

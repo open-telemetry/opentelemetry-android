@@ -35,7 +35,7 @@ import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.Services;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWork;
-import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler;
+import io.opentelemetry.android.internal.session.SessionBackgroundTimeoutHandler;
 import io.opentelemetry.android.internal.session.SessionManagerImpl;
 import io.opentelemetry.android.session.SessionManager;
 import io.opentelemetry.android.session.SessionProvider;
@@ -97,7 +97,7 @@ public final class OpenTelemetryRumBuilder {
     private final OtelRumConfig config;
     private final List<AndroidInstrumentation> instrumentations = new ArrayList<>();
     private final List<Consumer<OpenTelemetrySdk>> otelSdkReadyListeners = new ArrayList<>();
-    private final SessionIdTimeoutHandler timeoutHandler;
+    private final SessionBackgroundTimeoutHandler timeoutHandler;
     private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
     private Function<? super MetricExporter, ? extends MetricExporter> metricExporterCustomizer =
             a -> a;
@@ -118,11 +118,15 @@ public final class OpenTelemetryRumBuilder {
 
     public static OpenTelemetryRumBuilder create(Application application, OtelRumConfig config) {
         return new OpenTelemetryRumBuilder(
-                application, config, new SessionIdTimeoutHandler(config.getSessionTimeout()));
+                application,
+                config,
+                new SessionBackgroundTimeoutHandler(config.getSessionBackgroundTimeout()));
     }
 
     OpenTelemetryRumBuilder(
-            Application application, OtelRumConfig config, SessionIdTimeoutHandler timeoutHandler) {
+            Application application,
+            OtelRumConfig config,
+            SessionBackgroundTimeoutHandler timeoutHandler) {
         this.application = application;
         this.timeoutHandler = timeoutHandler;
         this.resource = AndroidResource.createDefault(application);
@@ -321,7 +325,8 @@ public final class OpenTelemetryRumBuilder {
 
         if (sessionManager == null) {
             sessionManager =
-                    SessionManagerImpl.create(timeoutHandler, config.getSessionTimeout().toNanos());
+                    SessionManagerImpl.create(
+                            timeoutHandler, config.getSessionForegroundTimeout().toNanos());
         }
 
         OpenTelemetrySdk sdk =
