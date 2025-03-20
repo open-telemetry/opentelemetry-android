@@ -17,6 +17,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
@@ -81,7 +82,10 @@ public class CrashReporterTest {
         List<LogRecordData> logRecords = logRecordExporter.getFinishedLogRecordItems();
         assertThat(logRecords).hasSize(1);
 
-        Attributes crashAttributes = logRecords.get(0).getAttributes();
+        ExtendedLogRecordData logRecord = (ExtendedLogRecordData) logRecords.get(0);
+
+        assertThat(logRecord.getEventName()).isEqualTo("device.crash");
+        Attributes crashAttributes = logRecord.getAttributes();
         OpenTelemetryAssertions.assertThat(crashAttributes)
                 .containsEntry(ExceptionAttributes.EXCEPTION_MESSAGE, exceptionMessage)
                 .containsEntry(ExceptionAttributes.EXCEPTION_TYPE, "java.lang.RuntimeException")

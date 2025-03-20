@@ -8,12 +8,12 @@ package io.opentelemetry.android.instrumentation.crash;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_MESSAGE;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_TYPE;
-import static io.opentelemetry.semconv.incubating.EventIncubatingAttributes.EVENT_NAME;
 import static io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.THREAD_ID;
 import static io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.THREAD_NAME;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.context.Context;
@@ -59,9 +59,12 @@ public final class CrashReporter {
             extractor.onStart(attributesBuilder, Context.current(), crashDetails);
         }
 
-        // TODO: use emitEvent() when available, with event name from semantic conventions.
-        attributesBuilder.put(EVENT_NAME, "device.crash");
-        crashReporter.logRecordBuilder().setAllAttributes(attributesBuilder.build()).emit();
+        ExtendedLogRecordBuilder eventBuilder =
+                (ExtendedLogRecordBuilder) crashReporter.logRecordBuilder();
+        eventBuilder
+                .setEventName("device.crash")
+                .setAllAttributes(attributesBuilder.build())
+                .emit();
     }
 
     private String stackTraceToString(Throwable throwable) {
