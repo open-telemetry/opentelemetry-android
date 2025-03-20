@@ -181,6 +181,6 @@ class NetworkChangeInstrumentationTest {
         every { services.currentNetworkProvider } returns currentNetworkProvider
         every { services.appLifecycle } returns appLifecycle
         Services.set(services)
-        return InstallationContext(app, otelTesting.openTelemetry, mockk<SessionManager>());
+        return InstallationContext(app, otelTesting.openTelemetry, mockk<SessionManager>())
     }
 }
