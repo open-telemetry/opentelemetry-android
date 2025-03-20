@@ -10,6 +10,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.common.RumConstants
+import io.opentelemetry.android.test.common.hasEventName
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.common.Value
@@ -95,7 +96,7 @@ class SdkInitializationEventsTest {
         override fun accept(log: ReadWriteLogRecord) {
             val logData: ExtendedLogRecordData = log.toLogRecordData() as ExtendedLogRecordData
             assertThat(logData.timestampEpochNanos).isEqualTo(timeNs)
-            assertThat(logData.eventName).isEqualTo(name)
+            assertThat(logData).hasEventName(name)
             if (body == null) {
                 assertThat(logData.bodyValue).isNull()
             } else {

@@ -15,7 +15,7 @@ import androidx.annotation.RequiresApi
 @RequiresApi(api = Build.VERSION_CODES.P)
 data class Carrier
     @JvmOverloads
-    internal constructor(
+    constructor(
         val id: Int = TelephonyManager.UNKNOWN_CARRIER_ID,
         val name: String? = null,
         val mobileCountryCode: String? = null,

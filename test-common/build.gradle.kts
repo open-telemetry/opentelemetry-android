@@ -14,6 +14,7 @@ dependencies {
     api(libs.opentelemetry.sdk)
     api(libs.opentelemetry.api)
     api(libs.opentelemetry.sdk.testing)
+    api(libs.assertj.core)
     implementation(libs.androidx.core)
     implementation(libs.androidx.junit)
 }
