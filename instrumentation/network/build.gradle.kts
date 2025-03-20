@@ -30,6 +30,7 @@ dependencies {
     implementation(libs.opentelemetry.sdk.extension.incubator)
     implementation(libs.opentelemetry.instrumentation.api)
     testImplementation(project(":test-common"))
+    testImplementation(project(":session"))
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
 }

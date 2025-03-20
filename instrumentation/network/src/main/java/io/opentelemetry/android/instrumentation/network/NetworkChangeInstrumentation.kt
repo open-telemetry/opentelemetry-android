@@ -3,51 +3,42 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network;
+package io.opentelemetry.android.instrumentation.network
 
-import androidx.annotation.NonNull;
-import com.google.auto.service.AutoService;
-import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
-import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
-import io.opentelemetry.android.instrumentation.InstallationContext;
-import io.opentelemetry.android.internal.services.Services;
-import io.opentelemetry.api.common.AttributesBuilder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.BiConsumer;
+import com.google.auto.service.AutoService
+import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.instrumentation.InstallationContext
+import io.opentelemetry.android.internal.services.Services.Companion.get
+import io.opentelemetry.api.common.AttributesBuilder
+import java.util.Collections
 
-/** Generates telemetry for when the network status changes. */
-@AutoService(AndroidInstrumentation.class)
-public final class NetworkChangeInstrumentation implements AndroidInstrumentation {
+/**
+ * A tag interface for an extractor that can add attributes from the [CurrentNetwork].
+ */
+interface NetworkAttributesExtractor : (AttributesBuilder, CurrentNetwork) -> Unit
 
-    private static final String INSTRUMENTATION_NAME = "network";
-    final List<BiConsumer<AttributesBuilder, CurrentNetwork>> additionalExtractors =
-            new ArrayList<>();
+/** Generates telemetry for when the network status changes.  */
+@AutoService(AndroidInstrumentation::class)
+class NetworkChangeInstrumentation : AndroidInstrumentation {
+    private val additionalAttributeExtractors: MutableList<NetworkAttributesExtractor> = ArrayList()
 
-    /** Adds a {@link BiConsumer} that can add Attributes about the current network. */
-    public NetworkChangeInstrumentation addAttributesExtractor(
-            BiConsumer<AttributesBuilder, CurrentNetwork> extractor) {
-        additionalExtractors.add(extractor);
-        return this;
+    override fun getName(){
+        return "network"
     }
 
-    @Override
-    public void install(@NonNull InstallationContext ctx) {
-        additionalExtractors.add(new NetworkChangeAttributesExtractor());
-        Services services = Services.get(ctx.getApplication());
-        NetworkChangeMonitor networkChangeMonitor =
-                new NetworkChangeMonitor(
-                        ctx.getOpenTelemetry(),
-                        services.getAppLifecycle(),
-                        services.getCurrentNetworkProvider(),
-                        Collections.unmodifiableList(additionalExtractors));
-        networkChangeMonitor.start();
+    /** Adds a [NetworkAttributesExtractor] that can add Attributes from the [CurrentNetwork].  */
+    fun addAttributesExtractor(attributeExtractor: NetworkAttributesExtractor): NetworkChangeInstrumentation {
+        additionalAttributeExtractors.add(attributeExtractor)
+        return this
     }
 
-    @NonNull
-    @Override
-    public String getName() {
-        return INSTRUMENTATION_NAME;
+    override fun install(ctx: InstallationContext) {
+        additionalAttributeExtractors.add(NetworkChangeAttributesExtractor())
+        val services = get(ctx.application)
+        val networkApplicationListener = NetworkApplicationListener(services.currentNetworkProvider)
+        val logger = ctx.openTelemetry.logsBridge["io.opentelemetry.network"]
+        networkApplicationListener.startMonitoring(logger, additionalAttributeExtractors)
+        services.appLifecycle.registerListener(networkApplicationListener)
     }
 }

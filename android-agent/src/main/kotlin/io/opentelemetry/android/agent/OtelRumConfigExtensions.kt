@@ -5,7 +5,6 @@
 
 package io.opentelemetry.android.agent
 
-import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.activity.ActivityLifecycleInstrumentation
@@ -16,11 +15,9 @@ import io.opentelemetry.android.instrumentation.crash.CrashReporterInstrumentati
 import io.opentelemetry.android.instrumentation.fragment.FragmentLifecycleInstrumentation
 import io.opentelemetry.android.instrumentation.network.NetworkChangeInstrumentation
 import io.opentelemetry.android.instrumentation.slowrendering.SlowRenderingInstrumentation
-import io.opentelemetry.api.common.AttributesBuilder
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor
 import java.time.Duration
-import java.util.function.BiConsumer
 
 /**
  * Convenience functions to allow configuring the default instrumentations through the [OtelRumConfig] object, for example:
@@ -75,10 +72,10 @@ fun OtelRumConfig.addCrashAttributesExtractor(extractor: AttributesExtractor<Cra
     return this
 }
 
-fun OtelRumConfig.addNetworkChangeAttributesExtractor(extractor: BiConsumer<AttributesBuilder, CurrentNetwork>): OtelRumConfig {
+fun OtelRumConfig.addNetworkChangeAttributesExtractor(attributeExtractor: NetworkChangeInstrumentation.AttributeExtractor): OtelRumConfig {
     AndroidInstrumentationLoader
         .getInstrumentation(NetworkChangeInstrumentation::class.java)
-        ?.addAttributesExtractor(extractor)
+        ?.addAttributesExtractor(attributeExtractor)
     return this
 }
 
