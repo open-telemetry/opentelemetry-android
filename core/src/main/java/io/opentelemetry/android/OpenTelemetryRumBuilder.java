@@ -37,6 +37,7 @@ import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWork;
 import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler;
 import io.opentelemetry.android.internal.session.SessionManagerImpl;
+import io.opentelemetry.android.session.SessionConfig;
 import io.opentelemetry.android.session.SessionManager;
 import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
@@ -117,8 +118,9 @@ public final class OpenTelemetryRumBuilder {
     }
 
     public static OpenTelemetryRumBuilder create(Application application, OtelRumConfig config) {
-        return new OpenTelemetryRumBuilder(
-                application, config, new SessionIdTimeoutHandler(config.getSessionTimeout()));
+        SessionConfig sessionConfig = config.getSessionConfig();
+        SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler(sessionConfig);
+        return new OpenTelemetryRumBuilder(application, config, timeoutHandler);
     }
 
     OpenTelemetryRumBuilder(
@@ -320,8 +322,7 @@ public final class OpenTelemetryRumBuilder {
                 new BufferDelegatingMetricExporter();
 
         if (sessionManager == null) {
-            sessionManager =
-                    SessionManagerImpl.create(timeoutHandler, config.getSessionTimeout().toNanos());
+            sessionManager = SessionManagerImpl.create(timeoutHandler, config.getSessionConfig());
         }
 
         OpenTelemetrySdk sdk =

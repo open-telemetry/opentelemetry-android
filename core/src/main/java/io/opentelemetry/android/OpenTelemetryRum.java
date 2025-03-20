@@ -8,6 +8,7 @@ package io.opentelemetry.android;
 import android.app.Application;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.internal.services.Services;
+import io.opentelemetry.android.session.SessionConfig;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -67,8 +68,25 @@ public interface OpenTelemetryRum {
             OpenTelemetrySdk openTelemetrySdk,
             boolean discoverInstrumentations) {
 
+        return builder(
+                application,
+                openTelemetrySdk,
+                SessionConfig.withDefaults(),
+                discoverInstrumentations);
+    }
+
+    static SdkPreconfiguredRumBuilder builder(
+            Application application,
+            OpenTelemetrySdk openTelemetrySdk,
+            SessionConfig sessionConfig,
+            boolean discoverInstrumentations) {
+
         return new SdkPreconfiguredRumBuilder(
-                application, openTelemetrySdk, discoverInstrumentations, Services.get(application));
+                application,
+                openTelemetrySdk,
+                sessionConfig,
+                discoverInstrumentations,
+                Services.get(application));
     }
 
     /** Returns a no-op implementation of {@link OpenTelemetryRum}. */
