@@ -3,39 +3,31 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android;
+package io.opentelemetry.android
 
-import static io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_ID;
+import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.context.Context
+import io.opentelemetry.sdk.trace.ReadWriteSpan
+import io.opentelemetry.sdk.trace.ReadableSpan
+import io.opentelemetry.sdk.trace.SpanProcessor
+import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_ID
 
-import io.opentelemetry.android.session.SessionProvider;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.ReadWriteSpan;
-import io.opentelemetry.sdk.trace.ReadableSpan;
-import io.opentelemetry.sdk.trace.SpanProcessor;
-
-final class SessionIdSpanAppender implements SpanProcessor {
-
-    private final SessionProvider sessionProvider;
-
-    public SessionIdSpanAppender(SessionProvider sessionProvider) {
-        this.sessionProvider = sessionProvider;
+/**
+ * A [SpanProcessor] that sets the `session.id` attribute to the current span when the span is started.
+ */
+internal class SessionIdSpanAppender(
+    private val sessionProvider: SessionProvider,
+) : SpanProcessor {
+    override fun onStart(
+        parentContext: Context,
+        span: ReadWriteSpan,
+    ) {
+        span.setAttribute(SESSION_ID, sessionProvider.getSessionId())
     }
 
-    @Override
-    public void onStart(Context parentContext, ReadWriteSpan span) {
-        span.setAttribute(SESSION_ID, sessionProvider.getSessionId());
-    }
+    override fun isStartRequired(): Boolean = true
 
-    @Override
-    public boolean isStartRequired() {
-        return true;
-    }
+    override fun onEnd(span: ReadableSpan) {}
 
-    @Override
-    public void onEnd(ReadableSpan span) {}
-
-    @Override
-    public boolean isEndRequired() {
-        return false;
-    }
+    override fun isEndRequired(): Boolean = false
 }
