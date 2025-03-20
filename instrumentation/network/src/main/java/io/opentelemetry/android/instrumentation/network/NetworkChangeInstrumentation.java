@@ -21,6 +21,7 @@ import java.util.function.BiConsumer;
 @AutoService(AndroidInstrumentation.class)
 public final class NetworkChangeInstrumentation implements AndroidInstrumentation {
 
+    private static final String INSTRUMENTATION_NAME = "network";
     final List<BiConsumer<AttributesBuilder, CurrentNetwork>> additionalExtractors =
             new ArrayList<>();
 
@@ -42,5 +43,11 @@ public final class NetworkChangeInstrumentation implements AndroidInstrumentatio
                         services.getCurrentNetworkProvider(),
                         Collections.unmodifiableList(additionalExtractors));
         networkChangeMonitor.start();
+    }
+
+    @NonNull
+    @Override
+    public String getName() {
+        return INSTRUMENTATION_NAME;
     }
 }

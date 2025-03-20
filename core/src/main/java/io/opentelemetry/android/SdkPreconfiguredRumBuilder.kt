@@ -6,6 +6,7 @@
 package io.opentelemetry.android
 
 import android.app.Application
+import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.InstallationContext
@@ -22,7 +23,7 @@ class SdkPreconfiguredRumBuilder
         private val sdk: OpenTelemetrySdk,
         private val timeoutHandler: SessionIdTimeoutHandler = SessionIdTimeoutHandler(),
         private val sessionManager: SessionManager = SessionManagerImpl(timeoutHandler = timeoutHandler),
-        private val discoverInstrumentations: Boolean,
+        private val config: OtelRumConfig,
         private val services: Services,
     ) {
         private val instrumentations = mutableListOf<AndroidInstrumentation>()
@@ -56,15 +57,18 @@ class SdkPreconfiguredRumBuilder
 
             // Install instrumentations
             val ctx = InstallationContext(application, openTelemetryRum.openTelemetry, sessionManager)
-            for (instrumentation in getInstrumentations()) {
+            for (instrumentation in getEnabledInstrumentations()) {
                 instrumentation.install(ctx)
             }
 
             return openTelemetryRum
         }
 
+        private fun getEnabledInstrumentations(): List<AndroidInstrumentation> =
+            getInstrumentations().filter { inst -> !config.isSuppressed(inst.name) }
+
         private fun getInstrumentations(): List<AndroidInstrumentation> {
-            if (discoverInstrumentations) {
+            if (config.shouldDiscoverInstrumentations()) {
                 instrumentations.addAll(AndroidInstrumentationLoader.get().getAll())
             }
 
