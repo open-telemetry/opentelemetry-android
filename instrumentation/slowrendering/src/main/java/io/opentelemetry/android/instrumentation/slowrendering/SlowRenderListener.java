@@ -196,6 +196,7 @@ class SlowRenderListener implements DefaultingActivityLifecycleCallbacks {
     }
 
     private void makeSpan(String spanName, String activityName, int slowCount, Instant now) {
+        // TODO: Use an event rather than a zero-duration span
         Span span =
                 tracer.spanBuilder(spanName)
                         .setAttribute("count", slowCount)
