@@ -22,9 +22,7 @@ interface NetworkAttributesExtractor : (AttributesBuilder, CurrentNetwork) -> Un
 class NetworkChangeInstrumentation : AndroidInstrumentation {
     private val additionalAttributeExtractors: MutableList<NetworkAttributesExtractor> = ArrayList()
 
-    override fun getName(){
-        return "network"
-    }
+    override val name = "network"
 
     /** Adds a [NetworkAttributesExtractor] that can add Attributes from the [CurrentNetwork].  */
     fun addAttributesExtractor(attributeExtractor: NetworkAttributesExtractor): NetworkChangeInstrumentation {
