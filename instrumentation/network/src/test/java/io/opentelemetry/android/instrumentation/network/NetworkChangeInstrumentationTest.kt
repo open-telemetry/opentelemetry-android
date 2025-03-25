@@ -5,21 +5,26 @@
 
 package io.opentelemetry.android.instrumentation.network
 
+import android.app.Application
 import android.os.Build
 import io.mockk.MockKAnnotations
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
+import io.opentelemetry.android.instrumentation.InstallationContext
+import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.network.NetworkChangeListener
+import io.opentelemetry.android.session.SessionManager
 import io.opentelemetry.android.test.common.hasEventName
-import io.opentelemetry.api.common.AttributesBuilder
 import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
@@ -31,12 +36,11 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import java.util.function.BiConsumer
 
 @Config(sdk = [Build.VERSION_CODES.P])
 @RunWith(RobolectricTestRunner::class)
 @ExtendWith(MockKExtension::class)
-class NetworkChangeMonitorTest {
+class NetworkChangeInstrumentationTest {
     private lateinit var otelTesting: OpenTelemetryRule
 
     @MockK
@@ -54,7 +58,7 @@ class NetworkChangeMonitorTest {
     @Test
     fun networkAvailable_wifi() {
         val networkChangeListenerSlot = slot<NetworkChangeListener>()
-        create().start()
+        NetworkChangeInstrumentation().install(createInstallationContext())
 
         verify {
             currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
@@ -69,7 +73,7 @@ class NetworkChangeMonitorTest {
         assertThat(event)
             .hasEventName("network.change")
             .hasAttributesSatisfyingExactly(
-                equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "available"),
+                equalTo(NETWORK_STATUS_KEY, "available"),
                 equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE, "wifi"),
             )
     }
@@ -77,7 +81,8 @@ class NetworkChangeMonitorTest {
     @Test
     fun networkAvailable_cellular() {
         val networkChangeListenerSlot = slot<NetworkChangeListener>()
-        create().start()
+        NetworkChangeInstrumentation().install(createInstallationContext())
+
         verify {
             currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
         }
@@ -98,7 +103,7 @@ class NetworkChangeMonitorTest {
         assertThat(event)
             .hasEventName("network.change")
             .hasAttributesSatisfyingExactly(
-                equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "available"),
+                equalTo(NETWORK_STATUS_KEY, "available"),
                 equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE, "cell"),
                 equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_SUBTYPE, "LTE"),
                 equalTo(NetworkIncubatingAttributes.NETWORK_CARRIER_NAME, "ShadyTel"),
@@ -111,7 +116,7 @@ class NetworkChangeMonitorTest {
     @Test
     fun networkLost() {
         val networkChangeListenerSlot = slot<NetworkChangeListener>()
-        create().start()
+        NetworkChangeInstrumentation().install(createInstallationContext())
 
         verify {
             currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
@@ -126,7 +131,7 @@ class NetworkChangeMonitorTest {
         assertThat(event)
             .hasEventName("network.change")
             .hasAttributesSatisfyingExactly(
-                equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "lost"),
+                equalTo(NETWORK_STATUS_KEY, "lost"),
                 equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE, "unavailable"),
             )
     }
@@ -135,7 +140,7 @@ class NetworkChangeMonitorTest {
     fun noEventsPlease() {
         val networkChangeListenerSlot = slot<NetworkChangeListener>()
         val appStateListener = slot<ApplicationStateListener>()
-        create().start()
+        NetworkChangeInstrumentation().install(createInstallationContext())
 
         verify {
             currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
@@ -165,16 +170,17 @@ class NetworkChangeMonitorTest {
         assertThat(event)
             .hasEventName("network.change")
             .hasAttributesSatisfyingExactly(
-                equalTo(NetworkApplicationListener.NETWORK_STATUS_KEY, "lost"),
+                equalTo(NETWORK_STATUS_KEY, "lost"),
                 equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE, "unavailable"),
             )
     }
 
-    private fun create(): NetworkChangeMonitor =
-        NetworkChangeMonitor(
-            otelTesting.openTelemetry,
-            appLifecycle,
-            currentNetworkProvider,
-            listOf<BiConsumer<AttributesBuilder, CurrentNetwork>>(NetworkChangeAttributesExtractor()),
-        )
+    private fun createInstallationContext(): InstallationContext {
+        val app = mockk<Application>()
+        val services = mockk<Services>()
+        every { services.currentNetworkProvider } returns currentNetworkProvider
+        every { services.appLifecycle } returns appLifecycle
+        Services.set(services)
+        return InstallationContext(app, otelTesting.openTelemetry, mockk<SessionManager>())
+    }
 }
