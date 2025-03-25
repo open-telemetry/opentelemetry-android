@@ -8,6 +8,9 @@ package io.opentelemetry.android;
 import android.app.Application;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.internal.services.Services;
+import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler;
+import io.opentelemetry.android.internal.session.SessionManagerImpl;
+import io.opentelemetry.android.session.SessionManager;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -64,8 +67,17 @@ public interface OpenTelemetryRum {
     static SdkPreconfiguredRumBuilder builder(
             Application application, OpenTelemetrySdk openTelemetrySdk, OtelRumConfig config) {
 
+        SessionIdTimeoutHandler timeoutHandler =
+                new SessionIdTimeoutHandler(config.getSessionConfig());
+        SessionManager sessionManager =
+                SessionManagerImpl.create(timeoutHandler, config.getSessionConfig());
         return new SdkPreconfiguredRumBuilder(
-                application, openTelemetrySdk, config, Services.get(application));
+                application,
+                openTelemetrySdk,
+                timeoutHandler,
+                sessionManager,
+                config,
+                Services.get(application));
     }
 
     /** Returns a no-op implementation of {@link OpenTelemetryRum}. */

@@ -8,8 +8,8 @@ package io.opentelemetry.android.config;
 import io.opentelemetry.android.ScreenAttributesSpanProcessor;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
+import io.opentelemetry.android.session.SessionConfig;
 import io.opentelemetry.api.common.Attributes;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -27,7 +27,7 @@ public class OtelRumConfig {
     private boolean includeScreenAttributes = true;
     private boolean discoverInstrumentations = true;
     private DiskBufferingConfig diskBufferingConfig = DiskBufferingConfig.create();
-    private Duration sessionTimeout = Duration.ofMinutes(15);
+    private SessionConfig sessionConfig = SessionConfig.withDefaults();
     private final List<String> suppressedInstrumentations = new ArrayList<>();
 
     /**
@@ -132,15 +132,20 @@ public class OtelRumConfig {
         return this;
     }
 
-    /** Call this method to set session timeout in minutes */
-    public OtelRumConfig setSessionTimeout(Duration sessionTimeout) {
-        this.sessionTimeout = sessionTimeout;
+    /**
+     * Sets the session configuration, which includes inactivity timeout and maximum lifetime
+     * durations.
+     *
+     * @return this
+     */
+    public OtelRumConfig setSessionConfig(SessionConfig sessionConfig) {
+        this.sessionConfig = sessionConfig;
         return this;
     }
 
-    /** Call this method to retrieve session timeout */
-    public Duration getSessionTimeout() {
-        return sessionTimeout;
+    /** Call this method to retrieve the session config */
+    public SessionConfig getSessionConfig() {
+        return sessionConfig;
     }
 
     /**
