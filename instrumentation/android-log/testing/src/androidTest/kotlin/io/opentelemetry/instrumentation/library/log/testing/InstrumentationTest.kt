@@ -9,6 +9,7 @@ import io.opentelemetry.android.test.common.OpenTelemetryRumRule
 import io.opentelemetry.api.logs.Severity
 import io.opentelemetry.instrumentation.library.log.AndroidLogSubstitutions
 import io.opentelemetry.instrumentation.library.log.LoggingTestUtil
+import io.opentelemetry.semconv.ExceptionAttributes
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -35,7 +36,7 @@ class InstrumentationTest {
         assertThat(finishedLogRecordItems[0].severity).isEqualTo(Severity.TRACE)
 
         assertThat(finishedLogRecordItems[0].bodyValue!!.asString()).isEqualTo(message)
-        assertThat(finishedLogRecordItems[1].attributes.get(AndroidLogSubstitutions.EXCEPTION_TYPE)).isEqualTo(
+        assertThat(finishedLogRecordItems[1].attributes.get(ExceptionAttributes.EXCEPTION_TYPE)).isEqualTo(
             RuntimeException::class.qualifiedName,
         )
     }
@@ -53,7 +54,7 @@ class InstrumentationTest {
         assertThat(finishedLogRecordItems[0].severity).isEqualTo(Severity.DEBUG)
 
         assertThat(finishedLogRecordItems[0].bodyValue!!.asString()).isEqualTo(message)
-        assertThat(finishedLogRecordItems[1].attributes.get(AndroidLogSubstitutions.EXCEPTION_TYPE)).isEqualTo(
+        assertThat(finishedLogRecordItems[1].attributes.get(ExceptionAttributes.EXCEPTION_TYPE)).isEqualTo(
             RuntimeException::class.qualifiedName,
         )
     }
@@ -71,7 +72,7 @@ class InstrumentationTest {
         assertThat(finishedLogRecordItems[0].severity).isEqualTo(Severity.INFO)
 
         assertThat(finishedLogRecordItems[0].bodyValue!!.asString()).isEqualTo(message)
-        assertThat(finishedLogRecordItems[1].attributes.get(AndroidLogSubstitutions.EXCEPTION_TYPE)).isEqualTo(
+        assertThat(finishedLogRecordItems[1].attributes.get(ExceptionAttributes.EXCEPTION_TYPE)).isEqualTo(
             RuntimeException::class.qualifiedName,
         )
     }
@@ -90,7 +91,7 @@ class InstrumentationTest {
         assertThat(finishedLogRecordItems[0].severity).isEqualTo(Severity.WARN)
 
         assertThat(finishedLogRecordItems[0].bodyValue!!.asString()).isEqualTo(message)
-        assertThat(finishedLogRecordItems[1].attributes.get(AndroidLogSubstitutions.EXCEPTION_TYPE)).isEqualTo(
+        assertThat(finishedLogRecordItems[1].attributes.get(ExceptionAttributes.EXCEPTION_TYPE)).isEqualTo(
             RuntimeException::class.qualifiedName,
         )
         assertThat(finishedLogRecordItems[2].bodyValue!!.asString()).isEqualTo(message)
@@ -109,7 +110,7 @@ class InstrumentationTest {
         assertThat(finishedLogRecordItems[0].severity).isEqualTo(Severity.ERROR)
 
         assertThat(finishedLogRecordItems[1].bodyValue!!.asString()).isEqualTo(message)
-        assertThat(finishedLogRecordItems[1].attributes.get(AndroidLogSubstitutions.EXCEPTION_TYPE)).isEqualTo(
+        assertThat(finishedLogRecordItems[1].attributes.get(ExceptionAttributes.EXCEPTION_TYPE)).isEqualTo(
             RuntimeException::class.qualifiedName,
         )
     }
@@ -128,7 +129,7 @@ class InstrumentationTest {
         assertThat(finishedLogRecordItems[0].severity).isEqualTo(Severity.UNDEFINED_SEVERITY_NUMBER)
 
         assertThat(finishedLogRecordItems[0].bodyValue!!.asString()).isEqualTo(message)
-        assertThat(finishedLogRecordItems[1].attributes.get(AndroidLogSubstitutions.EXCEPTION_TYPE)).isEqualTo(
+        assertThat(finishedLogRecordItems[1].attributes.get(ExceptionAttributes.EXCEPTION_TYPE)).isEqualTo(
             RuntimeException::class.qualifiedName,
         )
         assertThat(finishedLogRecordItems[2].bodyValue!!.asString()).isEqualTo(message)

@@ -8,6 +8,8 @@ package io.opentelemetry.instrumentation.library.log;
 import static io.opentelemetry.instrumentation.library.log.internal.LogRecordBuilderCreator.createLogRecordBuilder;
 import static io.opentelemetry.instrumentation.library.log.internal.LogRecordBuilderCreator.getTypeName;
 import static io.opentelemetry.instrumentation.library.log.internal.LogRecordBuilderCreator.printStacktrace;
+import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE;
+import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_TYPE;
 
 import android.util.Log;
 import io.opentelemetry.api.common.AttributeKey;
@@ -17,11 +19,6 @@ import io.opentelemetry.api.logs.Severity;
 public class AndroidLogSubstitutions {
 
     public static AttributeKey<String> TAG_KEY = AttributeKey.stringKey("android.log.tag");
-
-    public static AttributeKey<String> EXCEPTION_STACKTRACE =
-            AttributeKey.stringKey("exception.stacktrace");
-
-    public static AttributeKey<String> EXCEPTION_TYPE = AttributeKey.stringKey("exception.type");
 
     public static int substitutionForVerbose(String tag, String message) {
         createLogRecordBuilder()
