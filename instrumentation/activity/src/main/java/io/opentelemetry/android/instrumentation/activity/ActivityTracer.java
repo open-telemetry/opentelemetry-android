@@ -23,7 +23,7 @@ import io.opentelemetry.context.Context;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ActivityTracer {
-    static final AttributeKey<String> ACTIVITY_NAME_KEY = AttributeKey.stringKey("activityName");
+    static final AttributeKey<String> ACTIVITY_NAME_KEY = AttributeKey.stringKey("activity.name");
 
     private final AtomicReference<String> initialAppActivity;
     private final Tracer tracer;
