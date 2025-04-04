@@ -5,6 +5,7 @@
 ### ⚠️⚠️ Breaking changes
 
 - Remove `setSessionTimeout()` on `OtelRumConfig` in favor of new `setSessionConfig()`.([#xxx](https://github.com/open-telemetry/opentelemetry-android/pull/xxx))
+- Update Fragment and Activity attribute names. ([#920](https://github.com/open-telemetry/opentelemetry-android/pull/920))
 
 ## Version 0.10.0 (2025-03-06)
 

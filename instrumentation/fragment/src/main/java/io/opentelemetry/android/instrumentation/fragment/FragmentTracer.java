@@ -13,7 +13,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 
 class FragmentTracer {
-    static final AttributeKey<String> FRAGMENT_NAME_KEY = AttributeKey.stringKey("fragmentName");
+    static final AttributeKey<String> FRAGMENT_NAME_KEY = AttributeKey.stringKey("fragment.name");
 
     private final String fragmentName;
     private final String screenName;
