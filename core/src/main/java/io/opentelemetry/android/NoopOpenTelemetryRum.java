@@ -6,6 +6,7 @@
 package io.opentelemetry.android;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.TraceId;
 
 enum NoopOpenTelemetryRum implements OpenTelemetryRum {
@@ -21,4 +22,7 @@ enum NoopOpenTelemetryRum implements OpenTelemetryRum {
         // RUM session.id has the same format as traceId
         return TraceId.getInvalid();
     }
+
+    @Override
+    public void emitEvent(String eventName, String body, Attributes attributes) {}
 }
