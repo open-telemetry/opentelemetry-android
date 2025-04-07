@@ -86,21 +86,26 @@ afterEvaluate {
 }
 
 fun computeArtifactId(path: String): String {
+    val projectName = project.name
     if (!path.startsWith(":instrumentation:")) {
         // Return default artifactId for non auto-instrumentation publications.
-        return project.name
+        return projectName
     }
 
     // Adding library name to its related auto-instrumentation subprojects.
-    // For example, prepending "okhttp-3.0-" to both the "library" and "agent" subprojects inside the "okhttp-3.0" folder.
-    if (path.contains("okhttp")) {
-        println("PATH: $path")
+    // For example, prepending "okhttp-" to both the "library" and "agent" subprojects inside the "okhttp-" folder.
+    val match = Regex("^:instrumentation:([^:]+)(:[^:]+)?\$").matchEntire(path)
+        ?: throw IllegalStateException("Invalid instrumentation path: '$path'")
+
+    if (match.groupValues.size < 3) {
+        // The instrumentation has no subprojects
+        return projectName
     }
-    val match = Regex("[^:]+:[^:]+\$").find(path)
-    var artifactId = match!!.value.replace(":", "-")
-    if (!artifactId.startsWith("instrumentation-")) {
-        artifactId = "instrumentation-$artifactId"
-    }
+
+    val instrumentationName = match.groupValues[1].replace(":", "")
+    val instrumentationSubprojectName = match.groupValues[2].replace(":", "")
+
+    val artifactId = "$instrumentationName-$instrumentationSubprojectName"
 
     logger.debug("Using artifact id: '{}' for subproject: '{}'", artifactId, path)
     return artifactId
