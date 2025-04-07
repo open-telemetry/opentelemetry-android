@@ -92,12 +92,10 @@ fun computeArtifactId(path: String): String {
         return projectName
     }
 
-    // Adding library name to its related auto-instrumentation subprojects.
-    // For example, prepending "okhttp-" to both the "library" and "agent" subprojects inside the "okhttp-" folder.
     val match = Regex("^:instrumentation:([^:]+)(:[^:]+)?\$").matchEntire(path)
         ?: throw IllegalStateException("Invalid instrumentation path: '$path'")
 
-    if (match.groupValues.size < 3) {
+    if (match.groupValues[2].isEmpty()) {
         // The instrumentation has no subprojects
         return projectName
     }
@@ -105,6 +103,8 @@ fun computeArtifactId(path: String): String {
     val instrumentationName = match.groupValues[1].replace(":", "")
     val instrumentationSubprojectName = match.groupValues[2].replace(":", "")
 
+    // Adding instrumentation name to its related subprojects.
+    // For example, prepending "okhttp-" to both the "library" and "agent" subprojects inside the "okhttp" folder.
     val artifactId = "$instrumentationName-$instrumentationSubprojectName"
 
     logger.debug("Using artifact id: '{}' for subproject: '{}'", artifactId, path)
