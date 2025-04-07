@@ -19,6 +19,6 @@ This instrumentation produces the following telemetry:
   `fragmentStarted` | `fragmentResumed` | `fragmentPaused` | `fragmentStopped` |
   `fragmentViewDestroyed` | `fragmentDestroyed` | `fragmentDetached` }
 * Attributes:
-    * `fragment.name`:  <name of fragment>
-    * `screen.name`:  <name of screen>
-    * `last.screen.name`:  <name of screen>, when span contains the `fragmentResumed` event.
+    * `fragment.name`:  name of fragment
+    * `screen.name`:  name of screen
+    * `last.screen.name`:  name of screen, when span contains the `fragmentResumed` event.
