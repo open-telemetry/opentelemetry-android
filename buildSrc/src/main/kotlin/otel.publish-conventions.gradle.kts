@@ -96,7 +96,7 @@ fun computeArtifactId(path: String): String {
         ?: throw IllegalStateException("Invalid instrumentation path: '$path'")
 
     if (match.groupValues[2].isEmpty()) {
-        // The instrumentation has no subprojects
+        // This is not an instrumentation subproject.
         return projectName
     }
 
