@@ -35,7 +35,9 @@ if (android != null) {
 afterEvaluate {
     publishing.publications {
         val maven = create<MavenPublication>("maven") {
-            artifactId = computeArtifactId()
+            val path = project.path
+            artifactId = computeArtifactId(path)
+            groupId = computeGroupId(path)
             if (android != null) {
                 from(components.findByName(androidVariantToRelease))
             } else {
@@ -83,15 +85,17 @@ afterEvaluate {
     }
 }
 
-fun computeArtifactId(): String {
-    val path = project.path
-    if (!path.contains("instrumentation")) {
+fun computeArtifactId(path: String): String {
+    if (!path.startsWith(":instrumentation:")) {
         // Return default artifactId for non auto-instrumentation publications.
         return project.name
     }
 
     // Adding library name to its related auto-instrumentation subprojects.
     // For example, prepending "okhttp-3.0-" to both the "library" and "agent" subprojects inside the "okhttp-3.0" folder.
+    if (path.contains("okhttp")) {
+        println("PATH: $path")
+    }
     val match = Regex("[^:]+:[^:]+\$").find(path)
     var artifactId = match!!.value.replace(":", "-")
     if (!artifactId.startsWith("instrumentation-")) {
@@ -100,4 +104,14 @@ fun computeArtifactId(): String {
 
     logger.debug("Using artifact id: '{}' for subproject: '{}'", artifactId, path)
     return artifactId
+}
+
+fun computeGroupId(path: String): String {
+    val groupId = project.group.toString()
+    if (!path.startsWith(":instrumentation:")) {
+        // Return default artifactId for non auto-instrumentation publications.
+        return groupId
+    }
+
+    return "$groupId.instrumentation"
 }

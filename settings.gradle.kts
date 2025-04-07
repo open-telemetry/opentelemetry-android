@@ -14,32 +14,27 @@ develocity {
 
 include(":core")
 include(":android-agent")
-include(":instrumentation:activity")
-include(":instrumentation:anr")
-include(":instrumentation:common-api")
-include(":instrumentation:crash")
-include(":instrumentation:fragment")
-include(":instrumentation:okhttp:okhttp-3.0:agent")
-include(":instrumentation:okhttp:okhttp-3.0:library")
-include(":instrumentation:okhttp:okhttp-3.0:testing")
-include(":instrumentation:network")
-include(":instrumentation:sessions")
-include(":instrumentation:slowrendering")
-include(":instrumentation:startup")
-include(":instrumentation:volley:library")
-include(":instrumentation:httpurlconnection:agent")
-include(":instrumentation:httpurlconnection:library")
-include(":instrumentation:httpurlconnection:testing")
 include(":test-common")
 include(":animal-sniffer-signature")
-include(":instrumentation:android-instrumentation")
 include(":common")
 include(":services")
 include(":session")
 include(":opentelemetry-android-bom")
-include(":instrumentation:okhttp:websocket:okhttp-3.0:agent")
-include(":instrumentation:okhttp:websocket:okhttp-3.0:library")
-include(":instrumentation:okhttp:websocket:okhttp-3.0:testing")
-include(":instrumentation:android-log:library")
-include(":instrumentation:android-log:agent")
-include(":instrumentation:android-log:testing")
+includeFromDir("instrumentation")
+
+fun includeFromDir(
+    dirName: String,
+    maxDepth: Int = 3,
+) {
+    val instrumentationDir = File(rootDir, dirName)
+    val separator = Regex("[/\\\\]")
+    instrumentationDir.walk().maxDepth(maxDepth).forEach {
+        if (it.name.equals("build.gradle.kts")) {
+            include(
+                ":$dirName:${
+                    it.parentFile.toRelativeString(instrumentationDir).replace(separator, ":")
+                }",
+            )
+        }
+    }
+}
