@@ -34,6 +34,6 @@ This instrumentation produces the following telemetry:
   `activityPreStopped` | `activityStopped` | `activityPostStopped` |
   `activityPreDestroyed` | `activityDestroyed` | `activityPostDestroyed` }
 * Attributes:
-  * `activity.name`:  <name of activity>
-  * `screen.name`:  <name of screen>
-  * `last.screen.name`:  <name of screen>, only when span contains the `activityPostResumed` event.
+  * `activity.name`:  name of activity
+  * `screen.name`:  name of screen
+  * `last.screen.name`:  name of screen, only when span contains the `activityPostResumed` event.
