@@ -30,8 +30,8 @@ plugins {
 #### Project dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:okhttp-library:OPENTELEMETRY_VERSION")
-byteBuddy("io.opentelemetry.android.instrumentation:okhttp-agent:OPENTELEMETRY_VERSION")
+implementation("io.opentelemetry.android.instrumentation:okhttp3-library:OPENTELEMETRY_VERSION")
+byteBuddy("io.opentelemetry.android.instrumentation:okhttp3-agent:OPENTELEMETRY_VERSION")
 ```
 
 After adding the plugin and the dependencies to your project, your OkHttp requests will be traced

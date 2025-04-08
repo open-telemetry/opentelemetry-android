@@ -84,4 +84,4 @@ instrumentation/
 ```
 
 You can take a look at how it's done for the OkHttp
-instrumentation [here](instrumentation/okhttp) for reference.
+instrumentation [here](instrumentation/okhttp3) for reference.

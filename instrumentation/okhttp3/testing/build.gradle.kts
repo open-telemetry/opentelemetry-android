@@ -4,8 +4,8 @@ plugins {
 }
 
 dependencies {
-    byteBuddy(project(":instrumentation:okhttp:agent"))
-    implementation(project(":instrumentation:okhttp:library"))
+    byteBuddy(project(":instrumentation:okhttp3:agent"))
+    implementation(project(":instrumentation:okhttp3:library"))
     implementation(libs.okhttp)
     implementation(libs.opentelemetry.exporter.otlp)
     androidTestImplementation(libs.okhttp.mockwebserver)
