@@ -61,7 +61,7 @@ Some of the additional features provided include:
 * Android [Fragment lifecycle monitoring](./instrumentation/fragment)
 * Access to the OpenTelemetry APIs for manual instrumentation
 * Helpers to redact any span from export, or change span attributes before export
-* Slow / frozen render detection
+* [Slow / frozen render detection](./instrumentation/slowrendering)
 * Offline buffering of telemetry via storage
 
 Note: Use of these features is not yet well documented.

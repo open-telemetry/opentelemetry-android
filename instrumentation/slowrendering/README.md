@@ -25,7 +25,7 @@ Generated when rendering takes more than 16ms.
   one render duration longer than 16ms.
 * Attributes:
   * `count` - the number of slow renders
-  * `activityName` - the name of the activity for which the slow render was detected
+  * `activity.name` - the name of the activity for which the slow render was detected
 
 ### Frozen Renders
 
@@ -37,4 +37,4 @@ Generated when rendering takes more than 700ms.
   one render duration longer than 700ms.
 * Attributes:
     * `count` - the number of slow renders
-    * `activityName` - the name of the activity for which the slow render was detected
+    * `activity.name` - the name of the activity for which the slow render was detected
