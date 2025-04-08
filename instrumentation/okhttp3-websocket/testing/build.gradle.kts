@@ -9,8 +9,8 @@ android {
 
 dependencies {
     implementation(project(":test-common"))
-    byteBuddy(project(":instrumentation:okhttp:websocket:okhttp-3.0:agent"))
-    implementation(project(":instrumentation:okhttp:websocket:okhttp-3.0:library"))
+    byteBuddy(project(":instrumentation:okhttp3-websocket:agent"))
+    implementation(project(":instrumentation:okhttp3-websocket:library"))
 
     implementation(libs.okhttp)
     implementation(libs.opentelemetry.exporter.otlp)

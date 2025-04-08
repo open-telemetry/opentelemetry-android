@@ -15,7 +15,7 @@ the dependency in your `build.gradle.kts`:
 ```gradle
 dependencies {
     ...
-    implementation("io.opentelemetry.android:instrumentation-volley:{version}")
+    implementation("io.opentelemetry.android.instrumentation:volley:{version}")
     ...
 }
 ```

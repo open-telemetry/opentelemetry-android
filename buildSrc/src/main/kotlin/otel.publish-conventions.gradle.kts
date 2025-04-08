@@ -35,7 +35,9 @@ if (android != null) {
 afterEvaluate {
     publishing.publications {
         val maven = create<MavenPublication>("maven") {
-            artifactId = computeArtifactId()
+            val path = project.path
+            artifactId = computeArtifactId(path)
+            groupId = computeGroupId(path)
             if (android != null) {
                 from(components.findByName(androidVariantToRelease))
             } else {
@@ -83,21 +85,38 @@ afterEvaluate {
     }
 }
 
-fun computeArtifactId(): String {
-    val path = project.path
-    if (!path.contains("instrumentation")) {
+fun computeArtifactId(path: String): String {
+    val projectName = project.name
+    if (!path.startsWith(":instrumentation:")) {
         // Return default artifactId for non auto-instrumentation publications.
-        return project.name
+        return projectName
     }
 
-    // Adding library name to its related auto-instrumentation subprojects.
-    // For example, prepending "okhttp-3.0-" to both the "library" and "agent" subprojects inside the "okhttp-3.0" folder.
-    val match = Regex("[^:]+:[^:]+\$").find(path)
-    var artifactId = match!!.value.replace(":", "-")
-    if (!artifactId.startsWith("instrumentation-")) {
-        artifactId = "instrumentation-$artifactId"
+    val match = Regex("^:instrumentation:([^:]+)(:[^:]+)?\$").matchEntire(path)
+        ?: throw IllegalStateException("Invalid instrumentation path: '$path'")
+
+    if (match.groupValues[2].isEmpty()) {
+        // This is not an instrumentation subproject.
+        return projectName
     }
+
+    val instrumentationName = match.groupValues[1].replace(":", "")
+    val instrumentationSubprojectName = match.groupValues[2].replace(":", "")
+
+    // Adding instrumentation name to its related subprojects.
+    // For example, prepending "okhttp-" to both the "library" and "agent" subprojects inside the "okhttp" folder.
+    val artifactId = "$instrumentationName-$instrumentationSubprojectName"
 
     logger.debug("Using artifact id: '{}' for subproject: '{}'", artifactId, path)
     return artifactId
+}
+
+fun computeGroupId(path: String): String {
+    val groupId = project.group.toString()
+    if (!path.startsWith(":instrumentation:")) {
+        // Return default groupId for non instrumentation publications.
+        return groupId
+    }
+
+    return "$groupId.instrumentation"
 }
