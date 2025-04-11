@@ -33,7 +33,7 @@ public class OkHttpInstrumentation implements AndroidInstrumentation {
     private List<String> capturedResponseHeaders = new ArrayList<>();
     private Set<String> knownMethods = HttpConstants.KNOWN_METHODS;
     private Map<String, String> peerServiceMapping = new HashMap<>();
-    private boolean emitExperimentalHttpClientMetrics;
+    private boolean emitExperimentalHttpClientTelemetry;
 
     /** Adds an {@link AttributesExtractor} that will extract additional attributes. */
     public void addAttributesExtractor(AttributesExtractor<Interceptor.Chain, Response> extractor) {
@@ -129,12 +129,13 @@ public class OkHttpInstrumentation implements AndroidInstrumentation {
      * href="https://github.com/open-telemetry/semantic-conventions/blob/main/specification/metrics/semantic_conventions/http-metrics.md#metric-httpclientresponsesize">
      * the response size</a>.
      */
-    public void setEmitExperimentalHttpClientMetrics(boolean emitExperimentalHttpClientMetrics) {
-        this.emitExperimentalHttpClientMetrics = emitExperimentalHttpClientMetrics;
+    public void setEmitExperimentalHttpClientTelemetry(
+            boolean emitExperimentalHttpClientTelemetry) {
+        this.emitExperimentalHttpClientTelemetry = emitExperimentalHttpClientTelemetry;
     }
 
-    public boolean emitExperimentalHttpClientMetrics() {
-        return emitExperimentalHttpClientMetrics;
+    public boolean emitExperimentalHttpClientTelemetry() {
+        return emitExperimentalHttpClientTelemetry;
     }
 
     @Override
