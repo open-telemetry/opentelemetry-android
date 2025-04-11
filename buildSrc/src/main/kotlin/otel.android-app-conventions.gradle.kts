@@ -28,6 +28,10 @@ android {
         apiVersion = minKotlinVersion.version
         languageVersion = minKotlinVersion.version
     }
+
+    packaging {
+        resources.excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+    }
 }
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
