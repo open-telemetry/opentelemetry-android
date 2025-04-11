@@ -17,7 +17,8 @@ dependencies {
     implementation(project(":common"))
     api(platform(libs.opentelemetry.platform.alpha))
     api(libs.opentelemetry.api)
-    implementation(libs.androidx.navigation.fragment)
+    compileOnly(libs.androidx.navigation.fragment)
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.instrumentation.api)
+    testImplementation(libs.androidx.navigation.fragment)
 }

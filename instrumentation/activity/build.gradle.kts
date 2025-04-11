@@ -23,7 +23,8 @@ dependencies {
     implementation(project(":common"))
     implementation(libs.opentelemetry.sdk)
     implementation(libs.androidx.core)
-    implementation(libs.androidx.navigation.fragment)
+    compileOnly(libs.androidx.navigation.fragment)
     implementation(libs.opentelemetry.instrumentation.api)
+    testImplementation(libs.androidx.navigation.fragment)
     testImplementation(libs.robolectric)
 }
