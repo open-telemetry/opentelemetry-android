@@ -52,7 +52,7 @@ public final class OkHttp3Singletons {
                                 PeerServiceAttributesExtractor.create(
                                         OkHttpAttributesGetter.INSTANCE,
                                         instrumentation.newPeerServiceResolver()))
-                        .setEmitExperimentalHttpClientMetrics(
+                        .setEmitExperimentalHttpClientTelemetry(
                                 instrumentation.emitExperimentalHttpClientMetrics());
 
         for (AttributesExtractor<Interceptor.Chain, Response> extractor :
