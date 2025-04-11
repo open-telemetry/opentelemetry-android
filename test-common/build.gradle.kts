@@ -6,6 +6,10 @@ description = "OpenTelemetry Android common test utils"
 
 android {
     namespace = "io.opentelemetry.android.test.common"
+
+    packaging {
+        resources.excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+    }
 }
 
 dependencies {
