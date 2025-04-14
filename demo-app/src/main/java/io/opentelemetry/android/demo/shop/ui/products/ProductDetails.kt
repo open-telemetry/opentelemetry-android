@@ -134,8 +134,8 @@ fun AddToCartButton(
                 if (product.id == "HQTGWGPNH4") {
                     onSlowRenderChange(true)
                 }
-                cartViewModel.addProduct(product, quantity)
             }
+            cartViewModel.addProduct(product, quantity)
         },
         modifier = Modifier
             .fillMaxWidth()
