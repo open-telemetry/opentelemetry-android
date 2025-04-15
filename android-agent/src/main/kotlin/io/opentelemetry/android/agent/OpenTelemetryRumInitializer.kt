@@ -10,6 +10,9 @@ import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.agent.connectivity.EndpointConnectivity
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 import io.opentelemetry.android.config.OtelRumConfig
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
 
 object OpenTelemetryRumInitializer {
     @JvmStatic
@@ -33,7 +36,26 @@ object OpenTelemetryRumInitializer {
                 endpointHeaders,
             ),
         rumConfig: OtelRumConfig = OtelRumConfig(),
-    ): OpenTelemetryRum {
-        TODO()
-    }
+    ): OpenTelemetryRum =
+        OpenTelemetryRum
+            .builder(application, rumConfig)
+            .addSpanExporterCustomizer {
+                OtlpHttpSpanExporter
+                    .builder()
+                    .setEndpoint(spanEndpointConnectivity.getUrl())
+                    .setHeaders(spanEndpointConnectivity::getHeaders)
+                    .build()
+            }.addLogRecordExporterCustomizer {
+                OtlpHttpLogRecordExporter
+                    .builder()
+                    .setEndpoint(logEndpointConnectivity.getUrl())
+                    .setHeaders(logEndpointConnectivity::getHeaders)
+                    .build()
+            }.addMetricExporterCustomizer {
+                OtlpHttpMetricExporter
+                    .builder()
+                    .setEndpoint(metricEndpointConnectivity.getUrl())
+                    .setHeaders(metricEndpointConnectivity::getHeaders)
+                    .build()
+            }.build()
 }
