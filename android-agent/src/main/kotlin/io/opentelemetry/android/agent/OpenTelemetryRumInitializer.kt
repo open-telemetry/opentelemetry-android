@@ -7,6 +7,7 @@ package io.opentelemetry.android.agent
 
 import android.app.Application
 import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.android.OpenTelemetryRumBuilder
 import io.opentelemetry.android.agent.connectivity.EndpointConnectivity
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 import io.opentelemetry.android.config.OtelRumConfig
@@ -15,6 +16,17 @@ import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
 
 object OpenTelemetryRumInitializer {
+    /**
+     * Opinionated [OpenTelemetryRum] initialization.
+     *
+     * @param application Your android app's application object.
+     * @param endpointBaseUrl The base endpoint for exporting all your signals.
+     * @param endpointHeaders These will be added to each signal export request.
+     * @param spanEndpointConnectivity Span-specific endpoint configuration.
+     * @param logEndpointConnectivity Log-specific endpoint configuration.
+     * @param metricEndpointConnectivity Metric-specific endpoint configuration.
+     * @param rumConfig Configuration used by [OpenTelemetryRumBuilder].
+     */
     @JvmStatic
     fun initialize(
         application: Application,
