@@ -108,6 +108,11 @@
     {
       "matchPackagePrefixes": ["com.gradle.develocity"],
       "groupName": "gradle develocity packages"
+    },
+    {
+      "groupName": "all patch versions",
+      "matchUpdateTypes": ["patch"],
+      "schedule": ["before 8am every weekday"]
     }
   ]
 }
