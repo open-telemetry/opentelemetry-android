@@ -2,10 +2,38 @@
 
 ## Unreleased
 
+### 📣 Migration notes
+
+Please be aware that the maven coordinates for many instrumentation modules
+have changed. Details can be found [here](https://github.com/open-telemetry/opentelemetry-android/pull/926).
+
 ### ⚠️⚠️ Breaking changes
 
-- Remove `setSessionTimeout()` on `OtelRumConfig` in favor of new `setSessionConfig()`.([#xxx](https://github.com/open-telemetry/opentelemetry-android/pull/xxx))
+- Remove `setSessionTimeout()` on `OtelRumConfig` in favor of new `setSessionConfig()`.([#887](https://github.com/open-telemetry/opentelemetry-android/pull/887))
 - Update Fragment and Activity attribute names. ([#920](https://github.com/open-telemetry/opentelemetry-android/pull/920))
+
+### 🌟 New instrumentation
+
+- Generate events for OkHttp Websocket events
+  ([#863](https://github.com/open-telemetry/opentelemetry-android/pull/863))**
+- Add build-time `android.util.Log` call-site substitutions
+  ([#911](https://github.com/open-telemetry/opentelemetry-android/pull/911))
+
+### 📈 Enhancements
+
+- Support custom attribute extractors to auto-http instrumentations
+  ([#867](https://github.com/open-telemetry/opentelemetry-android/pull/867))
+- Allow users to configure suppression of some instrumentations.
+  ([#883](https://github.com/open-telemetry/opentelemetry-android/pull/883))
+- Use event name for crash event (instead of attr)
+  ([#894](https://github.com/open-telemetry/opentelemetry-android/pull/894))
+- Migrate network change event from zero-duration span to (log-based) event.
+  ([#895](https://github.com/open-telemetry/opentelemetry-android/pull/895))
+
+### 🛠️ Bug fixes
+
+- Fix instrumentation publication collisions
+  ([#926](https://github.com/open-telemetry/opentelemetry-android/pull/926))
 
 ## Version 0.10.0 (2025-03-06)
 
