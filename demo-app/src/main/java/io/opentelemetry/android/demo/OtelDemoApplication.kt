@@ -59,6 +59,10 @@ class OtelDemoApplication : Application() {
         try {
             rum = otelRumBuilder.build()
             Log.d(TAG, "RUM session started: " + rum!!.rumSessionId)
+            val webSocketClient = WebSocketClient()
+            webSocketClient.connect()
+            webSocketClient.sendHello()
+            webSocketClient.sendHello()
         } catch (e: Exception) {
             Log.e(TAG, "Oh no!", e)
         }
