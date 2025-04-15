@@ -10,7 +10,7 @@ android {
 }
 
 dependencies {
-    compileOnly(libs.okhttp)
+    implementation(libs.okhttp)
     implementation(project(":instrumentation:okhttp3:library"))
     implementation(libs.byteBuddy)
 }
