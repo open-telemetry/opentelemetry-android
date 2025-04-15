@@ -33,7 +33,6 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.navigation.fragment)
     implementation(libs.opentelemetry.instrumentation.api)
     implementation(libs.opentelemetry.semconv.incubating)
     compileOnly(libs.volley)
