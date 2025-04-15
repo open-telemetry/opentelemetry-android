@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 0.11.0 (2025-04-15)
+
 ### 📣 Migration notes
 
 Please be aware that the maven coordinates for many instrumentation modules
