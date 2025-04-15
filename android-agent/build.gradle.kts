@@ -10,7 +10,8 @@ android {
 dependencies {
     api(project(":core"))
     implementation(project(":common"))
-    implementation(libs.opentelemetry.instrumentation.api)
+    implementation(libs.opentelemetry.sdk)
+    implementation(libs.opentelemetry.exporter.otlp)
 
     // Default instrumentations:
     api(project(":instrumentation:activity"))
