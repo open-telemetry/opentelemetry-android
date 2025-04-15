@@ -10,7 +10,7 @@ import org.junit.Test
 
 class HttpEndpointConnectivityTest {
     @Test
-    fun `Validate exporter endpoint urls`() {
+    fun `Validate exporter endpoint configuration`() {
         val headers = mapOf("Authorization" to "Basic something")
         val tracesConnectivity = HttpEndpointConnectivity.forTraces("http://some.endpoint", headers)
         val logsConnectivity = HttpEndpointConnectivity.forLogs("http://some.endpoint/", headers)
