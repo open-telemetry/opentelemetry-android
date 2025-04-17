@@ -16,7 +16,7 @@ object EventBuilderCreator {
         OpenTelemetry
             .noop()
             .logsBridge
-            .loggerBuilder("io.opentelemetry.android.click.noop")
+            .loggerBuilder("io.opentelemetry.android.view.click.noop")
             .build() as ExtendedLogger
 
     @JvmStatic
@@ -24,7 +24,7 @@ object EventBuilderCreator {
         eventLogger =
             context.openTelemetry
                 .logsBridge
-                .loggerBuilder("io.opentelemetry.android.click")
+                .loggerBuilder("io.opentelemetry.android.view.click")
                 .build() as ExtendedLogger
     }
 

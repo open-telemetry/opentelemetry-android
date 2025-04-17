@@ -53,8 +53,8 @@ internal object ViewClickEventGenerator {
 
     fun stopTracking() {
         windowRef?.get()?.run {
-            if (callback is Pre23WindowCallbackWrapper) {
-                callback = (callback as Pre23WindowCallbackWrapper).unwrap()
+            if (callback is DefaultWindowCallback) {
+                callback = (callback as DefaultWindowCallback).unwrap()
             }
         }
         windowRef = null
