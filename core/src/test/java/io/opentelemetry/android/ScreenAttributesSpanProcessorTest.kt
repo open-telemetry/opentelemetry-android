@@ -2,6 +2,7 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package io.opentelemetry.android
 
 import io.mockk.every
@@ -18,7 +19,6 @@ import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.Test
 
 internal class ScreenAttributesSpanProcessorTest {
-
     @Test
     fun append() {
         val screenName = "my cool screen"
