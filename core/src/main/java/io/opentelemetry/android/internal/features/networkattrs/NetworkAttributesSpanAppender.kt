@@ -16,7 +16,7 @@ import io.opentelemetry.sdk.trace.SpanProcessor
  * A [SpanProcessor] implementation that appends a set of [attributes][Attributes]
  * describing the [current network][CurrentNetwork] to every span that is exported.
  */
-class NetworkAttributesSpanAppender internal constructor(private val currentNetworkProvider: CurrentNetworkProvider) :
+internal class NetworkAttributesSpanAppender(private val currentNetworkProvider: CurrentNetworkProvider) :
     SpanProcessor {
     private val networkAttributesExtractor = CurrentNetworkAttributesExtractor()
 
