@@ -3,88 +3,121 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android;
+package io.opentelemetry.android
 
-import static io.opentelemetry.api.common.AttributeKey.longKey;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import io.mockk.MockKAnnotations
+import io.mockk.every
+import io.mockk.impl.annotations.MockK
+import io.mockk.mockk
+import io.mockk.verify
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.common.AttributesBuilder
+import io.opentelemetry.context.Context
+import io.opentelemetry.sdk.trace.ReadWriteSpan
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.fail
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import java.util.function.Supplier
 
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.ReadWriteSpan;
-import java.util.function.Supplier;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+internal class GlobalAttributesSpanAppenderTest {
+    @MockK
+    lateinit var span: ReadWriteSpan
 
-@ExtendWith(MockitoExtension.class)
-class GlobalAttributesSpanAppenderTest {
-
-    @Mock private ReadWriteSpan span;
-
-    @Test
-    void shouldAppendGlobalAttributes() {
-        GlobalAttributesSpanAppender globalAttributes =
-                GlobalAttributesSpanAppender.create(Attributes.of(stringKey("key"), "value"));
-        globalAttributes.update(attributesBuilder -> attributesBuilder.put("key", "value2"));
-        globalAttributes.update(
-                attributesBuilder -> attributesBuilder.put(longKey("otherKey"), 1234L));
-
-        assertTrue(globalAttributes.isStartRequired());
-        globalAttributes.onStart(Context.root(), span);
-
-        verify(span)
-                .setAllAttributes(
-                        Attributes.of(stringKey("key"), "value2", longKey("otherKey"), 1234L));
-
-        assertFalse(globalAttributes.isEndRequired());
+    @BeforeEach
+    fun setup() {
+        MockKAnnotations.init(this, relaxUnitFun = true)
+        every { span.setAllAttributes(any()) } returns span
     }
 
     @Test
-    void createWithSupplier() {
-        Attributes attrs = Attributes.of(stringKey("foo"), "bar");
-        GlobalAttributesSpanAppender globalAttributes =
-                GlobalAttributesSpanAppender.create(() -> attrs);
+    fun shouldAppendGlobalAttributes() {
+        val globalAttributes =
+            GlobalAttributesSpanAppender {
+                Attributes.of(AttributeKey.stringKey("key"), "value")
+            }
+        globalAttributes.update { attributesBuilder: AttributesBuilder ->
+            attributesBuilder.put(
+                "key",
+                "value2",
+            )
+        }
+        globalAttributes.update { attributesBuilder: AttributesBuilder ->
+            attributesBuilder.put(
+                AttributeKey.longKey("otherKey"),
+                1234L,
+            )
+        }
 
-        globalAttributes.onStart(Context.root(), span);
-        verify(span).setAllAttributes(Attributes.of(stringKey("foo"), "bar"));
+        assertThat(globalAttributes.isStartRequired).isTrue()
+        globalAttributes.onStart(Context.root(), span)
+
+        verify {
+            span.setAllAttributes(
+                Attributes.of(
+                    AttributeKey.stringKey("key"),
+                    "value2",
+                    AttributeKey.longKey("otherKey"),
+                    1234L,
+                ),
+            )
+        }
+
+        assertThat(globalAttributes.isEndRequired).isFalse()
     }
 
     @Test
-    void updateWithSupplierReplacesSupplier() {
-        Attributes attrs = Attributes.of(stringKey("foo"), "bar");
-        Supplier<Attributes> originalSupplier = () -> fail("Should not have been called");
+    fun createWithSupplier() {
+        val attrs = Attributes.of(AttributeKey.stringKey("foo"), "bar")
+        val globalAttributes = GlobalAttributesSpanAppender { attrs }
 
-        GlobalAttributesSpanAppender globalAttributes =
-                GlobalAttributesSpanAppender.create(originalSupplier);
-        globalAttributes.update(() -> attrs);
-
-        globalAttributes.onStart(Context.root(), span);
-        verify(span).setAllAttributes(Attributes.of(stringKey("foo"), "bar"));
+        globalAttributes.onStart(Context.root(), span)
+        verify {
+            span.setAllAttributes(Attributes.of(AttributeKey.stringKey("foo"), "bar"))
+        }
     }
 
     @Test
-    void updateWithAttributesReplacesSupplier() {
-        Attributes attrs = Attributes.of(stringKey("foo"), "bar");
-        Attributes extra = Attributes.of(stringKey("bar"), "baz");
-        Supplier<Attributes> originalSupplier = mock(Supplier.class);
+    fun updateWithSupplierReplacesSupplier() {
+        val attrs = Attributes.of(AttributeKey.stringKey("foo"), "bar")
+        val originalSupplier =
+            Supplier { fail<Attributes>("Should not have been called") }
 
-        when(originalSupplier.get())
-                .thenReturn(attrs)
-                .thenThrow(new RuntimeException("Should not have been called again."));
+        val globalAttributes = GlobalAttributesSpanAppender(originalSupplier)
+        globalAttributes.update(Supplier { attrs })
 
-        GlobalAttributesSpanAppender globalAttributes =
-                GlobalAttributesSpanAppender.create(originalSupplier);
-        globalAttributes.update(builder -> builder.putAll(extra));
+        globalAttributes.onStart(Context.root(), span)
+        verify {
+            span.setAllAttributes(Attributes.of(AttributeKey.stringKey("foo"), "bar"))
+        }
+    }
 
-        globalAttributes.onStart(Context.root(), span);
-        verify(span)
-                .setAllAttributes(Attributes.of(stringKey("foo"), "bar", stringKey("bar"), "baz"));
+    @Test
+    fun updateWithAttributesReplacesSupplier() {
+        val attrs = Attributes.of(AttributeKey.stringKey("foo"), "bar")
+        val extra = Attributes.of(AttributeKey.stringKey("bar"), "baz")
+        val originalSupplier = mockk<Supplier<Attributes>>()
+
+        every { originalSupplier.get() } returns attrs andThenThrows RuntimeException("Should not have been called again.")
+
+        val globalAttributes = GlobalAttributesSpanAppender(originalSupplier)
+        globalAttributes.update { builder: AttributesBuilder ->
+            builder.putAll(
+                extra,
+            )
+        }
+
+        globalAttributes.onStart(Context.root(), span)
+        verify {
+            span.setAllAttributes(
+                Attributes.of(
+                    AttributeKey.stringKey("foo"),
+                    "bar",
+                    AttributeKey.stringKey("bar"),
+                    "baz",
+                ),
+            )
+        }
     }
 }
