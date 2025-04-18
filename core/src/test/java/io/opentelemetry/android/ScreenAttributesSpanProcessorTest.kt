@@ -2,40 +2,44 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+package io.opentelemetry.android
 
-package io.opentelemetry.android;
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import io.opentelemetry.android.common.RumConstants
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.context.Context
+import io.opentelemetry.sdk.trace.ReadWriteSpan
+import io.opentelemetry.sdk.trace.ReadableSpan
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
+import org.junit.jupiter.api.Test
 
-import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.ReadWriteSpan;
-import io.opentelemetry.sdk.trace.ReadableSpan;
-import org.junit.jupiter.api.Test;
-
-class ScreenAttributesSpanProcessorTest {
+internal class ScreenAttributesSpanProcessorTest {
 
     @Test
-    void append() {
-        String screenName = "my cool screen";
-        VisibleScreenTracker visibleScreenTracker = mock(VisibleScreenTracker.class);
-        Context contenxt = mock(Context.class);
-        ReadWriteSpan span = mock(ReadWriteSpan.class);
+    fun append() {
+        val screenName = "my cool screen"
+        val visibleScreenTracker = mockk<VisibleScreenTracker>()
+        val contenxt = mockk<Context>()
+        val span = mockk<ReadWriteSpan>()
 
-        when(visibleScreenTracker.getCurrentlyVisibleScreen()).thenReturn(screenName);
+        every { visibleScreenTracker.currentlyVisibleScreen } returns screenName
+        every { span.setAttribute(any<AttributeKey<String>>(), any()) } returns span
 
-        ScreenAttributesSpanProcessor testClass =
-                new ScreenAttributesSpanProcessor(visibleScreenTracker);
-        assertThat(testClass.isStartRequired()).isTrue();
-        assertThat(testClass.isEndRequired()).isFalse();
-        assertThatCode(() -> testClass.onEnd(mock(ReadableSpan.class))).doesNotThrowAnyException();
+        val testClass =
+            ScreenAttributesSpanProcessor(visibleScreenTracker)
+        assertThat(testClass.isStartRequired).isTrue()
+        assertThat(testClass.isEndRequired).isFalse()
+        assertThatCode {
+            testClass.onEnd(mockk<ReadableSpan>())
+        }.doesNotThrowAnyException()
 
-        testClass.onStart(contenxt, span);
-        verify(span).setAttribute(SCREEN_NAME_KEY, screenName);
+        testClass.onStart(contenxt, span)
+        verify {
+            span.setAttribute(RumConstants.SCREEN_NAME_KEY, screenName)
+        }
     }
 }
