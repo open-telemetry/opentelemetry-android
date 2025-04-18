@@ -45,7 +45,6 @@ import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTra
 import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler;
 import io.opentelemetry.android.session.SessionManager;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -182,19 +181,8 @@ public class OpenTelemetryRumBuilderTest {
                                                 SimpleLogRecordProcessor.create(logsExporter)))
                         .build();
 
-        Logger logger =
-                openTelemetryRum
-                        .getOpenTelemetry()
-                        .getLogsBridge()
-                        .loggerBuilder("otel.initialization.events")
-                        .build();
-        ExtendedLogRecordBuilder eventLogger = (ExtendedLogRecordBuilder) logger.logRecordBuilder();
-        Attributes attrs = Attributes.of(stringKey("mega"), "hit");
-        eventLogger
-                .setEventName("test.event")
-                .setAllAttributes(attrs)
-                .setAttribute(stringKey("body.field"), "foo")
-                .emit();
+        Attributes attrs = Attributes.of(stringKey("mega"), "hit", stringKey("body.field"), "foo");
+        openTelemetryRum.emitEvent("test.event", attrs);
 
         List<LogRecordData> logs = logsExporter.getFinishedLogRecordItems();
         assertThat(logs).hasSize(1);
