@@ -12,6 +12,9 @@ import io.opentelemetry.sdk.trace.ReadWriteSpan
 import io.opentelemetry.sdk.trace.ReadableSpan
 import io.opentelemetry.sdk.trace.SpanProcessor
 
+/**
+ * This class appends the screen name to all spans.
+ */
 class ScreenAttributesSpanProcessor(
     private val visibleScreenTracker: VisibleScreenTracker,
 ) : SpanProcessor {
