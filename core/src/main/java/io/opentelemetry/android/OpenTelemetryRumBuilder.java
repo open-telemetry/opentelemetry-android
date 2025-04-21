@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
+import io.opentelemetry.android.config.SessionConfig;
 import io.opentelemetry.android.export.BufferDelegatingLogExporter;
 import io.opentelemetry.android.export.BufferDelegatingMetricExporter;
 import io.opentelemetry.android.export.BufferDelegatingSpanExporter;
@@ -37,7 +38,6 @@ import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWork;
 import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler;
 import io.opentelemetry.android.internal.session.SessionManagerImpl;
-import io.opentelemetry.android.config.SessionConfig;
 import io.opentelemetry.android.session.SessionManager;
 import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
