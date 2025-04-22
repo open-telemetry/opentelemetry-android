@@ -487,7 +487,7 @@ public final class OpenTelemetryRumBuilder {
         if (config.hasGlobalAttributes()) {
             // Add span processor that appends global attributes.
             GlobalAttributesSpanAppender appender =
-                    GlobalAttributesSpanAppender.create(config.getGlobalAttributesSupplier());
+                    new GlobalAttributesSpanAppender(config.getGlobalAttributesSupplier());
             addTracerProviderCustomizer(
                     (tracerProviderBuilder, app) ->
                             tracerProviderBuilder.addSpanProcessor(appender));
