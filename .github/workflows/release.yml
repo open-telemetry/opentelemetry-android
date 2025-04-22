@@ -44,7 +44,7 @@ jobs:
           fi
           # otel instrumentation version comes in through alpha bom
           inst_version=$(./gradlew --console=plain android-agent:dependencies | \
-                        grep 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom ' | \
+                        grep 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-api ' | \
                         sed -e "s/.* -> //" | sed -e "s/ .*//" | \
                         sort | head -1)
           # otel-java core libs are transient deps thru instrumentation boms
