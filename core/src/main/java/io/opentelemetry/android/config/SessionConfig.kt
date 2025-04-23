@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.session
+package io.opentelemetry.android.config
 
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours

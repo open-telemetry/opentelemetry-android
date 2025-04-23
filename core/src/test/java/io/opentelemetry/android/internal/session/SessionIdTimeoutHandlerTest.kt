@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.internal.session
 
-import io.opentelemetry.android.session.SessionConfig
+import io.opentelemetry.android.config.SessionConfig
 import io.opentelemetry.sdk.testing.time.TestClock
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue

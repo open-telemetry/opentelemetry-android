@@ -8,7 +8,6 @@ package io.opentelemetry.android.config;
 import io.opentelemetry.android.ScreenAttributesSpanProcessor;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
-import io.opentelemetry.android.session.SessionConfig;
 import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
 import java.util.List;

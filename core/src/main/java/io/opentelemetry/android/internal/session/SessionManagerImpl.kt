@@ -5,8 +5,8 @@
 
 package io.opentelemetry.android.internal.session
 
+import io.opentelemetry.android.config.SessionConfig
 import io.opentelemetry.android.session.Session
-import io.opentelemetry.android.session.SessionConfig
 import io.opentelemetry.android.session.SessionIdGenerator
 import io.opentelemetry.android.session.SessionManager
 import io.opentelemetry.android.session.SessionObserver
