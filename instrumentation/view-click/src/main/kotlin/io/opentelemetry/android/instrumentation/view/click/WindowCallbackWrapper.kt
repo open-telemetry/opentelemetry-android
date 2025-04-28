@@ -5,20 +5,17 @@
 
 package io.opentelemetry.android.instrumentation.view.click
 
-import android.os.Build.VERSION_CODES
-import android.view.ActionMode
-import android.view.SearchEvent
+import android.view.MotionEvent
 import android.view.Window.Callback
-import androidx.annotation.RequiresApi
 
-@RequiresApi(api = VERSION_CODES.M)
 class WindowCallbackWrapper(
     private val callback: Callback,
-) : DefaultWindowCallback(callback) {
-    override fun onSearchRequested(searchEvent: SearchEvent?): Boolean = callback.onSearchRequested(searchEvent)
+    private val viewClickEventGenerator: ViewClickEventGenerator,
+) : Callback by callback {
+    override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
+        viewClickEventGenerator.generateClick(event)
+        return callback.dispatchTouchEvent(event)
+    }
 
-    override fun onWindowStartingActionMode(
-        callback: ActionMode.Callback?,
-        type: Int,
-    ): ActionMode? = this.callback.onWindowStartingActionMode(callback, type)
+    fun unwrap(): Callback = callback
 }

@@ -8,14 +8,16 @@ package io.opentelemetry.android.instrumentation.view.click
 import android.app.Activity
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
 
-class ViewClickActivityCallback : DefaultingActivityLifecycleCallbacks {
+class ViewClickActivityCallback(
+    private val viewClickEventGenerator: ViewClickEventGenerator,
+) : DefaultingActivityLifecycleCallbacks {
     override fun onActivityResumed(activity: Activity) {
         super.onActivityResumed(activity)
-        ViewClickEventGenerator.startTracking(activity.window)
+        viewClickEventGenerator.startTracking(activity.window)
     }
 
     override fun onActivityPaused(activity: Activity) {
         super.onActivityPaused(activity)
-        ViewClickEventGenerator.stopTracking()
+        viewClickEventGenerator.stopTracking()
     }
 }

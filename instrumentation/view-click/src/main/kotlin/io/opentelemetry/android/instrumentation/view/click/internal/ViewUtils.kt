@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.view.click
-import android.view.View
+package io.opentelemetry.android.instrumentation.view.click.internal
+
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.AttributeKey.doubleKey
 import io.opentelemetry.api.common.AttributeKey.longKey
@@ -17,6 +17,3 @@ val viewNameAttr: AttributeKey<String> = stringKey("app.widget.name")
 val xCoordinateAttr: AttributeKey<Double> = doubleKey("app.screen.coordinate.x")
 val yCoordinateAttr: AttributeKey<Double> = doubleKey("app.screen.coordinate.y")
 val viewIdAttr: AttributeKey<Long> = longKey("app.widget.id")
-
-internal val View.isVisible: Boolean
-    get() = visibility == View.VISIBLE

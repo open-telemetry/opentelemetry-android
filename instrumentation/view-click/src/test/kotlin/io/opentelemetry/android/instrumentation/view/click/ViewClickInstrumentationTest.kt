@@ -22,6 +22,12 @@ import io.mockk.mockkClass
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.instrumentation.InstallationContext
+import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_CLICK_EVENT_NAME
+import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_EVENT_NAME
+import io.opentelemetry.android.instrumentation.view.click.internal.viewIdAttr
+import io.opentelemetry.android.instrumentation.view.click.internal.viewNameAttr
+import io.opentelemetry.android.instrumentation.view.click.internal.xCoordinateAttr
+import io.opentelemetry.android.instrumentation.view.click.internal.yCoordinateAttr
 import io.opentelemetry.android.session.SessionManager
 import io.opentelemetry.android.test.common.hasEventName
 import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData
@@ -80,7 +86,7 @@ class ViewClickInstrumentationTest {
         }
 
         val viewClickActivityCallback = callbackCapturingSlot.captured
-        val wrapperCapturingSlot = slot<Pre23WindowCallbackWrapper>()
+        val wrapperCapturingSlot = slot<WindowCallbackWrapper>()
         every { window.callback = any() } returns Unit
 
         val motionEvent =
@@ -115,7 +121,7 @@ class ViewClickInstrumentationTest {
                 equalTo(xCoordinateAttr, mockView.x.toDouble()),
                 equalTo(yCoordinateAttr, mockView.y.toDouble()),
                 equalTo(viewIdAttr, mockView.id),
-                equalTo(viewNameAttr, EventBuilderCreator.viewToName(mockView)),
+                equalTo(viewNameAttr, "10012"),
             )
     }
 
@@ -141,7 +147,7 @@ class ViewClickInstrumentationTest {
         }
 
         val viewClickActivityCallback = callbackCapturingSlot.captured
-        val wrapperCapturingSlot = slot<Pre23WindowCallbackWrapper>()
+        val wrapperCapturingSlot = slot<WindowCallbackWrapper>()
         every { window.callback = any() } returns Unit
 
         val motionEvent =
@@ -182,7 +188,7 @@ class ViewClickInstrumentationTest {
                 equalTo(xCoordinateAttr, mockView.x.toDouble()),
                 equalTo(yCoordinateAttr, mockView.y.toDouble()),
                 equalTo(viewIdAttr, mockView.id),
-                equalTo(viewNameAttr, EventBuilderCreator.viewToName(mockView)),
+                equalTo(viewNameAttr, "10012"),
             )
     }
 
@@ -208,7 +214,7 @@ class ViewClickInstrumentationTest {
         }
 
         val viewClickActivityCallback = callbackCapturingSlot.captured
-        val wrapperCapturingSlot = slot<Pre23WindowCallbackWrapper>()
+        val wrapperCapturingSlot = slot<WindowCallbackWrapper>()
         every { window.callback = any() } returns Unit
 
         val motionEvent =
@@ -265,7 +271,7 @@ class ViewClickInstrumentationTest {
         }
 
         val viewClickActivityCallback = callbackCapturingSlot.captured
-        val wrapperCapturingSlot = slot<Pre23WindowCallbackWrapper>()
+        val wrapperCapturingSlot = slot<WindowCallbackWrapper>()
         every { window.callback = any() } returns Unit
 
         val motionEvent =

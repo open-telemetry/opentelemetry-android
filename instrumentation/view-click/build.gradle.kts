@@ -3,10 +3,14 @@ plugins {
     id("otel.publish-conventions")
 }
 
-description = "OpenTelemetry Android View clcik library instrumentation for Android"
+description = "OpenTelemetry Android View click library instrumentation"
 
 android {
-    namespace = "io.opentelemetry.android.view.click.library"
+    namespace = "io.opentelemetry.android.instrumentation.view.click"
+
+    defaultConfig {
+        minSdk = 23
+    }
 }
 
 dependencies {
