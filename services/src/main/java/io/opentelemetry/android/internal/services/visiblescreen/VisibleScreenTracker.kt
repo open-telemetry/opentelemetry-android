@@ -10,7 +10,7 @@ import android.app.Application
 import android.os.Build
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.NavHost
 import io.opentelemetry.android.internal.services.visiblescreen.activities.Pre29VisibleScreenLifecycleBinding
 import io.opentelemetry.android.internal.services.visiblescreen.activities.VisibleScreenLifecycleBinding
 import io.opentelemetry.android.internal.services.visiblescreen.fragments.RumFragmentActivityRegisterer
@@ -92,8 +92,8 @@ class VisibleScreenTracker internal constructor(
     }
 
     fun fragmentResumed(fragment: Fragment) {
-        // skip the NavHostFragment since it's never really "visible" by itself.
-        if (fragment is NavHostFragment) {
+        // skip the Fragment if it's a NavHost since it's never really "visible" by itself.
+        if (fragment is NavHost) {
             return
         }
 
@@ -104,8 +104,8 @@ class VisibleScreenTracker internal constructor(
     }
 
     fun fragmentPaused(fragment: Fragment) {
-        // skip the NavHostFragment since it's never really "visible" by itself.
-        if (fragment is NavHostFragment) {
+        // skip the Fragment if it's a NavHost since it's never really "visible" by itself.
+        if (fragment is NavHost) {
             return
         }
         if (fragment is DialogFragment) {

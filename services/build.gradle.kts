@@ -17,10 +17,11 @@ dependencies {
     implementation(project(":common"))
 
     implementation(libs.androidx.core)
-    implementation(libs.androidx.navigation.fragment)
+    implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.preference.ktx)
 
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.navigation.fragment)
 }
