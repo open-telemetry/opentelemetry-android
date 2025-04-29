@@ -69,7 +69,7 @@ errorprone-javac = "com.google.errorprone:javac:9+181-r4173-1"
 spotless-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
 errorprone-plugin = "net.ltgt.gradle:gradle-errorprone-plugin:4.2.0"
 nullaway-plugin = "net.ltgt.gradle:gradle-nullaway-plugin:2.2.0"
-animalsniffer-plugin = "ru.vyarus:gradle-animalsniffer-plugin:2.0.0"
+animalsniffer-plugin = "ru.vyarus:gradle-animalsniffer-plugin:2.0.1"
 android-plugin = { module = "com.android.tools.build:gradle", version.ref = "androidPlugin" }
 byteBuddy-plugin = { module = "net.bytebuddy:byte-buddy-gradle-plugin", version.ref = "byteBuddy" }
 kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
