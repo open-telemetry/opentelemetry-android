@@ -27,7 +27,7 @@ data class DiskBufferingConfig
         val maxFileAgeForReadMillis: Long = TimeUnit.HOURS.toMillis(DEFAULT_MAX_FILE_AGE_FOR_READ_MS),
         val maxCacheFileSize: Int = MAX_CACHE_FILE_SIZE,
         val debugEnabled: Boolean = false,
-        val exportIntervalInSeconds: Long = DEFAULT_EXPORT_INTERVAL_IN_SECONDS,
+        val exportIntervalInSeconds: Duration = DEFAULT_EXPORT_INTERVAL_IN_SECONDS,
         /**
          * The directory where the SDK stores the buffered signals before they are exported. If
          * `null`, a default directory inside the application's cache directory will be used.
