@@ -7,10 +7,6 @@ description = "OpenTelemetry Android View click library instrumentation"
 
 android {
     namespace = "io.opentelemetry.android.instrumentation.view.click"
-
-    defaultConfig {
-        minSdk = 23
-    }
 }
 
 dependencies {

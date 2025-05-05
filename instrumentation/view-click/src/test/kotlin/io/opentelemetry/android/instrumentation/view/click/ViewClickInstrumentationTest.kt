@@ -110,16 +110,16 @@ class ViewClickInstrumentationTest {
         assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(xCoordinateAttr, motionEvent.x.toDouble()),
-                equalTo(yCoordinateAttr, motionEvent.y.toDouble()),
+                equalTo(xCoordinateAttr, motionEvent.x.toLong()),
+                equalTo(yCoordinateAttr, motionEvent.y.toLong()),
             )
 
         event = events[1] as ExtendedLogRecordData
         assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(xCoordinateAttr, mockView.x.toDouble()),
-                equalTo(yCoordinateAttr, mockView.y.toDouble()),
+                equalTo(xCoordinateAttr, mockView.x.toLong()),
+                equalTo(yCoordinateAttr, mockView.y.toLong()),
                 equalTo(viewIdAttr, mockView.id),
                 equalTo(viewNameAttr, "10012"),
             )
@@ -177,16 +177,16 @@ class ViewClickInstrumentationTest {
         assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(xCoordinateAttr, motionEvent.x.toDouble()),
-                equalTo(yCoordinateAttr, motionEvent.y.toDouble()),
+                equalTo(xCoordinateAttr, motionEvent.x.toLong()),
+                equalTo(yCoordinateAttr, motionEvent.y.toLong()),
             )
 
         event = events[1] as ExtendedLogRecordData
         assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(xCoordinateAttr, mockView.x.toDouble()),
-                equalTo(yCoordinateAttr, mockView.y.toDouble()),
+                equalTo(xCoordinateAttr, mockView.x.toLong()),
+                equalTo(yCoordinateAttr, mockView.y.toLong()),
                 equalTo(viewIdAttr, mockView.id),
                 equalTo(viewNameAttr, "10012"),
             )
@@ -244,8 +244,8 @@ class ViewClickInstrumentationTest {
         assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(xCoordinateAttr, motionEvent.x.toDouble()),
-                equalTo(yCoordinateAttr, motionEvent.y.toDouble()),
+                equalTo(xCoordinateAttr, motionEvent.x.toLong()),
+                equalTo(yCoordinateAttr, motionEvent.y.toLong()),
             )
     }
 

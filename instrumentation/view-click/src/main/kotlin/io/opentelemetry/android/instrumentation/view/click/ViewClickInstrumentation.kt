@@ -20,7 +20,7 @@ class ViewClickInstrumentation : AndroidInstrumentation {
                 ViewClickEventGenerator(
                     ctx.openTelemetry
                         .logsBridge
-                        .loggerBuilder("io.opentelemetry.android.view.click")
+                        .loggerBuilder("io.opentelemetry.android.instrumentation.view.click")
                         .build() as ExtendedLogger,
                 ),
             ),

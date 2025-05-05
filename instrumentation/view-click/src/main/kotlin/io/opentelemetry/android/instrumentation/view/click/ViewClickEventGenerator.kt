@@ -38,8 +38,8 @@ class ViewClickEventGenerator(
         windowRef?.get()?.let { window ->
             if (motionEvent != null && motionEvent.actionMasked == MotionEvent.ACTION_UP) {
                 createEvent(APP_SCREEN_CLICK_EVENT_NAME)
-                    .setAttribute(yCoordinateAttr, motionEvent.y.toDouble())
-                    .setAttribute(xCoordinateAttr, motionEvent.x.toDouble())
+                    .setAttribute(yCoordinateAttr, motionEvent.y.toLong())
+                    .setAttribute(xCoordinateAttr, motionEvent.x.toLong())
                     .emit()
 
                 findTargetForTap(window.decorView, motionEvent.x, motionEvent.y)?.let { view ->
@@ -70,8 +70,8 @@ class ViewClickEventGenerator(
         builder.put(viewNameAttr, viewToName(view))
         builder.put(viewIdAttr, view.id.toLong())
 
-        builder.put(xCoordinateAttr, view.x.toDouble())
-        builder.put(yCoordinateAttr, view.y.toDouble())
+        builder.put(xCoordinateAttr, view.x.toLong())
+        builder.put(yCoordinateAttr, view.y.toLong())
         return builder.build()
     }
 
