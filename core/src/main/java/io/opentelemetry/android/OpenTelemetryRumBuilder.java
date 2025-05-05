@@ -570,19 +570,16 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private SpanExporter buildSpanExporter() {
-        // TODO: Default to otlp...but how can we make endpoint and auth mandatory?
         SpanExporter defaultExporter = LoggingSpanExporter.create();
         return spanExporterCustomizer.apply(defaultExporter);
     }
 
     private MetricExporter buildMetricExporter() {
-        // TODO: Default to otlp...but how can we make endpoint and auth mandatory?
         MetricExporter defaultExporter = LoggingMetricExporter.create();
         return metricExporterCustomizer.apply(defaultExporter);
     }
 
     private LogRecordExporter buildLogsExporter() {
-        // TODO: Default to otlp...but how can we make endpoint and auth mandatory?
         LogRecordExporter defaultExporter = SystemOutLogRecordExporter.create();
         return logRecordExporterCustomizer.apply(defaultExporter);
     }
