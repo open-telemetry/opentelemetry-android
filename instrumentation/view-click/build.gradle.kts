@@ -7,6 +7,10 @@ description = "OpenTelemetry Android View click library instrumentation"
 
 android {
     namespace = "io.opentelemetry.android.instrumentation.view.click"
+
+    defaultConfig {
+        consumerProguardFiles("consumer-rules.pro")
+    }
 }
 
 dependencies {
