@@ -1,7 +1,7 @@
 
 # OpenTelemetry Android Volley Instrumentation
 
-> :construction: &nbsp;Status: Experimental
+> :construction: &nbsp;Status: development
 
 This directory contains OpenTelemetry instrumentation for the [Volley](https://google.github.io/volley/)
 HTTP client library. If you use the Volley HTTP client in your Android application, you can

@@ -5,7 +5,7 @@
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/open-telemetry/opentelemetry-android/badge)](https://scorecard.dev/viewer/?uri=github.com/open-telemetry/opentelemetry-android)
 [![android api](https://img.shields.io/badge/Android_API-21-green.svg "Android min API 21")](VERSIONING.md)
 
-## Status: Experimental
+## Status: development
 
 * [About](#about)
 * [Getting Started](#getting-started)

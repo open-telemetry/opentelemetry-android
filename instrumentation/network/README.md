@@ -1,7 +1,7 @@
 
 # Network Change Instrumentation
 
-Status: experimental
+Status: development
 
 Android applications are typically deployed on mobile devices. These mobile devices
 have the ability to move between networks, and sometimes a network change can

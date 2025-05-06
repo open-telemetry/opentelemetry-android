@@ -1,7 +1,7 @@
 
 # ANR (Application Not Responding) Instrumentation
 
-Status: experimental
+Status: development
 
 The ANR (Application Not Responding) instrumentation helps to detect
 when an application becomes unresponsive. This instrumentation functions
