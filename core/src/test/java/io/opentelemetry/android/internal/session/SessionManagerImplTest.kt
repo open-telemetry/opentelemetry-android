@@ -141,10 +141,10 @@ internal class SessionManagerImplTest {
     }
 
     @Test
-    fun `session is stored in the context`(){
+    fun `session is stored in the context`() {
         val testClass = SessionManagerImpl(timeoutHandler = timeoutHandler, maxSessionLifetime = 4.hours)
         val sessionId = testClass.getSessionId()
-        val contextSessionId = Context.current().get(SESSION_CONTEXT_KEY)?.getId();
+        val contextSessionId = Context.current().get(SESSION_CONTEXT_KEY)?.getId()
         assertThat(contextSessionId).isEqualTo(sessionId)
     }
 }
