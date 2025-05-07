@@ -28,6 +28,7 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import io.opentelemetry.android.config.OtelRumConfig;
+import io.opentelemetry.android.config.SessionConfig;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
@@ -528,6 +529,25 @@ public class OpenTelemetryRumBuilderTest {
                                 .put("localAttrKey", "localAttrValue")
                                 .put(SCREEN_NAME_KEY, CUR_SCREEN_NAME)
                                 .build());
+    }
+
+    @Test
+    public void testSamplerWithSessionConfigRatio() {
+        SessionConfig sessionConfig = new SessionConfig(0, 0, 0.0);
+        OtelRumConfig otelRumConfig = buildConfig().setSessionConfig(sessionConfig);
+
+        OpenTelemetryRum rum =
+                OpenTelemetryRum.builder(application, otelRumConfig)
+                        .addTracerProviderCustomizer(
+                                (tracerProviderBuilder, app) ->
+                                        tracerProviderBuilder.addSpanProcessor(
+                                                SimpleSpanProcessor.create(spanExporter)))
+                        .build();
+
+        rum.getOpenTelemetry().getTracer("test").spanBuilder("test span").startSpan().end();
+
+        await().atMost(Duration.ofSeconds(30))
+                .untilAsserted(() -> assertThat(spanExporter.getFinishedSpanItems()).hasSize(0));
     }
 
     /**

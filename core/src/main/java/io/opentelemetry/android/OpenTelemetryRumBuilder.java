@@ -545,6 +545,13 @@ public final class OpenTelemetryRumBuilder {
                 customizer : tracerProviderCustomizers) {
             tracerProviderBuilder = customizer.apply(tracerProviderBuilder, application);
         }
+
+        if (config.getSessionConfig().getRatio() != null) {
+            tracerProviderBuilder.setSampler(
+                    new SessionIdRatioBasedSampler(
+                            config.getSessionConfig().getRatio(), sessionProvider));
+        }
+
         return tracerProviderBuilder.build();
     }
 
