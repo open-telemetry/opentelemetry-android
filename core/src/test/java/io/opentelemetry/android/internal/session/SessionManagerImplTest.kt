@@ -16,6 +16,7 @@ import io.mockk.verify
 import io.mockk.verifyOrder
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.context.Context
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.time.TestClock
 import org.junit.jupiter.api.BeforeEach
@@ -137,5 +138,13 @@ internal class SessionManagerImplTest {
 
         assertThat(value).isNotEqualTo(sessionId.getSessionId())
         verify(exactly = 3) { timeoutHandler.bump() }
+    }
+
+    @Test
+    fun `session is stored in the context`(){
+        val testClass = SessionManagerImpl(timeoutHandler = timeoutHandler, maxSessionLifetime = 4.hours)
+        val sessionId = testClass.getSessionId()
+        val contextSessionId = Context.current().get(SESSION_CONTEXT_KEY)?.getId();
+        assertThat(contextSessionId).isEqualTo(sessionId)
     }
 }

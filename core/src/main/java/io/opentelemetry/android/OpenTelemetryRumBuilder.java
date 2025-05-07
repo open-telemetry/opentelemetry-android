@@ -36,8 +36,10 @@ import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.Services;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWork;
+import io.opentelemetry.android.internal.session.SessionFromContextProvider;
 import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler;
 import io.opentelemetry.android.internal.session.SessionManagerImpl;
+import io.opentelemetry.android.sampling.SessionIdRatioBasedSampler;
 import io.opentelemetry.android.session.SessionManager;
 import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
@@ -71,6 +73,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -299,6 +302,36 @@ public final class OpenTelemetryRumBuilder {
                     return logRecordExporterCustomizer.apply(intermediate);
                 };
         return this;
+    }
+
+    /**
+     * Enables a ratio-based probabilistic sampling of sessions. When a session is sampled
+     * (included), then the telemetry for that session will be created and exported. If a session is
+     * not sampled (excluded) then the telemetry for that session will not be exported.
+     *
+     * @param ratio - A number between 0 and 1, representing a percentage of sessions to sample.
+     */
+    public OpenTelemetryRumBuilder enableSessionBasedSampling(double ratio) {
+        Sampler sampler = buildSampler(ratio);
+        addTracerProviderCustomizer((builder, application) -> builder.setSampler(sampler));
+
+        // TODO: When there is a mechanism for sampling logs, we need to wire
+        // it up here...
+
+        return this;
+    }
+
+    private static Sampler buildSampler(double ratio) {
+        if (ratio < 0.0 || ratio > 1.0) {
+            throw new IllegalArgumentException("ratio must be in range [0.0, 1.0]");
+        }
+        if (ratio == 0.0) {
+            return Sampler.alwaysOff();
+        }
+        if (ratio == 1.0) {
+            return Sampler.alwaysOn();
+        }
+        return new SessionIdRatioBasedSampler(0.5f, new SessionFromContextProvider());
     }
 
     /**

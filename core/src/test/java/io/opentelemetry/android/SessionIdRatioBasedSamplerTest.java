@@ -8,6 +8,7 @@ package io.opentelemetry.android;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.android.sampling.SessionIdRatioBasedSampler;
 import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;

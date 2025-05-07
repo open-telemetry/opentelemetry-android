@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android;
+package io.opentelemetry.android.sampling;
 
 import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.common.Attributes;
