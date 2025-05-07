@@ -1,6 +1,6 @@
 # Fragment Instrumentation
 
-Status: experimental
+Status: development
 
 The fragment instrumentation helps to track the state of your application's Fragment lifecycle.
 

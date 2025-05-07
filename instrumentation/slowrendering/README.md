@@ -1,7 +1,7 @@
 
 # Slow Rendering Instrumentation
 
-Status: experimental
+Status: development
 
 The OpenTelemetry slow rendering instrumentation for Android will detect when
 the application user interface is slow or frozen.

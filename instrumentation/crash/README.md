@@ -1,7 +1,7 @@
 
 # Crash Instrumentation
 
-Status: experimental
+Status: development
 
 The crash instrumentation detects uncaught exceptions in the user
 application and reports these occurrences as telemetry.

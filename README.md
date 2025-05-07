@@ -5,7 +5,7 @@
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/open-telemetry/opentelemetry-android/badge)](https://scorecard.dev/viewer/?uri=github.com/open-telemetry/opentelemetry-android)
 [![android api](https://img.shields.io/badge/Android_API-21-green.svg "Android min API 21")](VERSIONING.md)
 
-## Status: Experimental
+## Status: development
 
 * [About](#about)
 * [Getting Started](#getting-started)
@@ -59,6 +59,7 @@ Some of the additional features provided include:
 * [Network change detection](./instrumentation/network/)
 * Android [Activity lifecycle instrumentation](./instrumentation/activity/)
 * Android [Fragment lifecycle monitoring](./instrumentation/fragment)
+* [View click instrumentation](./instrumentation/view-click/)
 * Access to the OpenTelemetry APIs for manual instrumentation
 * Helpers to redact any span from export, or change span attributes before export
 * [Slow / frozen render detection](./instrumentation/slowrendering)

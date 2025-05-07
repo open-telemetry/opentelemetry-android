@@ -1,7 +1,7 @@
 
 # Android Log Instrumentation
 
-Status: experimental
+Status: development
 
 The Android Log instrumentation transforms calls to `android.uti.Log.x` to emit
 OTEL log record.

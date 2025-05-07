@@ -1,7 +1,7 @@
 
 # Activity Instrumentation
 
-Status: experimental
+Status: development
 
 The activity instrumentation helps to track the state of your application's
 Activity and the lifecycle. This instrumentation also currently measures
