@@ -8,14 +8,14 @@ performs click actions. A click is not differentiated from touch or other
 input pointer events.
 
 When an Activity becomes active, the instrumentation begins tracking
-its window by registering a callback that receives events. 
+its window by registering a callback that receives events.
 
 This instrumentation is not currently enabled by default.
 
 ## Telemetry
 
 Data produced by this instrumentation will have an instrumentation scope
-name of `io.opentelemetry.android.instrumentation.view.click`. 
+name of `io.opentelemetry.android.instrumentation.view.click`.
 This instrumentation produces the following telemetry:
 
 ### Network Change
