@@ -331,7 +331,7 @@ public final class OpenTelemetryRumBuilder {
         if (ratio == 1.0) {
             return Sampler.alwaysOn();
         }
-        return new SessionIdRatioBasedSampler(0.5f, new SessionFromContextProvider());
+        return new SessionIdRatioBasedSampler(ratio, new SessionFromContextProvider());
     }
 
     /**
