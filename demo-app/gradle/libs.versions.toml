@@ -23,7 +23,7 @@ desugarJdkLibs = "com.android.tools:desugar_jdk_libs:2.1.5"
 
 # demo-app
 androidx-core-ktx = "androidx.core:core-ktx:1.16.0"
-androidx-lifecycle-runtime-ktx = "androidx.lifecycle:lifecycle-runtime-ktx:2.8.7"
+androidx-lifecycle-runtime-ktx = "androidx.lifecycle:lifecycle-runtime-ktx:2.9.0"
 androidx-compose-bom = "androidx.compose:compose-bom:2025.05.00"
 androidx-activity-compose = "androidx.activity:activity-compose:1.10.1"
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
@@ -34,8 +34,8 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version = "2.2.1" }
 material = { group = "com.google.android.material", name = "material", version = "1.12.0" }
-androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version = "2.8.7" }
-androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version = "2.8.7" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version = "2.9.0" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version = "2.9.0" }
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation-compose" }
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigation-compose" }
 androidx-navigation-compose = {group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation-compose"}
