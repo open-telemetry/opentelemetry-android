@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicReference
  * A SessionObserver that listens for session start events, stores the session,
  * and is also a SessionProvider, that can return the session id.
  */
-class SessionObservingSessionProvider :
+internal class SessionObservingSessionProvider :
     SessionProvider,
     SessionObserver {
     private val session = AtomicReference<Session>(Session.NONE)
