@@ -382,7 +382,7 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private void configureSessionSampling() {
-        if (sessionIdSamplingRatio < 0) {
+        if ((sessionIdSamplingRatio < 0) || (sessionManager == null)) {
             return;
         }
         SessionObservingSessionProvider observerAndProvider = new SessionObservingSessionProvider();
