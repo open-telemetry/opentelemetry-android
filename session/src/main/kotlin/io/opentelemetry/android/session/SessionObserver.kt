@@ -9,7 +9,7 @@ interface SessionObserver {
     fun onSessionStarted(
         newSession: Session,
         previousSession: Session,
-    )
+    ) {}
 
-    fun onSessionEnded(session: Session)
+    fun onSessionEnded(session: Session) {}
 }
