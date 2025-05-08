@@ -11,7 +11,6 @@ import io.opentelemetry.android.session.SessionIdGenerator
 import io.opentelemetry.android.session.SessionManager
 import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.android.session.SessionStorage
-import io.opentelemetry.context.Context
 import io.opentelemetry.context.ContextKey
 import io.opentelemetry.sdk.common.Clock
 import java.util.Collections.synchronizedList
@@ -61,10 +60,6 @@ internal class SessionManagerImpl(
         if (newSession != session) {
             val previousSession = session
             session = newSession
-            Context
-                .current()
-                .with(SESSION_CONTEXT_KEY, session)
-                .makeCurrent()
             observers.forEach {
                 it.onSessionEnded(previousSession)
                 it.onSessionStarted(session, previousSession)
