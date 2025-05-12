@@ -11,9 +11,15 @@ import io.opentelemetry.android.OpenTelemetryRumBuilder
 import io.opentelemetry.android.agent.connectivity.EndpointConnectivity
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 import io.opentelemetry.android.config.OtelRumConfig
+import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
+import io.opentelemetry.android.instrumentation.crash.CrashDetails
+import io.opentelemetry.android.instrumentation.network.NetworkAttributesExtractor
+import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
+import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor
+import java.time.Duration
 
 object OpenTelemetryRumInitializer {
     /**
@@ -48,6 +54,14 @@ object OpenTelemetryRumInitializer {
                 endpointHeaders,
             ),
         rumConfig: OtelRumConfig = OtelRumConfig(),
+        activityTracerCustomizer: ((Tracer) -> Tracer)? = null,
+        activityNameExtractor: ScreenNameExtractor? = null,
+        fragmentTracerCustomizer: ((Tracer) -> Tracer)? = null,
+        fragmentNameExtractor: ScreenNameExtractor? = null,
+        anrAttributesExtractors: List<AttributesExtractor<Array<StackTraceElement>, Void>> = emptyList(),
+        crashAttributesExtractors: List<AttributesExtractor<CrashDetails, Void>> = emptyList(),
+        networkChangeAttributesExtractors: List<NetworkAttributesExtractor> = emptyList(),
+        slowRenderingDetectionPollInterval: Duration? = null,
     ): OpenTelemetryRum =
         OpenTelemetryRum
             .builder(application, rumConfig)
