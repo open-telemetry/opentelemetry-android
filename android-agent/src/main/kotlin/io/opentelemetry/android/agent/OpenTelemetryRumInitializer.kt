@@ -40,6 +40,14 @@ object OpenTelemetryRumInitializer {
      * @param logEndpointConnectivity Log-specific endpoint configuration.
      * @param metricEndpointConnectivity Metric-specific endpoint configuration.
      * @param rumConfig Configuration used by [OpenTelemetryRumBuilder].
+     * @param activityTracerCustomizer Tracer customizer for [ActivityLifecycleInstrumentation].
+     * @param activityNameExtractor Name extractor for [ActivityLifecycleInstrumentation].
+     * @param fragmentTracerCustomizer Tracer customizer for [FragmentLifecycleInstrumentation].
+     * @param fragmentNameExtractor Name extractor for [FragmentLifecycleInstrumentation].
+     * @param anrAttributesExtractors Attribute extractors for [AnrInstrumentation].
+     * @param crashAttributesExtractors Attribute extractors for [CrashReporterInstrumentation].
+     * @param networkChangeAttributesExtractors Attribute extractors for [NetworkChangeInstrumentation].
+     * @param slowRenderingDetectionPollInterval Slow rendering detection interval for [SlowRenderingInstrumentation].
      */
     @JvmStatic
     fun initialize(
