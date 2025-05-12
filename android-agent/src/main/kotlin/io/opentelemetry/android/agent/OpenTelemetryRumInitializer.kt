@@ -11,9 +11,17 @@ import io.opentelemetry.android.OpenTelemetryRumBuilder
 import io.opentelemetry.android.agent.connectivity.EndpointConnectivity
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 import io.opentelemetry.android.config.OtelRumConfig
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
+import io.opentelemetry.android.instrumentation.activity.ActivityLifecycleInstrumentation
+import io.opentelemetry.android.instrumentation.anr.AnrInstrumentation
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.instrumentation.crash.CrashDetails
+import io.opentelemetry.android.instrumentation.crash.CrashReporterInstrumentation
+import io.opentelemetry.android.instrumentation.fragment.FragmentLifecycleInstrumentation
 import io.opentelemetry.android.instrumentation.network.NetworkAttributesExtractor
+import io.opentelemetry.android.instrumentation.network.NetworkChangeInstrumentation
+import io.opentelemetry.android.instrumentation.slowrendering.SlowRenderingInstrumentation
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
@@ -62,8 +70,53 @@ object OpenTelemetryRumInitializer {
         crashAttributesExtractors: List<AttributesExtractor<CrashDetails, Void>> = emptyList(),
         networkChangeAttributesExtractors: List<NetworkAttributesExtractor> = emptyList(),
         slowRenderingDetectionPollInterval: Duration? = null,
-    ): OpenTelemetryRum =
-        OpenTelemetryRum
+    ): OpenTelemetryRum {
+        val activityLifecycleInstrumentation =
+            getInstrumentation<ActivityLifecycleInstrumentation>()
+        if (activityTracerCustomizer != null) {
+            activityLifecycleInstrumentation.setTracerCustomizer(activityTracerCustomizer)
+        }
+        if (activityNameExtractor != null) {
+            activityLifecycleInstrumentation.setScreenNameExtractor(activityNameExtractor)
+        }
+
+        val fragmentLifecycleInstrumentation =
+            getInstrumentation<FragmentLifecycleInstrumentation>()
+        if (fragmentTracerCustomizer != null) {
+            fragmentLifecycleInstrumentation.setTracerCustomizer(fragmentTracerCustomizer)
+        }
+        if (fragmentNameExtractor != null) {
+            fragmentLifecycleInstrumentation.setScreenNameExtractor(fragmentNameExtractor)
+        }
+
+        if (anrAttributesExtractors.isNotEmpty()) {
+            val anrInstrumentation = getInstrumentation<AnrInstrumentation>()
+            for (extractor in anrAttributesExtractors) {
+                anrInstrumentation.addAttributesExtractor(extractor)
+            }
+        }
+
+        if (crashAttributesExtractors.isNotEmpty()) {
+            val crashInstrumentation = getInstrumentation<CrashReporterInstrumentation>()
+            for (extractor in crashAttributesExtractors) {
+                crashInstrumentation.addAttributesExtractor(extractor)
+            }
+        }
+
+        if (networkChangeAttributesExtractors.isNotEmpty()) {
+            val networkChangeInstrumentation = getInstrumentation<NetworkChangeInstrumentation>()
+            for (extractor in networkChangeAttributesExtractors) {
+                networkChangeInstrumentation.addAttributesExtractor(extractor)
+            }
+        }
+
+        if (slowRenderingDetectionPollInterval != null) {
+            getInstrumentation<SlowRenderingInstrumentation>().setSlowRenderingDetectionPollInterval(
+                slowRenderingDetectionPollInterval,
+            )
+        }
+
+        return OpenTelemetryRum
             .builder(application, rumConfig)
             .addSpanExporterCustomizer {
                 OtlpHttpSpanExporter
@@ -84,4 +137,8 @@ object OpenTelemetryRumInitializer {
                     .setHeaders(metricEndpointConnectivity::getHeaders)
                     .build()
             }.build()
+    }
+
+    private inline fun <reified T : AndroidInstrumentation> getInstrumentation(): T =
+        AndroidInstrumentationLoader.getInstrumentation(T::class.java)!!
 }
