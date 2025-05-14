@@ -10,6 +10,9 @@ import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.OpenTelemetryRumBuilder
 import io.opentelemetry.android.agent.connectivity.EndpointConnectivity
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
+import io.opentelemetry.android.agent.session.SessionConfig
+import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
+import io.opentelemetry.android.agent.session.SessionManager
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
@@ -48,9 +51,21 @@ object OpenTelemetryRumInitializer {
                 endpointHeaders,
             ),
         rumConfig: OtelRumConfig = OtelRumConfig(),
-    ): OpenTelemetryRum =
-        OpenTelemetryRum
+        sessionConfig: SessionConfig = SessionConfig(),
+    ): OpenTelemetryRum {
+        // The session manager will be a SessionProvider implementation living in the agent where the agent will
+        // have full control of what a session is and will also make it observable and configurable.
+        val sessionManager =
+            SessionManager.create(SessionIdTimeoutHandler(sessionConfig), sessionConfig)
+
+        // We would have control to initialize the agent's session whenever we see fit, such as
+        // during initialization, e.g:
+        //
+        // sessionManager.startSession()
+
+        return OpenTelemetryRum
             .builder(application, rumConfig)
+            .setSessionProvider(sessionManager)
             .addSpanExporterCustomizer {
                 OtlpHttpSpanExporter
                     .builder()
@@ -70,4 +85,5 @@ object OpenTelemetryRumInitializer {
                     .setHeaders(metricEndpointConnectivity::getHeaders)
                     .build()
             }.build()
+    }
 }

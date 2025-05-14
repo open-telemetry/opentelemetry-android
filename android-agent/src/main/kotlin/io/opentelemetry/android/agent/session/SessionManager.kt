@@ -3,25 +3,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.session
+package io.opentelemetry.android.agent.session
 
-import io.opentelemetry.android.config.SessionConfig
-import io.opentelemetry.android.session.Session
-import io.opentelemetry.android.session.SessionIdGenerator
-import io.opentelemetry.android.session.SessionManager
-import io.opentelemetry.android.session.SessionObserver
-import io.opentelemetry.android.session.SessionStorage
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.common.Clock
 import java.util.Collections.synchronizedList
 import kotlin.time.Duration
 
-internal class SessionManagerImpl(
+internal class SessionManager(
     private val clock: Clock = Clock.getDefault(),
     private val sessionStorage: SessionStorage = SessionStorage.InMemory(),
     private val timeoutHandler: SessionIdTimeoutHandler,
     private val idGenerator: SessionIdGenerator = SessionIdGenerator.DEFAULT,
     private val maxSessionLifetime: Duration,
-) : SessionManager {
+) : SessionProvider,
+    SessionPublisher {
     // TODO: Make thread safe / wrap with AtomicReference?
     private var session: Session = Session.NONE
     private val observers = synchronizedList(ArrayList<SessionObserver>())
@@ -75,8 +71,8 @@ internal class SessionManagerImpl(
         fun create(
             timeoutHandler: SessionIdTimeoutHandler,
             sessionConfig: SessionConfig,
-        ): SessionManagerImpl =
-            SessionManagerImpl(
+        ): SessionManager =
+            SessionManager(
                 timeoutHandler = timeoutHandler,
                 maxSessionLifetime = sessionConfig.maxLifetime,
             )
