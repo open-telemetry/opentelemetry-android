@@ -11,10 +11,8 @@ import android.app.Application;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.config.OtelRumConfig;
-import io.opentelemetry.android.config.SessionConfig;
 import io.opentelemetry.android.export.BufferDelegatingLogExporter;
 import io.opentelemetry.android.export.BufferDelegatingMetricExporter;
 import io.opentelemetry.android.export.BufferDelegatingSpanExporter;
@@ -36,9 +34,6 @@ import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.Services;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWork;
-import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler;
-import io.opentelemetry.android.internal.session.SessionManagerImpl;
-import io.opentelemetry.android.session.SessionManager;
 import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -98,7 +93,6 @@ public final class OpenTelemetryRumBuilder {
     private final OtelRumConfig config;
     private final List<AndroidInstrumentation> instrumentations = new ArrayList<>();
     private final List<Consumer<OpenTelemetrySdk>> otelSdkReadyListeners = new ArrayList<>();
-    private final SessionIdTimeoutHandler timeoutHandler;
     private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
     private Function<? super MetricExporter, ? extends MetricExporter> metricExporterCustomizer =
             a -> a;
@@ -110,7 +104,7 @@ public final class OpenTelemetryRumBuilder {
     private Resource resource;
 
     @Nullable private ExportScheduleHandler exportScheduleHandler;
-    @Nullable private SessionManager sessionManager;
+    @Nullable private SessionProvider sessionProvider;
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
@@ -118,15 +112,11 @@ public final class OpenTelemetryRumBuilder {
     }
 
     public static OpenTelemetryRumBuilder create(Application application, OtelRumConfig config) {
-        SessionConfig sessionConfig = config.getSessionConfig();
-        SessionIdTimeoutHandler timeoutHandler = new SessionIdTimeoutHandler(sessionConfig);
-        return new OpenTelemetryRumBuilder(application, config, timeoutHandler);
+        return new OpenTelemetryRumBuilder(application, config);
     }
 
-    OpenTelemetryRumBuilder(
-            Application application, OtelRumConfig config, SessionIdTimeoutHandler timeoutHandler) {
+    OpenTelemetryRumBuilder(Application application, OtelRumConfig config) {
         this.application = application;
-        this.timeoutHandler = timeoutHandler;
         this.resource = AndroidResource.createDefault(application);
         this.config = config;
     }
@@ -321,18 +311,14 @@ public final class OpenTelemetryRumBuilder {
         BufferDelegatingMetricExporter bufferDelegatingMetricExporter =
                 new BufferDelegatingMetricExporter();
 
-        if (sessionManager == null) {
-            sessionManager = SessionManagerImpl.create(timeoutHandler, config.getSessionConfig());
-        }
-
         OpenTelemetrySdk sdk =
                 OpenTelemetrySdk.builder()
                         .setTracerProvider(
                                 buildTracerProvider(
-                                        sessionManager, application, bufferDelegatingSpanExporter))
+                                        sessionProvider, application, bufferDelegatingSpanExporter))
                         .setLoggerProvider(
                                 buildLoggerProvider(
-                                        sessionManager, application, bufferDelegatingLogExporter))
+                                        sessionProvider, application, bufferDelegatingLogExporter))
                         .setMeterProvider(
                                 buildMeterProvider(application, bufferDelegatingMetricExporter))
                         .setPropagators(buildFinalPropagators())
@@ -341,8 +327,7 @@ public final class OpenTelemetryRumBuilder {
         otelSdkReadyListeners.forEach(listener -> listener.accept(sdk));
 
         SdkPreconfiguredRumBuilder delegate =
-                new SdkPreconfiguredRumBuilder(
-                        application, sdk, timeoutHandler, sessionManager, config, services);
+                new SdkPreconfiguredRumBuilder(application, sdk, sessionProvider, config, services);
 
         // AsyncTask is deprecated but the thread pool is still used all over the Android SDK
         // and it provides a way to get a background thread without having to create a new one.
@@ -403,9 +388,8 @@ public final class OpenTelemetryRumBuilder {
         scheduleDiskTelemetryReader(services, signalFromDiskExporter);
     }
 
-    @VisibleForTesting
-    OpenTelemetryRumBuilder setSessionManager(SessionManager sessionManager) {
-        this.sessionManager = sessionManager;
+    public OpenTelemetryRumBuilder setSessionProvider(SessionProvider sessionProvider) {
+        this.sessionProvider = sessionProvider;
         return this;
     }
 
