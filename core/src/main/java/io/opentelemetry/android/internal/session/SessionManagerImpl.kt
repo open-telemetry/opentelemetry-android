@@ -11,9 +11,12 @@ import io.opentelemetry.android.session.SessionIdGenerator
 import io.opentelemetry.android.session.SessionManager
 import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.android.session.SessionStorage
+import io.opentelemetry.context.ContextKey
 import io.opentelemetry.sdk.common.Clock
 import java.util.Collections.synchronizedList
 import kotlin.time.Duration
+
+val SESSION_CONTEXT_KEY: ContextKey<Session> = ContextKey.named("rum.session")
 
 internal class SessionManagerImpl(
     private val clock: Clock = Clock.getDefault(),
