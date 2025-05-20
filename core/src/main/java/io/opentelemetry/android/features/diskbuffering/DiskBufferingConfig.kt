@@ -15,6 +15,7 @@ const val MAX_CACHE_FILE_SIZE: Int = 1024 * 1024
 const val DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS = 30L
 const val DEFAULT_MIN_FILE_AGE_FOR_READ_MS = 33L
 const val DEFAULT_MAX_FILE_AGE_FOR_READ_MS = 18L
+const val DEFAULT_EXPORT_INTERVAL_IN_SECONDS = 60L
 
 data class DiskBufferingConfig
     @JvmOverloads
@@ -26,6 +27,7 @@ data class DiskBufferingConfig
         val maxFileAgeForReadMillis: Long = TimeUnit.HOURS.toMillis(DEFAULT_MAX_FILE_AGE_FOR_READ_MS),
         val maxCacheFileSize: Int = MAX_CACHE_FILE_SIZE,
         val debugEnabled: Boolean = false,
+        val exportIntervalInSeconds: Duration = DEFAULT_EXPORT_INTERVAL_IN_SECONDS,
         /**
          * The directory where the SDK stores the buffered signals before they are exported. If
          * `null`, a default directory inside the application's cache directory will be used.
@@ -48,6 +50,7 @@ data class DiskBufferingConfig
                 maxFileAgeForReadMillis: Long = TimeUnit.HOURS.toMillis(18),
                 maxCacheFileSize: Int = MAX_CACHE_FILE_SIZE,
                 debugEnabled: Boolean = false,
+                exportIntervalInSeconds: Long = DEFAULT_EXPORT_INTERVAL_IN_SECONDS,
                 signalsBufferDir: File? = null,
             ): DiskBufferingConfig {
                 var minRead = minFileAgeForReadMillis
@@ -64,6 +67,7 @@ data class DiskBufferingConfig
                     maxFileAgeForReadMillis = maxFileAgeForReadMillis,
                     maxCacheFileSize = maxCacheFileSize,
                     debugEnabled = debugEnabled,
+                    exportIntervalInSeconds = exportIntervalInSeconds,
                     signalsBufferDir = signalsBufferDir,
                 )
             }
