@@ -314,7 +314,10 @@ public final class OpenTelemetryRumBuilder {
      */
     public OpenTelemetryRumBuilder enableSessionBasedSampling(double ratio) {
         if (ratio < 0.0 || ratio > 1.0) {
-            throw new IllegalArgumentException("ratio must be in range [0.0, 1.0]");
+            Log.e(
+                    RumConstants.OTEL_RUM_LOG_TAG,
+                    "Sampling ratio must be in range [0.0, 1.0], ignoring " + ratio);
+            return this;
         }
         sessionIdSamplingRatio = ratio;
         return this;
