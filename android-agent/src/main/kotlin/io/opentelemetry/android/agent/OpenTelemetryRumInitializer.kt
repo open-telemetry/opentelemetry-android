@@ -82,44 +82,44 @@ object OpenTelemetryRumInitializer {
         val activityLifecycleInstrumentation =
             getInstrumentation<ActivityLifecycleInstrumentation>()
         if (activityTracerCustomizer != null) {
-            activityLifecycleInstrumentation.setTracerCustomizer(activityTracerCustomizer)
+            activityLifecycleInstrumentation?.setTracerCustomizer(activityTracerCustomizer)
         }
         if (activityNameExtractor != null) {
-            activityLifecycleInstrumentation.setScreenNameExtractor(activityNameExtractor)
+            activityLifecycleInstrumentation?.setScreenNameExtractor(activityNameExtractor)
         }
 
         val fragmentLifecycleInstrumentation =
             getInstrumentation<FragmentLifecycleInstrumentation>()
         if (fragmentTracerCustomizer != null) {
-            fragmentLifecycleInstrumentation.setTracerCustomizer(fragmentTracerCustomizer)
+            fragmentLifecycleInstrumentation?.setTracerCustomizer(fragmentTracerCustomizer)
         }
         if (fragmentNameExtractor != null) {
-            fragmentLifecycleInstrumentation.setScreenNameExtractor(fragmentNameExtractor)
+            fragmentLifecycleInstrumentation?.setScreenNameExtractor(fragmentNameExtractor)
         }
 
         if (anrAttributesExtractors.isNotEmpty()) {
             val anrInstrumentation = getInstrumentation<AnrInstrumentation>()
             for (extractor in anrAttributesExtractors) {
-                anrInstrumentation.addAttributesExtractor(extractor)
+                anrInstrumentation?.addAttributesExtractor(extractor)
             }
         }
 
         if (crashAttributesExtractors.isNotEmpty()) {
             val crashInstrumentation = getInstrumentation<CrashReporterInstrumentation>()
             for (extractor in crashAttributesExtractors) {
-                crashInstrumentation.addAttributesExtractor(extractor)
+                crashInstrumentation?.addAttributesExtractor(extractor)
             }
         }
 
         if (networkChangeAttributesExtractors.isNotEmpty()) {
             val networkChangeInstrumentation = getInstrumentation<NetworkChangeInstrumentation>()
             for (extractor in networkChangeAttributesExtractors) {
-                networkChangeInstrumentation.addAttributesExtractor(extractor)
+                networkChangeInstrumentation?.addAttributesExtractor(extractor)
             }
         }
 
         if (slowRenderingDetectionPollInterval != null) {
-            getInstrumentation<SlowRenderingInstrumentation>().setSlowRenderingDetectionPollInterval(
+            getInstrumentation<SlowRenderingInstrumentation>()?.setSlowRenderingDetectionPollInterval(
                 slowRenderingDetectionPollInterval,
             )
         }
