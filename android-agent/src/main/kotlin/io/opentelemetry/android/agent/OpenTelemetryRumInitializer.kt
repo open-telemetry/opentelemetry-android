@@ -147,6 +147,6 @@ object OpenTelemetryRumInitializer {
             }.build()
     }
 
-    private inline fun <reified T : AndroidInstrumentation> getInstrumentation(): T =
-        AndroidInstrumentationLoader.getInstrumentation(T::class.java)!!
+    private inline fun <reified T : AndroidInstrumentation> getInstrumentation(): T? =
+        AndroidInstrumentationLoader.getInstrumentation(T::class.java)
 }
