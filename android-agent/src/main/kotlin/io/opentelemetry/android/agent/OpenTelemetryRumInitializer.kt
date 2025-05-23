@@ -14,9 +14,24 @@ import io.opentelemetry.android.agent.session.SessionConfig
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.agent.session.SessionManager
 import io.opentelemetry.android.config.OtelRumConfig
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
+import io.opentelemetry.android.instrumentation.activity.ActivityLifecycleInstrumentation
+import io.opentelemetry.android.instrumentation.anr.AnrInstrumentation
+import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
+import io.opentelemetry.android.instrumentation.crash.CrashDetails
+import io.opentelemetry.android.instrumentation.crash.CrashReporterInstrumentation
+import io.opentelemetry.android.instrumentation.fragment.FragmentLifecycleInstrumentation
+import io.opentelemetry.android.instrumentation.network.NetworkAttributesExtractor
+import io.opentelemetry.android.instrumentation.network.NetworkChangeInstrumentation
+import io.opentelemetry.android.instrumentation.slowrendering.SlowRenderingInstrumentation
+import io.opentelemetry.android.internal.services.Services
+import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
+import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor
+import java.time.Duration
 
 object OpenTelemetryRumInitializer {
     /**
@@ -29,6 +44,15 @@ object OpenTelemetryRumInitializer {
      * @param logEndpointConnectivity Log-specific endpoint configuration.
      * @param metricEndpointConnectivity Metric-specific endpoint configuration.
      * @param rumConfig Configuration used by [OpenTelemetryRumBuilder].
+     * @param sessionConfig The session configuration, which includes inactivity timeout and maximum lifetime durations.
+     * @param activityTracerCustomizer Tracer customizer for [ActivityLifecycleInstrumentation].
+     * @param activityNameExtractor Name extractor for [ActivityLifecycleInstrumentation].
+     * @param fragmentTracerCustomizer Tracer customizer for [FragmentLifecycleInstrumentation].
+     * @param fragmentNameExtractor Name extractor for [FragmentLifecycleInstrumentation].
+     * @param anrAttributesExtractors Attribute extractors for [AnrInstrumentation].
+     * @param crashAttributesExtractors Attribute extractors for [CrashReporterInstrumentation].
+     * @param networkChangeAttributesExtractors Attribute extractors for [NetworkChangeInstrumentation].
+     * @param slowRenderingDetectionPollInterval Slow rendering detection interval for [SlowRenderingInstrumentation].
      */
     @JvmStatic
     fun initialize(
@@ -51,21 +75,30 @@ object OpenTelemetryRumInitializer {
                 endpointHeaders,
             ),
         rumConfig: OtelRumConfig = OtelRumConfig(),
-        sessionConfig: SessionConfig = SessionConfig(),
+        sessionConfig: SessionConfig = SessionConfig.withDefaults(),
+        activityTracerCustomizer: ((Tracer) -> Tracer)? = null,
+        activityNameExtractor: ScreenNameExtractor? = null,
+        fragmentTracerCustomizer: ((Tracer) -> Tracer)? = null,
+        fragmentNameExtractor: ScreenNameExtractor? = null,
+        anrAttributesExtractors: List<AttributesExtractor<Array<StackTraceElement>, Void>> = emptyList(),
+        crashAttributesExtractors: List<AttributesExtractor<CrashDetails, Void>> = emptyList(),
+        networkChangeAttributesExtractors: List<NetworkAttributesExtractor> = emptyList(),
+        slowRenderingDetectionPollInterval: Duration? = null,
     ): OpenTelemetryRum {
-        // The session manager will be a SessionProvider implementation living in the agent where the agent will
-        // have full control of what a session is and will also make it observable and configurable.
-        val sessionManager =
-            SessionManager.create(SessionIdTimeoutHandler(sessionConfig), sessionConfig)
-
-        // We would have control to initialize the agent's session whenever we see fit, such as
-        // during initialization, e.g:
-        //
-        // sessionManager.startSession()
+        configureInstrumentation(
+            activityTracerCustomizer,
+            activityNameExtractor,
+            fragmentTracerCustomizer,
+            fragmentNameExtractor,
+            anrAttributesExtractors,
+            crashAttributesExtractors,
+            networkChangeAttributesExtractors,
+            slowRenderingDetectionPollInterval,
+        )
 
         return OpenTelemetryRum
             .builder(application, rumConfig)
-            .setSessionProvider(sessionManager)
+            .setSessionProvider(createSessionManager(application, sessionConfig))
             .addSpanExporterCustomizer {
                 OtlpHttpSpanExporter
                     .builder()
@@ -86,4 +119,72 @@ object OpenTelemetryRumInitializer {
                     .build()
             }.build()
     }
+
+    private fun createSessionManager(
+        application: Application,
+        sessionConfig: SessionConfig,
+    ): SessionManager {
+        val timeoutHandler = SessionIdTimeoutHandler(sessionConfig)
+        Services.get(application).appLifecycle.registerListener(timeoutHandler)
+        return SessionManager.create(timeoutHandler, sessionConfig)
+    }
+
+    private fun configureInstrumentation(
+        activityTracerCustomizer: ((Tracer) -> Tracer)?,
+        activityNameExtractor: ScreenNameExtractor?,
+        fragmentTracerCustomizer: ((Tracer) -> Tracer)?,
+        fragmentNameExtractor: ScreenNameExtractor?,
+        anrAttributesExtractors: List<AttributesExtractor<Array<StackTraceElement>, Void>>,
+        crashAttributesExtractors: List<AttributesExtractor<CrashDetails, Void>>,
+        networkChangeAttributesExtractors: List<NetworkAttributesExtractor>,
+        slowRenderingDetectionPollInterval: Duration?,
+    ) {
+        val activityLifecycleInstrumentation =
+            getInstrumentation<ActivityLifecycleInstrumentation>()
+        if (activityTracerCustomizer != null) {
+            activityLifecycleInstrumentation?.setTracerCustomizer(activityTracerCustomizer)
+        }
+        if (activityNameExtractor != null) {
+            activityLifecycleInstrumentation?.setScreenNameExtractor(activityNameExtractor)
+        }
+
+        val fragmentLifecycleInstrumentation =
+            getInstrumentation<FragmentLifecycleInstrumentation>()
+        if (fragmentTracerCustomizer != null) {
+            fragmentLifecycleInstrumentation?.setTracerCustomizer(fragmentTracerCustomizer)
+        }
+        if (fragmentNameExtractor != null) {
+            fragmentLifecycleInstrumentation?.setScreenNameExtractor(fragmentNameExtractor)
+        }
+
+        if (anrAttributesExtractors.isNotEmpty()) {
+            val anrInstrumentation = getInstrumentation<AnrInstrumentation>()
+            for (extractor in anrAttributesExtractors) {
+                anrInstrumentation?.addAttributesExtractor(extractor)
+            }
+        }
+
+        if (crashAttributesExtractors.isNotEmpty()) {
+            val crashInstrumentation = getInstrumentation<CrashReporterInstrumentation>()
+            for (extractor in crashAttributesExtractors) {
+                crashInstrumentation?.addAttributesExtractor(extractor)
+            }
+        }
+
+        if (networkChangeAttributesExtractors.isNotEmpty()) {
+            val networkChangeInstrumentation = getInstrumentation<NetworkChangeInstrumentation>()
+            for (extractor in networkChangeAttributesExtractors) {
+                networkChangeInstrumentation?.addAttributesExtractor(extractor)
+            }
+        }
+
+        if (slowRenderingDetectionPollInterval != null) {
+            getInstrumentation<SlowRenderingInstrumentation>()?.setSlowRenderingDetectionPollInterval(
+                slowRenderingDetectionPollInterval,
+            )
+        }
+    }
+
+    private inline fun <reified T : AndroidInstrumentation> getInstrumentation(): T? =
+        AndroidInstrumentationLoader.getInstrumentation(T::class.java)
 }

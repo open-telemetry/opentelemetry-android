@@ -304,6 +304,9 @@ public final class OpenTelemetryRumBuilder {
         Services services = Services.get(application);
         InitializationEvents initializationEvents = InitializationEvents.get();
         applyConfiguration(services, initializationEvents);
+        if (sessionProvider == null) {
+            sessionProvider = SessionProvider.getNoop();
+        }
 
         BufferDelegatingSpanExporter bufferDelegatingSpanExporter =
                 new BufferDelegatingSpanExporter();
@@ -327,7 +330,7 @@ public final class OpenTelemetryRumBuilder {
         otelSdkReadyListeners.forEach(listener -> listener.accept(sdk));
 
         SdkPreconfiguredRumBuilder delegate =
-                new SdkPreconfiguredRumBuilder(application, sdk, sessionProvider, config, services);
+                new SdkPreconfiguredRumBuilder(application, sdk, sessionProvider, config);
 
         // AsyncTask is deprecated but the thread pool is still used all over the Android SDK
         // and it provides a way to get a background thread without having to create a new one.

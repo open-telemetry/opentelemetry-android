@@ -19,14 +19,12 @@ import java.util.function.Supplier;
  * components.
  */
 public class OtelRumConfig {
-
     private Supplier<Attributes> globalAttributesSupplier = Attributes::empty;
     private boolean includeNetworkAttributes = true;
     private boolean generateSdkInitializationEvents = true;
     private boolean includeScreenAttributes = true;
     private boolean discoverInstrumentations = true;
     private DiskBufferingConfig diskBufferingConfig = DiskBufferingConfig.create();
-    private SessionConfig sessionConfig = SessionConfig.withDefaults();
     private final List<String> suppressedInstrumentations = new ArrayList<>();
 
     /**
@@ -129,22 +127,6 @@ public class OtelRumConfig {
     public OtelRumConfig setDiskBufferingConfig(DiskBufferingConfig diskBufferingConfig) {
         this.diskBufferingConfig = diskBufferingConfig;
         return this;
-    }
-
-    /**
-     * Sets the session configuration, which includes inactivity timeout and maximum lifetime
-     * durations.
-     *
-     * @return this
-     */
-    public OtelRumConfig setSessionConfig(SessionConfig sessionConfig) {
-        this.sessionConfig = sessionConfig;
-        return this;
-    }
-
-    /** Call this method to retrieve the session config */
-    public SessionConfig getSessionConfig() {
-        return sessionConfig;
     }
 
     /**

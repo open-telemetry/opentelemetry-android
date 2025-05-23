@@ -11,6 +11,7 @@ dependencies {
     api(project(":core"))
     implementation(project(":common"))
     implementation(project(":session"))
+    implementation(project(":services"))
     implementation(libs.opentelemetry.instrumentation.api)
     implementation(libs.opentelemetry.exporter.otlp)
 
