@@ -28,8 +28,7 @@ import io.opentelemetry.android.instrumentation.view.click.internal.viewIdAttr
 import io.opentelemetry.android.instrumentation.view.click.internal.viewNameAttr
 import io.opentelemetry.android.instrumentation.view.click.internal.xCoordinateAttr
 import io.opentelemetry.android.instrumentation.view.click.internal.yCoordinateAttr
-import io.opentelemetry.android.session.SessionManager
-import io.opentelemetry.android.test.common.hasEventName
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
@@ -69,7 +68,7 @@ class ViewClickInstrumentationTest {
             InstallationContext(
                 application,
                 openTelemetryRule.openTelemetry,
-                mockk<SessionManager>(),
+                mockk<SessionProvider>(),
             )
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
@@ -131,7 +130,7 @@ class ViewClickInstrumentationTest {
             InstallationContext(
                 application,
                 openTelemetryRule.openTelemetry,
-                mockk<SessionManager>(),
+                mockk<SessionProvider>(),
             )
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
@@ -198,7 +197,7 @@ class ViewClickInstrumentationTest {
             InstallationContext(
                 application,
                 openTelemetryRule.openTelemetry,
-                mockk<SessionManager>(),
+                mockk<SessionProvider>(),
             )
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
@@ -255,7 +254,7 @@ class ViewClickInstrumentationTest {
             InstallationContext(
                 application,
                 openTelemetryRule.openTelemetry,
-                mockk<SessionManager>(),
+                mockk<SessionProvider>(),
             )
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()

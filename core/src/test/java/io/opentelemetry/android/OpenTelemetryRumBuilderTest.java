@@ -14,7 +14,6 @@ import static io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SE
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -40,10 +39,8 @@ import io.opentelemetry.android.internal.services.CacheStorage;
 import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.Services;
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle;
-import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener;
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker;
-import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler;
-import io.opentelemetry.android.session.SessionManager;
+import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
@@ -123,16 +120,6 @@ public class OpenTelemetryRumBuilderTest {
         AndroidInstrumentationLoader.resetForTest();
         mocks.close();
         Services.set(null);
-    }
-
-    @Test
-    public void shouldRegisterApplicationStateWatcher() {
-        Services services = createAndSetServiceManager();
-        AppLifecycle appLifecycle = services.getAppLifecycle();
-
-        makeBuilder().build();
-
-        verify(appLifecycle).registerListener(isA(ApplicationStateListener.class));
     }
 
     @Test
@@ -269,9 +256,8 @@ public class OpenTelemetryRumBuilderTest {
 
     @Test
     public void shouldInstallInstrumentation() {
-        Services services = createAndSetServiceManager();
-        SessionManager sessionManager = mock();
-        SessionIdTimeoutHandler timeoutHandler = mock();
+        createAndSetServiceManager();
+        SessionProvider sessionProvider = mock();
         AndroidInstrumentation localInstrumentation = mock();
         AndroidInstrumentation classpathInstrumentation = mock();
 
@@ -283,24 +269,21 @@ public class OpenTelemetryRumBuilderTest {
         androidInstrumentationServices.registerForTest(classpathInstrumentation);
 
         OpenTelemetryRum rum =
-                new OpenTelemetryRumBuilder(application, buildConfig(), timeoutHandler)
+                new OpenTelemetryRumBuilder(application, buildConfig())
                         .addInstrumentation(localInstrumentation)
-                        .setSessionManager(sessionManager)
+                        .setSessionProvider(sessionProvider)
                         .build();
 
-        verify(services.getAppLifecycle()).registerListener(timeoutHandler);
-
         InstallationContext expectedCtx =
-                new InstallationContext(application, rum.getOpenTelemetry(), sessionManager);
+                new InstallationContext(application, rum.getOpenTelemetry(), sessionProvider);
         verify(localInstrumentation).install(eq(expectedCtx));
         verify(classpathInstrumentation).install(eq(expectedCtx));
     }
 
     @Test
     public void shouldInstallInstrumentation_excludingClasspathImplsWhenRequestedInConfig() {
-        Services services = createAndSetServiceManager();
-        SessionManager sessionManager = mock();
-        SessionIdTimeoutHandler timeoutHandler = mock();
+        createAndSetServiceManager();
+        SessionProvider sessionProvider = mock();
         AndroidInstrumentation localInstrumentation = mock();
         AndroidInstrumentation classpathInstrumentation = mock();
         AndroidInstrumentationLoaderImpl androidInstrumentationServices =
@@ -309,17 +292,13 @@ public class OpenTelemetryRumBuilderTest {
 
         OpenTelemetryRum rum =
                 new OpenTelemetryRumBuilder(
-                                application,
-                                buildConfig().disableInstrumentationDiscovery(),
-                                timeoutHandler)
+                                application, buildConfig().disableInstrumentationDiscovery())
                         .addInstrumentation(localInstrumentation)
-                        .setSessionManager(sessionManager)
+                        .setSessionProvider(sessionProvider)
                         .build();
 
-        verify(services.getAppLifecycle()).registerListener(timeoutHandler);
-
         InstallationContext expectedCtx =
-                new InstallationContext(application, rum.getOpenTelemetry(), sessionManager);
+                new InstallationContext(application, rum.getOpenTelemetry(), sessionProvider);
         verify(localInstrumentation).install(eq(expectedCtx));
         verifyNoInteractions(classpathInstrumentation);
     }
@@ -530,9 +509,6 @@ public class OpenTelemetryRumBuilderTest {
                                 .build());
     }
 
-    /**
-     * @noinspection KotlinInternalInJava
-     */
     private static Services createAndSetServiceManager() {
         Services services = mock(Services.class);
         when(services.getAppLifecycle()).thenReturn(mock(AppLifecycle.class));

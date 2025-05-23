@@ -10,6 +10,8 @@ android {
 dependencies {
     api(project(":core"))
     implementation(project(":common"))
+    implementation(project(":session"))
+    implementation(project(":services"))
     implementation(libs.opentelemetry.instrumentation.api)
     implementation(libs.opentelemetry.exporter.otlp)
 
@@ -21,6 +23,8 @@ dependencies {
     api(project(":instrumentation:network"))
     api(project(":instrumentation:slowrendering"))
     api(project(":instrumentation:startup"))
+
+    testImplementation(libs.robolectric)
 }
 
 extra["pomName"] = "OpenTelemetry Android Agent"

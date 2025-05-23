@@ -3,9 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.session
+package io.opentelemetry.android.agent.session
 
-import io.opentelemetry.android.config.SessionConfig
 import io.opentelemetry.sdk.testing.time.TestClock
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue

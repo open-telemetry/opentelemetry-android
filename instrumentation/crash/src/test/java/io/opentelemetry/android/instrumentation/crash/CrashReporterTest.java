@@ -12,7 +12,7 @@ import static org.mockito.Mockito.mock;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import io.opentelemetry.android.instrumentation.InstallationContext;
-import io.opentelemetry.android.session.SessionManager;
+import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -65,7 +65,7 @@ public class CrashReporterTest {
                 new InstallationContext(
                         RuntimeEnvironment.getApplication(),
                         openTelemetrySdk,
-                        mock(SessionManager.class));
+                        mock(SessionProvider.class));
         instrumentation.install(ctx);
 
         String exceptionMessage = "boooom!";

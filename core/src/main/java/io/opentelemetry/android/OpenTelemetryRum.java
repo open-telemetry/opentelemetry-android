@@ -7,10 +7,7 @@ package io.opentelemetry.android;
 
 import android.app.Application;
 import io.opentelemetry.android.config.OtelRumConfig;
-import io.opentelemetry.android.internal.services.Services;
-import io.opentelemetry.android.internal.session.SessionIdTimeoutHandler;
-import io.opentelemetry.android.internal.session.SessionManagerImpl;
-import io.opentelemetry.android.session.SessionManager;
+import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -64,21 +61,15 @@ public interface OpenTelemetryRum {
      * @param application The {@link Application} that is being instrumented.
      * @param openTelemetrySdk The {@link OpenTelemetrySdk} that the user has already created.
      * @param config The {@link OtelRumConfig} instance.
+     * @param sessionProvider The {@link SessionProvider} instance.
      */
     static SdkPreconfiguredRumBuilder builder(
-            Application application, OpenTelemetrySdk openTelemetrySdk, OtelRumConfig config) {
-
-        SessionIdTimeoutHandler timeoutHandler =
-                new SessionIdTimeoutHandler(config.getSessionConfig());
-        SessionManager sessionManager =
-                SessionManagerImpl.create(timeoutHandler, config.getSessionConfig());
+            Application application,
+            OpenTelemetrySdk openTelemetrySdk,
+            OtelRumConfig config,
+            SessionProvider sessionProvider) {
         return new SdkPreconfiguredRumBuilder(
-                application,
-                openTelemetrySdk,
-                timeoutHandler,
-                sessionManager,
-                config,
-                Services.get(application));
+                application, openTelemetrySdk, sessionProvider, config);
     }
 
     /** Returns a no-op implementation of {@link OpenTelemetryRum}. */
