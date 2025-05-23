@@ -10,9 +10,6 @@ import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.OpenTelemetryRumBuilder
 import io.opentelemetry.android.agent.connectivity.EndpointConnectivity
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
-import io.opentelemetry.android.agent.session.SessionConfig
-import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
-import io.opentelemetry.android.agent.session.SessionManager
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
@@ -25,7 +22,6 @@ import io.opentelemetry.android.instrumentation.fragment.FragmentLifecycleInstru
 import io.opentelemetry.android.instrumentation.network.NetworkAttributesExtractor
 import io.opentelemetry.android.instrumentation.network.NetworkChangeInstrumentation
 import io.opentelemetry.android.instrumentation.slowrendering.SlowRenderingInstrumentation
-import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
@@ -44,7 +40,6 @@ object OpenTelemetryRumInitializer {
      * @param logEndpointConnectivity Log-specific endpoint configuration.
      * @param metricEndpointConnectivity Metric-specific endpoint configuration.
      * @param rumConfig Configuration used by [OpenTelemetryRumBuilder].
-     * @param sessionConfig The session configuration, which includes inactivity timeout and maximum lifetime durations.
      * @param activityTracerCustomizer Tracer customizer for [ActivityLifecycleInstrumentation].
      * @param activityNameExtractor Name extractor for [ActivityLifecycleInstrumentation].
      * @param fragmentTracerCustomizer Tracer customizer for [FragmentLifecycleInstrumentation].
@@ -75,7 +70,6 @@ object OpenTelemetryRumInitializer {
                 endpointHeaders,
             ),
         rumConfig: OtelRumConfig = OtelRumConfig(),
-        sessionConfig: SessionConfig = SessionConfig.withDefaults(),
         activityTracerCustomizer: ((Tracer) -> Tracer)? = null,
         activityNameExtractor: ScreenNameExtractor? = null,
         fragmentTracerCustomizer: ((Tracer) -> Tracer)? = null,
@@ -85,60 +79,6 @@ object OpenTelemetryRumInitializer {
         networkChangeAttributesExtractors: List<NetworkAttributesExtractor> = emptyList(),
         slowRenderingDetectionPollInterval: Duration? = null,
     ): OpenTelemetryRum {
-        configureInstrumentation(
-            activityTracerCustomizer,
-            activityNameExtractor,
-            fragmentTracerCustomizer,
-            fragmentNameExtractor,
-            anrAttributesExtractors,
-            crashAttributesExtractors,
-            networkChangeAttributesExtractors,
-            slowRenderingDetectionPollInterval,
-        )
-
-        return OpenTelemetryRum
-            .builder(application, rumConfig)
-            .setSessionProvider(createSessionManager(application, sessionConfig))
-            .addSpanExporterCustomizer {
-                OtlpHttpSpanExporter
-                    .builder()
-                    .setEndpoint(spanEndpointConnectivity.getUrl())
-                    .setHeaders(spanEndpointConnectivity::getHeaders)
-                    .build()
-            }.addLogRecordExporterCustomizer {
-                OtlpHttpLogRecordExporter
-                    .builder()
-                    .setEndpoint(logEndpointConnectivity.getUrl())
-                    .setHeaders(logEndpointConnectivity::getHeaders)
-                    .build()
-            }.addMetricExporterCustomizer {
-                OtlpHttpMetricExporter
-                    .builder()
-                    .setEndpoint(metricEndpointConnectivity.getUrl())
-                    .setHeaders(metricEndpointConnectivity::getHeaders)
-                    .build()
-            }.build()
-    }
-
-    private fun createSessionManager(
-        application: Application,
-        sessionConfig: SessionConfig,
-    ): SessionManager {
-        val timeoutHandler = SessionIdTimeoutHandler(sessionConfig)
-        Services.get(application).appLifecycle.registerListener(timeoutHandler)
-        return SessionManager.create(timeoutHandler, sessionConfig)
-    }
-
-    private fun configureInstrumentation(
-        activityTracerCustomizer: ((Tracer) -> Tracer)?,
-        activityNameExtractor: ScreenNameExtractor?,
-        fragmentTracerCustomizer: ((Tracer) -> Tracer)?,
-        fragmentNameExtractor: ScreenNameExtractor?,
-        anrAttributesExtractors: List<AttributesExtractor<Array<StackTraceElement>, Void>>,
-        crashAttributesExtractors: List<AttributesExtractor<CrashDetails, Void>>,
-        networkChangeAttributesExtractors: List<NetworkAttributesExtractor>,
-        slowRenderingDetectionPollInterval: Duration?,
-    ) {
         val activityLifecycleInstrumentation =
             getInstrumentation<ActivityLifecycleInstrumentation>()
         if (activityTracerCustomizer != null) {
@@ -183,6 +123,28 @@ object OpenTelemetryRumInitializer {
                 slowRenderingDetectionPollInterval,
             )
         }
+
+        return OpenTelemetryRum
+            .builder(application, rumConfig)
+            .addSpanExporterCustomizer {
+                OtlpHttpSpanExporter
+                    .builder()
+                    .setEndpoint(spanEndpointConnectivity.getUrl())
+                    .setHeaders(spanEndpointConnectivity::getHeaders)
+                    .build()
+            }.addLogRecordExporterCustomizer {
+                OtlpHttpLogRecordExporter
+                    .builder()
+                    .setEndpoint(logEndpointConnectivity.getUrl())
+                    .setHeaders(logEndpointConnectivity::getHeaders)
+                    .build()
+            }.addMetricExporterCustomizer {
+                OtlpHttpMetricExporter
+                    .builder()
+                    .setEndpoint(metricEndpointConnectivity.getUrl())
+                    .setHeaders(metricEndpointConnectivity::getHeaders)
+                    .build()
+            }.build()
     }
 
     private inline fun <reified T : AndroidInstrumentation> getInstrumentation(): T? =
