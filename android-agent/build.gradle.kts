@@ -23,6 +23,8 @@ dependencies {
     api(project(":instrumentation:network"))
     api(project(":instrumentation:slowrendering"))
     api(project(":instrumentation:startup"))
+
+    testImplementation(libs.robolectric)
 }
 
 extra["pomName"] = "OpenTelemetry Android Agent"
