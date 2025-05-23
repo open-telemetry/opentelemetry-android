@@ -5,7 +5,10 @@
 
 package io.opentelemetry.android.agent.session
 
+import io.opentelemetry.android.session.Session
+import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.android.session.SessionPublisher
 import io.opentelemetry.sdk.common.Clock
 import java.util.Collections.synchronizedList
 import kotlin.time.Duration

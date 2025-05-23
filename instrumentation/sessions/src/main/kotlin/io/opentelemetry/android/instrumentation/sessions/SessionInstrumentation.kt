@@ -7,6 +7,7 @@ package io.opentelemetry.android.instrumentation.sessions
 
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.InstallationContext
+import io.opentelemetry.android.session.SessionPublisher
 import io.opentelemetry.api.incubator.logs.ExtendedLogger
 
 class SessionInstrumentation : AndroidInstrumentation {
@@ -17,6 +18,9 @@ class SessionInstrumentation : AndroidInstrumentation {
             ctx.openTelemetry.logsBridge
                 .loggerBuilder("otel.session")
                 .build() as ExtendedLogger
-        ctx.sessionManager.addObserver(SessionIdEventSender(eventLogger))
+        val sessionManager = ctx.sessionManager
+        if (sessionManager is SessionPublisher) {
+            sessionManager.addObserver(SessionIdEventSender(eventLogger))
+        }
     }
 }

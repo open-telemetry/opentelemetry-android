@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.agent.session
 
+import io.opentelemetry.android.session.Session
+
 interface SessionStorage {
     fun get(): Session
 
