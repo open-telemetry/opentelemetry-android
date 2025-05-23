@@ -12,5 +12,5 @@ import io.opentelemetry.api.OpenTelemetry
 data class InstallationContext(
     val application: Application,
     val openTelemetry: OpenTelemetry,
-    val sessionManager: SessionProvider,
+    val sessionProvider: SessionProvider,
 )

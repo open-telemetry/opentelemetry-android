@@ -18,9 +18,9 @@ class SessionInstrumentation : AndroidInstrumentation {
             ctx.openTelemetry.logsBridge
                 .loggerBuilder("otel.session")
                 .build() as ExtendedLogger
-        val sessionManager = ctx.sessionManager
-        if (sessionManager is SessionPublisher) {
-            sessionManager.addObserver(SessionIdEventSender(eventLogger))
+        val sessionProvider = ctx.sessionProvider
+        if (sessionProvider is SessionPublisher) {
+            sessionProvider.addObserver(SessionIdEventSender(eventLogger))
         }
     }
 }
