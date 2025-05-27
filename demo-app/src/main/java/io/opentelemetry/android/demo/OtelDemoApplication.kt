@@ -38,7 +38,11 @@ class OtelDemoApplication : Application() {
 
         // 10.0.2.2 is apparently a special binding to the host running the emulator
         try {
-            rum = OpenTelemetryRumInitializer.initialize(this, "http://10.0.2.2:4318")
+            rum = OpenTelemetryRumInitializer.initialize(
+                application = this,
+                endpointBaseUrl = "http://10.0.2.2:4318",
+                rumConfig = config
+            )
             Log.d(TAG, "RUM session started: " + rum!!.rumSessionId)
         } catch (e: Exception) {
             Log.e(TAG, "Oh no!", e)
