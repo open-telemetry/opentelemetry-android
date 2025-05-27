@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.session
+package io.opentelemetry.android.agent.session
 
 import io.mockk.MockKAnnotations
 import io.mockk.Runs
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 import kotlin.time.Duration.Companion.hours
 
-internal class SessionManagerImplTest {
+internal class SessionManagerTest {
     @MockK
     lateinit var timeoutHandler: SessionIdTimeoutHandler
 
@@ -38,7 +38,7 @@ internal class SessionManagerImplTest {
     @Test
     fun valueValid() {
         val sessionManager =
-            SessionManagerImpl(
+            SessionManager(
                 TestClock.create(),
                 timeoutHandler = timeoutHandler,
                 maxSessionLifetime = 4.hours,
@@ -53,7 +53,7 @@ internal class SessionManagerImplTest {
     fun valueSameUntil4Hours() {
         val clock = TestClock.create()
         val sessionManager =
-            SessionManagerImpl(
+            SessionManager(
                 clock,
                 timeoutHandler = timeoutHandler,
                 maxSessionLifetime = 4.hours,
@@ -82,7 +82,7 @@ internal class SessionManagerImplTest {
         every { observer.onSessionEnded(any<Session>()) } just Runs
 
         val sessionManager =
-            SessionManagerImpl(
+            SessionManager(
                 clock,
                 timeoutHandler = timeoutHandler,
                 maxSessionLifetime = 4.hours,
@@ -125,7 +125,8 @@ internal class SessionManagerImplTest {
 
     @Test
     fun shouldCreateNewSessionIdAfterTimeout() {
-        val sessionId = SessionManagerImpl(timeoutHandler = timeoutHandler, maxSessionLifetime = 4.hours)
+        val sessionId =
+            SessionManager(timeoutHandler = timeoutHandler, maxSessionLifetime = 4.hours)
 
         val value = sessionId.getSessionId()
         verify { timeoutHandler.bump() }

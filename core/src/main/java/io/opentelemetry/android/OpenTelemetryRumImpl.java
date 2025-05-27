@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android;
 
-import io.opentelemetry.android.session.SessionManager;
+import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
@@ -15,13 +15,13 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 final class OpenTelemetryRumImpl implements OpenTelemetryRum {
 
     private final OpenTelemetrySdk openTelemetrySdk;
-    private final SessionManager sessionManager;
+    private final SessionProvider sessionProvider;
 
     private final ExtendedLogger logger;
 
-    OpenTelemetryRumImpl(OpenTelemetrySdk openTelemetrySdk, SessionManager sessionManager) {
+    OpenTelemetryRumImpl(OpenTelemetrySdk openTelemetrySdk, SessionProvider sessionProvider) {
         this.openTelemetrySdk = openTelemetrySdk;
-        this.sessionManager = sessionManager;
+        this.sessionProvider = sessionProvider;
         this.logger =
                 (ExtendedLogger)
                         openTelemetrySdk
@@ -37,7 +37,7 @@ final class OpenTelemetryRumImpl implements OpenTelemetryRum {
 
     @Override
     public String getRumSessionId() {
-        return sessionManager.getSessionId();
+        return sessionProvider.getSessionId();
     }
 
     @Override
