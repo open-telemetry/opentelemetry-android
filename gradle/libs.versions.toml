@@ -22,7 +22,7 @@ androidx-navigation-fragment = { group = "androidx.navigation", name = "navigati
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "androidx-navigation" }
 androidx-core = "androidx.core:core:1.16.0"
 androidx-annotation = "androidx.annotation:annotation:1.9.1"
-androidx-lifecycle-process = "androidx.lifecycle:lifecycle-process:2.9.0"
+androidx-lifecycle-process = "androidx.lifecycle:lifecycle-process:2.9.1"
 androidx-preference-ktx = "androidx.preference:preference-ktx:1.2.1"
 findbugs-jsr305 = "com.google.code.findbugs:jsr305:3.0.2"
 byteBuddy = { module = "net.bytebuddy:byte-buddy", version.ref = "byteBuddy" }
