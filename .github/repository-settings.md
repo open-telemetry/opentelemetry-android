@@ -43,3 +43,6 @@ Same settings as above for `main`, except:
 * `GPG_PRIVATE_KEY` - stored in OpenTelemetry-Java 1Password
 * `SONATYPE_KEY` - owned by [@breedx-splk](https://github.com/breedx-splk)
 * `SONATYPE_USER` - owned by [@breedx-splk](https://github.com/breedx-splk)
+
+Note: `SONATYPE_KEY` and `SONATYPE_USER` were regenerated and replaced
+on June 6th, 2025 for the [Sonatype OSSRH migration](https://central.sonatype.org/news/20250326_ossrh_sunset/).
