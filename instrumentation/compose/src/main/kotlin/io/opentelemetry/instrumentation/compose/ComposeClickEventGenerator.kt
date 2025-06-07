@@ -11,30 +11,28 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.node.LayoutNode
 import androidx.compose.ui.node.Owner
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsModifier
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
+import io.opentelemetry.api.incubator.logs.ExtendedLogger
 import io.opentelemetry.instrumentation.compose.internal.APP_SCREEN_CLICK_EVENT_NAME
+import io.opentelemetry.instrumentation.compose.internal.ComposeLayoutNodeUtil
 import io.opentelemetry.instrumentation.compose.internal.VIEW_CLICK_EVENT_NAME
 import io.opentelemetry.instrumentation.compose.internal.viewIdAttr
 import io.opentelemetry.instrumentation.compose.internal.viewNameAttr
 import io.opentelemetry.instrumentation.compose.internal.xCoordinateAttr
 import io.opentelemetry.instrumentation.compose.internal.yCoordinateAttr
-import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
-import io.opentelemetry.api.incubator.logs.ExtendedLogger
 import java.lang.ref.WeakReference
 import java.util.LinkedList
 
-internal class ComposeClickEventGenerator(
+class ComposeClickEventGenerator(
     private val eventLogger: ExtendedLogger,
+    private val composeLayoutNodeUtil: ComposeLayoutNodeUtil = ComposeLayoutNodeUtil(),
 ) {
     private var windowRef: WeakReference<Window>? = null
 
@@ -76,7 +74,7 @@ internal class ComposeClickEventGenerator(
         builder.put(viewNameAttr, nodeToName(node))
         builder.put(viewIdAttr, node.semanticsId.toLong())
 
-        getLayoutNodePositionInWindow(node)?.let {
+        composeLayoutNodeUtil.getLayoutNodePositionInWindow(node)?.let {
             builder.put(xCoordinateAttr, it.x.toLong())
             builder.put(yCoordinateAttr, it.y.toLong())
         }
@@ -89,6 +87,40 @@ internal class ComposeClickEventGenerator(
         } catch (_: Throwable) {
             node.semanticsId.toString()
         }
+
+    private fun findTapTarget(
+        decorView: View,
+        x: Float,
+        y: Float,
+    ) {
+        val queue = LinkedList<View>()
+        queue.addFirst(decorView)
+
+        while (queue.isNotEmpty()) {
+            val view = queue.removeFirst()
+            if (view is ViewGroup) {
+                for (index in 0 until view.childCount) {
+                    queue.add(view.getChildAt(index))
+                }
+                (view as? Owner)?.let {
+                    try {
+                        findTapTarget(
+                            view as Owner,
+                            x,
+                            y,
+                        )?.let { layoutNode ->
+                            createEvent(VIEW_CLICK_EVENT_NAME)
+                                .setAllAttributes(createNodeAttributes(layoutNode))
+                                .emit()
+                        }
+                    } catch (_: Throwable) {
+                        // We rely on visibility suppression to access internal fields and
+                        // classes any runtime exception must be caught here.
+                    }
+                }
+            }
+        }
+    }
 
     private fun findTapTarget(
         owner: Owner,
@@ -110,40 +142,6 @@ internal class ComposeClickEventGenerator(
         return target
     }
 
-    private fun findTapTarget(
-        decorView: View,
-        x: Float,
-        y: Float,
-    ) {
-        val queue = LinkedList<View>()
-        queue.addFirst(decorView)
-
-        while (queue.isNotEmpty()) {
-            val view = queue.removeFirst()
-            if (view is ViewGroup) {
-                for (index in 0 until view.childCount) {
-                    queue.add(view.getChildAt(index))
-                }
-                (view as? Owner)?.let {
-                    try {
-                        findTapTarget(
-                            view as Owner,
-                            x,
-                            y
-                        )?.let { layoutNode ->
-                            createEvent(VIEW_CLICK_EVENT_NAME)
-                                .setAllAttributes(createNodeAttributes(layoutNode))
-                                .emit()
-                        }
-                    } catch (_: Throwable) {
-                        // We rely on visibility suppression to access internal field,
-                        // any runtime exception must be caught here.
-                    }
-                }
-            }
-        }
-    }
-
     private fun isValidClickTarget(node: LayoutNode): Boolean {
         var isClickable = false
 
@@ -151,18 +149,15 @@ internal class ComposeClickEventGenerator(
             val modifier = info.modifier
             if (modifier is SemanticsModifier) {
                 with(modifier.semanticsConfiguration) {
-                    if (contains(SemanticsActions.OnClick)) {
-                        isClickable = true
-                    }
+                    isClickable = contains(SemanticsActions.OnClick)
                 }
             } else {
                 val className = modifier::class.qualifiedName
-                if (className == CLASS_NAME_CLICKABLE_ELEMENT ||
-                    className == CLASS_NAME_COMBINED_CLICKABLE_ELEMENT ||
-                    className == CLASS_NAME_TOGGLEABLE_ELEMENT
-                ) {
-                    isClickable = true
-                }
+                isClickable = (
+                    className == CLASS_NAME_CLICKABLE_ELEMENT ||
+                        className == CLASS_NAME_COMBINED_CLICKABLE_ELEMENT ||
+                        className == CLASS_NAME_TOGGLEABLE_ELEMENT
+                )
             }
         }
 
@@ -181,15 +176,15 @@ internal class ComposeClickEventGenerator(
                         if (accessibilityActionLabel != null) {
                             return accessibilityActionLabel
                         }
+                    }
 
-                        val contentDescriptionSemanticsConfiguration =
-                            getOrNull(SemanticsProperties.ContentDescription)
-                        if (contentDescriptionSemanticsConfiguration != null) {
-                            val contentDescription =
-                                contentDescriptionSemanticsConfiguration.getOrNull(0)
-                            if (contentDescription != null) {
-                                return contentDescription
-                            }
+                    val contentDescriptionSemanticsConfiguration =
+                        getOrNull(SemanticsProperties.ContentDescription)
+                    if (contentDescriptionSemanticsConfiguration != null) {
+                        val contentDescription =
+                            contentDescriptionSemanticsConfiguration.getOrNull(0)
+                        if (contentDescription != null) {
+                            return contentDescription
                         }
                     }
                 }
@@ -206,29 +201,13 @@ internal class ComposeClickEventGenerator(
         x: Float,
         y: Float,
     ): Boolean {
-        val bounded = getLayoutNodeBoundsInWindow(node)?.let { bounds ->
-            x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom
-        } == true
+        val bounded =
+            composeLayoutNodeUtil.getLayoutNodeBoundsInWindow(node)?.let { bounds ->
+                x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom
+            } == true
 
         return bounded && isValidClickTarget(node)
     }
-
-    private fun getLayoutNodeBoundsInWindow(node: LayoutNode): Rect? {
-        return try {
-            node.layoutDelegate.outerCoordinator.coordinates.boundsInWindow()
-        } catch (_: Exception) {
-            null
-        }
-    }
-
-    private fun getLayoutNodePositionInWindow(node: LayoutNode): Offset? {
-        return try {
-            node.layoutDelegate.outerCoordinator.coordinates.positionInWindow()
-        } catch (_: Exception) {
-            null
-        }
-    }
-
 
     companion object {
         private const val CLASS_NAME_CLICKABLE_ELEMENT =

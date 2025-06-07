@@ -19,12 +19,14 @@ dependencies {
     api(platform(libs.opentelemetry.platform.alpha))
     api(project(":instrumentation:android-instrumentation"))
 
-    implementation(libs.opentelemetry.instrumentation.apiSemconv)
+    compileOnly(libs.compose)
     implementation(libs.opentelemetry.api.incubator)
-    implementation(libs.compose)
+    implementation(libs.opentelemetry.instrumentation.apiSemconv)
 
     testImplementation(project(":test-common"))
     testImplementation(project(":session"))
+
+    testImplementation(libs.compose)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
 }
