@@ -17,7 +17,7 @@ a regular release.
 ## Snapshot builds
 
 Every commit to the `main` branch will cause a
-[snapshot build](https://oss.sonatype.org/content/repositories/snapshots/io/opentelemetry/android/)
+[snapshot build](https://central.sonatype.com/service/rest/repository/browse/maven-snapshots/io/opentelemetry/android/)
 to be published to Sonatype. Users may choose to build and test and file issues against SNAPSHOT
 builds, but their use in production is strongly discouraged.
 
