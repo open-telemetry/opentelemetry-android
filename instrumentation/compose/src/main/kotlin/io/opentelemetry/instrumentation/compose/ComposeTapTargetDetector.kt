@@ -15,7 +15,6 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsModifier
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
-import io.opentelemetry.instrumentation.compose.internal.ComposeLayoutNodeUtil
 import java.util.LinkedList
 
 internal class ComposeTapTargetDetector(
@@ -93,9 +92,9 @@ internal class ComposeTapTargetDetector(
             } else {
                 val className = modifier::class.qualifiedName
                 if (
-                    className == ComposeClickEventGenerator.Companion.CLASS_NAME_CLICKABLE_ELEMENT ||
-                    className == ComposeClickEventGenerator.Companion.CLASS_NAME_COMBINED_CLICKABLE_ELEMENT ||
-                    className == ComposeClickEventGenerator.Companion.CLASS_NAME_TOGGLEABLE_ELEMENT
+                    className == CLASS_NAME_CLICKABLE_ELEMENT ||
+                    className == CLASS_NAME_COMBINED_CLICKABLE_ELEMENT ||
+                    className == CLASS_NAME_TOGGLEABLE_ELEMENT
                 ) {
                     return true
                 }
@@ -148,5 +147,14 @@ internal class ComposeTapTargetDetector(
             } == true
 
         return bounded && isValidClickTarget(node)
+    }
+
+    companion object {
+        private const val CLASS_NAME_CLICKABLE_ELEMENT =
+            "androidx.compose.foundation.ClickableElement"
+        private const val CLASS_NAME_COMBINED_CLICKABLE_ELEMENT =
+            "androidx.compose.foundation.CombinedClickableElement"
+        private const val CLASS_NAME_TOGGLEABLE_ELEMENT =
+            "androidx.compose.foundation.selection.ToggleableElement"
     }
 }

@@ -40,8 +40,6 @@ import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.session.SessionProvider
-import io.opentelemetry.instrumentation.compose.internal.APP_SCREEN_CLICK_EVENT_NAME
-import io.opentelemetry.instrumentation.compose.internal.VIEW_CLICK_EVENT_NAME
 import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo

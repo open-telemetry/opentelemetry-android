@@ -26,13 +26,11 @@ import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockkClass
-import io.opentelemetry.instrumentation.compose.internal.ComposeLayoutNodeUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import java.lang.RuntimeException
 
 @RunWith(RobolectricTestRunner::class)
 internal class ComposeTapTargetDetectorTest {

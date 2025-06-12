@@ -5,7 +5,7 @@
 
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
-package io.opentelemetry.instrumentation.compose.internal
+package io.opentelemetry.instrumentation.compose
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -16,7 +16,7 @@ import androidx.compose.ui.node.LayoutNode
 const val APP_SCREEN_CLICK_EVENT_NAME = "app.screen.click"
 const val VIEW_CLICK_EVENT_NAME = "event.app.widget.click"
 
-class ComposeLayoutNodeUtil {
+internal class ComposeLayoutNodeUtil {
     internal fun getLayoutNodeBoundsInWindow(node: LayoutNode): Rect? =
         try {
             node.layoutDelegate.outerCoordinator.coordinates

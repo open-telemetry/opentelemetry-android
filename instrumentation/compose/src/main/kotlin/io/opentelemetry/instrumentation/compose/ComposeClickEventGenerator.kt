@@ -13,16 +13,13 @@ import androidx.compose.ui.node.LayoutNode
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
 import io.opentelemetry.api.incubator.logs.ExtendedLogger
-import io.opentelemetry.instrumentation.compose.internal.APP_SCREEN_CLICK_EVENT_NAME
-import io.opentelemetry.instrumentation.compose.internal.ComposeLayoutNodeUtil
-import io.opentelemetry.instrumentation.compose.internal.VIEW_CLICK_EVENT_NAME
 import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_X
 import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_Y
 import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_ID
 import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_NAME
 import java.lang.ref.WeakReference
 
-class ComposeClickEventGenerator internal constructor(
+internal class ComposeClickEventGenerator(
     private val eventLogger: ExtendedLogger,
     private val composeLayoutNodeUtil: ComposeLayoutNodeUtil = ComposeLayoutNodeUtil(),
     private val composeTapTargetDetector: ComposeTapTargetDetector = ComposeTapTargetDetector(composeLayoutNodeUtil),
@@ -76,14 +73,5 @@ class ComposeClickEventGenerator internal constructor(
             builder.put(APP_SCREEN_COORDINATE_Y, it.y.toLong())
         }
         return builder.build()
-    }
-
-    companion object {
-        private const val CLASS_NAME_CLICKABLE_ELEMENT =
-            "androidx.compose.foundation.ClickableElement"
-        private const val CLASS_NAME_COMBINED_CLICKABLE_ELEMENT =
-            "androidx.compose.foundation.CombinedClickableElement"
-        private const val CLASS_NAME_TOGGLEABLE_ELEMENT =
-            "androidx.compose.foundation.selection.ToggleableElement"
     }
 }

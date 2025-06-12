@@ -8,7 +8,7 @@ package io.opentelemetry.instrumentation.compose
 import android.app.Activity
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
 
-class ComposeClickActivityCallback(
+internal class ComposeClickActivityCallback(
     private val composeClickEventGenerator: ComposeClickEventGenerator,
 ) : DefaultingActivityLifecycleCallbacks {
     override fun onActivityResumed(activity: Activity) {

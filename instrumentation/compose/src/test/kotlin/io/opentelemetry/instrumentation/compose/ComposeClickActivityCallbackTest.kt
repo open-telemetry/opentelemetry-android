@@ -17,7 +17,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-class ComposeClickActivityCallbackTest {
+internal class ComposeClickActivityCallbackTest {
     lateinit var composeClickActivityCallback: ComposeClickActivityCallback
 
     @MockK

@@ -29,9 +29,6 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockkClass
 import io.opentelemetry.api.incubator.logs.ExtendedLogger
-import io.opentelemetry.instrumentation.compose.internal.APP_SCREEN_CLICK_EVENT_NAME
-import io.opentelemetry.instrumentation.compose.internal.ComposeLayoutNodeUtil
-import io.opentelemetry.instrumentation.compose.internal.VIEW_CLICK_EVENT_NAME
 import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
@@ -47,7 +44,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-class ComposeClickEventGeneratorTest {
+internal class ComposeClickEventGeneratorTest {
     private lateinit var openTelemetryRule: OpenTelemetryRule
 
     private lateinit var composeClickEventGenerator: ComposeClickEventGenerator
