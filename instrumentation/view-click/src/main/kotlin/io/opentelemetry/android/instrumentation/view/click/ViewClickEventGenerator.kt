@@ -11,13 +11,13 @@ import android.view.ViewGroup
 import android.view.Window
 import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_CLICK_EVENT_NAME
 import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.viewIdAttr
-import io.opentelemetry.android.instrumentation.view.click.internal.viewNameAttr
-import io.opentelemetry.android.instrumentation.view.click.internal.xCoordinateAttr
-import io.opentelemetry.android.instrumentation.view.click.internal.yCoordinateAttr
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
 import io.opentelemetry.api.incubator.logs.ExtendedLogger
+import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_X
+import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_Y
+import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_ID
+import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_NAME
 import java.lang.ref.WeakReference
 import java.util.LinkedList
 
@@ -38,8 +38,8 @@ class ViewClickEventGenerator(
         windowRef?.get()?.let { window ->
             if (motionEvent != null && motionEvent.actionMasked == MotionEvent.ACTION_UP) {
                 createEvent(APP_SCREEN_CLICK_EVENT_NAME)
-                    .setAttribute(yCoordinateAttr, motionEvent.y.toLong())
-                    .setAttribute(xCoordinateAttr, motionEvent.x.toLong())
+                    .setAttribute(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong())
+                    .setAttribute(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong())
                     .emit()
 
                 findTargetForTap(window.decorView, motionEvent.x, motionEvent.y)?.let { view ->
@@ -67,11 +67,11 @@ class ViewClickEventGenerator(
 
     private fun createViewAttributes(view: View): Attributes {
         val builder = Attributes.builder()
-        builder.put(viewNameAttr, viewToName(view))
-        builder.put(viewIdAttr, view.id.toLong())
+        builder.put(APP_WIDGET_NAME, viewToName(view))
+        builder.put(APP_WIDGET_ID, view.id.toString())
 
-        builder.put(xCoordinateAttr, view.x.toLong())
-        builder.put(yCoordinateAttr, view.y.toLong())
+        builder.put(APP_SCREEN_COORDINATE_X, view.x.toLong())
+        builder.put(APP_SCREEN_COORDINATE_Y, view.y.toLong())
         return builder.build()
     }
 

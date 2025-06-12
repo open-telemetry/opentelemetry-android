@@ -20,6 +20,7 @@ dependencies {
     api(project(":instrumentation:android-instrumentation"))
 
     implementation(libs.opentelemetry.instrumentation.apiSemconv)
+    implementation(libs.opentelemetry.semconv.incubating)
     implementation(libs.opentelemetry.api.incubator)
 
     testImplementation(project(":test-common"))
