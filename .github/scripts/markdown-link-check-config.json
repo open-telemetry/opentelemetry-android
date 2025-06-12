@@ -7,6 +7,9 @@
   "ignorePatterns": [
     {
       "pattern": "^http://localhost:16686$"
+    },
+    {
+      "pattern": "^https://maven-badges.sml.io/maven-central/io.opentelemetry.android/.*$"
     }
   ]
 }
