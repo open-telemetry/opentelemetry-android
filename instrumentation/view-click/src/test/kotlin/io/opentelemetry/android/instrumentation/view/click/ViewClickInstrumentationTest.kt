@@ -118,7 +118,7 @@ class ViewClickInstrumentationTest {
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(APP_SCREEN_COORDINATE_X, mockView.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_X, mockView.y.toLong()),
+                equalTo(APP_SCREEN_COORDINATE_Y, mockView.y.toLong()),
                 equalTo(APP_WIDGET_ID, mockView.id.toString()),
                 equalTo(APP_WIDGET_NAME, "10012"),
             )
