@@ -22,6 +22,7 @@ dependencies {
     compileOnly(libs.compose)
     implementation(libs.opentelemetry.api.incubator)
     implementation(libs.opentelemetry.instrumentation.apiSemconv)
+    implementation(libs.opentelemetry.semconv.incubating)
 
     testImplementation(project(":test-common"))
     testImplementation(project(":session"))

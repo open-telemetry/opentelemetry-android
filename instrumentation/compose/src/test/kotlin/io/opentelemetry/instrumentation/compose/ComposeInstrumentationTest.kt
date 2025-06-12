@@ -33,7 +33,6 @@ import androidx.compose.ui.semantics.getOrNull
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkClass
 import io.mockk.mockkStatic
@@ -43,22 +42,20 @@ import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.instrumentation.compose.internal.APP_SCREEN_CLICK_EVENT_NAME
 import io.opentelemetry.instrumentation.compose.internal.VIEW_CLICK_EVENT_NAME
-import io.opentelemetry.instrumentation.compose.internal.viewIdAttr
-import io.opentelemetry.instrumentation.compose.internal.viewNameAttr
-import io.opentelemetry.instrumentation.compose.internal.xCoordinateAttr
-import io.opentelemetry.instrumentation.compose.internal.yCoordinateAttr
 import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
+import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_X
+import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_Y
+import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_ID
+import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_NAME
 import org.junit.Before
 import org.junit.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-@ExtendWith(MockKExtension::class)
 internal class ComposeInstrumentationTest {
     private lateinit var openTelemetryRule: OpenTelemetryRule
 
@@ -158,16 +155,16 @@ internal class ComposeInstrumentationTest {
         assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(xCoordinateAttr, motionEvent.x.toLong()),
-                equalTo(yCoordinateAttr, motionEvent.y.toLong()),
+                equalTo(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong()),
+                equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
             )
 
         event = events[1] as ExtendedLogRecordData
         assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfying(
-                equalTo(viewIdAttr, mockLayoutNode.semanticsId.toLong()),
-                equalTo(viewNameAttr, "clickMe"),
+                equalTo(APP_WIDGET_ID, mockLayoutNode.semanticsId.toString()),
+                equalTo(APP_WIDGET_NAME, "clickMe"),
             )
     }
 
