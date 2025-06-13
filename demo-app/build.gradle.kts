@@ -66,6 +66,7 @@ dependencies {
 
     coreLibraryDesugaring(libs.desugarJdkLibs)
 
+    implementation("io.opentelemetry.android:instrumentation-compose")
     implementation("io.opentelemetry.android:android-agent")    //parent dir
     implementation("io.opentelemetry.android:instrumentation-sessions")
     implementation(libs.androidx.core.ktx)

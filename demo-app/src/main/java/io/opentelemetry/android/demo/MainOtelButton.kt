@@ -17,6 +17,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import io.opentelemetry.api.metrics.LongCounter
 import io.opentelemetry.api.trace.SpanKind
@@ -28,7 +30,9 @@ fun MainOtelButton(icon: Painter,
         Spacer(modifier = Modifier.height(5.dp))
         Button(
             onClick = { generateClickEvent(clickCounter) },
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(20.dp).semantics{
+                onClick("MainOtelButton") { true }
+            },
             colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
             content = {
                 Image(
