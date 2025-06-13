@@ -26,6 +26,7 @@ import io.opentelemetry.android.instrumentation.network.NetworkAttributesExtract
 import io.opentelemetry.android.instrumentation.network.NetworkChangeInstrumentation
 import io.opentelemetry.android.instrumentation.slowrendering.SlowRenderingInstrumentation
 import io.opentelemetry.android.internal.services.Services
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
@@ -98,7 +99,7 @@ object OpenTelemetryRumInitializer {
 
         return OpenTelemetryRum
             .builder(application, rumConfig)
-            .setSessionProvider(createSessionManager(application, sessionConfig))
+            .setSessionProvider(createSessionProvider(application, sessionConfig))
             .addSpanExporterCustomizer {
                 OtlpHttpSpanExporter
                     .builder()
@@ -120,10 +121,10 @@ object OpenTelemetryRumInitializer {
             }.build()
     }
 
-    private fun createSessionManager(
+    private fun createSessionProvider(
         application: Application,
         sessionConfig: SessionConfig,
-    ): SessionManager {
+    ): SessionProvider {
         val timeoutHandler = SessionIdTimeoutHandler(sessionConfig)
         Services.get(application).appLifecycle.registerListener(timeoutHandler)
         return SessionManager.create(timeoutHandler, sessionConfig)
