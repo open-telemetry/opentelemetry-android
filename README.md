@@ -85,6 +85,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 [ci-url]: https://github.com/open-telemetry/opentelemetry-android/actions?query=workflow%3Abuild+branch%3Amain
 
-[maven-image]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry.android/android-agent/badge.svg
+[maven-image]: https://maven-badges.sml.io/maven-central/io.opentelemetry.android/android-agent/badge.svg
 
-[maven-url]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry.android/android-agent
+[maven-url]: https://maven-badges.sml.io/maven-central/io.opentelemetry.android/android-agent
