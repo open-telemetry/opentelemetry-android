@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.instrumentation.compose
+package io.opentelemetry.instrumentation.compose.click
 
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
@@ -12,7 +12,7 @@ import io.opentelemetry.api.incubator.logs.ExtendedLogger
 
 @AutoService(AndroidInstrumentation::class)
 class ComposeClickInstrumentation : AndroidInstrumentation {
-    override val name: String = "compose"
+    override val name: String = "compose.click"
 
     override fun install(ctx: InstallationContext) {
         ctx.application.registerActivityLifecycleCallbacks(
@@ -20,7 +20,7 @@ class ComposeClickInstrumentation : AndroidInstrumentation {
                 ComposeClickEventGenerator(
                     ctx.openTelemetry
                         .logsBridge
-                        .loggerBuilder("io.opentelemetry.android.instrumentation.compose")
+                        .loggerBuilder("io.opentelemetry.android.instrumentation.compose.click")
                         .build() as ExtendedLogger,
                 ),
             ),

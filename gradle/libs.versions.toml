@@ -14,8 +14,7 @@ androidPlugin = "8.10.1"
 junitKtx = "1.2.1"
 autoService = "1.1.1"
 androidx-navigation = "2.7.7"
-#noinspection GradleDependency
-compose = "1.3.0"
+compose = "1.5.4"
 
 [libraries]
 opentelemetry-platform-alpha = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-instrumentation-alpha" }

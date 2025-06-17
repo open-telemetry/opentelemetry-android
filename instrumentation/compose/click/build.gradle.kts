@@ -3,10 +3,10 @@ plugins {
     id("otel.publish-conventions")
 }
 
-description = "OpenTelemetry Android compose instrumentation"
+description = "OpenTelemetry Android compose click instrumentation"
 
 android {
-    namespace = "io.opentelemetry.android.instrumentation.compose"
+    namespace = "io.opentelemetry.android.instrumentation.compose.click"
 
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")

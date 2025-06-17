@@ -4,7 +4,7 @@
 Status: development
 
 ## Compose version
-`1.3.0+`
+`1.3.0` to `1.5.4`
 
 This instrumentation has the ability to generate events when the user
 performs click actions. A click is not differentiated from touch or other
@@ -18,7 +18,7 @@ This instrumentation is not currently enabled by default.
 ## Telemetry
 
 Data produced by this instrumentation will have an instrumentation scope
-name of `io.opentelemetry.android.instrumentation.compose`.
+name of `io.opentelemetry.android.instrumentation.compose.click`.
 This instrumentation produces the following telemetry:
 
 ### Clicks

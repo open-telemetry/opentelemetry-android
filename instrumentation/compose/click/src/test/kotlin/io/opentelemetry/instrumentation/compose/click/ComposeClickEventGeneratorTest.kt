@@ -5,7 +5,7 @@
 
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
-package io.opentelemetry.instrumentation.compose
+package io.opentelemetry.instrumentation.compose.click
 
 import android.os.SystemClock
 import android.view.MotionEvent
