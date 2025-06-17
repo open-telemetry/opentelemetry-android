@@ -14,6 +14,7 @@ androidPlugin = "8.10.1"
 junitKtx = "1.2.1"
 autoService = "1.1.1"
 androidx-navigation = "2.7.7"
+compose = "1.5.4"
 
 [libraries]
 opentelemetry-platform-alpha = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-instrumentation-alpha" }
@@ -43,6 +44,7 @@ opentelemetry-exporter-otlp = { module = "io.opentelemetry:opentelemetry-exporte
 volley = "com.android.volley:volley:1.2.1"
 auto-service-annotations = { module = "com.google.auto.service:auto-service-annotations", version.ref = "autoService" }
 auto-service-processor = { module = "com.google.auto.service:auto-service", version.ref = "autoService" }
+compose = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
 
 #Test tools
 opentelemetry-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-testing" }
