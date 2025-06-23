@@ -54,12 +54,12 @@ androidx-test-runner = "androidx.test:runner:1.6.2"
 androidx-junit = "androidx.test.ext:junit:1.2.1"
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
-mockk = "io.mockk:mockk:1.14.2"
+mockk = "io.mockk:mockk:1.14.4"
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "junit" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.13.1" }
-robolectric = "org.robolectric:robolectric:4.15"
+robolectric = "org.robolectric:robolectric:4.15.1"
 assertj-core = "org.assertj:assertj-core:3.27.3"
 awaitility = "org.awaitility:awaitility:4.3.0"
 mockwebserver = "com.google.mockwebserver:mockwebserver:20130706"
