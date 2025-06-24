@@ -10,6 +10,9 @@
     },
     {
       "pattern": "^https://maven-badges.sml.io/maven-central/io.opentelemetry.android/.*$"
+    },
+    {
+      "pattern": "^https://central.sonatype.com/service/rest/repository/browse/maven-snapshots/.*$"
     }
   ]
 }
