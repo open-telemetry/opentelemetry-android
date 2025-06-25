@@ -5,7 +5,7 @@ opentelemetry-semconv = "1.34.0"
 opentelemetry-semconv-alpha = "1.34.0-alpha"
 opentelemetry-contrib = "1.46.0-alpha"
 mockito = "5.18.0"
-junit = "5.13.1"
+junit = "5.13.2"
 byteBuddy = "1.17.6"
 okhttp = "4.12.0"
 spotless = "7.0.4"
@@ -58,7 +58,7 @@ mockk = "io.mockk:mockk:1.14.4"
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "junit" }
-junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.13.1" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.13.2" }
 robolectric = "org.robolectric:robolectric:4.15.1"
 assertj-core = "org.assertj:assertj-core:3.27.3"
 awaitility = "org.awaitility:awaitility:4.3.0"
