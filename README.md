@@ -76,14 +76,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 - [Jason Plumb](https://github.com/breedx-splk), Splunk
 - [Cesar Munoz](https://github.com/likethesalad), Elastic
 
-For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md#maintainer).
+For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
 
 ### Approvers
 
 - [Hanson Ho](https://github.com/bidetofevil), Embrace
 - [Manoel Aranda Neto](https://github.com/marandaneto), PostHog
 
-For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md#approver).
+For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
 
 [ci-image]: https://github.com/open-telemetry/opentelemetry-android/actions/workflows/build.yaml/badge.svg
 
