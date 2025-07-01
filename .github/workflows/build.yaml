@@ -30,6 +30,7 @@ jobs:
         run: ./gradlew check assemble
       - name: publish snapshot
         run: ./gradlew publishToSonatype
+        run: ./gradlew publishMavenPublicationToSonatypeRepository closeSonatypeStagingRepository releaseSonatypeStagingRepository
         env:
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
@@ -39,7 +40,7 @@ jobs:
   markdown-link-check:
     # release branches are excluded to avoid unnecessary maintenance
     if: ${{ !startsWith(github.ref_name, 'release/') }}
-    uses: ./.github/workflows/reusable-markdown-link-check.yml
+    uses: ./.github/workflows/reusable-link-check.yml
 
   workflow-notification:
     permissions: # required by the reusable workflow
