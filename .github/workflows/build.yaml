@@ -9,7 +9,6 @@ on:
 
 permissions:
   contents: read
-  issues: write
 
 jobs:
   build:
@@ -43,6 +42,9 @@ jobs:
     uses: ./.github/workflows/reusable-markdown-link-check.yml
 
   workflow-notification:
+    permissions: # required by the reusable workflow
+      contents: read
+      issues: write
     needs:
       - build
     if: failure() && github.run_attempt == 1
