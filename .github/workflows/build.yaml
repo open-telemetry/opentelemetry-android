@@ -30,7 +30,6 @@ jobs:
         run: ./gradlew check assemble
       - name: publish snapshot
         run: ./gradlew publishToSonatype
-        run: ./gradlew publishMavenPublicationToSonatypeRepository closeSonatypeStagingRepository releaseSonatypeStagingRepository
         env:
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
