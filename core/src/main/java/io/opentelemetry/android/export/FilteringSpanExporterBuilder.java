@@ -5,8 +5,11 @@
 
 package io.opentelemetry.android.export;
 
+import androidx.annotation.Nullable;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.contrib.interceptor.InterceptableSpanExporter;
+import io.opentelemetry.contrib.interceptor.api.Interceptor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Map;
@@ -16,6 +19,18 @@ public final class FilteringSpanExporterBuilder {
 
     private final SpanExporter delegate;
     private Predicate<SpanData> predicate = x -> false;
+    private final Interceptor<SpanData> interceptor = new Interceptor<SpanData>() {
+
+        @Nullable
+        @Override
+        public SpanData intercept(SpanData item) {
+            if (predicate.test(item)) {
+                return null;
+            } else {
+                return item;
+            }
+        }
+    };
 
     FilteringSpanExporterBuilder(SpanExporter spanExporter) {
         this.delegate = spanExporter;
@@ -90,6 +105,6 @@ public final class FilteringSpanExporterBuilder {
     }
 
     public SpanExporter build() {
-        return new FilteringSpanExporter(delegate, this.predicate);
+        return new InterceptableSpanExporter(delegate, interceptor);
     }
 }
