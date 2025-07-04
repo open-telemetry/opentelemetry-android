@@ -19,18 +19,19 @@ public final class FilteringSpanExporterBuilder {
 
     private final SpanExporter delegate;
     private Predicate<SpanData> predicate = x -> false;
-    private final Interceptor<SpanData> interceptor = new Interceptor<SpanData>() {
+    private final Interceptor<SpanData> interceptor =
+            new Interceptor<SpanData>() {
 
-        @Nullable
-        @Override
-        public SpanData intercept(SpanData item) {
-            if (predicate.test(item)) {
-                return null;
-            } else {
-                return item;
-            }
-        }
-    };
+                @Nullable
+                @Override
+                public SpanData intercept(SpanData item) {
+                    if (predicate.test(item)) {
+                        return null;
+                    } else {
+                        return item;
+                    }
+                }
+            };
 
     FilteringSpanExporterBuilder(SpanExporter spanExporter) {
         this.delegate = spanExporter;
