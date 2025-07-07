@@ -8,7 +8,7 @@ plugins {
 }
 
 val javaVersion = rootProject.extra["java_version"] as JavaVersion
-val jvmTarget = rootProject.extra["jvm_target"] as JvmTarget
+val targetJvm = rootProject.extra["jvm_target"] as JvmTarget
 val minKotlinVersion = rootProject.extra["kotlin_min_supported_version"] as KotlinVersion
 android {
     namespace = "io.opentelemetry.android"
@@ -27,7 +27,7 @@ android {
 
     kotlin {
         compilerOptions {
-            jvmTarget.set(jvmTarget)
+            jvmTarget.set(targetJvm)
             apiVersion.set(minKotlinVersion)
             languageVersion.set(minKotlinVersion)
         }
