@@ -2,6 +2,39 @@
 
 ## Unreleased
 
+### 🌟 New instrumentation
+
+- Capture click events for compose
+  ([#1002](https://github.com/open-telemetry/opentelemetry-android/pull/1002))
+- Capture click events for non-compose views
+  ([#953](https://github.com/open-telemetry/opentelemetry-android/pull/953))
+
+### 📈 Enhancements
+
+- Agent initialization api
+  ([#945](https://github.com/open-telemetry/opentelemetry-android/pull/945))
+- Enable disk buffering by default in the demo app
+  ([#988](https://github.com/open-telemetry/opentelemetry-android/pull/988))
+- Exposing SessionProvider setter
+  ([#979](https://github.com/open-telemetry/opentelemetry-android/pull/979))
+- Exposing instrumentation api as agent api
+  ([#1007](https://github.com/open-telemetry/opentelemetry-android/pull/1007))
+- Use semantic conventions in click instrumentation
+  ([#1008](https://github.com/open-telemetry/opentelemetry-android/pull/1008))
+- add convenience event emitting api to OpenTelemetryRum
+  ([#892](https://github.com/open-telemetry/opentelemetry-android/pull/892))
+
+### 🧰 Tooling
+
+- Move SessionConfig up
+  ([#959](https://github.com/open-telemetry/opentelemetry-android/pull/959))
+- Remove runtime dep on androidx fragment navigiation from modules that don't strictly need it
+  ([#961](https://github.com/open-telemetry/opentelemetry-android/pull/961))
+- Agent default instrumentation config
+  ([#976](https://github.com/open-telemetry/opentelemetry-android/pull/976))
+- update sonatype urls
+  ([#999](https://github.com/open-telemetry/opentelemetry-android/pull/999))
+
 ## Version 0.11.0 (2025-04-15)
 
 ### 📣 Migration notes
