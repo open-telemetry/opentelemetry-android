@@ -1,3 +1,5 @@
+import gradle.kotlin.dsl.accessors._d8282334f089ec6fbf714caba2b86dd9.kotlin
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
@@ -9,6 +11,7 @@ plugins {
 }
 
 val javaVersion = rootProject.extra["java_version"] as JavaVersion
+val targetJvm = rootProject.extra["jvm_target"] as JvmTarget
 val minKotlinVersion = rootProject.extra["kotlin_min_supported_version"] as KotlinVersion
 android {
     compileSdk = (property("android.compileSdk") as String).toInt()
@@ -31,11 +34,13 @@ android {
         targetCompatibility(javaVersion)
     }
 
-    kotlinOptions {
-        jvmTarget = javaVersion.toString()
-        apiVersion = minKotlinVersion.version
-        languageVersion = minKotlinVersion.version
-        freeCompilerArgs = listOf("-Xjvm-default=all")
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(targetJvm)
+            apiVersion.set(minKotlinVersion)
+            languageVersion.set(minKotlinVersion)
+            freeCompilerArgs.set(listOf("-Xjvm-default=all"))
+        }
     }
 }
 

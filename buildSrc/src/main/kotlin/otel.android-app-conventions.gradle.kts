@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
@@ -7,6 +8,7 @@ plugins {
 }
 
 val javaVersion = rootProject.extra["java_version"] as JavaVersion
+val targetJvm = rootProject.extra["jvm_target"] as JvmTarget
 val minKotlinVersion = rootProject.extra["kotlin_min_supported_version"] as KotlinVersion
 android {
     namespace = "io.opentelemetry.android"
@@ -23,10 +25,12 @@ android {
         isCoreLibraryDesugaringEnabled = true
     }
 
-    kotlinOptions {
-        jvmTarget = javaVersion.toString()
-        apiVersion = minKotlinVersion.version
-        languageVersion = minKotlinVersion.version
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(targetJvm)
+            apiVersion.set(minKotlinVersion)
+            languageVersion.set(minKotlinVersion)
+        }
     }
 
     packaging {
