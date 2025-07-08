@@ -14,6 +14,7 @@ android {
 }
 
 dependencies {
+    api(platform(libs.opentelemetry.platform.alpha))
     api(project(":instrumentation:android-instrumentation"))
     implementation(libs.opentelemetry.api.incubator)
     implementation(libs.opentelemetry.sdk)
