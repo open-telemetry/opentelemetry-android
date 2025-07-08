@@ -27,9 +27,8 @@ public final class FilteringSpanExporterBuilder {
                 public SpanData intercept(SpanData item) {
                     if (predicate.test(item)) {
                         return null;
-                    } else {
-                        return item;
-                    }
+                    } 
+                    return item;                   
                 }
             };
 
