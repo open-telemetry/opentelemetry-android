@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 0.12.0 (2025-07-08)
+
 ### 🌟 New instrumentation
 
 - Capture click events for compose
