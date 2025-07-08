@@ -43,7 +43,7 @@ in your gradle build script:
 ```kotlin
 dependencies {
     //...
-    implementation("io.opentelemetry.android:android-agent:0.11.0-alpha")
+    implementation("io.opentelemetry.android:android-agent:0.12.0-alpha")
     //...
 }
 ```
