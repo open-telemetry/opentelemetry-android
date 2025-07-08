@@ -25,7 +25,6 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.internal.features.networkattrs.NetworkAttributesLogRecordAppender;
 import io.opentelemetry.android.internal.features.networkattrs.NetworkAttributesSpanAppender;
 import io.opentelemetry.android.internal.features.persistence.DiskManager;
-import io.opentelemetry.android.internal.features.persistence.SimpleTemporaryFileProvider;
 import io.opentelemetry.android.internal.initialization.InitializationEvents;
 import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordAppender;
 import io.opentelemetry.android.internal.processors.ScreenAttributesLogRecordProcessor;
@@ -46,6 +45,8 @@ import io.opentelemetry.contrib.disk.buffering.MetricToDiskExporter;
 import io.opentelemetry.contrib.disk.buffering.SpanFromDiskExporter;
 import io.opentelemetry.contrib.disk.buffering.SpanToDiskExporter;
 import io.opentelemetry.contrib.disk.buffering.config.StorageConfiguration;
+import io.opentelemetry.contrib.disk.buffering.internal.storage.Storage;
+import io.opentelemetry.contrib.disk.buffering.internal.utils.SignalTypes;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
@@ -363,23 +364,32 @@ public final class OpenTelemetryRumBuilder {
         if (diskBufferingConfig.getEnabled()) {
             try {
                 StorageConfiguration storageConfiguration = createStorageConfiguration(services);
+                Storage spanStorage =
+                        Storage.builder(SignalTypes.spans)
+                                .setStorageConfiguration(storageConfiguration)
+                                .build();
+                Storage logsStorage =
+                        Storage.builder(SignalTypes.logs)
+                                .setStorageConfiguration(storageConfiguration)
+                                .build();
+                Storage metricsStorage =
+                        Storage.builder(SignalTypes.metrics)
+                                .setStorageConfiguration(storageConfiguration)
+                                .build();
                 final SpanExporter originalSpanExporter = spanExporter;
-                spanExporter =
-                        SpanToDiskExporter.create(originalSpanExporter, storageConfiguration);
+                spanExporter = SpanToDiskExporter.create(originalSpanExporter, spanStorage);
                 final LogRecordExporter originalLogsExporter = logsExporter;
-                logsExporter =
-                        LogRecordToDiskExporter.create(originalLogsExporter, storageConfiguration);
+                logsExporter = LogRecordToDiskExporter.create(originalLogsExporter, logsStorage);
                 final MetricExporter originalMetricExporter = metricExporter;
                 metricExporter =
-                        MetricToDiskExporter.create(originalMetricExporter, storageConfiguration);
+                        MetricToDiskExporter.create(originalMetricExporter, metricsStorage);
                 signalFromDiskExporter =
                         new SignalFromDiskExporter(
-                                SpanFromDiskExporter.create(
-                                        originalSpanExporter, storageConfiguration),
+                                SpanFromDiskExporter.create(originalSpanExporter, spanStorage),
                                 MetricFromDiskExporter.create(
-                                        originalMetricExporter, storageConfiguration),
+                                        originalMetricExporter, metricsStorage),
                                 LogRecordFromDiskExporter.create(
-                                        originalLogsExporter, storageConfiguration));
+                                        originalLogsExporter, logsStorage));
             } catch (IOException e) {
                 Log.e(RumConstants.OTEL_RUM_LOG_TAG, "Could not initialize disk exporters.", e);
             }
@@ -418,8 +428,6 @@ public final class OpenTelemetryRumBuilder {
                 .setMaxFileAgeForWriteMillis(config.getMaxFileAgeForWriteMillis())
                 .setMaxFileAgeForReadMillis(config.getMaxFileAgeForReadMillis())
                 .setMinFileAgeForReadMillis(config.getMinFileAgeForReadMillis())
-                .setTemporaryFileProvider(
-                        new SimpleTemporaryFileProvider(diskManager.getTemporaryDir()))
                 .setDebugEnabled(config.getDebugEnabled())
                 .build();
     }
