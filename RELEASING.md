@@ -39,7 +39,7 @@ Ensure that the preparation PR (created above) has been first merged into the re
   - Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `release/v0.6.x`, and click the "Run workflow" button below that.
   - This workflow will publish the artifacts to maven central and will publish a GitHub release.
-    The release will have release notes based on the CHANGELOG and will include `.zip` and 
+    The release will have release notes based on the CHANGELOG and will include `.zip` and
     `.tar.gz` bundles of the source code.
 
 > Please note that the artifacts are published into maven central, which tends to have a delay of
