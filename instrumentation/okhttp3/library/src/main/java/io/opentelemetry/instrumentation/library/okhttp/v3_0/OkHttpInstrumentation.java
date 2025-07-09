@@ -122,11 +122,11 @@ public class OkHttpInstrumentation implements AndroidInstrumentation {
 
     /**
      * When enabled keeps track of <a
-     * href="https://github.com/open-telemetry/semantic-conventions/blob/main/specification/metrics/semantic_conventions/http-metrics.md#http-client">non-stable
+     * href="https://github.com/open-telemetry/semantic-conventions/blob/main/docs/http/http-metrics.md#http-client">non-stable
      * HTTP client metrics</a>: <a
-     * href="https://github.com/open-telemetry/semantic-conventions/blob/main/specification/metrics/semantic_conventions/http-metrics.md#metric-httpclientrequestsize">the
+     * href="https://github.com/open-telemetry/semantic-conventions/blob/main/docs/http/http-metrics.md#metric-httpclientrequestbodysize">the
      * request size </a> and the <a
-     * href="https://github.com/open-telemetry/semantic-conventions/blob/main/specification/metrics/semantic_conventions/http-metrics.md#metric-httpclientresponsesize">
+     * href="https://github.com/open-telemetry/semantic-conventions/blob/main/docs/http/http-metrics.md#metric-httpserverresponsebodysize">
      * the response size</a>.
      */
     public void setEmitExperimentalHttpClientTelemetry(
