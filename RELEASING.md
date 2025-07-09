@@ -21,8 +21,10 @@ We first need to prepare the release. This creates a versioned release branch, T
     - Use [this action](https://github.com/open-telemetry/opentelemetry-android/actions/workflows/draft-change-log-entries.yaml) as a starting point for writing the change log entries. It will print a draft in the console that you can copy to create your PR.
 - Go to the
   [prepare-release-branch action](https://github.com/open-telemetry/opentelemetry-android/actions/workflows/prepare-release-branch.yml)
-  in Github and click on "Run workflow".
-- After the workflow runs, review the resulting release PR and merge it.
+  in Github and click on "Run workflow". This creates the release branch and does some prep.
+- After the workflow finishes, it will have created 2 PRs -- one against `main` branch and
+  one against the release branch. Review and merge these two PRs before running the release
+  job (below).
 
 ## Run the release
 
@@ -36,8 +38,9 @@ Ensure that the preparation PR (created above) has been first merged into the re
 - Run the [Release workflow](https://github.com/open-telemetry/opentelemetry-android/actions/workflows/release.yml).
   - Press the "Run workflow" button, then select the release branch from the dropdown list,
     e.g. `release/v0.6.x`, and click the "Run workflow" button below that.
-  - This workflow will publish the artifacts to maven central and will publish a GitHub release
-    with release notes based on the change log and with the javaagent jar attached.
+  - This workflow will publish the artifacts to maven central and will publish a GitHub release.
+    The release will have release notes based on the CHANGELOG and will include `.zip` and
+    `.tar.gz` bundles of the source code.
 
 > Please note that the artifacts are published into maven central, which tends to have a delay of
 > roughly half an hour, more or less, before making the newly published artifacts actually available
