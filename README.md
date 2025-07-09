@@ -73,8 +73,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### Maintainers
 
-- [Jason Plumb](https://github.com/breedx-splk), Splunk
 - [Cesar Munoz](https://github.com/likethesalad), Elastic
+- [Jason Plumb](https://github.com/breedx-splk), Splunk
 
 For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
 
