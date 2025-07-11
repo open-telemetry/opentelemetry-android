@@ -16,7 +16,6 @@ import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.export.BufferDelegatingLogExporter;
 import io.opentelemetry.android.export.BufferDelegatingMetricExporter;
 import io.opentelemetry.android.export.BufferDelegatingSpanExporter;
-import io.opentelemetry.android.export.FilteredResource;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduleHandler;
@@ -70,7 +69,6 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -584,13 +582,8 @@ public final class OpenTelemetryRumBuilder {
     private SdkMeterProvider buildMeterProvider(
             Application application, MetricExporter metricExporter) {
         MetricReader reader = PeriodicMetricReader.create(metricExporter);
-        Resource metricReaderResource = resource;
-        if(!config.hasMetricResourceKeysToFilter()){
-            FilteredResource filteredResource = new FilteredResource(resource, config.getMetricResourceKeysToFilter());
-            metricReaderResource = filteredResource.get();
-        }
         SdkMeterProviderBuilder meterProviderBuilder =
-                SdkMeterProvider.builder().registerMetricReader(reader).setResource(metricReaderResource);
+                SdkMeterProvider.builder().registerMetricReader(reader).setResource(resource);
         for (BiFunction<SdkMeterProviderBuilder, Application, SdkMeterProviderBuilder> customizer :
                 meterProviderCustomizers) {
             meterProviderBuilder = customizer.apply(meterProviderBuilder, application);
