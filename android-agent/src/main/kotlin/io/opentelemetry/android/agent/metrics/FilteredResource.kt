@@ -1,4 +1,4 @@
-package io.opentelemetry.android.export
+package io.opentelemetry.android.agent.metrics
 
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.AttributeType
@@ -7,7 +7,7 @@ import io.opentelemetry.sdk.resources.ResourceBuilder
 
 internal class FilteredResource(
     private val resource: Resource,
-    private val omitKeys: List<String>
+    private val includeKeys: Set<String>
 ) {
 
     fun get(): Resource {
@@ -65,6 +65,6 @@ internal class FilteredResource(
     }
 
     private fun wantKey(key: AttributeKey<*>): Boolean {
-        return !omitKeys.contains(key.key)
+        return includeKeys.contains(key.key)
     }
 }
