@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.agent.metrics
 
+import io.opentelemetry.semconv.ServiceAttributes
+import io.opentelemetry.semconv.incubating.OsIncubatingAttributes
 import java.util.Collections.unmodifiableSet
 
 class MetricsConfig {
@@ -32,7 +34,13 @@ class MetricsConfig {
     companion object {
         fun withDefaults(): MetricsConfig =
             MetricsConfig()
-                .includeMetricAttributeKeys("tbd")
-                .includeMetricResourceAttributes("tbd")
+//                .includeMetricAttributeKeys("tbd")
+                .includeMetricResourceAttributes(
+                    ServiceAttributes.SERVICE_NAME.key,
+                    ServiceAttributes.SERVICE_VERSION.key,
+                    OsIncubatingAttributes.OS_NAME.key,
+                    OsIncubatingAttributes.OS_TYPE.key,
+                    OsIncubatingAttributes.OS_VERSION.key,
+                )
     }
 }
