@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.agent.metrics
 
 import io.opentelemetry.api.common.AttributeKey
@@ -7,9 +12,8 @@ import io.opentelemetry.sdk.resources.ResourceBuilder
 
 internal class FilteredResource(
     private val resource: Resource,
-    private val includeKeys: Set<String>
+    private val includeKeys: Set<String>,
 ) {
-
     fun get(): Resource {
         val builder = Resource.builder().setSchemaUrl(resource.schemaUrl)
         resource.attributes.forEach { key, value ->
@@ -17,54 +21,59 @@ internal class FilteredResource(
                 put(builder, key, value)
             }
         }
-        return builder.build();
+        return builder.build()
     }
 
     private fun put(
         builder: ResourceBuilder,
         key: AttributeKey<*>,
-        value: Any
+        value: Any,
     ) {
         when (key.type) {
-            AttributeType.STRING -> builder.put(
-                key as AttributeKey<String>,
-                value as String
-            )
+            AttributeType.STRING ->
+                builder.put(
+                    key as AttributeKey<String>,
+                    value as String,
+                )
 
             AttributeType.LONG -> builder.put(key as AttributeKey<Long>, value as Long)
-            AttributeType.DOUBLE -> builder.put(
-                key as AttributeKey<Double>,
-                value as Double
-            )
+            AttributeType.DOUBLE ->
+                builder.put(
+                    key as AttributeKey<Double>,
+                    value as Double,
+                )
 
-            AttributeType.BOOLEAN -> builder.put(
-                key as AttributeKey<Boolean>,
-                value as Boolean
-            )
+            AttributeType.BOOLEAN ->
+                builder.put(
+                    key as AttributeKey<Boolean>,
+                    value as Boolean,
+                )
 
-            AttributeType.STRING_ARRAY -> builder.put(
-                key as AttributeKey<List<String>>,
-                value as List<String>
-            )
+            AttributeType.STRING_ARRAY ->
+                builder.put(
+                    key as AttributeKey<List<String>>,
+                    value as List<String>,
+                )
 
-            AttributeType.LONG_ARRAY -> builder.put(
-                key as AttributeKey<List<Long>>,
-                value as List<Long>
-            )
+            AttributeType.LONG_ARRAY ->
+                builder.put(
+                    key as AttributeKey<List<Long>>,
+                    value as List<Long>,
+                )
 
-            AttributeType.DOUBLE_ARRAY -> builder.put(
-                key as AttributeKey<List<Double>>,
-                value as List<Double>
-            )
+            AttributeType.DOUBLE_ARRAY ->
+                builder.put(
+                    key as AttributeKey<List<Double>>,
+                    value as List<Double>,
+                )
 
-            AttributeType.BOOLEAN_ARRAY -> builder.put(
-                key as AttributeKey<List<Boolean>>,
-                value as List<Boolean>
-            )
+            AttributeType.BOOLEAN_ARRAY ->
+                builder.put(
+                    key as AttributeKey<List<Boolean>>,
+                    value as List<Boolean>,
+                )
         }
     }
 
-    private fun wantKey(key: AttributeKey<*>): Boolean {
-        return includeKeys.contains(key.key)
-    }
+    private fun wantKey(key: AttributeKey<*>): Boolean = includeKeys.contains(key.key)
 }

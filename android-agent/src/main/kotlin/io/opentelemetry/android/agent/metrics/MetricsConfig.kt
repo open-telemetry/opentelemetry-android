@@ -1,9 +1,13 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.agent.metrics
 
 import java.util.Collections.unmodifiableSet
 
 class MetricsConfig {
-
     private val metricResourceKeysToInclude: MutableSet<String> = HashSet()
     private val metricAttributesToInclude: MutableSet<String> = HashSet()
 
@@ -17,27 +21,18 @@ class MetricsConfig {
         return this
     }
 
-    fun getMetricResourceKeysToInclude(): Set<String> {
-        return unmodifiableSet(metricResourceKeysToInclude)
-    }
+    fun getMetricResourceKeysToInclude(): Set<String> = unmodifiableSet(metricResourceKeysToInclude)
 
-    fun getMetricAttributesToInclude(): Set<String> {
-        return unmodifiableSet(metricAttributesToInclude)
-    }
+    fun getMetricAttributesToInclude(): Set<String> = unmodifiableSet(metricAttributesToInclude)
 
-    fun hasMetricResourceKeysToInclude(): Boolean {
-        return metricResourceKeysToInclude.isEmpty()
-    }
+    fun hasMetricResourceKeysToInclude(): Boolean = metricResourceKeysToInclude.isEmpty()
 
-    fun isEmpty(): Boolean {
-        return metricAttributesToInclude.isEmpty() && metricResourceKeysToInclude.isEmpty();
-    }
+    fun isEmpty(): Boolean = metricAttributesToInclude.isEmpty() && metricResourceKeysToInclude.isEmpty()
 
     companion object {
-        fun withDefaults(): MetricsConfig {
-            return MetricsConfig()
+        fun withDefaults(): MetricsConfig =
+            MetricsConfig()
                 .includeMetricAttributeKeys("tbd")
                 .includeMetricResourceAttributes("tbd")
-        }
     }
 }

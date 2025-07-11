@@ -2,6 +2,7 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package io.opentelemetry.android
 
 import android.app.Application
@@ -31,15 +32,14 @@ object AndroidResource {
             .build()
     }
 
-    private fun readAppName(application: Application): String {
-        return try {
+    private fun readAppName(application: Application): String =
+        try {
             val stringId =
                 application.applicationContext.applicationInfo.labelRes
             application.applicationContext.getString(stringId)
         } catch (_: Exception) {
             "unknown_service:android"
         }
-    }
 
     private val oSDescription: String
         get() {

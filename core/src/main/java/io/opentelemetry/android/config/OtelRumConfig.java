@@ -5,15 +5,11 @@
 
 package io.opentelemetry.android.config;
 
-import org.jetbrains.annotations.NotNull;
-
 import io.opentelemetry.android.ScreenAttributesSpanProcessor;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -146,5 +142,4 @@ public class OtelRumConfig {
     public boolean isSuppressed(String instrumentationName) {
         return suppressedInstrumentations.contains(instrumentationName);
     }
-
 }

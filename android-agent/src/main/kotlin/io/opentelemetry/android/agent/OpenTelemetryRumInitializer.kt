@@ -52,6 +52,7 @@ object OpenTelemetryRumInitializer {
      * @param logEndpointConnectivity Log-specific endpoint configuration.
      * @param metricEndpointConnectivity Metric-specific endpoint configuration.
      * @param rumConfig Configuration used by [OpenTelemetryRumBuilder].
+     * @param metricsConfig Configures which Attributes and Resource Attributes to include on metrics.
      * @param sessionConfig The session configuration, which includes inactivity timeout and maximum lifetime durations.
      * @param activityTracerCustomizer Tracer customizer for [ActivityLifecycleInstrumentation].
      * @param activityNameExtractor Name extractor for [ActivityLifecycleInstrumentation].
@@ -130,30 +131,29 @@ object OpenTelemetryRumInitializer {
             .build()
     }
 
-    private fun createMetricsFilter(config: MetricsConfig): BiFunction<SdkMeterProviderBuilder, Application, SdkMeterProviderBuilder> {
-        return BiFunction<SdkMeterProviderBuilder, Application, SdkMeterProviderBuilder> {
-            builder, app ->
-                if(config.isEmpty())
-                    builder
-                else {
-                    if(config.getMetricResourceKeysToInclude().isNotEmpty()){
-                        val resource = AndroidResource.createDefault(app);
-                        val filteredResource =
-                            FilteredResource(resource, config.getMetricResourceKeysToInclude())
-                        builder.setResource(filteredResource.get())
-                    }
-                    if(config.getMetricAttributesToInclude().isNotEmpty()){
-                        builder.registerView(
-                            InstrumentSelector.builder().build(), // match all instruments
-                            View.builder()
-                                .setAttributeFilter(config.getMetricAttributesToInclude())
-                                .build()
-                        )
-                    }
-                    builder
+    private fun createMetricsFilter(config: MetricsConfig): BiFunction<SdkMeterProviderBuilder, Application, SdkMeterProviderBuilder> =
+        BiFunction<SdkMeterProviderBuilder, Application, SdkMeterProviderBuilder> { builder, app ->
+            if (config.isEmpty()) {
+                builder
+            } else {
+                if (config.getMetricResourceKeysToInclude().isNotEmpty()) {
+                    val resource = AndroidResource.createDefault(app)
+                    val filteredResource =
+                        FilteredResource(resource, config.getMetricResourceKeysToInclude())
+                    builder.setResource(filteredResource.get())
                 }
+                if (config.getMetricAttributesToInclude().isNotEmpty()) {
+                    builder.registerView(
+                        InstrumentSelector.builder().build(), // match all instruments
+                        View
+                            .builder()
+                            .setAttributeFilter(config.getMetricAttributesToInclude())
+                            .build(),
+                    )
+                }
+                builder
+            }
         }
-    }
 
     private fun createSessionProvider(
         application: Application,
