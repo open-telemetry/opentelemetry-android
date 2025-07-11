@@ -7,6 +7,7 @@ package io.opentelemetry.android;
 
 import static io.opentelemetry.android.common.RumConstants.RUM_SDK_VERSION;
 import static io.opentelemetry.semconv.ServiceAttributes.SERVICE_NAME;
+import static io.opentelemetry.semconv.ServiceAttributes.SERVICE_VERSION;
 import static io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MANUFACTURER;
 import static io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER;
 import static io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MODEL_NAME;
@@ -19,6 +20,7 @@ import static org.mockito.Mockito.when;
 
 import android.app.Application;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.os.Build;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
@@ -31,6 +33,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AndroidResourceTest {
 
     String appName = "robotron";
+    String appVersion = "1.2.3";
     String rumSdkVersion = BuildConfig.OTEL_ANDROID_VERSION;
     String osDescription =
             new StringBuilder()
@@ -47,18 +50,24 @@ class AndroidResourceTest {
     Application app;
 
     @Test
-    void testFullResource() {
+    void testFullResource() throws Exception {
         ApplicationInfo appInfo = new ApplicationInfo();
         appInfo.labelRes = 12345;
+        PackageInfo packageInfo = new PackageInfo();
+        packageInfo.versionName = "1.2.3";
 
         when(app.getApplicationContext().getApplicationInfo()).thenReturn(appInfo);
         when(app.getApplicationContext().getString(appInfo.labelRes)).thenReturn(appName);
+        when(app.getApplicationContext().getPackageName()).thenReturn("mypackage");
+        when(app.getApplicationContext().getPackageManager().getPackageInfo("mypackage", 0))
+                .thenReturn(packageInfo);
 
         Resource expected =
                 Resource.getDefault()
                         .merge(
                                 Resource.builder()
                                         .put(SERVICE_NAME, appName)
+                                        .put(SERVICE_VERSION, appVersion)
                                         .put(RUM_SDK_VERSION, rumSdkVersion)
                                         .put(DEVICE_MODEL_NAME, Build.MODEL)
                                         .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)

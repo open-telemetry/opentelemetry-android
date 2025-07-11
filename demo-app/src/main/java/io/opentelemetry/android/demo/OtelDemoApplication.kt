@@ -50,6 +50,8 @@ class OtelDemoApplication : Application() {
 
         // This is needed to get R8 missing rules warnings.
         initializeOtelWithGrpc()
+
+        createAliveCounter()
     }
 
     // This is not used but it's needed to verify that our consumer proguard rules cover this use case.
@@ -67,6 +69,21 @@ class OtelDemoApplication : Application() {
         if (System.currentTimeMillis() < 0) {
             print(builder)
         }
+    }
+
+    // A simple counter that merely logs the number of seconds that the app has been
+    // alive. This is simply used to demonstrate the metrics signal before other
+    // meaningful metrics have been created.
+    private fun createAliveCounter() {
+        val startTime = System.currentTimeMillis()
+        rum?.openTelemetry
+            ?.getMeter("android.lifetime")
+            ?.counterBuilder("app.uptime.seconds")
+            ?.setDescription("The number of seconds the app has been alive.")
+            ?.setUnit("s")
+            ?.buildWithCallback {
+                measurement -> measurement.record((System.currentTimeMillis() - startTime)/1000)
+            }
     }
 
     companion object {
