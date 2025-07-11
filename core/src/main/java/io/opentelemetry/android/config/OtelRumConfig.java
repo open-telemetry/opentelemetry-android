@@ -30,7 +30,6 @@ public class OtelRumConfig {
     private boolean discoverInstrumentations = true;
     private DiskBufferingConfig diskBufferingConfig = DiskBufferingConfig.create();
     private final List<String> suppressedInstrumentations = new ArrayList<>();
-    private final List<String> metricResourceKeysToFilter = new ArrayList<>();
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -148,17 +147,4 @@ public class OtelRumConfig {
         return suppressedInstrumentations.contains(instrumentationName);
     }
 
-    public OtelRumConfig filterMetricResourceKeys(String ... keys){
-        metricResourceKeysToFilter.addAll(Arrays.asList(keys));
-        return this;
-    }
-
-    @NotNull
-    public List<String> getMetricResourceKeysToFilter() {
-        return Collections.unmodifiableList(metricResourceKeysToFilter);
-    }
-
-    public boolean hasMetricResourceKeysToFilter() {
-        return metricResourceKeysToFilter.isEmpty();
-    }
 }
