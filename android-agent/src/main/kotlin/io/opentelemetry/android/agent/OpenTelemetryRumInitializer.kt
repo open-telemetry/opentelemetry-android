@@ -6,10 +6,13 @@
 package io.opentelemetry.android.agent
 
 import android.app.Application
+import io.opentelemetry.android.AndroidResource
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.OpenTelemetryRumBuilder
 import io.opentelemetry.android.agent.connectivity.EndpointConnectivity
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
+import io.opentelemetry.android.agent.metrics.FilteredResource
+import io.opentelemetry.android.agent.metrics.MetricsConfig
 import io.opentelemetry.android.agent.session.SessionConfig
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.agent.session.SessionManager
@@ -32,7 +35,11 @@ import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor
+import io.opentelemetry.sdk.metrics.InstrumentSelector
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
+import io.opentelemetry.sdk.metrics.View
 import java.time.Duration
+import java.util.function.BiFunction
 
 object OpenTelemetryRumInitializer {
     /**
@@ -77,6 +84,7 @@ object OpenTelemetryRumInitializer {
             ),
         rumConfig: OtelRumConfig = OtelRumConfig(),
         sessionConfig: SessionConfig = SessionConfig.withDefaults(),
+        metricsConfig: MetricsConfig = MetricsConfig.withDefaults(),
         activityTracerCustomizer: ((Tracer) -> Tracer)? = null,
         activityNameExtractor: ScreenNameExtractor? = null,
         fragmentTracerCustomizer: ((Tracer) -> Tracer)? = null,
@@ -118,7 +126,33 @@ object OpenTelemetryRumInitializer {
                     .setEndpoint(metricEndpointConnectivity.getUrl())
                     .setHeaders(metricEndpointConnectivity::getHeaders)
                     .build()
-            }.build()
+            }.addMeterProviderCustomizer(createMetricsFilter(metricsConfig))
+            .build()
+    }
+
+    private fun createMetricsFilter(config: MetricsConfig): BiFunction<SdkMeterProviderBuilder, Application, SdkMeterProviderBuilder> {
+        return BiFunction<SdkMeterProviderBuilder, Application, SdkMeterProviderBuilder> {
+            builder, app ->
+                if(config.isEmpty())
+                    builder
+                else {
+                    if(config.getMetricResourceKeysToInclude().isNotEmpty()){
+                        val resource = AndroidResource.createDefault(app);
+                        val filteredResource =
+                            FilteredResource(resource, config.getMetricResourceKeysToInclude())
+                        builder.setResource(filteredResource.get())
+                    }
+                    if(config.getMetricAttributesToInclude().isNotEmpty()){
+                        builder.registerView(
+                            InstrumentSelector.builder().build(), // match all instruments
+                            View.builder()
+                                .setAttributeFilter(config.getMetricAttributesToInclude())
+                                .build()
+                        )
+                    }
+                    builder
+                }
+        }
     }
 
     private fun createSessionProvider(
