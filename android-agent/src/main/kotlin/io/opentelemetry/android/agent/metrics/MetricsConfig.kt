@@ -4,40 +4,40 @@ import java.util.Collections.unmodifiableSet
 
 class MetricsConfig {
 
-    private val metricResourceKeysToOmit: MutableSet<String> = HashSet()
-    private val metricAttributesToOmit: MutableSet<String> = HashSet()
+    private val metricResourceKeysToInclude: MutableSet<String> = HashSet()
+    private val metricAttributesToInclude: MutableSet<String> = HashSet()
 
-    fun omitMetricResourceAttributes(vararg keys: String): MetricsConfig {
-        metricResourceKeysToOmit.addAll(listOf(*keys))
+    fun includeMetricResourceAttributes(vararg keys: String): MetricsConfig {
+        metricResourceKeysToInclude.addAll(listOf(*keys))
         return this
     }
 
-    fun omitMetricAttributeKeys(vararg keys: String): MetricsConfig {
-        metricAttributesToOmit.addAll(listOf(*keys))
+    fun includeMetricAttributeKeys(vararg keys: String): MetricsConfig {
+        metricAttributesToInclude.addAll(listOf(*keys))
         return this
     }
 
-    fun getMetricResourceKeysToOmit(): Set<String> {
-        return unmodifiableSet(metricResourceKeysToOmit)
+    fun getMetricResourceKeysToInclude(): Set<String> {
+        return unmodifiableSet(metricResourceKeysToInclude)
     }
 
-    fun getMetricAttributesToOmit(): Set<String> {
-        return unmodifiableSet(metricAttributesToOmit)
+    fun getMetricAttributesToInclude(): Set<String> {
+        return unmodifiableSet(metricAttributesToInclude)
     }
 
-    fun hasMetricResourceKeysToOmit(): Boolean {
-        return metricResourceKeysToOmit.isEmpty()
+    fun hasMetricResourceKeysToInclude(): Boolean {
+        return metricResourceKeysToInclude.isEmpty()
     }
 
     fun isEmpty(): Boolean {
-        return metricAttributesToOmit.isEmpty() && metricResourceKeysToOmit.isEmpty();
+        return metricAttributesToInclude.isEmpty() && metricResourceKeysToInclude.isEmpty();
     }
 
     companion object {
         fun withDefaults(): MetricsConfig {
             return MetricsConfig()
-                .omitMetricAttributeKeys("tbd")
-                .omitMetricResourceAttributes("tbd")
+                .includeMetricAttributeKeys("tbd")
+                .includeMetricResourceAttributes("tbd")
         }
     }
 }
