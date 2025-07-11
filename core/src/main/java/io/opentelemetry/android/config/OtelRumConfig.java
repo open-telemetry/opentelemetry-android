@@ -5,11 +5,15 @@
 
 package io.opentelemetry.android.config;
 
+import org.jetbrains.annotations.NotNull;
+
 import io.opentelemetry.android.ScreenAttributesSpanProcessor;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
 import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -26,6 +30,7 @@ public class OtelRumConfig {
     private boolean discoverInstrumentations = true;
     private DiskBufferingConfig diskBufferingConfig = DiskBufferingConfig.create();
     private final List<String> suppressedInstrumentations = new ArrayList<>();
+    private final List<String> metricResourceKeysToFilter = new ArrayList<>();
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -141,5 +146,19 @@ public class OtelRumConfig {
     /** Returns false when the given instrumentation has been suppressed. True otherwise. */
     public boolean isSuppressed(String instrumentationName) {
         return suppressedInstrumentations.contains(instrumentationName);
+    }
+
+    public OtelRumConfig filterMetricResourceKeys(String ... keys){
+        metricResourceKeysToFilter.addAll(Arrays.asList(keys));
+        return this;
+    }
+
+    @NotNull
+    public List<String> getMetricResourceKeysToFilter() {
+        return Collections.unmodifiableList(metricResourceKeysToFilter);
+    }
+
+    public boolean hasMetricResourceKeysToFilter() {
+        return metricResourceKeysToFilter.isEmpty();
     }
 }
