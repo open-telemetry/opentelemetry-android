@@ -17,8 +17,12 @@ object AndroidResource {
     @JvmStatic
     fun createDefault(application: Application): Resource {
         val appName = readAppName(application)
+        val appVersion = readAppVersion(application)
         val resourceBuilder =
             Resource.getDefault().toBuilder().put(ServiceAttributes.SERVICE_NAME, appName)
+        if (appVersion != null) {
+            resourceBuilder.put(ServiceAttributes.SERVICE_VERSION, appVersion)
+        }
 
         return resourceBuilder
             .put(RumConstants.RUM_SDK_VERSION, BuildConfig.OTEL_ANDROID_VERSION)
@@ -40,6 +44,16 @@ object AndroidResource {
         } catch (_: Exception) {
             "unknown_service:android"
         }
+
+    private fun readAppVersion(application: Application): String? {
+        val ctx = application.applicationContext
+        return try {
+            val packageInfo = ctx.packageManager.getPackageInfo(ctx.packageName, 0)
+            packageInfo.versionName
+        } catch (_: Exception) {
+            null
+        }
+    }
 
     private val oSDescription: String
         get() {
