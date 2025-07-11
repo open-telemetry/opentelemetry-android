@@ -15,6 +15,7 @@ dependencies {
     implementation(project(":session"))
     implementation(project(":services"))
     implementation(libs.opentelemetry.exporter.otlp)
+    implementation(libs.opentelemetry.semconv.incubating)
 
     // Default instrumentations:
     api(project(":instrumentation:activity"))

@@ -144,7 +144,10 @@ object OpenTelemetryRumInitializer {
                 }
                 if (config.getMetricAttributesToInclude().isNotEmpty()) {
                     builder.registerView(
-                        InstrumentSelector.builder().build(), // match all instruments
+                        InstrumentSelector
+                            .builder()
+                            .setName("*") // match all instruments
+                            .build(),
                         View
                             .builder()
                             .setAttributeFilter(config.getMetricAttributesToInclude())
