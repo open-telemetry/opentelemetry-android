@@ -17,9 +17,9 @@ Same settings as above for `main`, except:
 
 * Restrict pushes that create matching branches: UNCHECKED
 
-  (So that opentelemetrybot can create release branches)
+  (So that otelbot can create release branches)
 
-### `renovate/**/**`, and `opentelemetrybot/*`
+### `renovate/**/**`, and `otelbot/*`
 
 * Require status checks to pass before merging: UNCHECKED
 
