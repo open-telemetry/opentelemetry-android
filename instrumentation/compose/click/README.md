@@ -34,3 +34,13 @@ This instrumentation produces the following telemetry:
 * Description: This event is emitted when the user taps on a composable that is clickable.
 * See the [semantic convention definition](https://github.com/open-telemetry/semantic-conventions/blob/main/docs/app/app.md#event-appwidgetclick)
   for more details.
+
+## Installation
+
+### Adding dependencies
+
+```kotlin
+implementation("io.opentelemetry.android.instrumentation:compose-click:LATEST_VERSION") // <1>
+```
+
+1. You can find the latest version [here](https://central.sonatype.com/artifact/io.opentelemetry.android.instrumentation/compose-click).
