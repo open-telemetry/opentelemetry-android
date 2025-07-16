@@ -24,6 +24,7 @@ dependencies {
     api(project(":instrumentation:network"))
     api(project(":instrumentation:slowrendering"))
     api(project(":instrumentation:startup"))
+    api(project(":instrumentation:sessions"))
 
     testImplementation(libs.robolectric)
 }

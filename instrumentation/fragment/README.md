@@ -22,3 +22,18 @@ This instrumentation produces the following telemetry:
     * `fragment.name`:  name of fragment
     * `screen.name`:  name of screen
     * `last.screen.name`:  name of screen, when span contains the `fragmentResumed` event.
+
+## Installation
+
+This instrumentation comes with the [android agent](../../android-agent) out of the box, so
+if you depend on it, you don't need to do anything else to install this instrumentation.
+However, if you don't use the agent but instead depend on [core](../../core) directly, you can
+manually install this instrumentation by following the steps below.
+
+### Adding dependencies
+
+```kotlin
+implementation("io.opentelemetry.android.instrumentation:fragment:LATEST_VERSION") // <1>
+```
+
+1. You can find the latest version [here](https://central.sonatype.com/artifact/io.opentelemetry.android.instrumentation/fragment).

@@ -18,7 +18,7 @@ Data produced by this instrumentation will have an instrumentation scope
 name of `io.opentelemetry.android.instrumentation.view.click`.
 This instrumentation produces the following telemetry:
 
-### Network Change
+### Clicks
 
 * Type: Event
 * Name: `app.screen.click`
@@ -31,3 +31,14 @@ This instrumentation produces the following telemetry:
 * Description: This event is emitted when the user taps on a view. Jetpack compose views are not currently supported.
 * See the [semantic convention definition](https://github.com/open-telemetry/semantic-conventions/blob/main/docs/app/app.md#event-appwidgetclick)
   for more details.
+
+
+## Installation
+
+### Adding dependencies
+
+```kotlin
+implementation("io.opentelemetry.android.instrumentation:view-click:LATEST_VERSION") // <1>
+```
+
+1. You can find the latest version [here](https://central.sonatype.com/artifact/io.opentelemetry.android.instrumentation/view-click).
