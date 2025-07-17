@@ -19,10 +19,10 @@ jobs:
       - name: touch local props
         run: touch demo-app/local.properties
       - name: run gradle
-        run: ./gradlew check
+        run: ./gradlew --build-cache check
       - name: build demo app
         working-directory: ./demo-app
-        run: ./gradlew check assemble
+        run: ./gradlew --build-cache check assemble
 
   required-status-check:
     needs:
