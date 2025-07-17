@@ -39,7 +39,7 @@ channel in the [CNCF slack](https://slack.cncf.io/). Please join us there for fu
 
 To use this android instrumentation library in your application, you will first need to add
 a dependency in your application's `build.gradle.kts`. We publish a bill of materials (BOM) that
-helps to coordinate versions of the opentelemetry-android components and the upstream 
+helps to coordinate versions of the opentelemetry-android components and the upstream
 `opentelemetry-java-instrumentation` and `opentelemetry-java` dependencies. We recommend
 using the bom as a platform dependency, and then omitting explicit version information
 from all other opentelemetry dependencies:
