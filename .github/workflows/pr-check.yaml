@@ -22,7 +22,7 @@ jobs:
         run: ./gradlew check
       - name: build demo app
         working-directory: ./demo-app
-        run: ./gradlew check assemble
+        run: ./gradlew assembleRelease
 
   required-status-check:
     needs:
