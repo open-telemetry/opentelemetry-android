@@ -22,14 +22,14 @@ A span associated with a given request is concluded in the following scenarios:
 
 Spans won't be automatically ended and reported otherwise. If any of your URLConnection requests do not call the span concluding APIs mentioned above, refer the section entitled ["Scheduling Harvester Thread"](#scheduling-harvester-thread). This section provides guidance on setting up a recurring thread that identifies unreported, idle connections and ends/reports any open spans associated with them. Idle connections are those that have been read from previously but have been inactive for a particular configurable time interval (defaults to 10 seconds).
 
-> The minimum supported Android SDK version is 21, though it will also instrument APIs added in the Android SDK version 24 when running on devices with API level 24 and above.
+> The minimum supported Android SDK version is 21, though it will also instrument APIs added in the Android SDK version 26 when running on devices with API level 26 and above.
 
 > If your project's minSdk is lower than 26, then you must enable
 > [corelib desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring).
 >
-> If your project's minSdk is lower than 24, in order to run the app built on debug, you need to add the following property in `gradle.properties` file:
-> -  If AGP <= 8.3.0, set `android.enableDexingArtifactTransform=false`
-> - if AGP > 8.3.0, set `android.useFullClasspathForDexingTransform=true`
+> Further, in order to run the app built on debug, you need to add the following property in `gradle.properties` file:
+> - If AGP <= 8.3.0, set `android.enableDexingArtifactTransform=false`
+> - If AGP > 8.3.0, set `android.useFullClasspathForDexingTransform=true`
 >
 > For the full context for these workaround, please see
 > [this issue](https://issuetracker.google.com/issues/334281968) for AGP <= 8.3.0
