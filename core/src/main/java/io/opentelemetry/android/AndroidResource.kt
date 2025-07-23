@@ -3,64 +3,68 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android;
+package io.opentelemetry.android
 
-import static io.opentelemetry.android.common.RumConstants.RUM_SDK_VERSION;
-import static io.opentelemetry.semconv.ServiceAttributes.SERVICE_NAME;
-import static io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MANUFACTURER;
-import static io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER;
-import static io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MODEL_NAME;
-import static io.opentelemetry.semconv.incubating.OsIncubatingAttributes.OS_DESCRIPTION;
-import static io.opentelemetry.semconv.incubating.OsIncubatingAttributes.OS_NAME;
-import static io.opentelemetry.semconv.incubating.OsIncubatingAttributes.OS_TYPE;
-import static io.opentelemetry.semconv.incubating.OsIncubatingAttributes.OS_VERSION;
+import android.app.Application
+import android.os.Build
+import io.opentelemetry.android.common.RumConstants.RUM_SDK_VERSION
+import io.opentelemetry.sdk.resources.Resource
+import io.opentelemetry.semconv.ServiceAttributes.SERVICE_NAME
+import io.opentelemetry.semconv.ServiceAttributes.SERVICE_VERSION
+import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MANUFACTURER
+import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER
+import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MODEL_NAME
+import io.opentelemetry.semconv.incubating.OsIncubatingAttributes.OS_DESCRIPTION
+import io.opentelemetry.semconv.incubating.OsIncubatingAttributes.OS_NAME
+import io.opentelemetry.semconv.incubating.OsIncubatingAttributes.OS_TYPE
+import io.opentelemetry.semconv.incubating.OsIncubatingAttributes.OS_VERSION
 
-import android.app.Application;
-import android.os.Build;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.resources.ResourceBuilder;
-import java.util.function.Supplier;
+private const val DEFAULT_APP_NAME = "unknown_service:android"
 
-final class AndroidResource {
-
-    static Resource createDefault(Application application) {
-        String appName = readAppName(application);
-        ResourceBuilder resourceBuilder =
-                Resource.getDefault().toBuilder().put(SERVICE_NAME, appName);
+object AndroidResource {
+    @JvmStatic
+    fun createDefault(application: Application): Resource {
+        val appName = readAppName(application)
+        val resourceBuilder =
+            Resource.getDefault().toBuilder().put(SERVICE_NAME, appName)
+        val appVersion = readAppVersion(application)
+        appVersion?.let { resourceBuilder.put(SERVICE_VERSION, it) }
 
         return resourceBuilder
-                .put(RUM_SDK_VERSION, BuildConfig.OTEL_ANDROID_VERSION)
-                .put(DEVICE_MODEL_NAME, Build.MODEL)
-                .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)
-                .put(DEVICE_MANUFACTURER, Build.MANUFACTURER)
-                .put(OS_NAME, "Android")
-                .put(OS_TYPE, "linux")
-                .put(OS_VERSION, Build.VERSION.RELEASE)
-                .put(OS_DESCRIPTION, getOSDescription())
-                .build();
+            .put(RUM_SDK_VERSION, BuildConfig.OTEL_ANDROID_VERSION)
+            .put(DEVICE_MODEL_NAME, Build.MODEL)
+            .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)
+            .put(DEVICE_MANUFACTURER, Build.MANUFACTURER)
+            .put(OS_NAME, "Android")
+            .put(OS_TYPE, "linux")
+            .put(OS_VERSION, Build.VERSION.RELEASE)
+            .put(OS_DESCRIPTION, oSDescription)
+            .build()
     }
 
-    private static String readAppName(Application application) {
-        return trapTo(
-                () -> {
-                    int stringId =
-                            application.getApplicationContext().getApplicationInfo().labelRes;
-                    return application.getApplicationContext().getString(stringId);
-                },
-                "unknown_service:android");
-    }
-
-    private static String trapTo(Supplier<String> fn, String defaultValue) {
+    private fun readAppName(application: Application): String =
         try {
-            return fn.get();
-        } catch (Exception e) {
-            return defaultValue;
+            val stringId =
+                application.applicationContext.applicationInfo.labelRes
+            application.applicationContext.getString(stringId)
+        } catch (_: Exception) {
+            DEFAULT_APP_NAME
+        }
+
+    private fun readAppVersion(application: Application): String? {
+        val ctx = application.applicationContext
+        return try {
+            val packageInfo = ctx.packageManager.getPackageInfo(ctx.packageName, 0)
+            packageInfo.versionName
+        } catch (_: Exception) {
+            null
         }
     }
 
-    private static String getOSDescription() {
-        StringBuilder osDescriptionBuilder = new StringBuilder();
-        return osDescriptionBuilder
+    private val oSDescription: String
+        get() {
+            val osDescriptionBuilder = StringBuilder()
+            return osDescriptionBuilder
                 .append("Android Version ")
                 .append(Build.VERSION.RELEASE)
                 .append(" (Build ")
@@ -68,6 +72,6 @@ final class AndroidResource {
                 .append(" API level ")
                 .append(Build.VERSION.SDK_INT)
                 .append(")")
-                .toString();
-    }
+                .toString()
+        }
 }
