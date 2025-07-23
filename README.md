@@ -23,8 +23,7 @@ of the [OpenTelemetry Java SDK](https://github.com/open-telemetry/opentelemetry-
 > If your project's minSdk is lower than 26, then you must enable
 > [corelib desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring).
 > See [#73](https://github.com/open-telemetry/opentelemetry-android/issues/73) for more information.
-> If your project's minSdk is lower than 24, in order to run instrumentation tests or run the app
-> built on debug, you must use AGP 8.3.0+ and set the `android.useFullClasspathForDexingTransform`
+> Further, you must use AGP 8.3.0+ and set the `android.useFullClasspathForDexingTransform`
 > property in `gradle.properties` to `true` to ensure desugaring runs properly. For the full
 > context for this workaround, please see
 > [this issue](https://issuetracker.google.com/issues/230454566#comment18).
