@@ -10,6 +10,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.android.volley.Header;
 import com.android.volley.Request;
 import com.android.volley.toolbox.HttpResponse;
@@ -19,9 +20,8 @@ import java.util.List;
 import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class VolleyHttpClientAttributesGetterTest {
 
     @Test

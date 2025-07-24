@@ -17,6 +17,7 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.os.Build;
 import android.telephony.TelephonyManager;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
@@ -26,10 +27,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(sdk = Build.VERSION_CODES.P)
 public class PostApi28NetworkDetectorTest {
 
