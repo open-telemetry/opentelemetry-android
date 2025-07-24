@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Alter FilteringSpanExporter to leverage common code from contrib
+  ([#1043](https://github.com/open-telemetry/opentelemetry-android/pull/1043))
+- Instrumentation docs now include installation instructions
+  ([#1068](https://github.com/open-telemetry/opentelemetry-android/pull/1068))
+- OpenTelemetry Android BOM now includes upstream components (instrumentation, sdk, api)
+  ([#1075](https://github.com/open-telemetry/opentelemetry-android/pull/1075))
+- Update docs to reflect that desugaring is required for minSdk < 26
+  ([#1085](https://github.com/open-telemetry/opentelemetry-android/pull/1085))
+- Include service.version in the default AndroidResource
+  ([#1087](https://github.com/open-telemetry/opentelemetry-android/pull/1087))
+
 ## Version 0.12.0 (2025-07-08)
 
 ### 🌟 New instrumentation
