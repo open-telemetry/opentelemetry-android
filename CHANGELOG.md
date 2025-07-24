@@ -1,6 +1,6 @@
 # OpenTelemetry Android Changelog
 
-## Unreleased
+## Version 0.13.0 (2025-07-24)
 
 - Alter FilteringSpanExporter to leverage common code from contrib
   ([#1043](https://github.com/open-telemetry/opentelemetry-android/pull/1043))
