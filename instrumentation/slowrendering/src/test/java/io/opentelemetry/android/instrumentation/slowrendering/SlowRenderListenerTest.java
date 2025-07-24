@@ -24,6 +24,7 @@ import android.content.ComponentName;
 import android.os.Build;
 import android.os.Handler;
 import android.view.FrameMetrics;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
@@ -44,10 +45,9 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(sdk = Build.VERSION_CODES.N)
 public class SlowRenderListenerTest {
 

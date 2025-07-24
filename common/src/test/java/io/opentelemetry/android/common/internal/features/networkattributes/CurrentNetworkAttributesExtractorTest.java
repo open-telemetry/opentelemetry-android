@@ -14,16 +14,16 @@ import static io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NE
 import static org.assertj.core.api.Assertions.entry;
 
 import android.os.Build;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class CurrentNetworkAttributesExtractorTest {
 
     final CurrentNetworkAttributesExtractor underTest = new CurrentNetworkAttributesExtractor();

@@ -9,6 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static io.opentelemetry.semconv.ExceptionAttributes.*;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.android.volley.Request;
 import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.RequestFuture;
@@ -22,9 +23,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class TracingHurlStackExceptionTest {
 
     @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
