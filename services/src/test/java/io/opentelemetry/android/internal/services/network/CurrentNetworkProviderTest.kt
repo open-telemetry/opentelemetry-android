@@ -10,6 +10,7 @@ import android.net.ConnectivityManager.NetworkCallback
 import android.net.Network
 import android.net.NetworkRequest
 import android.os.Build
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -21,15 +22,11 @@ import io.opentelemetry.android.internal.services.network.detector.NetworkDetect
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito
-import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.util.concurrent.atomic.AtomicInteger
 
-@RunWith(RobolectricTestRunner::class)
-@Config(
-    maxSdk = Build.VERSION_CODES.S,
-)
+@RunWith(AndroidJUnit4::class)
+@Config(sdk = [Build.VERSION_CODES.N, Build.VERSION_CODES.P, Build.VERSION_CODES.Q, Build.VERSION_CODES.UPSIDE_DOWN_CAKE])
 internal class CurrentNetworkProviderTest {
     private val fakeNet: Network = mockk()
     private val wifi = CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build()
@@ -39,10 +36,15 @@ internal class CurrentNetworkProviderTest {
             .subType("LTE")
             .build()
     private val noNetwork = CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build()
+    private val mockConnectivityManager = mockk<ConnectivityManager>()
+    private val errorNetworkDetector: NetworkDetector =
+        mockk<NetworkDetector>().apply {
+            every { detectCurrentNetwork() }.throws(SecurityException("bug"))
+        }
 
     @Test
-    @Config(maxSdk = Build.VERSION_CODES.LOLLIPOP)
-    fun lollipop() {
+    @Config(sdk = [Build.VERSION_CODES.LOLLIPOP])
+    fun `verify current network provider on lollipop`() {
         val networkRequest: NetworkRequest = mockk()
         val networkDetector: NetworkDetector = mockk()
         val connectivityManager: ConnectivityManager = mockk()
@@ -82,8 +84,7 @@ internal class CurrentNetworkProviderTest {
     }
 
     @Test
-    @Config(maxSdk = Build.VERSION_CODES.S, minSdk = Build.VERSION_CODES.O)
-    fun `modern SDKs`() {
+    fun `verify current network provider`() {
         val networkRequest: NetworkRequest = mockk()
         val networkDetector: NetworkDetector = mockk()
         val connectivityManager: ConnectivityManager = mockk()
@@ -124,16 +125,11 @@ internal class CurrentNetworkProviderTest {
 
     @Test
     fun `network detector exception`() {
-        val networkDetector: NetworkDetector = mockk()
-        every { networkDetector.detectCurrentNetwork() }.throws(SecurityException("bug"))
-
-        val currentNetworkProvider =
-            CurrentNetworkProvider(networkDetector, Mockito.mock())
+        val currentNetworkProvider = CurrentNetworkProvider(errorNetworkDetector, mockConnectivityManager)
         assertThat(currentNetworkProvider.refreshNetworkStatus()).isEqualTo(UNKNOWN_NETWORK)
     }
 
     @Test
-    @Config(maxSdk = Build.VERSION_CODES.S, minSdk = Build.VERSION_CODES.O)
     fun `network detector exception on callback registration`() {
         val networkDetector: NetworkDetector = mockk()
         val connectivityManager: ConnectivityManager = mockk()
@@ -152,7 +148,7 @@ internal class CurrentNetworkProviderTest {
     }
 
     @Test
-    @Config(maxSdk = Build.VERSION_CODES.LOLLIPOP)
+    @Config(sdk = [Build.VERSION_CODES.LOLLIPOP])
     fun `network detector exception on callback registration lollipop`() {
         val networkDetector: NetworkDetector = mockk()
         val connectivityManager: ConnectivityManager = mockk()
@@ -172,7 +168,7 @@ internal class CurrentNetworkProviderTest {
     }
 
     @Test
-    @Config(maxSdk = Build.VERSION_CODES.LOLLIPOP)
+    @Config(sdk = [Build.VERSION_CODES.LOLLIPOP])
     fun `should not fail on immediate ConnectionManager call lollipop`() {
         val networkDetector: NetworkDetector = mockk()
         val connectivityManager: ConnectivityManager = mockk()
@@ -196,7 +192,6 @@ internal class CurrentNetworkProviderTest {
     }
 
     @Test
-    @Config(maxSdk = Build.VERSION_CODES.S, minSdk = Build.VERSION_CODES.O)
     fun `should not fail on immediate ConnectionManager call`() {
         val networkDetector: NetworkDetector = mockk()
         val connectivityManager: ConnectivityManager = mockk()
