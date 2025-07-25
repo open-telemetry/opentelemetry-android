@@ -33,7 +33,7 @@ internal class AnrWatcher(
     private val mainThread: Thread,
     private val anrLogger: Logger,
     private val additionalExtractors: List<AttributesExtractor<Array<StackTraceElement>, Void>>,
-    private val pollDurationNs: Long = DEFAULT_POLL_DURATION_NS
+    private val pollDurationNs: Long = DEFAULT_POLL_DURATION_NS,
 ) : Runnable {
     private val anrCounter = AtomicInteger()
 
