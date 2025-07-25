@@ -94,7 +94,6 @@ class AnrWatcherTest {
         for (i in 0..4) {
             anrWatcher.run()
         }
-
         verify(exactly = 1) { logger.logRecordBuilder() }
         verify(exactly = 1) { logRecordBuilder.setEventName("device.anr") }
         verify(exactly = 1) { logRecordBuilder.setAllAttributes(any<Attributes>()) }
@@ -103,7 +102,6 @@ class AnrWatcherTest {
         for (i in 0..3) {
             anrWatcher.run()
         }
-
         // Still just the 1 time
         verify(exactly = 1) { logger.logRecordBuilder() }
         verify(exactly = 1) { logRecordBuilder.emit() }
