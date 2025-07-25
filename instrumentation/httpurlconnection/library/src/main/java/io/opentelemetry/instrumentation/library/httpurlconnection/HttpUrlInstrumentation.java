@@ -137,7 +137,7 @@ public class HttpUrlInstrumentation implements AndroidInstrumentation {
     }
 
     @Override
-    public void install(@NotNull InstallationContext ctx) {
+    public void install(@NonNull InstallationContext ctx) {
         HttpUrlConnectionSingletons.configure(this, ctx.getOpenTelemetry());
     }
 

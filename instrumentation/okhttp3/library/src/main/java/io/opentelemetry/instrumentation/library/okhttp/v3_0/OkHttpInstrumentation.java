@@ -139,7 +139,7 @@ public class OkHttpInstrumentation implements AndroidInstrumentation {
     }
 
     @Override
-    public void install(@NotNull InstallationContext ctx) {
+    public void install(@NonNull InstallationContext ctx) {
         OkHttp3Singletons.configure(this, ctx.getOpenTelemetry());
     }
 
