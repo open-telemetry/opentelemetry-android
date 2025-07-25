@@ -41,7 +41,7 @@ The OpenTelemetry Android Demo App currently supports the following features:
 
 * ANR Detection
   - Automatically detects and reports ANRs in the app.
-  - ANR events are captured as spans with detailed stack traces, providing insights into the exact operations that caused the ANR.
+  - ANR events are captured as log record events with detailed stack traces, providing insights into the exact operations that caused the ANR.
   - The span includes key attributes such as `screen.name`, `session.id`, and network information to assist in diagnosing the issue.
   - In order to crash the demo app, try to add to cart exactly 9 National Park Foundation Explorascopes (first product on the product list) and click "Yes, I'm sure." on the alert pop-up.
 
