@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.config
 
 import io.opentelemetry.api.common.AttributeKey.stringKey
@@ -7,16 +12,15 @@ import org.junit.Test
 import java.util.function.Supplier
 
 class OtelRumConfigTest {
-
     @Test
-    fun `no global attributes by default`(){
+    fun `no global attributes by default`() {
         val config = OtelRumConfig()
         assertThat(config.hasGlobalAttributes()).isFalse()
         assertThat(config.globalAttributesSupplier.get().isEmpty).isTrue()
     }
 
     @Test
-    fun `setting null Attributes does nothing`(){
+    fun `setting null Attributes does nothing`() {
         val config = OtelRumConfig()
         config.setGlobalAttributes(null as Attributes?)
         assertThat(config.hasGlobalAttributes()).isFalse()
@@ -24,7 +28,7 @@ class OtelRumConfigTest {
     }
 
     @Test
-    fun `setting empty Attributes does nothing`(){
+    fun `setting empty Attributes does nothing`() {
         val config = OtelRumConfig()
         config.setGlobalAttributes(Attributes.empty())
         assertThat(config.hasGlobalAttributes()).isFalse()
@@ -32,7 +36,7 @@ class OtelRumConfigTest {
     }
 
     @Test
-    fun `can set some Attributes directly`(){
+    fun `can set some Attributes directly`() {
         val config = OtelRumConfig()
         config.setGlobalAttributes(Attributes.of(stringKey("foo"), "bar"))
         assertThat(config.hasGlobalAttributes()).isTrue()
@@ -40,7 +44,7 @@ class OtelRumConfigTest {
     }
 
     @Test
-    fun `setting a null attribute supplier does nothing`(){
+    fun `setting a null attribute supplier does nothing`() {
         val config = OtelRumConfig()
         config.setGlobalAttributes(null as Supplier<Attributes>?)
         assertThat(config.hasGlobalAttributes()).isFalse()
@@ -48,7 +52,7 @@ class OtelRumConfigTest {
     }
 
     @Test
-    fun `setting a Supplier that returns empty attributes is fine`(){
+    fun `setting a Supplier that returns empty attributes is fine`() {
         val config = OtelRumConfig()
         config.setGlobalAttributes { Attributes.empty() }
         assertThat(config.hasGlobalAttributes()).isTrue() // It might return some Attributes later
@@ -56,7 +60,7 @@ class OtelRumConfigTest {
     }
 
     @Test
-    fun `setting a Supplier that returns null attributes is fine`(){
+    fun `setting a Supplier that returns null attributes is fine`() {
         val config = OtelRumConfig()
         config.setGlobalAttributes { null }
         assertThat(config.hasGlobalAttributes()).isTrue() // It might return some Attributes later
@@ -64,11 +68,10 @@ class OtelRumConfigTest {
     }
 
     @Test
-    fun `can supply global attributes with a supplier`(){
+    fun `can supply global attributes with a supplier`() {
         val config = OtelRumConfig()
         config.setGlobalAttributes { Attributes.of(stringKey("foo"), "bar") }
         assertThat(config.hasGlobalAttributes()).isTrue()
         assertThat(config.globalAttributesSupplier.get().get(stringKey("foo"))).isEqualTo("bar")
     }
-
 }

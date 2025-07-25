@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 import okhttp3.Interceptor;
 import okhttp3.Response;
-import org.jetbrains.annotations.NotNull;
 
 /** Instrumentation for okhttp requests. */
 @AutoService(AndroidInstrumentation.class)

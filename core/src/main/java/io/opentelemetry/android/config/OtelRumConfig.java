@@ -7,7 +7,6 @@ package io.opentelemetry.android.config;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import io.opentelemetry.android.ScreenAttributesSpanProcessor;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
@@ -23,8 +22,7 @@ import java.util.function.Supplier;
  */
 public class OtelRumConfig {
 
-    @Nullable
-    private Supplier<Attributes> globalAttributesSupplier = null;
+    @Nullable private Supplier<Attributes> globalAttributesSupplier = null;
     private boolean includeNetworkAttributes = true;
     private boolean generateSdkInitializationEvents = true;
     private boolean includeScreenAttributes = true;
@@ -37,7 +35,7 @@ public class OtelRumConfig {
      * configured attributes will be dropped. Default = none.
      */
     public OtelRumConfig setGlobalAttributes(@Nullable Attributes attributes) {
-        if(attributes == null || attributes.isEmpty()){
+        if (attributes == null || attributes.isEmpty()) {
             return this;
         }
         return setGlobalAttributes(() -> attributes);
