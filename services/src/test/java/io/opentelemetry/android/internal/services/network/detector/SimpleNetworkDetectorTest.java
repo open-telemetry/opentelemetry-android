@@ -13,17 +13,17 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowNetworkInfo;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(sdk = Build.VERSION_CODES.P)
 public class SimpleNetworkDetectorTest {
     @Test

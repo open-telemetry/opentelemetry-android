@@ -24,6 +24,7 @@ import androidx.compose.ui.semantics.SemanticsConfiguration
 import androidx.compose.ui.semantics.SemanticsModifier
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -41,9 +42,8 @@ import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_NA
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
 internal class ComposeClickEventGeneratorTest {
     private lateinit var openTelemetryRule: OpenTelemetryRule
 
