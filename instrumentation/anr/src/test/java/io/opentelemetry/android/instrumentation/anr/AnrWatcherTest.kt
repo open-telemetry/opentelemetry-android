@@ -104,6 +104,7 @@ class AnrWatcherTest {
             anrWatcher.run()
         }
 
+        // Still just the 1 time
         verify(exactly = 1) { logger.logRecordBuilder() }
         verify(exactly = 1) { logRecordBuilder.emit() }
 
