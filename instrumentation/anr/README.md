@@ -18,9 +18,9 @@ This instrumentation produces the following telemetry:
 
 ### ANR
 
-* Type: Span
+* Type: Event
 * Name: `ANR`
-* Description: This zero-duration span is created when this instrumentation detects an ANR.
+* Description: This log event is created when this instrumentation detects an ANR.
 * Status: `ERROR` (always)
 * Attributes:
   * `exception.stacktrace`: A string representation of the call stack of the main thread at the time of the ANR.
