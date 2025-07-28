@@ -10,7 +10,6 @@ import com.google.auto.service.AutoService;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.instrumentation.InstallationContext;
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +21,7 @@ public final class CrashReporterInstrumentation implements AndroidInstrumentatio
     private final List<EventAttributesExtractor<CrashDetails>> additionalExtractors =
             new ArrayList<>();
 
-    /** Adds an {@link AttributesExtractor} that will extract additional attributes. */
+    /** Adds an {@link EventAttributesExtractor} that will extract additional attributes. */
     public void addAttributesExtractor(EventAttributesExtractor<CrashDetails> extractor) {
         additionalExtractors.add(extractor);
     }

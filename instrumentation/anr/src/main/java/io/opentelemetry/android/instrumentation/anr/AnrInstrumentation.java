@@ -12,7 +12,6 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.instrumentation.InstallationContext;
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor;
 import io.opentelemetry.android.internal.services.Services;
-import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -28,7 +27,7 @@ public final class AnrInstrumentation implements AndroidInstrumentation {
     Looper mainLooper = Looper.getMainLooper();
     ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    /** Adds an {@link AttributesExtractor} that will extract additional attributes. */
+    /** Adds an {@link EventAttributesExtractor} that will extract additional attributes. */
     public AnrInstrumentation addAttributesExtractor(
             EventAttributesExtractor<StackTraceElement[]> extractor) {
         additionalExtractors.add(extractor);
