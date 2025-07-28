@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.instrumentation.common
 
 import io.opentelemetry.api.common.Attributes
@@ -11,6 +16,8 @@ import io.opentelemetry.context.Context
  * that is being generated.
  */
 interface EventAttributesExtractor<SUBJECT> {
-
-    fun extract(parentContext: Context, subject: SUBJECT): Attributes
+    fun extract(
+        parentContext: Context,
+        subject: SUBJECT,
+    ): Attributes
 }

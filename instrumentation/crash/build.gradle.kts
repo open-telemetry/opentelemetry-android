@@ -18,6 +18,7 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":services"))
     implementation(project(":session"))
+    implementation(project(":instrumentation:common-api"))
     api(platform(libs.opentelemetry.platform.alpha))
     api(libs.opentelemetry.api)
     implementation(libs.androidx.core)

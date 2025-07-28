@@ -11,7 +11,6 @@ import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.context.Context
-import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor
 import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE
 import io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.THREAD_ID
 import io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.THREAD_NAME
