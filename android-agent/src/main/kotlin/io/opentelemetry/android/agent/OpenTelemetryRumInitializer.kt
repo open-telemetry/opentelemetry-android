@@ -18,6 +18,7 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.activity.ActivityLifecycleInstrumentation
 import io.opentelemetry.android.instrumentation.anr.AnrInstrumentation
+import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.instrumentation.crash.CrashDetails
 import io.opentelemetry.android.instrumentation.crash.CrashReporterInstrumentation
@@ -81,7 +82,7 @@ object OpenTelemetryRumInitializer {
         activityNameExtractor: ScreenNameExtractor? = null,
         fragmentTracerCustomizer: ((Tracer) -> Tracer)? = null,
         fragmentNameExtractor: ScreenNameExtractor? = null,
-        anrAttributesExtractors: List<AttributesExtractor<Array<StackTraceElement>, Void>> = emptyList(),
+        anrAttributesExtractors: List<EventAttributesExtractor<Array<StackTraceElement>>> = emptyList(),
         crashAttributesExtractors: List<AttributesExtractor<CrashDetails, Void>> = emptyList(),
         networkChangeAttributesExtractors: List<NetworkAttributesExtractor> = emptyList(),
         slowRenderingDetectionPollInterval: Duration? = null,
@@ -135,7 +136,7 @@ object OpenTelemetryRumInitializer {
         activityNameExtractor: ScreenNameExtractor?,
         fragmentTracerCustomizer: ((Tracer) -> Tracer)?,
         fragmentNameExtractor: ScreenNameExtractor?,
-        anrAttributesExtractors: List<AttributesExtractor<Array<StackTraceElement>, Void>>,
+        anrAttributesExtractors: List<EventAttributesExtractor<Array<StackTraceElement>>>,
         crashAttributesExtractors: List<AttributesExtractor<CrashDetails, Void>>,
         networkChangeAttributesExtractors: List<NetworkAttributesExtractor>,
         slowRenderingDetectionPollInterval: Duration?,

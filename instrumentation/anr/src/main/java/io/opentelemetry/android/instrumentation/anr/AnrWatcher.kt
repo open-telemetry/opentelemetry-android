@@ -6,6 +6,7 @@
 package io.opentelemetry.android.instrumentation.anr
 
 import android.os.Handler
+import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
 import io.opentelemetry.api.logs.Logger
@@ -32,7 +33,7 @@ internal class AnrWatcher(
     private val uiHandler: Handler,
     private val mainThread: Thread,
     private val anrLogger: Logger,
-    private val additionalExtractors: List<AttributesExtractor<Array<StackTraceElement>, Void>>,
+    private val additionalExtractors: List<EventAttributesExtractor<Array<StackTraceElement>>>,
     private val pollDurationNs: Long = DEFAULT_POLL_DURATION_NS,
 ) : Runnable {
     private val anrCounter = AtomicInteger()
@@ -45,7 +46,7 @@ internal class AnrWatcher(
         uiHandler: Handler,
         mainThread: Thread,
         anrLogger: Logger,
-        additionalExtractors: List<AttributesExtractor<Array<StackTraceElement>, Void>>,
+        additionalExtractors: List<EventAttributesExtractor<Array<StackTraceElement>>>,
     ) :
         this(uiHandler, mainThread, anrLogger, additionalExtractors, DEFAULT_POLL_DURATION_NS)
 
@@ -82,7 +83,8 @@ internal class AnrWatcher(
                 .put(EXCEPTION_STACKTRACE, stackTraceToString(stackTrace))
 
         for (extractor in additionalExtractors) {
-            extractor.onStart(attributesBuilder, Context.current(), stackTrace)
+            val extractedAttributes = extractor.extract(Context.current(), stackTrace)
+            attributesBuilder.putAll(extractedAttributes)
         }
 
         val eventBuilder = anrLogger.logRecordBuilder() as ExtendedLogRecordBuilder
