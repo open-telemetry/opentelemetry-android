@@ -7,6 +7,7 @@ package io.opentelemetry.android.instrumentation.network
 
 import android.app.Application
 import android.os.Build
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -33,11 +34,10 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @Config(sdk = [Build.VERSION_CODES.P])
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
 @ExtendWith(MockKExtension::class)
 class NetworkChangeInstrumentationTest {
     private lateinit var otelTesting: OpenTelemetryRule

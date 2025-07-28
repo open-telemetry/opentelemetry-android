@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.internal.services
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
@@ -17,9 +18,8 @@ import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTra
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
 class ServicesTest {
     @Test
     fun `Verify that services are created lazily`() {

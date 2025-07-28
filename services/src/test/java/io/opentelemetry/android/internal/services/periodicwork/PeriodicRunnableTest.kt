@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.internal.services.periodicwork
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -15,9 +16,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
 class PeriodicRunnableTest {
     private lateinit var periodicWork: PeriodicWork
     private lateinit var testSystemTime: TestSystemTime

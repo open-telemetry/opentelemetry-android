@@ -5,16 +5,16 @@
 
 package io.opentelemetry.android.internal.services.periodicwork
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 import org.robolectric.shadows.ShadowLooper
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
 class PeriodicWorkTest {
     companion object {
         private const val DELAY_BETWEEN_EXECUTIONS_IN_SECONDS = 10L
