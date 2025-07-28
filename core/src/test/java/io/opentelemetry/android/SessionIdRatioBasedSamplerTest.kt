@@ -3,97 +3,100 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android;
+package io.opentelemetry.android
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import io.mockk.MockKAnnotations
+import io.mockk.every
+import io.mockk.impl.annotations.MockK
+import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanContext
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.context.Context
+import io.opentelemetry.sdk.trace.IdGenerator
+import io.opentelemetry.sdk.trace.data.LinkData
+import io.opentelemetry.sdk.trace.samplers.Sampler
+import io.opentelemetry.sdk.trace.samplers.SamplingDecision
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-import io.opentelemetry.android.session.SessionProvider;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.IdGenerator;
-import io.opentelemetry.sdk.trace.data.LinkData;
-import io.opentelemetry.sdk.trace.samplers.Sampler;
-import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
-import java.util.Collections;
-import java.util.List;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+internal class SessionIdRatioBasedSamplerTest {
+    @MockK
+    lateinit var sessionProvider: SessionProvider
+    private val traceId: String = idsGenerator.generateTraceId()
+    private val parentContext: Context = Context.root().with(Span.getInvalid())
+    private val parentLinks = mutableListOf<LinkData?>(LinkData.create(SpanContext.getInvalid()))
 
-@ExtendWith(MockitoExtension.class)
-class SessionIdRatioBasedSamplerTest {
-    private static final String HIGH_ID = "00000000000000008fffffffffffffff";
-    private static final String LOW_ID = "00000000000000000000000000000000";
-    private static final IdGenerator idsGenerator = IdGenerator.random();
-
-    @Mock SessionProvider sessionProvider;
-    private final String traceId = idsGenerator.generateTraceId();
-    private final Context parentContext = Context.root().with(Span.getInvalid());
-    private final List<LinkData> parentLinks =
-            Collections.singletonList(LinkData.create(SpanContext.getInvalid()));
+    @BeforeEach
+    fun setup() {
+        MockKAnnotations.init(this)
+    }
 
     @Test
-    void samplerDropsHigh() {
-        when(sessionProvider.getSessionId()).thenReturn(HIGH_ID);
+    fun samplerDropsHigh() {
+        every { sessionProvider.getSessionId() } returns HIGH_ID
 
-        SessionIdRatioBasedSampler sampler = new SessionIdRatioBasedSampler(0.5, sessionProvider);
+        val sampler = SessionIdRatioBasedSampler(0.5, sessionProvider!!)
 
         // Sampler drops if TraceIdRatioBasedSampler would drop this sessionId
-        assertEquals(shouldSample(sampler), SamplingDecision.DROP);
+        assertThat(shouldSample(sampler)).isEqualTo(SamplingDecision.DROP)
     }
 
     @Test
-    void samplerKeepsLowestId() {
+    fun samplerKeepsLowestId() {
         // Sampler accepts if TraceIdRatioBasedSampler would accept this sessionId
-        when(sessionProvider.getSessionId()).thenReturn(LOW_ID);
+        every { sessionProvider.getSessionId() } returns LOW_ID
 
-        SessionIdRatioBasedSampler sampler = new SessionIdRatioBasedSampler(0.5, sessionProvider);
-        assertEquals(shouldSample(sampler), SamplingDecision.RECORD_AND_SAMPLE);
+        val sampler = SessionIdRatioBasedSampler(0.5, sessionProvider!!)
+        assertThat(shouldSample(sampler)).isEqualTo(SamplingDecision.RECORD_AND_SAMPLE)
     }
 
     @Test
-    void zeroRatioDropsAll() {
-        when(sessionProvider.getSessionId()).thenReturn(HIGH_ID);
+    fun zeroRatioDropsAll() {
+        every { sessionProvider.getSessionId() } returns HIGH_ID
 
-        SessionIdRatioBasedSampler samplerHigh =
-                new SessionIdRatioBasedSampler(0.0, sessionProvider);
-        assertEquals(shouldSample(samplerHigh), SamplingDecision.DROP);
+        val samplerHigh =
+            SessionIdRatioBasedSampler(0.0, sessionProvider!!)
+        assertThat(shouldSample(samplerHigh)).isEqualTo(SamplingDecision.DROP)
 
-        when(sessionProvider.getSessionId()).thenReturn(LOW_ID);
+        every { sessionProvider.getSessionId() } returns LOW_ID
 
-        SessionIdRatioBasedSampler samplerLow =
-                new SessionIdRatioBasedSampler(0.0, sessionProvider);
-        assertEquals(shouldSample(samplerLow), SamplingDecision.DROP);
+        val samplerLow =
+            SessionIdRatioBasedSampler(0.0, sessionProvider!!)
+        assertThat(shouldSample(samplerLow)).isEqualTo(SamplingDecision.DROP)
     }
 
     @Test
-    void oneRatioAcceptsAll() {
-        when(sessionProvider.getSessionId()).thenReturn(HIGH_ID);
+    fun oneRatioAcceptsAll() {
+        every { sessionProvider.getSessionId() } returns HIGH_ID
 
-        SessionIdRatioBasedSampler samplerHigh =
-                new SessionIdRatioBasedSampler(1.0, sessionProvider);
-        assertEquals(shouldSample(samplerHigh), SamplingDecision.RECORD_AND_SAMPLE);
+        val samplerHigh =
+            SessionIdRatioBasedSampler(1.0, sessionProvider!!)
+        assertThat(shouldSample(samplerHigh)).isEqualTo(SamplingDecision.RECORD_AND_SAMPLE)
 
-        when(sessionProvider.getSessionId()).thenReturn(LOW_ID);
+        every { sessionProvider.getSessionId() } returns LOW_ID
 
-        SessionIdRatioBasedSampler samplerLow =
-                new SessionIdRatioBasedSampler(1.0, sessionProvider);
-        assertEquals(shouldSample(samplerLow), SamplingDecision.RECORD_AND_SAMPLE);
+        val samplerLow =
+            SessionIdRatioBasedSampler(1.0, sessionProvider!!)
+        assertThat(shouldSample(samplerLow)).isEqualTo(SamplingDecision.RECORD_AND_SAMPLE)
     }
 
-    private SamplingDecision shouldSample(Sampler sampler) {
-        return sampler.shouldSample(
-                        parentContext,
-                        traceId,
-                        "name",
-                        SpanKind.INTERNAL,
-                        Attributes.empty(),
-                        parentLinks)
-                .getDecision();
+    private fun shouldSample(sampler: Sampler): SamplingDecision? =
+        sampler
+            .shouldSample(
+                parentContext,
+                traceId,
+                "name",
+                SpanKind.INTERNAL,
+                Attributes.empty(),
+                parentLinks,
+            ).decision
+
+    companion object {
+        private const val HIGH_ID = "00000000000000008fffffffffffffff"
+        private const val LOW_ID = "00000000000000000000000000000000"
+        private val idsGenerator: IdGenerator = IdGenerator.random()
     }
 }
