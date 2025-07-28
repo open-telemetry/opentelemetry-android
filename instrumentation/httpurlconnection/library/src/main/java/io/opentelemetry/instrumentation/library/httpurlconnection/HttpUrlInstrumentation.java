@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.jetbrains.annotations.NotNull;
 
 /** Instrumentation for HttpURLConnection requests. */
 @AutoService(AndroidInstrumentation.class)
@@ -137,7 +136,7 @@ public class HttpUrlInstrumentation implements AndroidInstrumentation {
     }
 
     @Override
-    public void install(@NotNull InstallationContext ctx) {
+    public void install(@NonNull InstallationContext ctx) {
         HttpUrlConnectionSingletons.configure(this, ctx.getOpenTelemetry());
     }
 

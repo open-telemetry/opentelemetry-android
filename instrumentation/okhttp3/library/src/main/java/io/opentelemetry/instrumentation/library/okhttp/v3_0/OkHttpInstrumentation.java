@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 import okhttp3.Interceptor;
 import okhttp3.Response;
-import org.jetbrains.annotations.NotNull;
 
 /** Instrumentation for okhttp requests. */
 @AutoService(AndroidInstrumentation.class)
@@ -139,7 +138,7 @@ public class OkHttpInstrumentation implements AndroidInstrumentation {
     }
 
     @Override
-    public void install(@NotNull InstallationContext ctx) {
+    public void install(@NonNull InstallationContext ctx) {
         OkHttp3Singletons.configure(this, ctx.getOpenTelemetry());
     }
 
