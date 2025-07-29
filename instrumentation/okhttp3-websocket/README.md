@@ -22,9 +22,6 @@ plugins {
 ### Adding dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:okhttp3-websocket-library:LATEST_LIBRARY_VERSION") // <1>
+implementation("io.opentelemetry.android.instrumentation:okhttp3-websocket-library:LATEST_LIBRARY_VERSION")
 byteBuddy("io.opentelemetry.android.instrumentation:okhttp3-websocket-agent:LATEST_AGENT_VERSION") // <2>
 ```
-
-1. You can find the latest library version [here](https://central.sonatype.com/artifact/io.opentelemetry.android.instrumentation/okhttp3-websocket-library).
-2. You can find the latest instrumentation agent version [here](https://central.sonatype.com/artifact/io.opentelemetry.android.instrumentation/okhttp3-websocket-agent).
