@@ -1,4 +1,5 @@
 import gradle.kotlin.dsl.accessors._d8282334f089ec6fbf714caba2b86dd9.kotlin
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
@@ -40,6 +41,13 @@ android {
             apiVersion.set(minKotlinVersion)
             languageVersion.set(minKotlinVersion)
             freeCompilerArgs.set(listOf("-Xjvm-default=all"))
+        }
+    }
+    testOptions {
+        unitTests {
+            all { test ->
+                test.maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2) + 1
+            }
         }
     }
 }
