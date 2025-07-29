@@ -23,5 +23,5 @@ plugins {
 
 ```kotlin
 implementation("io.opentelemetry.android.instrumentation:okhttp3-websocket-library:0.13.0-alpha")
-byteBuddy("io.opentelemetry.android.instrumentation:okhttp3-websocket-agent:0.13.0-alpha") // <2>
+byteBuddy("io.opentelemetry.android.instrumentation:okhttp3-websocket-agent:0.13.0-alpha")
 ```
