@@ -32,7 +32,7 @@ class SessionIdRatioBasedSampler(
         name: String,
         spanKind: SpanKind,
         attributes: Attributes,
-        parentLinks: MutableList<LinkData?>,
+        parentLinks: List<LinkData?>,
     ): SamplingResult {
         // Replace traceId with sessionId
         return ratioBasedSampler.shouldSample(
