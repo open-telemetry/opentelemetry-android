@@ -52,7 +52,12 @@ jobs:
 
       - name: Update version in README
         run: sed -Ei "s/(\"io.opentelemetry.android:android-agent:).*\"/\1${VERSION}-alpha\"/" README.md
-
+      - name: Update instrumentation README.md versions
+        run: |
+          for f in $(find instrumentation -name README.md) ; do 
+            echo Updating version in $f; 
+            sed -Ei "s/(\(\"io\.opentelemetry\.android.*):[[:digit:]]+\.[[:digit:]]+\.[[:digit:]](-alpha)?\"/\1:${VERSION}-alpha\"/" $f
+          done
       - name: Update the change log with the approximate release date
         run: |
           date=$(date "+%Y-%m-%d")
@@ -109,7 +114,7 @@ jobs:
         run: .github/scripts/update-version.sh $NEXT_VERSION
 
       - name: Update version in README
-        run: sed -Ei "s/(\"io.opentelemetry.android:android-agent:).*\"/\1${VERSION}-alpha\"/" README.md
+        run: sed -Ei "s/(\"io.opentelemetry.android:opentelemetry-android-bom:).*\"/\1${VERSION}-alpha\"/" README.md
 
       - name: Update the change log on main
         run: |
