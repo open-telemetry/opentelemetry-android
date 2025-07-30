@@ -41,11 +41,17 @@ class SdkPreconfiguredRumBuilder internal constructor(
      * @return A new [OpenTelemetryRum] instance.
      */
     fun build(): OpenTelemetryRum {
-        val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionProvider)
+        val ctx = InstallationContext(application, sdk, sessionProvider)
+        val enabledInstrumentations = getEnabledInstrumentations()
+        val onShutdown = {
+            for (instrumentation in enabledInstrumentations) {
+                instrumentation.uninstall(ctx)
+            }
+        }
+        val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionProvider, onShutdown)
 
         // Install instrumentations
-        val ctx = InstallationContext(application, openTelemetryRum.openTelemetry, sessionProvider)
-        for (instrumentation in getEnabledInstrumentations()) {
+        for (instrumentation in enabledInstrumentations) {
             instrumentation.install(ctx)
         }
 
