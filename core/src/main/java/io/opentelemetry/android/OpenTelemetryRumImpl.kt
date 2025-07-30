@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk
 internal class OpenTelemetryRumImpl(
     private val openTelemetrySdk: OpenTelemetrySdk,
     private val sessionProvider: SessionProvider,
-    private val onShutdown: Runnable
+    private val onShutdown: Runnable,
 ) : OpenTelemetryRum {
     private val logger: ExtendedLogger =
         openTelemetrySdk.logsBridge
