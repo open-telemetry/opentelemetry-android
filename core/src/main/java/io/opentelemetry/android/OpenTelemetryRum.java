@@ -15,12 +15,7 @@ import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 
-/**
- * Entrypoint for the OpenTelemetry Real User Monitoring library for Android.
- *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
- */
+/** Entrypoint for the OpenTelemetry Real User Monitoring library for Android. */
 public interface OpenTelemetryRum {
 
     /**
@@ -137,4 +132,10 @@ public interface OpenTelemetryRum {
      * @param attributes The attributes associated with the event, providing metadata.
      */
     void emitEvent(String eventName, String body, Attributes attributes);
+
+    /**
+     * Initiates orderly shutdown of this OpenTelemetryRum instance. After this method completes,
+     * the instance should be considered invalid and no longer used.
+     */
+    void shutdown();
 }

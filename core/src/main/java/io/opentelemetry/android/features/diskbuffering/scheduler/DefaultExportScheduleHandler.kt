@@ -20,4 +20,9 @@ class DefaultExportScheduleHandler(
             periodicWorkService.enqueue(exportScheduler)
         }
     }
+
+    override fun disable() {
+        super.disable()
+        exportScheduler.shutdown()
+    }
 }

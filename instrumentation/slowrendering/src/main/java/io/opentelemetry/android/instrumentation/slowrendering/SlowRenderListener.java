@@ -26,6 +26,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
@@ -92,8 +93,21 @@ class SlowRenderListener implements DefaultingActivityLifecycleCallbacks {
                 TimeUnit.MILLISECONDS);
     }
 
+    public void shutdown() {
+        executorService.shutdownNow();
+        for (Map.Entry<Activity, PerActivityListener> entry : activities.entrySet()) {
+            Activity activity = entry.getKey();
+            PerActivityListener listener = entry.getValue();
+            activity.getWindow().removeOnFrameMetricsAvailableListener(listener);
+        }
+        activities.clear();
+    }
+
     @Override
     public void onActivityResumed(@NonNull Activity activity) {
+        if (executorService.isShutdown()) {
+            return;
+        }
         PerActivityListener listener = new PerActivityListener(activity);
         PerActivityListener existing = activities.putIfAbsent(activity, listener);
         if (existing == null) {
@@ -103,6 +117,9 @@ class SlowRenderListener implements DefaultingActivityLifecycleCallbacks {
 
     @Override
     public void onActivityPaused(@NonNull Activity activity) {
+        if (executorService.isShutdown()) {
+            return;
+        }
         PerActivityListener listener = activities.remove(activity);
         if (listener != null) {
             activity.getWindow().removeOnFrameMetricsAvailableListener(listener);

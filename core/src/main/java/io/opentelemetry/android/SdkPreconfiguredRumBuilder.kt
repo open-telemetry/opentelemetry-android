@@ -19,6 +19,7 @@ class SdkPreconfiguredRumBuilder internal constructor(
     private val sessionProvider: SessionProvider,
     private val config: OtelRumConfig,
 ) {
+    private var onShutdown: Runnable = Runnable {} // nop
     private val instrumentations = mutableListOf<AndroidInstrumentation>()
 
     /**
@@ -32,6 +33,15 @@ class SdkPreconfiguredRumBuilder internal constructor(
     }
 
     /**
+     * Call this to provide a shutdown hook that will be called when the OpenTelemetryRum
+     * instance is shut down.
+     */
+    fun setShutdownHook(onShutdown: Runnable): SdkPreconfiguredRumBuilder {
+        this.onShutdown = onShutdown
+        return this
+    }
+
+    /**
      * Creates a new instance of [OpenTelemetryRum] with the settings of this [ ].
      *
      *
@@ -41,11 +51,19 @@ class SdkPreconfiguredRumBuilder internal constructor(
      * @return A new [OpenTelemetryRum] instance.
      */
     fun build(): OpenTelemetryRum {
-        val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionProvider)
+        val ctx = InstallationContext(application, sdk, sessionProvider)
+        val enabledInstrumentations = getEnabledInstrumentations()
+        val onShutdown: () -> Unit = {
+            for (instrumentation in enabledInstrumentations) {
+                instrumentation.uninstall(ctx)
+            }
+            sdk.shutdown()
+            onShutdown.run()
+        }
+        val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionProvider, onShutdown)
 
         // Install instrumentations
-        val ctx = InstallationContext(application, openTelemetryRum.openTelemetry, sessionProvider)
-        for (instrumentation in getEnabledInstrumentations()) {
+        for (instrumentation in enabledInstrumentations) {
             instrumentation.install(ctx)
         }
 
