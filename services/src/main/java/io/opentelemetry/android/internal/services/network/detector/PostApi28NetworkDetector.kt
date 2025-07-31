@@ -89,6 +89,7 @@ internal class PostApi28NetworkDetector
         @Suppress("MissingPermission", "CyclomaticComplexMethod")
         private fun getDataNetworkTypeName(): String? =
             if (readPhoneState()) {
+                @Suppress("DEPRECATION") // suppress deprecated network type
                 when (telephonyManager.dataNetworkType) {
                     NETWORK_TYPE_1xRTT -> "1xRTT"
                     NETWORK_TYPE_CDMA -> "CDMA"

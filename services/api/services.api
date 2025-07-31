@@ -62,10 +62,6 @@ public final class io/opentelemetry/android/internal/services/network/detector/N
 	public final fun create (Landroid/content/Context;)Lio/opentelemetry/android/internal/services/network/detector/NetworkDetector;
 }
 
-public final class io/opentelemetry/android/internal/services/network/detector/PostApi28NetworkDetectorKt {
-	public static final fun canReadPhoneState (Landroid/content/Context;)Z
-}
-
 public abstract class io/opentelemetry/android/internal/services/periodicwork/PeriodicRunnable : java/lang/Runnable {
 	public fun <init> (Lkotlin/jvm/functions/Function0;)V
 	public abstract fun minimumDelayUntilNextRunInMillis ()J

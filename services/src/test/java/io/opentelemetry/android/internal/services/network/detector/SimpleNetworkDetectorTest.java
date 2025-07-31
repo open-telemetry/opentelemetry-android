@@ -23,6 +23,7 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowNetworkInfo;
 
+@SuppressWarnings("deprecation") // suppress warnings around deprecated network state APIs
 @RunWith(AndroidJUnit4.class)
 @Config(sdk = Build.VERSION_CODES.P)
 public class SimpleNetworkDetectorTest {
