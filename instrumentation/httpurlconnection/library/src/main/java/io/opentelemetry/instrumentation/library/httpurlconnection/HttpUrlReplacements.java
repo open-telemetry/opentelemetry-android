@@ -369,7 +369,7 @@ public class HttpUrlReplacements {
 
         private final InputStream inputStream;
 
-        public InstrumentedInputStream(URLConnection connection, InputStream inputStream) {
+        private InstrumentedInputStream(URLConnection connection, InputStream inputStream) {
             this.connection = connection;
             this.inputStream = inputStream;
         }
