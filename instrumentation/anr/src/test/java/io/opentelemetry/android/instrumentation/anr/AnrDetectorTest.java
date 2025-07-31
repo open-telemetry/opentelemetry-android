@@ -6,15 +6,16 @@
 package io.opentelemetry.android.instrumentation.anr;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor.constant;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.os.Looper;
+import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor;
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.Collections;
 import java.util.concurrent.ScheduledExecutorService;
@@ -36,9 +37,11 @@ class AnrDetectorTest {
         when(mainLooper.getThread()).thenReturn(new Thread());
         OpenTelemetry openTelemetry = OpenTelemetrySdk.builder().build();
 
+        EventAttributesExtractor<StackTraceElement[]> extractor =
+                (parentContext, o) -> Attributes.of(stringKey("test.key"), "abc");
         AnrDetector anrDetector =
                 new AnrDetector(
-                        Collections.singletonList(constant(stringKey("test.key"), "abc")),
+                        Collections.singletonList(extractor),
                         mainLooper,
                         scheduler,
                         appLifecycle,

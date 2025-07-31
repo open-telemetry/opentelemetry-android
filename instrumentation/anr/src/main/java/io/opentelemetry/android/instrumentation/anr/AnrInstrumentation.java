@@ -10,8 +10,8 @@ import androidx.annotation.NonNull;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.instrumentation.InstallationContext;
+import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor;
 import io.opentelemetry.android.internal.services.Services;
-import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -22,14 +22,14 @@ import java.util.concurrent.ScheduledExecutorService;
 public final class AnrInstrumentation implements AndroidInstrumentation {
 
     public static final String INSTRUMENTATION_NAME = "anr";
-    final List<AttributesExtractor<StackTraceElement[], Void>> additionalExtractors =
+    final List<EventAttributesExtractor<StackTraceElement[]>> additionalExtractors =
             new ArrayList<>();
     Looper mainLooper = Looper.getMainLooper();
     ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    /** Adds an {@link AttributesExtractor} that will extract additional attributes. */
+    /** Adds an {@link EventAttributesExtractor} that will extract additional attributes. */
     public AnrInstrumentation addAttributesExtractor(
-            AttributesExtractor<StackTraceElement[], Void> extractor) {
+            EventAttributesExtractor<StackTraceElement[]> extractor) {
         additionalExtractors.add(extractor);
         return this;
     }

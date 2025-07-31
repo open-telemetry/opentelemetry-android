@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.common;
+package io.opentelemetry.android.instrumentation.crash;
 
 import static io.opentelemetry.android.common.RumConstants.BATTERY_PERCENT_KEY;
 import static io.opentelemetry.android.common.RumConstants.HEAP_FREE_KEY;
@@ -15,13 +15,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
 import androidx.annotation.Nullable;
+import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import java.io.File;
 
 /** Represents details about the runtime environment at a time */
 public final class RuntimeDetailsExtractor<RQ, RS> extends BroadcastReceiver
-        implements AttributesExtractor<RQ, RS> {
+        implements EventAttributesExtractor<RQ> {
 
     private @Nullable volatile Double batteryPercent = null;
     private final File filesDir;
@@ -46,10 +47,8 @@ public final class RuntimeDetailsExtractor<RQ, RS> extends BroadcastReceiver
     }
 
     @Override
-    public void onStart(
-            AttributesBuilder attributes,
-            io.opentelemetry.context.Context parentContext,
-            RQ request) {
+    public Attributes extract(io.opentelemetry.context.Context parentContext, RQ request) {
+        AttributesBuilder attributes = Attributes.builder();
         attributes.put(STORAGE_SPACE_FREE_KEY, getCurrentStorageFreeSpaceInBytes());
         attributes.put(HEAP_FREE_KEY, getCurrentFreeHeapInBytes());
 
@@ -57,15 +56,8 @@ public final class RuntimeDetailsExtractor<RQ, RS> extends BroadcastReceiver
         if (currentBatteryPercent != null) {
             attributes.put(BATTERY_PERCENT_KEY, currentBatteryPercent);
         }
+        return attributes.build();
     }
-
-    @Override
-    public void onEnd(
-            AttributesBuilder attributes,
-            io.opentelemetry.context.Context context,
-            RQ request,
-            RS response,
-            Throwable error) {}
 
     private long getCurrentStorageFreeSpaceInBytes() {
         return filesDir.getFreeSpace();

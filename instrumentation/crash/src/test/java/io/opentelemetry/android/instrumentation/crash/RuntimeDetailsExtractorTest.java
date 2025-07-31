@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.common;
+package io.opentelemetry.android.instrumentation.crash;
 
 import static io.opentelemetry.android.common.RumConstants.BATTERY_PERCENT_KEY;
 import static io.opentelemetry.android.common.RumConstants.HEAP_FREE_KEY;
@@ -43,7 +43,7 @@ class RuntimeDetailsExtractorTest {
         details.onReceive(context, intent);
 
         AttributesBuilder attributes = Attributes.builder();
-        details.onStart(attributes, root(), null);
+        attributes.putAll(details.extract(root(), null));
         assertThat(attributes.build())
                 .hasSize(3)
                 .containsEntry(STORAGE_SPACE_FREE_KEY, 4200L)

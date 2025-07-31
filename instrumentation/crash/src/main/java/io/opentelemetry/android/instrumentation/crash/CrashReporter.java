@@ -11,13 +11,13 @@ import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_TYPE;
 import static io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.THREAD_ID;
 import static io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.THREAD_NAME;
 
+import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public final class CrashReporter {
-    private final List<AttributesExtractor<CrashDetails, Void>> additionalExtractors;
+    private final List<EventAttributesExtractor<CrashDetails>> additionalExtractors;
 
-    public CrashReporter(List<AttributesExtractor<CrashDetails, Void>> additionalExtractors) {
+    public CrashReporter(List<EventAttributesExtractor<CrashDetails>> additionalExtractors) {
         this.additionalExtractors = additionalExtractors;
     }
 
@@ -55,8 +55,9 @@ public final class CrashReporter {
                         .put(EXCEPTION_STACKTRACE, stackTraceToString(throwable))
                         .put(EXCEPTION_TYPE, throwable.getClass().getName());
 
-        for (AttributesExtractor<CrashDetails, Void> extractor : additionalExtractors) {
-            extractor.onStart(attributesBuilder, Context.current(), crashDetails);
+        for (EventAttributesExtractor<CrashDetails> extractor : additionalExtractors) {
+            Attributes extractedAttributes = extractor.extract(Context.current(), crashDetails);
+            attributesBuilder.putAll(extractedAttributes);
         }
 
         ExtendedLogRecordBuilder eventBuilder =

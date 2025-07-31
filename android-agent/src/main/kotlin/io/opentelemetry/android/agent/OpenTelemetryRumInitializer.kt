@@ -18,6 +18,7 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.activity.ActivityLifecycleInstrumentation
 import io.opentelemetry.android.instrumentation.anr.AnrInstrumentation
+import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.instrumentation.crash.CrashDetails
 import io.opentelemetry.android.instrumentation.crash.CrashReporterInstrumentation
@@ -31,7 +32,6 @@ import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
-import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor
 import java.time.Duration
 
 object OpenTelemetryRumInitializer {
@@ -81,8 +81,8 @@ object OpenTelemetryRumInitializer {
         activityNameExtractor: ScreenNameExtractor? = null,
         fragmentTracerCustomizer: ((Tracer) -> Tracer)? = null,
         fragmentNameExtractor: ScreenNameExtractor? = null,
-        anrAttributesExtractors: List<AttributesExtractor<Array<StackTraceElement>, Void>> = emptyList(),
-        crashAttributesExtractors: List<AttributesExtractor<CrashDetails, Void>> = emptyList(),
+        anrAttributesExtractors: List<EventAttributesExtractor<Array<StackTraceElement>>> = emptyList(),
+        crashAttributesExtractors: List<EventAttributesExtractor<CrashDetails>> = emptyList(),
         networkChangeAttributesExtractors: List<NetworkAttributesExtractor> = emptyList(),
         slowRenderingDetectionPollInterval: Duration? = null,
     ): OpenTelemetryRum {
@@ -135,8 +135,8 @@ object OpenTelemetryRumInitializer {
         activityNameExtractor: ScreenNameExtractor?,
         fragmentTracerCustomizer: ((Tracer) -> Tracer)?,
         fragmentNameExtractor: ScreenNameExtractor?,
-        anrAttributesExtractors: List<AttributesExtractor<Array<StackTraceElement>, Void>>,
-        crashAttributesExtractors: List<AttributesExtractor<CrashDetails, Void>>,
+        anrAttributesExtractors: List<EventAttributesExtractor<Array<StackTraceElement>>>,
+        crashAttributesExtractors: List<EventAttributesExtractor<CrashDetails>>,
         networkChangeAttributesExtractors: List<NetworkAttributesExtractor>,
         slowRenderingDetectionPollInterval: Duration?,
     ) {

@@ -7,10 +7,9 @@ package io.opentelemetry.android.instrumentation.crash;
 
 import androidx.annotation.NonNull;
 import com.google.auto.service.AutoService;
-import io.opentelemetry.android.common.RuntimeDetailsExtractor;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.instrumentation.InstallationContext;
-import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
+import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,11 +18,11 @@ import java.util.List;
 @AutoService(AndroidInstrumentation.class)
 public final class CrashReporterInstrumentation implements AndroidInstrumentation {
     private static final String INSTRUMENTATION_NAME = "crash";
-    private final List<AttributesExtractor<CrashDetails, Void>> additionalExtractors =
+    private final List<EventAttributesExtractor<CrashDetails>> additionalExtractors =
             new ArrayList<>();
 
-    /** Adds an {@link AttributesExtractor} that will extract additional attributes. */
-    public void addAttributesExtractor(AttributesExtractor<CrashDetails, Void> extractor) {
+    /** Adds an {@link EventAttributesExtractor} that will extract additional attributes. */
+    public void addAttributesExtractor(EventAttributesExtractor<CrashDetails> extractor) {
         additionalExtractors.add(extractor);
     }
 
