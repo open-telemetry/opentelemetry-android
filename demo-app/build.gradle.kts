@@ -13,7 +13,7 @@ localProperties.load(FileInputStream(rootProject.file("local.properties")))
 
 android {
     namespace = "io.opentelemetry.android.demo"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "io.opentelemetry.android.demo"
