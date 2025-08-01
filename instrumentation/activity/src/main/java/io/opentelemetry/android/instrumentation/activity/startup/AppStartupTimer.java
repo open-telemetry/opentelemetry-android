@@ -134,7 +134,7 @@ public class AppStartupTimer {
     private static class StartFromBackgroundRunnable implements Runnable {
         private final AppStartupTimer startupTimer;
 
-        public StartFromBackgroundRunnable(AppStartupTimer startupTimer) {
+        private StartFromBackgroundRunnable(AppStartupTimer startupTimer) {
             this.startupTimer = startupTimer;
         }
 

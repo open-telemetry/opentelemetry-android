@@ -91,6 +91,7 @@ internal class PostApi28NetworkDetector
             return builder.build()
         }
 
+        @Suppress("DEPRECATION") // suppress deprecated network type
         private fun getDataNetworkTypeName(dataNetworkType: Int): String =
             when (dataNetworkType) {
                 NETWORK_TYPE_1xRTT -> "1xRTT"

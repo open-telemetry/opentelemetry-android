@@ -38,7 +38,7 @@ internal class SessionIdRatioBasedSamplerTest {
     fun samplerDropsHigh() {
         every { sessionProvider.getSessionId() } returns HIGH_ID
 
-        val sampler = SessionIdRatioBasedSampler(0.5, sessionProvider!!)
+        val sampler = SessionIdRatioBasedSampler(0.5, sessionProvider)
 
         // Sampler drops if TraceIdRatioBasedSampler would drop this sessionId
         assertThat(shouldSample(sampler)).isEqualTo(SamplingDecision.DROP)
@@ -49,7 +49,7 @@ internal class SessionIdRatioBasedSamplerTest {
         // Sampler accepts if TraceIdRatioBasedSampler would accept this sessionId
         every { sessionProvider.getSessionId() } returns LOW_ID
 
-        val sampler = SessionIdRatioBasedSampler(0.5, sessionProvider!!)
+        val sampler = SessionIdRatioBasedSampler(0.5, sessionProvider)
         assertThat(shouldSample(sampler)).isEqualTo(SamplingDecision.RECORD_AND_SAMPLE)
     }
 
@@ -58,13 +58,13 @@ internal class SessionIdRatioBasedSamplerTest {
         every { sessionProvider.getSessionId() } returns HIGH_ID
 
         val samplerHigh =
-            SessionIdRatioBasedSampler(0.0, sessionProvider!!)
+            SessionIdRatioBasedSampler(0.0, sessionProvider)
         assertThat(shouldSample(samplerHigh)).isEqualTo(SamplingDecision.DROP)
 
         every { sessionProvider.getSessionId() } returns LOW_ID
 
         val samplerLow =
-            SessionIdRatioBasedSampler(0.0, sessionProvider!!)
+            SessionIdRatioBasedSampler(0.0, sessionProvider)
         assertThat(shouldSample(samplerLow)).isEqualTo(SamplingDecision.DROP)
     }
 
@@ -73,13 +73,13 @@ internal class SessionIdRatioBasedSamplerTest {
         every { sessionProvider.getSessionId() } returns HIGH_ID
 
         val samplerHigh =
-            SessionIdRatioBasedSampler(1.0, sessionProvider!!)
+            SessionIdRatioBasedSampler(1.0, sessionProvider)
         assertThat(shouldSample(samplerHigh)).isEqualTo(SamplingDecision.RECORD_AND_SAMPLE)
 
         every { sessionProvider.getSessionId() } returns LOW_ID
 
         val samplerLow =
-            SessionIdRatioBasedSampler(1.0, sessionProvider!!)
+            SessionIdRatioBasedSampler(1.0, sessionProvider)
         assertThat(shouldSample(samplerLow)).isEqualTo(SamplingDecision.RECORD_AND_SAMPLE)
     }
 
