@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MaxLineLength:SdkInitializationEvents.kt$SdkInitializationEvents$*</ID>
+    <ID>TooManyFunctions:SdkInitializationEvents.kt$SdkInitializationEvents : InitializationEvents</ID>
+  </CurrentIssues>
+</SmellBaseline>

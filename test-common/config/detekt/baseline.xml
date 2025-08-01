@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ForbiddenComment:AssertionExtensions.kt$// TODO: This will be removed after the event bits of logs gets out of incubating.</ID>
+  </CurrentIssues>
+</SmellBaseline>
