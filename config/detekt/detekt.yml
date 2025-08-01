@@ -1,0 +1,3 @@
+# https://detekt.dev/docs/introduction/configurations/
+build:
+  maxIssues: 0

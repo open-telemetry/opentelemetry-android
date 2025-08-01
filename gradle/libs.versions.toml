@@ -15,6 +15,7 @@ junitKtx = "1.3.0"
 autoService = "1.1.1"
 androidx-navigation = "2.7.7"
 compose = "1.5.4"
+detekt = "1.23.8"
 
 [libraries]
 opentelemetry-platform-alpha = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-instrumentation-alpha" }
@@ -47,6 +48,7 @@ volley = "com.android.volley:volley:1.2.1"
 auto-service-annotations = { module = "com.google.auto.service:auto-service-annotations", version.ref = "autoService" }
 auto-service-processor = { module = "com.google.auto.service:auto-service", version.ref = "autoService" }
 compose = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
+detekt-plugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 
 #Test tools
 opentelemetry-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-testing" }

@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:PostApi28NetworkDetector.kt$PostApi28NetworkDetector$private fun getDataNetworkTypeName(dataNetworkType: Int): String</ID>
+    <ID>ForbiddenComment:NetworkDetector.kt$NetworkDetector.Companion$// TODO: Use ServiceManager to get the ConnectivityManager or similar (not yet managed/abstracted)</ID>
+    <ID>ForbiddenComment:NetworkDetector.kt$NetworkDetector.Companion$// TODO: Use ServiceManager to get the TelephonyManager or similar (not yet managed/abstracted)</ID>
+    <ID>MagicNumber:VisibleScreenTracker.kt$VisibleScreenTracker$29</ID>
+    <ID>MaxLineLength:CurrentNetworkProviderTest.kt$CurrentNetworkProviderTest$@Config(sdk = [Build.VERSION_CODES.N, Build.VERSION_CODES.P, Build.VERSION_CODES.Q, Build.VERSION_CODES.UPSIDE_DOWN_CAKE])</ID>
+    <ID>MaxLineLength:PeriodicRunnable.kt$PeriodicRunnable$* Called only if a) The runnable has never run before, OR b) The minimum amount of time delay has passed after the last run.</ID>
+    <ID>ReturnCount:SimpleNetworkDetector.kt$SimpleNetworkDetector$@RequiresApi(api = Build.VERSION_CODES.Q) private fun detectUsingModernApi(): CurrentNetwork</ID>
+  </CurrentIssues>
+</SmellBaseline>
