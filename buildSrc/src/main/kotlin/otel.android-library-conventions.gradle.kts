@@ -62,13 +62,14 @@ detekt {
     autoCorrect = true
 
     // overwrite default behaviour here, if needed
-    config.from(project.files("${project.rootDir}/config/detekt/detekt.yml"))
+    config.from(rootProject.files("config/detekt/detekt.yml"))
+
     // suppress pre-existing issues on a per-project basis
-    baseline = project.file("${project.projectDir}/config/detekt/baseline.xml")
+    baseline = project.file("config/detekt/baseline.xml")
 }
 
 project.tasks.withType(Detekt::class.java).configureEach {
-    jvmTarget = "1.8"
+    jvmTarget = targetJvm.target
     reports {
         html.required.set(true)
         xml.required.set(false)
