@@ -1,5 +1,5 @@
 import gradle.kotlin.dsl.accessors._d8282334f089ec6fbf714caba2b86dd9.kotlin
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
@@ -9,6 +9,7 @@ plugins {
     id("otel.errorprone-conventions")
     id("kotlin-kapt")
     id("otel.animalsniffer-conventions")
+    id("io.gitlab.arturbosch.detekt")
 }
 
 val javaVersion = rootProject.extra["java_version"] as JavaVersion
@@ -54,6 +55,25 @@ android {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    autoCorrect = true
+
+    // overwrite default behaviour here, if needed
+    config.from(rootProject.files("config/detekt/detekt.yml"))
+
+    // suppress pre-existing issues on a per-project basis
+    baseline = project.file("config/detekt/baseline.xml")
+}
+
+project.tasks.withType(Detekt::class.java).configureEach {
+    jvmTarget = targetJvm.target
+    reports {
+        html.required.set(true)
+        xml.required.set(false)
+    }
 }
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
