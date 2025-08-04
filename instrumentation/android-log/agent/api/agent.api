@@ -1,0 +1,8 @@
+public class io/opentelemetry/instrumentation/agent/log/AndroidLogPlugin : net/bytebuddy/build/Plugin {
+	public fun <init> (Lnet/bytebuddy/build/AndroidDescriptor;)V
+	public fun apply (Lnet/bytebuddy/dynamic/DynamicType$Builder;Lnet/bytebuddy/description/type/TypeDescription;Lnet/bytebuddy/dynamic/ClassFileLocator;)Lnet/bytebuddy/dynamic/DynamicType$Builder;
+	public fun close ()V
+	public synthetic fun matches (Ljava/lang/Object;)Z
+	public fun matches (Lnet/bytebuddy/description/type/TypeDescription;)Z
+}
+

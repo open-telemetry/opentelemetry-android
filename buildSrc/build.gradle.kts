@@ -24,4 +24,5 @@ dependencies {
     implementation(libs.animalsniffer.plugin)
     implementation(libs.kotlin.plugin)
     implementation(libs.detekt.plugin)
+    implementation(libs.binary.compat.validator)
 }

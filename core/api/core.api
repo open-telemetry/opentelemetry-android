@@ -1,0 +1,249 @@
+public final class io/opentelemetry/android/AndroidResource {
+	public static final field INSTANCE Lio/opentelemetry/android/AndroidResource;
+	public static final fun createDefault (Landroid/app/Application;)Lio/opentelemetry/sdk/resources/Resource;
+}
+
+public final class io/opentelemetry/android/BuildConfig {
+	public static final field BUILD_TYPE Ljava/lang/String;
+	public static final field DEBUG Z
+	public static final field LIBRARY_PACKAGE_NAME Ljava/lang/String;
+	public static final field OTEL_ANDROID_VERSION Ljava/lang/String;
+	public fun <init> ()V
+}
+
+public abstract interface class io/opentelemetry/android/OpenTelemetryRum {
+	public static fun builder (Landroid/app/Application;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public static fun builder (Landroid/app/Application;Lio/opentelemetry/android/config/OtelRumConfig;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public static fun builder (Landroid/app/Application;Lio/opentelemetry/sdk/OpenTelemetrySdk;Lio/opentelemetry/android/config/OtelRumConfig;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/android/SdkPreconfiguredRumBuilder;
+	public fun emitEvent (Ljava/lang/String;)V
+	public fun emitEvent (Ljava/lang/String;Lio/opentelemetry/api/common/Attributes;)V
+	public fun emitEvent (Ljava/lang/String;Ljava/lang/String;)V
+	public abstract fun emitEvent (Ljava/lang/String;Ljava/lang/String;Lio/opentelemetry/api/common/Attributes;)V
+	public abstract fun getOpenTelemetry ()Lio/opentelemetry/api/OpenTelemetry;
+	public abstract fun getRumSessionId ()Ljava/lang/String;
+	public static fun noop ()Lio/opentelemetry/android/OpenTelemetryRum;
+	public abstract fun shutdown ()V
+}
+
+public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
+	public fun addInstrumentation (Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public fun addLogRecordExporterCustomizer (Ljava/util/function/Function;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public fun addLoggerProviderCustomizer (Ljava/util/function/BiFunction;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public fun addMeterProviderCustomizer (Ljava/util/function/BiFunction;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public fun addMetricExporterCustomizer (Ljava/util/function/Function;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public fun addOtelSdkReadyListener (Ljava/util/function/Consumer;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public fun addPropagatorCustomizer (Ljava/util/function/Function;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public fun addSpanExporterCustomizer (Ljava/util/function/Function;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public fun addTracerProviderCustomizer (Ljava/util/function/BiFunction;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public fun build ()Lio/opentelemetry/android/OpenTelemetryRum;
+	public static fun create (Landroid/app/Application;Lio/opentelemetry/android/config/OtelRumConfig;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public fun mergeResource (Lio/opentelemetry/sdk/resources/Resource;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public fun setExportScheduleHandler (Lio/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public fun setResource (Lio/opentelemetry/sdk/resources/Resource;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public fun setSessionProvider (Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+}
+
+public final class io/opentelemetry/android/SdkPreconfiguredRumBuilder {
+	public final fun addInstrumentation (Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;)Lio/opentelemetry/android/SdkPreconfiguredRumBuilder;
+	public final fun build ()Lio/opentelemetry/android/OpenTelemetryRum;
+	public final fun setShutdownHook (Ljava/lang/Runnable;)Lio/opentelemetry/android/SdkPreconfiguredRumBuilder;
+}
+
+public final class io/opentelemetry/android/SessionIdRatioBasedSampler : io/opentelemetry/sdk/trace/samplers/Sampler {
+	public fun <init> (DLio/opentelemetry/android/session/SessionProvider;)V
+	public fun getDescription ()Ljava/lang/String;
+	public fun shouldSample (Lio/opentelemetry/context/Context;Ljava/lang/String;Ljava/lang/String;Lio/opentelemetry/api/trace/SpanKind;Lio/opentelemetry/api/common/Attributes;Ljava/util/List;)Lio/opentelemetry/sdk/trace/samplers/SamplingResult;
+}
+
+public class io/opentelemetry/android/config/OtelRumConfig {
+	public fun <init> ()V
+	public fun disableInstrumentationDiscovery ()Lio/opentelemetry/android/config/OtelRumConfig;
+	public fun disableNetworkAttributes ()Lio/opentelemetry/android/config/OtelRumConfig;
+	public fun disableScreenAttributes ()Lio/opentelemetry/android/config/OtelRumConfig;
+	public fun disableSdkInitializationEvents ()Lio/opentelemetry/android/config/OtelRumConfig;
+	public fun getDiskBufferingConfig ()Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public fun getGlobalAttributesSupplier ()Ljava/util/function/Supplier;
+	public fun hasGlobalAttributes ()Z
+	public fun isSuppressed (Ljava/lang/String;)Z
+	public fun setDiskBufferingConfig (Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;)Lio/opentelemetry/android/config/OtelRumConfig;
+	public fun setGlobalAttributes (Lio/opentelemetry/api/common/Attributes;)Lio/opentelemetry/android/config/OtelRumConfig;
+	public fun setGlobalAttributes (Ljava/util/function/Supplier;)Lio/opentelemetry/android/config/OtelRumConfig;
+	public fun shouldDiscoverInstrumentations ()Z
+	public fun shouldGenerateSdkInitializationEvents ()Z
+	public fun shouldIncludeNetworkAttributes ()Z
+	public fun shouldIncludeScreenAttributes ()Z
+	public fun suppressInstrumentation (Ljava/lang/String;)Lio/opentelemetry/android/config/OtelRumConfig;
+}
+
+public class io/opentelemetry/android/export/AttributeModifyingSpanExporter : io/opentelemetry/sdk/trace/export/SpanExporter {
+	public fun <init> (Lio/opentelemetry/sdk/trace/export/SpanExporter;Ljava/util/Map;)V
+	public fun export (Ljava/util/Collection;)Lio/opentelemetry/sdk/common/CompletableResultCode;
+	public fun flush ()Lio/opentelemetry/sdk/common/CompletableResultCode;
+	public fun shutdown ()Lio/opentelemetry/sdk/common/CompletableResultCode;
+}
+
+public class io/opentelemetry/android/export/FilteringSpanExporter {
+	public fun <init> ()V
+	public static fun builder (Lio/opentelemetry/sdk/trace/export/SpanExporter;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+}
+
+public final class io/opentelemetry/android/export/FilteringSpanExporterBuilder {
+	public fun build ()Lio/opentelemetry/sdk/trace/export/SpanExporter;
+	public fun rejectSpansNamed (Ljava/lang/String;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+	public fun rejectSpansNamed (Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+	public fun rejectSpansWithAttributesMatching (Ljava/util/Map;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+	public fun rejectSpansWithNameContaining (Ljava/lang/String;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+	public fun rejecting (Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+}
+
+public final class io/opentelemetry/android/export/SpanDataModifier {
+	public fun build ()Lio/opentelemetry/sdk/trace/export/SpanExporter;
+	public static fun builder (Lio/opentelemetry/sdk/trace/export/SpanExporter;)Lio/opentelemetry/android/export/SpanDataModifier;
+	public fun rejectSpansByAttributeValue (Lio/opentelemetry/api/common/AttributeKey;Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/SpanDataModifier;
+	public fun rejectSpansByName (Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/SpanDataModifier;
+	public fun removeSpanAttribute (Lio/opentelemetry/api/common/AttributeKey;)Lio/opentelemetry/android/export/SpanDataModifier;
+	public fun removeSpanAttribute (Lio/opentelemetry/api/common/AttributeKey;Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/SpanDataModifier;
+	public fun replaceSpanAttribute (Lio/opentelemetry/api/common/AttributeKey;Ljava/util/function/Function;)Lio/opentelemetry/android/export/SpanDataModifier;
+}
+
+public final class io/opentelemetry/android/features/diskbuffering/DiskBufferingConfig {
+	public static final field Companion Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig$Companion;
+	public fun <init> ()V
+	public fun <init> (Z)V
+	public fun <init> (ZI)V
+	public fun <init> (ZIJ)V
+	public fun <init> (ZIJJ)V
+	public fun <init> (ZIJJJ)V
+	public fun <init> (ZIJJJI)V
+	public fun <init> (ZIJJJIZ)V
+	public fun <init> (ZIJJJIZLjava/io/File;)V
+	public synthetic fun <init> (ZIJJJIZLjava/io/File;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component2 ()I
+	public final fun component3 ()J
+	public final fun component4 ()J
+	public final fun component5 ()J
+	public final fun component6 ()I
+	public final fun component7 ()Z
+	public final fun component8 ()Ljava/io/File;
+	public final fun copy (ZIJJJIZLjava/io/File;)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public static synthetic fun copy$default (Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;ZIJJJIZLjava/io/File;ILjava/lang/Object;)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public static final fun create ()Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public static final fun create (Z)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public static final fun create (ZI)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public static final fun create (ZIJ)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public static final fun create (ZIJJ)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public static final fun create (ZIJJJ)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public static final fun create (ZIJJJI)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public static final fun create (ZIJJJIZ)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public static final fun create (ZIJJJIZLjava/io/File;)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDebugEnabled ()Z
+	public final fun getEnabled ()Z
+	public final fun getMaxCacheFileSize ()I
+	public final fun getMaxCacheSize ()I
+	public final fun getMaxFileAgeForReadMillis ()J
+	public final fun getMaxFileAgeForWriteMillis ()J
+	public final fun getMinFileAgeForReadMillis ()J
+	public final fun getSignalsBufferDir ()Ljava/io/File;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/opentelemetry/android/features/diskbuffering/DiskBufferingConfig$Companion {
+	public final fun create ()Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public final fun create (Z)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public final fun create (ZI)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public final fun create (ZIJ)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public final fun create (ZIJJ)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public final fun create (ZIJJJ)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public final fun create (ZIJJJI)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public final fun create (ZIJJJIZ)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public final fun create (ZIJJJIZLjava/io/File;)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public static synthetic fun create$default (Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig$Companion;ZIJJJIZLjava/io/File;ILjava/lang/Object;)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+}
+
+public final class io/opentelemetry/android/features/diskbuffering/DiskBufferingConfigKt {
+	public static final field DEFAULT_MAX_CACHE_SIZE I
+	public static final field DEFAULT_MAX_FILE_AGE_FOR_READ_MS J
+	public static final field DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS J
+	public static final field DEFAULT_MIN_FILE_AGE_FOR_READ_MS J
+	public static final field MAX_CACHE_FILE_SIZE I
+}
+
+public final class io/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter {
+	public static final field Companion Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter$Companion;
+	public fun <init> (Lio/opentelemetry/contrib/disk/buffering/SpanFromDiskExporter;Lio/opentelemetry/contrib/disk/buffering/MetricFromDiskExporter;Lio/opentelemetry/contrib/disk/buffering/LogRecordFromDiskExporter;)V
+	public final fun exportBatchOfEach ()Z
+	public final fun exportBatchOfLogs ()Z
+	public final fun exportBatchOfMetrics ()Z
+	public final fun exportBatchOfSpans ()Z
+	public static final fun get ()Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;
+	public static final fun resetForTesting ()V
+	public static final fun set (Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;)V
+}
+
+public final class io/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter$Companion {
+	public final fun get ()Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;
+	public final fun resetForTesting ()V
+	public final fun set (Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;)V
+}
+
+public final class io/opentelemetry/android/features/diskbuffering/scheduler/DefaultExportScheduleHandler : io/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler {
+	public fun <init> (Lio/opentelemetry/android/features/diskbuffering/scheduler/DefaultExportScheduler;Lkotlin/jvm/functions/Function0;)V
+	public fun disable ()V
+	public fun enable ()V
+}
+
+public final class io/opentelemetry/android/features/diskbuffering/scheduler/DefaultExportScheduler : io/opentelemetry/android/internal/services/periodicwork/PeriodicRunnable {
+	public static final field Companion Lio/opentelemetry/android/features/diskbuffering/scheduler/DefaultExportScheduler$Companion;
+	public fun <init> (Lkotlin/jvm/functions/Function0;)V
+	public fun minimumDelayUntilNextRunInMillis ()J
+	public fun onRun ()V
+	public fun shouldStopRunning ()Z
+	public final fun shutdown ()V
+}
+
+public final class io/opentelemetry/android/features/diskbuffering/scheduler/DefaultExportScheduler$Companion {
+}
+
+public abstract interface class io/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler {
+	public fun disable ()V
+	public abstract fun enable ()V
+}
+
+public final class io/opentelemetry/android/internal/features/networkattrs/NetworkAttributesLogRecordAppender : io/opentelemetry/sdk/logs/LogRecordProcessor {
+	public fun <init> (Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;)V
+	public fun <init> (Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;Lio/opentelemetry/android/common/internal/features/networkattributes/CurrentNetworkAttributesExtractor;)V
+	public synthetic fun <init> (Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;Lio/opentelemetry/android/common/internal/features/networkattributes/CurrentNetworkAttributesExtractor;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun onEmit (Lio/opentelemetry/context/Context;Lio/opentelemetry/sdk/logs/ReadWriteLogRecord;)V
+}
+
+public abstract interface class io/opentelemetry/android/internal/initialization/InitializationEvents {
+	public static final field Companion Lio/opentelemetry/android/internal/initialization/InitializationEvents$Companion;
+	public abstract fun anrMonitorInitialized ()V
+	public abstract fun crashReportingInitialized ()V
+	public abstract fun currentNetworkProviderInitialized ()V
+	public static fun get ()Lio/opentelemetry/android/internal/initialization/InitializationEvents;
+	public abstract fun networkMonitorInitialized ()V
+	public abstract fun recordConfiguration (Lio/opentelemetry/android/config/OtelRumConfig;)V
+	public static fun resetForTest ()V
+	public abstract fun sdkInitializationStarted ()V
+	public static fun set (Lio/opentelemetry/android/internal/initialization/InitializationEvents;)V
+	public abstract fun slowRenderingDetectorInitialized ()V
+	public abstract fun spanExporterInitialized (Lio/opentelemetry/sdk/trace/export/SpanExporter;)V
+}
+
+public final class io/opentelemetry/android/internal/initialization/InitializationEvents$Companion {
+	public final fun get ()Lio/opentelemetry/android/internal/initialization/InitializationEvents;
+	public final fun getNO_OP ()Lio/opentelemetry/android/internal/initialization/InitializationEvents;
+	public final fun resetForTest ()V
+	public final fun set (Lio/opentelemetry/android/internal/initialization/InitializationEvents;)V
+}
+
+public final class io/opentelemetry/android/internal/processors/ScreenAttributesLogRecordProcessor : io/opentelemetry/sdk/logs/LogRecordProcessor {
+	public fun <init> (Lio/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker;)V
+	public final fun getVisibleScreenTracker ()Lio/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker;
+	public fun onEmit (Lio/opentelemetry/context/Context;Lio/opentelemetry/sdk/logs/ReadWriteLogRecord;)V
+}
+

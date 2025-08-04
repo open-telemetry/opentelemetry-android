@@ -16,6 +16,7 @@ autoService = "1.1.1"
 androidx-navigation = "2.7.7"
 compose = "1.5.4"
 detekt = "1.23.8"
+binaryCompatValidator = "0.18.1"
 
 [libraries]
 opentelemetry-platform-alpha = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-instrumentation-alpha" }
@@ -49,6 +50,7 @@ auto-service-annotations = { module = "com.google.auto.service:auto-service-anno
 auto-service-processor = { module = "com.google.auto.service:auto-service", version.ref = "autoService" }
 compose = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
 detekt-plugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
+binary-compat-validator = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version.ref = "binaryCompatValidator" }
 
 #Test tools
 opentelemetry-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-testing" }

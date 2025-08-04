@@ -1,0 +1,13 @@
+public class io/opentelemetry/instrumentation/agent/okhttp/v3_0/websocket/OkHttpClientWebsocketAdvice {
+	public fun <init> ()V
+	public static fun enter (Lokhttp3/WebSocketListener;)V
+}
+
+public class io/opentelemetry/instrumentation/agent/okhttp/v3_0/websocket/OkHttpClientWebsocketPlugin : net/bytebuddy/build/Plugin {
+	public fun <init> ()V
+	public fun apply (Lnet/bytebuddy/dynamic/DynamicType$Builder;Lnet/bytebuddy/description/type/TypeDescription;Lnet/bytebuddy/dynamic/ClassFileLocator;)Lnet/bytebuddy/dynamic/DynamicType$Builder;
+	public fun close ()V
+	public synthetic fun matches (Ljava/lang/Object;)Z
+	public fun matches (Lnet/bytebuddy/description/type/TypeDescription;)Z
+}
+

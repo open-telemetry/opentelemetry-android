@@ -1,4 +1,3 @@
-import gradle.kotlin.dsl.accessors._d8282334f089ec6fbf714caba2b86dd9.kotlin
 import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
@@ -10,6 +9,7 @@ plugins {
     id("kotlin-kapt")
     id("otel.animalsniffer-conventions")
     id("io.gitlab.arturbosch.detekt")
+    id("org.jetbrains.kotlinx.binary-compatibility-validator")
 }
 
 val javaVersion = rootProject.extra["java_version"] as JavaVersion
@@ -75,6 +75,10 @@ project.tasks.withType(Detekt::class.java).configureEach {
         xml.required.set(false)
     }
 }
+
+// disable kotlin's binary compat validator for unwanted modules
+val ignoredModules = listOf("test-common")
+apiValidation.validationDisabled = ignoredModules.contains(project.name)
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 dependencies {
