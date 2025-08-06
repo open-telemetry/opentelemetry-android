@@ -1,0 +1,43 @@
+public abstract interface class io/opentelemetry/android/instrumentation/AndroidInstrumentation {
+	public abstract fun getName ()Ljava/lang/String;
+	public abstract fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
+	public fun uninstall (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
+}
+
+public abstract interface class io/opentelemetry/android/instrumentation/AndroidInstrumentationLoader {
+	public static final field Companion Lio/opentelemetry/android/instrumentation/AndroidInstrumentationLoader$Companion;
+	public static fun get ()Lio/opentelemetry/android/instrumentation/AndroidInstrumentationLoader;
+	public abstract fun getAll ()Ljava/util/Collection;
+	public abstract fun getByType (Ljava/lang/Class;)Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;
+	public static fun getInstrumentation (Ljava/lang/Class;)Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;
+	public static fun resetForTest ()V
+}
+
+public final class io/opentelemetry/android/instrumentation/AndroidInstrumentationLoader$Companion {
+	public final fun get ()Lio/opentelemetry/android/instrumentation/AndroidInstrumentationLoader;
+	public final fun getInstrumentation (Ljava/lang/Class;)Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;
+	public final fun resetForTest ()V
+}
+
+public final class io/opentelemetry/android/instrumentation/InstallationContext {
+	public fun <init> (Landroid/app/Application;Lio/opentelemetry/api/OpenTelemetry;Lio/opentelemetry/android/session/SessionProvider;)V
+	public final fun component1 ()Landroid/app/Application;
+	public final fun component2 ()Lio/opentelemetry/api/OpenTelemetry;
+	public final fun component3 ()Lio/opentelemetry/android/session/SessionProvider;
+	public final fun copy (Landroid/app/Application;Lio/opentelemetry/api/OpenTelemetry;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/android/instrumentation/InstallationContext;
+	public static synthetic fun copy$default (Lio/opentelemetry/android/instrumentation/InstallationContext;Landroid/app/Application;Lio/opentelemetry/api/OpenTelemetry;Lio/opentelemetry/android/session/SessionProvider;ILjava/lang/Object;)Lio/opentelemetry/android/instrumentation/InstallationContext;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getApplication ()Landroid/app/Application;
+	public final fun getOpenTelemetry ()Lio/opentelemetry/api/OpenTelemetry;
+	public final fun getSessionProvider ()Lio/opentelemetry/android/session/SessionProvider;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/opentelemetry/android/instrumentation/internal/AndroidInstrumentationLoaderImpl : io/opentelemetry/android/instrumentation/AndroidInstrumentationLoader {
+	public fun <init> ()V
+	public fun getAll ()Ljava/util/Collection;
+	public fun getByType (Ljava/lang/Class;)Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;
+	public final fun registerForTest (Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;)V
+}
+

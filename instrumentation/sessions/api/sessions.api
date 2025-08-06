@@ -1,0 +1,6 @@
+public final class io/opentelemetry/android/instrumentation/sessions/SessionInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
+	public fun <init> ()V
+	public fun getName ()Ljava/lang/String;
+	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
+}
+
