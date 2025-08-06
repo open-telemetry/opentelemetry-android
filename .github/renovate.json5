@@ -106,6 +106,12 @@
       "groupName": "androidx.core"
     },
     {
+      "matchPackagePatterns": [
+        "^androidx.test"
+      ],
+      "groupName": "androidx.test"
+    },
+    {
       "matchPackagePrefixes": ["com.gradle.develocity"],
       "groupName": "gradle develocity packages"
     },
