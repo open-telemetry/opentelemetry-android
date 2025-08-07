@@ -24,14 +24,11 @@ val signatureJarClasspath =
         isCanBeResolved = true
         extendsFrom(signatureJar)
     }
-val generatedSignature =
-    configurations.create("generatedSignature") {
-        isCanBeConsumed = true
-        isCanBeResolved = false
-    }
-configurations.add(signatureJar)
-configurations.add(signatureJarClasspath)
-configurations.add(generatedSignature)
+
+configurations.create("generatedSignature") {
+    isCanBeConsumed = true
+    isCanBeResolved = false
+}
 
 dependencies {
     signature("com.toasttab.android:gummy-bears-api-${project.property("android.minSdk")}:0.9.0@signature")
