@@ -3,11 +3,10 @@ public final class io/opentelemetry/android/instrumentation/anr/AnrDetector {
 }
 
 public final class io/opentelemetry/android/instrumentation/anr/AnrInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
-	public static final field INSTRUMENTATION_NAME Ljava/lang/String;
 	public fun <init> ()V
-	public fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/common/EventAttributesExtractor;)Lio/opentelemetry/android/instrumentation/anr/AnrInstrumentation;
+	public final fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/common/EventAttributesExtractor;)Lio/opentelemetry/android/instrumentation/anr/AnrInstrumentation;
 	public fun getName ()Ljava/lang/String;
 	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
-	public fun setMainLooper (Landroid/os/Looper;)Lio/opentelemetry/android/instrumentation/anr/AnrInstrumentation;
+	public final fun setMainLooper (Landroid/os/Looper;)Lio/opentelemetry/android/instrumentation/anr/AnrInstrumentation;
 }
 
