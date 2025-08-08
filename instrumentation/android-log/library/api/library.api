@@ -1,4 +1,4 @@
-public class io/opentelemetry/instrumentation/library/log/AndroidLogInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
+public final class io/opentelemetry/instrumentation/library/log/AndroidLogInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
 	public static final field INSTRUMENTATION_NAME Ljava/lang/String;
 	public fun <init> ()V
 	public fun getName ()Ljava/lang/String;

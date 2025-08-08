@@ -2,7 +2,6 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>CyclomaticComplexMethod:PostApi28NetworkDetector.kt$PostApi28NetworkDetector$private fun getDataNetworkTypeName(dataNetworkType: Int): String</ID>
     <ID>ForbiddenComment:NetworkDetector.kt$NetworkDetector.Companion$// TODO: Use ServiceManager to get the ConnectivityManager or similar (not yet managed/abstracted)</ID>
     <ID>ForbiddenComment:NetworkDetector.kt$NetworkDetector.Companion$// TODO: Use ServiceManager to get the TelephonyManager or similar (not yet managed/abstracted)</ID>
     <ID>MagicNumber:VisibleScreenTracker.kt$VisibleScreenTracker$29</ID>
