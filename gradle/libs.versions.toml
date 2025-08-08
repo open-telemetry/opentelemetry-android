@@ -55,7 +55,7 @@ binary-compat-validator = { module = "org.jetbrains.kotlinx:binary-compatibility
 #Test tools
 opentelemetry-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-testing" }
 androidx-test-core = "androidx.test:core:1.6.1"
-androidx-test-rules = "androidx.test:rules:1.6.1"
+androidx-test-rules = "androidx.test:rules:1.7.0"
 androidx-test-runner = "androidx.test:runner:1.7.0"
 androidx-junit = "androidx.test.ext:junit:1.3.0"
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
