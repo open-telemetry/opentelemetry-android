@@ -56,7 +56,7 @@ public final class OkHttp3Singletons {
                                 instrumentation.emitExperimentalHttpClientTelemetry());
 
         for (AttributesExtractor<Interceptor.Chain, Response> extractor :
-                instrumentation.getAdditionalExtractors()) {
+                instrumentation.additionalExtractors) {
             instrumenterBuilder = instrumenterBuilder.addAttributesExtractor(extractor);
         }
 
