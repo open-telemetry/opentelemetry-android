@@ -6,7 +6,6 @@
 package io.opentelemetry.android.instrumentation.volley;
 
 import android.util.Log;
-
 import com.android.volley.toolbox.HttpResponse;
 import com.android.volley.toolbox.HurlStack;
 import io.opentelemetry.api.OpenTelemetry;
@@ -17,7 +16,9 @@ import javax.net.ssl.SSLSocketFactory;
 public final class VolleyTracing {
 
     static {
-        Log.w("OpenTelemetryRum", "The OpenTelemetry Android Volley Instrumentation is deprecated without replacement.");
+        Log.w(
+                "OpenTelemetryRum",
+                "The OpenTelemetry Android Volley Instrumentation is deprecated without replacement.");
     }
 
     /** Returns a new {@link VolleyTracing} configured with the given {@link OpenTelemetry}. */
