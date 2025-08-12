@@ -1,19 +1,19 @@
-public class io/opentelemetry/instrumentation/library/okhttp/v3_0/OkHttpInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
+public final class io/opentelemetry/instrumentation/library/okhttp/v3_0/OkHttpInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
+	public final field additionalExtractors Ljava/util/List;
 	public fun <init> ()V
-	public fun addAttributesExtractor (Lio/opentelemetry/instrumentation/api/instrumenter/AttributesExtractor;)V
-	public fun emitExperimentalHttpClientTelemetry ()Z
-	public fun getAdditionalExtractors ()Ljava/util/List;
-	public fun getCapturedRequestHeaders ()Ljava/util/List;
-	public fun getCapturedResponseHeaders ()Ljava/util/List;
-	public fun getKnownMethods ()Ljava/util/Set;
+	public final fun addAttributesExtractor (Lio/opentelemetry/instrumentation/api/instrumenter/AttributesExtractor;)V
+	public final fun emitExperimentalHttpClientTelemetry ()Z
+	public final fun getCapturedRequestHeaders ()Ljava/util/List;
+	public final fun getCapturedResponseHeaders ()Ljava/util/List;
+	public final fun getKnownMethods ()Ljava/util/Set;
 	public fun getName ()Ljava/lang/String;
 	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
-	public fun newPeerServiceResolver ()Lio/opentelemetry/instrumentation/api/incubator/semconv/net/PeerServiceResolver;
-	public fun setCapturedRequestHeaders (Ljava/util/List;)V
-	public fun setCapturedResponseHeaders (Ljava/util/List;)V
-	public fun setEmitExperimentalHttpClientTelemetry (Z)V
-	public fun setKnownMethods (Ljava/util/Set;)V
-	public fun setPeerServiceMapping (Ljava/util/Map;)V
+	public final fun newPeerServiceResolver ()Lio/opentelemetry/instrumentation/api/incubator/semconv/net/PeerServiceResolver;
+	public final fun setCapturedRequestHeaders (Ljava/util/List;)V
+	public final fun setCapturedResponseHeaders (Ljava/util/List;)V
+	public final fun setEmitExperimentalHttpClientTelemetry (Z)V
+	public final fun setKnownMethods (Ljava/util/Set;)V
+	public final fun setPeerServiceMapping (Ljava/util/Map;)V
 }
 
 public final class io/opentelemetry/instrumentation/library/okhttp/v3_0/internal/OkHttp3Singletons {

@@ -1,23 +1,23 @@
-public class io/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
+public final class io/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
 	public fun <init> ()V
-	public fun addAttributesExtractor (Lio/opentelemetry/instrumentation/api/instrumenter/AttributesExtractor;)V
-	public fun emitExperimentalHttpClientMetrics ()Z
-	public fun getAdditionalExtractors ()Ljava/util/List;
-	public fun getCapturedRequestHeaders ()Ljava/util/List;
-	public fun getCapturedResponseHeaders ()Ljava/util/List;
-	public fun getKnownMethods ()Ljava/util/Set;
+	public final fun addAttributesExtractor (Lio/opentelemetry/instrumentation/api/instrumenter/AttributesExtractor;)V
+	public final fun emitExperimentalHttpClientMetrics ()Z
+	public final fun getAdditionalExtractors ()Ljava/util/List;
+	public final fun getCapturedRequestHeaders ()Ljava/util/List;
+	public final fun getCapturedResponseHeaders ()Ljava/util/List;
+	public final fun getKnownMethods ()Ljava/util/Set;
 	public fun getName ()Ljava/lang/String;
-	public fun getReportIdleConnectionInterval ()J
-	public fun getReportIdleConnectionRunnable ()Ljava/lang/Runnable;
+	public final fun getReportIdleConnectionInterval ()J
+	public final fun getReportIdleConnectionRunnable ()Ljava/lang/Runnable;
 	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
-	public fun newPeerServiceResolver ()Lio/opentelemetry/instrumentation/api/incubator/semconv/net/PeerServiceResolver;
-	public fun setCapturedRequestHeaders (Ljava/util/List;)V
-	public fun setCapturedResponseHeaders (Ljava/util/List;)V
-	public fun setConnectionInactivityTimeoutMs (J)V
-	public fun setConnectionInactivityTimeoutMsForTesting (J)V
-	public fun setEmitExperimentalHttpClientMetrics (Z)V
-	public fun setKnownMethods (Ljava/util/Set;)V
-	public fun setPeerServiceMapping (Ljava/util/Map;)V
+	public final fun newPeerServiceResolver ()Lio/opentelemetry/instrumentation/api/incubator/semconv/net/PeerServiceResolver;
+	public final fun setCapturedRequestHeaders (Ljava/util/List;)V
+	public final fun setCapturedResponseHeaders (Ljava/util/List;)V
+	public final fun setConnectionInactivityTimeoutMs (J)V
+	public final fun setConnectionInactivityTimeoutMsForTesting (J)V
+	public final fun setEmitExperimentalHttpClientMetrics (Z)V
+	public final fun setKnownMethods (Ljava/util/Set;)V
+	public final fun setPeerServiceMapping (Ljava/util/Map;)V
 }
 
 public class io/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlReplacements {
