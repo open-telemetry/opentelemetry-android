@@ -57,6 +57,7 @@ class NetworkUtilsTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun testGetNetworkTypeNameKnownTypes() {
         Assertions
             .assertThat(NetworkUtils.getNetworkTypeName(TelephonyManager.NETWORK_TYPE_1xRTT))

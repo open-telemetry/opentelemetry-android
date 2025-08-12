@@ -27,7 +27,6 @@ interface NetworkDetector {
     companion object {
         @JvmStatic
         fun create(context: Context): NetworkDetector {
-            // TODO: Use ServiceManager to get the ConnectivityManager, TelephonyManager or similar (not yet managed/abstracted)
             val connectivityManager =
                 context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val telephonyManager =
@@ -45,36 +44,40 @@ interface NetworkDetector {
 
                 @RequiresApi(Build.VERSION_CODES.M)
                 private fun detectNetworkPostApi23(connectivityManager: ConnectivityManager): CurrentNetwork {
-                    val network = connectivityManager.activeNetwork ?: return CurrentNetworkProvider.NO_NETWORK
-                    val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return CurrentNetworkProvider.UNKNOWN_NETWORK
+                    val network = connectivityManager.activeNetwork
+                    val capabilities =
+                        network?.let {
+                            connectivityManager.getNetworkCapabilities(it)
+                        }
 
-                    fun hasTransport(transport: Int): Boolean = capabilities.hasTransport(transport)
                     return when {
-                        hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> buildCellularNetwork()
-                        hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ->
-                            buildNetwork(
-                                NetworkState.TRANSPORT_WIFI,
-                            )
-                        hasTransport(NetworkCapabilities.TRANSPORT_VPN) ->
-                            buildNetwork(
-                                NetworkState.TRANSPORT_VPN,
-                            )
-                        hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) ->
-                            buildNetwork(
-                                NetworkState.TRANSPORT_WIRED,
-                            )
+                        network == null -> CurrentNetworkProvider.NO_NETWORK
+                        capabilities == null -> CurrentNetworkProvider.UNKNOWN_NETWORK
+                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ->
+                            buildCellularNetwork()
+                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ->
+                            buildNetwork(NetworkState.TRANSPORT_WIFI)
+                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN) ->
+                            buildNetwork(NetworkState.TRANSPORT_VPN)
+                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) ->
+                            buildNetwork(NetworkState.TRANSPORT_WIRED)
                         else -> CurrentNetworkProvider.UNKNOWN_NETWORK
                     }
                 }
 
                 @Suppress("deprecation")
                 private fun detectNetworkPreApi23(connectivityManager: ConnectivityManager): CurrentNetwork {
-                    val activeNetwork = connectivityManager.activeNetworkInfo ?: return CurrentNetworkProvider.NO_NETWORK
+                    val activeNetwork =
+                        connectivityManager.activeNetworkInfo
+                            ?: return CurrentNetworkProvider.NO_NETWORK
                     return when (activeNetwork.type) {
                         ConnectivityManager.TYPE_MOBILE -> buildCellularNetwork()
-                        ConnectivityManager.TYPE_WIFI -> buildNetwork(NetworkState.TRANSPORT_WIFI)
-                        ConnectivityManager.TYPE_VPN -> buildNetwork(NetworkState.TRANSPORT_VPN)
-                        ConnectivityManager.TYPE_ETHERNET -> buildNetwork(NetworkState.TRANSPORT_WIRED)
+                        ConnectivityManager.TYPE_WIFI ->
+                            buildNetwork(NetworkState.TRANSPORT_WIFI)
+                        ConnectivityManager.TYPE_VPN ->
+                            buildNetwork(NetworkState.TRANSPORT_VPN)
+                        ConnectivityManager.TYPE_ETHERNET ->
+                            buildNetwork(NetworkState.TRANSPORT_WIRED)
                         else -> CurrentNetworkProvider.UNKNOWN_NETWORK
                     }
                 }
@@ -95,7 +98,7 @@ interface NetworkDetector {
                 /**
                  * Builds a network for non-cellular networks.
                  */
-                fun buildNetwork(networkState: NetworkState): CurrentNetwork = CurrentNetwork.builder(networkState).build()
+                fun buildNetwork(networkState: NetworkState) = CurrentNetwork.builder(networkState).build()
             }
         }
     }
