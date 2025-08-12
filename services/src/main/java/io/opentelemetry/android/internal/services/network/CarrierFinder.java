@@ -5,46 +5,115 @@
 
 package io.opentelemetry.android.internal.services.network;
 
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.telephony.TelephonyManager;
+import android.util.Log;
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier;
 
 /**
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
  */
-@RequiresApi(api = Build.VERSION_CODES.P)
 public class CarrierFinder {
 
     private final TelephonyManager telephonyManager;
+    private final Context context;
 
-    public CarrierFinder(TelephonyManager telephonyManager) {
+    public CarrierFinder(@NonNull Context context, @NonNull TelephonyManager telephonyManager) {
+        this.context = context;
         this.telephonyManager = telephonyManager;
     }
 
+    @NonNull
     public Carrier get() {
-        int id = telephonyManager.getSimCarrierId();
-        String name = null;
-        String mobileCountryCode = null;
-        String mobileNetworkCode = null;
-        String isoCountryCode = null;
-        CharSequence simCarrierIdName = telephonyManager.getSimCarrierIdName();
-        if (validString(simCarrierIdName)) {
-            name = simCarrierIdName.toString();
+        if (!hasTelephonyCapability()) {
+            return createUnknownCarrier();
         }
-        String simOperator = telephonyManager.getSimOperator();
-        if (validString(simOperator) && simOperator.length() >= 5) {
-            mobileCountryCode = simOperator.substring(0, 3);
-            mobileNetworkCode = simOperator.substring(3);
+
+        boolean hasReadPhoneState = NetworkUtils.INSTANCE.hasReadPhoneStatePermission(context);
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && hasReadPhoneState) {
+                return getCarrierPostApi28();
+            } else {
+                return getCarrierPreApi28();
+            }
+        } catch (SecurityException e) {
+            Log.w(
+                    RumConstants.OTEL_RUM_LOG_TAG,
+                    "SecurityException when accessing carrier info",
+                    e);
         }
-        String providedIsoCountryCode = telephonyManager.getSimCountryIso();
-        if (validString(providedIsoCountryCode)) {
-            isoCountryCode = providedIsoCountryCode;
-        }
-        return new Carrier(id, name, mobileCountryCode, mobileNetworkCode, isoCountryCode);
+
+        return createUnknownCarrier();
     }
 
-    private boolean validString(CharSequence str) {
-        return !(str == null || str.length() == 0);
+    /** Extracts carrier information using modern APIs (Post API 28). */
+    @RequiresApi(Build.VERSION_CODES.P)
+    private Carrier getCarrierPostApi28() {
+        int id = telephonyManager.getSimCarrierId();
+
+        String name = null;
+        CharSequence carrierName = telephonyManager.getSimCarrierIdName();
+        if (NetworkUtils.INSTANCE.isValidString(carrierName)) {
+            name = carrierName.toString();
+        }
+
+        String[] mccMncIso = getMccMncIso();
+        return new Carrier(id, name, mccMncIso[0], mccMncIso[1], mccMncIso[2]);
+    }
+
+    /** Extracts carrier information using legacy APIs (Pre API 28). */
+    private Carrier getCarrierPreApi28() {
+        String name = null;
+        String carrierName = telephonyManager.getNetworkOperatorName();
+        if (NetworkUtils.INSTANCE.isValidString(carrierName)) {
+            name = carrierName;
+        }
+
+        String[] mccMncIso = getMccMncIso();
+        return new Carrier(-1, name, mccMncIso[0], mccMncIso[1], mccMncIso[2]);
+    }
+
+    /**
+     * Extracts MCC, MNC, and ISO country code from TelephonyManager.
+     *
+     * @return String array: [mcc, mnc, iso]
+     */
+    private String[] getMccMncIso() {
+        String mcc = null, mnc = null, iso = null;
+        String simOperator = telephonyManager.getSimOperator();
+        if (NetworkUtils.INSTANCE.isValidString(simOperator) && simOperator.length() >= 5) {
+            mcc = simOperator.substring(0, 3);
+            mnc = simOperator.substring(3);
+        }
+        String isoCountryCode = telephonyManager.getSimCountryIso();
+        if (NetworkUtils.INSTANCE.isValidString(isoCountryCode)) {
+            iso = isoCountryCode;
+        }
+        return new String[] {mcc, mnc, iso};
+    }
+
+    /** Checks if the device has telephony capabilities. */
+    private boolean hasTelephonyCapability() {
+        PackageManager pm = context.getPackageManager();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // API 33+ uses FEATURE_TELEPHONY_SUBSCRIPTION for subscription-related features
+            return pm.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION);
+        } else {
+            // API 5+ has FEATURE_TELEPHONY
+            return pm.hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
+        }
+    }
+
+    /** Creates a default carrier object for when telephony is not available. */
+    @NonNull
+    private Carrier createUnknownCarrier() {
+        return new Carrier(-1, null, null, null, null);
     }
 }

@@ -5,7 +5,6 @@
 
 package io.opentelemetry.android.common.internal.features.networkattributes.data;
 
-import android.os.Build;
 import androidx.annotation.Nullable;
 import java.util.Objects;
 
@@ -44,29 +43,25 @@ public final class CurrentNetwork {
     @SuppressWarnings("NullAway")
     @Nullable
     public String getCarrierCountryCode() {
-        return haveCarrier() ? carrier.getMobileCountryCode() : null;
+        return (carrier != null) ? carrier.getMobileCountryCode() : null;
     }
 
     @SuppressWarnings("NullAway")
     @Nullable
     public String getCarrierIsoCountryCode() {
-        return haveCarrier() ? carrier.getIsoCountryCode() : null;
+        return (carrier != null) ? carrier.getIsoCountryCode() : null;
     }
 
     @SuppressWarnings("NullAway")
     @Nullable
     public String getCarrierNetworkCode() {
-        return haveCarrier() ? carrier.getMobileNetworkCode() : null;
+        return (carrier != null) ? carrier.getMobileNetworkCode() : null;
     }
 
     @SuppressWarnings("NullAway")
     @Nullable
     public String getCarrierName() {
-        return haveCarrier() ? carrier.getName() : null;
-    }
-
-    private boolean haveCarrier() {
-        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) && (carrier != null);
+        return (carrier != null) ? carrier.getName() : null;
     }
 
     @Override

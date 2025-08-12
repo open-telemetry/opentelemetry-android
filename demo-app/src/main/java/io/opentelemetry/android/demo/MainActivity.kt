@@ -5,7 +5,9 @@
 
 package io.opentelemetry.android.demo
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -28,6 +30,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import io.opentelemetry.android.demo.about.AboutActivity
 import io.opentelemetry.android.demo.theme.DemoAppTheme
 import io.opentelemetry.android.demo.shop.ui.AstronomyShopActivity
@@ -87,5 +91,16 @@ class MainActivity : ComponentActivity() {
             }
         }
         viewModel.sessionIdState.value = OtelDemoApplication.rum?.rumSessionId!!
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
+            != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted, request it
+            ActivityCompat.requestPermissions(
+                this, // Activity or Fragment
+                arrayOf(Manifest.permission.READ_PHONE_STATE),
+                100
+            )
+        }
+
     }
 }
