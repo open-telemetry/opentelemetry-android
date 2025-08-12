@@ -331,7 +331,13 @@ public final class OpenTelemetryRumBuilder {
         otelSdkReadyListeners.forEach(listener -> listener.accept(sdk));
 
         SdkPreconfiguredRumBuilder delegate =
-                new SdkPreconfiguredRumBuilder(application, sdk, sessionProvider, config);
+                new SdkPreconfiguredRumBuilder(application, sdk, sessionProvider, config)
+                        .setShutdownHook(
+                                () -> {
+                                    if (exportScheduleHandler != null) {
+                                        exportScheduleHandler.disable();
+                                    }
+                                });
 
         // AsyncTask is deprecated but the thread pool is still used all over the Android SDK
         // and it provides a way to get a background thread without having to create a new one.

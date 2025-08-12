@@ -1,0 +1,20 @@
+public final class io/opentelemetry/android/instrumentation/startup/SdkInitializationEvents : io/opentelemetry/android/internal/initialization/InitializationEvents {
+	public fun <init> ()V
+	public fun <init> (Ljava/util/function/Supplier;)V
+	public synthetic fun <init> (Ljava/util/function/Supplier;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun anrMonitorInitialized ()V
+	public fun crashReportingInitialized ()V
+	public fun currentNetworkProviderInitialized ()V
+	public fun networkMonitorInitialized ()V
+	public fun recordConfiguration (Lio/opentelemetry/android/config/OtelRumConfig;)V
+	public fun sdkInitializationStarted ()V
+	public fun slowRenderingDetectorInitialized ()V
+	public fun spanExporterInitialized (Lio/opentelemetry/sdk/trace/export/SpanExporter;)V
+}
+
+public final class io/opentelemetry/android/instrumentation/startup/StartupInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
+	public fun <init> ()V
+	public fun getName ()Ljava/lang/String;
+	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
+}
+

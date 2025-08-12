@@ -1,0 +1,71 @@
+public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer {
+	public static final field INSTANCE Lio/opentelemetry/android/agent/OpenTelemetryRumInitializer;
+	public static final fun initialize (Landroid/app/Application;Ljava/lang/String;Ljava/util/Map;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/config/OtelRumConfig;Lio/opentelemetry/android/agent/session/SessionConfig;Lkotlin/jvm/functions/Function1;Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;Lkotlin/jvm/functions/Function1;Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/time/Duration;)Lio/opentelemetry/android/OpenTelemetryRum;
+	public static synthetic fun initialize$default (Landroid/app/Application;Ljava/lang/String;Ljava/util/Map;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/config/OtelRumConfig;Lio/opentelemetry/android/agent/session/SessionConfig;Lkotlin/jvm/functions/Function1;Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;Lkotlin/jvm/functions/Function1;Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/time/Duration;ILjava/lang/Object;)Lio/opentelemetry/android/OpenTelemetryRum;
+}
+
+public abstract interface class io/opentelemetry/android/agent/connectivity/EndpointConnectivity {
+	public abstract fun getHeaders ()Ljava/util/Map;
+	public abstract fun getUrl ()Ljava/lang/String;
+}
+
+public final class io/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity : io/opentelemetry/android/agent/connectivity/EndpointConnectivity {
+	public static final field Companion Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity$Companion;
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/Map;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getHeaders ()Ljava/util/Map;
+	public fun getUrl ()Ljava/lang/String;
+}
+
+public final class io/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity$Companion {
+	public final fun forLogs (Ljava/lang/String;Ljava/util/Map;)Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity;
+	public static synthetic fun forLogs$default (Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity$Companion;Ljava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity;
+	public final fun forMetrics (Ljava/lang/String;Ljava/util/Map;)Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity;
+	public static synthetic fun forMetrics$default (Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity$Companion;Ljava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity;
+	public final fun forTraces (Ljava/lang/String;Ljava/util/Map;)Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity;
+	public static synthetic fun forTraces$default (Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity$Companion;Ljava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity;
+}
+
+public final class io/opentelemetry/android/agent/session/SessionConfig {
+	public static final field Companion Lio/opentelemetry/android/agent/session/SessionConfig$Companion;
+	public synthetic fun <init> (JJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (JJLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-UwyO8pc ()J
+	public final fun component2-UwyO8pc ()J
+	public final fun copy-QTBD994 (JJ)Lio/opentelemetry/android/agent/session/SessionConfig;
+	public static synthetic fun copy-QTBD994$default (Lio/opentelemetry/android/agent/session/SessionConfig;JJILjava/lang/Object;)Lio/opentelemetry/android/agent/session/SessionConfig;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBackgroundInactivityTimeout-UwyO8pc ()J
+	public final fun getMaxLifetime-UwyO8pc ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun withDefaults ()Lio/opentelemetry/android/agent/session/SessionConfig;
+}
+
+public final class io/opentelemetry/android/agent/session/SessionConfig$Companion {
+	public final fun withDefaults ()Lio/opentelemetry/android/agent/session/SessionConfig;
+}
+
+public abstract interface class io/opentelemetry/android/agent/session/SessionIdGenerator {
+	public abstract fun generateSessionId ()Ljava/lang/String;
+}
+
+public final class io/opentelemetry/android/agent/session/SessionIdGenerator$DEFAULT : io/opentelemetry/android/agent/session/SessionIdGenerator {
+	public static final field INSTANCE Lio/opentelemetry/android/agent/session/SessionIdGenerator$DEFAULT;
+	public fun generateSessionId ()Ljava/lang/String;
+}
+
+public abstract interface class io/opentelemetry/android/agent/session/SessionStorage {
+	public abstract fun get ()Lio/opentelemetry/android/session/Session;
+	public abstract fun save (Lio/opentelemetry/android/session/Session;)V
+}
+
+public final class io/opentelemetry/android/agent/session/SessionStorage$InMemory : io/opentelemetry/android/agent/session/SessionStorage {
+	public fun <init> ()V
+	public fun <init> (Lio/opentelemetry/android/session/Session;)V
+	public synthetic fun <init> (Lio/opentelemetry/android/session/Session;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun get ()Lio/opentelemetry/android/session/Session;
+	public final fun getSession ()Lio/opentelemetry/android/session/Session;
+	public fun save (Lio/opentelemetry/android/session/Session;)V
+	public final fun setSession (Lio/opentelemetry/android/session/Session;)V
+}
+

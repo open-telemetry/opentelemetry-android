@@ -6,12 +6,12 @@
 package io.opentelemetry.android.instrumentation.crash;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor.constant;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import io.opentelemetry.android.instrumentation.InstallationContext;
+import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor;
 import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -60,7 +60,9 @@ public class CrashReporterTest {
     @Test
     public void integrationTest() throws InterruptedException {
         CrashReporterInstrumentation instrumentation = new CrashReporterInstrumentation();
-        instrumentation.addAttributesExtractor(constant(stringKey("test.key"), "abc"));
+        EventAttributesExtractor<CrashDetails> extractor =
+                (parentContext, o) -> Attributes.of(stringKey("test.key"), "abc");
+        instrumentation.addAttributesExtractor(extractor);
         InstallationContext ctx =
                 new InstallationContext(
                         RuntimeEnvironment.getApplication(),

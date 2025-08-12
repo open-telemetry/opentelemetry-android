@@ -1,0 +1,25 @@
+public final class io/opentelemetry/instrumentation/library/okhttp/v3_0/websocket/internal/OkHttpWebsocketInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
+	public fun <init> ()V
+	public fun getName ()Ljava/lang/String;
+	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
+}
+
+public class io/opentelemetry/instrumentation/library/okhttp/v3_0/websocket/internal/WebsocketAttributes {
+	public static field MESSAGE_SIZE Lio/opentelemetry/api/common/AttributeKey;
+	public static field MESSAGE_TYPE Lio/opentelemetry/api/common/AttributeKey;
+}
+
+public final class io/opentelemetry/instrumentation/library/okhttp/v3_0/websocket/internal/WebsocketEventGenerator {
+	public static fun configure (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
+	public static fun generateEvent (Ljava/lang/String;Lio/opentelemetry/api/common/Attributes;)V
+}
+
+public class io/opentelemetry/instrumentation/library/okhttp/v3_0/websocket/internal/WebsocketListenerWrapper : okhttp3/WebSocketListener {
+	public fun <init> (Lokhttp3/WebSocketListener;)V
+	public fun onClosed (Lokhttp3/WebSocket;ILjava/lang/String;)V
+	public fun onFailure (Lokhttp3/WebSocket;Ljava/lang/Throwable;Lokhttp3/Response;)V
+	public fun onMessage (Lokhttp3/WebSocket;Ljava/lang/String;)V
+	public fun onMessage (Lokhttp3/WebSocket;Lokio/ByteString;)V
+	public fun onOpen (Lokhttp3/WebSocket;Lokhttp3/Response;)V
+}
+

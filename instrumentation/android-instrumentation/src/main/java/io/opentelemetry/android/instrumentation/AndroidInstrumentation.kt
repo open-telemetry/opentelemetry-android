@@ -31,6 +31,16 @@ interface AndroidInstrumentation {
     fun install(ctx: InstallationContext)
 
     /**
+     * This method can be called to uninstall the instrumentation. Implementations should remove all
+     * used resources and shut down cleanly.
+     *
+     * @param ctx The InstallationContext under which the instrumentation had been removed.
+     */
+    fun uninstall(ctx: InstallationContext) {
+        // NOP default implementation
+    }
+
+    /**
      * The canonical short name for this instrumentation.
      */
     val name: String

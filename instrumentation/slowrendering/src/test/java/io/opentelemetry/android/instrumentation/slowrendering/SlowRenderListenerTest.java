@@ -31,6 +31,7 @@ import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -64,12 +65,14 @@ public class SlowRenderListenerTest {
 
     @Mock FrameMetrics frameMetrics;
     Tracer tracer;
+    ScheduledExecutorService executorService;
 
     @Captor ArgumentCaptor<SlowRenderListener.PerActivityListener> activityListenerCaptor;
 
     @Before
     public void setup() {
         tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
+        executorService = Executors.newSingleThreadScheduledExecutor();
         ComponentName componentName = new ComponentName("io.otel", "Komponent");
         when(activity.getComponentName()).thenReturn(componentName);
     }
@@ -77,7 +80,7 @@ public class SlowRenderListenerTest {
     @Test
     public void add() {
         SlowRenderListener testInstance =
-                new SlowRenderListener(tracer, null, frameMetricsHandler, Duration.ZERO);
+                new SlowRenderListener(tracer, executorService, frameMetricsHandler, Duration.ZERO);
 
         testInstance.onActivityResumed(activity);
 
@@ -90,7 +93,7 @@ public class SlowRenderListenerTest {
     @Test
     public void removeBeforeAddOk() {
         SlowRenderListener testInstance =
-                new SlowRenderListener(tracer, null, frameMetricsHandler, Duration.ZERO);
+                new SlowRenderListener(tracer, executorService, frameMetricsHandler, Duration.ZERO);
 
         testInstance.onActivityPaused(activity);
 
@@ -101,7 +104,7 @@ public class SlowRenderListenerTest {
     @Test
     public void addAndRemove() {
         SlowRenderListener testInstance =
-                new SlowRenderListener(tracer, null, frameMetricsHandler, Duration.ZERO);
+                new SlowRenderListener(tracer, executorService, frameMetricsHandler, Duration.ZERO);
 
         testInstance.onActivityResumed(activity);
         testInstance.onActivityPaused(activity);
@@ -118,7 +121,7 @@ public class SlowRenderListenerTest {
     @Test
     public void removeWithMetrics() {
         SlowRenderListener testInstance =
-                new SlowRenderListener(tracer, null, frameMetricsHandler, Duration.ZERO);
+                new SlowRenderListener(tracer, executorService, frameMetricsHandler, Duration.ZERO);
 
         testInstance.onActivityResumed(activity);
 

@@ -1,0 +1,52 @@
+public final class io/opentelemetry/android/instrumentation/view/click/ViewClickActivityCallback : io/opentelemetry/android/internal/services/visiblescreen/activities/DefaultingActivityLifecycleCallbacks {
+	public fun <init> (Lio/opentelemetry/android/instrumentation/view/click/ViewClickEventGenerator;)V
+	public fun onActivityPaused (Landroid/app/Activity;)V
+	public fun onActivityResumed (Landroid/app/Activity;)V
+}
+
+public final class io/opentelemetry/android/instrumentation/view/click/ViewClickEventGenerator {
+	public fun <init> (Lio/opentelemetry/api/incubator/logs/ExtendedLogger;)V
+	public final fun generateClick (Landroid/view/MotionEvent;)V
+	public final fun startTracking (Landroid/view/Window;)V
+	public final fun stopTracking ()V
+}
+
+public final class io/opentelemetry/android/instrumentation/view/click/ViewClickInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
+	public fun <init> ()V
+	public fun getName ()Ljava/lang/String;
+	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
+}
+
+public final class io/opentelemetry/android/instrumentation/view/click/WindowCallbackWrapper : android/view/Window$Callback {
+	public fun <init> (Landroid/view/Window$Callback;Lio/opentelemetry/android/instrumentation/view/click/ViewClickEventGenerator;)V
+	public fun dispatchGenericMotionEvent (Landroid/view/MotionEvent;)Z
+	public fun dispatchKeyEvent (Landroid/view/KeyEvent;)Z
+	public fun dispatchKeyShortcutEvent (Landroid/view/KeyEvent;)Z
+	public fun dispatchPopulateAccessibilityEvent (Landroid/view/accessibility/AccessibilityEvent;)Z
+	public fun dispatchTouchEvent (Landroid/view/MotionEvent;)Z
+	public fun dispatchTrackballEvent (Landroid/view/MotionEvent;)Z
+	public fun onActionModeFinished (Landroid/view/ActionMode;)V
+	public fun onActionModeStarted (Landroid/view/ActionMode;)V
+	public fun onAttachedToWindow ()V
+	public fun onContentChanged ()V
+	public fun onCreatePanelMenu (ILandroid/view/Menu;)Z
+	public fun onCreatePanelView (I)Landroid/view/View;
+	public fun onDetachedFromWindow ()V
+	public fun onMenuItemSelected (ILandroid/view/MenuItem;)Z
+	public fun onMenuOpened (ILandroid/view/Menu;)Z
+	public fun onPanelClosed (ILandroid/view/Menu;)V
+	public fun onPreparePanel (ILandroid/view/View;Landroid/view/Menu;)Z
+	public fun onSearchRequested ()Z
+	public fun onSearchRequested (Landroid/view/SearchEvent;)Z
+	public fun onWindowAttributesChanged (Landroid/view/WindowManager$LayoutParams;)V
+	public fun onWindowFocusChanged (Z)V
+	public fun onWindowStartingActionMode (Landroid/view/ActionMode$Callback;)Landroid/view/ActionMode;
+	public fun onWindowStartingActionMode (Landroid/view/ActionMode$Callback;I)Landroid/view/ActionMode;
+	public final fun unwrap ()Landroid/view/Window$Callback;
+}
+
+public final class io/opentelemetry/android/instrumentation/view/click/internal/ViewUtilsKt {
+	public static final field APP_SCREEN_CLICK_EVENT_NAME Ljava/lang/String;
+	public static final field VIEW_CLICK_EVENT_NAME Ljava/lang/String;
+}
+

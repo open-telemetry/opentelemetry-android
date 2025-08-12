@@ -1,0 +1,26 @@
+public class io/opentelemetry/instrumentation/agent/okhttp/v3_0/OkHttpClientAdvice {
+	public fun <init> ()V
+	public static fun enter (Lokhttp3/OkHttpClient$Builder;)V
+}
+
+public class io/opentelemetry/instrumentation/agent/okhttp/v3_0/OkHttpClientPlugin : net/bytebuddy/build/Plugin {
+	public fun <init> ()V
+	public fun apply (Lnet/bytebuddy/dynamic/DynamicType$Builder;Lnet/bytebuddy/description/type/TypeDescription;Lnet/bytebuddy/dynamic/ClassFileLocator;)Lnet/bytebuddy/dynamic/DynamicType$Builder;
+	public fun close ()V
+	public synthetic fun matches (Ljava/lang/Object;)Z
+	public fun matches (Lnet/bytebuddy/description/type/TypeDescription;)Z
+}
+
+public class io/opentelemetry/instrumentation/agent/okhttp/v3_0/callback/OkHttpCallbackAdvice {
+	public fun <init> ()V
+	public static fun enter (Lokhttp3/Call;Lokhttp3/Callback;)V
+}
+
+public class io/opentelemetry/instrumentation/agent/okhttp/v3_0/callback/OkHttpCallbackPlugin : net/bytebuddy/build/Plugin {
+	public fun <init> ()V
+	public fun apply (Lnet/bytebuddy/dynamic/DynamicType$Builder;Lnet/bytebuddy/description/type/TypeDescription;Lnet/bytebuddy/dynamic/ClassFileLocator;)Lnet/bytebuddy/dynamic/DynamicType$Builder;
+	public fun close ()V
+	public synthetic fun matches (Ljava/lang/Object;)Z
+	public fun matches (Lnet/bytebuddy/description/type/TypeDescription;)Z
+}
+

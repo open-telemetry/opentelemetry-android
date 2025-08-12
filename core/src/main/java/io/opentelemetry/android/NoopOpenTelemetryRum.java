@@ -25,4 +25,9 @@ enum NoopOpenTelemetryRum implements OpenTelemetryRum {
 
     @Override
     public void emitEvent(String eventName, String body, Attributes attributes) {}
+
+    @Override
+    public void shutdown() {
+        // nop
+    }
 }

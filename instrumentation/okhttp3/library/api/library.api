@@ -1,0 +1,38 @@
+public final class io/opentelemetry/instrumentation/library/okhttp/v3_0/OkHttpInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
+	public final field additionalExtractors Ljava/util/List;
+	public fun <init> ()V
+	public final fun addAttributesExtractor (Lio/opentelemetry/instrumentation/api/instrumenter/AttributesExtractor;)V
+	public final fun emitExperimentalHttpClientTelemetry ()Z
+	public final fun getCapturedRequestHeaders ()Ljava/util/List;
+	public final fun getCapturedResponseHeaders ()Ljava/util/List;
+	public final fun getKnownMethods ()Ljava/util/Set;
+	public fun getName ()Ljava/lang/String;
+	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
+	public final fun newPeerServiceResolver ()Lio/opentelemetry/instrumentation/api/incubator/semconv/net/PeerServiceResolver;
+	public final fun setCapturedRequestHeaders (Ljava/util/List;)V
+	public final fun setCapturedResponseHeaders (Ljava/util/List;)V
+	public final fun setEmitExperimentalHttpClientTelemetry (Z)V
+	public final fun setKnownMethods (Ljava/util/Set;)V
+	public final fun setPeerServiceMapping (Ljava/util/Map;)V
+}
+
+public final class io/opentelemetry/instrumentation/library/okhttp/v3_0/internal/OkHttp3Singletons {
+	public static final field CALLBACK_CONTEXT_INTERCEPTOR Lokhttp3/Interceptor;
+	public static field CONNECTION_ERROR_INTERCEPTOR Lokhttp3/Interceptor;
+	public static final field RESEND_COUNT_CONTEXT_INTERCEPTOR Lokhttp3/Interceptor;
+	public static field TRACING_INTERCEPTOR Lokhttp3/Interceptor;
+	public static fun configure (Lio/opentelemetry/instrumentation/library/okhttp/v3_0/OkHttpInstrumentation;Lio/opentelemetry/api/OpenTelemetry;)V
+}
+
+public final class io/opentelemetry/instrumentation/library/okhttp/v3_0/internal/OkHttpCallbackAdviceHelper {
+	public fun <init> ()V
+	public static fun propagateContext (Lokhttp3/Call;)Z
+	public static fun tryRecoverPropagatedContextFromCallback (Lokhttp3/Request;)Lio/opentelemetry/context/Context;
+}
+
+public final class io/opentelemetry/instrumentation/library/okhttp/v3_0/internal/TracingCallback : okhttp3/Callback {
+	public fun <init> (Lokhttp3/Callback;Lio/opentelemetry/context/Context;)V
+	public fun onFailure (Lokhttp3/Call;Ljava/io/IOException;)V
+	public fun onResponse (Lokhttp3/Call;Lokhttp3/Response;)V
+}
+

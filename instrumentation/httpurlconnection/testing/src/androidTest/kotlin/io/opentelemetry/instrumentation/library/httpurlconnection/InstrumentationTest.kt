@@ -103,7 +103,7 @@ class InstrumentationTest {
         instrumentation?.setConnectionInactivityTimeoutMsForTesting(-1)
         // Running the harvester runnable once instead of scheduling it to run periodically,
         // so we can synchronously assert instead of waiting for another threads execution to finish
-        instrumentation?.getReportIdleConnectionRunnable()?.run()
+        instrumentation?.reportIdleConnectionRunnable?.run()
 
         // span created with harvester thread
         assertThat(openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size).isEqualTo(1)
