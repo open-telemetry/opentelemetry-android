@@ -24,7 +24,7 @@ opentelemetry-platform = { module = "io.opentelemetry.instrumentation:openteleme
 opentelemetry-core-bom = { module = "io.opentelemetry:opentelemetry-bom" }
 androidx-navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "androidx-navigation" }
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "androidx-navigation" }
-androidx-core = "androidx.core:core:1.16.0"
+androidx-core = "androidx.core:core:1.17.0"
 androidx-annotation = "androidx.annotation:annotation:1.9.1"
 androidx-lifecycle-process = "androidx.lifecycle:lifecycle-process:2.9.2"
 androidx-preference-ktx = "androidx.preference:preference-ktx:1.2.1"
