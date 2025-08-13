@@ -1,7 +1,10 @@
 
 # OpenTelemetry Android Volley Instrumentation
 
-> :construction: &nbsp;Status: development
+> :warning: &nbsp;Status: DEPRECATED
+
+This instrumentation is deprecated and will be removed in a future release.
+It is not recommended to use this instrumentation in new deployments.
 
 This directory contains OpenTelemetry instrumentation for the [Volley](https://google.github.io/volley/)
 HTTP client library. If you use the Volley HTTP client in your Android application, you can

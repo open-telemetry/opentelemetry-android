@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Deprecate Volley HTTP instrumentation. This will be removed in 0.20.0.
+  Volley has [not seen a release in about 4 years](https://github.com/google/volley/releases)
+  and it is unlikely that it has much adoption. As a result, we have chosen to halt development
+  of the instrumentation in `opentelemetry-android`.
+  [#1145](https://github.com/open-telemetry/opentelemetry-android/pull/1145)
+
 ## Version 0.13.0 (2025-07-24)
 
 - Alter FilteringSpanExporter to leverage common code from contrib
