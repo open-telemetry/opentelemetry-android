@@ -10,13 +10,15 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.telephony.TelephonyManager
+import android.util.Log
 import androidx.annotation.RequiresApi
+import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState.TRANSPORT_CELLULAR
 import io.opentelemetry.android.internal.services.network.CarrierFinder
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
-import io.opentelemetry.android.internal.services.network.SubTypeFinder
+import io.opentelemetry.android.internal.services.network.NetworkUtils
 
 /**
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
@@ -32,7 +34,6 @@ interface NetworkDetector {
             val telephonyManager =
                 context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
             val carrierFinder = CarrierFinder(context, telephonyManager)
-            val subTypeFinder = SubTypeFinder(context, telephonyManager)
 
             return object : NetworkDetector {
                 override fun detectCurrentNetwork(): CurrentNetwork =
@@ -83,11 +84,16 @@ interface NetworkDetector {
                 }
 
                 /**
+                 * Builds a network for non-cellular networks.
+                 */
+                fun buildNetwork(networkState: NetworkState) = CurrentNetwork.builder(networkState).build()
+
+                /**
                  * Builds a cellular network with carrier and subtype information.
                  */
                 fun buildCellularNetwork(): CurrentNetwork {
                     val carrier = carrierFinder.get()
-                    val subType = subTypeFinder.get()
+                    val subType = findSubtype(context, telephonyManager)
                     return CurrentNetwork
                         .builder(TRANSPORT_CELLULAR)
                         .carrier(carrier)
@@ -96,9 +102,41 @@ interface NetworkDetector {
                 }
 
                 /**
-                 * Builds a network for non-cellular networks.
+                 * Gets the current cellular network subtype with proper permission and API level handling.
+                 *
+                 * @param context The application context for permission checking
+                 * @param telephonyManager The TelephonyManager instance
+                 * @return Network subtype name or null if unavailable or permission denied
                  */
-                fun buildNetwork(networkState: NetworkState) = CurrentNetwork.builder(networkState).build()
+                @Suppress("MissingPermission")
+                private fun findSubtype(context: Context, telephonyManager: TelephonyManager): String? {
+                    if (!NetworkUtils.hasReadPhoneStatePermission(context)) {
+                        return null
+                    }
+
+                    return try {
+                        val networkType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            getNetworkSubTypePostApi24(telephonyManager)
+                        } else {
+                            @Suppress("DEPRECATION")
+                            telephonyManager.networkType
+                        }
+                        NetworkUtils.getNetworkTypeName(networkType)
+                    } catch (e: SecurityException) {
+                        Log.w(
+                            RumConstants.OTEL_RUM_LOG_TAG,
+                            "SecurityException when accessing network type",
+                            e
+                        )
+                        null
+                    }
+                }
+
+                @RequiresApi(Build.VERSION_CODES.N)
+                @Suppress("MissingPermission")
+                private fun getNetworkSubTypePostApi24(telephonyManager: TelephonyManager): Int {
+                    return telephonyManager.dataNetworkType
+                }
             }
         }
     }
