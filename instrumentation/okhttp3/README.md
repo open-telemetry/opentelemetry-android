@@ -41,7 +41,7 @@ automatically.
 
 You can configure the automatic instrumentation by using the setters
 from
-the [OkHttpInstrumentation](library/src/main/java/io/opentelemetry/instrumentation/library/okhttp/v3_0/OkHttpInstrumentation.java)
+the [OkHttpInstrumentation](library/src/main/java/io/opentelemetry/instrumentation/library/okhttp/v3_0/OkHttpInstrumentation.kt)
 instance provided via the AndroidInstrumentationLoader as shown below:
 
 ```java
