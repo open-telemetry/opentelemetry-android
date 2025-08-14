@@ -27,6 +27,7 @@ class PeriodicWorkTest {
         service = PeriodicWork()
     }
 
+    @Suppress("DEPRECATION") // suppress deprecation for id
     @Test
     fun `Execute enqueued work on start`() {
         val numberOfTasks = 5

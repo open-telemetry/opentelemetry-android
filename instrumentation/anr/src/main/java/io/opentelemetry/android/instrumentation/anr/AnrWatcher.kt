@@ -73,6 +73,7 @@ internal class AnrWatcher(
         }
     }
 
+    @Suppress("DEPRECATION") // suppress deprecation for id
     private fun emitAnrEvent(stackTrace: Array<StackTraceElement>) {
         val attributesBuilder =
             Attributes
