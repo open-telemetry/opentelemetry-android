@@ -1,6 +1,6 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.FileInputStream
 import java.util.Properties
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(rootLibs.plugins.androidApp)
@@ -88,3 +88,15 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
+
+configurations.all {
+    resolutionStrategy {
+        eachDependency {
+            if (requested.group == "com.squareup.okhttp3" && requested.name == "okhttp-jvm") {
+                useTarget("com.squareup.okhttp3:okhttp:${requested.version}")
+                because("choosing okhttp over okhttp-jvm")
+            }
+        }
+    }
+}
+
