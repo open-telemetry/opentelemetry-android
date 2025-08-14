@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.internal.services.periodicwork
 
+import android.os.Build
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -34,7 +35,7 @@ class PeriodicWorkTest {
         val threadIds = mutableSetOf<Long>()
         repeat(numberOfTasks) {
             service.enqueue {
-                threadIds.add(Thread.currentThread().id)
+                threadIds.add(findThreadId())
                 latch.countDown()
             }
         }
@@ -46,7 +47,16 @@ class PeriodicWorkTest {
         assertThat(threadIds.size).isEqualTo(1)
 
         // The worker thread is not the same as the main thread
-        assertThat(threadIds.first()).isNotEqualTo(Thread.currentThread().id)
+        assertThat(threadIds.first()).isNotEqualTo(findThreadId())
+    }
+
+    private fun findThreadId(): Long {
+        val thread = Thread.currentThread()
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+            thread.threadId()
+        } else {
+            thread.id
+        }
     }
 
     @Test

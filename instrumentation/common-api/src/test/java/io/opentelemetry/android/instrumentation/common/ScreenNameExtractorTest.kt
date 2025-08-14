@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+@file:Suppress("DEPRECATION") // suppress deprecation for android.app.Fragment
+
 package io.opentelemetry.android.instrumentation.common
 
 import android.app.Activity
