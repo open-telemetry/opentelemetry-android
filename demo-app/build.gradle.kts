@@ -18,7 +18,7 @@ android {
     defaultConfig {
         applicationId = "io.opentelemetry.android.demo"
         minSdk = 21
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
