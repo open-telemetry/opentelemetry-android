@@ -37,7 +37,7 @@ private fun hasBasicPhoneStatePermission(context: Context): Boolean =
  * - API 33+: checks READ_BASIC_PHONE_STATE or READ_PHONE_STATE
  * - Older: checks READ_PHONE_STATE
  */
-fun hasPhoneStatePermission(context: Context): Boolean =
+internal fun hasPhoneStatePermission(context: Context): Boolean =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         hasBasicPhoneStatePermission(context) ||
             hasReadPhoneStatePermission(context)
@@ -46,12 +46,12 @@ fun hasPhoneStatePermission(context: Context): Boolean =
     }
 
 /** Checks if the device has telephony capabilities. */
-fun hasTelephonyFeature(context: Context): Boolean = context.packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)
+internal fun hasTelephonyFeature(context: Context): Boolean = context.packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)
 
 /**
  * Maps TelephonyManager network type constants to human-readable strings.
  */
-fun getNetworkTypeName(networkType: Int): String =
+internal fun getNetworkTypeName(networkType: Int): String =
     getGsmNetworkTypeName(networkType)
         ?: getCdmaNetworkTypeName(networkType)
         ?: getLteAndModernNetworkTypeName(networkType)
@@ -60,7 +60,7 @@ fun getNetworkTypeName(networkType: Int): String =
 /**
  * Checks if a CharSequence is valid (not null or empty).
  */
-fun isValidString(str: CharSequence?): Boolean = !str.isNullOrEmpty()
+internal fun isValidString(str: CharSequence?): Boolean = !str.isNullOrEmpty()
 
 private fun getGsmNetworkTypeName(networkType: Int): String? =
     when (networkType) {
