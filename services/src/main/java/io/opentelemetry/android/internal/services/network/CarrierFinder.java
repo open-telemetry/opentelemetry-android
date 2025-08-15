@@ -14,6 +14,7 @@ import android.os.Build;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier;
@@ -31,7 +32,7 @@ public class CarrierFinder {
         this.telephonyManager = telephonyManager;
     }
 
-    @androidx.annotation.Nullable
+    @Nullable
     public Carrier get() {
         if (!hasTelephonyFeature(context)) {
             return null;

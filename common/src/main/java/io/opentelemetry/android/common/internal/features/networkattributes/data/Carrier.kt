@@ -17,10 +17,10 @@ data class Carrier
         val mobileNetworkCode: String? = null,
         val isoCountryCode: String? = null,
     ) {
-        companion object {
+        private companion object {
             /**
              * Default value for unknown carrier id.
              */
-            const val UNKNOWN_CARRIER_ID = -1
+            private const val UNKNOWN_CARRIER_ID = -1
         }
     }
