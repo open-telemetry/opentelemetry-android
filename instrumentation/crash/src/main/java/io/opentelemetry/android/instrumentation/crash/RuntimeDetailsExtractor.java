@@ -21,16 +21,16 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import java.io.File;
 
 /** Represents details about the runtime environment at a time */
-public final class RuntimeDetailsExtractor<RQ, RS> extends BroadcastReceiver
+public final class RuntimeDetailsExtractor<RQ> extends BroadcastReceiver
         implements EventAttributesExtractor<RQ> {
 
     private @Nullable volatile Double batteryPercent = null;
     private final File filesDir;
 
-    public static <RQ, RS> RuntimeDetailsExtractor<RQ, RS> create(Context context) {
+    public static <RQ> RuntimeDetailsExtractor<RQ> create(Context context) {
         IntentFilter batteryChangedFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         File filesDir = context.getFilesDir();
-        RuntimeDetailsExtractor<RQ, RS> runtimeDetails = new RuntimeDetailsExtractor<>(filesDir);
+        RuntimeDetailsExtractor<RQ> runtimeDetails = new RuntimeDetailsExtractor<>(filesDir);
         context.registerReceiver(runtimeDetails, batteryChangedFilter);
         return runtimeDetails;
     }

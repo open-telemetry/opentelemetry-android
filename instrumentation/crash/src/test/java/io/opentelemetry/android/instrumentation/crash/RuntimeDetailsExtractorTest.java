@@ -39,7 +39,7 @@ class RuntimeDetailsExtractorTest {
         when(intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)).thenReturn(level);
         when(intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)).thenReturn(1000);
 
-        RuntimeDetailsExtractor<?, ?> details = RuntimeDetailsExtractor.create(context);
+        RuntimeDetailsExtractor<?> details = RuntimeDetailsExtractor.create(context);
         details.onReceive(context, intent);
 
         AttributesBuilder attributes = Attributes.builder();
