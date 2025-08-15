@@ -1,3 +1,10 @@
 # https://detekt.dev/docs/introduction/configurations/
 build:
   maxIssues: 0
+
+style:
+  MaxLineLength:
+    maxLineLength: 140
+    excludePackageStatements: true
+    excludeImportStatements: true
+    excludeCommentStatements: true
