@@ -18,11 +18,12 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.telephony.TelephonyManager;
-
 import androidx.core.content.ContextCompat;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-
+import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
+import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,10 +33,6 @@ import org.mockito.MockedStatic;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowNetworkInfo;
-
-import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier;
-import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
-import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
 
 @RunWith(AndroidJUnit4.class)
 public class NetworkDetectorTest {
@@ -62,6 +59,17 @@ public class NetworkDetectorTest {
         when(context.getSystemService(Context.TELEPHONY_SERVICE)).thenReturn(telephonyManager);
         when(context.getPackageManager()).thenReturn(packageManager);
         when(connectivityManager.getNetworkCapabilities(network)).thenReturn(networkCapabilities);
+
+        // Mock telephony feature as available by default
+        when(packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)).thenReturn(true);
+
+        // Mock permission granted by default for most tests
+        contextCompatMock
+                .when(
+                        () ->
+                                ContextCompat.checkSelfPermission(
+                                        context, android.Manifest.permission.READ_PHONE_STATE))
+                .thenReturn(PackageManager.PERMISSION_GRANTED);
     }
 
     @After
@@ -73,7 +81,19 @@ public class NetworkDetectorTest {
 
     @Test
     @Config(sdk = Build.VERSION_CODES.M)
-    public void none_modern() {
+    public void noNetwork_modern() {
+        when(connectivityManager.getActiveNetwork()).thenReturn(null);
+
+        NetworkDetector networkDetector = NetworkDetector.create(context);
+        CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
+
+        assertEquals(
+                CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build(), currentNetwork);
+    }
+
+    @Test
+    @Config(sdk = Build.VERSION_CODES.M)
+    public void unknown_modern() {
         when(connectivityManager.getActiveNetwork()).thenReturn(network);
         when(connectivityManager.getNetworkCapabilities(network)).thenReturn(null);
         NetworkDetector networkDetector = NetworkDetector.create(context);
@@ -103,7 +123,11 @@ public class NetworkDetectorTest {
 
         // Setup for Carrier and SubType details
         when(packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)).thenReturn(true);
-        contextCompatMock.when(() -> ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_PHONE_STATE))
+        contextCompatMock
+                .when(
+                        () ->
+                                ContextCompat.checkSelfPermission(
+                                        context, android.Manifest.permission.READ_PHONE_STATE))
                 .thenReturn(PackageManager.PERMISSION_GRANTED);
         when(telephonyManager.getSimCarrierId()).thenReturn(310);
         when(telephonyManager.getSimCarrierIdName()).thenReturn("TestCarrier");
@@ -129,7 +153,11 @@ public class NetworkDetectorTest {
         when(connectivityManager.getNetworkCapabilities(network)).thenReturn(networkCapabilities);
         when(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
                 .thenReturn(true);
-        contextCompatMock.when(() -> ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_PHONE_STATE))
+        contextCompatMock
+                .when(
+                        () ->
+                                ContextCompat.checkSelfPermission(
+                                        context, android.Manifest.permission.READ_PHONE_STATE))
                 .thenReturn(PackageManager.PERMISSION_DENIED);
 
         NetworkDetector networkDetector = NetworkDetector.create(context);
@@ -226,7 +254,11 @@ public class NetworkDetectorTest {
         when(connectivityManager.getNetworkCapabilities(network)).thenReturn(networkCapabilities);
         when(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
                 .thenReturn(true);
-        contextCompatMock.when(() -> ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_PHONE_STATE))
+        contextCompatMock
+                .when(
+                        () ->
+                                ContextCompat.checkSelfPermission(
+                                        context, android.Manifest.permission.READ_PHONE_STATE))
                 .thenReturn(PackageManager.PERMISSION_GRANTED);
         when(telephonyManager.getNetworkType()).thenReturn(TelephonyManager.NETWORK_TYPE_UMTS);
 
@@ -244,7 +276,11 @@ public class NetworkDetectorTest {
         when(connectivityManager.getNetworkCapabilities(network)).thenReturn(networkCapabilities);
         when(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
                 .thenReturn(true);
-        contextCompatMock.when(() -> ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_PHONE_STATE))
+        contextCompatMock
+                .when(
+                        () ->
+                                ContextCompat.checkSelfPermission(
+                                        context, android.Manifest.permission.READ_PHONE_STATE))
                 .thenReturn(PackageManager.PERMISSION_GRANTED);
         when(telephonyManager.getDataNetworkType())
                 .thenThrow(new SecurityException("Permission denied"));
@@ -264,7 +300,11 @@ public class NetworkDetectorTest {
         when(connectivityManager.getNetworkCapabilities(network)).thenReturn(networkCapabilities);
         when(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
                 .thenReturn(true);
-        contextCompatMock.when(() -> ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_PHONE_STATE))
+        contextCompatMock
+                .when(
+                        () ->
+                                ContextCompat.checkSelfPermission(
+                                        context, android.Manifest.permission.READ_PHONE_STATE))
                 .thenReturn(PackageManager.PERMISSION_GRANTED);
         when(telephonyManager.getNetworkType())
                 .thenThrow(new SecurityException("Permission denied"));
@@ -274,5 +314,84 @@ public class NetworkDetectorTest {
 
         assertEquals(NetworkState.TRANSPORT_CELLULAR, currentNetwork.getState());
         assertEquals(null, currentNetwork.getSubType());
+    }
+
+    @Test
+    @Config(sdk = Build.VERSION_CODES.TIRAMISU)
+    public void cellular_api33_withBasicPhoneStatePermission() {
+        when(connectivityManager.getActiveNetwork()).thenReturn(network);
+        when(connectivityManager.getNetworkCapabilities(network)).thenReturn(networkCapabilities);
+        when(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
+                .thenReturn(true);
+
+        // Deny READ_PHONE_STATE but grant READ_BASIC_PHONE_STATE
+        contextCompatMock
+                .when(
+                        () ->
+                                ContextCompat.checkSelfPermission(
+                                        context, android.Manifest.permission.READ_PHONE_STATE))
+                .thenReturn(PackageManager.PERMISSION_DENIED);
+        contextCompatMock
+                .when(
+                        () ->
+                                ContextCompat.checkSelfPermission(
+                                        context,
+                                        android.Manifest.permission.READ_BASIC_PHONE_STATE))
+                .thenReturn(PackageManager.PERMISSION_GRANTED);
+
+        when(telephonyManager.getSimCarrierId()).thenReturn(123);
+        when(telephonyManager.getSimCarrierIdName()).thenReturn("API33Carrier");
+        when(telephonyManager.getSimCountryIso()).thenReturn("us");
+        when(telephonyManager.getSimOperator()).thenReturn("31026");
+        when(telephonyManager.getDataNetworkType()).thenReturn(TelephonyManager.NETWORK_TYPE_NR);
+
+        NetworkDetector networkDetector = NetworkDetector.create(context);
+        CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
+
+        assertEquals(NetworkState.TRANSPORT_CELLULAR, currentNetwork.getState());
+        assertEquals("NR", currentNetwork.getSubType());
+        assertEquals("API33Carrier", currentNetwork.getCarrierName());
+        assertEquals("310", currentNetwork.getCarrierCountryCode());
+        assertEquals("26", currentNetwork.getCarrierNetworkCode());
+        assertEquals("us", currentNetwork.getCarrierIsoCountryCode());
+    }
+
+    @Test
+    @Config(sdk = Build.VERSION_CODES.TIRAMISU)
+    public void cellular_api33_withoutAnyPermission() {
+        when(connectivityManager.getActiveNetwork()).thenReturn(network);
+        when(connectivityManager.getNetworkCapabilities(network)).thenReturn(networkCapabilities);
+        when(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
+                .thenReturn(true);
+
+        // Deny both permissions
+        contextCompatMock
+                .when(
+                        () ->
+                                ContextCompat.checkSelfPermission(
+                                        context, android.Manifest.permission.READ_PHONE_STATE))
+                .thenReturn(PackageManager.PERMISSION_DENIED);
+        contextCompatMock
+                .when(
+                        () ->
+                                ContextCompat.checkSelfPermission(
+                                        context,
+                                        android.Manifest.permission.READ_BASIC_PHONE_STATE))
+                .thenReturn(PackageManager.PERMISSION_DENIED);
+
+        when(telephonyManager.getSimCarrierId()).thenReturn(123);
+        when(telephonyManager.getSimCarrierIdName()).thenReturn("API33Carrier");
+        when(telephonyManager.getSimCountryIso()).thenReturn("us");
+        when(telephonyManager.getSimOperator()).thenReturn("31026");
+
+        NetworkDetector networkDetector = NetworkDetector.create(context);
+        CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
+
+        assertEquals(NetworkState.TRANSPORT_CELLULAR, currentNetwork.getState());
+        assertEquals(null, currentNetwork.getSubType());
+        // Carrier should still be available for basic info (non-permission protected methods)
+        assertEquals("310", currentNetwork.getCarrierCountryCode());
+        assertEquals("26", currentNetwork.getCarrierNetworkCode());
+        assertEquals("us", currentNetwork.getCarrierIsoCountryCode());
     }
 }

@@ -11,9 +11,16 @@ package io.opentelemetry.android.common.internal.features.networkattributes.data
 data class Carrier
     @JvmOverloads
     constructor(
-        val id: Int = -1,
+        val id: Int = UNKNOWN_CARRIER_ID,
         val name: String? = null,
         val mobileCountryCode: String? = null,
         val mobileNetworkCode: String? = null,
         val isoCountryCode: String? = null,
-    )
+    ) {
+        companion object {
+            /**
+             * Default value for unknown carrier id.
+             */
+            const val UNKNOWN_CARRIER_ID = -1
+        }
+    }

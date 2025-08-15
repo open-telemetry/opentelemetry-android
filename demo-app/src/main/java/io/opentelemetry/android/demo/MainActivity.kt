@@ -92,17 +92,23 @@ class MainActivity : ComponentActivity() {
         }
         viewModel.sessionIdState.value = OtelDemoApplication.rum?.rumSessionId!!
 
-        // READ_PHONE_STATE permission is needed for gathering certain network information like
+        // Request the correct phone state permission based on API level
+        // This permission is needed for gathering certain network information like
         // carrier name and network subtype (LTE, 4G) on certain API levels.
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
+        val phoneStatePermission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_BASIC_PHONE_STATE
+        } else {
+            Manifest.permission.READ_PHONE_STATE
+        }
+
+        if (ContextCompat.checkSelfPermission(this, phoneStatePermission)
             != PackageManager.PERMISSION_GRANTED) {
             // Permission is not granted, request it
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(Manifest.permission.READ_PHONE_STATE),
+                arrayOf(phoneStatePermission),
                 100
             )
         }
-
     }
 }
