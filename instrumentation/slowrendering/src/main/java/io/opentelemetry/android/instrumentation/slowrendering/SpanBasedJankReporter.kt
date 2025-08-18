@@ -6,6 +6,9 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
 import java.time.Instant
 
+private const val SLOW_THRESHOLD_MS = 16
+private const val FROZEN_THRESHOLD_MS = 700
+
 internal class SpanBasedJankReporter(private val tracer: Tracer) : JankReporter {
 
     override fun reportSlow(listener: PerActivityListener) {
@@ -15,13 +18,13 @@ internal class SpanBasedJankReporter(private val tracer: Tracer) : JankReporter 
         for (i in 0 until durationToCountHistogram.size()) {
             val duration = durationToCountHistogram.keyAt(i)
             val count = durationToCountHistogram.get(duration)
-            if (duration > SlowRenderListener.FROZEN_THRESHOLD_MS) {
+            if (duration > FROZEN_THRESHOLD_MS) {
                 Log.d(
                     RumConstants.OTEL_RUM_LOG_TAG,
                     "* FROZEN RENDER DETECTED: $duration ms.$count times"
                 )
                 frozenCount += count
-            } else if (duration > SlowRenderListener.SLOW_THRESHOLD_MS) {
+            } else if (duration > SLOW_THRESHOLD_MS) {
                 Log.d(
                     RumConstants.OTEL_RUM_LOG_TAG,
                     "* Slow render detected: $duration ms. $count times"

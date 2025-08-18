@@ -30,10 +30,6 @@ import java.util.concurrent.TimeUnit;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
 class SlowRenderListener implements DefaultingActivityLifecycleCallbacks {
-
-    static final int SLOW_THRESHOLD_MS = 16;
-    static final int FROZEN_THRESHOLD_MS = 700;
-
     private static final HandlerThread frameMetricsThread =
             new HandlerThread("FrameMetricsCollector");
 
