@@ -53,6 +53,29 @@ class SpanBasedJankReporterTest {
         assertSpanContent(otelTesting.spans)
     }
 
+    @Test
+    fun `no spans created when no slow frames`() {
+        val jankReporter = SpanBasedJankReporter(tracer)
+        val perActivityListener: PerActivityListener = mockk()
+        val histogramData: SparseIntArray = mockk()
+        every { histogramData.size() } returns 2
+        val key1 = 3
+        val key2 = 8
+        every { histogramData.keyAt(0) } returns key1
+        every { histogramData.keyAt(1) } returns key2
+        every { histogramData.get(key1) } returns 3
+        every { histogramData.get(key2) } returns 1
+        every { perActivityListener.resetMetrics() } returns histogramData
+        every { perActivityListener.getActivityName() } returns "io.otel/Komponent"
+        mockkStatic(Log::class)
+        every { Log.d(any(), any())} returns 0
+
+        jankReporter.reportSlow(perActivityListener)
+
+        assertThat(otelTesting.spans.size).isZero
+    }
+
+
     private fun assertSpanContent(spans: MutableList<SpanData?>?) {
         assertThat<SpanData?>(spans)
             .hasSize(2)
