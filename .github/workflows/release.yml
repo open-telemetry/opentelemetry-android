@@ -87,7 +87,9 @@ jobs:
           java-version: 17
 
       - name: Build and publish artifacts
-        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository -Pfinal=true --no-build-cache --no-configuration-cache --no-parallel
+        # See https://youtrack.jetbrains.com/projects/KT/issues/KT-79047/Gradle-compileKotlin-fails-with-configuration-cache for why this is needed
+        # We may be able to remove this when gradle 9.1 lands.
+        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository -Pkotlin.incremental=false -Pfinal=true --no-build-cache --no-configuration-cache --no-parallel
         env:
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
