@@ -33,12 +33,12 @@ internal class SpanBasedJankReporter(private val tracer: Tracer) : JankReporter 
             }
         }
 
-        val now = Instant.now();
+        val now = Instant.now()
         if (slowCount > 0) {
-            makeSpan("slowRenders", listener.getActivityName(), slowCount, now);
+            makeSpan("slowRenders", listener.getActivityName(), slowCount, now)
         }
         if (frozenCount > 0) {
-            makeSpan("frozenRenders", listener.getActivityName(), frozenCount, now);
+            makeSpan("frozenRenders", listener.getActivityName(), frozenCount, now)
         }
     }
 
