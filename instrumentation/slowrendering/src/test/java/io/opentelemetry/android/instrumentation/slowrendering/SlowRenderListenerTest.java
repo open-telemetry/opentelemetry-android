@@ -64,14 +64,13 @@ public class SlowRenderListenerTest {
     Activity activity;
 
     @Mock FrameMetrics frameMetrics;
-    Tracer tracer;
+    @Mock JankReporter jankReporter;
     ScheduledExecutorService executorService;
 
-    @Captor ArgumentCaptor<SlowRenderListener.PerActivityListener> activityListenerCaptor;
+    @Captor ArgumentCaptor<PerActivityListener> activityListenerCaptor;
 
     @Before
     public void setup() {
-        tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
         executorService = Executors.newSingleThreadScheduledExecutor();
         ComponentName componentName = new ComponentName("io.otel", "Komponent");
         when(activity.getComponentName()).thenReturn(componentName);
@@ -80,7 +79,7 @@ public class SlowRenderListenerTest {
     @Test
     public void add() {
         SlowRenderListener testInstance =
-                new SlowRenderListener(tracer, executorService, frameMetricsHandler, Duration.ZERO);
+                new SlowRenderListener(jankReporter, executorService, frameMetricsHandler, Duration.ZERO);
 
         testInstance.onActivityResumed(activity);
 
@@ -93,7 +92,7 @@ public class SlowRenderListenerTest {
     @Test
     public void removeBeforeAddOk() {
         SlowRenderListener testInstance =
-                new SlowRenderListener(tracer, executorService, frameMetricsHandler, Duration.ZERO);
+                new SlowRenderListener(jankReporter, executorService, frameMetricsHandler, Duration.ZERO);
 
         testInstance.onActivityPaused(activity);
 
@@ -104,7 +103,7 @@ public class SlowRenderListenerTest {
     @Test
     public void addAndRemove() {
         SlowRenderListener testInstance =
-                new SlowRenderListener(tracer, executorService, frameMetricsHandler, Duration.ZERO);
+                new SlowRenderListener(jankReporter, executorService, frameMetricsHandler, Duration.ZERO);
 
         testInstance.onActivityResumed(activity);
         testInstance.onActivityPaused(activity);
@@ -120,14 +119,16 @@ public class SlowRenderListenerTest {
 
     @Test
     public void removeWithMetrics() {
+        Tracer tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
+        jankReporter = new SpanBasedJankReporter(tracer);
         SlowRenderListener testInstance =
-                new SlowRenderListener(tracer, executorService, frameMetricsHandler, Duration.ZERO);
+                new SlowRenderListener(jankReporter, executorService, frameMetricsHandler, Duration.ZERO);
 
         testInstance.onActivityResumed(activity);
 
         verify(activity.getWindow())
                 .addOnFrameMetricsAvailableListener(activityListenerCaptor.capture(), any());
-        SlowRenderListener.PerActivityListener listener = activityListenerCaptor.getValue();
+        PerActivityListener listener = activityListenerCaptor.getValue();
         for (long duration : makeSomeDurations()) {
             when(frameMetrics.getMetric(DRAW_DURATION)).thenReturn(duration);
             listener.onFrameMetricsAvailable(null, frameMetrics, 0);
@@ -152,14 +153,16 @@ public class SlowRenderListenerTest {
                 .when(exec)
                 .scheduleWithFixedDelay(any(), eq(1001L), eq(1001L), eq(TimeUnit.MILLISECONDS));
 
+        Tracer tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
+        jankReporter = new SpanBasedJankReporter(tracer);
         SlowRenderListener testInstance =
-                new SlowRenderListener(tracer, exec, frameMetricsHandler, Duration.ofMillis(1001));
+                new SlowRenderListener(jankReporter, exec, frameMetricsHandler, Duration.ofMillis(1001));
 
         testInstance.onActivityResumed(activity);
 
         verify(activity.getWindow())
                 .addOnFrameMetricsAvailableListener(activityListenerCaptor.capture(), any());
-        SlowRenderListener.PerActivityListener listener = activityListenerCaptor.getValue();
+        PerActivityListener listener = activityListenerCaptor.getValue();
         for (long duration : makeSomeDurations()) {
             when(frameMetrics.getMetric(DRAW_DURATION)).thenReturn(duration);
             listener.onFrameMetricsAvailable(null, frameMetrics, 0);
@@ -173,8 +176,8 @@ public class SlowRenderListenerTest {
 
     @Test
     public void activityListenerSkipsFirstFrame() {
-        SlowRenderListener.PerActivityListener listener =
-                new SlowRenderListener.PerActivityListener(null);
+        PerActivityListener listener =
+                new PerActivityListener(activity);
         when(frameMetrics.getMetric(FIRST_DRAW_FRAME)).thenReturn(1L);
         listener.onFrameMetricsAvailable(null, frameMetrics, 99);
         verify(frameMetrics, never()).getMetric(DRAW_DURATION);

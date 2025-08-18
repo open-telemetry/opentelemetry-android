@@ -61,14 +61,15 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
             return
         }
 
-        detector =
-            SlowRenderListener(
-                ctx.openTelemetry.getTracer("io.opentelemetry.slow-rendering"),
-                slowRenderingDetectionPollInterval,
-            )
+
+        // TODO: Let the type of reporter be configurable
+        val tracer = ctx.openTelemetry.getTracer("io.opentelemetry.slow-rendering")
+        val jankReporter = SpanBasedJankReporter(tracer)
+
+        detector = SlowRenderListener(jankReporter, slowRenderingDetectionPollInterval)
 
         ctx.application.registerActivityLifecycleCallbacks(detector)
-        detector?.start()
+        detector!!.start()
     }
 
     override fun uninstall(ctx: InstallationContext) {
