@@ -35,7 +35,7 @@ public abstract interface class io/opentelemetry/android/internal/services/appli
 }
 
 public class io/opentelemetry/android/internal/services/network/CarrierFinder {
-	public fun <init> (Landroid/telephony/TelephonyManager;)V
+	public fun <init> (Landroid/content/Context;Landroid/telephony/TelephonyManager;)V
 	public fun get ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/Carrier;
 }
 

@@ -5,7 +5,9 @@
 
 package io.opentelemetry.android.demo
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -28,6 +30,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import io.opentelemetry.android.demo.about.AboutActivity
 import io.opentelemetry.android.demo.theme.DemoAppTheme
 import io.opentelemetry.android.demo.shop.ui.AstronomyShopActivity
@@ -87,5 +91,24 @@ class MainActivity : ComponentActivity() {
             }
         }
         viewModel.sessionIdState.value = OtelDemoApplication.rum?.rumSessionId!!
+
+        // Request the correct phone state permission based on API level
+        // This permission is needed for gathering certain network information like
+        // carrier name and network subtype (LTE, 4G) on certain API levels.
+        val phoneStatePermission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_BASIC_PHONE_STATE
+        } else {
+            Manifest.permission.READ_PHONE_STATE
+        }
+
+        if (ContextCompat.checkSelfPermission(this, phoneStatePermission)
+            != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted, request it
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(phoneStatePermission),
+                100
+            )
+        }
     }
 }

@@ -51,10 +51,7 @@ public class CurrentNetworkAttributesExtractorTest {
     @Test
     public void getNetworkAttributes_withoutCarrier() {
         CurrentNetwork currentNetwork =
-                CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
-                        .subType("aaa")
-                        .carrier(new Carrier(42, "ShadyTel"))
-                        .build();
+                CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).subType("aaa").build();
 
         OpenTelemetryAssertions.assertThat(underTest.extract(currentNetwork))
                 .containsOnly(
