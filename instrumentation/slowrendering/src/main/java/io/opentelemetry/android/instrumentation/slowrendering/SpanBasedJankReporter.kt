@@ -1,6 +1,7 @@
 package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.util.Log
+import android.util.SparseIntArray
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
@@ -11,10 +12,9 @@ private const val FROZEN_THRESHOLD_MS = 700
 
 internal class SpanBasedJankReporter(private val tracer: Tracer) : JankReporter {
 
-    override fun reportSlow(listener: PerActivityListener) {
+    override fun reportSlow(durationToCountHistogram: SparseIntArray, periodSeconds: Double, activityName: String) {
         var slowCount = 0
         var frozenCount = 0
-        val durationToCountHistogram = listener.resetMetrics()
         for (i in 0 until durationToCountHistogram.size()) {
             val duration = durationToCountHistogram.keyAt(i)
             val count = durationToCountHistogram.get(duration)
@@ -35,15 +35,14 @@ internal class SpanBasedJankReporter(private val tracer: Tracer) : JankReporter 
 
         val now = Instant.now()
         if (slowCount > 0) {
-            makeSpan("slowRenders", listener.getActivityName(), slowCount, now)
+            makeSpan("slowRenders", activityName, slowCount, now)
         }
         if (frozenCount > 0) {
-            makeSpan("frozenRenders", listener.getActivityName(), frozenCount, now)
+            makeSpan("frozenRenders", activityName, frozenCount, now)
         }
     }
 
     private fun makeSpan(spanName: String, activityName: String, slowCount: Int, now: Instant) {
-        // TODO: Use an event rather than a zero-duration span
         val span: Span =
             tracer.spanBuilder(spanName)
                 .setAttribute("count", slowCount.toLong())

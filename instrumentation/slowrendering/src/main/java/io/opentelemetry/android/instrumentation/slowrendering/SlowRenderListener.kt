@@ -75,14 +75,16 @@ internal class SlowRenderListener // Exists for testing
         val listener = activities.remove(activity)
         if (listener != null) {
             activity.window.removeOnFrameMetricsAvailableListener(listener)
-            jankReporter.reportSlow(listener)
+            val durationToCountHistogram = listener.resetMetrics()
+            jankReporter.reportSlow(durationToCountHistogram, pollInterval.toSeconds().toDouble(), listener.getActivityName())
         }
     }
 
     private fun reportSlowRenders() {
         try {
             activities.forEach { (_: Activity?, listener: PerActivityListener) ->
-                jankReporter.reportSlow(listener)
+                val durationToCountHistogram = listener.resetMetrics()
+                jankReporter.reportSlow(durationToCountHistogram, pollInterval.toSeconds().toDouble(), listener.getActivityName())
             }
         } catch (e: Exception) {
             Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Exception while processing frame metrics", e)

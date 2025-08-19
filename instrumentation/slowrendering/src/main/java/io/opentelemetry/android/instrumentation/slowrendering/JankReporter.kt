@@ -1,11 +1,13 @@
 package io.opentelemetry.android.instrumentation.slowrendering
 
+import android.util.SparseIntArray
+
 /**
  * Responsible for sending telemetry. This is a temporary class that we can remove
  * after the jank semconv becomes more stable.
  */
 internal fun interface JankReporter {
-    fun reportSlow(listener: PerActivityListener)
+    fun reportSlow(durationToCountHistogram: SparseIntArray, periodSeconds: Double, activityName: String)
 
     /**
      * Creates a combined JankReporter that will first report slow for this
@@ -13,9 +15,9 @@ internal fun interface JankReporter {
      */
     fun combine(jankReporter: JankReporter): JankReporter {
         return object: JankReporter {
-            override fun reportSlow(listener: PerActivityListener) {
-                reportSlow(listener)
-                jankReporter.reportSlow(listener)
+            override fun reportSlow(durationToCountHistogram: SparseIntArray, periodSeconds: Double, activityName: String) {
+                reportSlow(durationToCountHistogram, periodSeconds, activityName)
+                jankReporter.reportSlow(durationToCountHistogram, periodSeconds, activityName)
             }
         }
     }
