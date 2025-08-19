@@ -16,15 +16,14 @@ val THRESHOLD: AttributeKey<Double> = AttributeKey.doubleKey("app.jank.threshold
 
 internal class EventsJankReporter(
     private val eventLogger: Logger,
-    private val threshold: Double,
-    private val period: Double
+    private val threshold: Double
 ) : JankReporter {
 
     override fun reportSlow(durationToCountHistogram: SparseIntArray, periodSeconds: Double, activityName: String) {
         var frameCount: Long = 0
         for (i in 0 until durationToCountHistogram.size()) {
             val durationMillis = durationToCountHistogram.keyAt(i)
-            if (TimeUnit.MILLISECONDS.toSeconds(durationMillis.toLong()) > threshold) {
+            if ((durationMillis/1000.0) > threshold) {
                 val count = durationToCountHistogram.get(durationMillis)
                 Log.d(
                     RumConstants.OTEL_RUM_LOG_TAG,
@@ -38,7 +37,7 @@ internal class EventsJankReporter(
             val eventBuilder = eventLogger.logRecordBuilder() as ExtendedLogRecordBuilder
             val attributes = Attributes.builder()
                 .put(FRAME_COUNT, frameCount)
-                .put(PERIOD, period)
+                .put(PERIOD, periodSeconds)
                 .put(THRESHOLD, threshold)
                 .build()
             eventBuilder

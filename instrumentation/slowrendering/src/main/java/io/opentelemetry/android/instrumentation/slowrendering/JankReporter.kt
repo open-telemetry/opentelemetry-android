@@ -14,9 +14,13 @@ internal fun interface JankReporter {
      * instance and then delegate to another JankReporter instance.
      */
     fun combine(jankReporter: JankReporter): JankReporter {
+        if(jankReporter == this){
+            throw IllegalArgumentException("cannot combine with self")
+        }
+        val exec = this::reportSlow
         return object: JankReporter {
             override fun reportSlow(durationToCountHistogram: SparseIntArray, periodSeconds: Double, activityName: String) {
-                reportSlow(durationToCountHistogram, periodSeconds, activityName)
+                exec(durationToCountHistogram, periodSeconds, activityName)
                 jankReporter.reportSlow(durationToCountHistogram, periodSeconds, activityName)
             }
         }

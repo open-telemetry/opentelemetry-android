@@ -11,6 +11,10 @@ android {
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")
     }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {
@@ -27,3 +31,4 @@ dependencies {
     implementation(libs.opentelemetry.sdk.extension.incubator)
     testImplementation(libs.robolectric)
 }
+
