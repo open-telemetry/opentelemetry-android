@@ -1,14 +1,6 @@
 public final class io/opentelemetry/android/instrumentation/crash/CrashDetails {
-	public static fun create (Ljava/lang/Thread;Ljava/lang/Throwable;)Lio/opentelemetry/android/instrumentation/crash/CrashDetails;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getCause ()Ljava/lang/Throwable;
-	public fun getThread ()Ljava/lang/Thread;
-	public fun hashCode ()I
-}
-
-public final class io/opentelemetry/android/instrumentation/crash/CrashReporter {
-	public fun <init> (Ljava/util/List;)V
-	public fun install (Lio/opentelemetry/sdk/OpenTelemetrySdk;)V
+	public final fun getCause ()Ljava/lang/Throwable;
+	public final fun getThread ()Ljava/lang/Thread;
 }
 
 public final class io/opentelemetry/android/instrumentation/crash/CrashReporterInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
@@ -16,11 +8,5 @@ public final class io/opentelemetry/android/instrumentation/crash/CrashReporterI
 	public final fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/common/EventAttributesExtractor;)V
 	public fun getName ()Ljava/lang/String;
 	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
-}
-
-public final class io/opentelemetry/android/instrumentation/crash/RuntimeDetailsExtractor : android/content/BroadcastReceiver, io/opentelemetry/android/instrumentation/common/EventAttributesExtractor {
-	public static fun create (Landroid/content/Context;)Lio/opentelemetry/android/instrumentation/crash/RuntimeDetailsExtractor;
-	public fun extract (Lio/opentelemetry/context/Context;Ljava/lang/Object;)Lio/opentelemetry/api/common/Attributes;
-	public fun onReceive (Landroid/content/Context;Landroid/content/Intent;)V
 }
 
