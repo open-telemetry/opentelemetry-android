@@ -8,6 +8,7 @@ plugins {
     id("otel.errorprone-conventions")
     id("com.google.devtools.ksp")
     id("otel.animalsniffer-conventions")
+    id("otel.android-dependency-conventions")
     id("io.gitlab.arturbosch.detekt")
     id("org.jetbrains.kotlinx.binary-compatibility-validator")
 }
