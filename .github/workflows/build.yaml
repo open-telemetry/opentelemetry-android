@@ -29,9 +29,7 @@ jobs:
         working-directory: ./demo-app
         run: ./gradlew check assemble
       - name: publish snapshot
-        # See https://youtrack.jetbrains.com/projects/KT/issues/KT-79047/Gradle-compileKotlin-fails-with-configuration-cache for why this is needed
-        # We may be able to remove this when gradle 9.1 lands.
-        run: ./gradlew publishToSonatype -Pkotlin.incremental=false
+        run: ./gradlew publishToSonatype
         env:
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
