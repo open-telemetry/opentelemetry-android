@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.util.Log
@@ -10,9 +15,14 @@ import java.time.Instant
 private const val SLOW_THRESHOLD_MS = 16
 private const val FROZEN_THRESHOLD_MS = 700
 
-internal class SpanBasedJankReporter(private val tracer: Tracer) : JankReporter {
-
-    override fun reportSlow(durationToCountHistogram: SparseIntArray, periodSeconds: Double, activityName: String) {
+internal class SpanBasedJankReporter(
+    private val tracer: Tracer,
+) : JankReporter {
+    override fun reportSlow(
+        durationToCountHistogram: SparseIntArray,
+        periodSeconds: Double,
+        activityName: String,
+    ) {
         var slowCount = 0
         var frozenCount = 0
         for (i in 0 until durationToCountHistogram.size()) {
@@ -21,13 +31,13 @@ internal class SpanBasedJankReporter(private val tracer: Tracer) : JankReporter 
             if (duration > FROZEN_THRESHOLD_MS) {
                 Log.d(
                     RumConstants.OTEL_RUM_LOG_TAG,
-                    "* FROZEN RENDER DETECTED: $duration ms.$count times"
+                    "* FROZEN RENDER DETECTED: $duration ms.$count times",
                 )
                 frozenCount += count
             } else if (duration > SLOW_THRESHOLD_MS) {
                 Log.d(
                     RumConstants.OTEL_RUM_LOG_TAG,
-                    "* Slow render detected: $duration ms. $count times"
+                    "* Slow render detected: $duration ms. $count times",
                 )
                 slowCount += count
             }
@@ -42,9 +52,15 @@ internal class SpanBasedJankReporter(private val tracer: Tracer) : JankReporter 
         }
     }
 
-    private fun makeSpan(spanName: String, activityName: String, slowCount: Int, now: Instant) {
+    private fun makeSpan(
+        spanName: String,
+        activityName: String,
+        slowCount: Int,
+        now: Instant,
+    ) {
         val span: Span =
-            tracer.spanBuilder(spanName)
+            tracer
+                .spanBuilder(spanName)
                 .setAttribute("count", slowCount.toLong())
                 .setAttribute("activity.name", activityName)
                 .setStartTimestamp(now)

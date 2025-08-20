@@ -31,4 +31,3 @@ dependencies {
     implementation(libs.opentelemetry.sdk.extension.incubator)
     testImplementation(libs.robolectric)
 }
-

@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.util.Log
@@ -18,17 +23,15 @@ import org.junit.jupiter.api.Test
 
 private val COUNT_KEY = AttributeKey.longKey("count")
 
-
 class SpanBasedJankReporterTest {
-
     private lateinit var tracer: Tracer
 
     @Rule
     var otelTesting: OpenTelemetryRule = OpenTelemetryRule.create()
 
     @BeforeEach
-    fun setup(){
-        tracer = otelTesting.openTelemetry.getTracer("testTracer");
+    fun setup() {
+        tracer = otelTesting.openTelemetry.getTracer("testTracer")
     }
 
     @Test
@@ -43,7 +46,7 @@ class SpanBasedJankReporterTest {
         every { histogramData.get(key1) } returns 3
         every { histogramData.get(key2) } returns 1
         mockkStatic(Log::class)
-        every { Log.d(any(), any())} returns 0
+        every { Log.d(any(), any()) } returns 0
 
         jankReporter.reportSlow(histogramData, 0.1, "io.otel/Komponent")
 
@@ -62,7 +65,7 @@ class SpanBasedJankReporterTest {
         every { histogramData.get(key1) } returns 3
         every { histogramData.get(key2) } returns 1
         mockkStatic(Log::class)
-        every { Log.d(any(), any())} returns 0
+        every { Log.d(any(), any()) } returns 0
 
         jankReporter.reportSlow(histogramData, 0.1, "")
 
@@ -74,26 +77,27 @@ class SpanBasedJankReporterTest {
             .hasSize(2)
             .satisfiesExactly(
                 ThrowingConsumer { span: SpanData? ->
-                    OpenTelemetryAssertions.assertThat(span)
+                    OpenTelemetryAssertions
+                        .assertThat(span)
                         .hasName("slowRenders")
                         .endsAt(span!!.getStartEpochNanos())
                         .hasAttribute(COUNT_KEY, 3L)
                         .hasAttribute(
                             AttributeKey.stringKey("activity.name"),
-                            "io.otel/Komponent"
+                            "io.otel/Komponent",
                         )
                 },
                 ThrowingConsumer { span: SpanData? ->
-                    OpenTelemetryAssertions.assertThat(span)
+                    OpenTelemetryAssertions
+                        .assertThat(span)
                         .hasName("frozenRenders")
                         .endsAt(span!!.getStartEpochNanos())
                         .hasAttribute(COUNT_KEY, 1L)
                         .hasAttribute(
                             AttributeKey.stringKey("activity.name"),
-                            "io.otel/Komponent"
+                            "io.otel/Komponent",
                         )
-                })
+                },
+            )
     }
-
-
 }

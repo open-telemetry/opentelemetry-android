@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.util.Log
@@ -27,7 +32,7 @@ class EventsJankReporterTest {
         every { histogramData.get(key1) } returns 3
         every { histogramData.get(key2) } returns 1
         mockkStatic(Log::class)
-        every { Log.d(any(), any())} returns 0
+        every { Log.d(any(), any()) } returns 0
 
         jankReporter.reportSlow(histogramData, 10.5, "io.otel/Komponent")
 
@@ -38,5 +43,4 @@ class EventsJankReporterTest {
         assertThat(log.attributes.get(PERIOD)).isEqualTo(10.5)
         assertThat(log.attributes.get(THRESHOLD)).isEqualTo(0.6)
     }
-
 }

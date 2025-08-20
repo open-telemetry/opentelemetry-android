@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.app.Activity
@@ -11,12 +16,14 @@ import androidx.annotation.RequiresApi
 import java.util.concurrent.TimeUnit
 
 private val NANOS_PER_MS = TimeUnit.MILLISECONDS.toNanos(1).toInt()
+
 // rounding value adds half a millisecond, for rounding to nearest ms
 private val NANOS_ROUNDING_VALUE: Int = NANOS_PER_MS / 2
 
 @RequiresApi(api = Build.VERSION_CODES.N)
-internal class PerActivityListener(private val activity: Activity) :
-    OnFrameMetricsAvailableListener {
+internal class PerActivityListener(
+    private val activity: Activity,
+) : OnFrameMetricsAvailableListener {
     private val lock = Any()
 
     @GuardedBy("lock")
@@ -25,7 +32,9 @@ internal class PerActivityListener(private val activity: Activity) :
     fun getActivityName(): String = activity.componentName.flattenToShortString()
 
     override fun onFrameMetricsAvailable(
-        window: Window?, frameMetrics: FrameMetrics, dropCountSinceLastInvocation: Int
+        window: Window?,
+        frameMetrics: FrameMetrics,
+        dropCountSinceLastInvocation: Int,
     ) {
         val firstDrawFrame = frameMetrics.getMetric(FrameMetrics.FIRST_DRAW_FRAME)
         if (firstDrawFrame == 1L) {

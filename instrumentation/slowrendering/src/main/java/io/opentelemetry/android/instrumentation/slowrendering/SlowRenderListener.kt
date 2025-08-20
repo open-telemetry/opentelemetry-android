@@ -2,6 +2,7 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.app.Activity
@@ -21,12 +22,11 @@ import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
 @RequiresApi(api = Build.VERSION_CODES.N)
-internal class SlowRenderListener // Exists for testing
-    (
+internal class SlowRenderListener(
     private val jankReporter: JankReporter,
     private val executorService: ScheduledExecutorService,
     private val frameMetricsHandler: Handler,
-    private val pollInterval: Duration
+    private val pollInterval: Duration,
 ) : DefaultingActivityLifecycleCallbacks {
     private val activities: ConcurrentMap<Activity, PerActivityListener> = ConcurrentHashMap()
 
@@ -34,7 +34,7 @@ internal class SlowRenderListener // Exists for testing
         jankReporter,
         Executors.newScheduledThreadPool(1),
         Handler(startFrameMetricsLoop()),
-        pollInterval
+        pollInterval,
     )
 
     // the returned future is very unlikely to fail
@@ -43,7 +43,7 @@ internal class SlowRenderListener // Exists for testing
             { this.reportSlowRenders() },
             pollInterval.toMillis(),
             pollInterval.toMillis(),
-            TimeUnit.MILLISECONDS
+            TimeUnit.MILLISECONDS,
         )
     }
 

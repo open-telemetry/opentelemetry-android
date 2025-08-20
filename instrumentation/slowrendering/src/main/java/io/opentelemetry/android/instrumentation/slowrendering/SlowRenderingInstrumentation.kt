@@ -61,7 +61,6 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
             return
         }
 
-
         // TODO: Let the type of reporter be configurable
         val tracer = ctx.openTelemetry.getTracer("io.opentelemetry.slow-rendering")
         val jankReporter = SpanBasedJankReporter(tracer)

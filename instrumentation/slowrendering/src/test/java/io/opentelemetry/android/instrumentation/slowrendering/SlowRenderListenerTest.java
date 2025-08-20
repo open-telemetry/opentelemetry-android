@@ -79,7 +79,8 @@ public class SlowRenderListenerTest {
     @Test
     public void add() {
         SlowRenderListener testInstance =
-                new SlowRenderListener(jankReporter, executorService, frameMetricsHandler, Duration.ZERO);
+                new SlowRenderListener(
+                        jankReporter, executorService, frameMetricsHandler, Duration.ZERO);
 
         testInstance.onActivityResumed(activity);
 
@@ -92,7 +93,8 @@ public class SlowRenderListenerTest {
     @Test
     public void removeBeforeAddOk() {
         SlowRenderListener testInstance =
-                new SlowRenderListener(jankReporter, executorService, frameMetricsHandler, Duration.ZERO);
+                new SlowRenderListener(
+                        jankReporter, executorService, frameMetricsHandler, Duration.ZERO);
 
         testInstance.onActivityPaused(activity);
 
@@ -103,7 +105,8 @@ public class SlowRenderListenerTest {
     @Test
     public void addAndRemove() {
         SlowRenderListener testInstance =
-                new SlowRenderListener(jankReporter, executorService, frameMetricsHandler, Duration.ZERO);
+                new SlowRenderListener(
+                        jankReporter, executorService, frameMetricsHandler, Duration.ZERO);
 
         testInstance.onActivityResumed(activity);
         testInstance.onActivityPaused(activity);
@@ -122,7 +125,8 @@ public class SlowRenderListenerTest {
         Tracer tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
         jankReporter = new SpanBasedJankReporter(tracer);
         SlowRenderListener testInstance =
-                new SlowRenderListener(jankReporter, executorService, frameMetricsHandler, Duration.ZERO);
+                new SlowRenderListener(
+                        jankReporter, executorService, frameMetricsHandler, Duration.ZERO);
 
         testInstance.onActivityResumed(activity);
 
@@ -156,7 +160,8 @@ public class SlowRenderListenerTest {
         Tracer tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
         jankReporter = new SpanBasedJankReporter(tracer);
         SlowRenderListener testInstance =
-                new SlowRenderListener(jankReporter, exec, frameMetricsHandler, Duration.ofMillis(1001));
+                new SlowRenderListener(
+                        jankReporter, exec, frameMetricsHandler, Duration.ofMillis(1001));
 
         testInstance.onActivityResumed(activity);
 
@@ -176,8 +181,7 @@ public class SlowRenderListenerTest {
 
     @Test
     public void activityListenerSkipsFirstFrame() {
-        PerActivityListener listener =
-                new PerActivityListener(activity);
+        PerActivityListener listener = new PerActivityListener(activity);
         when(frameMetrics.getMetric(FIRST_DRAW_FRAME)).thenReturn(1L);
         listener.onFrameMetricsAvailable(null, frameMetrics, 99);
         verify(frameMetrics, never()).getMetric(DRAW_DURATION);
