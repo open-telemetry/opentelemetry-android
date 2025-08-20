@@ -12,8 +12,8 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
 import java.time.Instant
 
-private const val SLOW_THRESHOLD_MS = 16
-private const val FROZEN_THRESHOLD_MS = 700
+internal const val SLOW_THRESHOLD_MS = 16
+internal const val FROZEN_THRESHOLD_MS = 700
 
 internal class SpanBasedJankReporter(
     private val tracer: Tracer,
