@@ -23,9 +23,7 @@ internal fun interface JankReporter {
      * instance and then delegate to another JankReporter instance.
      */
     fun combine(jankReporter: JankReporter): JankReporter {
-        if (jankReporter == this) {
-            throw IllegalArgumentException("cannot combine with self")
-        }
+        require(jankReporter != this) { "cannot combine with self" }
         val exec = this::reportSlow
         return object : JankReporter {
             override fun reportSlow(

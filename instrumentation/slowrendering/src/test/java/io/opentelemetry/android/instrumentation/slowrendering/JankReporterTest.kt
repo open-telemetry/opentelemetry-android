@@ -65,7 +65,6 @@ class JankReporterTest {
 
     @Test
     fun `combine with self fails`() {
-        val state = StringBuilder("")
         val reporter =
             object : JankReporter {
                 override fun reportSlow(
