@@ -14,9 +14,9 @@ import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
 import io.opentelemetry.api.logs.Logger
 
 // TODO: Replace with semconv constants
-val FRAME_COUNT: AttributeKey<Long> = AttributeKey.longKey("app.jank.frame_count")
-val PERIOD: AttributeKey<Double> = AttributeKey.doubleKey("app.jank.period")
-val THRESHOLD: AttributeKey<Double> = AttributeKey.doubleKey("app.jank.threshold")
+internal val FRAME_COUNT: AttributeKey<Long> = AttributeKey.longKey("app.jank.frame_count")
+internal val PERIOD: AttributeKey<Double> = AttributeKey.doubleKey("app.jank.period")
+internal val THRESHOLD: AttributeKey<Double> = AttributeKey.doubleKey("app.jank.threshold")
 
 internal class EventsJankReporter(
     private val eventLogger: Logger,
