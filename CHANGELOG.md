@@ -2,11 +2,33 @@
 
 ## Unreleased
 
-- Deprecate Volley HTTP instrumentation. This will be removed in 0.20.0.
+### 📣 Migration notes
+
+- Volley HTTP instrumentation is now marked as deprecated and will be removed in 0.20.0.
   Volley has [not seen a release in about 4 years](https://github.com/google/volley/releases)
   and it is unlikely that it has much adoption. As a result, we have chosen to halt development
   of the instrumentation in `opentelemetry-android`.
   [#1145](https://github.com/open-telemetry/opentelemetry-android/pull/1145)
+
+### 🛠️ Bug fixes
+- Allow empty global attributes from empty Supplier at startup
+  ([#1102](https://github.com/open-telemetry/opentelemetry-android/pull/1102))
+- Fix build warning for duplicate module namespace in manifest
+  ([#1136](https://github.com/open-telemetry/opentelemetry-android/pull/1136))
+
+### 📈 Enhancements
+- Updated ANR data model from span to log event
+  ([#1101](https://github.com/open-telemetry/opentelemetry-android/pull/1101))
+- Experimental OpenTelemetryRum.shutdown() and instrumentation uninstall
+  ([#1109](https://github.com/open-telemetry/opentelemetry-android/pull/1109))
+- build: bump compileSdkVersion to 36
+  ([#1122](https://github.com/open-telemetry/opentelemetry-android/pull/1122))
+- Remove READ_PHONE_STATE permission and update docs
+  ([#1129](https://github.com/open-telemetry/opentelemetry-android/pull/1129))
+- Okhttp jvm android resolution
+  ([#1155](https://github.com/open-telemetry/opentelemetry-android/pull/1155))
+- Update network fetch - Use relevant APIs and permissions across different API Levels
+  ([#1147](https://github.com/open-telemetry/opentelemetry-android/pull/1147))
 
 ## Version 0.13.0 (2025-07-24)
 
