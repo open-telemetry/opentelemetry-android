@@ -50,8 +50,9 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
      * Reports jank by using a zero-duration span.
      */
     @Deprecated("Use the default event to report jank")
-    fun enableDeprecatedZeroDurationSpan() {
+    fun enableDeprecatedZeroDurationSpan(): SlowRenderingInstrumentation {
         useDeprecatedSpan = true
+        return this
     }
 
     override fun install(ctx: InstallationContext) {
