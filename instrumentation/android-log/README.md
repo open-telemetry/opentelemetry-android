@@ -37,6 +37,6 @@ plugins {
 ### Adding dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:android-log-library:0.13.0-alpha")
-byteBuddy("io.opentelemetry.android.instrumentation:android-log-agent:0.13.0-alpha") // <2>
+implementation("io.opentelemetry.android.instrumentation:android-log-library:0.14.0-alpha")
+byteBuddy("io.opentelemetry.android.instrumentation:android-log-agent:0.14.0-alpha") // <2>
 ```

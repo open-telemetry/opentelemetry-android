@@ -39,5 +39,5 @@ manually install this instrumentation by following the steps below.
 ### Adding dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:anr:0.13.0-alpha")
+implementation("io.opentelemetry.android.instrumentation:anr:0.14.0-alpha")
 ```
