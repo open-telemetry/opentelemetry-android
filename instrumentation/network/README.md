@@ -29,9 +29,12 @@ Note: This instrumentation supports additional user-configurable `AttributeExtra
 may set additional attributes when given a `CurrentNetwork` instance.
 
 The `CurrentNetworkAttributesExtractor` class is configured by default and provides additional information about the
-current network, depending on the Android version and permissions granted. In particular:
-- Detailed information about the carrier for mobile network connections is only available for Android 9+.
-- The [READ_PHONE_STATE](https://developer.android.com/reference/android/Manifest.permission#READ_PHONE_STATE) permission is required to extract the type of mobile network connection (e.g. LTE, 5G, etc.).
+current network, depending on the Android version and permissions granted. In particular, The app must declare the
+required permission [READ_PHONE_STATE](https://developer.android.com/reference/android/Manifest.permission#READ_PHONE_STATE) or
+[READ_BASIC_PHONE_STATE](https://developer.android.com/reference/android/Manifest.permission#READ_BASIC_PHONE_STATE) (API 33+)
+in its manifest and request it at runtime to extract the mobile network type (e.g., LTE, 5G) and to access the standardized
+carrier name mapped by Android (e.g., "T-Mobile-US"). Without this permission, only the SIM-provided carrier name (e.g., "T-Mobile")
+is available. See [Android permissions documentation](https://developer.android.com/guide/topics/permissions/overview) for more details.
 
 ## Installation
 
