@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 0.14.0 (2025-08-21)
+
 ### 📣 Migration notes
 
 - Volley HTTP instrumentation is now marked as deprecated and will be removed in 0.20.0.
