@@ -18,6 +18,7 @@ import java.time.Duration
  */
 @AutoService(AndroidInstrumentation::class)
 class SlowRenderingInstrumentation : AndroidInstrumentation {
+    internal var useDeprecatedSpan: Boolean = false
     internal var slowRenderingDetectionPollInterval: Duration = Duration.ofSeconds(1)
 
     @Volatile
@@ -45,6 +46,15 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
         return this
     }
 
+    /**
+     * Reports jank by using a zero-duration span.
+     */
+    @Deprecated("Use the default event to report jank")
+    fun enableDeprecatedZeroDurationSpan(): SlowRenderingInstrumentation {
+        useDeprecatedSpan = true
+        return this
+    }
+
     override fun install(ctx: InstallationContext) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             Log.w(
@@ -61,14 +71,19 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
             return
         }
 
-        detector =
-            SlowRenderListener(
-                ctx.openTelemetry.getTracer("io.opentelemetry.slow-rendering"),
-                slowRenderingDetectionPollInterval,
-            )
+        val logger = ctx.openTelemetry.logsBridge.get("app.jank")
+        var jankReporter: JankReporter = EventsJankReporter(logger, SLOW_THRESHOLD_MS / 1000.0)
+        jankReporter = jankReporter.combine(EventsJankReporter(logger, FROZEN_THRESHOLD_MS / 1000.0))
+
+        if (useDeprecatedSpan) {
+            val tracer = ctx.openTelemetry.getTracer("io.opentelemetry.slow-rendering")
+            jankReporter = jankReporter.combine(SpanBasedJankReporter(tracer))
+        }
+
+        detector = SlowRenderListener(jankReporter, slowRenderingDetectionPollInterval)
 
         ctx.application.registerActivityLifecycleCallbacks(detector)
-        detector?.start()
+        detector!!.start()
     }
 
     override fun uninstall(ctx: InstallationContext) {

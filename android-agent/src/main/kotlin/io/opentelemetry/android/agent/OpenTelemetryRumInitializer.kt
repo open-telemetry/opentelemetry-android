@@ -180,9 +180,9 @@ object OpenTelemetryRumInitializer {
         }
 
         if (slowRenderingDetectionPollInterval != null) {
-            getInstrumentation<SlowRenderingInstrumentation>()?.setSlowRenderingDetectionPollInterval(
-                slowRenderingDetectionPollInterval,
-            )
+            val instrumentation = getInstrumentation<SlowRenderingInstrumentation>()
+            instrumentation?.setSlowRenderingDetectionPollInterval(slowRenderingDetectionPollInterval)
+            instrumentation?.enableDeprecatedZeroDurationSpan()
         }
     }
 
