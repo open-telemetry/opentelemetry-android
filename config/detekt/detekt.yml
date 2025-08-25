@@ -2,6 +2,19 @@
 build:
   maxIssues: 0
 
+complexity:
+  LongMethod:
+    active: false
+  LongParameterList:
+    ignoreDataClasses: true
+  TooManyFunctions:
+    thresholdInFiles: 20
+    thresholdInClasses: 20
+    thresholdInInterfaces: 20
+    thresholdInObjects: 20
+    thresholdInEnums: 20
+    ignoreOverridden: true
+
 style:
   MaxLineLength:
     maxLineLength: 140
