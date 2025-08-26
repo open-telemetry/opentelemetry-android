@@ -22,7 +22,7 @@ class EventsJankReporterTest {
     @Test
     fun `event is generated`() {
         val eventLogger = otelTesting.openTelemetry.logsBridge.get("JANK!")
-        val jankReporter = EventsJankReporter(eventLogger, 0.600)
+        val jankReporter = EventJankReporter(eventLogger, 0.600)
         val histogramData: SparseIntArray = mockk()
         every { histogramData.size() } returns 2
         val key1 = 17

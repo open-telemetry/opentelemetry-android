@@ -18,7 +18,7 @@ internal val FRAME_COUNT: AttributeKey<Long> = AttributeKey.longKey("app.jank.fr
 internal val PERIOD: AttributeKey<Double> = AttributeKey.doubleKey("app.jank.period")
 internal val THRESHOLD: AttributeKey<Double> = AttributeKey.doubleKey("app.jank.threshold")
 
-internal class EventsJankReporter(
+internal class EventJankReporter(
     private val eventLogger: Logger,
     private val threshold: Double,
 ) : JankReporter {
