@@ -69,8 +69,12 @@ public class TracingHurlStackTest {
 
     @After
     public void cleanup() throws IOException {
-        stuckTestHelper.close();
-        server.shutdown();
+        if (stuckTestHelper != null) {
+            stuckTestHelper.close();
+        }
+        if (server != null) {
+            server.shutdown();
+        }
     }
 
     @Test

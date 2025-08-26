@@ -7,6 +7,7 @@ package io.opentelemetry.android.demo
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.os.StrictMode
 import android.util.Log
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.agent.OpenTelemetryRumInitializer
@@ -27,6 +28,17 @@ class OtelDemoApplication : Application() {
     @SuppressLint("RestrictedApi")
     override fun onCreate() {
         super.onCreate()
+        StrictMode.setThreadPolicy(
+            StrictMode.ThreadPolicy.Builder()
+                .detectAll()
+                .build()
+        )
+        StrictMode.setVmPolicy(
+            StrictMode.VmPolicy.Builder()
+                .detectAll()
+                .build()
+        )
+        System.setProperty("io.opentelemetry.context.contextStorageProvider", "default")
 
         Log.i(TAG, "Initializing the opentelemetry-android-agent")
         val diskBufferingConfig = DiskBufferingConfig(
