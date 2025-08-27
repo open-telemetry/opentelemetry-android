@@ -1,8 +1,8 @@
 [versions]
 opentelemetry-instrumentation-alpha = "2.19.0-alpha"
 #opentelemetry-instrumentation = "2.9.0" // alpha bom includes non-alpha bom
-opentelemetry-semconv = "1.36.0"
-opentelemetry-semconv-alpha = "1.36.0-alpha"
+opentelemetry-semconv = "1.37.0"
+opentelemetry-semconv-alpha = "1.37.0-alpha"
 opentelemetry-contrib = "1.49.0-alpha"
 mockito = "5.19.0"
 junit = "5.13.4"
