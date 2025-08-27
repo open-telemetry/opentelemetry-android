@@ -6,9 +6,7 @@
 package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.util.Log
-import android.util.SparseIntArray
 import io.mockk.every
-import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.Tracer
@@ -37,14 +35,9 @@ class SpanBasedJankReporterTest {
     @Test
     fun `spans are generated`() {
         val jankReporter = SpanBasedJankReporter(tracer)
-        val histogramData: SparseIntArray = mockk()
-        every { histogramData.size() } returns 2
-        val key1 = 17
-        val key2 = 701
-        every { histogramData.keyAt(0) } returns key1
-        every { histogramData.keyAt(1) } returns key2
-        every { histogramData.get(key1) } returns 3
-        every { histogramData.get(key2) } returns 1
+        val histogramData = HashMap<Int, Int>()
+        histogramData[17] = 3
+        histogramData[701] = 1
         mockkStatic(Log::class)
         every { Log.d(any(), any()) } returns 0
 
@@ -56,14 +49,9 @@ class SpanBasedJankReporterTest {
     @Test
     fun `no spans created when no slow frames`() {
         val jankReporter = SpanBasedJankReporter(tracer)
-        val histogramData: SparseIntArray = mockk()
-        every { histogramData.size() } returns 2
-        val key1 = 3
-        val key2 = 8
-        every { histogramData.keyAt(0) } returns key1
-        every { histogramData.keyAt(1) } returns key2
-        every { histogramData.get(key1) } returns 3
-        every { histogramData.get(key2) } returns 1
+        val histogramData = HashMap<Int, Int>()
+        histogramData[3] = 3
+        histogramData[8] = 1
         mockkStatic(Log::class)
         every { Log.d(any(), any()) } returns 0
 

@@ -6,16 +6,14 @@
 package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.util.Log
-import android.util.SparseIntArray
 import io.mockk.every
-import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Rule
 import org.junit.jupiter.api.Test
 
-class EventsJankReporterTest {
+class EventJankReporterTest {
     @Rule
     var otelTesting: OpenTelemetryRule = OpenTelemetryRule.create()
 
@@ -23,14 +21,10 @@ class EventsJankReporterTest {
     fun `event is generated`() {
         val eventLogger = otelTesting.openTelemetry.logsBridge.get("JANK!")
         val jankReporter = EventJankReporter(eventLogger, 0.600)
-        val histogramData: SparseIntArray = mockk()
-        every { histogramData.size() } returns 2
-        val key1 = 17
-        val key2 = 701
-        every { histogramData.keyAt(0) } returns key1
-        every { histogramData.keyAt(1) } returns key2
-        every { histogramData.get(key1) } returns 3
-        every { histogramData.get(key2) } returns 1
+        val histogramData = HashMap<Int, Int>()
+        histogramData[17] = 3
+        histogramData[701] = 1
+
         mockkStatic(Log::class)
         every { Log.d(any(), any()) } returns 0
 

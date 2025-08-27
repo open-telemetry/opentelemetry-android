@@ -5,9 +5,6 @@
 
 package io.opentelemetry.android.instrumentation.slowrendering
 
-import android.util.SparseIntArray
-import io.mockk.every
-import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.Test
@@ -19,7 +16,7 @@ class JankReporterTest {
         val inner =
             object : JankReporter {
                 override fun reportSlow(
-                    durationToCountHistogram: SparseIntArray,
+                    durationToCountHistogram: Map<Int, Int>,
                     periodSeconds: Double,
                     activityName: String,
                 ) {
@@ -35,7 +32,7 @@ class JankReporterTest {
         val outer =
             object : JankReporter {
                 override fun reportSlow(
-                    durationToCountHistogram: SparseIntArray,
+                    durationToCountHistogram: Map<Int, Int>,
                     periodSeconds: Double,
                     activityName: String,
                 ) {
@@ -51,15 +48,10 @@ class JankReporterTest {
 
         val both = inner.combine(outer)
 
-        val histogram = SparseIntArray()
-        val histogramData: SparseIntArray = mockk()
-        every { histogramData.size() } returns 1
-        every { histogramData.toString() } returns "x"
-        val key1 = 99
-        every { histogramData.keyAt(0) } returns key1
-        every { histogramData.get(key1) } returns 37
+        val histogram = HashMap<Int, Int>()
+        histogram[99] = 37
         both.reportSlow(histogram, 6.9, "four.something")
-        val expected = ".inner.null.6.9.four.something.outer.null.6.9.four.something"
+        val expected = ".inner.{99=37}.6.9.four.something.outer.{99=37}.6.9.four.something"
         assertThat(state.toString()).isEqualTo(expected)
     }
 
@@ -68,7 +60,7 @@ class JankReporterTest {
         val reporter =
             object : JankReporter {
                 override fun reportSlow(
-                    durationToCountHistogram: SparseIntArray,
+                    durationToCountHistogram: Map<Int, Int>,
                     periodSeconds: Double,
                     activityName: String,
                 ) {

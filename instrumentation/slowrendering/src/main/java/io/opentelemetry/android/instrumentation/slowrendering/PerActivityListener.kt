@@ -7,7 +7,6 @@ package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.app.Activity
 import android.os.Build
-import android.util.SparseIntArray
 import android.view.FrameMetrics
 import android.view.Window
 import android.view.Window.OnFrameMetricsAvailableListener
@@ -27,7 +26,7 @@ internal class PerActivityListener(
     private val lock = Any()
 
     @GuardedBy("lock")
-    private var drawDurationHistogram = SparseIntArray()
+    private var drawDurationHistogram: MutableMap<Int, Int> = HashMap<Int, Int>()
 
     fun getActivityName(): String = activity.componentName.flattenToShortString()
 
@@ -47,16 +46,16 @@ internal class PerActivityListener(
             synchronized(lock) {
                 // calculation copied from FrameMetricsAggregator
                 val durationMs = ((drawDurationsNs + NANOS_ROUNDING_VALUE) / NANOS_PER_MS).toInt()
-                val oldValue = drawDurationHistogram.get(durationMs)
-                drawDurationHistogram.put(durationMs, (oldValue + 1))
+                val oldValue: Int = drawDurationHistogram.getOrDefault(durationMs, 0)
+                drawDurationHistogram[durationMs] = (oldValue + 1)
             }
         }
     }
 
-    fun resetMetrics(): SparseIntArray {
+    fun resetMetrics(): Map<Int, Int> {
         synchronized(lock) {
-            val metrics = drawDurationHistogram
-            drawDurationHistogram = SparseIntArray()
+            val metrics = HashMap(drawDurationHistogram)
+            drawDurationHistogram = HashMap()
             return metrics
         }
     }

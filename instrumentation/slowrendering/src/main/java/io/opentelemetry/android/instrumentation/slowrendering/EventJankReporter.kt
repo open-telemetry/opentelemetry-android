@@ -6,7 +6,6 @@
 package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.util.Log
-import android.util.SparseIntArray
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
@@ -23,15 +22,15 @@ internal class EventJankReporter(
     private val threshold: Double,
 ) : JankReporter {
     override fun reportSlow(
-        durationToCountHistogram: SparseIntArray,
+        durationToCountHistogram: Map<Int, Int>,
         periodSeconds: Double,
         activityName: String,
     ) {
         var frameCount: Long = 0
-        for (i in 0 until durationToCountHistogram.size()) {
-            val durationMillis = durationToCountHistogram.keyAt(i)
+        for (entry in durationToCountHistogram) {
+            val durationMillis = entry.key
             if ((durationMillis / 1000.0) > threshold) {
-                val count = durationToCountHistogram.get(durationMillis)
+                val count = entry.value
                 Log.d(
                     RumConstants.OTEL_RUM_LOG_TAG,
                     "* Slow render detected: $durationMillis ms. $count times",
