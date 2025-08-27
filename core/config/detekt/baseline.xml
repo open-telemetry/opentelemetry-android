@@ -15,13 +15,5 @@
     <ID>MagicNumber:DiskBufferingConfig.kt$DiskBufferingConfig.Companion$5</ID>
     <ID>MagicNumber:DiskManager.kt$DiskManager$3</ID>
     <ID>MagicNumber:SignalFromDiskExporter.kt$SignalFromDiskExporter$5</ID>
-    <ID>MaxLineLength:BufferDelegatingLogExporter.kt$BufferDelegatingLogExporter$*</ID>
-    <ID>MaxLineLength:BufferDelegatingMetricExporter.kt$BufferDelegatingMetricExporter$private var aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative()</ID>
-    <ID>MaxLineLength:DiskBufferingConfig.kt$DiskBufferingConfig.Companion$Log.w(OTEL_RUM_LOG_TAG, "overriding minFileAgeForReadMillis from $minFileAgeForReadMillis to $minRead")</ID>
-    <ID>MaxLineLength:GlobalAttributesSpanAppender.kt$GlobalAttributesSpanAppender$*</ID>
-    <ID>MaxLineLength:GlobalAttributesSpanAppenderTest.kt$GlobalAttributesSpanAppenderTest$every { originalSupplier.get() } returns attrs andThenThrows RuntimeException("Should not have been called again.")</ID>
-    <ID>MaxLineLength:NetworkAttributesSpanAppender.kt$NetworkAttributesSpanAppender.Companion$fun</ID>
-    <ID>MaxLineLength:SessionIdRatioBasedSampler.kt$SessionIdRatioBasedSampler$*</ID>
-    <ID>MaxLineLength:SignalFromDiskExporter.kt$SignalFromDiskExporter$*</ID>
   </CurrentIssues>
 </SmellBaseline>

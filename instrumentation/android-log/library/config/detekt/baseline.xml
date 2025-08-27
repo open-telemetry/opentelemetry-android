@@ -2,6 +2,6 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>MagicNumber:VisibleScreenTracker.kt$VisibleScreenTracker$29</ID>
+    <ID>TooManyFunctions:AndroidLogSubstitutions.kt$AndroidLogSubstitutions</ID>
   </CurrentIssues>
 </SmellBaseline>
