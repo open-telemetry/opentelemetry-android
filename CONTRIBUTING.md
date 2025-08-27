@@ -88,7 +88,7 @@ instrumentation [here](instrumentation/okhttp3) for reference.
 
 ## API Compatibility
 
-This project leverages the kotlin 
+This project leverages the kotlin
 [binary compatibility validator](https://github.com/Kotlin/binary-compatibility-validator)
 to detect and make explicit/intentional any changes to the public api surface. If you have
 made changes locally and wish to see if there are api changes, you can use the following:
