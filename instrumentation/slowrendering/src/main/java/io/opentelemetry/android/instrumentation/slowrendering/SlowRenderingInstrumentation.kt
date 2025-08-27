@@ -19,6 +19,7 @@ import java.time.Duration
 @AutoService(AndroidInstrumentation::class)
 class SlowRenderingInstrumentation : AndroidInstrumentation {
     internal var useDeprecatedSpan: Boolean = false
+    internal var debugVerbose: Boolean = false
     internal var slowRenderingDetectionPollInterval: Duration = Duration.ofSeconds(1)
 
     @Volatile
@@ -43,6 +44,14 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
             return this
         }
         this.slowRenderingDetectionPollInterval = interval
+        return this
+    }
+
+    /**
+     * Call this to enable verbose debug logging when slow renders are detected.
+     */
+    fun enableVerboseDebugLogging(): SlowRenderingInstrumentation {
+        debugVerbose = true
         return this
     }
 
@@ -72,8 +81,8 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
         }
 
         val logger = ctx.openTelemetry.logsBridge.get("app.jank")
-        var jankReporter: JankReporter = EventJankReporter(logger, SLOW_THRESHOLD_MS / 1000.0)
-        jankReporter = jankReporter.combine(EventJankReporter(logger, FROZEN_THRESHOLD_MS / 1000.0))
+        var jankReporter: JankReporter = EventJankReporter(logger, SLOW_THRESHOLD_MS / 1000.0, debugVerbose)
+        jankReporter = jankReporter.combine(EventJankReporter(logger, FROZEN_THRESHOLD_MS / 1000.0, debugVerbose))
 
         if (useDeprecatedSpan) {
             val tracer = ctx.openTelemetry.getTracer("io.opentelemetry.slow-rendering")
