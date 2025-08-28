@@ -85,3 +85,23 @@ instrumentation/
 
 You can take a look at how it's done for the OkHttp
 instrumentation [here](instrumentation/okhttp3) for reference.
+
+## API Compatibility
+
+This project leverages the kotlin
+[binary compatibility validator](https://github.com/Kotlin/binary-compatibility-validator)
+to detect and make explicit/intentional any changes to the public api surface. If you have
+made changes locally and wish to see if there are api changes, you can use the following:
+
+```
+$ ./gradlew apiCheck
+```
+
+Note that `apiCheck` is run as part of the `check` task as well, so if there are unresolved
+api changes, the `check` will fail.
+
+If you have an intentional changes, you can regenerate the api file(s) with the following:
+
+```
+$ ./gradlew apiDump
+```
