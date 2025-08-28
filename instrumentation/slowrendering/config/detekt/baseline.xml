@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>EmptyFunctionBlock:JankReporterTest.kt$JankReporterTest.&lt;no name provided&gt;${ }</ID>
+    <ID>ForbiddenComment:EventJankReporter.kt$// TODO: Replace with semconv constants</ID>
+    <ID>MagicNumber:EventJankReporter.kt$EventJankReporter$1000.0</ID>
+    <ID>MagicNumber:SlowRenderingInstrumentation.kt$SlowRenderingInstrumentation$1000.0</ID>
+    <ID>TooGenericExceptionCaught:SlowRenderListener.kt$SlowRenderListener$e: Exception</ID>
+  </CurrentIssues>
+</SmellBaseline>
