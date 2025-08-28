@@ -43,47 +43,6 @@ internal class CurrentNetworkProviderTest {
         }
 
     @Test
-    @Config(sdk = [Build.VERSION_CODES.LOLLIPOP])
-    fun `verify current network provider on lollipop`() {
-        val networkRequest: NetworkRequest = mockk()
-        val networkDetector: NetworkDetector = mockk()
-        val connectivityManager: ConnectivityManager = mockk()
-
-        every { networkDetector.detectCurrentNetwork() } returns wifi andThen cellular
-
-        val currentNetworkProvider =
-            CurrentNetworkProvider(networkDetector, connectivityManager) { networkRequest }
-
-        assertThat(
-            CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(),
-        ).isEqualTo(
-            currentNetworkProvider.currentNetwork,
-        )
-
-        val monitorSlot = slot<NetworkCallback>()
-
-        verify {
-            connectivityManager.registerNetworkCallback(networkRequest, capture(monitorSlot))
-        }
-
-        val notified = AtomicInteger(0)
-        currentNetworkProvider.addNetworkChangeListener { currentNetwork: CurrentNetwork? ->
-            val timesCalled = notified.incrementAndGet()
-            if (timesCalled == 1) {
-                assertThat(currentNetwork).isEqualTo(cellular)
-            } else {
-                assertThat(currentNetwork).isEqualTo(noNetwork)
-            }
-        }
-        // note: we ignore the network passed in and just rely on refreshing the network info when
-        // this is happens
-        monitorSlot.captured.onAvailable(fakeNet)
-        assertThat(notified.get()).isEqualTo(1L)
-        monitorSlot.captured.onLost(fakeNet)
-        assertThat(notified.get()).isEqualTo(2L)
-    }
-
-    @Test
     fun `verify current network provider`() {
         val networkRequest: NetworkRequest = mockk()
         val networkDetector: NetworkDetector = mockk()
@@ -145,50 +104,6 @@ internal class CurrentNetworkProviderTest {
         val currentNetworkProvider =
             CurrentNetworkProvider(networkDetector, connectivityManager) { networkRequest }
         assertThat(currentNetworkProvider.refreshNetworkStatus()).isEqualTo(wifi)
-    }
-
-    @Test
-    @Config(sdk = [Build.VERSION_CODES.LOLLIPOP])
-    fun `network detector exception on callback registration lollipop`() {
-        val networkDetector: NetworkDetector = mockk()
-        val connectivityManager: ConnectivityManager = mockk()
-        val networkRequest: NetworkRequest = mockk()
-
-        every { networkDetector.detectCurrentNetwork() } returns wifi
-        every {
-            connectivityManager.registerNetworkCallback(
-                networkRequest,
-                any<NetworkCallback>(),
-            )
-        }.throws(SecurityException("bug"))
-
-        val currentNetworkProvider =
-            CurrentNetworkProvider(networkDetector, connectivityManager) { networkRequest }
-        assertThat(currentNetworkProvider.refreshNetworkStatus()).isEqualTo(wifi)
-    }
-
-    @Test
-    @Config(sdk = [Build.VERSION_CODES.LOLLIPOP])
-    fun `should not fail on immediate ConnectionManager call lollipop`() {
-        val networkDetector: NetworkDetector = mockk()
-        val connectivityManager: ConnectivityManager = mockk()
-        val networkRequest: NetworkRequest = mockk()
-
-        every {
-            connectivityManager.registerNetworkCallback(
-                networkRequest,
-                any<NetworkCallback>(),
-            )
-        }.answers { a ->
-            run {
-                val x: NetworkCallback = a.invocation.args[1] as NetworkCallback
-                x.onAvailable(mockk())
-            }
-        }
-
-        val networkProvider =
-            CurrentNetworkProvider(networkDetector, connectivityManager) { networkRequest }
-        assertThat(networkProvider.refreshNetworkStatus()).isEqualTo(UNKNOWN_NETWORK)
     }
 
     @Test

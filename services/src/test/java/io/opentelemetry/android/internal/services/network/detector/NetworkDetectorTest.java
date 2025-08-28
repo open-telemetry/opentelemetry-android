@@ -15,24 +15,19 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
 import android.os.Build;
 import android.telephony.TelephonyManager;
 import androidx.core.content.ContextCompat;
-import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockedStatic;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowNetworkInfo;
 
 @RunWith(AndroidJUnit4.class)
 public class NetworkDetectorTest {
@@ -190,60 +185,6 @@ public class NetworkDetectorTest {
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
         assertEquals(
                 CurrentNetwork.builder(NetworkState.TRANSPORT_UNKNOWN).build(), currentNetwork);
-    }
-
-    @Test
-    @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
-    public void none_legacy() {
-        ConnectivityManager cm =
-                (ConnectivityManager)
-                        ApplicationProvider.getApplicationContext()
-                                .getSystemService(Context.CONNECTIVITY_SERVICE);
-        Shadows.shadowOf(cm).setActiveNetworkInfo(null);
-        NetworkDetector networkDetector =
-                NetworkDetector.create(ApplicationProvider.getApplicationContext());
-        CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        Assert.assertEquals(
-                CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build(), currentNetwork);
-    }
-
-    @Test
-    @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
-    public void wifi_legacy() {
-        ConnectivityManager cm =
-                (ConnectivityManager)
-                        ApplicationProvider.getApplicationContext()
-                                .getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo =
-                ShadowNetworkInfo.newInstance(
-                        null, // Use null instead of deprecated DetailedState.CONNECTED
-                        ConnectivityManager.TYPE_WIFI,
-                        0,
-                        true,
-                        null); // Use null instead of deprecated State.CONNECTED
-        Shadows.shadowOf(cm).setActiveNetworkInfo(networkInfo);
-        NetworkDetector networkDetector =
-                NetworkDetector.create(ApplicationProvider.getApplicationContext());
-        CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        Assert.assertEquals(
-                CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(), currentNetwork);
-    }
-
-    @Test
-    @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
-    public void cellularWithSubtype_legacy() {
-        ConnectivityManager cm =
-                (ConnectivityManager)
-                        ApplicationProvider.getApplicationContext()
-                                .getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = mock(NetworkInfo.class);
-        when(networkInfo.getType()).thenReturn(ConnectivityManager.TYPE_MOBILE);
-        when(networkInfo.getSubtypeName()).thenReturn("LTE");
-        Shadows.shadowOf(cm).setActiveNetworkInfo(networkInfo);
-        NetworkDetector networkDetector =
-                NetworkDetector.create(ApplicationProvider.getApplicationContext());
-        CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        Assert.assertEquals(NetworkState.TRANSPORT_CELLULAR, currentNetwork.getState());
     }
 
     @Test

@@ -41,6 +41,7 @@ dependencies {
     api(libs.opentelemetry.api)
 
     testImplementation(libs.volley)
+    testRuntimeOnly(libs.apache.httpcore)
     testImplementation(libs.robolectric)
     testImplementation(libs.mockwebserver)
 }
