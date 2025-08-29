@@ -13,7 +13,7 @@ import io.opentelemetry.android.internal.services.Service
  */
 class AppLifecycle internal constructor(
     private val applicationStateWatcher: ApplicationStateWatcher,
-    appLifecycle: Lifecycle,
+    private val appLifecycle: Lifecycle,
 ) : Service {
     init {
         appLifecycle.addObserver(applicationStateWatcher)
@@ -24,6 +24,7 @@ class AppLifecycle internal constructor(
     }
 
     override fun close() {
-        TODO("Not yet implemented")
+        appLifecycle.removeObserver(applicationStateWatcher)
+        applicationStateWatcher.close()
     }
 }

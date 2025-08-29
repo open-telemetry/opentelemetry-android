@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicReference
  * screen, and the launching screen never leaves visibility.
  */
 class VisibleScreenTracker internal constructor(
-    application: Application,
+    private val application: Application,
 ) : Service {
     private val lastResumedActivity = AtomicReference<String>()
     private val previouslyLastResumedActivity = AtomicReference<String>()
@@ -118,6 +118,7 @@ class VisibleScreenTracker internal constructor(
     }
 
     override fun close() {
-        TODO("Not yet implemented")
+        application.unregisterActivityLifecycleCallbacks(activityLifecycleTracker)
+        application.unregisterActivityLifecycleCallbacks(fragmentLifecycleTrackerRegisterer)
     }
 }

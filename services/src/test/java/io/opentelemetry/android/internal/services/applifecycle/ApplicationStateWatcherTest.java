@@ -6,6 +6,7 @@
 package io.opentelemetry.android.internal.services.applifecycle;
 
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import androidx.core.app.ComponentActivity;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,5 +56,15 @@ class ApplicationStateWatcherTest {
         io.verify(listener1).onApplicationBackgrounded();
         io.verify(listener2).onApplicationBackgrounded();
         io.verifyNoMoreInteractions();
+    }
+
+    @Test
+    void closing() {
+        underTest.close();
+
+        underTest.onStart(activity);
+        underTest.onStop(activity);
+
+        verifyNoInteractions(listener1, listener2);
     }
 }

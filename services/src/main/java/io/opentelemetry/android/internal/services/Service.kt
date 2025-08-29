@@ -7,4 +7,6 @@ package io.opentelemetry.android.internal.services
 
 import java.io.Closeable
 
-interface Service : Closeable
+interface Service : Closeable {
+    override fun close() {}
+}

@@ -30,8 +30,4 @@ class Preferences internal constructor(
         key: String,
         defaultValue: Int,
     ): Int = preferences.getInt(key, defaultValue)
-
-    override fun close() {
-        TODO("Not yet implemented")
-    }
 }
