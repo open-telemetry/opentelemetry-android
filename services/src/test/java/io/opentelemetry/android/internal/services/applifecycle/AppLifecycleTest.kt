@@ -43,7 +43,15 @@ class AppLifecycleTest {
     }
 
     @Test
-    fun `Starting to observe app's lifecycle`() {
+    fun `Observing app's lifecycle`() {
         verify { lifecycle.addObserver(applicationStateWatcher) }
+
+        // Closing
+        every { lifecycle.removeObserver(any()) } just Runs
+        every { applicationStateWatcher.close() } just Runs
+        lifecycleService.close()
+
+        verify { lifecycle.removeObserver(applicationStateWatcher) }
+        verify { applicationStateWatcher.close() }
     }
 }

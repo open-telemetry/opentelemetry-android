@@ -337,6 +337,7 @@ public final class OpenTelemetryRumBuilder {
                                     if (exportScheduleHandler != null) {
                                         exportScheduleHandler.disable();
                                     }
+                                    services.close();
                                 });
 
         // AsyncTask is deprecated but the thread pool is still used all over the Android SDK

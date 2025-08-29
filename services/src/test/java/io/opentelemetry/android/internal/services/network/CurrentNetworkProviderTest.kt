@@ -11,7 +11,9 @@ import android.net.Network
 import android.net.NetworkRequest
 import android.os.Build
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
@@ -48,6 +50,8 @@ internal class CurrentNetworkProviderTest {
         val networkDetector: NetworkDetector = mockk()
         val connectivityManager: ConnectivityManager = mockk()
         every { networkDetector.detectCurrentNetwork() } returns wifi andThen cellular
+        every { connectivityManager.registerDefaultNetworkCallback(any()) } just Runs
+        every { connectivityManager.unregisterNetworkCallback(any<NetworkCallback>()) } just Runs
 
         val currentNetworkProvider =
             CurrentNetworkProvider(
@@ -80,6 +84,12 @@ internal class CurrentNetworkProviderTest {
         assertThat(notified.get()).isEqualTo(1L)
         monitorSlot.captured.onLost(fakeNet)
         assertThat(notified.get()).isEqualTo(2L)
+
+        // Verify close
+        currentNetworkProvider.close()
+        verify {
+            connectivityManager.unregisterNetworkCallback(monitorSlot.captured)
+        }
     }
 
     @Test

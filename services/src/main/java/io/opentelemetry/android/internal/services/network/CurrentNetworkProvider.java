@@ -16,9 +16,11 @@ import androidx.annotation.RequiresApi;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
+import io.opentelemetry.android.internal.services.Service;
 import io.opentelemetry.android.internal.services.network.detector.NetworkDetector;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 // note: based on ideas from stack overflow:
@@ -31,7 +33,7 @@ import java.util.function.Supplier;
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
-public final class CurrentNetworkProvider {
+public final class CurrentNetworkProvider implements Service {
 
     public static final CurrentNetwork NO_NETWORK =
             CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build();
@@ -42,6 +44,8 @@ public final class CurrentNetworkProvider {
     private final ConnectivityManager connectivityManager;
 
     private volatile CurrentNetwork currentNetwork = UNKNOWN_NETWORK;
+    private final AtomicReference<ConnectivityManager.NetworkCallback> callbackRef =
+            new AtomicReference<>();
     private final List<NetworkChangeListener> listeners = new CopyOnWriteArrayList<>();
 
     public CurrentNetworkProvider(
@@ -79,13 +83,17 @@ public final class CurrentNetworkProvider {
             registerNetworkCallbackApi24();
         } else {
             NetworkRequest networkRequest = createNetworkMonitoringRequest.get();
-            connectivityManager.registerNetworkCallback(networkRequest, new ConnectionMonitor());
+            ConnectivityManager.NetworkCallback callback = new ConnectionMonitor();
+            connectivityManager.registerNetworkCallback(networkRequest, callback);
+            callbackRef.set(callback);
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
     private void registerNetworkCallbackApi24() {
-        connectivityManager.registerDefaultNetworkCallback(new ConnectionMonitor());
+        ConnectivityManager.NetworkCallback callback = new ConnectionMonitor();
+        connectivityManager.registerDefaultNetworkCallback(callback);
+        callbackRef.set(callback);
     }
 
     /** Returns up-to-date {@linkplain CurrentNetwork current network information}. */
@@ -122,6 +130,16 @@ public final class CurrentNetworkProvider {
     private void notifyListeners(CurrentNetwork activeNetwork) {
         for (NetworkChangeListener listener : listeners) {
             listener.onNetworkChange(activeNetwork);
+        }
+    }
+
+    @Override
+    public void close() {
+        ConnectivityManager.NetworkCallback callback = callbackRef.get();
+        if (callback != null) {
+            connectivityManager.unregisterNetworkCallback(callback);
+            listeners.clear();
+            callbackRef.set(null);
         }
     }
 

@@ -15,13 +15,14 @@ import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.network.detector.NetworkDetector
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWork
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
+import java.io.Closeable
 
 /**
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
  */
 class Services internal constructor(
     private val factory: ServicesFactory,
-) {
+) : Closeable {
     val preferences: Preferences by lazy {
         factory.createPreferences()
     }
@@ -44,6 +45,15 @@ class Services internal constructor(
 
     val visibleScreenTracker: VisibleScreenTracker by lazy {
         factory.createVisibleScreenTracker()
+    }
+
+    override fun close() {
+        preferences.close()
+        cacheStorage.close()
+        periodicWork.close()
+        currentNetworkProvider.close()
+        appLifecycle.close()
+        visibleScreenTracker.close()
     }
 
     companion object {
