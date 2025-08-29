@@ -74,10 +74,12 @@ internal class AnrWatcher(
     }
 
     private fun emitAnrEvent(stackTrace: Array<StackTraceElement>) {
+        @Suppress("DEPRECATION")
+        val id = mainThread.id
         val attributesBuilder =
             Attributes
                 .builder()
-                .put(THREAD_ID, mainThread.id)
+                .put(THREAD_ID, id)
                 .put(THREAD_NAME, mainThread.name)
                 .put(EXCEPTION_STACKTRACE, stackTraceToString(stackTrace))
 
