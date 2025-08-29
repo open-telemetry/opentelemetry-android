@@ -23,8 +23,10 @@ class CrashReporterInstrumentation : AndroidInstrumentation {
     }
 
     override fun install(ctx: InstallationContext) {
-        addAttributesExtractor(RuntimeDetailsExtractor.create<CrashDetails, Any>(ctx.application))
+        addAttributesExtractor(RuntimeDetailsExtractor.create(ctx.application))
         val crashReporter = CrashReporter(additionalExtractors)
+
+        // TODO avoid using OpenTelemetrySdk methods, only use the ones from OpenTelemetry api.
         crashReporter.install(ctx.openTelemetry as OpenTelemetrySdk)
     }
 
