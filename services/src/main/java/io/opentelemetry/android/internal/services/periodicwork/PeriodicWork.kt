@@ -7,6 +7,7 @@ package io.opentelemetry.android.internal.services.periodicwork
 
 import android.os.Handler
 import android.os.Looper
+import io.opentelemetry.android.internal.services.Service
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
@@ -18,7 +19,7 @@ import java.util.concurrent.TimeUnit
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
-class PeriodicWork internal constructor() {
+class PeriodicWork internal constructor() : Service {
     private val delegator = WorkerDelegator()
 
     init {
@@ -27,6 +28,10 @@ class PeriodicWork internal constructor() {
 
     fun enqueue(runnable: Runnable) {
         delegator.enqueue(runnable)
+    }
+
+    override fun close() {
+        TODO("Not yet implemented")
     }
 
     private class WorkerDelegator : Runnable {

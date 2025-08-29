@@ -16,7 +16,9 @@ import androidx.annotation.RequiresApi;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
+import io.opentelemetry.android.internal.services.Service;
 import io.opentelemetry.android.internal.services.network.detector.NetworkDetector;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
@@ -31,7 +33,7 @@ import java.util.function.Supplier;
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
-public final class CurrentNetworkProvider {
+public final class CurrentNetworkProvider implements Service {
 
     public static final CurrentNetwork NO_NETWORK =
             CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build();
@@ -124,6 +126,9 @@ public final class CurrentNetworkProvider {
             listener.onNetworkChange(activeNetwork);
         }
     }
+
+    @Override
+    public void close() throws IOException {}
 
     private final class ConnectionMonitor extends ConnectivityManager.NetworkCallback {
 
