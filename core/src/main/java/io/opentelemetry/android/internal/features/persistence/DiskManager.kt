@@ -19,7 +19,7 @@ internal class DiskManager(
     @get:Throws(IOException::class)
     val signalsBufferDir: File
         get() {
-            val dir = diskBufferingConfig.signalsBufferDir ?: File(cacheStorage.getCacheDir(), "opentelemetry/signals")
+            val dir = diskBufferingConfig.signalsBufferDir ?: File(cacheStorage.cacheDir, "opentelemetry/signals")
             ensureExistingOrThrow(dir)
             return dir
         }
@@ -27,7 +27,7 @@ internal class DiskManager(
     @get:Throws(IOException::class)
     val temporaryDir: File
         get() {
-            val dir = File(cacheStorage.getCacheDir(), "opentelemetry/temp")
+            val dir = File(cacheStorage.cacheDir, "opentelemetry/temp")
             ensureExistingOrThrow(dir)
             deleteFiles(dir)
             return dir

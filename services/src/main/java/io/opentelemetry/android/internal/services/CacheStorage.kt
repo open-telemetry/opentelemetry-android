@@ -17,5 +17,6 @@ import java.io.File
 class CacheStorage(
     private val appContext: Context,
 ) : Service {
-    fun getCacheDir(): File = appContext.cacheDir
+    val cacheDir: File
+        get() = appContext.cacheDir
 }

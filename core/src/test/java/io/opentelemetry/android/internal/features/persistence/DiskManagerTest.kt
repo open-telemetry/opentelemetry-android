@@ -33,7 +33,7 @@ internal class DiskManagerTest {
     @BeforeEach
     fun setUp() {
         MockKAnnotations.init(this)
-        every { cacheStorage.getCacheDir() }.returns(cacheDir)
+        every { cacheStorage.cacheDir }.returns(cacheDir)
         diskManager =
             DiskManager(cacheStorage, diskBufferingConfig)
     }
@@ -56,7 +56,7 @@ internal class DiskManagerTest {
 
     @Test
     fun `provides a temp dir`() {
-        every { cacheStorage.getCacheDir() }.returns(cacheDir)
+        every { cacheStorage.cacheDir }.returns(cacheDir)
         val expected = File(cacheDir, "opentelemetry/temp")
         assertThat(diskManager.temporaryDir).isEqualTo(expected)
         assertThat(expected.exists()).isTrue()
