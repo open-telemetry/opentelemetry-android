@@ -21,7 +21,7 @@ class InstrumentationTest {
 
     private val tag = "log.test"
 
-    private val tagKey = AndroidLogSubstitutions.TAG_KEY
+    private val tagKey = AndroidLogSubstitutions.tagKey
 
     @Test
     fun test_verbose_logging() {

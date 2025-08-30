@@ -2,10 +2,6 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>MaxLineLength:OkHttpInstrumentation.kt$OkHttpInstrumentation$ and the </ID>
-    <ID>MaxLineLength:OkHttpInstrumentation.kt$OkHttpInstrumentation$*</ID>
-    <ID>MaxLineLength:OkHttpInstrumentation.kt$OkHttpInstrumentation$.</ID>
-    <ID>MaxLineLength:OkHttpInstrumentation.kt$OkHttpInstrumentation$: </ID>
     <ID>PackageNaming:OkHttpInstrumentation.kt$package io.opentelemetry.instrumentation.library.okhttp.v3_0</ID>
   </CurrentIssues>
 </SmellBaseline>
