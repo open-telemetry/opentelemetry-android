@@ -46,7 +46,6 @@ object OpenTelemetryRumInitializer {
      * @param metricEndpointConnectivity Metric-specific endpoint configuration.
      * @param rumConfig Configuration used by [OpenTelemetryRumBuilder].
      * @param sessionConfig The session configuration, which includes inactivity timeout and maximum lifetime durations.
-     * @param crashAttributesExtractors Attribute extractors for [CrashReporterInstrumentation].
      * @param networkChangeAttributesExtractors Attribute extractors for [NetworkChangeInstrumentation].
      * @param slowRenderingDetectionPollInterval Slow rendering detection interval for [SlowRenderingInstrumentation].
      */
@@ -72,12 +71,10 @@ object OpenTelemetryRumInitializer {
             ),
         rumConfig: OtelRumConfig = OtelRumConfig(),
         sessionConfig: SessionConfig = SessionConfig.withDefaults(),
-        crashAttributesExtractors: List<EventAttributesExtractor<CrashDetails>> = emptyList(),
         networkChangeAttributesExtractors: List<NetworkAttributesExtractor> = emptyList(),
         slowRenderingDetectionPollInterval: Duration? = null,
     ): OpenTelemetryRum {
         configureInstrumentation(
-            crashAttributesExtractors,
             networkChangeAttributesExtractors,
             slowRenderingDetectionPollInterval,
         )
@@ -116,17 +113,9 @@ object OpenTelemetryRumInitializer {
     }
 
     private fun configureInstrumentation(
-        crashAttributesExtractors: List<EventAttributesExtractor<CrashDetails>>,
         networkChangeAttributesExtractors: List<NetworkAttributesExtractor>,
         slowRenderingDetectionPollInterval: Duration?,
     ) {
-        if (crashAttributesExtractors.isNotEmpty()) {
-            val crashInstrumentation = getInstrumentation<CrashReporterInstrumentation>()
-            for (extractor in crashAttributesExtractors) {
-                crashInstrumentation?.addAttributesExtractor(extractor)
-            }
-        }
-
         if (networkChangeAttributesExtractors.isNotEmpty()) {
             val networkChangeInstrumentation = getInstrumentation<NetworkChangeInstrumentation>()
             for (extractor in networkChangeAttributesExtractors) {
@@ -149,7 +138,8 @@ object OpenTelemetryRumInitializer {
     class InstrumentationConfiguration {
         private val activity: ActivityLifecycleConfiguration by lazy { ActivityLifecycleConfiguration() }
         private val fragment: FragmentLifecycleConfiguration by lazy { FragmentLifecycleConfiguration() }
-        private val anr: AnrConfiguration by lazy { AnrConfiguration() }
+        private val anr: AnrReporterConfiguration by lazy { AnrReporterConfiguration() }
+        private val crash: CrashReporterConfiguration by lazy { CrashReporterConfiguration() }
 
         fun activity(configure: ActivityLifecycleConfiguration.() -> Unit) {
             activity.configure()
@@ -159,8 +149,12 @@ object OpenTelemetryRumInitializer {
             fragment.configure()
         }
 
-        fun anrReporter(configure: AnrConfiguration.() -> Unit) {
+        fun anrReporter(configure: AnrReporterConfiguration.() -> Unit) {
             anr.configure()
+        }
+
+        fun crashReporter(configure: CrashReporterConfiguration.() -> Unit) {
+            crash.configure()
         }
     }
 
@@ -192,11 +186,19 @@ object OpenTelemetryRumInitializer {
         }
     }
 
-    class AnrConfiguration {
+    class AnrReporterConfiguration {
         private val anrInstrumentation: AnrInstrumentation by lazy { getInstrumentation() }
 
         fun addAttributesExtractor(value: EventAttributesExtractor<Array<StackTraceElement>>) {
             anrInstrumentation.addAttributesExtractor(value)
+        }
+    }
+
+    class CrashReporterConfiguration {
+        private val crashReporterInstrumentation: CrashReporterInstrumentation by lazy { getInstrumentation() }
+
+        fun addAttributesExtractor(value: EventAttributesExtractor<CrashDetails>) {
+            crashReporterInstrumentation.addAttributesExtractor(value)
         }
     }
 }
