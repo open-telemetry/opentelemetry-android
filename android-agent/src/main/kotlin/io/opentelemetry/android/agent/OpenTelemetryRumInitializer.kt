@@ -46,6 +46,7 @@ object OpenTelemetryRumInitializer {
      * @param metricEndpointConnectivity Metric-specific endpoint configuration.
      * @param rumConfig Configuration used by [OpenTelemetryRumBuilder].
      * @param sessionConfig The session configuration, which includes inactivity timeout and maximum lifetime durations.
+     * @param instrumentations Configurations for all the default instrumentations.
      */
     @JvmStatic
     fun initialize(
@@ -69,8 +70,12 @@ object OpenTelemetryRumInitializer {
             ),
         rumConfig: OtelRumConfig = OtelRumConfig(),
         sessionConfig: SessionConfig = SessionConfig.withDefaults(),
-    ): OpenTelemetryRum =
-        OpenTelemetryRum
+        instrumentations: (InstrumentationConfiguration.() -> Unit)? = null,
+    ): OpenTelemetryRum {
+        instrumentations?.let { configure ->
+            InstrumentationConfiguration().configure()
+        }
+        return OpenTelemetryRum
             .builder(application, rumConfig)
             .setSessionProvider(createSessionProvider(application, sessionConfig))
             .addSpanExporterCustomizer {
@@ -92,6 +97,7 @@ object OpenTelemetryRumInitializer {
                     .setHeaders(metricEndpointConnectivity::getHeaders)
                     .build()
             }.build()
+    }
 
     private fun createSessionProvider(
         application: Application,
