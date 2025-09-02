@@ -1,7 +1,50 @@
 public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer {
 	public static final field INSTANCE Lio/opentelemetry/android/agent/OpenTelemetryRumInitializer;
-	public static final fun initialize (Landroid/app/Application;Ljava/lang/String;Ljava/util/Map;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/config/OtelRumConfig;Lio/opentelemetry/android/agent/session/SessionConfig;Lkotlin/jvm/functions/Function1;Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;Lkotlin/jvm/functions/Function1;Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/time/Duration;)Lio/opentelemetry/android/OpenTelemetryRum;
-	public static synthetic fun initialize$default (Landroid/app/Application;Ljava/lang/String;Ljava/util/Map;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/config/OtelRumConfig;Lio/opentelemetry/android/agent/session/SessionConfig;Lkotlin/jvm/functions/Function1;Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;Lkotlin/jvm/functions/Function1;Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/time/Duration;ILjava/lang/Object;)Lio/opentelemetry/android/OpenTelemetryRum;
+	public static final fun initialize (Landroid/app/Application;Ljava/lang/String;Ljava/util/Map;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/config/OtelRumConfig;Lio/opentelemetry/android/agent/session/SessionConfig;Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRum;
+	public static synthetic fun initialize$default (Landroid/app/Application;Ljava/lang/String;Ljava/util/Map;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/config/OtelRumConfig;Lio/opentelemetry/android/agent/session/SessionConfig;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/opentelemetry/android/OpenTelemetryRum;
+}
+
+public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$ActivityLifecycleConfiguration {
+	public fun <init> ()V
+	public final fun screenNameExtractor (Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;)V
+	public final fun tracerCustomizer (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$AnrReporterConfiguration {
+	public fun <init> ()V
+	public final fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/common/EventAttributesExtractor;)V
+}
+
+public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CrashReporterConfiguration {
+	public fun <init> ()V
+	public final fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/common/EventAttributesExtractor;)V
+}
+
+public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$FragmentLifecycleConfiguration {
+	public fun <init> ()V
+	public final fun screenNameExtractor (Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;)V
+	public final fun tracerCustomizer (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$InstrumentationConfiguration {
+	public fun <init> ()V
+	public final fun activity (Lkotlin/jvm/functions/Function1;)V
+	public final fun anrReporter (Lkotlin/jvm/functions/Function1;)V
+	public final fun crashReporter (Lkotlin/jvm/functions/Function1;)V
+	public final fun fragment (Lkotlin/jvm/functions/Function1;)V
+	public final fun networkMonitoring (Lkotlin/jvm/functions/Function1;)V
+	public final fun slowRenderingReporter (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$NetworkMonitoringConfiguration {
+	public fun <init> ()V
+	public final fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/network/NetworkAttributesExtractor;)V
+}
+
+public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$SlowRenderingReporterConfiguration {
+	public fun <init> ()V
+	public final fun detectionPollInterval-LRDsOJo (J)V
+	public final fun enableVerboseDebugLogging ()V
 }
 
 public abstract interface class io/opentelemetry/android/agent/connectivity/EndpointConnectivity {
