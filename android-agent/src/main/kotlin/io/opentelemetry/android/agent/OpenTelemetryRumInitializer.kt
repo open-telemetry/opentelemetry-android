@@ -46,7 +46,6 @@ object OpenTelemetryRumInitializer {
      * @param metricEndpointConnectivity Metric-specific endpoint configuration.
      * @param rumConfig Configuration used by [OpenTelemetryRumBuilder].
      * @param sessionConfig The session configuration, which includes inactivity timeout and maximum lifetime durations.
-     * @param anrAttributesExtractors Attribute extractors for [AnrInstrumentation].
      * @param crashAttributesExtractors Attribute extractors for [CrashReporterInstrumentation].
      * @param networkChangeAttributesExtractors Attribute extractors for [NetworkChangeInstrumentation].
      * @param slowRenderingDetectionPollInterval Slow rendering detection interval for [SlowRenderingInstrumentation].
@@ -73,13 +72,11 @@ object OpenTelemetryRumInitializer {
             ),
         rumConfig: OtelRumConfig = OtelRumConfig(),
         sessionConfig: SessionConfig = SessionConfig.withDefaults(),
-        anrAttributesExtractors: List<EventAttributesExtractor<Array<StackTraceElement>>> = emptyList(),
         crashAttributesExtractors: List<EventAttributesExtractor<CrashDetails>> = emptyList(),
         networkChangeAttributesExtractors: List<NetworkAttributesExtractor> = emptyList(),
         slowRenderingDetectionPollInterval: Duration? = null,
     ): OpenTelemetryRum {
         configureInstrumentation(
-            anrAttributesExtractors,
             crashAttributesExtractors,
             networkChangeAttributesExtractors,
             slowRenderingDetectionPollInterval,
@@ -119,18 +116,10 @@ object OpenTelemetryRumInitializer {
     }
 
     private fun configureInstrumentation(
-        anrAttributesExtractors: List<EventAttributesExtractor<Array<StackTraceElement>>>,
         crashAttributesExtractors: List<EventAttributesExtractor<CrashDetails>>,
         networkChangeAttributesExtractors: List<NetworkAttributesExtractor>,
         slowRenderingDetectionPollInterval: Duration?,
     ) {
-        if (anrAttributesExtractors.isNotEmpty()) {
-            val anrInstrumentation = getInstrumentation<AnrInstrumentation>()
-            for (extractor in anrAttributesExtractors) {
-                anrInstrumentation?.addAttributesExtractor(extractor)
-            }
-        }
-
         if (crashAttributesExtractors.isNotEmpty()) {
             val crashInstrumentation = getInstrumentation<CrashReporterInstrumentation>()
             for (extractor in crashAttributesExtractors) {
@@ -160,6 +149,7 @@ object OpenTelemetryRumInitializer {
     class InstrumentationConfiguration {
         private val activity: ActivityLifecycleConfiguration by lazy { ActivityLifecycleConfiguration() }
         private val fragment: FragmentLifecycleConfiguration by lazy { FragmentLifecycleConfiguration() }
+        private val anr: AnrConfiguration by lazy { AnrConfiguration() }
 
         fun activity(configure: ActivityLifecycleConfiguration.() -> Unit) {
             activity.configure()
@@ -168,11 +158,15 @@ object OpenTelemetryRumInitializer {
         fun fragment(configure: FragmentLifecycleConfiguration.() -> Unit) {
             fragment.configure()
         }
+
+        fun anrReporter(configure: AnrConfiguration.() -> Unit) {
+            anr.configure()
+        }
     }
 
     class ActivityLifecycleConfiguration {
         private val activityLifecycleInstrumentation: ActivityLifecycleInstrumentation by lazy {
-            getInstrumentation<ActivityLifecycleInstrumentation>()
+            getInstrumentation()
         }
 
         fun tracerCustomizer(value: (Tracer) -> Tracer) {
@@ -186,7 +180,7 @@ object OpenTelemetryRumInitializer {
 
     class FragmentLifecycleConfiguration {
         private val fragmentLifecycleInstrumentation: FragmentLifecycleInstrumentation by lazy {
-            getInstrumentation<FragmentLifecycleInstrumentation>()
+            getInstrumentation()
         }
 
         fun tracerCustomizer(value: (Tracer) -> Tracer) {
@@ -195,6 +189,14 @@ object OpenTelemetryRumInitializer {
 
         fun screenNameExtractor(value: ScreenNameExtractor) {
             fragmentLifecycleInstrumentation.setScreenNameExtractor(value)
+        }
+    }
+
+    class AnrConfiguration {
+        private val anrInstrumentation: AnrInstrumentation by lazy { getInstrumentation() }
+
+        fun addAttributesExtractor(value: EventAttributesExtractor<Array<StackTraceElement>>) {
+            anrInstrumentation.addAttributesExtractor(value)
         }
     }
 }
