@@ -46,7 +46,6 @@ object OpenTelemetryRumInitializer {
      * @param metricEndpointConnectivity Metric-specific endpoint configuration.
      * @param rumConfig Configuration used by [OpenTelemetryRumBuilder].
      * @param sessionConfig The session configuration, which includes inactivity timeout and maximum lifetime durations.
-     * @param networkChangeAttributesExtractors Attribute extractors for [NetworkChangeInstrumentation].
      * @param slowRenderingDetectionPollInterval Slow rendering detection interval for [SlowRenderingInstrumentation].
      */
     @JvmStatic
@@ -71,11 +70,9 @@ object OpenTelemetryRumInitializer {
             ),
         rumConfig: OtelRumConfig = OtelRumConfig(),
         sessionConfig: SessionConfig = SessionConfig.withDefaults(),
-        networkChangeAttributesExtractors: List<NetworkAttributesExtractor> = emptyList(),
         slowRenderingDetectionPollInterval: Duration? = null,
     ): OpenTelemetryRum {
         configureInstrumentation(
-            networkChangeAttributesExtractors,
             slowRenderingDetectionPollInterval,
         )
 
@@ -112,17 +109,7 @@ object OpenTelemetryRumInitializer {
         return SessionManager.create(timeoutHandler, sessionConfig)
     }
 
-    private fun configureInstrumentation(
-        networkChangeAttributesExtractors: List<NetworkAttributesExtractor>,
-        slowRenderingDetectionPollInterval: Duration?,
-    ) {
-        if (networkChangeAttributesExtractors.isNotEmpty()) {
-            val networkChangeInstrumentation = getInstrumentation<NetworkChangeInstrumentation>()
-            for (extractor in networkChangeAttributesExtractors) {
-                networkChangeInstrumentation?.addAttributesExtractor(extractor)
-            }
-        }
-
+    private fun configureInstrumentation(slowRenderingDetectionPollInterval: Duration?) {
         if (slowRenderingDetectionPollInterval != null) {
             val instrumentation = getInstrumentation<SlowRenderingInstrumentation>()
             instrumentation?.setSlowRenderingDetectionPollInterval(
@@ -140,6 +127,7 @@ object OpenTelemetryRumInitializer {
         private val fragment: FragmentLifecycleConfiguration by lazy { FragmentLifecycleConfiguration() }
         private val anr: AnrReporterConfiguration by lazy { AnrReporterConfiguration() }
         private val crash: CrashReporterConfiguration by lazy { CrashReporterConfiguration() }
+        private val networkMonitoring: NetworkMonitoringConfiguration by lazy { NetworkMonitoringConfiguration() }
 
         fun activity(configure: ActivityLifecycleConfiguration.() -> Unit) {
             activity.configure()
@@ -155,6 +143,10 @@ object OpenTelemetryRumInitializer {
 
         fun crashReporter(configure: CrashReporterConfiguration.() -> Unit) {
             crash.configure()
+        }
+
+        fun networkMonitoring(configure: NetworkMonitoringConfiguration.() -> Unit) {
+            networkMonitoring.configure()
         }
     }
 
@@ -199,6 +191,14 @@ object OpenTelemetryRumInitializer {
 
         fun addAttributesExtractor(value: EventAttributesExtractor<CrashDetails>) {
             crashReporterInstrumentation.addAttributesExtractor(value)
+        }
+    }
+
+    class NetworkMonitoringConfiguration {
+        private val networkInstrumentation: NetworkChangeInstrumentation by lazy { getInstrumentation() }
+
+        fun addAttributesExtractor(value: NetworkAttributesExtractor) {
+            networkInstrumentation.addAttributesExtractor(value)
         }
     }
 }
