@@ -49,6 +49,7 @@ object OpenTelemetryRumInitializer {
      * @param sessionConfig The session configuration, which includes inactivity timeout and maximum lifetime durations.
      * @param instrumentations Configurations for all the default instrumentations.
      */
+    @Suppress("LongParameterList")
     @JvmStatic
     fun initialize(
         application: Application,
