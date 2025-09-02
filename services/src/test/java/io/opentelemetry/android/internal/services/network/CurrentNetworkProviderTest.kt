@@ -19,7 +19,7 @@ import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
-import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider.UNKNOWN_NETWORK
+import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider.Companion.UNKNOWN_NETWORK
 import io.opentelemetry.android.internal.services.network.detector.NetworkDetector
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -54,7 +54,7 @@ internal class CurrentNetworkProviderTest {
         every { connectivityManager.unregisterNetworkCallback(any<NetworkCallback>()) } just Runs
 
         val currentNetworkProvider =
-            CurrentNetworkProvider(
+            CurrentNetworkProviderImpl(
                 networkDetector,
                 connectivityManager,
             ) { networkRequest }
@@ -94,7 +94,7 @@ internal class CurrentNetworkProviderTest {
 
     @Test
     fun `network detector exception`() {
-        val currentNetworkProvider = CurrentNetworkProvider(errorNetworkDetector, mockConnectivityManager)
+        val currentNetworkProvider = CurrentNetworkProviderImpl(errorNetworkDetector, mockConnectivityManager)
         assertThat(currentNetworkProvider.refreshNetworkStatus()).isEqualTo(UNKNOWN_NETWORK)
     }
 
@@ -112,7 +112,7 @@ internal class CurrentNetworkProviderTest {
         )
 
         val currentNetworkProvider =
-            CurrentNetworkProvider(networkDetector, connectivityManager) { networkRequest }
+            CurrentNetworkProviderImpl(networkDetector, connectivityManager) { networkRequest }
         assertThat(currentNetworkProvider.refreshNetworkStatus()).isEqualTo(wifi)
     }
 
@@ -131,7 +131,7 @@ internal class CurrentNetworkProviderTest {
             }
 
         val networkProvider =
-            CurrentNetworkProvider(networkDetector, connectivityManager) { networkRequest }
+            CurrentNetworkProviderImpl(networkDetector, connectivityManager) { networkRequest }
         assertThat(networkProvider.refreshNetworkStatus()).isEqualTo(UNKNOWN_NETWORK)
     }
 }
