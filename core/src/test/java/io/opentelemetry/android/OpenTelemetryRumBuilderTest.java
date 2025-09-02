@@ -36,7 +36,6 @@ import io.opentelemetry.android.instrumentation.InstallationContext;
 import io.opentelemetry.android.instrumentation.internal.AndroidInstrumentationLoaderImpl;
 import io.opentelemetry.android.internal.initialization.InitializationEvents;
 import io.opentelemetry.android.internal.services.CacheStorage;
-import io.opentelemetry.android.internal.services.Preferences;
 import io.opentelemetry.android.internal.services.Services;
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle;
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker;
@@ -513,7 +512,6 @@ public class OpenTelemetryRumBuilderTest {
         Services services = mock(Services.class);
         when(services.getAppLifecycle()).thenReturn(mock(AppLifecycle.class));
         when(services.getCacheStorage()).thenReturn(mock(CacheStorage.class));
-        when(services.getPreferences()).thenReturn(mock(Preferences.class));
         VisibleScreenTracker screenService = mock(VisibleScreenTracker.class);
         when(screenService.getCurrentlyVisibleScreen()).thenReturn(CUR_SCREEN_NAME);
         when(services.getVisibleScreenTracker()).thenReturn(screenService);

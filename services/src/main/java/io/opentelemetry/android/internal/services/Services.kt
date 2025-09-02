@@ -22,10 +22,6 @@ import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTra
 class Services internal constructor(
     private val factory: ServicesFactory,
 ) {
-    val preferences: Preferences by lazy {
-        factory.createPreferences()
-    }
-
     val cacheStorage: CacheStorage by lazy {
         factory.createCacheStorage()
     }
@@ -68,14 +64,6 @@ class Services internal constructor(
     internal class ServicesFactory(
         private val application: Application,
     ) {
-        fun createPreferences(): Preferences =
-            Preferences(
-                application.getSharedPreferences(
-                    "io.opentelemetry.android" + ".prefs",
-                    Context.MODE_PRIVATE,
-                ),
-            )
-
         fun createCacheStorage(): CacheStorage = CacheStorage(application)
 
         fun createPeriodicWork(): PeriodicWork = PeriodicWork()

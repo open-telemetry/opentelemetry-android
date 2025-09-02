@@ -4,3 +4,4 @@
 demo-app/local.properties
 .DS_Store
 **/build/
+.kotlin/
