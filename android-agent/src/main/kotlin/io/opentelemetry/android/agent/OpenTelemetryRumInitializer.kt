@@ -46,10 +46,6 @@ object OpenTelemetryRumInitializer {
      * @param metricEndpointConnectivity Metric-specific endpoint configuration.
      * @param rumConfig Configuration used by [OpenTelemetryRumBuilder].
      * @param sessionConfig The session configuration, which includes inactivity timeout and maximum lifetime durations.
-     * @param activityTracerCustomizer Tracer customizer for [ActivityLifecycleInstrumentation].
-     * @param activityNameExtractor Name extractor for [ActivityLifecycleInstrumentation].
-     * @param fragmentTracerCustomizer Tracer customizer for [FragmentLifecycleInstrumentation].
-     * @param fragmentNameExtractor Name extractor for [FragmentLifecycleInstrumentation].
      * @param anrAttributesExtractors Attribute extractors for [AnrInstrumentation].
      * @param crashAttributesExtractors Attribute extractors for [CrashReporterInstrumentation].
      * @param networkChangeAttributesExtractors Attribute extractors for [NetworkChangeInstrumentation].
@@ -77,16 +73,12 @@ object OpenTelemetryRumInitializer {
             ),
         rumConfig: OtelRumConfig = OtelRumConfig(),
         sessionConfig: SessionConfig = SessionConfig.withDefaults(),
-        fragmentTracerCustomizer: ((Tracer) -> Tracer)? = null,
-        fragmentNameExtractor: ScreenNameExtractor? = null,
         anrAttributesExtractors: List<EventAttributesExtractor<Array<StackTraceElement>>> = emptyList(),
         crashAttributesExtractors: List<EventAttributesExtractor<CrashDetails>> = emptyList(),
         networkChangeAttributesExtractors: List<NetworkAttributesExtractor> = emptyList(),
         slowRenderingDetectionPollInterval: Duration? = null,
     ): OpenTelemetryRum {
         configureInstrumentation(
-            fragmentTracerCustomizer,
-            fragmentNameExtractor,
             anrAttributesExtractors,
             crashAttributesExtractors,
             networkChangeAttributesExtractors,
@@ -127,22 +119,11 @@ object OpenTelemetryRumInitializer {
     }
 
     private fun configureInstrumentation(
-        fragmentTracerCustomizer: ((Tracer) -> Tracer)?,
-        fragmentNameExtractor: ScreenNameExtractor?,
         anrAttributesExtractors: List<EventAttributesExtractor<Array<StackTraceElement>>>,
         crashAttributesExtractors: List<EventAttributesExtractor<CrashDetails>>,
         networkChangeAttributesExtractors: List<NetworkAttributesExtractor>,
         slowRenderingDetectionPollInterval: Duration?,
     ) {
-        val fragmentLifecycleInstrumentation =
-            getInstrumentation<FragmentLifecycleInstrumentation>()
-        if (fragmentTracerCustomizer != null) {
-            fragmentLifecycleInstrumentation?.setTracerCustomizer(fragmentTracerCustomizer)
-        }
-        if (fragmentNameExtractor != null) {
-            fragmentLifecycleInstrumentation?.setScreenNameExtractor(fragmentNameExtractor)
-        }
-
         if (anrAttributesExtractors.isNotEmpty()) {
             val anrInstrumentation = getInstrumentation<AnrInstrumentation>()
             for (extractor in anrAttributesExtractors) {
@@ -177,14 +158,19 @@ object OpenTelemetryRumInitializer {
         AndroidInstrumentationLoader.getInstrumentation(T::class.java)!!
 
     class InstrumentationConfiguration {
-        private val activity: ActivityInstrumentationConfiguration by lazy { ActivityInstrumentationConfiguration() }
+        private val activity: ActivityLifecycleConfiguration by lazy { ActivityLifecycleConfiguration() }
+        private val fragment: FragmentLifecycleConfiguration by lazy { FragmentLifecycleConfiguration() }
 
-        fun activity(configure: ActivityInstrumentationConfiguration.() -> Unit) {
+        fun activity(configure: ActivityLifecycleConfiguration.() -> Unit) {
             activity.configure()
+        }
+
+        fun fragment(configure: FragmentLifecycleConfiguration.() -> Unit) {
+            fragment.configure()
         }
     }
 
-    class ActivityInstrumentationConfiguration {
+    class ActivityLifecycleConfiguration {
         private val activityLifecycleInstrumentation: ActivityLifecycleInstrumentation by lazy {
             getInstrumentation<ActivityLifecycleInstrumentation>()
         }
@@ -195,6 +181,20 @@ object OpenTelemetryRumInitializer {
 
         fun screenNameExtractor(value: ScreenNameExtractor) {
             activityLifecycleInstrumentation.setScreenNameExtractor(value)
+        }
+    }
+
+    class FragmentLifecycleConfiguration {
+        private val fragmentLifecycleInstrumentation: FragmentLifecycleInstrumentation by lazy {
+            getInstrumentation<FragmentLifecycleInstrumentation>()
+        }
+
+        fun tracerCustomizer(value: (Tracer) -> Tracer) {
+            fragmentLifecycleInstrumentation.setTracerCustomizer(value)
+        }
+
+        fun screenNameExtractor(value: ScreenNameExtractor) {
+            fragmentLifecycleInstrumentation.setScreenNameExtractor(value)
         }
     }
 }
