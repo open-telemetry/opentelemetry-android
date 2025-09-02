@@ -24,8 +24,6 @@ class ServicesTest {
     @Test
     fun `Verify that services are created lazily`() {
         val factory = mockk<ServicesFactory>()
-        val preferences = mockk<Preferences>()
-        every { factory.createPreferences() }.returns(preferences)
         val cacheStorage = mockk<CacheStorage>()
         every { factory.createCacheStorage() }.returns(cacheStorage)
         val periodicWork = mockk<PeriodicWork>()
@@ -41,7 +39,6 @@ class ServicesTest {
         val services = Services(factory)
         verify { factory wasNot Called }
 
-        verifyLazyCreation(preferences, services::preferences, factory::createPreferences)
         verifyLazyCreation(cacheStorage, services::cacheStorage, factory::createCacheStorage)
         verifyLazyCreation(periodicWork, services::periodicWork, factory::createPeriodicWork)
         verifyLazyCreation(

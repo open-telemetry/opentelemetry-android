@@ -3,11 +3,6 @@ public class io/opentelemetry/android/internal/services/CacheStorage {
 	public fun getCacheDir ()Ljava/io/File;
 }
 
-public final class io/opentelemetry/android/internal/services/Preferences {
-	public final fun retrieveInt (Ljava/lang/String;I)I
-	public final fun store (Ljava/lang/String;I)V
-}
-
 public final class io/opentelemetry/android/internal/services/Services {
 	public static final field Companion Lio/opentelemetry/android/internal/services/Services$Companion;
 	public static final fun get (Landroid/app/Application;)Lio/opentelemetry/android/internal/services/Services;
@@ -15,7 +10,6 @@ public final class io/opentelemetry/android/internal/services/Services {
 	public final fun getCacheStorage ()Lio/opentelemetry/android/internal/services/CacheStorage;
 	public final fun getCurrentNetworkProvider ()Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;
 	public final fun getPeriodicWork ()Lio/opentelemetry/android/internal/services/periodicwork/PeriodicWork;
-	public final fun getPreferences ()Lio/opentelemetry/android/internal/services/Preferences;
 	public final fun getVisibleScreenTracker ()Lio/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker;
 	public static final fun set (Lio/opentelemetry/android/internal/services/Services;)V
 }
