@@ -46,7 +46,6 @@ object OpenTelemetryRumInitializer {
      * @param metricEndpointConnectivity Metric-specific endpoint configuration.
      * @param rumConfig Configuration used by [OpenTelemetryRumBuilder].
      * @param sessionConfig The session configuration, which includes inactivity timeout and maximum lifetime durations.
-     * @param slowRenderingDetectionPollInterval Slow rendering detection interval for [SlowRenderingInstrumentation].
      */
     @JvmStatic
     fun initialize(
@@ -70,13 +69,8 @@ object OpenTelemetryRumInitializer {
             ),
         rumConfig: OtelRumConfig = OtelRumConfig(),
         sessionConfig: SessionConfig = SessionConfig.withDefaults(),
-        slowRenderingDetectionPollInterval: Duration? = null,
-    ): OpenTelemetryRum {
-        configureInstrumentation(
-            slowRenderingDetectionPollInterval,
-        )
-
-        return OpenTelemetryRum
+    ): OpenTelemetryRum =
+        OpenTelemetryRum
             .builder(application, rumConfig)
             .setSessionProvider(createSessionProvider(application, sessionConfig))
             .addSpanExporterCustomizer {
@@ -98,7 +92,6 @@ object OpenTelemetryRumInitializer {
                     .setHeaders(metricEndpointConnectivity::getHeaders)
                     .build()
             }.build()
-    }
 
     private fun createSessionProvider(
         application: Application,
@@ -109,25 +102,13 @@ object OpenTelemetryRumInitializer {
         return SessionManager.create(timeoutHandler, sessionConfig)
     }
 
-    private fun configureInstrumentation(slowRenderingDetectionPollInterval: Duration?) {
-        if (slowRenderingDetectionPollInterval != null) {
-            val instrumentation = getInstrumentation<SlowRenderingInstrumentation>()
-            instrumentation?.setSlowRenderingDetectionPollInterval(
-                slowRenderingDetectionPollInterval,
-            )
-            instrumentation?.enableDeprecatedZeroDurationSpan()
-        }
-    }
-
-    private inline fun <reified T : AndroidInstrumentation> getInstrumentation(): T =
-        AndroidInstrumentationLoader.getInstrumentation(T::class.java)!!
-
     class InstrumentationConfiguration {
         private val activity: ActivityLifecycleConfiguration by lazy { ActivityLifecycleConfiguration() }
         private val fragment: FragmentLifecycleConfiguration by lazy { FragmentLifecycleConfiguration() }
         private val anr: AnrReporterConfiguration by lazy { AnrReporterConfiguration() }
         private val crash: CrashReporterConfiguration by lazy { CrashReporterConfiguration() }
         private val networkMonitoring: NetworkMonitoringConfiguration by lazy { NetworkMonitoringConfiguration() }
+        private val slowRendering: SlowRenderingReporterConfiguration by lazy { SlowRenderingReporterConfiguration() }
 
         fun activity(configure: ActivityLifecycleConfiguration.() -> Unit) {
             activity.configure()
@@ -147,6 +128,10 @@ object OpenTelemetryRumInitializer {
 
         fun networkMonitoring(configure: NetworkMonitoringConfiguration.() -> Unit) {
             networkMonitoring.configure()
+        }
+
+        fun slowRenderingReporter(configure: SlowRenderingReporterConfiguration.() -> Unit) {
+            slowRendering.configure()
         }
     }
 
@@ -201,4 +186,19 @@ object OpenTelemetryRumInitializer {
             networkInstrumentation.addAttributesExtractor(value)
         }
     }
+
+    class SlowRenderingReporterConfiguration {
+        private val slowRenderingInstrumentation: SlowRenderingInstrumentation by lazy { getInstrumentation() }
+
+        fun detectionPollInterval(value: Duration) {
+            slowRenderingInstrumentation.setSlowRenderingDetectionPollInterval(value)
+        }
+
+        fun enableVerboseDebugLogging() {
+            slowRenderingInstrumentation.enableVerboseDebugLogging()
+        }
+    }
+
+    private inline fun <reified T : AndroidInstrumentation> getInstrumentation(): T =
+        AndroidInstrumentationLoader.getInstrumentation(T::class.java)!!
 }
