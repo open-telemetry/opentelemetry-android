@@ -77,8 +77,6 @@ object OpenTelemetryRumInitializer {
             ),
         rumConfig: OtelRumConfig = OtelRumConfig(),
         sessionConfig: SessionConfig = SessionConfig.withDefaults(),
-        activityTracerCustomizer: ((Tracer) -> Tracer)? = null,
-        activityNameExtractor: ScreenNameExtractor? = null,
         fragmentTracerCustomizer: ((Tracer) -> Tracer)? = null,
         fragmentNameExtractor: ScreenNameExtractor? = null,
         anrAttributesExtractors: List<EventAttributesExtractor<Array<StackTraceElement>>> = emptyList(),
@@ -87,8 +85,6 @@ object OpenTelemetryRumInitializer {
         slowRenderingDetectionPollInterval: Duration? = null,
     ): OpenTelemetryRum {
         configureInstrumentation(
-            activityTracerCustomizer,
-            activityNameExtractor,
             fragmentTracerCustomizer,
             fragmentNameExtractor,
             anrAttributesExtractors,
@@ -131,8 +127,6 @@ object OpenTelemetryRumInitializer {
     }
 
     private fun configureInstrumentation(
-        activityTracerCustomizer: ((Tracer) -> Tracer)?,
-        activityNameExtractor: ScreenNameExtractor?,
         fragmentTracerCustomizer: ((Tracer) -> Tracer)?,
         fragmentNameExtractor: ScreenNameExtractor?,
         anrAttributesExtractors: List<EventAttributesExtractor<Array<StackTraceElement>>>,
@@ -140,15 +134,6 @@ object OpenTelemetryRumInitializer {
         networkChangeAttributesExtractors: List<NetworkAttributesExtractor>,
         slowRenderingDetectionPollInterval: Duration?,
     ) {
-        val activityLifecycleInstrumentation =
-            getInstrumentation<ActivityLifecycleInstrumentation>()
-        if (activityTracerCustomizer != null) {
-            activityLifecycleInstrumentation?.setTracerCustomizer(activityTracerCustomizer)
-        }
-        if (activityNameExtractor != null) {
-            activityLifecycleInstrumentation?.setScreenNameExtractor(activityNameExtractor)
-        }
-
         val fragmentLifecycleInstrumentation =
             getInstrumentation<FragmentLifecycleInstrumentation>()
         if (fragmentTracerCustomizer != null) {
@@ -181,11 +166,35 @@ object OpenTelemetryRumInitializer {
 
         if (slowRenderingDetectionPollInterval != null) {
             val instrumentation = getInstrumentation<SlowRenderingInstrumentation>()
-            instrumentation?.setSlowRenderingDetectionPollInterval(slowRenderingDetectionPollInterval)
+            instrumentation?.setSlowRenderingDetectionPollInterval(
+                slowRenderingDetectionPollInterval,
+            )
             instrumentation?.enableDeprecatedZeroDurationSpan()
         }
     }
 
-    private inline fun <reified T : AndroidInstrumentation> getInstrumentation(): T? =
-        AndroidInstrumentationLoader.getInstrumentation(T::class.java)
+    private inline fun <reified T : AndroidInstrumentation> getInstrumentation(): T =
+        AndroidInstrumentationLoader.getInstrumentation(T::class.java)!!
+
+    class InstrumentationConfiguration {
+        private val activity: ActivityInstrumentationConfiguration by lazy { ActivityInstrumentationConfiguration() }
+
+        fun activity(configure: ActivityInstrumentationConfiguration.() -> Unit) {
+            activity.configure()
+        }
+    }
+
+    class ActivityInstrumentationConfiguration {
+        private val activityLifecycleInstrumentation: ActivityLifecycleInstrumentation by lazy {
+            getInstrumentation<ActivityLifecycleInstrumentation>()
+        }
+
+        fun tracerCustomizer(value: (Tracer) -> Tracer) {
+            activityLifecycleInstrumentation.setTracerCustomizer(value)
+        }
+
+        fun screenNameExtractor(value: ScreenNameExtractor) {
+            activityLifecycleInstrumentation.setScreenNameExtractor(value)
+        }
+    }
 }
