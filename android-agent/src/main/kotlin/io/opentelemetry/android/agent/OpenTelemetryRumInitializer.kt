@@ -32,7 +32,8 @@ import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
-import java.time.Duration
+import kotlin.time.Duration
+import kotlin.time.toJavaDuration
 
 object OpenTelemetryRumInitializer {
     /**
@@ -197,7 +198,7 @@ object OpenTelemetryRumInitializer {
         private val slowRenderingInstrumentation: SlowRenderingInstrumentation by lazy { getInstrumentation() }
 
         fun detectionPollInterval(value: Duration) {
-            slowRenderingInstrumentation.setSlowRenderingDetectionPollInterval(value)
+            slowRenderingInstrumentation.setSlowRenderingDetectionPollInterval(value.toJavaDuration())
         }
 
         fun enableVerboseDebugLogging() {
