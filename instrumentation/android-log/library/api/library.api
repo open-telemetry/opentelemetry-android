@@ -4,23 +4,23 @@ public final class io/opentelemetry/instrumentation/library/log/AndroidLogInstru
 	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
 }
 
-public class io/opentelemetry/instrumentation/library/log/AndroidLogSubstitutions {
-	public static field TAG_KEY Lio/opentelemetry/api/common/AttributeKey;
-	public fun <init> ()V
-	public static fun substitutionForDebug (Ljava/lang/String;Ljava/lang/String;)I
-	public static fun substitutionForDebug2 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
-	public static fun substitutionForError (Ljava/lang/String;Ljava/lang/String;)I
-	public static fun substitutionForError2 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
-	public static fun substitutionForInfo (Ljava/lang/String;Ljava/lang/String;)I
-	public static fun substitutionForInfo2 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
-	public static fun substitutionForVerbose (Ljava/lang/String;Ljava/lang/String;)I
-	public static fun substitutionForVerbose2 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
-	public static fun substitutionForWarn (Ljava/lang/String;Ljava/lang/String;)I
-	public static fun substitutionForWarn2 (Ljava/lang/String;Ljava/lang/Throwable;)I
-	public static fun substitutionForWarn3 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
-	public static fun substitutionForWtf (Ljava/lang/String;Ljava/lang/String;)I
-	public static fun substitutionForWtf2 (Ljava/lang/String;Ljava/lang/Throwable;)I
-	public static fun substitutionForWtf3 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
+public final class io/opentelemetry/instrumentation/library/log/AndroidLogSubstitutions {
+	public static final field INSTANCE Lio/opentelemetry/instrumentation/library/log/AndroidLogSubstitutions;
+	public final fun getTagKey ()Lio/opentelemetry/api/common/AttributeKey;
+	public static final fun substitutionForDebug (Ljava/lang/String;Ljava/lang/String;)I
+	public static final fun substitutionForDebug2 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
+	public static final fun substitutionForError (Ljava/lang/String;Ljava/lang/String;)I
+	public static final fun substitutionForError2 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
+	public static final fun substitutionForInfo (Ljava/lang/String;Ljava/lang/String;)I
+	public static final fun substitutionForInfo2 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
+	public static final fun substitutionForVerbose (Ljava/lang/String;Ljava/lang/String;)I
+	public static final fun substitutionForVerbose2 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
+	public static final fun substitutionForWarn (Ljava/lang/String;Ljava/lang/String;)I
+	public static final fun substitutionForWarn2 (Ljava/lang/String;Ljava/lang/Throwable;)I
+	public static final fun substitutionForWarn3 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
+	public static final fun substitutionForWtf (Ljava/lang/String;Ljava/lang/String;)I
+	public static final fun substitutionForWtf2 (Ljava/lang/String;Ljava/lang/Throwable;)I
+	public static final fun substitutionForWtf3 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 }
 
 public final class io/opentelemetry/instrumentation/library/log/internal/LogRecordBuilderCreator {

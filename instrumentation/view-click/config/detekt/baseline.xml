@@ -3,7 +3,6 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <ID>LongParameterList:ViewClickInstrumentationTest.kt$ViewClickInstrumentationTest$( id: Int, motionEvent: MotionEvent, hitOffset: IntArray = intArrayOf(0, 0), clickable: Boolean = true, visibility: Int = View.VISIBLE, applyOthers: (T) -&gt; Unit = {}, )</ID>
-    <ID>MaxLineLength:ViewClickEventGenerator.kt$ViewClickEventGenerator$private fun isJetpackComposeView(view: View): Boolean</ID>
     <ID>SwallowedException:ViewClickEventGenerator.kt$ViewClickEventGenerator$throwable: Throwable</ID>
     <ID>TooGenericExceptionCaught:ViewClickEventGenerator.kt$ViewClickEventGenerator$throwable: Throwable</ID>
     <ID>TooManyFunctions:ViewClickEventGenerator.kt$ViewClickEventGenerator</ID>
