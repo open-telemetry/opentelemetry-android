@@ -11,7 +11,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.verify
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
-import io.opentelemetry.android.internal.services.CacheStorage
+import io.opentelemetry.android.internal.services.storage.CacheStorage
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach

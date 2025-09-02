@@ -30,7 +30,7 @@ class AppLifecycleTest {
         MockKAnnotations.init(this)
         every { applicationStateWatcher.registerListener(any()) } just Runs
         every { lifecycle.addObserver(any()) } just Runs
-        lifecycleService = AppLifecycle(applicationStateWatcher, lifecycle)
+        lifecycleService = AppLifecycleImpl(applicationStateWatcher, lifecycle)
     }
 
     @Test
