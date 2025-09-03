@@ -11,6 +11,7 @@ import android.os.Build
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavHost
+import io.opentelemetry.android.internal.services.Service
 import io.opentelemetry.android.internal.services.visiblescreen.activities.Pre29VisibleScreenLifecycleBinding
 import io.opentelemetry.android.internal.services.visiblescreen.activities.VisibleScreenLifecycleBinding
 import io.opentelemetry.android.internal.services.visiblescreen.fragments.RumFragmentActivityRegisterer
@@ -30,8 +31,8 @@ import java.util.concurrent.atomic.AtomicReference
  * screen, and the launching screen never leaves visibility.
  */
 class VisibleScreenTracker internal constructor(
-    application: Application,
-) {
+    private val application: Application,
+) : Service {
     private val lastResumedActivity = AtomicReference<String>()
     private val previouslyLastResumedActivity = AtomicReference<String>()
     private val lastResumedFragment = AtomicReference<String>()
@@ -114,5 +115,10 @@ class VisibleScreenTracker internal constructor(
             lastResumedFragment.compareAndSet(fragment.javaClass.simpleName, null)
         }
         previouslyLastResumedFragment.set(fragment.javaClass.simpleName)
+    }
+
+    override fun close() {
+        application.unregisterActivityLifecycleCallbacks(activityLifecycleTracker)
+        application.unregisterActivityLifecycleCallbacks(fragmentLifecycleTrackerRegisterer)
     }
 }

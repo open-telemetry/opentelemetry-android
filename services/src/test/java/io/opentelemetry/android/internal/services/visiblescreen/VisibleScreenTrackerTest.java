@@ -8,6 +8,8 @@ package io.opentelemetry.android.internal.services.visiblescreen;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
 import android.app.Application;
@@ -15,8 +17,10 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class VisibleScreenTrackerTest {
     private Application application;
@@ -24,6 +28,22 @@ class VisibleScreenTrackerTest {
     @BeforeEach
     void setUp() {
         application = mock();
+    }
+
+    @Test
+    void verifyInitializationAndClose() {
+        VisibleScreenTracker visibleScreenTracker = getVisibleScreenService();
+        ArgumentCaptor<Application.ActivityLifecycleCallbacks> callbacksCaptor =
+                ArgumentCaptor.captor();
+
+        verify(application, times(2)).registerActivityLifecycleCallbacks(callbacksCaptor.capture());
+        List<Application.ActivityLifecycleCallbacks> callbacks = callbacksCaptor.getAllValues();
+        assertEquals(2, callbacks.size());
+
+        // Closing
+        visibleScreenTracker.close();
+        verify(application).unregisterActivityLifecycleCallbacks(callbacks.get(0));
+        verify(application).unregisterActivityLifecycleCallbacks(callbacks.get(1));
     }
 
     @Test
