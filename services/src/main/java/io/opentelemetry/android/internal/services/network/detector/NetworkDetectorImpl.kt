@@ -108,6 +108,10 @@ internal class NetworkDetectorImpl(
     @Suppress("MissingPermission")
     private fun findSubtype(): String? {
         if (!(hasTelephonyFeature(context) && hasPhoneStatePermission(context))) {
+            Log.w(
+                RumConstants.OTEL_RUM_LOG_TAG,
+                "Cannot determine network subtype: missing required telephony feature or read phone state permission.",
+            )
             return null
         }
 
