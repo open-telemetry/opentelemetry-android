@@ -110,6 +110,7 @@ object OpenTelemetryRumInitializer {
         return SessionManager.create(timeoutHandler, sessionConfig)
     }
 
+    @InstrumentationConfigMarker
     class InstrumentationConfiguration internal constructor() {
         private val activity: ActivityLifecycleConfiguration by lazy { ActivityLifecycleConfiguration() }
         private val fragment: FragmentLifecycleConfiguration by lazy { FragmentLifecycleConfiguration() }
@@ -143,6 +144,7 @@ object OpenTelemetryRumInitializer {
         }
     }
 
+    @InstrumentationConfigMarker
     class ActivityLifecycleConfiguration internal constructor() {
         private val activityLifecycleInstrumentation: ActivityLifecycleInstrumentation by lazy {
             getInstrumentation()
@@ -157,6 +159,7 @@ object OpenTelemetryRumInitializer {
         }
     }
 
+    @InstrumentationConfigMarker
     class FragmentLifecycleConfiguration internal constructor() {
         private val fragmentLifecycleInstrumentation: FragmentLifecycleInstrumentation by lazy {
             getInstrumentation()
@@ -171,6 +174,7 @@ object OpenTelemetryRumInitializer {
         }
     }
 
+    @InstrumentationConfigMarker
     class AnrReporterConfiguration internal constructor() {
         private val anrInstrumentation: AnrInstrumentation by lazy { getInstrumentation() }
 
@@ -179,6 +183,7 @@ object OpenTelemetryRumInitializer {
         }
     }
 
+    @InstrumentationConfigMarker
     class CrashReporterConfiguration internal constructor() {
         private val crashReporterInstrumentation: CrashReporterInstrumentation by lazy { getInstrumentation() }
 
@@ -187,6 +192,7 @@ object OpenTelemetryRumInitializer {
         }
     }
 
+    @InstrumentationConfigMarker
     class NetworkMonitoringConfiguration internal constructor() {
         private val networkInstrumentation: NetworkChangeInstrumentation by lazy { getInstrumentation() }
 
@@ -195,6 +201,7 @@ object OpenTelemetryRumInitializer {
         }
     }
 
+    @InstrumentationConfigMarker
     class SlowRenderingReporterConfiguration internal constructor() {
         private val slowRenderingInstrumentation: SlowRenderingInstrumentation by lazy { getInstrumentation() }
 
@@ -206,6 +213,9 @@ object OpenTelemetryRumInitializer {
             slowRenderingInstrumentation.enableVerboseDebugLogging()
         }
     }
+
+    @DslMarker
+    internal annotation class InstrumentationConfigMarker
 
     private inline fun <reified T : AndroidInstrumentation> getInstrumentation(): T =
         AndroidInstrumentationLoader.getInstrumentation(T::class.java)!!
