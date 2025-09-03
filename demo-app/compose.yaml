@@ -1,6 +1,6 @@
 services:
   collector:
-    image: "otel/opentelemetry-collector-contrib@sha256:df554813acf7f318ac32d877264754cf55998c5b1d4591721c36db138f2c0b86"
+    image: "otel/opentelemetry-collector-contrib@sha256:440197291e082dcd225339cc7caabfa8d13414e29779e8b493716cfea385fd9c"
     volumes:
       - ./collector.yaml:/etc/demo-collector.yaml
     entrypoint: ["/otelcol-contrib"]
