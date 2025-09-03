@@ -31,7 +31,7 @@ class VisibleScreenTrackerTest {
     }
 
     @Test
-    void verifyInitialization() {
+    void verifyInitializationAndClose() {
         VisibleScreenTracker visibleScreenTracker = getVisibleScreenService();
         ArgumentCaptor<Application.ActivityLifecycleCallbacks> callbacksCaptor =
                 ArgumentCaptor.captor();
