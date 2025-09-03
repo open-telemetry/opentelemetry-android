@@ -110,7 +110,7 @@ object OpenTelemetryRumInitializer {
         return SessionManager.create(timeoutHandler, sessionConfig)
     }
 
-    class InstrumentationConfiguration {
+    class InstrumentationConfiguration internal constructor() {
         private val activity: ActivityLifecycleConfiguration by lazy { ActivityLifecycleConfiguration() }
         private val fragment: FragmentLifecycleConfiguration by lazy { FragmentLifecycleConfiguration() }
         private val anr: AnrReporterConfiguration by lazy { AnrReporterConfiguration() }
@@ -143,7 +143,7 @@ object OpenTelemetryRumInitializer {
         }
     }
 
-    class ActivityLifecycleConfiguration {
+    class ActivityLifecycleConfiguration internal constructor() {
         private val activityLifecycleInstrumentation: ActivityLifecycleInstrumentation by lazy {
             getInstrumentation()
         }
@@ -157,7 +157,7 @@ object OpenTelemetryRumInitializer {
         }
     }
 
-    class FragmentLifecycleConfiguration {
+    class FragmentLifecycleConfiguration internal constructor() {
         private val fragmentLifecycleInstrumentation: FragmentLifecycleInstrumentation by lazy {
             getInstrumentation()
         }
@@ -171,7 +171,7 @@ object OpenTelemetryRumInitializer {
         }
     }
 
-    class AnrReporterConfiguration {
+    class AnrReporterConfiguration internal constructor() {
         private val anrInstrumentation: AnrInstrumentation by lazy { getInstrumentation() }
 
         fun addAttributesExtractor(value: EventAttributesExtractor<Array<StackTraceElement>>) {
@@ -179,7 +179,7 @@ object OpenTelemetryRumInitializer {
         }
     }
 
-    class CrashReporterConfiguration {
+    class CrashReporterConfiguration internal constructor() {
         private val crashReporterInstrumentation: CrashReporterInstrumentation by lazy { getInstrumentation() }
 
         fun addAttributesExtractor(value: EventAttributesExtractor<CrashDetails>) {
@@ -187,7 +187,7 @@ object OpenTelemetryRumInitializer {
         }
     }
 
-    class NetworkMonitoringConfiguration {
+    class NetworkMonitoringConfiguration internal constructor() {
         private val networkInstrumentation: NetworkChangeInstrumentation by lazy { getInstrumentation() }
 
         fun addAttributesExtractor(value: NetworkAttributesExtractor) {
@@ -195,7 +195,7 @@ object OpenTelemetryRumInitializer {
         }
     }
 
-    class SlowRenderingReporterConfiguration {
+    class SlowRenderingReporterConfiguration internal constructor() {
         private val slowRenderingInstrumentation: SlowRenderingInstrumentation by lazy { getInstrumentation() }
 
         fun detectionPollInterval(value: Duration) {
