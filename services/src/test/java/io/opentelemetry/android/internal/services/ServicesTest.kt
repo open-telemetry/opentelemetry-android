@@ -22,17 +22,17 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class ServicesTest {
     @Test
-    fun `Verify that services are created lazily`() {
+    fun `Verify that services are created lazily and also closed`() {
         val factory = mockk<ServicesFactory>()
-        val cacheStorage = mockk<CacheStorage>()
+        val cacheStorage = mockk<CacheStorage>(relaxUnitFun = true)
         every { factory.createCacheStorage() }.returns(cacheStorage)
-        val periodicWork = mockk<PeriodicWork>()
+        val periodicWork = mockk<PeriodicWork>(relaxUnitFun = true)
         every { factory.createPeriodicWork() }.returns(periodicWork)
-        val currentNetworkProvider = mockk<CurrentNetworkProvider>()
+        val currentNetworkProvider = mockk<CurrentNetworkProvider>(relaxUnitFun = true)
         every { factory.createCurrentNetworkProvider() }.returns(currentNetworkProvider)
-        val appLifecycle = mockk<AppLifecycle>()
+        val appLifecycle = mockk<AppLifecycle>(relaxUnitFun = true)
         every { factory.createAppLifecycle() }.returns(appLifecycle)
-        val visibleScreenTracker = mockk<VisibleScreenTracker>()
+        val visibleScreenTracker = mockk<VisibleScreenTracker>(relaxUnitFun = true)
         every { factory.createVisibleScreenTracker() }.returns(visibleScreenTracker)
 
         // Instantiation of services must not create any service
@@ -52,6 +52,16 @@ class ServicesTest {
             services::visibleScreenTracker,
             factory::createVisibleScreenTracker,
         )
+
+        // Verify closing services
+        services.close()
+        verify {
+            cacheStorage.close()
+            periodicWork.close()
+            currentNetworkProvider.close()
+            appLifecycle.close()
+            visibleScreenTracker.close()
+        }
     }
 
     private fun <T : Any> verifyLazyCreation(
