@@ -1,7 +1,8 @@
-public class io/opentelemetry/android/common/RumConstants {
+public final class io/opentelemetry/android/common/RumConstants {
 	public static final field APP_START_SPAN_NAME Ljava/lang/String;
 	public static final field BATTERY_PERCENT_KEY Lio/opentelemetry/api/common/AttributeKey;
 	public static final field HEAP_FREE_KEY Lio/opentelemetry/api/common/AttributeKey;
+	public static final field INSTANCE Lio/opentelemetry/android/common/RumConstants;
 	public static final field LAST_SCREEN_NAME_KEY Lio/opentelemetry/api/common/AttributeKey;
 	public static final field OTEL_RUM_LOG_TAG Ljava/lang/String;
 	public static final field RUM_SDK_VERSION Lio/opentelemetry/api/common/AttributeKey;
@@ -21,6 +22,7 @@ public final class io/opentelemetry/android/common/RumConstants$Events {
 	public static final field INIT_EVENT_NET_PROVIDER Ljava/lang/String;
 	public static final field INIT_EVENT_SPAN_EXPORTER Ljava/lang/String;
 	public static final field INIT_EVENT_STARTED Ljava/lang/String;
+	public static final field INSTANCE Lio/opentelemetry/android/common/RumConstants$Events;
 }
 
 public final class io/opentelemetry/android/common/internal/features/networkattributes/CurrentNetworkAttributesExtractor {

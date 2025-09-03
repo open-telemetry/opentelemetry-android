@@ -23,10 +23,6 @@ import java.io.Closeable
 class Services internal constructor(
     private val factory: ServicesFactory,
 ) : Closeable {
-    val preferences: Preferences by lazy {
-        factory.createPreferences()
-    }
-
     val cacheStorage: CacheStorage by lazy {
         factory.createCacheStorage()
     }
@@ -48,7 +44,6 @@ class Services internal constructor(
     }
 
     override fun close() {
-        preferences.close()
         cacheStorage.close()
         periodicWork.close()
         currentNetworkProvider.close()
@@ -78,14 +73,6 @@ class Services internal constructor(
     internal class ServicesFactory(
         private val application: Application,
     ) {
-        fun createPreferences(): Preferences =
-            Preferences(
-                application.getSharedPreferences(
-                    "io.opentelemetry.android" + ".prefs",
-                    Context.MODE_PRIVATE,
-                ),
-            )
-
         fun createCacheStorage(): CacheStorage = CacheStorage(application)
 
         fun createPeriodicWork(): PeriodicWork = PeriodicWork()

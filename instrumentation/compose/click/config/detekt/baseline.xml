@@ -5,8 +5,6 @@
     <ID>LongParameterList:ComposeClickEventGeneratorTest.kt$ComposeClickEventGeneratorTest$( targetX: Float = 0f, targetY: Float = 0f, hitOffset: IntArray = intArrayOf(10, 20), id: Int = 100, hit: Boolean = false, clickable: Boolean = false, useDescription: Boolean = false, )</ID>
     <ID>LongParameterList:ComposeInstrumentationTest.kt$ComposeInstrumentationTest$( targetX: Float = 0f, targetY: Float = 0f, hitOffset: IntArray = intArrayOf(10, 20), id: Int = 100, hit: Boolean = false, clickable: Boolean = false, useDescription: Boolean = false, )</ID>
     <ID>LongParameterList:ComposeTapTargetDetectorTest.kt$ComposeTapTargetDetectorTest$( targetX: Float = 0f, targetY: Float = 0f, hitOffset: IntArray = intArrayOf(10, 20), id: Int = 100, hit: Boolean = false, clickable: Boolean = false, useDescription: Boolean = false, )</ID>
-    <ID>MaxLineLength:ComposeClickEventGenerator.kt$ComposeClickEventGenerator$composeTapTargetDetector.findTapTarget(window.decorView, motionEvent.x, motionEvent.y)</ID>
-    <ID>MaxLineLength:ComposeClickEventGeneratorTest.kt$ComposeClickEventGeneratorTest$fun</ID>
     <ID>NestedBlockDepth:ComposeTapTargetDetector.kt$ComposeTapTargetDetector$fun findTapTarget( decorView: View, x: Float, y: Float, ): LayoutNode?</ID>
     <ID>NestedBlockDepth:ComposeTapTargetDetector.kt$ComposeTapTargetDetector$private fun getNodeName(node: LayoutNode): String?</ID>
     <ID>NestedBlockDepth:ComposeTapTargetDetector.kt$ComposeTapTargetDetector$private fun isValidClickTarget(node: LayoutNode): Boolean</ID>
