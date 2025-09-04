@@ -37,7 +37,7 @@ public class CarrierFinder {
         if (!hasTelephonyFeature(context)) {
             Log.w(
                     RumConstants.OTEL_RUM_LOG_TAG,
-                    "Cannot determine network carrier details: missing required telephony feature.");
+                    "Cannot determine carrier details: telephony feature missing.");
             return null;
         }
 
@@ -48,7 +48,7 @@ public class CarrierFinder {
                 } else {
                     Log.w(
                             RumConstants.OTEL_RUM_LOG_TAG,
-                            "Missing read phone state permission, falling back to legacy methods for gathering carrier details.");
+                            "Missing read phone state permission, using legacy carrier methods.");
                     return getCarrierPreApi28();
                 }
             } else {

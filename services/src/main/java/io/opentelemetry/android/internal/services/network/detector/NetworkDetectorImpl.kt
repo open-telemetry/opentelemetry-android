@@ -110,7 +110,7 @@ internal class NetworkDetectorImpl(
         if (!(hasTelephonyFeature(context) && hasPhoneStatePermission(context))) {
             Log.w(
                 RumConstants.OTEL_RUM_LOG_TAG,
-                "Cannot determine network subtype: missing required telephony feature or read phone state permission.",
+                "Cannot determine network subtype: missing telephony feature or read phone state permission.",
             )
             return null
         }
