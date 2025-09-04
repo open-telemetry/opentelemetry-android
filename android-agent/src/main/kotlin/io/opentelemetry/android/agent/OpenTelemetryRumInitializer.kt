@@ -145,49 +145,49 @@ object OpenTelemetryRumInitializer {
     }
 
     @InstrumentationConfigMarker
-    class ActivityLifecycleConfiguration internal constructor() {
+    class ActivityLifecycleConfiguration internal constructor() : ScreenLifecycleConfigurable {
         private val activityLifecycleInstrumentation: ActivityLifecycleInstrumentation by lazy {
             getInstrumentation()
         }
 
-        fun tracerCustomizer(value: (Tracer) -> Tracer) {
+        override fun tracerCustomizer(value: (Tracer) -> Tracer) {
             activityLifecycleInstrumentation.setTracerCustomizer(value)
         }
 
-        fun screenNameExtractor(value: ScreenNameExtractor) {
+        override fun screenNameExtractor(value: ScreenNameExtractor) {
             activityLifecycleInstrumentation.setScreenNameExtractor(value)
         }
     }
 
     @InstrumentationConfigMarker
-    class FragmentLifecycleConfiguration internal constructor() {
+    class FragmentLifecycleConfiguration internal constructor() : ScreenLifecycleConfigurable {
         private val fragmentLifecycleInstrumentation: FragmentLifecycleInstrumentation by lazy {
             getInstrumentation()
         }
 
-        fun tracerCustomizer(value: (Tracer) -> Tracer) {
+        override fun tracerCustomizer(value: (Tracer) -> Tracer) {
             fragmentLifecycleInstrumentation.setTracerCustomizer(value)
         }
 
-        fun screenNameExtractor(value: ScreenNameExtractor) {
+        override fun screenNameExtractor(value: ScreenNameExtractor) {
             fragmentLifecycleInstrumentation.setScreenNameExtractor(value)
         }
     }
 
     @InstrumentationConfigMarker
-    class AnrReporterConfiguration internal constructor() {
+    class AnrReporterConfiguration internal constructor() : WithEventAttributes<Array<StackTraceElement>> {
         private val anrInstrumentation: AnrInstrumentation by lazy { getInstrumentation() }
 
-        fun addAttributesExtractor(value: EventAttributesExtractor<Array<StackTraceElement>>) {
+        override fun addAttributesExtractor(value: EventAttributesExtractor<Array<StackTraceElement>>) {
             anrInstrumentation.addAttributesExtractor(value)
         }
     }
 
     @InstrumentationConfigMarker
-    class CrashReporterConfiguration internal constructor() {
+    class CrashReporterConfiguration internal constructor() : WithEventAttributes<CrashDetails> {
         private val crashReporterInstrumentation: CrashReporterInstrumentation by lazy { getInstrumentation() }
 
-        fun addAttributesExtractor(value: EventAttributesExtractor<CrashDetails>) {
+        override fun addAttributesExtractor(value: EventAttributesExtractor<CrashDetails>) {
             crashReporterInstrumentation.addAttributesExtractor(value)
         }
     }
@@ -212,6 +212,16 @@ object OpenTelemetryRumInitializer {
         fun enableVerboseDebugLogging() {
             slowRenderingInstrumentation.enableVerboseDebugLogging()
         }
+    }
+
+    internal interface ScreenLifecycleConfigurable {
+        fun tracerCustomizer(value: (Tracer) -> Tracer)
+
+        fun screenNameExtractor(value: ScreenNameExtractor)
+    }
+
+    internal interface WithEventAttributes<T> {
+        fun addAttributesExtractor(value: EventAttributesExtractor<T>)
     }
 
     @DslMarker
