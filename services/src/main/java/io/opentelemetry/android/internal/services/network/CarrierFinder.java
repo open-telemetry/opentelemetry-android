@@ -35,13 +35,22 @@ public class CarrierFinder {
     @Nullable
     public Carrier get() {
         if (!hasTelephonyFeature(context)) {
+            Log.w(
+                    RumConstants.OTEL_RUM_LOG_TAG,
+                    "Cannot determine carrier details: telephony feature missing.");
             return null;
         }
 
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-                    && hasPhoneStatePermission(context)) {
-                return getCarrierPostApi28();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                if (hasPhoneStatePermission(context)) {
+                    return getCarrierPostApi28();
+                } else {
+                    Log.w(
+                            RumConstants.OTEL_RUM_LOG_TAG,
+                            "Missing read phone state permission, using legacy carrier methods.");
+                    return getCarrierPreApi28();
+                }
             } else {
                 return getCarrierPreApi28();
             }
