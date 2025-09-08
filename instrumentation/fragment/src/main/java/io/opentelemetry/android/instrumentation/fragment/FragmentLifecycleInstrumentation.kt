@@ -11,6 +11,7 @@ import com.google.auto.service.AutoService
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.instrumentation.common.Constants.INSTRUMENTATION_SCOPE
+import io.opentelemetry.android.instrumentation.common.DefaultScreenNameExtractor
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.visiblescreen.fragments.RumFragmentActivityRegisterer
@@ -18,7 +19,7 @@ import io.opentelemetry.api.trace.Tracer
 
 @AutoService(AndroidInstrumentation::class)
 class FragmentLifecycleInstrumentation : AndroidInstrumentation {
-    private var screenNameExtractor = ScreenNameExtractor.DEFAULT
+    private var screenNameExtractor: ScreenNameExtractor = DefaultScreenNameExtractor
     private var tracerCustomizer: (Tracer) -> Tracer = { it }
 
     fun setTracerCustomizer(customizer: (Tracer) -> Tracer) {

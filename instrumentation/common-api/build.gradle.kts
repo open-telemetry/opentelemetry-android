@@ -19,4 +19,5 @@ dependencies {
     api(libs.opentelemetry.api)
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.instrumentation.api)
+    testImplementation(libs.androidx.fragment)
 }
