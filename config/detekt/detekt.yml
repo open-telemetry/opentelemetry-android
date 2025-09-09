@@ -7,7 +7,7 @@ complexity:
     constructorThreshold: 15
     functionThreshold: 31
   NestedBlockDepth:
-    threshold: 10
+    threshold: 6
   TooManyFunctions:
     thresholdInFiles: 31
     thresholdInClasses: 31
