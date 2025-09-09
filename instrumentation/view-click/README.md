@@ -23,13 +23,13 @@ This instrumentation produces the following telemetry:
 * Type: Event
 * Name: `app.screen.click`
 * Description: This event is emitted when the user taps or clicks on the screen.
-* See the [semantic convention definition](https://github.com/open-telemetry/semantic-conventions/blob/main/docs/app/app.md#event-appscreenclick)
+* See the [semantic convention definition](https://github.com/open-telemetry/semantic-conventions/blob/main/docs/app/app-events.md#event-appscreenclick)
   for more details.
 
 * Type: Event
 * Name: `event.app.widget.click`
 * Description: This event is emitted when the user taps on a view. Jetpack compose views are not currently supported.
-* See the [semantic convention definition](https://github.com/open-telemetry/semantic-conventions/blob/main/docs/app/app.md#event-appwidgetclick)
+* See the [semantic convention definition](https://github.com/open-telemetry/semantic-conventions/blob/main/docs/app/app-events.md#event-appwidgetclick)
   for more details.
 
 
