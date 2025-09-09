@@ -12,7 +12,6 @@ import io.opentelemetry.context.Context
 import io.opentelemetry.sdk.trace.data.LinkData
 import io.opentelemetry.sdk.trace.samplers.Sampler
 import io.opentelemetry.sdk.trace.samplers.SamplingResult
-import java.util.Locale
 
 /**
  * Session ID ratio based sampler. Uses [Sampler.traceIdRatioBased] sampler internally, but passes sessionId instead of
@@ -45,10 +44,5 @@ class SessionIdRatioBasedSampler(
         )
     }
 
-    override fun getDescription(): String =
-        String.format(
-            Locale.ENGLISH,
-            "SessionIdRatioBased{traceIdRatioBased:%s}",
-            ratioBasedSampler.description,
-        )
+    override fun getDescription(): String = "SessionIdRatioBased{traceIdRatioBased:$ratioBasedSampler.description}"
 }

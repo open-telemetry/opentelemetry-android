@@ -11,7 +11,6 @@ import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.android.internal.services.CacheStorage
 import java.io.File
 import java.io.IOException
-import java.util.Locale
 
 internal class DiskManager(
     private val cacheStorage: CacheStorage,
@@ -46,15 +45,7 @@ internal class DiskManager(
 
             // Divides the available cache size by 3 (for each signal's folder)
             val calculatedSize = requestedSize / 3
-            Log.d(
-                RumConstants.OTEL_RUM_LOG_TAG,
-                String.format(
-                    Locale.ENGLISH,
-                    "Requested cache size: %s, folder size: %s",
-                    requestedSize,
-                    calculatedSize,
-                ),
-            )
+            Log.d(RumConstants.OTEL_RUM_LOG_TAG, "Requested cache size: %s, folder size: $requestedSize")
             return calculatedSize
         }
 
