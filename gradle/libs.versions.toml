@@ -19,6 +19,7 @@ androidx-navigation = "2.7.7"
 compose = "1.5.4"
 detekt = "1.23.8"
 binaryCompatValidator = "0.18.1"
+koverGradlePlugin = "0.9.1"
 
 [libraries]
 opentelemetry-platform-alpha = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-instrumentation-alpha" }
@@ -89,6 +90,7 @@ byteBuddy-plugin = { module = "net.bytebuddy:byte-buddy-gradle-plugin", version.
 kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 ksp-plugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "kspPlugin" }
 androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junitKtx" }
+kover-plugin = { module = "org.jetbrains.kotlinx.kover:org.jetbrains.kotlinx.kover.gradle.plugin", version.ref = "koverGradlePlugin" }
 
 [bundles]
 mocking = ["mockito-core", "mockito-junit-jupiter", "mockk"]
@@ -99,3 +101,4 @@ publishPlugin = { id = "io.github.gradle-nexus.publish-plugin", version = "2.0.0
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 androidApp = { id = "com.android.application", version.ref = "androidPlugin" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "koverGradlePlugin" }

@@ -26,4 +26,5 @@ dependencies {
     implementation(libs.detekt.plugin)
     implementation(libs.binary.compat.validator)
     implementation(libs.ksp.plugin)
+    implementation(libs.kover.plugin)
 }
