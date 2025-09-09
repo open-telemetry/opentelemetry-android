@@ -1,19 +1,4 @@
 <?xml version="1.0" ?>
 <SmellBaseline>
   <ManuallySuppressedIssues/>
-  <CurrentIssues>
-    <ID>EmptyFunctionBlock:GlobalAttributesSpanAppender.kt$GlobalAttributesSpanAppender${}</ID>
-    <ID>EmptyFunctionBlock:NetworkAttributesSpanAppender.kt$NetworkAttributesSpanAppender${}</ID>
-    <ID>EmptyFunctionBlock:SessionIdSpanAppender.kt$SessionIdSpanAppender${}</ID>
-    <ID>EmptyFunctionBlock:TestInitializationEvents.kt$TestInitializationEvents${ }</ID>
-    <ID>ImplicitDefaultLocale:DiskManager.kt$DiskManager$String.format( "Requested cache size: %s, folder size: %s", requestedSize, calculatedSize, )</ID>
-    <ID>ImplicitDefaultLocale:SessionIdRatioBasedSampler.kt$SessionIdRatioBasedSampler$String.format( "SessionIdRatioBased{traceIdRatioBased:%s}", ratioBasedSampler.description, )</ID>
-    <ID>LongParameterList:DiskBufferingConfig.kt$DiskBufferingConfig.Companion$( enabled: Boolean = false, maxCacheSize: Int = DEFAULT_MAX_CACHE_SIZE, maxFileAgeForWriteMillis: Long = TimeUnit.SECONDS.toMillis(30), minFileAgeForReadMillis: Long = TimeUnit.SECONDS.toMillis(33), maxFileAgeForReadMillis: Long = TimeUnit.HOURS.toMillis(18), maxCacheFileSize: Int = MAX_CACHE_FILE_SIZE, debugEnabled: Boolean = false, signalsBufferDir: File? = null, )</ID>
-    <ID>MagicNumber:DiskBufferingConfig.kt$DiskBufferingConfig.Companion$18</ID>
-    <ID>MagicNumber:DiskBufferingConfig.kt$DiskBufferingConfig.Companion$30</ID>
-    <ID>MagicNumber:DiskBufferingConfig.kt$DiskBufferingConfig.Companion$33</ID>
-    <ID>MagicNumber:DiskBufferingConfig.kt$DiskBufferingConfig.Companion$5</ID>
-    <ID>MagicNumber:DiskManager.kt$DiskManager$3</ID>
-    <ID>MagicNumber:SignalFromDiskExporter.kt$SignalFromDiskExporter$5</ID>
-  </CurrentIssues>
 </SmellBaseline>

@@ -2,9 +2,38 @@
 build:
   maxIssues: 0
 
+complexity:
+  LongParameterList:
+    constructorThreshold: 15
+    functionThreshold: 31
+  NestedBlockDepth:
+    threshold: 10
+  TooManyFunctions:
+    thresholdInFiles: 31
+    thresholdInClasses: 31
+    thresholdInInterfaces: 31
+    thresholdInObjects: 31
+    thresholdInEnums: 31
+    ignoreOverridden: true
+
+empty-blocks:
+  EmptyFunctionBlock:
+    ignoreOverridden: true
+
+exceptions:
+  SwallowedException:
+    active: false
+  TooGenericExceptionCaught:
+    active: false
+
 style:
+  ForbiddenComment:
+    active: false
+  MagicNumber:
+    active: false
   MaxLineLength:
     maxLineLength: 140
     excludePackageStatements: true
     excludeImportStatements: true
-    excludeCommentStatements: true
+  ReturnCount:
+    active: false

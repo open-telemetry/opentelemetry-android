@@ -1,7 +1,4 @@
 <?xml version="1.0" ?>
 <SmellBaseline>
   <ManuallySuppressedIssues/>
-  <CurrentIssues>
-    <ID>UseCheckOrError:AndroidInstrumentationLoaderImpl.kt$AndroidInstrumentationLoaderImpl$throw IllegalStateException("Instrumentation with type '${instrumentation::class.java}' already exists.")</ID>
-  </CurrentIssues>
 </SmellBaseline>

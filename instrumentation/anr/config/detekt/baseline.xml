@@ -1,8 +1,4 @@
 <?xml version="1.0" ?>
 <SmellBaseline>
   <ManuallySuppressedIssues/>
-  <CurrentIssues>
-    <ID>MagicNumber:AnrWatcher.kt$AnrWatcher$5</ID>
-    <ID>ReturnCount:AnrWatcher.kt$AnrWatcher$override fun run()</ID>
-  </CurrentIssues>
 </SmellBaseline>

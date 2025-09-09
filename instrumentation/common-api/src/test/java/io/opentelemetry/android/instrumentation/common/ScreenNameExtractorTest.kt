@@ -43,6 +43,13 @@ internal class ScreenNameExtractorTest {
     }
 
     @Test
+    fun testAnnotatedFragment() {
+        val fragment = AnnotatedFragment()
+        val name = ScreenNameExtractor.DEFAULT.extract(fragment)
+        Assertions.assertEquals("bumpity", name)
+    }
+
+    @Test
     fun testAnnotatedObject() {
         val obj = AnnotatedObject()
         val name = ScreenNameExtractor.DEFAULT.extract(obj)
