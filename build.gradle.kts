@@ -16,6 +16,7 @@ buildscript {
 plugins {
     id("otel.spotless-conventions")
     alias(libs.plugins.publishPlugin)
+    id("org.jetbrains.kotlinx.kover")
 }
 
 extra["java_version"] = JavaVersion.VERSION_1_8
@@ -44,6 +45,22 @@ nexusPublishing {
             snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
             username.set(System.getenv("SONATYPE_USER"))
             password.set(System.getenv("SONATYPE_KEY"))
+        }
+    }
+}
+
+kover {
+    merge {
+        subprojects { project ->
+            true
+        }
+    }
+    reports {
+        filters {
+            excludes {
+                androidGeneratedClasses()
+                classes("*.BuildConfig")
+            }
         }
     }
 }
