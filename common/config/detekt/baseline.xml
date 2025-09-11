@@ -1,7 +1,0 @@
-<?xml version="1.0" ?>
-<SmellBaseline>
-  <ManuallySuppressedIssues/>
-  <CurrentIssues>
-    <ID>ForbiddenComment:RumConstants.kt$RumConstants.Events$// TODO: Use the semconv when available</ID>
-  </CurrentIssues>
-</SmellBaseline>

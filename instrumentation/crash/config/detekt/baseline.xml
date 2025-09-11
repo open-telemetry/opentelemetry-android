@@ -1,9 +1,0 @@
-<?xml version="1.0" ?>
-<SmellBaseline>
-  <ManuallySuppressedIssues/>
-  <CurrentIssues>
-    <ID>ForbiddenComment:CrashReportIntegrationTest.kt$CrashReportIntegrationTest$// TODO: future: truncate stackframes at some reasonable limit</ID>
-    <ID>MagicNumber:CrashReporter.kt$CrashReporter$10</ID>
-    <ID>MagicNumber:RuntimeDetailsExtractor.kt$RuntimeDetailsExtractor$100.0</ID>
-  </CurrentIssues>
-</SmellBaseline>

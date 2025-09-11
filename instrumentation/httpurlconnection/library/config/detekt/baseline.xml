@@ -2,6 +2,6 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>MagicNumber:HttpUrlInstrumentation.kt$HttpUrlInstrumentation$10000</ID>
+    <ID>MaxLineLength:HttpUrlInstrumentation.kt$HttpUrlInstrumentation$*</ID>
   </CurrentIssues>
 </SmellBaseline>

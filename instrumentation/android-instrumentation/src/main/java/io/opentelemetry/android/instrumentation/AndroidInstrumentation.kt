@@ -12,8 +12,8 @@ package io.opentelemetry.android.instrumentation
  * Implementations of this interface should be focused on a single use-case and should attach themselves automatically
  * to the tool that they are supposed to generate telemetry for. For example, an implementation that tracks
  * Fragment lifecycle methods by generating OTel events in key places of a Fragment's lifecycle, should
- * come with its own "FragmentLifecycleCallbacks" implementation (or similar callback mechanism that notifies when a fragment lifecycle state has changed)
- * and should find a way to register its callback into all of the Fragments of the host app to automatically
+ * come with its own "FragmentLifecycleCallbacks" implementation (or similar callback mechanism that notifies when a fragment lifecycle
+ * state has changed) and should find a way to register its callback into all of the Fragments of the host app to automatically
  * track their lifecycle without end users having to modify their project's code to make it work.
  *
  * Even though users shouldn't have to write code to make an AndroidInstrumentation implementation work,

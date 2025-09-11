@@ -1,7 +1,0 @@
-<?xml version="1.0" ?>
-<SmellBaseline>
-  <ManuallySuppressedIssues/>
-  <CurrentIssues>
-    <ID>MagicNumber:VisibleScreenTracker.kt$VisibleScreenTracker$29</ID>
-  </CurrentIssues>
-</SmellBaseline>

@@ -28,8 +28,8 @@ class AndroidInstrumentationLoaderImpl : AndroidInstrumentationLoader {
 
     @Throws(IllegalStateException::class)
     fun registerForTest(instrumentation: AndroidInstrumentation) {
-        if (instrumentation::class.java in instrumentations) {
-            throw IllegalStateException("Instrumentation with type '${instrumentation::class.java}' already exists.")
+        check(instrumentation::class.java !in instrumentations) {
+            "Instrumentation with type '${instrumentation::class.java}' already exists."
         }
         instrumentations[instrumentation.javaClass] = instrumentation
     }

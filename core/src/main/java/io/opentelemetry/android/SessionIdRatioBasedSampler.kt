@@ -14,10 +14,9 @@ import io.opentelemetry.sdk.trace.samplers.Sampler
 import io.opentelemetry.sdk.trace.samplers.SamplingResult
 
 /**
- * Session ID ratio based sampler. Uses [Sampler.traceIdRatioBased] sampler
- * internally, but passes sessionId instead of traceId to the underlying sampler in order to use the
- * same ratio logic but on sessionId instead. This is valid as sessionId uses [ ][io.opentelemetry.api.trace.TraceId.fromLongs] internally to generate random session
- * IDs.
+ * Session ID ratio based sampler. Uses [Sampler.traceIdRatioBased] sampler internally, but passes sessionId instead of
+ * traceId to the underlying sampler in order to use the same ratio logic but on sessionId instead. This is valid as sessionId
+ * uses [io.opentelemetry.api.trace.TraceId.fromLongs] internally to generate random session IDs.
  */
 class SessionIdRatioBasedSampler(
     ratio: Double,
@@ -45,9 +44,5 @@ class SessionIdRatioBasedSampler(
         )
     }
 
-    override fun getDescription(): String =
-        String.format(
-            "SessionIdRatioBased{traceIdRatioBased:%s}",
-            ratioBasedSampler.description,
-        )
+    override fun getDescription(): String = "SessionIdRatioBased{traceIdRatioBased:$ratioBasedSampler.description}"
 }

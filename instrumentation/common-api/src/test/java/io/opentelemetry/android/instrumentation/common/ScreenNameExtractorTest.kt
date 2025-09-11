@@ -10,7 +10,7 @@ package io.opentelemetry.android.instrumentation.common
 import android.app.Activity
 import android.app.Fragment
 import io.opentelemetry.android.instrumentation.annotations.RumScreenName
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class ScreenNameExtractorTest {
@@ -18,35 +18,42 @@ internal class ScreenNameExtractorTest {
     fun testActivity() {
         val activity = Activity()
         val name = ScreenNameExtractor.DEFAULT.extract(activity)
-        Assertions.assertEquals("Activity", name)
+        assertEquals("Activity", name)
     }
 
     @Test
     fun testFragment() {
         val fragment = Fragment()
         val name = ScreenNameExtractor.DEFAULT.extract(fragment)
-        Assertions.assertEquals("Fragment", name)
+        assertEquals("Fragment", name)
     }
 
     @Test
     fun testObject() {
         val obj = Object()
         val name = ScreenNameExtractor.DEFAULT.extract(obj)
-        Assertions.assertEquals("Object", name)
+        assertEquals("Object", name)
     }
 
     @Test
     fun testAnnotatedActivity() {
         val activity: Activity = AnnotatedActivity()
         val name = ScreenNameExtractor.DEFAULT.extract(activity)
-        Assertions.assertEquals("squarely", name)
+        assertEquals("squarely", name)
+    }
+
+    @Test
+    fun testAnnotatedFragment() {
+        val fragment = AnnotatedFragment()
+        val name = ScreenNameExtractor.DEFAULT.extract(fragment)
+        assertEquals("bumpity", name)
     }
 
     @Test
     fun testAnnotatedObject() {
         val obj = AnnotatedObject()
         val name = ScreenNameExtractor.DEFAULT.extract(obj)
-        Assertions.assertEquals("woohoo", name)
+        assertEquals("woohoo", name)
     }
 
     @RumScreenName("bumpity")
