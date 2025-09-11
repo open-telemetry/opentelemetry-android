@@ -16,12 +16,16 @@ public final class io/opentelemetry/android/instrumentation/common/Constants {
 	public static final field INSTRUMENTATION_SCOPE Ljava/lang/String;
 }
 
+public final class io/opentelemetry/android/instrumentation/common/DefaultScreenNameExtractor : io/opentelemetry/android/instrumentation/common/ScreenNameExtractor {
+	public static final field INSTANCE Lio/opentelemetry/android/instrumentation/common/DefaultScreenNameExtractor;
+	public fun extract (Ljava/lang/Object;)Ljava/lang/String;
+}
+
 public abstract interface class io/opentelemetry/android/instrumentation/common/EventAttributesExtractor {
 	public abstract fun extract (Lio/opentelemetry/context/Context;Ljava/lang/Object;)Lio/opentelemetry/api/common/Attributes;
 }
 
 public abstract interface class io/opentelemetry/android/instrumentation/common/ScreenNameExtractor {
-	public static final field DEFAULT Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;
 	public abstract fun extract (Ljava/lang/Object;)Ljava/lang/String;
 }
 

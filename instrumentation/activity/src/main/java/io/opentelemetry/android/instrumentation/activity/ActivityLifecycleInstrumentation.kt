@@ -11,6 +11,7 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.Constants.INSTRUMENTATION_SCOPE
+import io.opentelemetry.android.instrumentation.common.DefaultScreenNameExtractor
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
@@ -19,7 +20,7 @@ import io.opentelemetry.api.trace.Tracer
 @AutoService(AndroidInstrumentation::class)
 class ActivityLifecycleInstrumentation : AndroidInstrumentation {
     private val startupTimer: AppStartupTimer by lazy { AppStartupTimer() }
-    private var screenNameExtractor: ScreenNameExtractor = ScreenNameExtractor.DEFAULT
+    private var screenNameExtractor: ScreenNameExtractor = DefaultScreenNameExtractor
     private var tracerCustomizer: (Tracer) -> Tracer = { it }
 
     override val name: String = "activity"
