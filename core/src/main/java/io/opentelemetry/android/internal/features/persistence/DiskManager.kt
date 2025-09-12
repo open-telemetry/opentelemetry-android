@@ -8,7 +8,7 @@ package io.opentelemetry.android.internal.features.persistence
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
-import io.opentelemetry.android.internal.services.CacheStorage
+import io.opentelemetry.android.internal.services.storage.CacheStorage
 import java.io.File
 import java.io.IOException
 

@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.services.periodicwork
+package io.opentelemetry.android.internal.services.storage
 
 import io.opentelemetry.android.internal.services.Service
+import java.io.File
 
-interface PeriodicWork : Service {
-    fun enqueue(runnable: Runnable)
+interface CacheStorage : Service {
+    val cacheDir: File
 }

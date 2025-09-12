@@ -25,7 +25,7 @@ class PeriodicWorkTest {
 
     @Before
     fun setUp() {
-        service = PeriodicWork()
+        service = PeriodicWorkImpl()
     }
 
     @Test

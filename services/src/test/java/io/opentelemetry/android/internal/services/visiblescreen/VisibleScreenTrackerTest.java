@@ -160,6 +160,6 @@ class VisibleScreenTrackerTest {
     }
 
     private @NonNull VisibleScreenTracker getVisibleScreenService() {
-        return new VisibleScreenTracker(application);
+        return new VisibleScreenTrackerImpl(application);
     }
 }
