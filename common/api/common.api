@@ -27,7 +27,7 @@ public final class io/opentelemetry/android/common/RumConstants$Events {
 
 public final class io/opentelemetry/android/common/internal/features/networkattributes/CurrentNetworkAttributesExtractor {
 	public fun <init> ()V
-	public fun extract (Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;)Lio/opentelemetry/api/common/Attributes;
+	public final fun extract (Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;)Lio/opentelemetry/api/common/Attributes;
 }
 
 public final class io/opentelemetry/android/common/internal/features/networkattributes/data/Carrier {
@@ -56,23 +56,23 @@ public final class io/opentelemetry/android/common/internal/features/networkattr
 }
 
 public final class io/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork {
-	public static fun builder (Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;)Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork$Builder;
+	public fun <init> (Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;)V
+	public fun <init> (Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;Lio/opentelemetry/android/common/internal/features/networkattributes/data/Carrier;)V
+	public fun <init> (Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;Lio/opentelemetry/android/common/internal/features/networkattributes/data/Carrier;Ljava/lang/String;)V
+	public synthetic fun <init> (Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;Lio/opentelemetry/android/common/internal/features/networkattributes/data/Carrier;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;Lio/opentelemetry/android/common/internal/features/networkattributes/data/Carrier;Ljava/lang/String;)Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
+	public static synthetic fun copy$default (Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;Lio/opentelemetry/android/common/internal/features/networkattributes/data/Carrier;Ljava/lang/String;ILjava/lang/Object;)Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
 	public fun equals (Ljava/lang/Object;)Z
-	public fun getCarrierCountryCode ()Ljava/lang/String;
-	public fun getCarrierIsoCountryCode ()Ljava/lang/String;
-	public fun getCarrierName ()Ljava/lang/String;
-	public fun getCarrierNetworkCode ()Ljava/lang/String;
-	public fun getState ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;
-	public fun getSubType ()Ljava/lang/String;
+	public final fun getCarrierCountryCode ()Ljava/lang/String;
+	public final fun getCarrierIsoCountryCode ()Ljava/lang/String;
+	public final fun getCarrierName ()Ljava/lang/String;
+	public final fun getCarrierNetworkCode ()Ljava/lang/String;
+	public final fun getState ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;
+	public final fun getSubType ()Ljava/lang/String;
 	public fun hashCode ()I
-	public fun isOnline ()Z
 	public fun toString ()Ljava/lang/String;
-}
-
-public class io/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork$Builder {
-	public fun build ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
-	public fun carrier (Lio/opentelemetry/android/common/internal/features/networkattributes/data/Carrier;)Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork$Builder;
-	public fun subType (Ljava/lang/String;)Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork$Builder;
 }
 
 public final class io/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState : java/lang/Enum {
@@ -82,7 +82,7 @@ public final class io/opentelemetry/android/common/internal/features/networkattr
 	public static final field TRANSPORT_VPN Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;
 	public static final field TRANSPORT_WIFI Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;
 	public static final field TRANSPORT_WIRED Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;
-	public fun getHumanName ()Ljava/lang/String;
+	public final fun getHumanName ()Ljava/lang/String;
 	public static fun valueOf (Ljava/lang/String;)Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;
 	public static fun values ()[Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;
 }

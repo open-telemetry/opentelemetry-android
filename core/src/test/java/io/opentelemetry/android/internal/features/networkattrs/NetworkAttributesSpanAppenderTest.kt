@@ -39,11 +39,7 @@ internal class NetworkAttributesSpanAppenderTest {
 
     @Test
     fun shouldAppendNetworkAttributes() {
-        val network =
-            CurrentNetwork
-                .builder(NetworkState.TRANSPORT_CELLULAR)
-                .subType("LTE")
-                .build()
+        val network = CurrentNetwork(state = NetworkState.TRANSPORT_CELLULAR, subType = "LTE")
         every { currentNetworkProvider.currentNetwork } returns network
         assertThat(underTest.isStartRequired).isTrue()
 

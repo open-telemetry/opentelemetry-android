@@ -36,9 +36,9 @@ import java.util.function.Supplier;
 public final class CurrentNetworkProvider implements Service {
 
     public static final CurrentNetwork NO_NETWORK =
-            CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build();
+            new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE);
     public static final CurrentNetwork UNKNOWN_NETWORK =
-            CurrentNetwork.builder(NetworkState.TRANSPORT_UNKNOWN).build();
+            new CurrentNetwork(NetworkState.TRANSPORT_UNKNOWN);
 
     private final NetworkDetector networkDetector;
     private final ConnectivityManager connectivityManager;

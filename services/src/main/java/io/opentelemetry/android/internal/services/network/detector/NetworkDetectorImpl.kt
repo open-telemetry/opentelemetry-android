@@ -85,7 +85,7 @@ internal class NetworkDetectorImpl(
     /**
      * Builds a network for non-cellular networks.
      */
-    private fun buildNetwork(networkState: NetworkState) = CurrentNetwork.builder(networkState).build()
+    private fun buildNetwork(networkState: NetworkState) = CurrentNetwork(networkState)
 
     /**
      * Builds a cellular network with carrier and subtype information.
@@ -93,11 +93,11 @@ internal class NetworkDetectorImpl(
     private fun buildCellularNetwork(): CurrentNetwork {
         val carrier = carrierFinder.get()
         val subType = findSubtype()
-        return CurrentNetwork
-            .builder(TRANSPORT_CELLULAR)
-            .carrier(carrier)
-            .subType(subType)
-            .build()
+        return CurrentNetwork(
+            state = TRANSPORT_CELLULAR,
+            carrier = carrier,
+            subType = subType,
+        )
     }
 
     /**

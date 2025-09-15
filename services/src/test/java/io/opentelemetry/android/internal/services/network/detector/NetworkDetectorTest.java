@@ -6,6 +6,7 @@
 package io.opentelemetry.android.internal.services.network.detector;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -82,8 +83,7 @@ public class NetworkDetectorTest {
         NetworkDetector networkDetector = NetworkDetector.create(context);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
 
-        assertEquals(
-                CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build(), currentNetwork);
+        assertEquals(new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE), currentNetwork);
     }
 
     @Test
@@ -93,8 +93,7 @@ public class NetworkDetectorTest {
         when(connectivityManager.getNetworkCapabilities(network)).thenReturn(null);
         NetworkDetector networkDetector = NetworkDetector.create(context);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        assertEquals(
-                CurrentNetwork.builder(NetworkState.TRANSPORT_UNKNOWN).build(), currentNetwork);
+        assertEquals(new CurrentNetwork(NetworkState.TRANSPORT_UNKNOWN), currentNetwork);
     }
 
     @Test
@@ -105,7 +104,7 @@ public class NetworkDetectorTest {
         when(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)).thenReturn(true);
         NetworkDetector networkDetector = NetworkDetector.create(context);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        assertEquals(CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build(), currentNetwork);
+        assertEquals(new CurrentNetwork(NetworkState.TRANSPORT_WIFI), currentNetwork);
     }
 
     @Test
@@ -134,10 +133,7 @@ public class NetworkDetectorTest {
         NetworkDetector networkDetector = NetworkDetector.create(context);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
         assertEquals(
-                CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR)
-                        .carrier(expectedCarrier)
-                        .subType("LTE")
-                        .build(),
+                new CurrentNetwork(NetworkState.TRANSPORT_CELLULAR, expectedCarrier, "LTE"),
                 currentNetwork);
     }
 
@@ -159,7 +155,7 @@ public class NetworkDetectorTest {
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
         // Without permission, should still detect cellular but with no subtype
         assertEquals(NetworkState.TRANSPORT_CELLULAR, currentNetwork.getState());
-        assertEquals(null, currentNetwork.getSubType());
+        assertNull(currentNetwork.getSubType());
     }
 
     @Test
@@ -183,8 +179,7 @@ public class NetworkDetectorTest {
         when(connectivityManager.getNetworkCapabilities(network)).thenReturn(networkCapabilities);
         NetworkDetector networkDetector = NetworkDetector.create(context);
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
-        assertEquals(
-                CurrentNetwork.builder(NetworkState.TRANSPORT_UNKNOWN).build(), currentNetwork);
+        assertEquals(new CurrentNetwork(NetworkState.TRANSPORT_UNKNOWN), currentNetwork);
     }
 
     @Test
@@ -230,7 +225,7 @@ public class NetworkDetectorTest {
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
 
         assertEquals(NetworkState.TRANSPORT_CELLULAR, currentNetwork.getState());
-        assertEquals(null, currentNetwork.getSubType());
+        assertNull(currentNetwork.getSubType());
     }
 
     @Test
@@ -254,7 +249,7 @@ public class NetworkDetectorTest {
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
 
         assertEquals(NetworkState.TRANSPORT_CELLULAR, currentNetwork.getState());
-        assertEquals(null, currentNetwork.getSubType());
+        assertNull(currentNetwork.getSubType());
     }
 
     @Test
@@ -329,7 +324,7 @@ public class NetworkDetectorTest {
         CurrentNetwork currentNetwork = networkDetector.detectCurrentNetwork();
 
         assertEquals(NetworkState.TRANSPORT_CELLULAR, currentNetwork.getState());
-        assertEquals(null, currentNetwork.getSubType());
+        assertNull(currentNetwork.getSubType());
         // Carrier should still be available for basic info (non-permission protected methods)
         assertEquals("310", currentNetwork.getCarrierCountryCode());
         assertEquals("26", currentNetwork.getCarrierNetworkCode());
