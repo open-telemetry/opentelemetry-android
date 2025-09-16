@@ -1,13 +1,5 @@
 plugins {
     `kotlin-dsl`
-    alias(libs.plugins.spotless)
-}
-
-spotless {
-    kotlinGradle {
-        ktlint()
-        target("* * / *.gradle.kts")
-    }
 }
 
 repositories {

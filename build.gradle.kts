@@ -14,7 +14,6 @@ buildscript {
 }
 
 plugins {
-    id("otel.spotless-conventions")
     alias(libs.plugins.publishPlugin)
     id("org.jetbrains.kotlinx.kover")
 }
@@ -31,10 +30,6 @@ allprojects {
     if (findProperty("final") != "true") {
         version = "$version-SNAPSHOT"
     }
-}
-
-subprojects {
-    apply(plugin = "otel.spotless-conventions")
 }
 
 nexusPublishing {
