@@ -6,6 +6,8 @@
 
 - Drop support for Lollipop and API level 21. 
   ([#1189](https://github.com/open-telemetry/opentelemetry-android/pull/1189))
+- Drop volley instrumentation.
+  ([#1228](https://github.com/open-telemetry/opentelemetry-android/pull/1228))
 
 ### 📈 Enhancements
 
