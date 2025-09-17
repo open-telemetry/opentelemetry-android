@@ -12,6 +12,7 @@ plugins {
     id("io.gitlab.arturbosch.detekt")
     id("org.jetbrains.kotlinx.binary-compatibility-validator")
     id("org.jetbrains.kotlinx.kover")
+    id("otel.spotless-conventions")
 }
 
 val javaVersion = rootProject.extra["java_version"] as JavaVersion
