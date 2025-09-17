@@ -32,7 +32,8 @@ import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
-import java.time.Duration
+import kotlin.time.Duration
+import kotlin.time.toJavaDuration
 
 object OpenTelemetryRumInitializer {
     /**
@@ -46,15 +47,9 @@ object OpenTelemetryRumInitializer {
      * @param metricEndpointConnectivity Metric-specific endpoint configuration.
      * @param rumConfig Configuration used by [OpenTelemetryRumBuilder].
      * @param sessionConfig The session configuration, which includes inactivity timeout and maximum lifetime durations.
-     * @param activityTracerCustomizer Tracer customizer for [ActivityLifecycleInstrumentation].
-     * @param activityNameExtractor Name extractor for [ActivityLifecycleInstrumentation].
-     * @param fragmentTracerCustomizer Tracer customizer for [FragmentLifecycleInstrumentation].
-     * @param fragmentNameExtractor Name extractor for [FragmentLifecycleInstrumentation].
-     * @param anrAttributesExtractors Attribute extractors for [AnrInstrumentation].
-     * @param crashAttributesExtractors Attribute extractors for [CrashReporterInstrumentation].
-     * @param networkChangeAttributesExtractors Attribute extractors for [NetworkChangeInstrumentation].
-     * @param slowRenderingDetectionPollInterval Slow rendering detection interval for [SlowRenderingInstrumentation].
+     * @param instrumentations Configurations for all the default instrumentations.
      */
+    @Suppress("LongParameterList")
     @JvmStatic
     fun initialize(
         application: Application,
@@ -77,26 +72,11 @@ object OpenTelemetryRumInitializer {
             ),
         rumConfig: OtelRumConfig = OtelRumConfig(),
         sessionConfig: SessionConfig = SessionConfig.withDefaults(),
-        activityTracerCustomizer: ((Tracer) -> Tracer)? = null,
-        activityNameExtractor: ScreenNameExtractor? = null,
-        fragmentTracerCustomizer: ((Tracer) -> Tracer)? = null,
-        fragmentNameExtractor: ScreenNameExtractor? = null,
-        anrAttributesExtractors: List<EventAttributesExtractor<Array<StackTraceElement>>> = emptyList(),
-        crashAttributesExtractors: List<EventAttributesExtractor<CrashDetails>> = emptyList(),
-        networkChangeAttributesExtractors: List<NetworkAttributesExtractor> = emptyList(),
-        slowRenderingDetectionPollInterval: Duration? = null,
+        instrumentations: (InstrumentationConfiguration.() -> Unit)? = null,
     ): OpenTelemetryRum {
-        configureInstrumentation(
-            activityTracerCustomizer,
-            activityNameExtractor,
-            fragmentTracerCustomizer,
-            fragmentNameExtractor,
-            anrAttributesExtractors,
-            crashAttributesExtractors,
-            networkChangeAttributesExtractors,
-            slowRenderingDetectionPollInterval,
-        )
-
+        instrumentations?.let { configure ->
+            InstrumentationConfiguration().configure()
+        }
         return OpenTelemetryRum
             .builder(application, rumConfig)
             .setSessionProvider(createSessionProvider(application, sessionConfig))
@@ -130,62 +110,123 @@ object OpenTelemetryRumInitializer {
         return SessionManager.create(timeoutHandler, sessionConfig)
     }
 
-    private fun configureInstrumentation(
-        activityTracerCustomizer: ((Tracer) -> Tracer)?,
-        activityNameExtractor: ScreenNameExtractor?,
-        fragmentTracerCustomizer: ((Tracer) -> Tracer)?,
-        fragmentNameExtractor: ScreenNameExtractor?,
-        anrAttributesExtractors: List<EventAttributesExtractor<Array<StackTraceElement>>>,
-        crashAttributesExtractors: List<EventAttributesExtractor<CrashDetails>>,
-        networkChangeAttributesExtractors: List<NetworkAttributesExtractor>,
-        slowRenderingDetectionPollInterval: Duration?,
-    ) {
-        val activityLifecycleInstrumentation =
-            getInstrumentation<ActivityLifecycleInstrumentation>()
-        if (activityTracerCustomizer != null) {
-            activityLifecycleInstrumentation?.setTracerCustomizer(activityTracerCustomizer)
-        }
-        if (activityNameExtractor != null) {
-            activityLifecycleInstrumentation?.setScreenNameExtractor(activityNameExtractor)
+    @InstrumentationConfigMarker
+    class InstrumentationConfiguration internal constructor() {
+        private val activity: ActivityLifecycleConfiguration by lazy { ActivityLifecycleConfiguration() }
+        private val fragment: FragmentLifecycleConfiguration by lazy { FragmentLifecycleConfiguration() }
+        private val anr: AnrReporterConfiguration by lazy { AnrReporterConfiguration() }
+        private val crash: CrashReporterConfiguration by lazy { CrashReporterConfiguration() }
+        private val networkMonitoring: NetworkMonitoringConfiguration by lazy { NetworkMonitoringConfiguration() }
+        private val slowRendering: SlowRenderingReporterConfiguration by lazy { SlowRenderingReporterConfiguration() }
+
+        fun activity(configure: ActivityLifecycleConfiguration.() -> Unit) {
+            activity.configure()
         }
 
-        val fragmentLifecycleInstrumentation =
-            getInstrumentation<FragmentLifecycleInstrumentation>()
-        if (fragmentTracerCustomizer != null) {
-            fragmentLifecycleInstrumentation?.setTracerCustomizer(fragmentTracerCustomizer)
-        }
-        if (fragmentNameExtractor != null) {
-            fragmentLifecycleInstrumentation?.setScreenNameExtractor(fragmentNameExtractor)
+        fun fragment(configure: FragmentLifecycleConfiguration.() -> Unit) {
+            fragment.configure()
         }
 
-        if (anrAttributesExtractors.isNotEmpty()) {
-            val anrInstrumentation = getInstrumentation<AnrInstrumentation>()
-            for (extractor in anrAttributesExtractors) {
-                anrInstrumentation?.addAttributesExtractor(extractor)
-            }
+        fun anrReporter(configure: AnrReporterConfiguration.() -> Unit) {
+            anr.configure()
         }
 
-        if (crashAttributesExtractors.isNotEmpty()) {
-            val crashInstrumentation = getInstrumentation<CrashReporterInstrumentation>()
-            for (extractor in crashAttributesExtractors) {
-                crashInstrumentation?.addAttributesExtractor(extractor)
-            }
+        fun crashReporter(configure: CrashReporterConfiguration.() -> Unit) {
+            crash.configure()
         }
 
-        if (networkChangeAttributesExtractors.isNotEmpty()) {
-            val networkChangeInstrumentation = getInstrumentation<NetworkChangeInstrumentation>()
-            for (extractor in networkChangeAttributesExtractors) {
-                networkChangeInstrumentation?.addAttributesExtractor(extractor)
-            }
+        fun networkMonitoring(configure: NetworkMonitoringConfiguration.() -> Unit) {
+            networkMonitoring.configure()
         }
 
-        if (slowRenderingDetectionPollInterval != null) {
-            val instrumentation = getInstrumentation<SlowRenderingInstrumentation>()
-            instrumentation?.setSlowRenderingDetectionPollInterval(slowRenderingDetectionPollInterval)
-            instrumentation?.enableDeprecatedZeroDurationSpan()
+        fun slowRenderingReporter(configure: SlowRenderingReporterConfiguration.() -> Unit) {
+            slowRendering.configure()
         }
     }
 
-    private inline fun <reified T : AndroidInstrumentation> getInstrumentation(): T? =
-        AndroidInstrumentationLoader.getInstrumentation(T::class.java)
+    @InstrumentationConfigMarker
+    class ActivityLifecycleConfiguration internal constructor() : ScreenLifecycleConfigurable {
+        private val activityLifecycleInstrumentation: ActivityLifecycleInstrumentation by lazy {
+            getInstrumentation()
+        }
+
+        override fun tracerCustomizer(value: (Tracer) -> Tracer) {
+            activityLifecycleInstrumentation.setTracerCustomizer(value)
+        }
+
+        override fun screenNameExtractor(value: ScreenNameExtractor) {
+            activityLifecycleInstrumentation.setScreenNameExtractor(value)
+        }
+    }
+
+    @InstrumentationConfigMarker
+    class FragmentLifecycleConfiguration internal constructor() : ScreenLifecycleConfigurable {
+        private val fragmentLifecycleInstrumentation: FragmentLifecycleInstrumentation by lazy {
+            getInstrumentation()
+        }
+
+        override fun tracerCustomizer(value: (Tracer) -> Tracer) {
+            fragmentLifecycleInstrumentation.setTracerCustomizer(value)
+        }
+
+        override fun screenNameExtractor(value: ScreenNameExtractor) {
+            fragmentLifecycleInstrumentation.setScreenNameExtractor(value)
+        }
+    }
+
+    @InstrumentationConfigMarker
+    class AnrReporterConfiguration internal constructor() : WithEventAttributes<Array<StackTraceElement>> {
+        private val anrInstrumentation: AnrInstrumentation by lazy { getInstrumentation() }
+
+        override fun addAttributesExtractor(value: EventAttributesExtractor<Array<StackTraceElement>>) {
+            anrInstrumentation.addAttributesExtractor(value)
+        }
+    }
+
+    @InstrumentationConfigMarker
+    class CrashReporterConfiguration internal constructor() : WithEventAttributes<CrashDetails> {
+        private val crashReporterInstrumentation: CrashReporterInstrumentation by lazy { getInstrumentation() }
+
+        override fun addAttributesExtractor(value: EventAttributesExtractor<CrashDetails>) {
+            crashReporterInstrumentation.addAttributesExtractor(value)
+        }
+    }
+
+    @InstrumentationConfigMarker
+    class NetworkMonitoringConfiguration internal constructor() {
+        private val networkInstrumentation: NetworkChangeInstrumentation by lazy { getInstrumentation() }
+
+        fun addAttributesExtractor(value: NetworkAttributesExtractor) {
+            networkInstrumentation.addAttributesExtractor(value)
+        }
+    }
+
+    @InstrumentationConfigMarker
+    class SlowRenderingReporterConfiguration internal constructor() {
+        private val slowRenderingInstrumentation: SlowRenderingInstrumentation by lazy { getInstrumentation() }
+
+        fun detectionPollInterval(value: Duration) {
+            slowRenderingInstrumentation.setSlowRenderingDetectionPollInterval(value.toJavaDuration())
+        }
+
+        fun enableVerboseDebugLogging() {
+            slowRenderingInstrumentation.enableVerboseDebugLogging()
+        }
+    }
+
+    internal interface ScreenLifecycleConfigurable {
+        fun tracerCustomizer(value: (Tracer) -> Tracer)
+
+        fun screenNameExtractor(value: ScreenNameExtractor)
+    }
+
+    internal interface WithEventAttributes<T> {
+        fun addAttributesExtractor(value: EventAttributesExtractor<T>)
+    }
+
+    @DslMarker
+    internal annotation class InstrumentationConfigMarker
+
+    private inline fun <reified T : AndroidInstrumentation> getInstrumentation(): T =
+        AndroidInstrumentationLoader.getInstrumentation(T::class.java)!!
 }
