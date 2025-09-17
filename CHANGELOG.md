@@ -2,7 +2,21 @@
 
 ## Unreleased
 
-- Drop support for Lollipop and API level 21.
+### ⚠️⚠️ Breaking changes
+
+- Drop support for Lollipop and API level 21. 
+  ([#1189](https://github.com/open-telemetry/opentelemetry-android/pull/1189))
+
+### 📈 Enhancements
+
+- Introduce configuration DSL for `OpenTelemetryRumInitializer`
+  ([#1198](https://github.com/open-telemetry/opentelemetry-android/pull/1198))
+- Refactor jank to use events instead of zero-duration spans  
+  ([#1175](https://github.com/open-telemetry/opentelemetry-android/pull/1175))
+- Add experimental ability to close Services
+  ([#1196](https://github.com/open-telemetry/opentelemetry-android/pull/1196))
+- Add more warning logs in Network detection  
+  ([#1205](https://github.com/open-telemetry/opentelemetry-android/pull/1205))
 
 ## Version 0.14.0 (2025-08-21)
 
