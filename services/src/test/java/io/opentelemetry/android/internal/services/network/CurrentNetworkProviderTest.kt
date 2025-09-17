@@ -31,13 +31,13 @@ import java.util.concurrent.atomic.AtomicInteger
 @Config(sdk = [Build.VERSION_CODES.N, Build.VERSION_CODES.P, Build.VERSION_CODES.Q, Build.VERSION_CODES.UPSIDE_DOWN_CAKE])
 internal class CurrentNetworkProviderTest {
     private val fakeNet: Network = mockk()
-    private val wifi = CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build()
+    private val wifi = CurrentNetwork(NetworkState.TRANSPORT_WIFI)
     private val cellular =
-        CurrentNetwork
-            .builder(NetworkState.TRANSPORT_CELLULAR)
-            .subType("LTE")
-            .build()
-    private val noNetwork = CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build()
+        CurrentNetwork(
+            state = NetworkState.TRANSPORT_CELLULAR,
+            subType = "LTE",
+        )
+    private val noNetwork = CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE)
     private val mockConnectivityManager = mockk<ConnectivityManager>()
     private val errorNetworkDetector: NetworkDetector =
         mockk<NetworkDetector>().apply {
@@ -70,7 +70,7 @@ internal class CurrentNetworkProviderTest {
         }
 
         val notified = AtomicInteger(0)
-        currentNetworkProvider.addNetworkChangeListener { currentNetwork: CurrentNetwork? ->
+        currentNetworkProvider.addNetworkChangeListener { currentNetwork: CurrentNetwork ->
             val timesCalled = notified.incrementAndGet()
             if (timesCalled == 1) {
                 assertThat(currentNetwork).isEqualTo(cellular)

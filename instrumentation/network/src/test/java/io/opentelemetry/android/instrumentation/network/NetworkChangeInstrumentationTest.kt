@@ -64,7 +64,7 @@ class NetworkChangeInstrumentationTest {
         }
         val listener = networkChangeListenerSlot.captured
 
-        listener.onNetworkChange(CurrentNetwork.builder(NetworkState.TRANSPORT_WIFI).build())
+        listener.onNetworkChange(CurrentNetwork(NetworkState.TRANSPORT_WIFI))
 
         val events = otelTesting.logRecords
         assertThat(events).hasSize(1)
@@ -88,11 +88,11 @@ class NetworkChangeInstrumentationTest {
         val listener = networkChangeListenerSlot.captured
 
         val network =
-            CurrentNetwork
-                .builder(NetworkState.TRANSPORT_CELLULAR)
-                .subType("LTE")
-                .carrier(Carrier(206, "ShadyTel", "usa", "omg", "US"))
-                .build()
+            CurrentNetwork(
+                state = NetworkState.TRANSPORT_CELLULAR,
+                subType = "LTE",
+                carrier = Carrier(206, "ShadyTel", "usa", "omg", "US"),
+            )
 
         listener.onNetworkChange(network)
 
@@ -122,7 +122,7 @@ class NetworkChangeInstrumentationTest {
         }
         val listener = networkChangeListenerSlot.captured
 
-        listener.onNetworkChange(CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build())
+        listener.onNetworkChange(CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE))
 
         val events = otelTesting.logRecords
         assertThat(events).hasSize(1)
@@ -151,18 +151,18 @@ class NetworkChangeInstrumentationTest {
         applicationListener.onApplicationBackgrounded()
 
         networkListener.onNetworkChange(
-            CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build(),
+            CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE),
         )
         assertThat(otelTesting.logRecords).isEmpty()
         networkListener.onNetworkChange(
-            CurrentNetwork.builder(NetworkState.TRANSPORT_CELLULAR).subType("LTE").build(),
+            CurrentNetwork(state = NetworkState.TRANSPORT_CELLULAR, subType = "LTE"),
         )
         assertThat(otelTesting.logRecords).isEmpty()
 
         applicationListener.onApplicationForegrounded()
 
         networkListener.onNetworkChange(
-            CurrentNetwork.builder(NetworkState.NO_NETWORK_AVAILABLE).build(),
+            CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE),
         )
         assertThat(otelTesting.logRecords).hasSize(1)
         val event: ExtendedLogRecordData = otelTesting.logRecords[0] as ExtendedLogRecordData
