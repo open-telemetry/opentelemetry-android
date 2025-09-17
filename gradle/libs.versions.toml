@@ -34,8 +34,6 @@ androidx-lifecycle-process = "androidx.lifecycle:lifecycle-process:2.9.3"
 androidx-preference-ktx = "androidx.preference:preference-ktx:1.2.1"
 androidx-fragment = { module = "androidx.fragment:fragment", version.ref="fragment" }
 
-# TODO: Remove this apache httpcomponents dep when volley instrumentation is removed
-apache-httpcore = "org.apache.httpcomponents:httpcore:4.4.16"
 findbugs-jsr305 = "com.google.code.findbugs:jsr305:3.0.2"
 byteBuddy = { module = "net.bytebuddy:byte-buddy", version.ref = "byteBuddy" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
@@ -53,7 +51,6 @@ opentelemetry-exporter-logging = { module = "io.opentelemetry:opentelemetry-expo
 opentelemetry-diskBuffering = { module = "io.opentelemetry.contrib:opentelemetry-disk-buffering", version.ref = "opentelemetry-contrib" }
 opentelemetry-processors = { module = "io.opentelemetry.contrib:opentelemetry-processors", version.ref = "opentelemetry-contrib" }
 opentelemetry-exporter-otlp = { module = "io.opentelemetry:opentelemetry-exporter-otlp" }
-volley = "com.android.volley:volley:1.2.1"
 auto-service-annotations = { module = "com.google.auto.service:auto-service-annotations", version.ref = "autoService" }
 auto-service-processor = { module = "dev.zacsweers.autoservice:auto-service-ksp", version.ref = "autoServiceProcessor" }
 compose = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
