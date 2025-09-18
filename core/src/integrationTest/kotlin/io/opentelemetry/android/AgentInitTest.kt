@@ -7,6 +7,7 @@ package io.opentelemetry.android
 
 import android.app.Application
 import android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+import android.os.Build.VERSION_CODES.M
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.opentelemetry.android.config.OtelRumConfig
@@ -17,7 +18,7 @@ import org.robolectric.annotation.Config
 
 @RunWith(AndroidJUnit4::class)
 internal class AgentInitTest {
-    @Config(sdk = [UPSIDE_DOWN_CAKE])
+    @Config(sdk = [M, UPSIDE_DOWN_CAKE])
     @Test
     fun startOpenTelemetryRumInAndroid() {
         val application = getApplicationContext<Application>()
