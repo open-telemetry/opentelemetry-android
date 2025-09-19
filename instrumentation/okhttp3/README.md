@@ -8,11 +8,8 @@ Provides OpenTelemetry instrumentation for [okhttp3](https://square.github.io/ok
 
 ### Add these dependencies to your project
 
-Replace `OPENTELEMETRY_VERSION` with the [latest
-release](https://search.maven.org/search?q=g:io.opentelemetry.android%20AND%20a:okhttp-3.0-library).
-
 Replace `BYTEBUDDY_VERSION` with the [latest
-release](https://search.maven.org/search?q=g:net.bytebuddy%20AND%20a:byte-buddy).
+release](https://central.sonatype.com/artifact/net.bytebuddy/byte-buddy-gradle-plugin/versions).
 
 #### Byte buddy compilation plugin
 
@@ -30,8 +27,8 @@ plugins {
 #### Project dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:okhttp3-library:OPENTELEMETRY_VERSION")
-byteBuddy("io.opentelemetry.android.instrumentation:okhttp3-agent:OPENTELEMETRY_VERSION")
+implementation("io.opentelemetry.android.instrumentation:okhttp3-library:0.15.0-alpha")
+byteBuddy("io.opentelemetry.android.instrumentation:okhttp3-agent:0.15.0-alpha")
 ```
 
 After adding the plugin and the dependencies to your project, your OkHttp requests will be traced

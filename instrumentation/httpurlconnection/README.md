@@ -37,9 +37,7 @@ Spans won't be automatically ended and reported otherwise. If any of your URLCon
 
 ### Add these dependencies to your project
 
-Replace `AUTO_HTTP_URL_INSTRUMENTATION_VERSION` with the [latest release](https://central.sonatype.com/search?q=g%3Aio.opentelemetry.android++a%3Ahttpurlconnection-library&smo=true).
-
-Replace `BYTEBUDDY_VERSION` with the [latest release](https://search.maven.org/search?q=g:net.bytebuddy%20AND%20a:byte-buddy).
+Replace `BYTEBUDDY_VERSION` with the [latest release](https://central.sonatype.com/artifact/net.bytebuddy/byte-buddy-gradle-plugin/versions).
 
 #### Byte buddy compilation plugin
 
@@ -54,8 +52,8 @@ plugins {
 #### Project dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:httpurlconnection-library:AUTO_HTTP_URL_INSTRUMENTATION_VERSION")
-byteBuddy("io.opentelemetry.android.instrumentation:httpurlconnection-agent:AUTO_HTTP_URL_INSTRUMENTATION_VERSION")
+implementation("io.opentelemetry.android.instrumentation:httpurlconnection-library:0.15.0-alpha")
+byteBuddy("io.opentelemetry.android.instrumentation:httpurlconnection-agent:0.15.0-alpha")
 ```
 
 ### Configurations
@@ -63,7 +61,7 @@ byteBuddy("io.opentelemetry.android.instrumentation:httpurlconnection-agent:AUTO
 #### Scheduling Harvester Thread
 
 To schedule a periodically running thread to conclude/report spans on any unreported, idle connections, add the below code in the function where your application starts ( that could be onCreate() method of first Activity/Fragment/Service):
-```Java
+```java
 HttpUrlInstrumentation instrumentation = AndroidInstrumentationLoader.getInstrumentation(HttpUrlInstrumentation.class);
 instrumentation.setConnectionInactivityTimeoutMs(customTimeoutValue); //This is optional. Replace customTimeoutValue with a long data type value which denotes the connection inactivity timeout in milli seconds. Defaults to 10000ms
 Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(instrumentation.getReportIdleConnectionRunnable(), 0, instrumentation.getReportIdleConnectionInterval(), TimeUnit.MILLISECONDS);
