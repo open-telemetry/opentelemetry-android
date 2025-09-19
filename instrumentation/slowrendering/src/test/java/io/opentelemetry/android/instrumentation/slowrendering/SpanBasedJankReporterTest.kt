@@ -6,10 +6,13 @@
 package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.util.Log
+import io.embrace.opentelemetry.kotlin.ExperimentalApi
+import io.embrace.opentelemetry.kotlin.getTracer
+import io.embrace.opentelemetry.kotlin.toOtelKotlinApi
+import io.embrace.opentelemetry.kotlin.tracing.Tracer
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.opentelemetry.api.common.AttributeKey
-import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import io.opentelemetry.sdk.trace.data.SpanData
@@ -21,6 +24,7 @@ import org.junit.jupiter.api.Test
 
 private val COUNT_KEY = AttributeKey.longKey("count")
 
+@OptIn(ExperimentalApi::class)
 class SpanBasedJankReporterTest {
     private lateinit var tracer: Tracer
 
@@ -29,7 +33,7 @@ class SpanBasedJankReporterTest {
 
     @BeforeEach
     fun setup() {
-        tracer = otelTesting.openTelemetry.getTracer("testTracer")
+        tracer = otelTesting.openTelemetry.toOtelKotlinApi().getTracer("testTracer")
     }
 
     @Test

@@ -25,8 +25,11 @@ import android.os.Build;
 import android.os.Handler;
 import android.view.FrameMetrics;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import io.embrace.opentelemetry.kotlin.OpenTelemetryExtKt;
+import io.embrace.opentelemetry.kotlin.OtelJavaOpenTelemetryExtKt;
+import io.embrace.opentelemetry.kotlin.tracing.Tracer;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
@@ -122,7 +125,10 @@ public class SlowRenderListenerTest {
 
     @Test
     public void removeWithMetrics() {
-        Tracer tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
+        OpenTelemetry openTelemetry = otelTesting.getOpenTelemetry();
+        io.embrace.opentelemetry.kotlin.OpenTelemetry otelKotlin =
+                OtelJavaOpenTelemetryExtKt.toOtelKotlinApi(openTelemetry);
+        Tracer tracer = OpenTelemetryExtKt.getTracer(otelKotlin, "testTracer");
         jankReporter = new SpanBasedJankReporter(tracer);
         SlowRenderListener testInstance =
                 new SlowRenderListener(
@@ -157,7 +163,10 @@ public class SlowRenderListenerTest {
                 .when(exec)
                 .scheduleWithFixedDelay(any(), eq(1001L), eq(1001L), eq(TimeUnit.MILLISECONDS));
 
-        Tracer tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
+        OpenTelemetry openTelemetry = otelTesting.getOpenTelemetry();
+        io.embrace.opentelemetry.kotlin.OpenTelemetry otelKotlin =
+                OtelJavaOpenTelemetryExtKt.toOtelKotlinApi(openTelemetry);
+        Tracer tracer = OpenTelemetryExtKt.getTracer(otelKotlin, "testTracer");
         jankReporter = new SpanBasedJankReporter(tracer);
         SlowRenderListener testInstance =
                 new SlowRenderListener(

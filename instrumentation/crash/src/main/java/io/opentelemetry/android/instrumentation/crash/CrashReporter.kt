@@ -5,9 +5,13 @@
 
 package io.opentelemetry.android.instrumentation.crash
 
+import io.embrace.opentelemetry.kotlin.ExperimentalApi
+import io.embrace.opentelemetry.kotlin.attributes.setAttributes
+import io.embrace.opentelemetry.kotlin.getLogger
+import io.embrace.opentelemetry.kotlin.toOtelKotlinApi
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
+import io.opentelemetry.api.common.AttributesBuilder
 import io.opentelemetry.context.Context
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_MESSAGE
@@ -37,34 +41,41 @@ internal class CrashReporter(
         Thread.setDefaultUncaughtExceptionHandler(handler)
     }
 
+    @OptIn(ExperimentalApi::class)
     private fun processCrash(
         openTelemetry: OpenTelemetrySdk,
         crashDetails: CrashDetails,
     ) {
-        val logger = openTelemetry.sdkLoggerProvider.loggerBuilder("io.opentelemetry.crash").build()
+        val otel = openTelemetry.toOtelKotlinApi()
+        val logger = otel.getLogger("io.opentelemetry.crash")
         val throwable = crashDetails.cause
         val thread = crashDetails.thread
-        val attributesBuilder =
-            Attributes
-                .builder()
-                .put(THREAD_ID, thread.id)
-                .put(THREAD_NAME, thread.name)
-                .put(EXCEPTION_MESSAGE, throwable.message)
-                .put(
-                    EXCEPTION_STACKTRACE,
-                    throwable.stackTraceToString(),
-                ).put(EXCEPTION_TYPE, throwable.javaClass.name)
+
+        val attributesBuilder = Attributes.builder()
         for (extractor in extractors) {
             val extractedAttributes = extractor.extract(Context.current(), crashDetails)
             attributesBuilder.putAll(extractedAttributes)
         }
-        val eventBuilder =
-            logger.logRecordBuilder() as ExtendedLogRecordBuilder
-        eventBuilder
-            .setEventName("device.crash")
-            .setAllAttributes(attributesBuilder.build())
-            .emit()
+
+        logger.log(body = "device.crash") {
+            // event name not supported yet. Use body as an example instead.
+            setAttributes(
+                mapOf<String, Any>(
+                    THREAD_ID.key to thread.id,
+                    THREAD_NAME.key to thread.name,
+                    EXCEPTION_STACKTRACE.key to throwable.stackTraceToString(),
+                    EXCEPTION_TYPE.key to throwable.javaClass.name,
+                ),
+            )
+            setAttributes(attributesBuilder.toMap())
+
+            throwable.message?.let {
+                setStringAttribute(EXCEPTION_MESSAGE.key, it)
+            }
+        }
     }
+
+    private fun AttributesBuilder.toMap(): Map<String, Any> = build().asMap().mapKeys { (k, _) -> k.key }
 
     private fun waitForCrashFlush(openTelemetry: OpenTelemetrySdk) {
         val flushResult = openTelemetry.sdkLoggerProvider.forceFlush()

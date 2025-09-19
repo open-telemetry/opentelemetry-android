@@ -8,6 +8,9 @@ package io.opentelemetry.android.instrumentation.slowrendering
 import android.os.Build
 import android.util.Log
 import com.google.auto.service.AutoService
+import io.embrace.opentelemetry.kotlin.ExperimentalApi
+import io.embrace.opentelemetry.kotlin.getTracer
+import io.embrace.opentelemetry.kotlin.toOtelKotlinApi
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.InstallationContext
@@ -64,6 +67,7 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
         return this
     }
 
+    @OptIn(ExperimentalApi::class)
     override fun install(ctx: InstallationContext) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             Log.w(
@@ -85,7 +89,8 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
         jankReporter = jankReporter.combine(EventJankReporter(logger, FROZEN_THRESHOLD_MS / 1000.0, debugVerbose))
 
         if (useDeprecatedSpan) {
-            val tracer = ctx.openTelemetry.getTracer("io.opentelemetry.slow-rendering")
+            val otel = ctx.openTelemetry.toOtelKotlinApi()
+            val tracer = otel.getTracer("io.opentelemetry.slow-rendering")
             jankReporter = jankReporter.combine(SpanBasedJankReporter(tracer))
         }
 

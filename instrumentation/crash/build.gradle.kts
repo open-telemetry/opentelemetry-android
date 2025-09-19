@@ -28,4 +28,7 @@ dependencies {
     implementation(libs.opentelemetry.instrumentation.api)
     testImplementation(libs.awaitility)
     testImplementation(libs.robolectric)
+
+    implementation(libs.opentelemetry.kotlin)
+    implementation(libs.opentelemetry.kotlin.compat)
 }
