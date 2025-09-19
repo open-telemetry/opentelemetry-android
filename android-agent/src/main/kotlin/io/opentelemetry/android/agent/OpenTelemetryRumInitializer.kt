@@ -6,6 +6,7 @@
 package io.opentelemetry.android.agent
 
 import android.app.Application
+import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.OpenTelemetryRumBuilder
 import io.opentelemetry.android.agent.connectivity.EndpointConnectivity
@@ -35,6 +36,7 @@ import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
+@OptIn(Incubating::class)
 object OpenTelemetryRumInitializer {
     /**
      * Opinionated [OpenTelemetryRum] initialization.
