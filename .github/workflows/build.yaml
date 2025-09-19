@@ -25,6 +25,15 @@ jobs:
         run: touch demo-app/local.properties
       - name: run gradle check
         run: ./gradlew check
+      - name: create test coverage report
+        run: ./gradlew check koverXmlReport
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: build/reports/kover/report.xml
+          slug: open-telemetry/opentelemetry-android
+
       - name: build demo app
         working-directory: ./demo-app
         run: ./gradlew check assemble
