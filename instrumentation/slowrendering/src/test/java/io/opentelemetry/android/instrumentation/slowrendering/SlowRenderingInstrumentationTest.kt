@@ -7,6 +7,9 @@ package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.app.Application
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.embrace.opentelemetry.kotlin.ExperimentalApi
+import io.embrace.opentelemetry.kotlin.createCompatOpenTelemetry
+import io.embrace.opentelemetry.kotlin.toOtelJavaApi
 import io.mockk.Called
 import io.mockk.MockKAnnotations
 import io.mockk.Runs
@@ -100,16 +103,16 @@ class SlowRenderingInstrumentationTest {
         verify { application.registerActivityLifecycleCallbacks(capture(capturedListener)) }
     }
 
+    @OptIn(ExperimentalApi::class)
     @Config(sdk = [24, 25])
     @Test
     fun `can use legacy span`() {
         val capturedListener = slot<SlowRenderListener>()
-        every { openTelemetry.getTracer(any()) }.returns(mockk())
+        val otel = createCompatOpenTelemetry().toOtelJavaApi()
         every { application.registerActivityLifecycleCallbacks(any()) } just Runs
-        val ctx = InstallationContext(application, openTelemetry, mockk())
+        val ctx = InstallationContext(application, otel, mockk())
         slowRenderingInstrumentation.enableDeprecatedZeroDurationSpan().install(ctx)
 
-        verify { openTelemetry.getTracer("io.opentelemetry.slow-rendering") }
         verify { application.registerActivityLifecycleCallbacks(capture(capturedListener)) }
     }
 }
