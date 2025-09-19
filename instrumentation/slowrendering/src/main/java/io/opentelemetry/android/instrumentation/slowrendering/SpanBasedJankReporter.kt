@@ -6,14 +6,16 @@
 package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.util.Log
+import io.embrace.opentelemetry.kotlin.ExperimentalApi
+import io.embrace.opentelemetry.kotlin.tracing.Tracer
 import io.opentelemetry.android.common.RumConstants
-import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.Tracer
 import java.time.Instant
+import java.util.concurrent.TimeUnit
 
 internal const val SLOW_THRESHOLD_MS = 16
 internal const val FROZEN_THRESHOLD_MS = 700
 
+@OptIn(ExperimentalApi::class)
 internal class SpanBasedJankReporter(
     private val tracer: Tracer,
 ) : JankReporter {
@@ -57,13 +59,13 @@ internal class SpanBasedJankReporter(
         slowCount: Int,
         now: Instant,
     ) {
-        val span: Span =
-            tracer
-                .spanBuilder(spanName)
-                .setAttribute("count", slowCount.toLong())
-                .setAttribute("activity.name", activityName)
-                .setStartTimestamp(now)
-                .startSpan()
-        span.end(now)
+        val span =
+            tracer.createSpan(spanName, startTimestamp = now.toNanoSeconds()) {
+                setLongAttribute("count", slowCount.toLong())
+                setStringAttribute("activity.name", activityName)
+            }
+        span.end(now.toNanoSeconds())
     }
+
+    private fun Instant.toNanoSeconds(): Long = TimeUnit.MILLISECONDS.convert(toEpochMilli(), TimeUnit.NANOSECONDS)
 }
