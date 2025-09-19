@@ -15,8 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork;
-import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState;
-import io.opentelemetry.android.internal.services.Service;
 import io.opentelemetry.android.internal.services.network.detector.NetworkDetector;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -33,12 +31,7 @@ import java.util.function.Supplier;
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
-public final class CurrentNetworkProvider implements Service {
-
-    public static final CurrentNetwork NO_NETWORK =
-            new CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE);
-    public static final CurrentNetwork UNKNOWN_NETWORK =
-            new CurrentNetwork(NetworkState.TRANSPORT_UNKNOWN);
+public final class CurrentNetworkProviderImpl implements CurrentNetworkProvider {
 
     private final NetworkDetector networkDetector;
     private final ConnectivityManager connectivityManager;
@@ -48,15 +41,15 @@ public final class CurrentNetworkProvider implements Service {
             new AtomicReference<>();
     private final List<NetworkChangeListener> listeners = new CopyOnWriteArrayList<>();
 
-    public CurrentNetworkProvider(
+    public CurrentNetworkProviderImpl(
             NetworkDetector networkDetector, ConnectivityManager connectivityManager) {
         this(
                 networkDetector,
                 connectivityManager,
-                CurrentNetworkProvider::createNetworkMonitoringRequest);
+                CurrentNetworkProviderImpl::createNetworkMonitoringRequest);
     }
 
-    CurrentNetworkProvider(
+    CurrentNetworkProviderImpl(
             NetworkDetector networkDetector,
             ConnectivityManager connectivityManager,
             Supplier<NetworkRequest> createNetworkMonitoringRequest) {
@@ -97,6 +90,8 @@ public final class CurrentNetworkProvider implements Service {
     }
 
     /** Returns up-to-date {@linkplain CurrentNetwork current network information}. */
+    @NonNull
+    @Override
     public CurrentNetwork refreshNetworkStatus() {
         try {
             currentNetwork = networkDetector.detectCurrentNetwork();
@@ -119,11 +114,14 @@ public final class CurrentNetworkProvider implements Service {
                 .build();
     }
 
+    @NonNull
+    @Override
     public CurrentNetwork getCurrentNetwork() {
         return currentNetwork;
     }
 
-    public void addNetworkChangeListener(NetworkChangeListener listener) {
+    @Override
+    public void addNetworkChangeListener(@NonNull NetworkChangeListener listener) {
         listeners.add(listener);
     }
 
@@ -159,8 +157,8 @@ public final class CurrentNetworkProvider implements Service {
             // this method, we'll force it to be NO_NETWORK, rather than relying on the
             // ConnectivityManager to have the right
             // state at the right time during this event.
-            CurrentNetwork currentNetwork = NO_NETWORK;
-            CurrentNetworkProvider.this.currentNetwork = currentNetwork;
+            CurrentNetwork currentNetwork = CurrentNetworkProvider.NO_NETWORK;
+            CurrentNetworkProviderImpl.this.currentNetwork = currentNetwork;
             Log.d(RumConstants.OTEL_RUM_LOG_TAG, "  onLost: currentNetwork=" + currentNetwork);
 
             notifyListeners(currentNetwork);

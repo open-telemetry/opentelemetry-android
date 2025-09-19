@@ -6,41 +6,53 @@
 package io.opentelemetry.android.internal.services
 
 import android.app.Application
-import android.content.Context
+import android.content.Context.CONNECTIVITY_SERVICE
 import android.net.ConnectivityManager
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ProcessLifecycleOwner
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
+import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleImpl
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateWatcher
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
+import io.opentelemetry.android.internal.services.network.CurrentNetworkProviderImpl
 import io.opentelemetry.android.internal.services.network.detector.NetworkDetector
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWork
+import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkImpl
+import io.opentelemetry.android.internal.services.storage.CacheStorage
+import io.opentelemetry.android.internal.services.storage.CacheStorageImpl
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
-import java.io.Closeable
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTrackerImpl
 
 /**
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
  */
 class Services internal constructor(
-    private val factory: ServicesFactory,
-) : Closeable {
-    val cacheStorage: CacheStorage by lazy {
-        factory.createCacheStorage()
+    private val application: Application,
+) : ServicesFactory {
+    override val cacheStorage: CacheStorage by lazy {
+        CacheStorageImpl(application)
     }
 
-    val periodicWork: PeriodicWork by lazy {
-        factory.createPeriodicWork()
+    override val periodicWork: PeriodicWork by lazy {
+        PeriodicWorkImpl()
     }
 
-    val currentNetworkProvider: CurrentNetworkProvider by lazy {
-        factory.createCurrentNetworkProvider()
+    override val currentNetworkProvider: CurrentNetworkProvider by lazy {
+        CurrentNetworkProviderImpl(
+            NetworkDetector.Companion.create(application),
+            application.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager,
+        )
     }
 
-    val appLifecycle: AppLifecycle by lazy {
-        factory.createAppLifecycle()
+    override val appLifecycle: AppLifecycle by lazy {
+        AppLifecycleImpl(
+            ApplicationStateWatcher(),
+            ProcessLifecycleOwner.Companion.get().lifecycle,
+        )
     }
 
-    val visibleScreenTracker: VisibleScreenTracker by lazy {
-        factory.createVisibleScreenTracker()
+    override val visibleScreenTracker: VisibleScreenTracker by lazy {
+        VisibleScreenTrackerImpl(application)
     }
 
     override fun close() {
@@ -58,37 +70,15 @@ class Services internal constructor(
         fun get(application: Application): Services =
             synchronized(this) {
                 if (instance == null) {
-                    set(Services(ServicesFactory(application)))
+                    set(Services(application))
                 }
-                return instance!!
+                return checkNotNull(instance)
             }
 
-        // Visible for tests
         @JvmStatic
+        @VisibleForTesting
         fun set(services: Services?) {
             instance = services
         }
-    }
-
-    internal class ServicesFactory(
-        private val application: Application,
-    ) {
-        fun createCacheStorage(): CacheStorage = CacheStorage(application)
-
-        fun createPeriodicWork(): PeriodicWork = PeriodicWork()
-
-        fun createCurrentNetworkProvider(): CurrentNetworkProvider =
-            CurrentNetworkProvider(
-                NetworkDetector.create(application),
-                application.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager,
-            )
-
-        fun createAppLifecycle(): AppLifecycle =
-            AppLifecycle(
-                ApplicationStateWatcher(),
-                ProcessLifecycleOwner.get().lifecycle,
-            )
-
-        fun createVisibleScreenTracker(): VisibleScreenTracker = VisibleScreenTracker(application)
     }
 }

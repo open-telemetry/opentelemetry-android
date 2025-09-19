@@ -1,21 +1,16 @@
-public final class io/opentelemetry/android/internal/services/CacheStorage : io/opentelemetry/android/internal/services/Service {
-	public fun <init> (Landroid/content/Context;)V
-	public final fun getCacheDir ()Ljava/io/File;
-}
-
 public abstract interface class io/opentelemetry/android/internal/services/Service : java/io/Closeable {
 	public fun close ()V
 }
 
-public final class io/opentelemetry/android/internal/services/Services : java/io/Closeable {
+public final class io/opentelemetry/android/internal/services/Services : io/opentelemetry/android/internal/services/ServicesFactory {
 	public static final field Companion Lio/opentelemetry/android/internal/services/Services$Companion;
 	public fun close ()V
 	public static final fun get (Landroid/app/Application;)Lio/opentelemetry/android/internal/services/Services;
-	public final fun getAppLifecycle ()Lio/opentelemetry/android/internal/services/applifecycle/AppLifecycle;
-	public final fun getCacheStorage ()Lio/opentelemetry/android/internal/services/CacheStorage;
-	public final fun getCurrentNetworkProvider ()Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;
-	public final fun getPeriodicWork ()Lio/opentelemetry/android/internal/services/periodicwork/PeriodicWork;
-	public final fun getVisibleScreenTracker ()Lio/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker;
+	public fun getAppLifecycle ()Lio/opentelemetry/android/internal/services/applifecycle/AppLifecycle;
+	public fun getCacheStorage ()Lio/opentelemetry/android/internal/services/storage/CacheStorage;
+	public fun getCurrentNetworkProvider ()Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;
+	public fun getPeriodicWork ()Lio/opentelemetry/android/internal/services/periodicwork/PeriodicWork;
+	public fun getVisibleScreenTracker ()Lio/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker;
 	public static final fun set (Lio/opentelemetry/android/internal/services/Services;)V
 }
 
@@ -24,9 +19,16 @@ public final class io/opentelemetry/android/internal/services/Services$Companion
 	public final fun set (Lio/opentelemetry/android/internal/services/Services;)V
 }
 
-public final class io/opentelemetry/android/internal/services/applifecycle/AppLifecycle : io/opentelemetry/android/internal/services/Service {
-	public fun close ()V
-	public final fun registerListener (Lio/opentelemetry/android/internal/services/applifecycle/ApplicationStateListener;)V
+public abstract interface class io/opentelemetry/android/internal/services/ServicesFactory : java/io/Closeable {
+	public abstract fun getAppLifecycle ()Lio/opentelemetry/android/internal/services/applifecycle/AppLifecycle;
+	public abstract fun getCacheStorage ()Lio/opentelemetry/android/internal/services/storage/CacheStorage;
+	public abstract fun getCurrentNetworkProvider ()Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;
+	public abstract fun getPeriodicWork ()Lio/opentelemetry/android/internal/services/periodicwork/PeriodicWork;
+	public abstract fun getVisibleScreenTracker ()Lio/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker;
+}
+
+public abstract interface class io/opentelemetry/android/internal/services/applifecycle/AppLifecycle : io/opentelemetry/android/internal/services/Service {
+	public abstract fun registerListener (Lio/opentelemetry/android/internal/services/applifecycle/ApplicationStateListener;)V
 }
 
 public abstract interface class io/opentelemetry/android/internal/services/applifecycle/ApplicationStateListener {
@@ -39,9 +41,19 @@ public class io/opentelemetry/android/internal/services/network/CarrierFinder {
 	public fun get ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/Carrier;
 }
 
-public final class io/opentelemetry/android/internal/services/network/CurrentNetworkProvider : io/opentelemetry/android/internal/services/Service {
+public abstract interface class io/opentelemetry/android/internal/services/network/CurrentNetworkProvider : io/opentelemetry/android/internal/services/Service {
+	public static final field Companion Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider$Companion;
 	public static final field NO_NETWORK Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
 	public static final field UNKNOWN_NETWORK Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
+	public abstract fun addNetworkChangeListener (Lio/opentelemetry/android/internal/services/network/NetworkChangeListener;)V
+	public abstract fun getCurrentNetwork ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
+	public abstract fun refreshNetworkStatus ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
+}
+
+public final class io/opentelemetry/android/internal/services/network/CurrentNetworkProvider$Companion {
+}
+
+public final class io/opentelemetry/android/internal/services/network/CurrentNetworkProviderImpl : io/opentelemetry/android/internal/services/network/CurrentNetworkProvider {
 	public fun <init> (Lio/opentelemetry/android/internal/services/network/detector/NetworkDetector;Landroid/net/ConnectivityManager;)V
 	public fun addNetworkChangeListener (Lio/opentelemetry/android/internal/services/network/NetworkChangeListener;)V
 	public fun close ()V
@@ -71,19 +83,21 @@ public abstract class io/opentelemetry/android/internal/services/periodicwork/Pe
 	public abstract fun shouldStopRunning ()Z
 }
 
-public final class io/opentelemetry/android/internal/services/periodicwork/PeriodicWork : io/opentelemetry/android/internal/services/Service {
-	public fun close ()V
-	public final fun enqueue (Ljava/lang/Runnable;)V
+public abstract interface class io/opentelemetry/android/internal/services/periodicwork/PeriodicWork : io/opentelemetry/android/internal/services/Service {
+	public abstract fun enqueue (Ljava/lang/Runnable;)V
 }
 
-public final class io/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker : io/opentelemetry/android/internal/services/Service {
-	public final fun activityPaused (Landroid/app/Activity;)V
-	public final fun activityResumed (Landroid/app/Activity;)V
-	public fun close ()V
-	public final fun fragmentPaused (Landroidx/fragment/app/Fragment;)V
-	public final fun fragmentResumed (Landroidx/fragment/app/Fragment;)V
-	public final fun getCurrentlyVisibleScreen ()Ljava/lang/String;
-	public final fun getPreviouslyVisibleScreen ()Ljava/lang/String;
+public abstract interface class io/opentelemetry/android/internal/services/storage/CacheStorage : io/opentelemetry/android/internal/services/Service {
+	public abstract fun getCacheDir ()Ljava/io/File;
+}
+
+public abstract interface class io/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker : io/opentelemetry/android/internal/services/Service {
+	public abstract fun activityPaused (Landroid/app/Activity;)V
+	public abstract fun activityResumed (Landroid/app/Activity;)V
+	public abstract fun fragmentPaused (Landroidx/fragment/app/Fragment;)V
+	public abstract fun fragmentResumed (Landroidx/fragment/app/Fragment;)V
+	public abstract fun getCurrentlyVisibleScreen ()Ljava/lang/String;
+	public abstract fun getPreviouslyVisibleScreen ()Ljava/lang/String;
 }
 
 public abstract interface class io/opentelemetry/android/internal/services/visiblescreen/activities/DefaultingActivityLifecycleCallbacks : android/app/Application$ActivityLifecycleCallbacks {
