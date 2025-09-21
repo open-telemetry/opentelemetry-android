@@ -11,6 +11,8 @@
 * [Getting Started](#getting-started)
 * [Features](#contributing)
 * [Contributing](#contributing)
+* [StrictMode Policy](./docs/STRICTMODE.md)
+* [Exporter Chain](./docs/EXPORTER_CHAIN.md)
 
 # About
 
@@ -70,6 +72,12 @@ Some of the additional features provided include:
 * Offline buffering of telemetry via storage
 
 Note: Use of these features is not yet well documented.
+
+## StrictMode
+
+For guidance on Android StrictMode violations (disk / network I/O warnings) triggered by SDK initialization
+and instrumentation, expected one-time operations, plus available mitigations and workarounds, see
+[StrictMode Policy](./docs/STRICTMODE.md).
 
 # Contributing
 
