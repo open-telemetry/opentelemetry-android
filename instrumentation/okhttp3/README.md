@@ -1,8 +1,32 @@
 # Android Instrumentation for OkHttp version 3.0 and higher
 
-## Status: development
+Status: development
 
-Provides OpenTelemetry instrumentation for [okhttp3](https://square.github.io/okhttp/).
+The OpenTelemetry OkHttp instrumentation for Android instruments client-side requests
+made via OkHttp (version 3.0 +) [okhttp3](https://square.github.io/okhttp/). It adds distributed tracing context,
+creates client HTTP spans, and records request/response metadata.
+
+## Telemetry
+
+This instrumentation produces HTTP client spans using the OpenTelemetry HTTP semantic
+conventions. The span name is created via the HTTP span name extractor and attributes
+are provided by the OkHttp attributes getter.
+
+### HTTP client span
+
+* Type: Span
+* Name: Determined by the HTTP span name extractor (typically `HTTP {method}` or derived from the URL)
+* Description: Client-side HTTP request
+* Common attributes (following OpenTelemetry HTTP semantic conventions):
+  * `http.method` — request method (GET, POST, etc.)
+  * `http.url` — full URL
+  * `http.status_code` — response status code
+  * `http.flavor` — protocol (e.g. `1.1`)
+  * `net.peer.name` — server host
+  * `net.peer.port` — server port
+  * Captured request/response headers per configuration
+
+If a request fails, the span is ended and the error is recorded.
 
 ## Quickstart
 
