@@ -8,8 +8,8 @@ creates client HTTP spans, and records request/response metadata.
 
 ## Telemetry
 
-This instrumentation produces HTTP client spans using the OpenTelemetry HTTP semantic
-conventions. The span name is created via the HTTP span name extractor and attributes
+This instrumentation produces HTTP client spans using the OpenTelemetry [HTTP semantic
+conventions](https://opentelemetry.io/docs/specs/semconv/http/http-spans/). The span name is created via the HTTP span name extractor and attributes
 are provided by the OkHttp attributes getter.
 
 ### HTTP client span

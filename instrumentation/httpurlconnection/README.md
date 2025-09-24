@@ -1,9 +1,9 @@
 # Android Instrumentation for URLConnection, HttpURLConnection and HttpsURLConnection
 
-Status: experimental
+Status: development
 
 The OpenTelemetry HttpUrlConnection instrumentation for Android will automatically
-instrument client-side usage of
+instrument client-side usage of:
 
 - [URLConnection](https://developer.android.com/reference/java/net/URLConnection)
 - [HttpURLConnection](https://developer.android.com/reference/java/net/HttpURLConnection)
@@ -33,7 +33,7 @@ the following occurs: the response stream is fully read, the stream is closed,
 - Type: Span
 - Name: Determined by the HTTP span name extractor (typically `HTTP {method}` or derived from the URL)
 - Description: Client-side HTTP request
-- Attributes (following OpenTelemetry HTTP semantic conventions):
+- Attributes (following OpenTelemetry [HTTP semantic conventions](https://opentelemetry.io/docs/specs/semconv/http/http-spans/)):
   - `http.method` — request method (GET, POST, etc.)
   - `http.url` — full URL
   - `http.target`, `http.host`, `http.scheme` — parts of the request URL when available
