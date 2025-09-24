@@ -15,6 +15,12 @@ import android.os.Build
 import android.telephony.TelephonyManager
 import androidx.core.content.ContextCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.mockk.MockKAnnotations
+import io.mockk.every
+import io.mockk.impl.annotations.MockK
+import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
@@ -24,65 +30,61 @@ import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.MockedStatic
-import org.mockito.Mockito
 import org.robolectric.annotation.Config
 
 @RunWith(AndroidJUnit4::class)
 class NetworkDetectorTest {
+    @MockK
     private lateinit var connectivityManager: ConnectivityManager
+
+    @MockK
     private lateinit var telephonyManager: TelephonyManager
+
+    @MockK
     private lateinit var context: Context
+
+    @MockK
     private lateinit var network: Network
+
+    @MockK
     private lateinit var networkCapabilities: NetworkCapabilities
+
+    @MockK
     private lateinit var packageManager: PackageManager
-    private lateinit var contextCompatMock: MockedStatic<ContextCompat>
+
+    @MockK
+    private lateinit var contextCompatMock: ContextCompat
 
     @Before
     fun setup() {
-        connectivityManager = Mockito.mock(ConnectivityManager::class.java)
-        telephonyManager = Mockito.mock(TelephonyManager::class.java)
-        context = Mockito.mock(Context::class.java)
-        network = Mockito.mock(Network::class.java)
-        networkCapabilities = Mockito.mock(NetworkCapabilities::class.java)
-        packageManager = Mockito.mock(PackageManager::class.java)
-        contextCompatMock = Mockito.mockStatic(ContextCompat::class.java)
+        MockKAnnotations.init(this)
+        mockkStatic(ContextCompat::class)
+        contextCompatMock = mockk<ContextCompat>()
 
-        Mockito
-            .`when`(context.getSystemService(Context.CONNECTIVITY_SERVICE))
-            .thenReturn(connectivityManager)
-        Mockito
-            .`when`(context.getSystemService(Context.TELEPHONY_SERVICE))
-            .thenReturn(telephonyManager)
-        Mockito.`when`(context.packageManager).thenReturn(packageManager)
-        Mockito
-            .`when`<NetworkCapabilities?>(connectivityManager.getNetworkCapabilities(network))
-            .thenReturn(networkCapabilities)
+        every { context.getSystemService(Context.CONNECTIVITY_SERVICE) } returns connectivityManager
+        every { context.getSystemService(Context.TELEPHONY_SERVICE) } returns telephonyManager
+        every { context.packageManager } returns packageManager
+        every { connectivityManager.activeNetwork } returns network
+        every { connectivityManager.getNetworkCapabilities(network) } returns networkCapabilities
+        every { networkCapabilities.hasTransport(any()) } returns false // default
+        every { telephonyManager.simOperatorName } returns "JibroCom" // default
 
         // Mock telephony feature as available by default
-        Mockito
-            .`when`(packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY))
-            .thenReturn(true)
+        every { packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY) } returns true
 
         // Mock permission granted by default for most tests
-        contextCompatMock
-            .`when`<Any?> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.READ_PHONE_STATE,
-                )
-            }.thenReturn(PackageManager.PERMISSION_GRANTED)
+        every { ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) } returns PackageManager.PERMISSION_GRANTED
     }
 
     @After
     fun tearDown() {
-        contextCompatMock.close()
+        unmockkStatic(ContextCompat::class)
     }
 
     @Test
     @Config(sdk = [Build.VERSION_CODES.M])
     fun noNetwork_modern() {
-        Mockito.`when`<Network?>(connectivityManager.activeNetwork).thenReturn(null)
+        every { connectivityManager.activeNetwork } returns null
 
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
@@ -93,10 +95,7 @@ class NetworkDetectorTest {
     @Test
     @Config(sdk = [Build.VERSION_CODES.M])
     fun unknown_modern() {
-        Mockito.`when`<Network?>(connectivityManager.activeNetwork).thenReturn(network)
-        Mockito
-            .`when`<NetworkCapabilities?>(connectivityManager.getNetworkCapabilities(network))
-            .thenReturn(null)
+        every { connectivityManager.getNetworkCapabilities(network) } returns null
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
         assertEquals(CurrentNetwork(NetworkState.TRANSPORT_UNKNOWN), currentNetwork)
@@ -105,13 +104,7 @@ class NetworkDetectorTest {
     @Test
     @Config(sdk = [Build.VERSION_CODES.M])
     fun wifi_modern() {
-        Mockito.`when`<Network?>(connectivityManager.activeNetwork).thenReturn(network)
-        Mockito
-            .`when`<NetworkCapabilities?>(connectivityManager.getNetworkCapabilities(network))
-            .thenReturn(networkCapabilities)
-        Mockito
-            .`when`(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))
-            .thenReturn(true)
+        every { networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) } returns true
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
         assertEquals(CurrentNetwork(NetworkState.TRANSPORT_WIFI), currentNetwork)
@@ -120,34 +113,16 @@ class NetworkDetectorTest {
     @Test
     @Config(sdk = [Build.VERSION_CODES.P])
     fun cellular_modern() {
-        Mockito.`when`<Network?>(connectivityManager.activeNetwork).thenReturn(network)
-        Mockito
-            .`when`<NetworkCapabilities?>(connectivityManager.getNetworkCapabilities(network))
-            .thenReturn(networkCapabilities)
-        Mockito
-            .`when`(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
-            .thenReturn(true)
+        every { networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) } returns true
 
         // Setup for Carrier and SubType details
-        Mockito
-            .`when`(packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY))
-            .thenReturn(true)
-        contextCompatMock
-            .`when`<Any?> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.READ_PHONE_STATE,
-                )
-            }.thenReturn(PackageManager.PERMISSION_GRANTED)
-        Mockito.`when`(telephonyManager.simCarrierId).thenReturn(310)
-        Mockito
-            .`when`<CharSequence?>(telephonyManager.simCarrierIdName)
-            .thenReturn("TestCarrier")
-        Mockito.`when`(telephonyManager.simCountryIso).thenReturn("us")
-        Mockito.`when`(telephonyManager.simOperator).thenReturn("310260")
-        Mockito
-            .`when`(telephonyManager.dataNetworkType)
-            .thenReturn(TelephonyManager.NETWORK_TYPE_LTE)
+        every { packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY) } returns true
+        every { ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) } returns PackageManager.PERMISSION_GRANTED
+        every { telephonyManager.simCarrierId } returns 310
+        every { telephonyManager.simCarrierIdName } returns "TestCarrier"
+        every { telephonyManager.simCountryIso } returns "us"
+        every { telephonyManager.simOperator } returns "310260"
+        every { telephonyManager.dataNetworkType } returns TelephonyManager.NETWORK_TYPE_LTE
         val expectedCarrier = Carrier(310, "TestCarrier", "310", "260", "us")
 
         val networkDetector = NetworkDetector.create(context)
@@ -161,20 +136,10 @@ class NetworkDetectorTest {
     @Test
     @Config(sdk = [Build.VERSION_CODES.P])
     fun cellular_modern_withoutPermission() {
-        Mockito.`when`<Network?>(connectivityManager.activeNetwork).thenReturn(network)
-        Mockito
-            .`when`<NetworkCapabilities?>(connectivityManager.getNetworkCapabilities(network))
-            .thenReturn(networkCapabilities)
-        Mockito
-            .`when`(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
-            .thenReturn(true)
-        contextCompatMock
-            .`when`<Any?> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.READ_PHONE_STATE,
-                )
-            }.thenReturn(PackageManager.PERMISSION_DENIED)
+        every { networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) } returns true
+        every { ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) } returns PackageManager.PERMISSION_DENIED
+        every { telephonyManager.simOperator } returns "trev"
+        every { telephonyManager.simCountryIso } returns "91"
 
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
@@ -186,16 +151,9 @@ class NetworkDetectorTest {
     @Test
     @Config(sdk = [Build.VERSION_CODES.P])
     fun cellular_modern_noTelephonyFeature() {
-        Mockito.`when`<Network?>(connectivityManager.activeNetwork).thenReturn(network)
-        Mockito
-            .`when`<NetworkCapabilities?>(connectivityManager.getNetworkCapabilities(network))
-            .thenReturn(networkCapabilities)
-        Mockito
-            .`when`(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
-            .thenReturn(true)
-        Mockito
-            .`when`(packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY))
-            .thenReturn(false)
+        every { networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) } returns true
+        every { packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY) } returns false
+
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
         // Without telephony feature, should still detect cellular but with limited info
@@ -205,10 +163,7 @@ class NetworkDetectorTest {
     @Test
     @Config(sdk = [Build.VERSION_CODES.M])
     fun other_modern() {
-        Mockito.`when`<Network?>(connectivityManager.activeNetwork).thenReturn(network)
-        Mockito
-            .`when`<NetworkCapabilities?>(connectivityManager.getNetworkCapabilities(network))
-            .thenReturn(networkCapabilities)
+        every { networkCapabilities.hasTransport(any()) } returns false
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
         assertEquals(CurrentNetwork(NetworkState.TRANSPORT_UNKNOWN), currentNetwork)
@@ -218,23 +173,11 @@ class NetworkDetectorTest {
     @Config(sdk = [Build.VERSION_CODES.M])
     @Suppress("deprecation")
     fun subtype_preApi24_withPermission() {
-        Mockito.`when`<Network?>(connectivityManager.activeNetwork).thenReturn(network)
-        Mockito
-            .`when`<NetworkCapabilities?>(connectivityManager.getNetworkCapabilities(network))
-            .thenReturn(networkCapabilities)
-        Mockito
-            .`when`(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
-            .thenReturn(true)
-        contextCompatMock
-            .`when`<Any?> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.READ_PHONE_STATE,
-                )
-            }.thenReturn(PackageManager.PERMISSION_GRANTED)
-        Mockito
-            .`when`(telephonyManager.networkType)
-            .thenReturn(TelephonyManager.NETWORK_TYPE_UMTS)
+        every { networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) } returns true
+        every { ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) } returns PackageManager.PERMISSION_GRANTED
+        every { telephonyManager.networkType } returns TelephonyManager.NETWORK_TYPE_UMTS
+        every { telephonyManager.simOperator } returns "jeb"
+        every { telephonyManager.simCountryIso } returns "1"
 
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
@@ -246,23 +189,10 @@ class NetworkDetectorTest {
     @Test
     @Config(sdk = [Build.VERSION_CODES.N])
     fun subtype_securityException_postApi24() {
-        Mockito.`when`<Network?>(connectivityManager.activeNetwork).thenReturn(network)
-        Mockito
-            .`when`<NetworkCapabilities?>(connectivityManager.getNetworkCapabilities(network))
-            .thenReturn(networkCapabilities)
-        Mockito
-            .`when`(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
-            .thenReturn(true)
-        contextCompatMock
-            .`when`<Any?> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.READ_PHONE_STATE,
-                )
-            }.thenReturn(PackageManager.PERMISSION_GRANTED)
-        Mockito
-            .`when`(telephonyManager.dataNetworkType)
-            .thenThrow(SecurityException("Permission denied"))
+        every { networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) } returns true
+        every { ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) } returns PackageManager.PERMISSION_GRANTED
+        every { telephonyManager.dataNetworkType } throws SecurityException("Permission denied")
+        every { telephonyManager.simOperator } throws SecurityException("Permission denied")
 
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
@@ -275,23 +205,11 @@ class NetworkDetectorTest {
     @Config(sdk = [Build.VERSION_CODES.M])
     @Suppress("deprecation")
     fun subtype_securityException_preApi24() {
-        Mockito.`when`<Network?>(connectivityManager.activeNetwork).thenReturn(network)
-        Mockito
-            .`when`<NetworkCapabilities?>(connectivityManager.getNetworkCapabilities(network))
-            .thenReturn(networkCapabilities)
-        Mockito
-            .`when`(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
-            .thenReturn(true)
-        contextCompatMock
-            .`when`<Any?> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.READ_PHONE_STATE,
-                )
-            }.thenReturn(PackageManager.PERMISSION_GRANTED)
-        Mockito
-            .`when`(telephonyManager.networkType)
-            .thenThrow(SecurityException("Permission denied"))
+        every { networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) } returns true
+        every { ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) } returns PackageManager.PERMISSION_GRANTED
+        every { telephonyManager.networkType } throws SecurityException("Permission denied")
+        every { telephonyManager.simOperator } returns "gah"
+        every { telephonyManager.simCountryIso } returns "81"
 
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
@@ -303,39 +221,17 @@ class NetworkDetectorTest {
     @Test
     @Config(sdk = [Build.VERSION_CODES.TIRAMISU])
     fun cellular_api33_withBasicPhoneStatePermission() {
-        Mockito.`when`<Network?>(connectivityManager.activeNetwork).thenReturn(network)
-        Mockito
-            .`when`<NetworkCapabilities?>(connectivityManager.getNetworkCapabilities(network))
-            .thenReturn(networkCapabilities)
-        Mockito
-            .`when`(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
-            .thenReturn(true)
-
+        every { networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) } returns true
         // Deny READ_PHONE_STATE but grant READ_BASIC_PHONE_STATE
-        contextCompatMock
-            .`when`<Any?> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.READ_PHONE_STATE,
-                )
-            }.thenReturn(PackageManager.PERMISSION_DENIED)
-        contextCompatMock
-            .`when`<Any?> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.READ_BASIC_PHONE_STATE,
-                )
-            }.thenReturn(PackageManager.PERMISSION_GRANTED)
+        every { ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) } returns PackageManager.PERMISSION_DENIED
+        every { ContextCompat.checkSelfPermission(context, Manifest.permission.READ_BASIC_PHONE_STATE) } returns
+            PackageManager.PERMISSION_GRANTED
 
-        Mockito.`when`(telephonyManager.simCarrierId).thenReturn(123)
-        Mockito
-            .`when`<CharSequence?>(telephonyManager.simCarrierIdName)
-            .thenReturn("API33Carrier")
-        Mockito.`when`(telephonyManager.simCountryIso).thenReturn("us")
-        Mockito.`when`(telephonyManager.simOperator).thenReturn("31026")
-        Mockito
-            .`when`(telephonyManager.dataNetworkType)
-            .thenReturn(TelephonyManager.NETWORK_TYPE_NR)
+        every { telephonyManager.simCarrierId } returns 123
+        every { telephonyManager.simCarrierIdName } returns "API33Carrier"
+        every { telephonyManager.simCountryIso } returns "us"
+        every { telephonyManager.simOperator } returns "31026"
+        every { telephonyManager.dataNetworkType } returns TelephonyManager.NETWORK_TYPE_NR
 
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
@@ -351,36 +247,17 @@ class NetworkDetectorTest {
     @Test
     @Config(sdk = [Build.VERSION_CODES.TIRAMISU])
     fun cellular_api33_withoutAnyPermission() {
-        Mockito.`when`<Network?>(connectivityManager.activeNetwork).thenReturn(network)
-        Mockito
-            .`when`<NetworkCapabilities?>(connectivityManager.getNetworkCapabilities(network))
-            .thenReturn(networkCapabilities)
-        Mockito
-            .`when`(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
-            .thenReturn(true)
+        every { networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) } returns true
 
         // Deny both permissions
-        contextCompatMock
-            .`when`<Any?> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.READ_PHONE_STATE,
-                )
-            }.thenReturn(PackageManager.PERMISSION_DENIED)
-        contextCompatMock
-            .`when`<Any?> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.READ_BASIC_PHONE_STATE,
-                )
-            }.thenReturn(PackageManager.PERMISSION_DENIED)
+        every { ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) } returns PackageManager.PERMISSION_DENIED
+        every { ContextCompat.checkSelfPermission(context, Manifest.permission.READ_BASIC_PHONE_STATE) } returns
+            PackageManager.PERMISSION_DENIED
 
-        Mockito.`when`(telephonyManager.simCarrierId).thenReturn(123)
-        Mockito
-            .`when`<CharSequence?>(telephonyManager.simCarrierIdName)
-            .thenReturn("API33Carrier")
-        Mockito.`when`(telephonyManager.simCountryIso).thenReturn("us")
-        Mockito.`when`(telephonyManager.simOperator).thenReturn("31026")
+        every { telephonyManager.simCarrierId } returns 123
+        every { telephonyManager.simCarrierIdName } returns "API33Carrier"
+        every { telephonyManager.simCountryIso } returns "us"
+        every { telephonyManager.simOperator } returns "31026"
 
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
