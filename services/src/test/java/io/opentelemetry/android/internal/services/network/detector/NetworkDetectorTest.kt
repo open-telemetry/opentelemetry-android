@@ -24,9 +24,8 @@ import io.mockk.unmockkStatic
 import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -89,7 +88,7 @@ class NetworkDetectorTest {
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
 
-        assertEquals(CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE), currentNetwork)
+        assertThat(currentNetwork).isEqualTo(CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE))
     }
 
     @Test
@@ -98,7 +97,7 @@ class NetworkDetectorTest {
         every { connectivityManager.getNetworkCapabilities(network) } returns null
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
-        assertEquals(CurrentNetwork(NetworkState.TRANSPORT_UNKNOWN), currentNetwork)
+        assertThat(currentNetwork).isEqualTo(CurrentNetwork(NetworkState.TRANSPORT_UNKNOWN))
     }
 
     @Test
@@ -107,7 +106,7 @@ class NetworkDetectorTest {
         every { networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) } returns true
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
-        assertEquals(CurrentNetwork(NetworkState.TRANSPORT_WIFI), currentNetwork)
+        assertThat(currentNetwork).isEqualTo(CurrentNetwork(NetworkState.TRANSPORT_WIFI))
     }
 
     @Test
@@ -127,10 +126,7 @@ class NetworkDetectorTest {
 
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
-        assertEquals(
-            CurrentNetwork(NetworkState.TRANSPORT_CELLULAR, expectedCarrier, "LTE"),
-            currentNetwork,
-        )
+        assertThat(currentNetwork).isEqualTo(CurrentNetwork(NetworkState.TRANSPORT_CELLULAR, expectedCarrier, "LTE"))
     }
 
     @Test
@@ -144,8 +140,8 @@ class NetworkDetectorTest {
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
         // Without permission, should still detect cellular but with no subtype
-        assertEquals(NetworkState.TRANSPORT_CELLULAR, currentNetwork.state)
-        assertNull(currentNetwork.subType)
+        assertThat(currentNetwork.state).isEqualTo(NetworkState.TRANSPORT_CELLULAR)
+        assertThat(currentNetwork.subType).isNull()
     }
 
     @Test
@@ -157,7 +153,7 @@ class NetworkDetectorTest {
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
         // Without telephony feature, should still detect cellular but with limited info
-        assertEquals(NetworkState.TRANSPORT_CELLULAR, currentNetwork.state)
+        assertThat(currentNetwork.state).isEqualTo(NetworkState.TRANSPORT_CELLULAR)
     }
 
     @Test
@@ -166,7 +162,7 @@ class NetworkDetectorTest {
         every { networkCapabilities.hasTransport(any()) } returns false
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
-        assertEquals(CurrentNetwork(NetworkState.TRANSPORT_UNKNOWN), currentNetwork)
+        assertThat(currentNetwork).isEqualTo(CurrentNetwork(NetworkState.TRANSPORT_UNKNOWN))
     }
 
     @Test
@@ -182,8 +178,8 @@ class NetworkDetectorTest {
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
 
-        assertEquals(NetworkState.TRANSPORT_CELLULAR, currentNetwork.state)
-        assertEquals("UMTS", currentNetwork.subType)
+        assertThat(currentNetwork.state).isEqualTo(NetworkState.TRANSPORT_CELLULAR)
+        assertThat(currentNetwork.subType).isEqualTo("UMTS")
     }
 
     @Test
@@ -197,8 +193,8 @@ class NetworkDetectorTest {
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
 
-        assertEquals(NetworkState.TRANSPORT_CELLULAR, currentNetwork.state)
-        assertNull(currentNetwork.subType)
+        assertThat(currentNetwork.state).isEqualTo(NetworkState.TRANSPORT_CELLULAR)
+        assertThat(currentNetwork.subType).isNull()
     }
 
     @Test
@@ -214,8 +210,8 @@ class NetworkDetectorTest {
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
 
-        assertEquals(NetworkState.TRANSPORT_CELLULAR, currentNetwork.state)
-        assertNull(currentNetwork.subType)
+        assertThat(currentNetwork.state).isEqualTo(NetworkState.TRANSPORT_CELLULAR)
+        assertThat(currentNetwork.subType).isNull()
     }
 
     @Test
@@ -236,12 +232,12 @@ class NetworkDetectorTest {
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
 
-        assertEquals(NetworkState.TRANSPORT_CELLULAR, currentNetwork.state)
-        assertEquals("NR", currentNetwork.subType)
-        assertEquals("API33Carrier", currentNetwork.carrierName)
-        assertEquals("310", currentNetwork.carrierCountryCode)
-        assertEquals("26", currentNetwork.carrierNetworkCode)
-        assertEquals("us", currentNetwork.carrierIsoCountryCode)
+        assertThat(currentNetwork.state).isEqualTo(NetworkState.TRANSPORT_CELLULAR)
+        assertThat(currentNetwork.subType).isEqualTo("NR")
+        assertThat(currentNetwork.carrierName).isEqualTo("API33Carrier")
+        assertThat(currentNetwork.carrierCountryCode).isEqualTo("310")
+        assertThat(currentNetwork.carrierNetworkCode).isEqualTo("26")
+        assertThat(currentNetwork.carrierIsoCountryCode).isEqualTo("us")
     }
 
     @Test
@@ -262,11 +258,11 @@ class NetworkDetectorTest {
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
 
-        assertEquals(NetworkState.TRANSPORT_CELLULAR, currentNetwork.state)
-        assertNull(currentNetwork.subType)
+        assertThat(currentNetwork.state).isEqualTo(NetworkState.TRANSPORT_CELLULAR)
+        assertThat(currentNetwork.subType).isNull()
         // Carrier should still be available for basic info (non-permission protected methods)
-        assertEquals("310", currentNetwork.carrierCountryCode)
-        assertEquals("26", currentNetwork.carrierNetworkCode)
-        assertEquals("us", currentNetwork.carrierIsoCountryCode)
+        assertThat(currentNetwork.carrierCountryCode).isEqualTo("310")
+        assertThat(currentNetwork.carrierNetworkCode).isEqualTo("26")
+        assertThat(currentNetwork.carrierIsoCountryCode).isEqualTo("us")
     }
 }
