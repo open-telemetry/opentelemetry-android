@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.opentelemetry.api.incubator)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.material.icons.core)
 
     coreLibraryDesugaring(libs.desugarJdkLibs)
 

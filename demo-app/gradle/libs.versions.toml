@@ -34,12 +34,13 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version = "2.2.1" }
 material = { group = "com.google.android.material", name = "material", version = "1.13.0" }
+material-icons-core = { group = "androidx.compose.material", name = "material-icons-core", version = "1.7.8" }
+
 androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version = "2.9.4" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version = "2.9.4" }
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation-compose" }
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigation-compose" }
 androidx-navigation-compose = {group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation-compose"}
-
 [bundles]
 junit = ["junit-jupiter-api", "junit-jupiter-engine", "junit-vintage-engine"]
 
