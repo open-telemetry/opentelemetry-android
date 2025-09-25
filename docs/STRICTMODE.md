@@ -5,14 +5,16 @@ violations when using the OpenTelemetry Android SDK ("android-agent") and underl
 
 StrictMode is a development tool that surfaces potentially expensive operations (e.g. disk/network I/O) on
 threads where they could cause UI jank or ANRs. The OpenTelemetry Android SDK aims to minimize undesirable
-impact to startup and frame rendering, but (a) some one‑time initialization I/O is currently unavoidable and
-(b) completely eliminating all StrictMode disk read signals would add significant complexity / overhead.
+impact to startup and frame rendering. However:
+
+- Some one‑time initialization I/O is currently unavoidable.
+- Completely eliminating all StrictMode disk read signals would add significant complexity or overhead.
 
 We group known violations into three categories:
 
-1. Avoidable (we intend to fix or have open issues / PRs)  
-2. Optional / Bypassable (you can disable a feature or apply a configuration trade‑off to avoid them)  
-3. Acceptable / Unavoidable (one‑time, low‑latency initialization that we accept for now)  
+1. Avoidable – we intend to fix or have open issues / PRs.  
+2. Optional / Avoidable by app choice – can be prevented by disabling an optional feature OR by applying an early, low‑cost mitigation (e.g. setting a property very early).  
+3. Acceptable / Unavoidable – one‑time, low‑latency initialization that cannot practically be prevented without disproportionate complexity, performance cost, or brittle ordering requirements.  
 
 > IMPORTANT: StrictMode reports *any* disk read/write on the main thread, regardless of cost. A reported
 > violation does not automatically mean a user‑visible freeze. Always measure real device startup / frame
@@ -22,12 +24,12 @@ We group known violations into three categories:
 
 | Source / Stack (Representative) | Category | Description | Mitigation / Workaround |
 |---------------------------------|----------|-------------|--------------------------|
-| `io.opentelemetry.context.LazyStorage.<clinit>` SPI resource scan (ServiceLoader) | 3 | One‑time classpath resource + service index scan across DEX/JAR elements to initialize context storage in OpenTelemetry Java | Pre‑seed the default context storage via system property to avoid ServiceLoader disk scan during first span; see below |
-| Offline persistence initialization (creating / listing storage dir) | 2 | Disk reads/writes to enable offline batching of telemetry (creates cache subdir, may stat existing files) | Disable offline buffering feature (see configuration section – TODO: link) if startup StrictMode cleanliness is critical |
+| `io.opentelemetry.context.LazyStorage.<clinit>` SPI resource scan (ServiceLoader) | 2 | One‑time classpath resource + service index scan across DEX/JAR elements to initialize context storage in OpenTelemetry Java | Pre‑seed the default context storage via system property to avoid ServiceLoader disk scan during first span; see below. |
+| Offline persistence initialization (creating / listing storage dir) | 2 | Disk reads/writes to enable offline batching of telemetry (creates cache subdir, may stat existing files) | Disable offline buffering (`DiskBufferingConfig.enabled = false` when configuring, or omit enabling the feature) if startup StrictMode cleanliness is critical – see `core/src/main/java/io/opentelemetry/android/features/diskbuffering/DiskBufferingConfig.kt` |
 | Crash / ANR signal handlers registration (proc / system reads) | 3 | Light, one‑time metadata collection (may read `/proc/self/` entries, system traces) | No direct workaround; expected to be minimal on typical hardware—measure on low‑end devices |
 | Reading network state / registering listeners | 2 | Accessing system services (e.g. `ConnectivityManager`, possibly reading system settings) | Disable specific instrumentation modules (network, slow/frozen frame) or remove their Gradle dependency |
 
-(We will expand this table as additional sources are identified. Contributions welcome.)
+We will expand this table as additional sources are identified. Contributions welcome.
 
 ## Known Primary Violation: Context Storage Lazy Initialization
 
@@ -49,8 +51,8 @@ scans Class-Path / DEX resource indices (service descriptors) to locate an imple
 
 References:
 
-* OTel Java issue: <https://github.com/open-telemetry/opentelemetry-java/issues/7600>
-* `LazyStorage` source (may move across versions): <https://github.com/open-telemetry/opentelemetry-java/blob/main/context/src/main/java/io/opentelemetry/context/LazyStorage.java>
+- OTel Java issue: <https://github.com/open-telemetry/opentelemetry-java/issues/7600>
+- `LazyStorage` source (may move across versions): <https://github.com/open-telemetry/opentelemetry-java/blob/main/context/src/main/java/io/opentelemetry/context/LazyStorage.java>
 
 ### Workaround: Pre‑seed the Default Context Storage
 
@@ -59,10 +61,10 @@ any OpenTelemetry API, agent, or auto-initialization code runs) to short‑circu
 
 Important details:
 
-* Set it before any OpenTelemetry API usage.
-* ContentProvider-based auto-initialization may run earlier; if that happens and can't be disabled, accept the one-time scan.
-* Applies per process.
-* Do not set it if you use a custom ContextStorage implementation.
+- Set it before any OpenTelemetry API usage.
+- ContentProvider-based auto-initialization may run earlier; if that happens and can't be disabled, accept the one-time scan.
+- Applies per process.
+- Do not set it if you use a custom ContextStorage implementation.
 
 Kotlin (e.g. in a custom `Application` `attachBaseContext` or very early in `onCreate`):
 
@@ -87,9 +89,9 @@ public class MyApplication extends Application {
 
 Notes:
 
-* Must run before any OpenTelemetry API call (including automatic instrumentation) to be effective.
-* Does nothing if you actually supply a custom provider (omit it in that case).
-* Eliminates the specific `LazyStorage` triggered disk read StrictMode warning in most scenarios.
+- Must run before any OpenTelemetry API call (including automatic instrumentation) to be effective.
+- Does nothing if you actually supply a custom provider (omit it in that case).
+- Eliminates the specific `LazyStorage` triggered disk read StrictMode warning in most scenarios.
 
 ### Alternative: Initialize Off Main Thread
 
@@ -121,15 +123,11 @@ startup telemetry) still meets your requirements.
 
 ## Policy
 
-1. We accept one‑time low latency disk reads during initialization where:  
-
-    * They occur exactly once (per process). NOTE: Under concurrent first access (race) multiple StrictMode entries may appear until initialization completes – treat this still as a single logical initialization sequence.  
-    * The mean cost is low (< ~5ms guideline) on representative hardware OR unavoidable due to JVM / Android constraints. This is a heuristic: measure p50/p95 on your target device classes.  
-
-2. We will provide workarounds (system properties, optional pre‑initialization APIs, configuration toggles) to move or eliminate work from the main thread where feasible.  
-3. Any recurring or high‑latency (> ~16ms) main thread I/O attributable to OpenTelemetry will be treated as a bug (file an issue with stack trace + timing).  
-4. This document will be kept up to date; new modules must list any expected StrictMode interactions.  
-5. Users are encouraged to measure real performance impact (startup time, ANR rate, frame time) before optimizing purely for zero StrictMode signals.  
+1. One‑time, low‑latency (< ~5ms guideline) main‑thread disk reads during initialization are acceptable when they occur exactly once per process (concurrent first access still counts as one logical init) or are realistically unavoidable due to platform/JVM constraints.
+2. Where feasible we expose mitigations (early system property, background warmup, feature toggles) so apps can eliminate or shift this work.
+3. StrictMode violations > ~16ms that are easily/consistently reproducible and attributable to OpenTelemetry main‑thread I/O may be filed as issues. Please include stack trace, timing, reproduction steps, and enabled modules so we can prioritize actual user impact.
+4. The list of sources will evolve; new SDK versions, Android platform changes, or dependency updates can surface new one‑time reads. We’ll adjust documentation as patterns emerge.
+5. Always validate real performance signals (startup time, frame timing, ANR rate) before optimizing purely for zero StrictMode entries; benign one‑time reads without user impact are lower priority than sustained latency.
 
 ## Reporting Additional Violations
 
@@ -142,8 +140,8 @@ If you find a StrictMode violation that appears frequently or adds noticeable st
 
 ## References
 
-* OTel Android issue (policy): <https://github.com/open-telemetry/opentelemetry-android/issues/1188>
-* OTel Java issue (LazyStorage SPI scan): <https://github.com/open-telemetry/opentelemetry-java/issues/7600>
-* OTel Java `LazyStorage` source: <https://github.com/open-telemetry/opentelemetry-java/blob/main/context/src/main/java/io/opentelemetry/context/LazyStorage.java>
-* Disk buffering configuration (`DiskBufferingConfig`): `core/src/main/java/io/opentelemetry/android/features/diskbuffering/DiskBufferingConfig.kt`
-* Exporter delegate chain overview: `docs/EXPORTER_CHAIN.md`
+- OTel Android issue (policy): <https://github.com/open-telemetry/opentelemetry-android/issues/1188>
+- OTel Java issue (LazyStorage SPI scan): <https://github.com/open-telemetry/opentelemetry-java/issues/7600>
+- OTel Java `LazyStorage` source: <https://github.com/open-telemetry/opentelemetry-java/blob/main/context/src/main/java/io/opentelemetry/context/LazyStorage.java>
+- Disk buffering configuration (`DiskBufferingConfig`): `core/src/main/java/io/opentelemetry/android/features/diskbuffering/DiskBufferingConfig.kt`
+- Exporter delegate chain overview: `docs/EXPORTER_CHAIN.md`
