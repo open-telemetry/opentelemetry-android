@@ -51,7 +51,7 @@ No disk layer is inserted and no scheduled reader is enabled.
 
 ### BufferDelegating[Span|Log|Metric]Exporter
 
-Internal in‑memory temporary exporters created immediately. They hold up to 5,000 items (per signal type) produced before the real delegate is attached. If the buffer fills, additional items are dropped with a warning log (`The <type> buffer was filled before export delegate set...`). After `setDelegate(...)` is invoked, the buffered data is exported, optional pending `flush()` / `shutdown()` calls are honored, and the buffer is cleared.
+Internal in‑memory temporary exporters created immediately. They hold up to 5,000 items (per signal type) produced before the real delegate is attached. If the buffer fills, additional items are dropped with a warning log (`The <type> buffer was filled before export delegate set...`). After `setDelegate(...)` is invoked, the buffered data is exported, optional pending `flush()` / `shutdown()` calls are honored, and the buffer is cleared. From that point on the exporter no longer buffers anything: every new signal is delegated straight through to the next exporter in the chain (*ToDiskExporter if disk buffering is enabled, otherwise the customized/base exporter).
 
 Source examples:
 
@@ -93,24 +93,29 @@ OpenTelemetryRum.builder(application)
   .build();
 ```
 
-Customizer semantics:
+Customizer semantics (build time vs. runtime order):
 
-* Each customizer receives the current exporter and must return the exporter to use next.
-* Multiple customizers compose in order of registration (first added runs first in the chain).
-* Disk buffering (if enabled) is inserted AFTER your customizers and BEFORE buffering to disk.
-* The BufferDelegating* exporters sit in front of everything solely during async init.
-
-Resulting order WITH customizers and disk buffering:
-
-```java
-BufferDelegating --> (Your custom wrappers...) --> *ToDiskExporter --> Original exporter
-```java
-
-Resulting order WITH customizers and NO disk buffering:
+* Start with the SDK's default exporter (e.g. `LoggingSpanExporter`) – call this the base exporter.
+* Each customizer is invoked in the exact order it was registered. It receives the exporter built so far and returns a (possibly wrapped) exporter. This produces a nested chain. If you register A then B then C, the resulting nesting is: `C(B(A(base)))`.
+* If disk buffering is enabled, the fully customized exporter (the outermost custom wrapper in code, i.e. `C(...)` in the example) is then wrapped by `*ToDiskExporter` so data is persisted to disk before reaching any of the custom wrappers.
+* Finally a `BufferDelegating*Exporter` wraps the whole thing to capture early telemetry while async initialization finishes. After `setDelegate(...)` it becomes a pass‑through.
+* Runtime data flow therefore in the A,B,C example (registered in that order) is:
 
 ```text
-BufferDelegating --> (Your custom wrappers...) --> Original exporter
+BufferDelegating*Exporter → *ToDiskExporter (if enabled) → C → B → A → base exporter
 ```
+
+Notes:
+
+* Registration order (A,B,C) is outside‑in at build time, but runtime export order is the reverse (C,B,A) because of nested wrapping.
+* The disk buffering layer is not added via a customizer; it is applied after all customizers are evaluated.
+* If disk buffering is disabled the flow simply omits that layer:
+
+```text
+BufferDelegating*Exporter → C → B → A → base exporter
+```
+
+Summary (concise): Once the exporter is built and all customizers have been applied, that result is wrapped by a disk buffering exporter (if enabled) and then finally wrapped by a `BufferDelegating*Exporter`.
 
 You control the final network/export sink by returning it from the last customizer. For example, to send spans via OTLP HTTP:
 
@@ -136,6 +141,7 @@ If `flush()` or `shutdown()` is invoked before delegates are attached, the `Dele
 * Buffer Overflow: If more than 5,000 signals of a type are produced before delegate attachment, newer signals beyond capacity are dropped (a warning is logged). Consider reducing startup emission volume or initializing earlier if this occurs.
 * Disk Layer: If disk initialization fails, the SDK logs an error and proceeds WITHOUT disk buffering (the chain reverts to memory buffer -> original exporter). The scheduled disk reader is disabled in this case.
 * From-Disk Export Failures: Batches that fail to export remain on disk (subject to age / size pruning rules governed by `DiskBufferingConfig`).
+* To-Disk Export Failures: If disk buffering is enabled and initialized but a batch cannot be written (e.g., I/O error or size constraint), that batch is immediately forwarded to the underlying exporter (skipping disk for that batch) to avoid data loss. Subsequent batches continue attempting disk writes.
 
 ## Configuration References
 
