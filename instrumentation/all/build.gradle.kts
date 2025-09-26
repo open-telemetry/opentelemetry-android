@@ -7,7 +7,7 @@ description = "OpenTelemetry Android aggregate: all available instrumentation fe
 
 android {
     namespace = "io.opentelemetry.android.instrumentation.all"
-    
+
     defaultConfig {
         // No consumer rules; this module just aggregates others.
     }
