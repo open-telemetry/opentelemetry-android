@@ -73,6 +73,12 @@ For a bundled “everything on” experience during evaluation/development, see 
 
 Note: Use of these features is not yet well documented.
 
+## Exporter Chain
+
+The SDK performs asynchronous exporter initialization with an in-memory buffering layer and optional
+disk buffering for offline scenarios. See [Exporter Chain documentation](./docs/EXPORTER_CHAIN.md)
+for details, customization hooks, and ordering semantics.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
