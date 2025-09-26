@@ -12,13 +12,13 @@
 * [Features](#contributing)
 * [Contributing](#contributing)
 
-# About
+## About
 
 The repository contains the OpenTelemetry Android SDK for generating mobile
 client telemetry for real user monitoring (RUM). It is built on top
 of the [OpenTelemetry Java SDK](https://github.com/open-telemetry/opentelemetry-java).
 
-# Getting Started
+## Getting Started
 
 > If your project's minSdk is lower than 26, then you must enable
 > [corelib desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring).
@@ -52,7 +52,7 @@ dependencies {
 }
 ```
 
-# Features
+## Features
 
 This android library builds on top of
 the [OpenTelemetry Java SDK](https://github.com/open-telemetry/opentelemetry-java).
@@ -69,23 +69,25 @@ Some of the additional features provided include:
 * [Slow / frozen render detection](./instrumentation/slowrendering)
 * Offline buffering of telemetry via storage
 
+For a bundled “everything on” experience during evaluation/development, see the optional [`instrumentation-all` module](./instrumentation/all/README.md).
+
 Note: Use of these features is not yet well documented.
 
-# Contributing
+## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-### Maintainers
+## Maintainers
 
-- [Cesar Munoz](https://github.com/likethesalad), Elastic
-- [Jason Plumb](https://github.com/breedx-splk), Splunk
+* [Cesar Munoz](https://github.com/likethesalad), Elastic
+* [Jason Plumb](https://github.com/breedx-splk), Splunk
 
 For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
 
-### Approvers
+## Approvers
 
-- [Hanson Ho](https://github.com/bidetofevil), Embrace
-- [Manoel Aranda Neto](https://github.com/marandaneto), PostHog
+* [Hanson Ho](https://github.com/bidetofevil), Embrace
+* [Manoel Aranda Neto](https://github.com/marandaneto), PostHog
 
 For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
 
