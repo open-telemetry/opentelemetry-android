@@ -6,28 +6,30 @@
 package io.opentelemetry.android.internal.services.applifecycle
 
 import androidx.core.app.ComponentActivity
+import io.mockk.Called
+import io.mockk.MockKAnnotations
+import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.verify
+import io.mockk.verifyOrder
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.junit.jupiter.MockitoExtension
 
-@ExtendWith(MockitoExtension::class)
 internal class ApplicationStateWatcherTest {
-    @Mock
+    @MockK
     private lateinit var activity: ComponentActivity
 
-    @Mock
+    @RelaxedMockK
     private lateinit var listener1: ApplicationStateListener
 
-    @Mock
+    @RelaxedMockK
     private lateinit var listener2: ApplicationStateListener
 
     private lateinit var underTest: ApplicationStateWatcher
 
     @BeforeEach
     fun setUp() {
+        MockKAnnotations.init(this)
         underTest = ApplicationStateWatcher()
         underTest.registerListener(listener1)
         underTest.registerListener(listener2)
@@ -37,10 +39,10 @@ internal class ApplicationStateWatcherTest {
     fun appForegrounded() {
         underTest.onStart(activity)
 
-        val io = Mockito.inOrder(listener1, listener2)
-        io.verify(listener1).onApplicationForegrounded()
-        io.verify(listener2).onApplicationForegrounded()
-        io.verifyNoMoreInteractions()
+        verifyOrder {
+            listener1.onApplicationForegrounded()
+            listener2.onApplicationForegrounded()
+        }
     }
 
     @Test
@@ -48,12 +50,12 @@ internal class ApplicationStateWatcherTest {
         underTest.onStart(activity)
         underTest.onStop(activity)
 
-        val io = Mockito.inOrder(listener1, listener2)
-        io.verify(listener1).onApplicationForegrounded()
-        io.verify(listener2).onApplicationForegrounded()
-        io.verify(listener1).onApplicationBackgrounded()
-        io.verify(listener2).onApplicationBackgrounded()
-        io.verifyNoMoreInteractions()
+        verifyOrder {
+            listener1.onApplicationForegrounded()
+            listener2.onApplicationForegrounded()
+            listener1.onApplicationBackgrounded()
+            listener2.onApplicationBackgrounded()
+        }
     }
 
     @Test
@@ -63,6 +65,7 @@ internal class ApplicationStateWatcherTest {
         underTest.onStart(activity)
         underTest.onStop(activity)
 
-        Mockito.verifyNoInteractions(listener1, listener2)
+        verify { listener1 wasNot Called }
+        verify { listener2 wasNot Called }
     }
 }
