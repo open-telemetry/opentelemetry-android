@@ -8,13 +8,13 @@ package io.opentelemetry.android.agent
 import android.app.Application
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.OpenTelemetryRumBuilder
 import io.opentelemetry.android.agent.connectivity.EndpointConnectivity
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 import io.opentelemetry.android.agent.session.SessionConfig
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.agent.session.SessionManager
 import io.opentelemetry.android.config.OtelRumConfig
+import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.activity.ActivityLifecycleInstrumentation
@@ -47,7 +47,6 @@ object OpenTelemetryRumInitializer {
      * @param spanEndpointConnectivity Span-specific endpoint configuration.
      * @param logEndpointConnectivity Log-specific endpoint configuration.
      * @param metricEndpointConnectivity Metric-specific endpoint configuration.
-     * @param rumConfig Configuration used by [OpenTelemetryRumBuilder].
      * @param sessionConfig The session configuration, which includes inactivity timeout and maximum lifetime durations.
      * @param instrumentations Configurations for all the default instrumentations.
      */
@@ -72,13 +71,14 @@ object OpenTelemetryRumInitializer {
                 endpointBaseUrl,
                 endpointHeaders,
             ),
-        rumConfig: OtelRumConfig = OtelRumConfig(),
         sessionConfig: SessionConfig = SessionConfig.withDefaults(),
         instrumentations: (InstrumentationConfiguration.() -> Unit)? = null,
     ): OpenTelemetryRum {
         instrumentations?.let { configure ->
             InstrumentationConfiguration().configure()
         }
+        val rumConfig = OtelRumConfig()
+        rumConfig.setDiskBufferingConfig(DiskBufferingConfig.create(enabled = true))
         return OpenTelemetryRum
             .builder(application, rumConfig)
             .setSessionProvider(createSessionProvider(application, sessionConfig))
