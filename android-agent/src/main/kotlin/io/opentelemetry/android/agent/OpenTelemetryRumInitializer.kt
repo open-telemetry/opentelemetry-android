@@ -29,6 +29,7 @@ import io.opentelemetry.android.instrumentation.network.NetworkChangeInstrumenta
 import io.opentelemetry.android.instrumentation.slowrendering.SlowRenderingInstrumentation
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
@@ -72,6 +73,7 @@ object OpenTelemetryRumInitializer {
                 endpointHeaders,
             ),
         sessionConfig: SessionConfig = SessionConfig.withDefaults(),
+        globalAttributes: (() -> Attributes)? = null,
         instrumentations: (InstrumentationConfiguration.() -> Unit)? = null,
     ): OpenTelemetryRum {
         instrumentations?.let { configure ->
@@ -79,6 +81,9 @@ object OpenTelemetryRumInitializer {
         }
         val rumConfig = OtelRumConfig()
         rumConfig.setDiskBufferingConfig(DiskBufferingConfig.create(enabled = true))
+        globalAttributes?.let {
+            rumConfig.setGlobalAttributes(it::invoke)
+        }
         return OpenTelemetryRum
             .builder(application, rumConfig)
             .setSessionProvider(createSessionProvider(application, sessionConfig))
