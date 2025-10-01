@@ -15,7 +15,7 @@ import io.opentelemetry.api.common.AttributesBuilder
 /**
  * A tag interface for an extractor that can add attributes from the [CurrentNetwork].
  */
-interface NetworkAttributesExtractor : (AttributesBuilder, CurrentNetwork) -> Unit
+fun interface NetworkAttributesExtractor : (AttributesBuilder, CurrentNetwork) -> Unit
 
 /** Generates telemetry for when the network status changes.  */
 @AutoService(AndroidInstrumentation::class)
