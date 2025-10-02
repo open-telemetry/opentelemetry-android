@@ -44,7 +44,7 @@ class OtelDemoApplication : Application() {
                 endpointBaseUrl = "http://10.0.2.2:4318",
                 rumConfig = config
             )
-            Log.d(TAG, "RUM session started: " + rum!!.rumSessionId)
+            Log.d(TAG, "RUM session started: " + rum?.getRumSessionId())
         } catch (e: Exception) {
             Log.e(TAG, "Oh no!", e)
         }
@@ -74,18 +74,18 @@ class OtelDemoApplication : Application() {
         var rum: OpenTelemetryRum? = null
 
         fun tracer(name: String): Tracer? {
-            return rum?.openTelemetry?.tracerProvider?.get(name)
+            return rum?.getOpenTelemetry()?.tracerProvider?.get(name)
         }
 
         fun counter(name: String): LongCounter? {
-            return rum?.openTelemetry?.meterProvider?.get("demo.app")?.counterBuilder(name)?.build()
+            return rum?.getOpenTelemetry()?.meterProvider?.get("demo.app")?.counterBuilder(name)?.build()
         }
 
         fun eventBuilder(scopeName: String, eventName: String): LogRecordBuilder {
             if (rum == null) {
                 return LoggerProvider.noop().get("noop").logRecordBuilder()
             }
-            val logger = rum!!.openTelemetry.logsBridge.loggerBuilder(scopeName).build()
+            val logger = rum!!.getOpenTelemetry().logsBridge.loggerBuilder(scopeName).build()
             return logger.logRecordBuilder().setEventName(eventName)
         }
     }

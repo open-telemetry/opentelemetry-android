@@ -167,7 +167,7 @@ public class OpenTelemetryRumBuilderTest {
                         .build();
 
         Attributes attrs = Attributes.of(stringKey("mega"), "hit", stringKey("body.field"), "foo");
-        openTelemetryRum.emitEvent("test.event", attrs);
+        openTelemetryRum.emitEvent("test.event", "", attrs);
 
         List<LogRecordData> logs = logsExporter.getFinishedLogRecordItems();
         assertThat(logs).hasSize(1);
