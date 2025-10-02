@@ -168,7 +168,7 @@ object OpenTelemetryRumInitializer {
     class ActivityLifecycleConfiguration internal constructor(
         private val config: OtelRumConfig,
     ) : ScreenLifecycleConfigurable,
-        CanBeDisabled {
+        CanBeEnabledAndDisabled {
         private val activityLifecycleInstrumentation: ActivityLifecycleInstrumentation by lazy {
             getInstrumentation()
         }
@@ -181,8 +181,12 @@ object OpenTelemetryRumInitializer {
             activityLifecycleInstrumentation.setScreenNameExtractor(value)
         }
 
-        override fun disable() {
-            config.suppressInstrumentation(activityLifecycleInstrumentation.name)
+        override fun setEnabled(enabled: Boolean) {
+            if (enabled) {
+                config.allowInstrumentation(activityLifecycleInstrumentation.name)
+            } else {
+                config.suppressInstrumentation(activityLifecycleInstrumentation.name)
+            }
         }
     }
 
@@ -190,7 +194,7 @@ object OpenTelemetryRumInitializer {
     class FragmentLifecycleConfiguration internal constructor(
         private val config: OtelRumConfig,
     ) : ScreenLifecycleConfigurable,
-        CanBeDisabled {
+        CanBeEnabledAndDisabled {
         private val fragmentLifecycleInstrumentation: FragmentLifecycleInstrumentation by lazy {
             getInstrumentation()
         }
@@ -203,8 +207,12 @@ object OpenTelemetryRumInitializer {
             fragmentLifecycleInstrumentation.setScreenNameExtractor(value)
         }
 
-        override fun disable() {
-            config.suppressInstrumentation(fragmentLifecycleInstrumentation.name)
+        override fun setEnabled(enabled: Boolean) {
+            if (enabled) {
+                config.allowInstrumentation(fragmentLifecycleInstrumentation.name)
+            } else {
+                config.suppressInstrumentation(fragmentLifecycleInstrumentation.name)
+            }
         }
     }
 
@@ -212,15 +220,19 @@ object OpenTelemetryRumInitializer {
     class AnrReporterConfiguration internal constructor(
         private val config: OtelRumConfig,
     ) : WithEventAttributes<Array<StackTraceElement>>,
-        CanBeDisabled {
+        CanBeEnabledAndDisabled {
         private val anrInstrumentation: AnrInstrumentation by lazy { getInstrumentation() }
 
         override fun addAttributesExtractor(value: EventAttributesExtractor<Array<StackTraceElement>>) {
             anrInstrumentation.addAttributesExtractor(value)
         }
 
-        override fun disable() {
-            config.suppressInstrumentation(anrInstrumentation.name)
+        override fun setEnabled(enabled: Boolean) {
+            if (enabled) {
+                config.allowInstrumentation(anrInstrumentation.name)
+            } else {
+                config.suppressInstrumentation(anrInstrumentation.name)
+            }
         }
     }
 
@@ -228,37 +240,45 @@ object OpenTelemetryRumInitializer {
     class CrashReporterConfiguration internal constructor(
         private val config: OtelRumConfig,
     ) : WithEventAttributes<CrashDetails>,
-        CanBeDisabled {
+        CanBeEnabledAndDisabled {
         private val crashReporterInstrumentation: CrashReporterInstrumentation by lazy { getInstrumentation() }
 
         override fun addAttributesExtractor(value: EventAttributesExtractor<CrashDetails>) {
             crashReporterInstrumentation.addAttributesExtractor(value)
         }
 
-        override fun disable() {
-            config.suppressInstrumentation(crashReporterInstrumentation.name)
+        override fun setEnabled(enabled: Boolean) {
+            if (enabled) {
+                config.allowInstrumentation(crashReporterInstrumentation.name)
+            } else {
+                config.suppressInstrumentation(crashReporterInstrumentation.name)
+            }
         }
     }
 
     @InstrumentationConfigMarker
     class NetworkMonitoringConfiguration internal constructor(
         private val config: OtelRumConfig,
-    ) : CanBeDisabled {
+    ) : CanBeEnabledAndDisabled {
         private val networkInstrumentation: NetworkChangeInstrumentation by lazy { getInstrumentation() }
 
         fun addAttributesExtractor(value: NetworkAttributesExtractor) {
             networkInstrumentation.addAttributesExtractor(value)
         }
 
-        override fun disable() {
-            config.suppressInstrumentation(networkInstrumentation.name)
+        override fun setEnabled(enabled: Boolean) {
+            if (enabled) {
+                config.allowInstrumentation(networkInstrumentation.name)
+            } else {
+                config.suppressInstrumentation(networkInstrumentation.name)
+            }
         }
     }
 
     @InstrumentationConfigMarker
     class SlowRenderingReporterConfiguration internal constructor(
         private val config: OtelRumConfig,
-    ) : CanBeDisabled {
+    ) : CanBeEnabledAndDisabled {
         private val slowRenderingInstrumentation: SlowRenderingInstrumentation by lazy { getInstrumentation() }
 
         fun detectionPollInterval(value: Duration) {
@@ -269,8 +289,12 @@ object OpenTelemetryRumInitializer {
             slowRenderingInstrumentation.enableVerboseDebugLogging()
         }
 
-        override fun disable() {
-            config.suppressInstrumentation(slowRenderingInstrumentation.name)
+        override fun setEnabled(enabled: Boolean) {
+            if (enabled) {
+                config.allowInstrumentation(slowRenderingInstrumentation.name)
+            } else {
+                config.suppressInstrumentation(slowRenderingInstrumentation.name)
+            }
         }
     }
 
@@ -284,8 +308,8 @@ object OpenTelemetryRumInitializer {
         fun addAttributesExtractor(value: EventAttributesExtractor<T>)
     }
 
-    internal interface CanBeDisabled {
-        fun disable()
+    internal interface CanBeEnabledAndDisabled {
+        fun setEnabled(enabled: Boolean)
     }
 
     @DslMarker
