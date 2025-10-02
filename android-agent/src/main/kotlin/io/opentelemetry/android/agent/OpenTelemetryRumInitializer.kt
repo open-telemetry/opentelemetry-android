@@ -181,7 +181,7 @@ object OpenTelemetryRumInitializer {
             activityLifecycleInstrumentation.setScreenNameExtractor(value)
         }
 
-        override fun setEnabled(enabled: Boolean) {
+        override fun enabled(enabled: Boolean) {
             if (enabled) {
                 config.allowInstrumentation(activityLifecycleInstrumentation.name)
             } else {
@@ -207,7 +207,7 @@ object OpenTelemetryRumInitializer {
             fragmentLifecycleInstrumentation.setScreenNameExtractor(value)
         }
 
-        override fun setEnabled(enabled: Boolean) {
+        override fun enabled(enabled: Boolean) {
             if (enabled) {
                 config.allowInstrumentation(fragmentLifecycleInstrumentation.name)
             } else {
@@ -227,7 +227,7 @@ object OpenTelemetryRumInitializer {
             anrInstrumentation.addAttributesExtractor(value)
         }
 
-        override fun setEnabled(enabled: Boolean) {
+        override fun enabled(enabled: Boolean) {
             if (enabled) {
                 config.allowInstrumentation(anrInstrumentation.name)
             } else {
@@ -247,7 +247,7 @@ object OpenTelemetryRumInitializer {
             crashReporterInstrumentation.addAttributesExtractor(value)
         }
 
-        override fun setEnabled(enabled: Boolean) {
+        override fun enabled(enabled: Boolean) {
             if (enabled) {
                 config.allowInstrumentation(crashReporterInstrumentation.name)
             } else {
@@ -266,7 +266,7 @@ object OpenTelemetryRumInitializer {
             networkInstrumentation.addAttributesExtractor(value)
         }
 
-        override fun setEnabled(enabled: Boolean) {
+        override fun enabled(enabled: Boolean) {
             if (enabled) {
                 config.allowInstrumentation(networkInstrumentation.name)
             } else {
@@ -289,7 +289,7 @@ object OpenTelemetryRumInitializer {
             slowRenderingInstrumentation.enableVerboseDebugLogging()
         }
 
-        override fun setEnabled(enabled: Boolean) {
+        override fun enabled(enabled: Boolean) {
             if (enabled) {
                 config.allowInstrumentation(slowRenderingInstrumentation.name)
             } else {
@@ -309,7 +309,7 @@ object OpenTelemetryRumInitializer {
     }
 
     internal interface CanBeEnabledAndDisabled {
-        fun setEnabled(enabled: Boolean)
+        fun enabled(enabled: Boolean)
     }
 
     @DslMarker
