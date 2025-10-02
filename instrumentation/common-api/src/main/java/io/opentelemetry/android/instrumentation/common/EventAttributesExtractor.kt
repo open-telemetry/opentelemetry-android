@@ -15,7 +15,7 @@ import io.opentelemetry.context.Context
  * at a point in time. The resulting Attributes will all be added to the event
  * that is being generated.
  */
-interface EventAttributesExtractor<SUBJECT> {
+fun interface EventAttributesExtractor<SUBJECT> {
     fun extract(
         parentContext: Context,
         subject: SUBJECT,

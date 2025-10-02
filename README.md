@@ -79,6 +79,12 @@ For guidance on Android StrictMode violations (disk / network I/O warnings) trig
 and instrumentation, expected one-time operations, plus available mitigations and workarounds, see
 [StrictMode Policy](./docs/STRICTMODE.md).
 
+## Exporter Chain
+
+The SDK performs asynchronous exporter initialization with an in-memory buffering layer and optional
+disk buffering for offline scenarios. See [Exporter Chain documentation](./docs/EXPORTER_CHAIN.md)
+for details, customization hooks, and ordering semantics.
+
 # Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).

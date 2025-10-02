@@ -1,8 +1,8 @@
 [versions]
-opentelemetry = "1.54.0"
-opentelemetry-alpha = "1.54.0-alpha"
-junit = "5.13.4"
-spotless = "7.2.1"
+opentelemetry = "1.54.1"
+opentelemetry-alpha = "1.54.1-alpha"
+junit = "6.0.0"
+spotless = "8.0.0"
 kotlin = "2.2.20"
 navigation-compose = "2.7.7"
 
@@ -23,8 +23,8 @@ desugarJdkLibs = "com.android.tools:desugar_jdk_libs:2.1.5"
 
 # demo-app
 androidx-core-ktx = "androidx.core:core-ktx:1.17.0"
-androidx-lifecycle-runtime-ktx = "androidx.lifecycle:lifecycle-runtime-ktx:2.9.3"
-androidx-compose-bom = "androidx.compose:compose-bom:2025.09.00"
+androidx-lifecycle-runtime-ktx = "androidx.lifecycle:lifecycle-runtime-ktx:2.9.4"
+androidx-compose-bom = "androidx.compose:compose-bom:2025.09.01"
 androidx-activity-compose = "androidx.activity:activity-compose:1.11.0"
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
@@ -34,12 +34,13 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version = "2.2.1" }
 material = { group = "com.google.android.material", name = "material", version = "1.13.0" }
+material-icons-core = { group = "androidx.compose.material", name = "material-icons-core", version = "1.7.8" }
+
 androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version = "2.9.4" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version = "2.9.4" }
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation-compose" }
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigation-compose" }
 androidx-navigation-compose = {group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation-compose"}
-
 [bundles]
 junit = ["junit-jupiter-api", "junit-jupiter-engine", "junit-vintage-engine"]
 
