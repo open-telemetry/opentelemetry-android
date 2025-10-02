@@ -8,14 +8,15 @@ package io.opentelemetry.android.demo
 import android.annotation.SuppressLint
 import android.app.Application
 import android.util.Log
+import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.agent.OpenTelemetryRumInitializer
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
 import io.opentelemetry.api.logs.LogRecordBuilder
+import io.opentelemetry.api.logs.LoggerProvider
 import io.opentelemetry.api.metrics.LongCounter
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter
@@ -41,7 +42,11 @@ class OtelDemoApplication : Application() {
             rum = OpenTelemetryRumInitializer.initialize(
                 application = this,
                 endpointBaseUrl = "http://10.0.2.2:4318",
-                rumConfig = config
+
+                rumConfig = config,
+                instrumentations = {
+
+                }
             )
             Log.d(TAG, "RUM session started: " + rum!!.rumSessionId)
         } catch (e: Exception) {
@@ -81,9 +86,11 @@ class OtelDemoApplication : Application() {
         }
 
         fun eventBuilder(scopeName: String, eventName: String): LogRecordBuilder {
-            val logger = rum?.openTelemetry?.logsBridge?.loggerBuilder(scopeName)?.build()
-            var builder: ExtendedLogRecordBuilder = logger?.logRecordBuilder() as ExtendedLogRecordBuilder
-            return builder.setEventName(eventName)
+            if(rum == null){
+                return LoggerProvider.noop().get("noop").logRecordBuilder()
+            }
+            val logger = rum!!.openTelemetry.logsBridge.loggerBuilder(scopeName).build()
+            return logger.logRecordBuilder().setEventName(eventName)
         }
     }
 }

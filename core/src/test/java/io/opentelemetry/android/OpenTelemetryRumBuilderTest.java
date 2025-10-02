@@ -53,7 +53,6 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.contrib.disk.buffering.SpanToDiskExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -180,7 +179,7 @@ public class OpenTelemetryRumBuilderTest {
                         equalTo(stringKey("body.field"), "foo"))
                 .hasResource(resource);
         // TODO: verify event name inline above when the assertions framework can handle it
-        ExtendedLogRecordData log0 = (ExtendedLogRecordData) logs.get(0);
+        LogRecordData log0 = logs.get(0);
         assertThat(log0.getEventName()).isEqualTo("test.event");
     }
 

@@ -7,7 +7,6 @@ package io.opentelemetry.android.instrumentation.crash
 
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
 import io.opentelemetry.context.Context
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_MESSAGE
@@ -59,7 +58,7 @@ internal class CrashReporter(
             attributesBuilder.putAll(extractedAttributes)
         }
         val eventBuilder =
-            logger.logRecordBuilder() as ExtendedLogRecordBuilder
+            logger.logRecordBuilder()
         eventBuilder
             .setEventName("device.crash")
             .setAllAttributes(attributesBuilder.build())

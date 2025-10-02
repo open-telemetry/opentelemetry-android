@@ -8,8 +8,8 @@ package io.opentelemetry.instrumentation.library.okhttp.v3_0.websocket.internal;
 import io.opentelemetry.android.instrumentation.InstallationContext;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
-import io.opentelemetry.api.incubator.logs.ExtendedLogger;
+import io.opentelemetry.api.logs.LogRecordBuilder;
+import io.opentelemetry.api.logs.Logger;
 
 public final class WebsocketEventGenerator {
 
@@ -17,17 +17,16 @@ public final class WebsocketEventGenerator {
 
     private static final String SCOPE = "io.opentelemetry.websocket.events";
 
-    private static ExtendedLogger logger =
-            (ExtendedLogger) OpenTelemetry.noop().getLogsBridge().loggerBuilder(SCOPE).build();
+    private static Logger logger =
+            OpenTelemetry.noop().getLogsBridge().loggerBuilder(SCOPE).build();
 
     public static void configure(InstallationContext context) {
         WebsocketEventGenerator.logger =
-                (ExtendedLogger)
                         context.getOpenTelemetry().getLogsBridge().loggerBuilder(SCOPE).build();
     }
 
     public static void generateEvent(String eventName, Attributes attributes) {
-        ExtendedLogRecordBuilder logRecordBuilder = logger.logRecordBuilder();
+        LogRecordBuilder logRecordBuilder = logger.logRecordBuilder();
         logRecordBuilder.setEventName(eventName).setAllAttributes(attributes).emit();
     }
 }
