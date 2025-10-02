@@ -29,3 +29,8 @@ public abstract interface class io/opentelemetry/android/instrumentation/common/
 	public abstract fun extract (Ljava/lang/Object;)Ljava/lang/String;
 }
 
+public final class io/opentelemetry/android/instrumentation/common/ViewUtilsKt {
+	public static final fun getChildren (Landroid/view/ViewGroup;)Ljava/util/List;
+	public static final fun getComplexity (Landroid/view/View;)Lkotlin/Pair;
+}
+

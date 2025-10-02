@@ -7,6 +7,7 @@ package io.opentelemetry.android.instrumentation.activity
 
 import android.app.Activity
 import android.os.Bundle
+import io.opentelemetry.android.instrumentation.activity.draw.FirstDrawListener
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
 
 class ActivityCallbacks(
@@ -17,6 +18,9 @@ class ActivityCallbacks(
         savedInstanceState: Bundle?,
     ) {
         tracers.startActivityCreation(activity).addEvent("activityPreCreated")
+        FirstDrawListener.registerFirstDraw(activity) { view ->
+            tracers.endInitialDrawSpan(activity, view)
+        }
     }
 
     override fun onActivityCreated(

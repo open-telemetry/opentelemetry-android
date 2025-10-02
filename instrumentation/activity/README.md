@@ -38,6 +38,20 @@ This instrumentation produces the following telemetry:
   * `screen.name`:  name of screen
   * `last.screen.name`:  name of screen, only when span contains the `activityPostResumed` event.
 
+### First Draw
+
+* Type: Span
+* Name: `FirstDraw`
+* Description: On activity PreCreated or Created (pre API 29) callback, a span will be created
+  to represent the time that the UI pipeline took to render that Activity's first frame. The span ends
+  at the first draw of the window
+  [DecorView](https://developer.android.com/reference/android/view/Window#getDecorView())
+* Attributes:
+  * `activity.name`:  name of activity
+  * `screen.name`:  name of screen
+  * `screen.view.nodes`: a recursive count of all View nodes under the window DecorView. This gives a measure of the amount of work being done in the *layout-and-measure* stage of the UI pipeline. A high count correlates with longer FirstDraw. System-defined layers are included in this count.
+  * `screen.view.depth`: the depth of the deepest-nested View under the window DecorView. This gives a measure of your UI complexity; more work must be done for a deeply-nested View heirarchy. A high count correlates with longer FirstDraw. System-defined layers (usually 4-6) are included when calculating the depth.
+
 ## Installation
 
 This instrumentation comes with the [android agent](../../android-agent) out of the box, so

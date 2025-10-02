@@ -8,7 +8,9 @@ package io.opentelemetry.android.instrumentation.activity
 import android.app.Activity
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.opentelemetry.android.common.RumConstants
+import io.opentelemetry.android.instrumentation.activity.draw.FirstDrawListener
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
@@ -39,6 +41,9 @@ internal class Pre29ActivityLifecycleCallbacksTest {
         val extractor = mockk<ScreenNameExtractor>(relaxed = true)
         every { extractor.extract(any<Activity>()) } returns "Activity"
         tracers = ActivityTracerCache(tracer, visibleScreenTracker, appStartupTimer, extractor)
+
+        mockkObject(FirstDrawListener)
+        every { FirstDrawListener.registerFirstDraw(any(), any()) } returns Unit
     }
 
     @Test
