@@ -42,11 +42,7 @@ class OtelDemoApplication : Application() {
             rum = OpenTelemetryRumInitializer.initialize(
                 application = this,
                 endpointBaseUrl = "http://10.0.2.2:4318",
-
-                rumConfig = config,
-                instrumentations = {
-
-                }
+                rumConfig = config
             )
             Log.d(TAG, "RUM session started: " + rum!!.rumSessionId)
         } catch (e: Exception) {
