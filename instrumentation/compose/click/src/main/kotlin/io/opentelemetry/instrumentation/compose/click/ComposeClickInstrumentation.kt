@@ -20,7 +20,7 @@ class ComposeClickInstrumentation : AndroidInstrumentation {
                     ctx.openTelemetry
                         .logsBridge
                         .loggerBuilder("io.opentelemetry.android.instrumentation.compose.click")
-                        .build()
+                        .build(),
                 ),
             ),
         )

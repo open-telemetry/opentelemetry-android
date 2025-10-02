@@ -22,7 +22,7 @@ public final class WebsocketEventGenerator {
 
     public static void configure(InstallationContext context) {
         WebsocketEventGenerator.logger =
-                        context.getOpenTelemetry().getLogsBridge().loggerBuilder(SCOPE).build();
+                context.getOpenTelemetry().getLogsBridge().loggerBuilder(SCOPE).build();
     }
 
     public static void generateEvent(String eventName, Attributes attributes) {
