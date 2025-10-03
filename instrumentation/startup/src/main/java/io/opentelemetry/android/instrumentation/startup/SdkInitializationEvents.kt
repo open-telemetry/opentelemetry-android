@@ -13,7 +13,6 @@ import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.common.Value
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import java.time.Instant
@@ -75,7 +74,7 @@ class SdkInitializationEvents(
     }
 
     private fun Event.emit(logger: Logger) {
-        val eventBuilder: ExtendedLogRecordBuilder = logger.logRecordBuilder() as ExtendedLogRecordBuilder
+        val eventBuilder = logger.logRecordBuilder()
         eventBuilder
             .setEventName(name)
             .setTimestamp(timestamp)

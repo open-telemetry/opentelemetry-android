@@ -5,19 +5,20 @@
 
 package io.opentelemetry.android.instrumentation.sessions
 
+import com.google.auto.service.AutoService
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.session.SessionPublisher
-import io.opentelemetry.api.incubator.logs.ExtendedLogger
 
+@AutoService(AndroidInstrumentation::class)
 class SessionInstrumentation : AndroidInstrumentation {
     override val name: String = "session"
 
     override fun install(ctx: InstallationContext) {
-        val eventLogger: ExtendedLogger =
+        val eventLogger =
             ctx.openTelemetry.logsBridge
                 .loggerBuilder("otel.session")
-                .build() as ExtendedLogger
+                .build()
         val sessionProvider = ctx.sessionProvider
         if (sessionProvider is SessionPublisher) {
             sessionProvider.addObserver(SessionIdEventSender(eventLogger))

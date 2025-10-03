@@ -26,7 +26,6 @@ import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_CLICK_EVENT_NAME
 import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_EVENT_NAME
 import io.opentelemetry.android.session.SessionProvider
-import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
@@ -105,7 +104,7 @@ class ViewClickInstrumentationTest {
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
 
-        var event = events[0] as ExtendedLogRecordData
+        var event = events[0]
         assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
@@ -113,7 +112,7 @@ class ViewClickInstrumentationTest {
                 equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
             )
 
-        event = events[1] as ExtendedLogRecordData
+        event = events[1]
         assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
@@ -172,7 +171,7 @@ class ViewClickInstrumentationTest {
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
 
-        var event = events[0] as ExtendedLogRecordData
+        var event = events[0]
         assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
@@ -180,7 +179,7 @@ class ViewClickInstrumentationTest {
                 equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
             )
 
-        event = events[1] as ExtendedLogRecordData
+        event = events[1]
         assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
@@ -239,7 +238,7 @@ class ViewClickInstrumentationTest {
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(1)
 
-        val event = events[0] as ExtendedLogRecordData
+        val event = events[0]
         assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(

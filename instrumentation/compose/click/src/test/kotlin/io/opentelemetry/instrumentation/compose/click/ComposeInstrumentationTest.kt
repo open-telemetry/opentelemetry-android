@@ -41,7 +41,7 @@ import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.session.SessionProvider
-import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData
+import io.opentelemetry.sdk.logs.data.LogRecordData
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
@@ -149,7 +149,7 @@ internal class ComposeInstrumentationTest {
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
 
-        var event = events[0] as ExtendedLogRecordData
+        var event = events[0]
         assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
@@ -157,7 +157,7 @@ internal class ComposeInstrumentationTest {
                 equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
             )
 
-        event = events[1] as ExtendedLogRecordData
+        event = events[1]
         assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfying(

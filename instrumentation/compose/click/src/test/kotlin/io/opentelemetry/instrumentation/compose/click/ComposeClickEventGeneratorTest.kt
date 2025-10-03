@@ -29,8 +29,6 @@ import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockkClass
-import io.opentelemetry.api.incubator.logs.ExtendedLogger
-import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
@@ -78,7 +76,7 @@ internal class ComposeClickEventGeneratorTest {
             ComposeClickEventGenerator(
                 openTelemetryRule.openTelemetry.logsBridge
                     .loggerBuilder("io.opentelemetry.android.instrumentation.compose")
-                    .build() as ExtendedLogger,
+                    .build(),
                 composeLayoutNodeUtil,
             )
 
@@ -108,7 +106,7 @@ internal class ComposeClickEventGeneratorTest {
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
 
-        var event = events[0] as ExtendedLogRecordData
+        var event = events[0]
         OpenTelemetryAssertions
             .assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
@@ -117,7 +115,7 @@ internal class ComposeClickEventGeneratorTest {
                 equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
             )
 
-        event = events[1] as ExtendedLogRecordData
+        event = events[1]
         assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfying(
@@ -145,7 +143,7 @@ internal class ComposeClickEventGeneratorTest {
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
 
-        var event = events[0] as ExtendedLogRecordData
+        var event = events[0]
         OpenTelemetryAssertions
             .assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
@@ -154,7 +152,7 @@ internal class ComposeClickEventGeneratorTest {
                 equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
             )
 
-        event = events[1] as ExtendedLogRecordData
+        event = events[1]
         assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfying(
@@ -183,7 +181,7 @@ internal class ComposeClickEventGeneratorTest {
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
 
-        var event = events[0] as ExtendedLogRecordData
+        var event = events[0]
         OpenTelemetryAssertions
             .assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
@@ -192,7 +190,7 @@ internal class ComposeClickEventGeneratorTest {
                 equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
             )
 
-        event = events[1] as ExtendedLogRecordData
+        event = events[1]
         assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfying(

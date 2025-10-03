@@ -12,8 +12,8 @@ import android.view.Window
 import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_CLICK_EVENT_NAME
 import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_EVENT_NAME
 import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
-import io.opentelemetry.api.incubator.logs.ExtendedLogger
+import io.opentelemetry.api.logs.LogRecordBuilder
+import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_X
 import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_Y
 import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_ID
@@ -22,7 +22,7 @@ import java.lang.ref.WeakReference
 import java.util.LinkedList
 
 class ViewClickEventGenerator(
-    private val eventLogger: ExtendedLogger,
+    private val eventLogger: Logger,
 ) {
     private var windowRef: WeakReference<Window>? = null
 
@@ -60,7 +60,7 @@ class ViewClickEventGenerator(
         windowRef = null
     }
 
-    private fun createEvent(name: String): ExtendedLogRecordBuilder =
+    private fun createEvent(name: String): LogRecordBuilder =
         eventLogger
             .logRecordBuilder()
             .setEventName(name)

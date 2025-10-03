@@ -9,7 +9,7 @@ import android.util.Log
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
+import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.Logger
 
 // TODO: Replace with semconv constants
@@ -43,7 +43,7 @@ internal class EventJankReporter(
         }
 
         if (frameCount > 0) {
-            val eventBuilder = eventLogger.logRecordBuilder() as ExtendedLogRecordBuilder
+            val eventBuilder = eventLogger.logRecordBuilder()
             val attributes =
                 Attributes
                     .builder()
