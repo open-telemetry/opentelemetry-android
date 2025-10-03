@@ -7,6 +7,7 @@ package io.opentelemetry.android.internal.services.visiblescreen
 
 import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.os.Build
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -30,7 +31,7 @@ import java.util.concurrent.atomic.AtomicReference
  * screen, and the launching screen never leaves visibility.
  */
 internal class VisibleScreenTrackerImpl internal constructor(
-    private val application: Application,
+    context: Context,
 ) : VisibleScreenTracker {
     private val lastResumedActivity = AtomicReference<String>()
     private val previouslyLastResumedActivity = AtomicReference<String>()
@@ -39,9 +40,13 @@ internal class VisibleScreenTrackerImpl internal constructor(
     private val activityLifecycleTracker by lazy { buildActivitiesTracker() }
     private val fragmentLifecycleTrackerRegisterer by lazy { buildFragmentsTrackerRegisterer() }
 
+    private val application = context as? Application
+
     init {
-        application.registerActivityLifecycleCallbacks(activityLifecycleTracker)
-        application.registerActivityLifecycleCallbacks(fragmentLifecycleTrackerRegisterer)
+        application?.let {
+            it.registerActivityLifecycleCallbacks(activityLifecycleTracker)
+            it.registerActivityLifecycleCallbacks(fragmentLifecycleTrackerRegisterer)
+        }
     }
 
     private fun buildActivitiesTracker(): Application.ActivityLifecycleCallbacks =
@@ -117,7 +122,9 @@ internal class VisibleScreenTrackerImpl internal constructor(
     }
 
     override fun close() {
-        application.unregisterActivityLifecycleCallbacks(activityLifecycleTracker)
-        application.unregisterActivityLifecycleCallbacks(fragmentLifecycleTrackerRegisterer)
+        application?.let {
+            it.unregisterActivityLifecycleCallbacks(activityLifecycleTracker)
+            it.unregisterActivityLifecycleCallbacks(fragmentLifecycleTrackerRegisterer)
+        }
     }
 }

@@ -6,6 +6,7 @@
 package io.opentelemetry.android.agent
 
 import android.app.Application
+import android.content.Context
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.agent.dsl.DiskBufferingConfigurationSpec
@@ -39,6 +40,32 @@ object OpenTelemetryRumInitializer {
         globalAttributes: (() -> Attributes)? = null,
         diskBuffering: (DiskBufferingConfigurationSpec.() -> Unit)? = null,
         configuration: (OpenTelemetryConfiguration.() -> Unit) = {},
+    ): OpenTelemetryRum =
+        initialize(
+            context = application,
+            globalAttributes = globalAttributes,
+            diskBuffering = diskBuffering,
+            configuration = configuration,
+        )
+
+    /**
+     * Opinionated [OpenTelemetryRum] initialization.
+     *
+     * @param context Your android app's application context. This should be from your Application
+     * subclass or an appropriate context that allows retrieving the application context. If you
+     * supply an inappropriate context (e.g. from attachBaseContext) then instrumentation relying
+     * on activity lifecycle callbacks will not function correctly.
+     * @param globalAttributes Configures the set of global attributes to emit with every span and event.
+     * @param diskBuffering Configures the disk buffering feature.
+     * @param configuration Type-safe config DSL that controls how OpenTelemetry
+     * should behave.
+     */
+    @JvmStatic
+    fun initialize(
+        context: Context,
+        globalAttributes: (() -> Attributes)? = null,
+        diskBuffering: (DiskBufferingConfigurationSpec.() -> Unit)? = null,
+        configuration: (OpenTelemetryConfiguration.() -> Unit) = {},
     ): OpenTelemetryRum {
         val rumConfig = OtelRumConfig()
         val cfg = OpenTelemetryConfiguration(rumConfig)
@@ -57,9 +84,19 @@ object OpenTelemetryRumInitializer {
                 cfg.sessionConfig.backgroundInactivityTimeout,
                 cfg.sessionConfig.maxLifetime,
             )
+
+        // ensure we're using the Application Context to prevent potential leaks.
+        // if context.applicationContext is null (e.g. called from within attachBaseContext),
+        // fallback to the supplied context.
+        val ctx =
+            when (context) {
+                is Application -> context
+                else -> context.applicationContext ?: context
+            }
+
         return OpenTelemetryRum
-            .builder(application, cfg.rumConfig)
-            .setSessionProvider(createSessionProvider(application, sessionConfig))
+            .builder(ctx, rumConfig)
+            .setSessionProvider(createSessionProvider(ctx, sessionConfig))
             .addSpanExporterCustomizer {
                 OtlpHttpSpanExporter
                     .builder()
@@ -82,11 +119,11 @@ object OpenTelemetryRumInitializer {
     }
 
     private fun createSessionProvider(
-        application: Application,
+        context: Context,
         sessionConfig: SessionConfig,
     ): SessionProvider {
         val timeoutHandler = SessionIdTimeoutHandler(sessionConfig)
-        Services.get(application).appLifecycle.registerListener(timeoutHandler)
+        Services.get(context).appLifecycle.registerListener(timeoutHandler)
         return SessionManager.create(timeoutHandler, sessionConfig)
     }
 }

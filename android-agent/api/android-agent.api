@@ -4,7 +4,9 @@ public abstract interface annotation class io/opentelemetry/android/Incubating :
 public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer {
 	public static final field INSTANCE Lio/opentelemetry/android/agent/OpenTelemetryRumInitializer;
 	public static final fun initialize (Landroid/app/Application;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRum;
+	public static final fun initialize (Landroid/content/Context;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRum;
 	public static synthetic fun initialize$default (Landroid/app/Application;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/opentelemetry/android/OpenTelemetryRum;
+	public static synthetic fun initialize$default (Landroid/content/Context;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/opentelemetry/android/OpenTelemetryRum;
 }
 
 public abstract interface class io/opentelemetry/android/agent/connectivity/EndpointConnectivity {
