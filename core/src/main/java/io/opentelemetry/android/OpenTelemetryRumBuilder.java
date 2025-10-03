@@ -531,6 +531,12 @@ public final class OpenTelemetryRumBuilder {
                                     new ScreenAttributesLogRecordProcessor(
                                             services.getVisibleScreenTracker())));
         }
+
+        // Add processor that appends CPU attributes
+        if (config.shouldIncludeCpuAttributes()) {
+            tracerProviderCustomizers.add(
+                    0, (builder, app) -> builder.addSpanProcessor(new CpuAttributesSpanAppender()));
+        }
     }
 
     private SdkTracerProvider buildTracerProvider(

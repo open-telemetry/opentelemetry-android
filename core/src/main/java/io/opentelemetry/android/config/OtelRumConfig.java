@@ -7,6 +7,7 @@ package io.opentelemetry.android.config;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import io.opentelemetry.android.CpuAttributesSpanAppender;
 import io.opentelemetry.android.ScreenAttributesSpanProcessor;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig;
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider;
@@ -27,6 +28,7 @@ public class OtelRumConfig {
     private boolean generateSdkInitializationEvents = true;
     private boolean includeScreenAttributes = true;
     private boolean discoverInstrumentations = true;
+    private boolean includeCpuAttributes = true;
     private DiskBufferingConfig diskBufferingConfig = DiskBufferingConfig.create();
     private final List<String> suppressedInstrumentations = new ArrayList<>();
 
@@ -66,9 +68,23 @@ public class OtelRumConfig {
         return this;
     }
 
+    /**
+     * Disables the cpu attributes for spans. See {@link CpuAttributesSpanAppender} for more
+     * information. Default = true.
+     */
+    public OtelRumConfig disableCpuAttributes() {
+        includeCpuAttributes = false;
+        return this;
+    }
+
     /** Returns true if runtime network attributes are enabled, false otherwise. */
     public boolean shouldIncludeNetworkAttributes() {
         return includeNetworkAttributes;
+    }
+
+    /** Returns true if cpu attributes are enabled, false otherwise */
+    public boolean shouldIncludeCpuAttributes() {
+        return includeCpuAttributes;
     }
 
     /**
