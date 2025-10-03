@@ -74,14 +74,20 @@ object OpenTelemetryRumInitializer {
                 endpointHeaders,
             ),
         sessionConfig: SessionConfig = SessionConfig.withDefaults(),
+        diskBufferingConfig: (DiskBufferingConfigurationSpec.() -> Unit)? = null,
         globalAttributes: (() -> Attributes)? = null,
         instrumentations: (InstrumentationConfiguration.() -> Unit)? = null,
     ): OpenTelemetryRum {
+        val rumConfig = OtelRumConfig()
+
         instrumentations?.let { configure ->
             InstrumentationConfiguration(rumConfig).configure()
         }
-        val rumConfig = OtelRumConfig()
-        rumConfig.setDiskBufferingConfig(DiskBufferingConfig.create(enabled = true))
+
+        val diskBufferingConfigurationSpec = DiskBufferingConfigurationSpec()
+        diskBufferingConfig?.invoke(diskBufferingConfigurationSpec)
+        rumConfig.setDiskBufferingConfig(DiskBufferingConfig.create(enabled = diskBufferingConfigurationSpec.enabled))
+
         globalAttributes?.let {
             rumConfig.setGlobalAttributes(it::invoke)
         }
@@ -301,6 +307,14 @@ object OpenTelemetryRumInitializer {
             } else {
                 config.suppressInstrumentation(slowRenderingInstrumentation.name)
             }
+        }
+    }
+
+    class DiskBufferingConfigurationSpec internal constructor() : CanBeEnabledAndDisabled {
+        internal var enabled: Boolean = true
+
+        override fun enabled(enabled: Boolean) {
+            this.enabled = enabled
         }
     }
 
