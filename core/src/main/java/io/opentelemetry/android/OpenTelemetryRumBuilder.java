@@ -7,7 +7,7 @@ package io.opentelemetry.android;
 
 import static java.util.Objects.requireNonNull;
 
-import android.app.Application;
+import android.content.Context;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -84,12 +84,12 @@ import kotlin.jvm.functions.Function0;
  */
 public final class OpenTelemetryRumBuilder {
 
-    private final Application application;
-    private final List<BiFunction<SdkTracerProviderBuilder, Application, SdkTracerProviderBuilder>>
+    private final Context context;
+    private final List<BiFunction<SdkTracerProviderBuilder, Context, SdkTracerProviderBuilder>>
             tracerProviderCustomizers = new ArrayList<>();
-    private final List<BiFunction<SdkMeterProviderBuilder, Application, SdkMeterProviderBuilder>>
+    private final List<BiFunction<SdkMeterProviderBuilder, Context, SdkMeterProviderBuilder>>
             meterProviderCustomizers = new ArrayList<>();
-    private final List<BiFunction<SdkLoggerProviderBuilder, Application, SdkLoggerProviderBuilder>>
+    private final List<BiFunction<SdkLoggerProviderBuilder, Context, SdkLoggerProviderBuilder>>
             loggerProviderCustomizers = new ArrayList<>();
     private final OtelRumConfig config;
     private final List<AndroidInstrumentation> instrumentations = new ArrayList<>();
@@ -112,13 +112,13 @@ public final class OpenTelemetryRumBuilder {
                 W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance());
     }
 
-    public static OpenTelemetryRumBuilder create(Application application, OtelRumConfig config) {
-        return new OpenTelemetryRumBuilder(application, config);
+    public static OpenTelemetryRumBuilder create(Context context, OtelRumConfig config) {
+        return new OpenTelemetryRumBuilder(context, config);
     }
 
-    OpenTelemetryRumBuilder(Application application, OtelRumConfig config) {
-        this.application = application;
-        this.resource = AndroidResource.createDefault(application);
+    OpenTelemetryRumBuilder(Context context, OtelRumConfig config) {
+        this.context = context;
+        this.resource = AndroidResource.createDefault(context);
         this.config = config;
     }
 
@@ -159,8 +159,7 @@ public final class OpenTelemetryRumBuilder {
      * @return {@code this}
      */
     public OpenTelemetryRumBuilder addTracerProviderCustomizer(
-            BiFunction<SdkTracerProviderBuilder, Application, SdkTracerProviderBuilder>
-                    customizer) {
+            BiFunction<SdkTracerProviderBuilder, Context, SdkTracerProviderBuilder> customizer) {
         tracerProviderCustomizers.add(customizer);
         return this;
     }
@@ -179,7 +178,7 @@ public final class OpenTelemetryRumBuilder {
      * @return {@code this}
      */
     public OpenTelemetryRumBuilder addMeterProviderCustomizer(
-            BiFunction<SdkMeterProviderBuilder, Application, SdkMeterProviderBuilder> customizer) {
+            BiFunction<SdkMeterProviderBuilder, Context, SdkMeterProviderBuilder> customizer) {
         meterProviderCustomizers.add(customizer);
         return this;
     }
@@ -198,8 +197,7 @@ public final class OpenTelemetryRumBuilder {
      * @return {@code this}
      */
     public OpenTelemetryRumBuilder addLoggerProviderCustomizer(
-            BiFunction<SdkLoggerProviderBuilder, Application, SdkLoggerProviderBuilder>
-                    customizer) {
+            BiFunction<SdkLoggerProviderBuilder, Context, SdkLoggerProviderBuilder> customizer) {
         loggerProviderCustomizers.add(customizer);
         return this;
     }
@@ -297,12 +295,12 @@ public final class OpenTelemetryRumBuilder {
      * OpenTelemetryRumBuilder}.
      *
      * <p>This method will initialize the OpenTelemetry SDK and install built-in system
-     * instrumentations in the passed Android {@link Application}.
+     * instrumentations in the passed Android {@link Context}.
      *
      * @return A new {@link OpenTelemetryRum} instance.
      */
     public OpenTelemetryRum build() {
-        Services services = Services.get(application);
+        Services services = Services.get(context);
         InitializationEvents initializationEvents = InitializationEvents.get();
         applyConfiguration(services, initializationEvents);
         if (sessionProvider == null) {
@@ -319,19 +317,19 @@ public final class OpenTelemetryRumBuilder {
                 OpenTelemetrySdk.builder()
                         .setTracerProvider(
                                 buildTracerProvider(
-                                        sessionProvider, application, bufferDelegatingSpanExporter))
+                                        sessionProvider, context, bufferDelegatingSpanExporter))
                         .setLoggerProvider(
                                 buildLoggerProvider(
-                                        sessionProvider, application, bufferDelegatingLogExporter))
+                                        sessionProvider, context, bufferDelegatingLogExporter))
                         .setMeterProvider(
-                                buildMeterProvider(application, bufferDelegatingMetricExporter))
+                                buildMeterProvider(context, bufferDelegatingMetricExporter))
                         .setPropagators(buildFinalPropagators())
                         .build();
 
         otelSdkReadyListeners.forEach(listener -> listener.accept(sdk));
 
         SdkPreconfiguredRumBuilder delegate =
-                new SdkPreconfiguredRumBuilder(application, sdk, sessionProvider, config)
+                new SdkPreconfiguredRumBuilder(context, sdk, sessionProvider, config)
                         .setShutdownHook(
                                 () -> {
                                     if (exportScheduleHandler != null) {
@@ -534,7 +532,7 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private SdkTracerProvider buildTracerProvider(
-            SessionProvider sessionProvider, Application application, SpanExporter spanExporter) {
+            SessionProvider sessionProvider, Context context, SpanExporter spanExporter) {
         SdkTracerProviderBuilder tracerProviderBuilder =
                 SdkTracerProvider.builder()
                         .setResource(resource)
@@ -543,17 +541,15 @@ public final class OpenTelemetryRumBuilder {
         BatchSpanProcessor batchSpanProcessor = BatchSpanProcessor.builder(spanExporter).build();
         tracerProviderBuilder.addSpanProcessor(batchSpanProcessor);
 
-        for (BiFunction<SdkTracerProviderBuilder, Application, SdkTracerProviderBuilder>
-                customizer : tracerProviderCustomizers) {
-            tracerProviderBuilder = customizer.apply(tracerProviderBuilder, application);
+        for (BiFunction<SdkTracerProviderBuilder, Context, SdkTracerProviderBuilder> customizer :
+                tracerProviderCustomizers) {
+            tracerProviderBuilder = customizer.apply(tracerProviderBuilder, context);
         }
         return tracerProviderBuilder.build();
     }
 
     private SdkLoggerProvider buildLoggerProvider(
-            SessionProvider sessionProvider,
-            Application application,
-            LogRecordExporter logsExporter) {
+            SessionProvider sessionProvider, Context context, LogRecordExporter logsExporter) {
         SdkLoggerProviderBuilder loggerProviderBuilder =
                 SdkLoggerProvider.builder()
                         .setResource(resource)
@@ -564,9 +560,9 @@ public final class OpenTelemetryRumBuilder {
         LogRecordProcessor batchLogsProcessor =
                 BatchLogRecordProcessor.builder(logsExporter).build();
         loggerProviderBuilder.addLogRecordProcessor(batchLogsProcessor);
-        for (BiFunction<SdkLoggerProviderBuilder, Application, SdkLoggerProviderBuilder>
-                customizer : loggerProviderCustomizers) {
-            loggerProviderBuilder = customizer.apply(loggerProviderBuilder, application);
+        for (BiFunction<SdkLoggerProviderBuilder, Context, SdkLoggerProviderBuilder> customizer :
+                loggerProviderCustomizers) {
+            loggerProviderBuilder = customizer.apply(loggerProviderBuilder, context);
         }
         return loggerProviderBuilder.build();
     }
@@ -586,14 +582,13 @@ public final class OpenTelemetryRumBuilder {
         return logRecordExporterCustomizer.apply(defaultExporter);
     }
 
-    private SdkMeterProvider buildMeterProvider(
-            Application application, MetricExporter metricExporter) {
+    private SdkMeterProvider buildMeterProvider(Context context, MetricExporter metricExporter) {
         MetricReader reader = PeriodicMetricReader.create(metricExporter);
         SdkMeterProviderBuilder meterProviderBuilder =
                 SdkMeterProvider.builder().registerMetricReader(reader).setResource(resource);
-        for (BiFunction<SdkMeterProviderBuilder, Application, SdkMeterProviderBuilder> customizer :
+        for (BiFunction<SdkMeterProviderBuilder, Context, SdkMeterProviderBuilder> customizer :
                 meterProviderCustomizers) {
-            meterProviderBuilder = customizer.apply(meterProviderBuilder, application);
+            meterProviderBuilder = customizer.apply(meterProviderBuilder, context);
         }
         return meterProviderBuilder.build();
     }

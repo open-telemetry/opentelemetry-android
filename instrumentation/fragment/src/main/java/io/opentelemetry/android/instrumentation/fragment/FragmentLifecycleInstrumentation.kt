@@ -33,11 +33,11 @@ class FragmentLifecycleInstrumentation : AndroidInstrumentation {
     override val name: String = "fragment"
 
     override fun install(ctx: InstallationContext) {
-        ctx.application.registerActivityLifecycleCallbacks(buildFragmentRegisterer(ctx))
+        ctx.application?.registerActivityLifecycleCallbacks(buildFragmentRegisterer(ctx))
     }
 
     private fun buildFragmentRegisterer(ctx: InstallationContext): ActivityLifecycleCallbacks {
-        val visibleScreenService = Services.get(ctx.application).visibleScreenTracker
+        val visibleScreenService = Services.get(ctx.context).visibleScreenTracker
         val delegateTracer: Tracer = ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
         val fragmentLifecycle =
             RumFragmentLifecycleCallbacks(

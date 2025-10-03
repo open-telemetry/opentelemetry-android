@@ -20,18 +20,11 @@ public final class io/opentelemetry/android/instrumentation/AndroidInstrumentati
 }
 
 public final class io/opentelemetry/android/instrumentation/InstallationContext {
-	public fun <init> (Landroid/app/Application;Lio/opentelemetry/api/OpenTelemetry;Lio/opentelemetry/android/session/SessionProvider;)V
-	public final fun component1 ()Landroid/app/Application;
-	public final fun component2 ()Lio/opentelemetry/api/OpenTelemetry;
-	public final fun component3 ()Lio/opentelemetry/android/session/SessionProvider;
-	public final fun copy (Landroid/app/Application;Lio/opentelemetry/api/OpenTelemetry;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/android/instrumentation/InstallationContext;
-	public static synthetic fun copy$default (Lio/opentelemetry/android/instrumentation/InstallationContext;Landroid/app/Application;Lio/opentelemetry/api/OpenTelemetry;Lio/opentelemetry/android/session/SessionProvider;ILjava/lang/Object;)Lio/opentelemetry/android/instrumentation/InstallationContext;
-	public fun equals (Ljava/lang/Object;)Z
+	public fun <init> (Landroid/content/Context;Lio/opentelemetry/api/OpenTelemetry;Lio/opentelemetry/android/session/SessionProvider;)V
 	public final fun getApplication ()Landroid/app/Application;
+	public final fun getContext ()Landroid/content/Context;
 	public final fun getOpenTelemetry ()Lio/opentelemetry/api/OpenTelemetry;
 	public final fun getSessionProvider ()Lio/opentelemetry/android/session/SessionProvider;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class io/opentelemetry/android/instrumentation/internal/AndroidInstrumentationLoaderImpl : io/opentelemetry/android/instrumentation/AndroidInstrumentationLoader {

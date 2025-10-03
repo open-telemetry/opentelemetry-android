@@ -91,7 +91,7 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
 
         detector = SlowRenderListener(jankReporter, slowRenderingDetectionPollInterval)
 
-        ctx.application.registerActivityLifecycleCallbacks(detector)
+        ctx.application?.registerActivityLifecycleCallbacks(detector)
         detector!!.start()
     }
 
@@ -103,7 +103,7 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
             )
             return
         }
-        ctx.application.unregisterActivityLifecycleCallbacks(detector)
+        ctx.application?.unregisterActivityLifecycleCallbacks(detector)
         detector?.shutdown()
         detector = null
     }
