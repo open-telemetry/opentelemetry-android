@@ -57,6 +57,7 @@ public final class io/opentelemetry/android/SessionIdRatioBasedSampler : io/open
 
 public class io/opentelemetry/android/config/OtelRumConfig {
 	public fun <init> ()V
+	public fun allowInstrumentation (Ljava/lang/String;)Lio/opentelemetry/android/config/OtelRumConfig;
 	public fun disableInstrumentationDiscovery ()Lio/opentelemetry/android/config/OtelRumConfig;
 	public fun disableNetworkAttributes ()Lio/opentelemetry/android/config/OtelRumConfig;
 	public fun disableScreenAttributes ()Lio/opentelemetry/android/config/OtelRumConfig;

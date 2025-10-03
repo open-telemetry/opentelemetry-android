@@ -7,20 +7,24 @@ public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer {
 	public static synthetic fun initialize$default (Landroid/app/Application;Ljava/lang/String;Ljava/util/Map;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/config/OtelRumConfig;Lio/opentelemetry/android/agent/session/SessionConfig;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/opentelemetry/android/OpenTelemetryRum;
 }
 
-public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$ActivityLifecycleConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$ScreenLifecycleConfigurable {
+public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$ActivityLifecycleConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CanBeEnabledAndDisabled, io/opentelemetry/android/agent/OpenTelemetryRumInitializer$ScreenLifecycleConfigurable {
+	public fun enabled (Z)V
 	public fun screenNameExtractor (Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;)V
 	public fun tracerCustomizer (Lkotlin/jvm/functions/Function1;)V
 }
 
-public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$AnrReporterConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$WithEventAttributes {
+public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$AnrReporterConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CanBeEnabledAndDisabled, io/opentelemetry/android/agent/OpenTelemetryRumInitializer$WithEventAttributes {
 	public fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/common/EventAttributesExtractor;)V
+	public fun enabled (Z)V
 }
 
-public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CrashReporterConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$WithEventAttributes {
+public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CrashReporterConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CanBeEnabledAndDisabled, io/opentelemetry/android/agent/OpenTelemetryRumInitializer$WithEventAttributes {
 	public fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/common/EventAttributesExtractor;)V
+	public fun enabled (Z)V
 }
 
-public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$FragmentLifecycleConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$ScreenLifecycleConfigurable {
+public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$FragmentLifecycleConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CanBeEnabledAndDisabled, io/opentelemetry/android/agent/OpenTelemetryRumInitializer$ScreenLifecycleConfigurable {
+	public fun enabled (Z)V
 	public fun screenNameExtractor (Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;)V
 	public fun tracerCustomizer (Lkotlin/jvm/functions/Function1;)V
 }
@@ -34,13 +38,15 @@ public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$In
 	public final fun slowRenderingReporter (Lkotlin/jvm/functions/Function1;)V
 }
 
-public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$NetworkMonitoringConfiguration {
+public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$NetworkMonitoringConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CanBeEnabledAndDisabled {
 	public final fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/network/NetworkAttributesExtractor;)V
+	public fun enabled (Z)V
 }
 
-public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$SlowRenderingReporterConfiguration {
+public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$SlowRenderingReporterConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CanBeEnabledAndDisabled {
 	public final fun detectionPollInterval-LRDsOJo (J)V
 	public final fun enableVerboseDebugLogging ()V
+	public fun enabled (Z)V
 }
 
 public abstract interface class io/opentelemetry/android/agent/connectivity/EndpointConnectivity {
