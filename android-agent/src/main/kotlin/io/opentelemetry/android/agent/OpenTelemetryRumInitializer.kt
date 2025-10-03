@@ -6,6 +6,7 @@
 package io.opentelemetry.android.agent
 
 import android.app.Application
+import android.content.Context
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.OpenTelemetryRumBuilder
@@ -41,7 +42,7 @@ object OpenTelemetryRumInitializer {
     /**
      * Opinionated [OpenTelemetryRum] initialization.
      *
-     * @param application Your android app's application object.
+     * @param context Your android app's application context.
      * @param endpointBaseUrl The base endpoint for exporting all your signals.
      * @param endpointHeaders These will be added to each signal export request.
      * @param spanEndpointConnectivity Span-specific endpoint configuration.
@@ -54,7 +55,7 @@ object OpenTelemetryRumInitializer {
     @Suppress("LongParameterList")
     @JvmStatic
     fun initialize(
-        application: Application,
+        context: Context,
         endpointBaseUrl: String,
         endpointHeaders: Map<String, String> = emptyMap(),
         spanEndpointConnectivity: EndpointConnectivity =
@@ -79,9 +80,17 @@ object OpenTelemetryRumInitializer {
         instrumentations?.let { configure ->
             InstrumentationConfiguration(rumConfig).configure()
         }
+
+        // ensure we're using the Application Context to prevent potential leaks
+        val ctx =
+            when (context) {
+                is Application -> context
+                else -> context.applicationContext
+            }
+
         return OpenTelemetryRum
-            .builder(application, rumConfig)
-            .setSessionProvider(createSessionProvider(application, sessionConfig))
+            .builder(ctx, rumConfig)
+            .setSessionProvider(createSessionProvider(ctx, sessionConfig))
             .addSpanExporterCustomizer {
                 OtlpHttpSpanExporter
                     .builder()
@@ -104,11 +113,11 @@ object OpenTelemetryRumInitializer {
     }
 
     private fun createSessionProvider(
-        application: Application,
+        context: Context,
         sessionConfig: SessionConfig,
     ): SessionProvider {
         val timeoutHandler = SessionIdTimeoutHandler(sessionConfig)
-        Services.get(application).appLifecycle.registerListener(timeoutHandler)
+        Services.get(context).appLifecycle.registerListener(timeoutHandler)
         return SessionManager.create(timeoutHandler, sessionConfig)
     }
 

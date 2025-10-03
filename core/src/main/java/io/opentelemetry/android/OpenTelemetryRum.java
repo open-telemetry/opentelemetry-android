@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android;
 
-import android.app.Application;
+import android.content.Context;
 import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.session.SessionProvider;
 import io.opentelemetry.api.OpenTelemetry;
@@ -26,10 +26,10 @@ public interface OpenTelemetryRum {
      * {@link OtelRumConfig} instance. If you would like to "bring your own" SDK, call the
      * two-argument version that takes the SDK as a parameter.
      *
-     * @param application The {@link Application} that is being instrumented.
+     * @param context The {@link Context} of the application that is being instrumented.
      */
-    static OpenTelemetryRumBuilder builder(Application application) {
-        return builder(application, new OtelRumConfig());
+    static OpenTelemetryRumBuilder builder(Context context) {
+        return builder(context, new OtelRumConfig());
     }
 
     /**
@@ -39,8 +39,8 @@ public interface OpenTelemetryRum {
      * you. If you would like to "bring your own" SDK, call the two-argument version that takes the
      * SDK as a parameter.
      */
-    static OpenTelemetryRumBuilder builder(Application application, OtelRumConfig config) {
-        return OpenTelemetryRumBuilder.create(application, config);
+    static OpenTelemetryRumBuilder builder(Context context, OtelRumConfig config) {
+        return OpenTelemetryRumBuilder.create(context, config);
     }
 
     /**
@@ -53,18 +53,17 @@ public interface OpenTelemetryRum {
      * the {@link SdkTracerProvider}, {@link SdkMeterProvider}, and {@link SdkLoggerProvider} are
      * configured correctly for your target RUM provider.
      *
-     * @param application The {@link Application} that is being instrumented.
+     * @param context The {@link Context} of the application that is being instrumented.
      * @param openTelemetrySdk The {@link OpenTelemetrySdk} that the user has already created.
      * @param config The {@link OtelRumConfig} instance.
      * @param sessionProvider The {@link SessionProvider} instance.
      */
     static SdkPreconfiguredRumBuilder builder(
-            Application application,
+            Context context,
             OpenTelemetrySdk openTelemetrySdk,
             OtelRumConfig config,
             SessionProvider sessionProvider) {
-        return new SdkPreconfiguredRumBuilder(
-                application, openTelemetrySdk, sessionProvider, config);
+        return new SdkPreconfiguredRumBuilder(context, openTelemetrySdk, sessionProvider, config);
     }
 
     /** Returns a no-op implementation of {@link OpenTelemetryRum}. */
