@@ -508,6 +508,31 @@ public class OpenTelemetryRumBuilderTest {
                                 .build());
     }
 
+    @Test
+    public void verifyCpuAttributesSpanProcessor() {
+        createAndSetServiceManager();
+        OtelRumConfig config = buildConfig();
+
+        OpenTelemetryRum rum =
+                OpenTelemetryRum.builder(application, config)
+                        .addTracerProviderCustomizer(
+                                (tracerProviderBuilder, app) ->
+                                        tracerProviderBuilder.addSpanProcessor(
+                                                SimpleSpanProcessor.create(spanExporter)))
+                        .build();
+
+        rum.getOpenTelemetry().getTracer("test").spanBuilder("test span").startSpan().end();
+
+        await().atMost(Duration.ofSeconds(30))
+                .untilAsserted(
+                        () -> {
+                            List<SpanData> spans = spanExporter.getFinishedSpanItems();
+                            assertThat(spans).hasSize(1);
+                            assertThat(spans.get(0).getAttributes().asMap())
+                                    .containsKey(longKey("process.cpu.elapsed_time_start"));
+                        });
+    }
+
     private static Services createAndSetServiceManager() {
         Services services = mock(Services.class);
         when(services.getAppLifecycle()).thenReturn(mock(AppLifecycle.class));

@@ -11,6 +11,18 @@ public final class io/opentelemetry/android/BuildConfig {
 	public fun <init> ()V
 }
 
+public final class io/opentelemetry/android/CpuAttributesSpanAppender : io/opentelemetry/sdk/trace/internal/ExtendedSpanProcessor {
+	public fun <init> ()V
+	public fun <init> (I)V
+	public synthetic fun <init> (IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun isEndRequired ()Z
+	public fun isOnEndingRequired ()Z
+	public fun isStartRequired ()Z
+	public fun onEnd (Lio/opentelemetry/sdk/trace/ReadableSpan;)V
+	public fun onEnding (Lio/opentelemetry/sdk/trace/ReadWriteSpan;)V
+	public fun onStart (Lio/opentelemetry/context/Context;Lio/opentelemetry/sdk/trace/ReadWriteSpan;)V
+}
+
 public abstract interface class io/opentelemetry/android/OpenTelemetryRum {
 	public static fun builder (Landroid/app/Application;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public static fun builder (Landroid/app/Application;Lio/opentelemetry/android/config/OtelRumConfig;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
@@ -57,6 +69,7 @@ public final class io/opentelemetry/android/SessionIdRatioBasedSampler : io/open
 
 public class io/opentelemetry/android/config/OtelRumConfig {
 	public fun <init> ()V
+	public fun disableCpuAttributes ()Lio/opentelemetry/android/config/OtelRumConfig;
 	public fun disableInstrumentationDiscovery ()Lio/opentelemetry/android/config/OtelRumConfig;
 	public fun disableNetworkAttributes ()Lio/opentelemetry/android/config/OtelRumConfig;
 	public fun disableScreenAttributes ()Lio/opentelemetry/android/config/OtelRumConfig;
@@ -70,6 +83,7 @@ public class io/opentelemetry/android/config/OtelRumConfig {
 	public fun setGlobalAttributes (Ljava/util/function/Supplier;)Lio/opentelemetry/android/config/OtelRumConfig;
 	public fun shouldDiscoverInstrumentations ()Z
 	public fun shouldGenerateSdkInitializationEvents ()Z
+	public fun shouldIncludeCpuAttributes ()Z
 	public fun shouldIncludeNetworkAttributes ()Z
 	public fun shouldIncludeScreenAttributes ()Z
 	public fun suppressInstrumentation (Ljava/lang/String;)Lio/opentelemetry/android/config/OtelRumConfig;

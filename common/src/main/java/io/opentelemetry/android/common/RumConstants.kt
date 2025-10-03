@@ -31,6 +31,15 @@ object RumConstants {
     @JvmField
     val BATTERY_PERCENT_KEY: AttributeKey<Double> = AttributeKey.doubleKey("battery.percent")
 
+    @JvmField
+    val CPU_AVERAGE_KEY: AttributeKey<Double> = AttributeKey.doubleKey("process.cpu.avg_utilization")
+
+    @JvmField
+    val CPU_ELAPSED_TIME_START_KEY: AttributeKey<Long> = AttributeKey.longKey("process.cpu.elapsed_time_start")
+
+    @JvmField
+    val CPU_ELAPSED_TIME_END_KEY: AttributeKey<Long> = AttributeKey.longKey("process.cpu.elapsed_time_end")
+
     const val APP_START_SPAN_NAME: String = "AppStart"
 
     object Events {
