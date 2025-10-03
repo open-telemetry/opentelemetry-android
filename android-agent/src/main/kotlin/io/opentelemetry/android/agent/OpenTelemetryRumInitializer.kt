@@ -74,8 +74,8 @@ object OpenTelemetryRumInitializer {
                 endpointHeaders,
             ),
         sessionConfig: SessionConfig = SessionConfig.withDefaults(),
-        diskBufferingConfig: (DiskBufferingConfigurationSpec.() -> Unit)? = null,
         globalAttributes: (() -> Attributes)? = null,
+        diskBuffering: (DiskBufferingConfigurationSpec.() -> Unit)? = null,
         instrumentations: (InstrumentationConfiguration.() -> Unit)? = null,
     ): OpenTelemetryRum {
         val rumConfig = OtelRumConfig()
@@ -85,7 +85,7 @@ object OpenTelemetryRumInitializer {
         }
 
         val diskBufferingConfigurationSpec = DiskBufferingConfigurationSpec()
-        diskBufferingConfig?.invoke(diskBufferingConfigurationSpec)
+        diskBuffering?.invoke(diskBufferingConfigurationSpec)
         rumConfig.setDiskBufferingConfig(DiskBufferingConfig.create(enabled = diskBufferingConfigurationSpec.enabled))
 
         globalAttributes?.let {
