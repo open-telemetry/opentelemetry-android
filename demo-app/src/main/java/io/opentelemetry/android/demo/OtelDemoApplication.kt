@@ -82,7 +82,7 @@ class OtelDemoApplication : Application() {
         }
 
         fun eventBuilder(scopeName: String, eventName: String): LogRecordBuilder {
-            if(rum == null){
+            if (rum == null) {
                 return LoggerProvider.noop().get("noop").logRecordBuilder()
             }
             val logger = rum!!.openTelemetry.logsBridge.loggerBuilder(scopeName).build()
