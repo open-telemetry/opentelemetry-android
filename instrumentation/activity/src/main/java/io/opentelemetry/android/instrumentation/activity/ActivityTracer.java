@@ -10,10 +10,13 @@ import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
 import static io.opentelemetry.android.common.RumConstants.START_TYPE_KEY;
 
 import android.app.Activity;
+import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer;
 import io.opentelemetry.android.instrumentation.common.ActiveSpan;
+import io.opentelemetry.android.instrumentation.common.ViewUtilsKt;
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
@@ -21,6 +24,7 @@ import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import java.util.concurrent.atomic.AtomicReference;
+import kotlin.Pair;
 
 public class ActivityTracer {
     static final AttributeKey<String> ACTIVITY_NAME_KEY = AttributeKey.stringKey("activity.name");
@@ -31,6 +35,7 @@ public class ActivityTracer {
     private final String screenName;
     private final AppStartupTimer appStartupTimer;
     private final ActiveSpan activeSpan;
+    @Nullable private Span initialDrawSpan;
 
     private ActivityTracer(Builder builder) {
         this.initialAppActivity = builder.initialAppActivity;
@@ -50,7 +55,9 @@ public class ActivityTracer {
     }
 
     ActivityTracer startActivityCreation() {
-        activeSpan.startSpan(this::makeCreationSpan);
+        Span creationSpan = makeCreationSpan();
+        activeSpan.startSpan(() -> creationSpan);
+        startInitialDrawSpan(creationSpan);
         return this;
     }
 
@@ -133,6 +140,24 @@ public class ActivityTracer {
     public ActivityTracer addEvent(String eventName) {
         activeSpan.addEvent(eventName);
         return this;
+    }
+
+    void startInitialDrawSpan(Span parentSpan) {
+        if (initialDrawSpan == null) {
+            initialDrawSpan = createSpanWithParent("FirstDraw", parentSpan);
+        }
+    }
+
+    void endInitialDrawSpan(View view) {
+        if (initialDrawSpan != null) {
+            Pair<Integer, Integer> complexity = ViewUtilsKt.getComplexity(view);
+            initialDrawSpan.setAttribute(
+                    RumConstants.SCREEN_VIEW_NODES_KEY, complexity.component1().longValue());
+            initialDrawSpan.setAttribute(
+                    RumConstants.SCREEN_VIEW_DEPTH_KEY, complexity.component2().longValue());
+            initialDrawSpan.end();
+            initialDrawSpan = null;
+        }
     }
 
     static Builder builder(Activity activity) {
