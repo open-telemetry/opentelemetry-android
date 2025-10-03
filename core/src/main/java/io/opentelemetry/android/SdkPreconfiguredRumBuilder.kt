@@ -6,6 +6,7 @@
 package io.opentelemetry.android
 
 import android.app.Application
+import android.content.Context
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
@@ -14,7 +15,7 @@ import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.OpenTelemetrySdk
 
 class SdkPreconfiguredRumBuilder internal constructor(
-    private val application: Application,
+    private val context: Context,
     private val sdk: OpenTelemetrySdk,
     private val sessionProvider: SessionProvider,
     private val config: OtelRumConfig,
@@ -44,14 +45,13 @@ class SdkPreconfiguredRumBuilder internal constructor(
     /**
      * Creates a new instance of [OpenTelemetryRum] with the settings of this [ ].
      *
-     *
      * This method uses a preconfigured OpenTelemetry SDK and install built-in system
-     * instrumentations in the passed Android [Application].
+     * instrumentations in the passed Android [Context].
      *
      * @return A new [OpenTelemetryRum] instance.
      */
     fun build(): OpenTelemetryRum {
-        val ctx = InstallationContext(application, sdk, sessionProvider)
+        val ctx = InstallationContext(context, sdk, sessionProvider)
         val enabledInstrumentations = getEnabledInstrumentations()
         val onShutdown: () -> Unit = {
             for (instrumentation in enabledInstrumentations) {
