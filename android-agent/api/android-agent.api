@@ -3,8 +3,8 @@ public abstract interface annotation class io/opentelemetry/android/Incubating :
 
 public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer {
 	public static final field INSTANCE Lio/opentelemetry/android/agent/OpenTelemetryRumInitializer;
-	public static final fun initialize (Landroid/app/Application;Ljava/lang/String;Ljava/util/Map;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/session/SessionConfig;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRum;
-	public static synthetic fun initialize$default (Landroid/app/Application;Ljava/lang/String;Ljava/util/Map;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/session/SessionConfig;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/opentelemetry/android/OpenTelemetryRum;
+	public static final fun initialize (Landroid/app/Application;Ljava/lang/String;Ljava/util/Map;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/session/SessionConfig;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRum;
+	public static synthetic fun initialize$default (Landroid/app/Application;Ljava/lang/String;Ljava/util/Map;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/session/SessionConfig;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/opentelemetry/android/OpenTelemetryRum;
 }
 
 public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$ActivityLifecycleConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CanBeEnabledAndDisabled, io/opentelemetry/android/agent/OpenTelemetryRumInitializer$ScreenLifecycleConfigurable {
@@ -20,6 +20,10 @@ public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$An
 
 public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CrashReporterConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CanBeEnabledAndDisabled, io/opentelemetry/android/agent/OpenTelemetryRumInitializer$WithEventAttributes {
 	public fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/common/EventAttributesExtractor;)V
+	public fun enabled (Z)V
+}
+
+public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$DiskBufferingConfigurationSpec : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CanBeEnabledAndDisabled {
 	public fun enabled (Z)V
 }
 
