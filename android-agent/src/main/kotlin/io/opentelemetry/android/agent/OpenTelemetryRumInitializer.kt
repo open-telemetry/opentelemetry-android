@@ -48,8 +48,8 @@ object OpenTelemetryRumInitializer {
      * @param spanEndpointConnectivity Span-specific endpoint configuration.
      * @param logEndpointConnectivity Log-specific endpoint configuration.
      * @param metricEndpointConnectivity Metric-specific endpoint configuration.
-     * @param globalAttributes Configures the set of global attributes to emit with every span and event.
      * @param sessionConfig The session configuration, which includes inactivity timeout and maximum lifetime durations.
+     * @param globalAttributes Configures the set of global attributes to emit with every span and event.
      * @param diskBuffering Configures the disk buffering feature.
      * @param instrumentations Configurations for all the default instrumentations.
      */
