@@ -5,8 +5,23 @@ plugins {
     id("signing")
 }
 
-version = project.version.toString().replaceFirst("(-SNAPSHOT)?$".toRegex(), "-alpha$1")
+// If this module is not marked as stable (the default state) then append "-alpha" to its version.
+// ---
+// To mark a module as stable, it needs to define the following property: "otel.stable=true" preferably within a "gradle.properties" file
+// located in the same directory as the target module's "build.gradle.kts" file.
+if (findProperty("otel.stable") != "true") {
+    version = "$version-alpha"
+}
+// If this release isn't "final" (the default state) then append "-SNAPSHOT" to this module's version.
+// ---
+// To make a release "final", the gradle release command must include the "-Pfinal=true" argument.
+// For example: "./gradlew publishToMavenLocal -Pfinal=true".
+if (findProperty("final") != "true") {
+    version = "$version-SNAPSHOT"
+}
 
+// When isARelease is `false`, only the main deliverable is generated (.aar/.jar file) and is not signed.
+// When isARelease is `true`, some extra work is done to also generate javadoc/sources artifacts, while signing them all as well.
 val isARelease = System.getenv("CI") != null
 
 val android = extensions.findByType(LibraryExtension::class.java)

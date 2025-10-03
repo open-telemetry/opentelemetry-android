@@ -27,9 +27,6 @@ allprojects {
         google()
         mavenCentral()
     }
-    if (findProperty("final") != "true") {
-        version = "$version-SNAPSHOT"
-    }
 }
 
 nexusPublishing {
