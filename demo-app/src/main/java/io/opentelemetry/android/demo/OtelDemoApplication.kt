@@ -43,7 +43,7 @@ class OtelDemoApplication : Application() {
                 endpointBaseUrl = "http://10.0.2.2:4318",
                 rumConfig = config
             )
-            Log.d(TAG, "RUM session started: " + rum!!.rumSessionId)
+            Log.d(TAG, "RUM session started: " + rum?.getRumSessionId())
         } catch (e: Exception) {
             Log.e(TAG, "Oh no!", e)
         }

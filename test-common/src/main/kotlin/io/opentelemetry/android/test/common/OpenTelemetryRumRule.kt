@@ -40,7 +40,8 @@ class OpenTelemetryRumRule : TestRule {
         }
 
     fun getSpan(): Span =
-        openTelemetryRum.openTelemetry
+        openTelemetryRum
+            .getOpenTelemetry()
             .getTracer("TestTracer")
             .spanBuilder("A Span")
             .startSpan()
