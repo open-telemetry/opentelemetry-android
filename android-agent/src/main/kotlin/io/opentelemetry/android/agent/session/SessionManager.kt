@@ -5,19 +5,21 @@
 
 package io.opentelemetry.android.agent.session
 
+import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.android.session.SessionPublisher
 import io.opentelemetry.sdk.common.Clock
 import java.util.Collections.synchronizedList
+import kotlin.random.Random
 import kotlin.time.Duration
 
 internal class SessionManager(
     private val clock: Clock = Clock.getDefault(),
-    private val sessionStorage: SessionStorage = SessionStorage.InMemory(),
+    private val sessionStorage: SessionStorage = InMemorySessionStorage(),
     private val timeoutHandler: SessionIdTimeoutHandler,
-    private val idGenerator: SessionIdGenerator = SessionIdGenerator.DEFAULT,
+    private val idGenerator: SessionIdGenerator = DefaultSessionIdGenerator(Random.Default),
     private val maxSessionLifetime: Duration,
 ) : SessionProvider,
     SessionPublisher {
@@ -70,6 +72,7 @@ internal class SessionManager(
     }
 
     companion object {
+        @OptIn(Incubating::class)
         @JvmStatic
         fun create(
             timeoutHandler: SessionIdTimeoutHandler,
