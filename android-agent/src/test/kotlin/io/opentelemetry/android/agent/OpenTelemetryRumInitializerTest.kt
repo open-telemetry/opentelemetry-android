@@ -33,10 +33,11 @@ class OpenTelemetryRumInitializerTest {
     fun `Verify timeoutHandler initialization`() {
         createAndSetServiceManager()
 
-        OpenTelemetryRumInitializer.initialize(
-            RuntimeEnvironment.getApplication(),
-            "http://127.0.0.1:4318",
-        )
+        OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
+            httpExport {
+                baseUrl = "http://127.0.0.1:4318"
+            }
+        }
 
         verify {
             appLifecycle.registerListener(any<SessionIdTimeoutHandler>())
