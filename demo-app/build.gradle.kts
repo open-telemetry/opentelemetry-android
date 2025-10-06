@@ -70,9 +70,11 @@ dependencies {
 
     coreLibraryDesugaring(libs.desugarJdkLibs)
 
-    implementation("io.opentelemetry.android:instrumentation-compose-click")
+    // These are sourced from local project dirs. See settings.gradle.kts for the
+    // configured substitutions.
     implementation("io.opentelemetry.android:android-agent")    //parent dir
-    implementation("io.opentelemetry.android:instrumentation-sessions")
+    implementation("io.opentelemetry.android.instrumentation:compose-click")
+    implementation("io.opentelemetry.android.instrumentation:sessions")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
