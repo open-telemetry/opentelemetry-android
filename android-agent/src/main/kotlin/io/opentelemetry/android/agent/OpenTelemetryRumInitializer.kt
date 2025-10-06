@@ -8,10 +8,8 @@ package io.opentelemetry.android.agent
 import android.app.Application
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.agent.connectivity.EndpointConnectivity
-import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 import io.opentelemetry.android.agent.dsl.DiskBufferingConfigurationSpec
-import io.opentelemetry.android.agent.dsl.instrumentation.InstrumentationConfiguration
+import io.opentelemetry.android.agent.dsl.OpenTelemetryConfiguration
 import io.opentelemetry.android.agent.session.SessionConfig
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.agent.session.SessionManager
@@ -30,47 +28,21 @@ object OpenTelemetryRumInitializer {
      * Opinionated [OpenTelemetryRum] initialization.
      *
      * @param application Your android app's application object.
-     * @param endpointBaseUrl The base endpoint for exporting all your signals.
-     * @param endpointHeaders These will be added to each signal export request.
-     * @param spanEndpointConnectivity Span-specific endpoint configuration.
-     * @param logEndpointConnectivity Log-specific endpoint configuration.
-     * @param metricEndpointConnectivity Metric-specific endpoint configuration.
-     * @param sessionConfig The session configuration, which includes inactivity timeout and maximum lifetime durations.
      * @param globalAttributes Configures the set of global attributes to emit with every span and event.
      * @param diskBuffering Configures the disk buffering feature.
-     * @param instrumentations Configurations for all the default instrumentations.
+     * @param configuration Type-safe config DSL that controls how OpenTelemetry
+     * should behave.
      */
-    @Suppress("LongParameterList")
     @JvmStatic
     fun initialize(
         application: Application,
-        endpointBaseUrl: String,
-        endpointHeaders: Map<String, String> = emptyMap(),
-        spanEndpointConnectivity: EndpointConnectivity =
-            HttpEndpointConnectivity.forTraces(
-                endpointBaseUrl,
-                endpointHeaders,
-            ),
-        logEndpointConnectivity: EndpointConnectivity =
-            HttpEndpointConnectivity.forLogs(
-                endpointBaseUrl,
-                endpointHeaders,
-            ),
-        metricEndpointConnectivity: EndpointConnectivity =
-            HttpEndpointConnectivity.forMetrics(
-                endpointBaseUrl,
-                endpointHeaders,
-            ),
-        sessionConfig: SessionConfig = SessionConfig.withDefaults(),
         globalAttributes: (() -> Attributes)? = null,
         diskBuffering: (DiskBufferingConfigurationSpec.() -> Unit)? = null,
-        instrumentations: (InstrumentationConfiguration.() -> Unit)? = null,
+        configuration: (OpenTelemetryConfiguration.() -> Unit) = {},
     ): OpenTelemetryRum {
         val rumConfig = OtelRumConfig()
-
-        instrumentations?.let { configure ->
-            InstrumentationConfiguration(rumConfig).configure()
-        }
+        val cfg = OpenTelemetryConfiguration(rumConfig)
+        configuration(cfg)
 
         val diskBufferingConfigurationSpec = DiskBufferingConfigurationSpec()
         diskBuffering?.invoke(diskBufferingConfigurationSpec)
@@ -79,26 +51,32 @@ object OpenTelemetryRumInitializer {
         globalAttributes?.let {
             rumConfig.setGlobalAttributes(it::invoke)
         }
+
+        val sessionConfig =
+            SessionConfig(
+                cfg.sessionConfig.backgroundInactivityTimeout,
+                cfg.sessionConfig.maxLifetime,
+            )
         return OpenTelemetryRum
-            .builder(application, rumConfig)
+            .builder(application, cfg.rumConfig)
             .setSessionProvider(createSessionProvider(application, sessionConfig))
             .addSpanExporterCustomizer {
                 OtlpHttpSpanExporter
                     .builder()
-                    .setEndpoint(spanEndpointConnectivity.getUrl())
-                    .setHeaders(spanEndpointConnectivity::getHeaders)
+                    .setEndpoint(cfg.exportConfig.spansConfig.url)
+                    .setHeaders(cfg.exportConfig.spansConfig::headers)
                     .build()
             }.addLogRecordExporterCustomizer {
                 OtlpHttpLogRecordExporter
                     .builder()
-                    .setEndpoint(logEndpointConnectivity.getUrl())
-                    .setHeaders(logEndpointConnectivity::getHeaders)
+                    .setEndpoint(cfg.exportConfig.logsConfig.url)
+                    .setHeaders(cfg.exportConfig.logsConfig::headers)
                     .build()
             }.addMetricExporterCustomizer {
                 OtlpHttpMetricExporter
                     .builder()
-                    .setEndpoint(metricEndpointConnectivity.getUrl())
-                    .setHeaders(metricEndpointConnectivity::getHeaders)
+                    .setEndpoint(cfg.exportConfig.metricsConfig.url)
+                    .setHeaders(cfg.exportConfig.metricsConfig::headers)
                     .build()
             }.build()
     }
