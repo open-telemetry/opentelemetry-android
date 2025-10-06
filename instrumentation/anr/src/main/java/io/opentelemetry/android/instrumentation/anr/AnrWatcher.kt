@@ -8,7 +8,7 @@ package io.opentelemetry.android.instrumentation.anr
 import android.os.Handler
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
+import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.context.Context
 import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE
@@ -88,7 +88,7 @@ internal class AnrWatcher(
             attributesBuilder.putAll(extractedAttributes)
         }
 
-        val eventBuilder = anrLogger.logRecordBuilder() as ExtendedLogRecordBuilder
+        val eventBuilder = anrLogger.logRecordBuilder()
         eventBuilder
             .setEventName("device.anr")
             .setAllAttributes(attributesBuilder.build())

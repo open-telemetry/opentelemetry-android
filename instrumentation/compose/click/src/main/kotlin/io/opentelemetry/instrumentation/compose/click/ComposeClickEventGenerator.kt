@@ -11,16 +11,17 @@ import android.view.MotionEvent
 import android.view.Window
 import androidx.compose.ui.node.LayoutNode
 import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
-import io.opentelemetry.api.incubator.logs.ExtendedLogger
+import io.opentelemetry.api.logs.LogRecordBuilder
+import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_X
 import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_Y
 import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_ID
 import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_NAME
 import java.lang.ref.WeakReference
+import kotlin.let
 
 internal class ComposeClickEventGenerator(
-    private val eventLogger: ExtendedLogger,
+    private val eventLogger: Logger,
     private val composeLayoutNodeUtil: ComposeLayoutNodeUtil = ComposeLayoutNodeUtil(),
     private val composeTapTargetDetector: ComposeTapTargetDetector = ComposeTapTargetDetector(composeLayoutNodeUtil),
 ) {
@@ -58,7 +59,7 @@ internal class ComposeClickEventGenerator(
         windowRef = null
     }
 
-    private fun createEvent(name: String): ExtendedLogRecordBuilder =
+    private fun createEvent(name: String): LogRecordBuilder =
         eventLogger
             .logRecordBuilder()
             .setEventName(name)

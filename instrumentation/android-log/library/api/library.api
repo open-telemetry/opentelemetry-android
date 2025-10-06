@@ -26,7 +26,7 @@ public final class io/opentelemetry/instrumentation/library/log/AndroidLogSubsti
 public final class io/opentelemetry/instrumentation/library/log/internal/LogRecordBuilderCreator {
 	public static final field INSTANCE Lio/opentelemetry/instrumentation/library/log/internal/LogRecordBuilderCreator;
 	public static final fun configure (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
-	public static final fun createLogRecordBuilder ()Lio/opentelemetry/api/incubator/logs/ExtendedLogRecordBuilder;
+	public static final fun createLogRecordBuilder ()Lio/opentelemetry/api/logs/LogRecordBuilder;
 	public static final fun getTypeName (Ljava/lang/Throwable;)Ljava/lang/String;
 	public static final fun printStacktrace (Ljava/lang/Throwable;)Ljava/lang/String;
 }

@@ -9,7 +9,7 @@ import io.opentelemetry.android.common.RumConstants.Events.EVENT_SESSION_END
 import io.opentelemetry.android.common.RumConstants.Events.EVENT_SESSION_START
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
-import io.opentelemetry.api.incubator.logs.ExtendedLogger
+import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_ID
 import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_PREVIOUS_ID
 
@@ -18,7 +18,7 @@ import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_P
  * specified in the OpenTelemetry semantic conventions.
  */
 internal class SessionIdEventSender(
-    private val eventLogger: ExtendedLogger,
+    private val eventLogger: Logger,
 ) : SessionObserver {
     override fun onSessionStarted(
         newSession: Session,

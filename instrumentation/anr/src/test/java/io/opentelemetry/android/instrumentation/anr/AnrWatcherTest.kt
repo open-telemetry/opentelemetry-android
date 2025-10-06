@@ -11,7 +11,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder
+import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import org.junit.Before
@@ -28,7 +28,7 @@ class AnrWatcherTest {
     private lateinit var handler: Handler
     private lateinit var mainThread: Thread
     private lateinit var logger: Logger
-    private lateinit var logRecordBuilder: ExtendedLogRecordBuilder
+    private lateinit var logRecordBuilder: LogRecordBuilder
 
     @Before
     fun setup() {

@@ -25,7 +25,6 @@ import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateL
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.network.NetworkChangeListener
 import io.opentelemetry.android.session.SessionProvider
-import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
@@ -68,7 +67,7 @@ class NetworkChangeInstrumentationTest {
 
         val events = otelTesting.logRecords
         assertThat(events).hasSize(1)
-        val event = events[0] as ExtendedLogRecordData
+        val event = events[0]
         assertThat(event)
             .hasEventName("network.change")
             .hasAttributesSatisfyingExactly(
@@ -98,7 +97,7 @@ class NetworkChangeInstrumentationTest {
 
         val events = otelTesting.logRecords
         assertThat(events).hasSize(1)
-        val event = events[0] as ExtendedLogRecordData
+        val event = events[0]
         assertThat(event)
             .hasEventName("network.change")
             .hasAttributesSatisfyingExactly(
@@ -126,7 +125,7 @@ class NetworkChangeInstrumentationTest {
 
         val events = otelTesting.logRecords
         assertThat(events).hasSize(1)
-        val event = events[0] as ExtendedLogRecordData
+        val event = events[0]
         assertThat(event)
             .hasEventName("network.change")
             .hasAttributesSatisfyingExactly(
@@ -165,7 +164,7 @@ class NetworkChangeInstrumentationTest {
             CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE),
         )
         assertThat(otelTesting.logRecords).hasSize(1)
-        val event: ExtendedLogRecordData = otelTesting.logRecords[0] as ExtendedLogRecordData
+        val event = otelTesting.logRecords[0]
         assertThat(event)
             .hasEventName("network.change")
             .hasAttributesSatisfyingExactly(
