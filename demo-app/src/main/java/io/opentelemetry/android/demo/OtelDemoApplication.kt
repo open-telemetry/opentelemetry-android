@@ -11,8 +11,6 @@ import android.util.Log
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.agent.OpenTelemetryRumInitializer
-import io.opentelemetry.android.config.OtelRumConfig
-import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
@@ -25,6 +23,8 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter
 const val TAG = "otel.demo"
 
 class OtelDemoApplication : Application() {
+
+    @OptIn(Incubating::class)
     @SuppressLint("RestrictedApi")
     override fun onCreate() {
         super.onCreate()

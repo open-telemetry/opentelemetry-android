@@ -7,52 +7,6 @@ public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer {
 	public static synthetic fun initialize$default (Landroid/app/Application;Ljava/lang/String;Ljava/util/Map;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/connectivity/EndpointConnectivity;Lio/opentelemetry/android/agent/session/SessionConfig;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/opentelemetry/android/OpenTelemetryRum;
 }
 
-public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$ActivityLifecycleConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CanBeEnabledAndDisabled, io/opentelemetry/android/agent/OpenTelemetryRumInitializer$ScreenLifecycleConfigurable {
-	public fun enabled (Z)V
-	public fun screenNameExtractor (Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;)V
-	public fun tracerCustomizer (Lkotlin/jvm/functions/Function1;)V
-}
-
-public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$AnrReporterConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CanBeEnabledAndDisabled, io/opentelemetry/android/agent/OpenTelemetryRumInitializer$WithEventAttributes {
-	public fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/common/EventAttributesExtractor;)V
-	public fun enabled (Z)V
-}
-
-public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CrashReporterConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CanBeEnabledAndDisabled, io/opentelemetry/android/agent/OpenTelemetryRumInitializer$WithEventAttributes {
-	public fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/common/EventAttributesExtractor;)V
-	public fun enabled (Z)V
-}
-
-public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$DiskBufferingConfigurationSpec : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CanBeEnabledAndDisabled {
-	public fun enabled (Z)V
-}
-
-public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$FragmentLifecycleConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CanBeEnabledAndDisabled, io/opentelemetry/android/agent/OpenTelemetryRumInitializer$ScreenLifecycleConfigurable {
-	public fun enabled (Z)V
-	public fun screenNameExtractor (Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;)V
-	public fun tracerCustomizer (Lkotlin/jvm/functions/Function1;)V
-}
-
-public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$InstrumentationConfiguration {
-	public final fun activity (Lkotlin/jvm/functions/Function1;)V
-	public final fun anrReporter (Lkotlin/jvm/functions/Function1;)V
-	public final fun crashReporter (Lkotlin/jvm/functions/Function1;)V
-	public final fun fragment (Lkotlin/jvm/functions/Function1;)V
-	public final fun networkMonitoring (Lkotlin/jvm/functions/Function1;)V
-	public final fun slowRenderingReporter (Lkotlin/jvm/functions/Function1;)V
-}
-
-public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$NetworkMonitoringConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CanBeEnabledAndDisabled {
-	public final fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/network/NetworkAttributesExtractor;)V
-	public fun enabled (Z)V
-}
-
-public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer$SlowRenderingReporterConfiguration : io/opentelemetry/android/agent/OpenTelemetryRumInitializer$CanBeEnabledAndDisabled {
-	public final fun detectionPollInterval-LRDsOJo (J)V
-	public final fun enableVerboseDebugLogging ()V
-	public fun enabled (Z)V
-}
-
 public abstract interface class io/opentelemetry/android/agent/connectivity/EndpointConnectivity {
 	public abstract fun getHeaders ()Ljava/util/Map;
 	public abstract fun getUrl ()Ljava/lang/String;
@@ -72,6 +26,52 @@ public final class io/opentelemetry/android/agent/connectivity/HttpEndpointConne
 	public static synthetic fun forMetrics$default (Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity$Companion;Ljava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity;
 	public final fun forTraces (Ljava/lang/String;Ljava/util/Map;)Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity;
 	public static synthetic fun forTraces$default (Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity$Companion;Ljava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity;
+}
+
+public final class io/opentelemetry/android/agent/dsl/DiskBufferingConfigurationSpec : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled {
+	public fun enabled (Z)V
+}
+
+public final class io/opentelemetry/android/agent/dsl/instrumentation/ActivityLifecycleConfiguration : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled, io/opentelemetry/android/agent/dsl/instrumentation/ScreenLifecycleConfigurable {
+	public fun enabled (Z)V
+	public fun screenNameExtractor (Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;)V
+	public fun tracerCustomizer (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class io/opentelemetry/android/agent/dsl/instrumentation/AnrReporterConfiguration : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled, io/opentelemetry/android/agent/dsl/instrumentation/WithEventAttributes {
+	public fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/common/EventAttributesExtractor;)V
+	public fun enabled (Z)V
+}
+
+public final class io/opentelemetry/android/agent/dsl/instrumentation/CrashReporterConfiguration : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled, io/opentelemetry/android/agent/dsl/instrumentation/WithEventAttributes {
+	public fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/common/EventAttributesExtractor;)V
+	public fun enabled (Z)V
+}
+
+public final class io/opentelemetry/android/agent/dsl/instrumentation/FragmentLifecycleConfiguration : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled, io/opentelemetry/android/agent/dsl/instrumentation/ScreenLifecycleConfigurable {
+	public fun enabled (Z)V
+	public fun screenNameExtractor (Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;)V
+	public fun tracerCustomizer (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class io/opentelemetry/android/agent/dsl/instrumentation/InstrumentationConfiguration {
+	public final fun activity (Lkotlin/jvm/functions/Function1;)V
+	public final fun anrReporter (Lkotlin/jvm/functions/Function1;)V
+	public final fun crashReporter (Lkotlin/jvm/functions/Function1;)V
+	public final fun fragment (Lkotlin/jvm/functions/Function1;)V
+	public final fun networkMonitoring (Lkotlin/jvm/functions/Function1;)V
+	public final fun slowRenderingReporter (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class io/opentelemetry/android/agent/dsl/instrumentation/NetworkMonitoringConfiguration : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled {
+	public final fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/network/NetworkAttributesExtractor;)V
+	public fun enabled (Z)V
+}
+
+public final class io/opentelemetry/android/agent/dsl/instrumentation/SlowRenderingReporterConfiguration : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled {
+	public final fun detectionPollInterval-LRDsOJo (J)V
+	public final fun enableVerboseDebugLogging ()V
+	public fun enabled (Z)V
 }
 
 public final class io/opentelemetry/android/agent/session/SessionConfig {
