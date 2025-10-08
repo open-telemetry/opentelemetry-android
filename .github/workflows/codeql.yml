@@ -38,7 +38,7 @@ jobs:
         run: touch demo-app/local.properties
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@64d10c13136e1c5bce3e5fbde8d4906eeaafc885 # v3.30.6
+        uses: github/codeql-action/init@a8d1ac45b9a34d11fe398d5503176af0d06b303e # v3.30.7
         with:
           languages: java, actions
           # using "linked" helps to keep up with the latest Kotlin support
@@ -53,7 +53,7 @@ jobs:
         run: ./gradlew assemble --no-build-cache --no-daemon
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@64d10c13136e1c5bce3e5fbde8d4906eeaafc885 # v3.30.6
+        uses: github/codeql-action/analyze@a8d1ac45b9a34d11fe398d5503176af0d06b303e # v3.30.7
 
       - name: Enable KVM for Android tests
         run: |
