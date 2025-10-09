@@ -26,6 +26,8 @@ import io.opentelemetry.android.instrumentation.crash.CrashReporterInstrumentati
 import io.opentelemetry.android.instrumentation.fragment.FragmentLifecycleInstrumentation
 import io.opentelemetry.android.instrumentation.network.NetworkAttributesExtractor
 import io.opentelemetry.android.instrumentation.network.NetworkChangeInstrumentation
+import io.opentelemetry.android.instrumentation.screen_orientation.ScreenOrientationInstrumentation
+import io.opentelemetry.android.instrumentation.screen_orientation.model.Orientation
 import io.opentelemetry.android.instrumentation.slowrendering.SlowRenderingInstrumentation
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.session.SessionProvider
@@ -138,6 +140,11 @@ object OpenTelemetryRumInitializer {
                 config,
             )
         }
+        private val screenOrientation: ScreenOrientationConfiguration by lazy {
+            ScreenOrientationConfiguration(
+                config
+            )
+        }
 
         fun activity(configure: ActivityLifecycleConfiguration.() -> Unit) {
             activity.configure()
@@ -161,6 +168,10 @@ object OpenTelemetryRumInitializer {
 
         fun slowRenderingReporter(configure: SlowRenderingReporterConfiguration.() -> Unit) {
             slowRendering.configure()
+        }
+
+        fun screenOrientation(configure: ScreenOrientationConfiguration.() -> Unit) {
+            screenOrientation.configure()
         }
     }
 
@@ -294,6 +305,25 @@ object OpenTelemetryRumInitializer {
                 config.allowInstrumentation(slowRenderingInstrumentation.name)
             } else {
                 config.suppressInstrumentation(slowRenderingInstrumentation.name)
+            }
+        }
+    }
+
+    @InstrumentationConfigMarker
+    class ScreenOrientationConfiguration internal constructor(
+        private val config: OtelRumConfig
+    ) : WithEventAttributes<Orientation>, CanBeEnabledAndDisabled {
+        private val instrumentation: ScreenOrientationInstrumentation by lazy { getInstrumentation() }
+
+        override fun addAttributesExtractor(value: EventAttributesExtractor<Orientation>) {
+            instrumentation.addAttributesExtractor(value)
+        }
+
+        override fun enabled(enabled: Boolean) {
+            if (enabled) {
+                config.allowInstrumentation(instrumentation.name)
+            } else {
+                config.suppressInstrumentation(instrumentation.name)
             }
         }
     }
