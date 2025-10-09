@@ -17,6 +17,10 @@ internal class ScreenOrientationDetector(
 ) : ComponentCallbacks {
     private var currentOrientation: Int = applicationContext.resources.configuration.orientation
 
+    internal companion object {
+        const val EVENT_NAME = "device.screen_orientation"
+    }
+
     private fun emitLog(orientation: Orientation, body: String) {
         val attributesBuilder = Attributes.builder()
         additionalExtractors.forEach {
@@ -26,7 +30,7 @@ internal class ScreenOrientationDetector(
         }
 
         logger.logRecordBuilder()
-            .setEventName("device.screen_orientation")
+            .setEventName(EVENT_NAME)
             .setBody(body)
             .setAllAttributes(attributesBuilder.build())
             .emit()
