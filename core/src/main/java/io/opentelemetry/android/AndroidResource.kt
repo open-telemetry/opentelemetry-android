@@ -46,10 +46,9 @@ object AndroidResource {
         try {
             val stringId =
                 application.applicationInfo.labelRes
-            if(stringId == 0){
+            if (stringId == 0) {
                 application.applicationInfo.nonLocalizedLabel.toString()
-            }
-            else {
+            } else {
                 application.applicationContext.getString(stringId)
             }
         } catch (_: Exception) {
