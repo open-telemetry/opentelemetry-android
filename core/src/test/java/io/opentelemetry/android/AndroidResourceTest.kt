@@ -47,7 +47,7 @@ internal class AndroidResourceTest {
                 labelRes = 12345
             }
 
-        every { app.applicationContext.applicationInfo } returns appInfo
+        every { app.applicationInfo } returns appInfo
         every { app.applicationContext.getString(appInfo.labelRes) } returns appName
 
         val expected =
@@ -57,6 +57,39 @@ internal class AndroidResourceTest {
                     Resource
                         .builder()
                         .put(ServiceAttributes.SERVICE_NAME, appName)
+                        .put(RumConstants.RUM_SDK_VERSION, rumSdkVersion)
+                        .put(DeviceIncubatingAttributes.DEVICE_MODEL_NAME, Build.MODEL)
+                        .put(DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER, Build.MODEL)
+                        .put(DeviceIncubatingAttributes.DEVICE_MANUFACTURER, Build.MANUFACTURER)
+                        .put(OsIncubatingAttributes.OS_NAME, "Android")
+                        .put(OsIncubatingAttributes.OS_TYPE, "linux")
+                        .put(OsIncubatingAttributes.OS_VERSION, Build.VERSION.RELEASE)
+                        .put(OsIncubatingAttributes.OS_DESCRIPTION, osDescription)
+                        .build(),
+                )
+
+        val result = AndroidResource.createDefault(app)
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun `fall back to nonLocalizedLabel if needed`() {
+        val appInfo =
+            ApplicationInfo().apply {
+                labelRes = 0
+                nonLocalizedLabel = "shim sham"
+            }
+
+        every { app.applicationContext.applicationInfo } returns appInfo
+        every { app.applicationInfo } returns appInfo
+
+        val expected =
+            Resource
+                .getDefault()
+                .merge(
+                    Resource
+                        .builder()
+                        .put(ServiceAttributes.SERVICE_NAME, "shim sham")
                         .put(RumConstants.RUM_SDK_VERSION, rumSdkVersion)
                         .put(DeviceIncubatingAttributes.DEVICE_MODEL_NAME, Build.MODEL)
                         .put(DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER, Build.MODEL)

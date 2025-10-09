@@ -45,8 +45,13 @@ object AndroidResource {
     private fun readAppName(application: Application): String =
         try {
             val stringId =
-                application.applicationContext.applicationInfo.labelRes
-            application.applicationContext.getString(stringId)
+                application.applicationInfo.labelRes
+            if(stringId == 0){
+                application.applicationInfo.nonLocalizedLabel.toString()
+            }
+            else {
+                application.applicationContext.getString(stringId)
+            }
         } catch (_: Exception) {
             DEFAULT_APP_NAME
         }
