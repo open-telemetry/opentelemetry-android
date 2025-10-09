@@ -30,19 +30,13 @@ class OtelDemoApplication : Application() {
         super.onCreate()
 
         Log.i(TAG, "Initializing the opentelemetry-android-agent")
-        val diskBufferingConfig = DiskBufferingConfig(
-            enabled = true, maxCacheSize = 10_000_000, debugEnabled = true);
-        val config =
-            OtelRumConfig()
-                .setGlobalAttributes(Attributes.of(stringKey("toolkit"), "jetpack compose"))
-                .setDiskBufferingConfig(diskBufferingConfig)
 
         // 10.0.2.2 is apparently a special binding to the host running the emulator
         try {
             rum = OpenTelemetryRumInitializer.initialize(
                 application = this,
                 endpointBaseUrl = "http://10.0.2.2:4318",
-                rumConfig = config
+                globalAttributes = { Attributes.of(stringKey("toolkit"), "jetpack compose") }
             )
             Log.d(TAG, "RUM session started: " + rum!!.rumSessionId)
         } catch (e: Exception) {
