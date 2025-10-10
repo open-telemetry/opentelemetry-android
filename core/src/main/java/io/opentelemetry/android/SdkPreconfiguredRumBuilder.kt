@@ -5,7 +5,9 @@
 
 package io.opentelemetry.android
 
-import android.app.Application
+import android.content.Context
+import android.util.Log
+import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
@@ -14,7 +16,7 @@ import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.OpenTelemetrySdk
 
 class SdkPreconfiguredRumBuilder internal constructor(
-    private val application: Application,
+    private val context: Context,
     private val sdk: OpenTelemetrySdk,
     private val sessionProvider: SessionProvider,
     private val config: OtelRumConfig,
@@ -44,14 +46,23 @@ class SdkPreconfiguredRumBuilder internal constructor(
     /**
      * Creates a new instance of [OpenTelemetryRum] with the settings of this [ ].
      *
-     *
      * This method uses a preconfigured OpenTelemetry SDK and install built-in system
-     * instrumentations in the passed Android [Application].
+     * instrumentations in the passed Android [Context].
      *
      * @return A new [OpenTelemetryRum] instance.
      */
     fun build(): OpenTelemetryRum {
-        val ctx = InstallationContext(application, sdk, sessionProvider)
+        val ctx = InstallationContext(context, sdk, sessionProvider)
+        if (ctx.application == null) {
+            Log.w(
+                RumConstants.OTEL_RUM_LOG_TAG,
+                "Cannot retrieve applicationContext. This indicates the OpenTelemetry SDK was" +
+                    "initialized outside of the Application subclass too early using an " +
+                    "inappropriate context. Functionality that relies on lifecycle callbacks will" +
+                    "not work until you resolve this problem.",
+            )
+        }
+
         val enabledInstrumentations = getEnabledInstrumentations()
         val onShutdown: () -> Unit = {
             for (instrumentation in enabledInstrumentations) {

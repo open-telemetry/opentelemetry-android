@@ -5,7 +5,7 @@ public abstract interface class io/opentelemetry/android/internal/services/Servi
 public final class io/opentelemetry/android/internal/services/Services : io/opentelemetry/android/internal/services/ServicesFactory {
 	public static final field Companion Lio/opentelemetry/android/internal/services/Services$Companion;
 	public fun close ()V
-	public static final fun get (Landroid/app/Application;)Lio/opentelemetry/android/internal/services/Services;
+	public static final fun get (Landroid/content/Context;)Lio/opentelemetry/android/internal/services/Services;
 	public fun getAppLifecycle ()Lio/opentelemetry/android/internal/services/applifecycle/AppLifecycle;
 	public fun getCacheStorage ()Lio/opentelemetry/android/internal/services/storage/CacheStorage;
 	public fun getCurrentNetworkProvider ()Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;
@@ -15,7 +15,7 @@ public final class io/opentelemetry/android/internal/services/Services : io/open
 }
 
 public final class io/opentelemetry/android/internal/services/Services$Companion {
-	public final fun get (Landroid/app/Application;)Lio/opentelemetry/android/internal/services/Services;
+	public final fun get (Landroid/content/Context;)Lio/opentelemetry/android/internal/services/Services;
 	public final fun set (Lio/opentelemetry/android/internal/services/Services;)V
 }
 

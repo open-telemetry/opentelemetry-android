@@ -14,7 +14,7 @@ class ComposeClickInstrumentation : AndroidInstrumentation {
     override val name: String = "compose.click"
 
     override fun install(ctx: InstallationContext) {
-        ctx.application.registerActivityLifecycleCallbacks(
+        ctx.application?.registerActivityLifecycleCallbacks(
             ComposeClickActivityCallback(
                 ComposeClickEventGenerator(
                     ctx.openTelemetry

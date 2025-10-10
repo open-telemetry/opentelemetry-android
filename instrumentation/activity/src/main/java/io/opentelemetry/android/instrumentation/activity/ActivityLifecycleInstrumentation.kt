@@ -35,12 +35,14 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
 
     override fun install(ctx: InstallationContext) {
         startupTimer.start(ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE))
-        ctx.application.registerActivityLifecycleCallbacks(startupTimer.createLifecycleCallback())
-        ctx.application.registerActivityLifecycleCallbacks(buildActivityLifecycleTracer(ctx))
+        ctx.application?.let {
+            it.registerActivityLifecycleCallbacks(startupTimer.createLifecycleCallback())
+            it.registerActivityLifecycleCallbacks(buildActivityLifecycleTracer(ctx))
+        }
     }
 
     private fun buildActivityLifecycleTracer(ctx: InstallationContext): DefaultingActivityLifecycleCallbacks {
-        val visibleScreenService = Services.get(ctx.application).visibleScreenTracker
+        val visibleScreenService = Services.get(ctx.context).visibleScreenTracker
         val delegateTracer: Tracer = ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
         val tracers =
             ActivityTracerCache(

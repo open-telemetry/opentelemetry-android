@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android
 
-import android.app.Application
+import android.content.Context
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.OpenTelemetry
@@ -59,14 +59,14 @@ interface OpenTelemetryRum {
          * [OtelRumConfig] instance. If you would like to "bring your own" SDK, call the
          * two-argument version that takes the SDK as a parameter.
          *
-         * @param application The [Application] that is being instrumented.
+         * @param context The [Context] that is being instrumented.
          */
         @JvmStatic
         @JvmOverloads
         fun builder(
-            application: Application,
+            context: Context,
             config: OtelRumConfig = OtelRumConfig(),
-        ): OpenTelemetryRumBuilder = OpenTelemetryRumBuilder.create(application, config)
+        ): OpenTelemetryRumBuilder = OpenTelemetryRumBuilder.create(context, config)
 
         /**
          * Returns a new [SdkPreconfiguredRumBuilder] for [OpenTelemetryRum]. This version
@@ -78,20 +78,20 @@ interface OpenTelemetryRum {
          * the [SdkTracerProvider], [SdkMeterProvider], and [SdkLoggerProvider] are
          * configured correctly for your target RUM provider.
          *
-         * @param application The [Application] that is being instrumented.
+         * @param context The [Context] that is being instrumented.
          * @param openTelemetrySdk The [OpenTelemetrySdk] that the user has already created.
          * @param config The [OtelRumConfig] instance.
          * @param sessionProvider The [SessionProvider] instance.
          */
         @JvmStatic
         fun builder(
-            application: Application,
+            context: Context,
             openTelemetrySdk: OpenTelemetrySdk,
             config: OtelRumConfig,
             sessionProvider: SessionProvider,
         ): SdkPreconfiguredRumBuilder =
             SdkPreconfiguredRumBuilder(
-                application,
+                context,
                 openTelemetrySdk,
                 sessionProvider,
                 config,

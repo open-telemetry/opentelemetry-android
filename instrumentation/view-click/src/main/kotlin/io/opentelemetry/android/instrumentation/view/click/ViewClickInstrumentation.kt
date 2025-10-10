@@ -14,7 +14,7 @@ class ViewClickInstrumentation : AndroidInstrumentation {
     override val name: String = "view.click"
 
     override fun install(ctx: InstallationContext) {
-        ctx.application.registerActivityLifecycleCallbacks(
+        ctx.application?.registerActivityLifecycleCallbacks(
             ViewClickActivityCallback(
                 ViewClickEventGenerator(
                     ctx.openTelemetry
