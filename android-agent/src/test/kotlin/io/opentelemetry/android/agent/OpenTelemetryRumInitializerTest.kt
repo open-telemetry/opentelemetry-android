@@ -9,6 +9,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
@@ -27,6 +28,7 @@ class OpenTelemetryRumInitializerTest {
         appLifecycle = mockk(relaxed = true)
     }
 
+    @OptIn(Incubating::class)
     @Test
     fun `Verify timeoutHandler initialization`() {
         createAndSetServiceManager()
