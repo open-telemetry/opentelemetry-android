@@ -32,6 +32,8 @@ android {
         all {
             val accessToken = localProperties["rum.access.token"] as String?
             resValue("string", "rum_access_token", accessToken ?: "fakebroken")
+            manifestPlaceholders.put("appName", "OpenTelemetry Android Demo")
+            manifestPlaceholders.put("appNameSuffix", "default")
         }
         release {
             isMinifyEnabled = true
