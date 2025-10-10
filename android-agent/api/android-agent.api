@@ -87,27 +87,3 @@ public final class io/opentelemetry/android/agent/session/SessionConfig$Companio
 	public final fun withDefaults ()Lio/opentelemetry/android/agent/session/SessionConfig;
 }
 
-public abstract interface class io/opentelemetry/android/agent/session/SessionIdGenerator {
-	public abstract fun generateSessionId ()Ljava/lang/String;
-}
-
-public final class io/opentelemetry/android/agent/session/SessionIdGenerator$DEFAULT : io/opentelemetry/android/agent/session/SessionIdGenerator {
-	public static final field INSTANCE Lio/opentelemetry/android/agent/session/SessionIdGenerator$DEFAULT;
-	public fun generateSessionId ()Ljava/lang/String;
-}
-
-public abstract interface class io/opentelemetry/android/agent/session/SessionStorage {
-	public abstract fun get ()Lio/opentelemetry/android/session/Session;
-	public abstract fun save (Lio/opentelemetry/android/session/Session;)V
-}
-
-public final class io/opentelemetry/android/agent/session/SessionStorage$InMemory : io/opentelemetry/android/agent/session/SessionStorage {
-	public fun <init> ()V
-	public fun <init> (Lio/opentelemetry/android/session/Session;)V
-	public synthetic fun <init> (Lio/opentelemetry/android/session/Session;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun get ()Lio/opentelemetry/android/session/Session;
-	public final fun getSession ()Lio/opentelemetry/android/session/Session;
-	public fun save (Lio/opentelemetry/android/session/Session;)V
-	public final fun setSession (Lio/opentelemetry/android/session/Session;)V
-}
-
