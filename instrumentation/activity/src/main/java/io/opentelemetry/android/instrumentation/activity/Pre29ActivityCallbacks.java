@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import io.opentelemetry.android.instrumentation.activity.draw.FirstDrawListener;
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks;
 
 public class Pre29ActivityCallbacks implements DefaultingActivityLifecycleCallbacks {
@@ -21,6 +22,12 @@ public class Pre29ActivityCallbacks implements DefaultingActivityLifecycleCallba
     @Override
     public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
         tracers.startActivityCreation(activity).addEvent("activityCreated");
+        FirstDrawListener.INSTANCE.registerFirstDraw(
+                activity,
+                view -> {
+                    tracers.endInitialDrawSpan(activity, view);
+                    return null;
+                });
     }
 
     @Override

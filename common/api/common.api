@@ -7,6 +7,8 @@ public final class io/opentelemetry/android/common/RumConstants {
 	public static final field OTEL_RUM_LOG_TAG Ljava/lang/String;
 	public static final field RUM_SDK_VERSION Lio/opentelemetry/api/common/AttributeKey;
 	public static final field SCREEN_NAME_KEY Lio/opentelemetry/api/common/AttributeKey;
+	public static final field SCREEN_VIEW_DEPTH_KEY Lio/opentelemetry/api/common/AttributeKey;
+	public static final field SCREEN_VIEW_NODES_KEY Lio/opentelemetry/api/common/AttributeKey;
 	public static final field START_TYPE_KEY Lio/opentelemetry/api/common/AttributeKey;
 	public static final field STORAGE_SPACE_FREE_KEY Lio/opentelemetry/api/common/AttributeKey;
 }

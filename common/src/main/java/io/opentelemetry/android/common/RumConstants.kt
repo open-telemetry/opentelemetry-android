@@ -31,6 +31,12 @@ object RumConstants {
     @JvmField
     val BATTERY_PERCENT_KEY: AttributeKey<Double> = AttributeKey.doubleKey("battery.percent")
 
+    @JvmField
+    val SCREEN_VIEW_NODES_KEY: AttributeKey<Long> = AttributeKey.longKey("screen.view.nodes")
+
+    @JvmField
+    val SCREEN_VIEW_DEPTH_KEY: AttributeKey<Long> = AttributeKey.longKey("screen.view.depth")
+
     const val APP_START_SPAN_NAME: String = "AppStart"
 
     object Events {
