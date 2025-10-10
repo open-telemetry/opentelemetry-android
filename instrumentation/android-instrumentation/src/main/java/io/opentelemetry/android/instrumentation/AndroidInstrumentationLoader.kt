@@ -41,7 +41,7 @@ interface AndroidInstrumentationLoader {
          * Convenience method for [AndroidInstrumentationLoader.getByType].
          */
         @JvmStatic
-        fun <T : AndroidInstrumentation> getInstrumentation(type: Class<out T>): T? = get().getByType(type)
+        fun <T : AndroidInstrumentation> getInstrumentation(type: Class<out T>): T = get().getByType(type)!!
 
         @JvmStatic
         fun resetForTest() {
