@@ -73,8 +73,7 @@ junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher
 robolectric = "org.robolectric:robolectric:4.16"
 assertj-core = "org.assertj:assertj-core:3.27.6"
 awaitility = "org.awaitility:awaitility:4.3.0"
-mockwebserver = "com.google.mockwebserver:mockwebserver:20130706"
-okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp" }
+okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver3", version.ref = "okhttp" }
 
 #Compilation tools
 desugarJdkLibs = "com.android.tools:desugar_jdk_libs:2.1.5"
