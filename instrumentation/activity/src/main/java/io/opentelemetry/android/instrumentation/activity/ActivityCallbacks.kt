@@ -18,8 +18,8 @@ class ActivityCallbacks(
         savedInstanceState: Bundle?,
     ) {
         tracers.startActivityCreation(activity).addEvent("activityPreCreated")
-        FirstDrawListener.registerFirstDraw(activity) { view ->
-            tracers.endInitialDrawSpan(activity, view)
+        FirstDrawListener.registerFirstDraw(activity) {
+            tracers.endInitialDrawSpan(activity)
         }
     }
 

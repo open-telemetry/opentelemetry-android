@@ -6,7 +6,6 @@
 package io.opentelemetry.android.instrumentation.activity;
 
 import android.app.Activity;
-import android.view.View;
 import androidx.annotation.VisibleForTesting;
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer;
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor;
@@ -80,8 +79,8 @@ public class ActivityTracerCache {
         return getTracer(activity).startActivityCreation();
     }
 
-    public void endInitialDrawSpan(Activity activity, View view) {
-        getTracer(activity).endInitialDrawSpan(view);
+    public void endInitialDrawSpan(Activity activity) {
+        getTracer(activity).endInitialDrawSpan();
     }
 
     private ActivityTracer getTracer(Activity activity) {

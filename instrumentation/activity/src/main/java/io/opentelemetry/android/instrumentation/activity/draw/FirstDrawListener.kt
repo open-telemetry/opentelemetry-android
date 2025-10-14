@@ -15,7 +15,7 @@ import android.view.ViewTreeObserver
 internal object FirstDrawListener {
     fun registerFirstDraw(
         activity: Activity,
-        drawDoneCallback: (View) -> Unit,
+        drawDoneCallback: () -> Unit,
     ) {
         val window = activity.window
 
@@ -51,7 +51,7 @@ internal object FirstDrawListener {
      */
     internal class NextDrawListener(
         val view: View,
-        val drawDoneCallback: (View) -> Unit,
+        val drawDoneCallback: () -> Unit,
         val handler: Handler = Handler(Looper.getMainLooper()),
     ) : ViewTreeObserver.OnDrawListener {
         var invoked = false
@@ -59,7 +59,7 @@ internal object FirstDrawListener {
         override fun onDraw() {
             if (!invoked) {
                 invoked = true
-                drawDoneCallback(view)
+                drawDoneCallback()
                 handler.post {
                     if (view.viewTreeObserver.isAlive) {
                         view.viewTreeObserver.removeOnDrawListener(this)

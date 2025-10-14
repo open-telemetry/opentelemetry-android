@@ -144,12 +144,11 @@ internal class ActivityTracerCacheTest {
 
     @Test
     fun endInitialDrawSpan() {
-        val view = Mockito.mock(android.view.View::class.java)
         Mockito.`when`(tracerCreator.apply(activity)).thenReturn(activityTracer)
 
         val underTest = ActivityTracerCache(tracerCreator)
 
-        underTest.endInitialDrawSpan(activity, view)
-        Mockito.verify(activityTracer).endInitialDrawSpan(view)
+        underTest.endInitialDrawSpan(activity)
+        Mockito.verify(activityTracer).endInitialDrawSpan()
     }
 }

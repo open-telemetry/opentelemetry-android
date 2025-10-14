@@ -24,8 +24,8 @@ public class Pre29ActivityCallbacks implements DefaultingActivityLifecycleCallba
         tracers.startActivityCreation(activity).addEvent("activityCreated");
         FirstDrawListener.INSTANCE.registerFirstDraw(
                 activity,
-                view -> {
-                    tracers.endInitialDrawSpan(activity, view);
+                () -> {
+                    tracers.endInitialDrawSpan(activity);
                     return null;
                 });
     }

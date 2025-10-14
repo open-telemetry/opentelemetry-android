@@ -27,17 +27,14 @@ internal class FirstDrawListenerTest {
         every { handler.post(any()) } returns true
 
         var callbackInvoked = false
-        var capturedView: View? = null
         val listener =
-            FirstDrawListener.NextDrawListener(view, { v ->
+            FirstDrawListener.NextDrawListener(view, {
                 callbackInvoked = true
-                capturedView = v
             }, handler)
 
         listener.onDraw()
 
         assert(callbackInvoked)
-        assertEquals(view, capturedView)
     }
 
     @Test

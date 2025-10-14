@@ -38,7 +38,7 @@ public class io/opentelemetry/android/instrumentation/activity/ActivityTracer {
 public class io/opentelemetry/android/instrumentation/activity/ActivityTracerCache {
 	public fun <init> (Lio/opentelemetry/api/trace/Tracer;Lio/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker;Lio/opentelemetry/android/instrumentation/activity/startup/AppStartupTimer;Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;)V
 	public fun addEvent (Landroid/app/Activity;Ljava/lang/String;)Lio/opentelemetry/android/instrumentation/activity/ActivityTracer;
-	public fun endInitialDrawSpan (Landroid/app/Activity;Landroid/view/View;)V
+	public fun endInitialDrawSpan (Landroid/app/Activity;)V
 	public fun initiateRestartSpanIfNecessary (Landroid/app/Activity;)Lio/opentelemetry/android/instrumentation/activity/ActivityTracer;
 	public fun startActivityCreation (Landroid/app/Activity;)Lio/opentelemetry/android/instrumentation/activity/ActivityTracer;
 	public fun startSpanIfNoneInProgress (Landroid/app/Activity;Ljava/lang/String;)Lio/opentelemetry/android/instrumentation/activity/ActivityTracer;

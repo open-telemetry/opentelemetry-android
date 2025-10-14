@@ -10,13 +10,10 @@ import static io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY;
 import static io.opentelemetry.android.common.RumConstants.START_TYPE_KEY;
 
 import android.app.Activity;
-import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import io.opentelemetry.android.common.RumConstants;
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer;
 import io.opentelemetry.android.instrumentation.common.ActiveSpan;
-import io.opentelemetry.android.instrumentation.common.ViewUtilsKt;
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
@@ -24,7 +21,6 @@ import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import java.util.concurrent.atomic.AtomicReference;
-import kotlin.Pair;
 
 public class ActivityTracer {
     static final AttributeKey<String> ACTIVITY_NAME_KEY = AttributeKey.stringKey("activity.name");
@@ -148,13 +144,8 @@ public class ActivityTracer {
         }
     }
 
-    void endInitialDrawSpan(View view) {
+    void endInitialDrawSpan() {
         if (initialDrawSpan != null) {
-            Pair<Integer, Integer> complexity = ViewUtilsKt.getComplexity(view);
-            initialDrawSpan.setAttribute(
-                    RumConstants.SCREEN_VIEW_NODES_KEY, complexity.component1().longValue());
-            initialDrawSpan.setAttribute(
-                    RumConstants.SCREEN_VIEW_DEPTH_KEY, complexity.component2().longValue());
             initialDrawSpan.end();
             initialDrawSpan = null;
         }
