@@ -31,6 +31,7 @@ public class ActivityTracer {
     private final String screenName;
     private final AppStartupTimer appStartupTimer;
     private final ActiveSpan activeSpan;
+    @Nullable private Span initialDrawSpan;
 
     private ActivityTracer(Builder builder) {
         this.initialAppActivity = builder.initialAppActivity;
@@ -50,7 +51,9 @@ public class ActivityTracer {
     }
 
     ActivityTracer startActivityCreation() {
-        activeSpan.startSpan(this::makeCreationSpan);
+        Span creationSpan = makeCreationSpan();
+        activeSpan.startSpan(() -> creationSpan);
+        startInitialDrawSpan(creationSpan);
         return this;
     }
 
@@ -133,6 +136,19 @@ public class ActivityTracer {
     public ActivityTracer addEvent(String eventName) {
         activeSpan.addEvent(eventName);
         return this;
+    }
+
+    void startInitialDrawSpan(Span parentSpan) {
+        if (initialDrawSpan == null) {
+            initialDrawSpan = createSpanWithParent("FirstDraw", parentSpan);
+        }
+    }
+
+    void endInitialDrawSpan() {
+        if (initialDrawSpan != null) {
+            initialDrawSpan.end();
+            initialDrawSpan = null;
+        }
     }
 
     static Builder builder(Activity activity) {
