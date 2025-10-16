@@ -19,26 +19,29 @@ class HttpExportConfiguration internal constructor() {
      */
     var baseHeaders: Map<String, String> = emptyMap()
 
-    internal val spansConfig: EndpointConfiguration =
-        HttpEndpointConnectivity
-            .forTraces(
-                baseUrl,
-                baseHeaders,
-            ).let(::toEndpointConfiguration)
+    private val spansConfig: EndpointConfiguration = EndpointConfiguration("")
+    private val logsConfig: EndpointConfiguration = EndpointConfiguration("")
+    private val metricsConfig: EndpointConfiguration = EndpointConfiguration("")
 
-    internal val logsConfig: EndpointConfiguration =
-        HttpEndpointConnectivity
-            .forLogs(
-                baseUrl,
-                baseHeaders,
-            ).let(::toEndpointConfiguration)
+    internal fun spansEndpoint(): HttpEndpointConnectivity =
+        HttpEndpointConnectivity.forTraces(
+            chooseUrlSource(spansConfig),
+            spansConfig.headers + baseHeaders,
+        )
 
-    internal val metricsConfig: EndpointConfiguration =
-        HttpEndpointConnectivity
-            .forMetrics(
-                baseUrl,
-                baseHeaders,
-            ).let(::toEndpointConfiguration)
+    internal fun logsEndpoint(): HttpEndpointConnectivity =
+        HttpEndpointConnectivity.forLogs(
+            chooseUrlSource(logsConfig),
+            logsConfig.headers + baseHeaders,
+        )
+
+    internal fun metricsEndpoint(): HttpEndpointConnectivity =
+        HttpEndpointConnectivity.forMetrics(
+            chooseUrlSource(metricsConfig),
+            metricsConfig.headers + baseHeaders,
+        )
+
+    private fun chooseUrlSource(cfg: EndpointConfiguration): String = cfg.url.ifBlank { baseUrl }
 
     fun spans(action: EndpointConfiguration.() -> Unit) {
         spansConfig.action()
@@ -51,7 +54,4 @@ class HttpExportConfiguration internal constructor() {
     fun metrics(action: EndpointConfiguration.() -> Unit) {
         metricsConfig.action()
     }
-
-    private fun toEndpointConfiguration(connectivity: HttpEndpointConnectivity): EndpointConfiguration =
-        EndpointConfiguration(connectivity.getUrl(), connectivity.getHeaders())
 }

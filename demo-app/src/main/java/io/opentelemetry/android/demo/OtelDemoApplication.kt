@@ -34,11 +34,13 @@ class OtelDemoApplication : Application() {
         // 10.0.2.2 is a special binding to the host running the emulator
         try {
             rum = OpenTelemetryRumInitializer.initialize(
-                application = this,
-                globalAttributes = { Attributes.of(stringKey("toolkit"), "jetpack compose") },
+                context = this@OtelDemoApplication,
                 configuration = {
                     httpExport {
                         baseUrl = "http://10.0.2.2:4318"
+                    }
+                    globalAttributes {
+                        Attributes.of(stringKey("toolkit"), "jetpack compose")
                     }
                 }
             )

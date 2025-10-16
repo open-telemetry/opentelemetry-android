@@ -3,31 +3,8 @@ public abstract interface annotation class io/opentelemetry/android/Incubating :
 
 public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer {
 	public static final field INSTANCE Lio/opentelemetry/android/agent/OpenTelemetryRumInitializer;
-	public static final fun initialize (Landroid/app/Application;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRum;
-	public static final fun initialize (Landroid/content/Context;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRum;
-	public static synthetic fun initialize$default (Landroid/app/Application;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/opentelemetry/android/OpenTelemetryRum;
-	public static synthetic fun initialize$default (Landroid/content/Context;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/opentelemetry/android/OpenTelemetryRum;
-}
-
-public abstract interface class io/opentelemetry/android/agent/connectivity/EndpointConnectivity {
-	public abstract fun getHeaders ()Ljava/util/Map;
-	public abstract fun getUrl ()Ljava/lang/String;
-}
-
-public final class io/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity : io/opentelemetry/android/agent/connectivity/EndpointConnectivity {
-	public static final field Companion Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity$Companion;
-	public synthetic fun <init> (Ljava/lang/String;Ljava/util/Map;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun getHeaders ()Ljava/util/Map;
-	public fun getUrl ()Ljava/lang/String;
-}
-
-public final class io/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity$Companion {
-	public final fun forLogs (Ljava/lang/String;Ljava/util/Map;)Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity;
-	public static synthetic fun forLogs$default (Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity$Companion;Ljava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity;
-	public final fun forMetrics (Ljava/lang/String;Ljava/util/Map;)Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity;
-	public static synthetic fun forMetrics$default (Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity$Companion;Ljava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity;
-	public final fun forTraces (Ljava/lang/String;Ljava/util/Map;)Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity;
-	public static synthetic fun forTraces$default (Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity$Companion;Ljava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Lio/opentelemetry/android/agent/connectivity/HttpEndpointConnectivity;
+	public static final fun initialize (Landroid/content/Context;Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRum;
+	public static synthetic fun initialize$default (Landroid/content/Context;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/opentelemetry/android/OpenTelemetryRum;
 }
 
 public final class io/opentelemetry/android/agent/dsl/DiskBufferingConfigurationSpec : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled {
@@ -52,14 +29,14 @@ public final class io/opentelemetry/android/agent/dsl/HttpExportConfiguration {
 }
 
 public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration {
-	public fun <init> ()V
+	public final fun diskBuffering (Lkotlin/jvm/functions/Function1;)V
+	public final fun globalAttributes (Lkotlin/jvm/functions/Function0;)V
 	public final fun httpExport (Lkotlin/jvm/functions/Function1;)V
 	public final fun instrumentations (Lkotlin/jvm/functions/Function1;)V
 	public final fun session (Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class io/opentelemetry/android/agent/dsl/SessionConfiguration {
-	public synthetic fun <init> (JJILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getBackgroundInactivityTimeout-UwyO8pc ()J
 	public final fun getMaxLifetime-UwyO8pc ()J
 	public final fun setBackgroundInactivityTimeout-LRDsOJo (J)V
@@ -106,18 +83,5 @@ public final class io/opentelemetry/android/agent/dsl/instrumentation/SlowRender
 	public final fun detectionPollInterval-LRDsOJo (J)V
 	public final fun enableVerboseDebugLogging ()V
 	public fun enabled (Z)V
-}
-
-public final class io/opentelemetry/android/agent/session/SessionConfig {
-	public static final field Companion Lio/opentelemetry/android/agent/session/SessionConfig$Companion;
-	public synthetic fun <init> (JJILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public synthetic fun <init> (JJLkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getBackgroundInactivityTimeout-UwyO8pc ()J
-	public final fun getMaxLifetime-UwyO8pc ()J
-	public static final fun withDefaults ()Lio/opentelemetry/android/agent/session/SessionConfig;
-}
-
-public final class io/opentelemetry/android/agent/session/SessionConfig$Companion {
-	public final fun withDefaults ()Lio/opentelemetry/android/agent/session/SessionConfig;
 }
 
