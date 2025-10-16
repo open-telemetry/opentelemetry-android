@@ -35,10 +35,12 @@ class OtelDemoApplication : Application() {
         try {
             rum = OpenTelemetryRumInitializer.initialize(
                 application = this,
-                globalAttributes = { Attributes.of(stringKey("toolkit"), "jetpack compose") },
                 configuration = {
                     httpExport {
                         baseUrl = "http://10.0.2.2:4318"
+                    }
+                    globalAttributes {
+                        Attributes.of(stringKey("toolkit"), "jetpack compose")
                     }
                 }
             )
