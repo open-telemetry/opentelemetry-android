@@ -22,29 +22,12 @@ jobs:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - name: Set environment variables
         run: |
-          version_json=$(.github/scripts/get-version.sh)
-          version=$(echo "$version_json" | jq -r '.version')
-          major=$(echo "$version_json" | jq -r '.major')
-          minor=$(echo "$version_json" | jq -r '.minor')
+          version=$(.github/scripts/get-version.sh)
+          version_json=$(.github/scripts/parse-version.sh "$version")
           patch=$(echo "$version_json" | jq -r '.patch')
-          rc=$(echo "$version_json" | jq -r '.rc')
           
           # Getting prior version to create release notes
-          if [[ $rc -gt 1 ]]; then
-            prior_version="$major.$minor.$patch-rc.$((rc - 1))"
-          else 
-            if [[ $patch == 0 ]]; then
-              if [[ $minor == 0 ]]; then
-                prior_major=$((major - 1))
-                prior_minor=$(grep -Po "^## Version $prior_major.\K[0-9]+" CHANGELOG.md | head -1)
-                prior_version="$prior_major.$prior_minor"
-              else
-                prior_version="$major.$((minor - 1)).0"
-              fi
-            else
-              prior_version="$major.$minor.$((patch - 1))"
-            fi
-          fi
+          prior_version=$(".github/scripts/get-prior-version.sh" "$version")
   
           # otel instrumentation version comes in through alpha bom
           inst_version=$(./gradlew --console=plain android-agent:dependencies | \
