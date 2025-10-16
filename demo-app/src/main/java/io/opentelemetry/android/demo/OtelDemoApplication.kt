@@ -31,12 +31,16 @@ class OtelDemoApplication : Application() {
 
         Log.i(TAG, "Initializing the opentelemetry-android-agent")
 
-        // 10.0.2.2 is apparently a special binding to the host running the emulator
+        // 10.0.2.2 is a special binding to the host running the emulator
         try {
             rum = OpenTelemetryRumInitializer.initialize(
                 application = this,
-                endpointBaseUrl = "http://10.0.2.2:4318",
-                globalAttributes = { Attributes.of(stringKey("toolkit"), "jetpack compose") }
+                globalAttributes = { Attributes.of(stringKey("toolkit"), "jetpack compose") },
+                configuration = {
+                    httpExport {
+                        baseUrl = "http://10.0.2.2:4318"
+                    }
+                }
             )
             Log.d(TAG, "RUM session started: " + rum?.getRumSessionId())
         } catch (e: Exception) {
@@ -72,7 +76,8 @@ class OtelDemoApplication : Application() {
         }
 
         fun counter(name: String): LongCounter? {
-            return rum?.getOpenTelemetry()?.meterProvider?.get("demo.app")?.counterBuilder(name)?.build()
+            return rum?.getOpenTelemetry()?.meterProvider?.get("demo.app")?.counterBuilder(name)
+                ?.build()
         }
 
         fun eventBuilder(scopeName: String, eventName: String): LogRecordBuilder {
