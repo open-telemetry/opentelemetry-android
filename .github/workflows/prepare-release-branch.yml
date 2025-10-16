@@ -35,12 +35,11 @@ jobs:
       - name: Create release branch
         run: |
           version=$(.github/scripts/get-version.sh)
-          if [[ $version =~ ^([0-9]+)\.([0-9]+)\.0$ ]]; then
-            release_branch_name=$(echo $version | sed -E 's/([0-9]+)\.([0-9]+)\.0/release\/v\1.\2.x/')
-          else
-            echo "unexpected version: $version"
-            exit 1
-          fi
+          version_json=$(.github/scripts/parse-version.sh "$version")
+          major=$(echo "$version_json" | jq -r '.major')
+          minor=$(echo "$version_json" | jq -r '.minor')
+          
+          release_branch_name="release/v$major.$minor.x"
 
           git push origin HEAD:$release_branch_name
 
@@ -99,14 +98,23 @@ jobs:
       - name: Set environment variables
         run: |
           version=$(.github/scripts/get-version.sh)
-          if [[ $version =~ ^([0-9]+)\.([0-9]+)\.0$ ]]; then
-            major="${BASH_REMATCH[1]}"
-            minor="${BASH_REMATCH[2]}"
-            next_version="$major.$((minor + 1)).0"
+          version_json=$(.github/scripts/parse-version.sh "$version")
+          major=$(echo "$version_json" | jq -r '.major')
+          minor=$(echo "$version_json" | jq -r '.minor')
+          patch=$(echo "$version_json" | jq -r '.patch')
+          rc=$(echo "$version_json" | jq -r '.rc')
+          
+          if [[ -n $version_rc ]]; then
+            next_version="$major.$minor.$patch-rc.$((rc + 1))"
           else
-            echo "unexpected version: $version"
-            exit 1
+            if [[ $patch == 0 ]]; then
+              next_version="$major.$((minor + 1)).0"
+            else
+              echo "unexpected version: $version"
+              exit 1
+            fi
           fi
+          
           echo "NEXT_VERSION=${next_version}" >> $GITHUB_ENV
           echo "VERSION=$version" >> $GITHUB_ENV
 
