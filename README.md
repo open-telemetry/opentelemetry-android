@@ -99,6 +99,7 @@ For more information about the maintainer role, see the [community repository](h
 ### Approvers
 
 - [Hanson Ho](https://github.com/bidetofevil), Embrace
+- [Jamie Lynch](https://github.com/fractalwrench), Embrace
 - [Manoel Aranda Neto](https://github.com/marandaneto), PostHog
 
 For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
