@@ -48,7 +48,7 @@ class AnrInstrumentation : AndroidInstrumentation {
                 additionalExtractors,
                 mainLooper,
                 scheduler,
-                get(ctx.application).appLifecycle,
+                get(ctx.context).appLifecycle,
                 ctx.openTelemetry,
             )
         anrDetector.start()

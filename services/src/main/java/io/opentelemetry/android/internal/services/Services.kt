@@ -5,7 +5,9 @@
 
 package io.opentelemetry.android.internal.services
 
+import android.annotation.SuppressLint
 import android.app.Application
+import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
 import android.net.ConnectivityManager
 import androidx.annotation.VisibleForTesting
@@ -27,10 +29,10 @@ import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTra
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
  */
 class Services internal constructor(
-    private val application: Application,
+    private val context: Context,
 ) : ServicesFactory {
     override val cacheStorage: CacheStorage by lazy {
-        CacheStorageImpl(application)
+        CacheStorageImpl(context)
     }
 
     override val periodicWork: PeriodicWork by lazy {
@@ -39,8 +41,8 @@ class Services internal constructor(
 
     override val currentNetworkProvider: CurrentNetworkProvider by lazy {
         CurrentNetworkProviderImpl(
-            NetworkDetector.Companion.create(application),
-            application.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager,
+            NetworkDetector.Companion.create(context),
+            context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager,
         )
     }
 
@@ -52,7 +54,7 @@ class Services internal constructor(
     }
 
     override val visibleScreenTracker: VisibleScreenTracker by lazy {
-        VisibleScreenTrackerImpl(application)
+        VisibleScreenTrackerImpl(context)
     }
 
     override fun close() {
@@ -64,13 +66,14 @@ class Services internal constructor(
     }
 
     companion object {
+        @SuppressLint("StaticFieldLeak") // ignoring, we're using the application context
         private var instance: Services? = null
 
         @JvmStatic
-        fun get(application: Application): Services =
+        fun get(context: Context): Services =
             synchronized(this) {
                 if (instance == null) {
-                    set(Services(application))
+                    set(Services(context))
                 }
                 return checkNotNull(instance)
             }
