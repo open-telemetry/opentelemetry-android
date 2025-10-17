@@ -5,13 +5,11 @@
 
 package io.opentelemetry.android.agent.session
 
-import io.opentelemetry.android.Incubating
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
-@Incubating
-class SessionConfig(
+internal class SessionConfig(
     val backgroundInactivityTimeout: Duration = 15.minutes,
     val maxLifetime: Duration = 4.hours,
 ) {

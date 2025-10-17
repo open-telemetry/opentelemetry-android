@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.agent.connectivity
 
-class HttpEndpointConnectivity private constructor(
+internal class HttpEndpointConnectivity private constructor(
     private val url: String,
     private val headers: Map<String, String>,
 ) : EndpointConnectivity {

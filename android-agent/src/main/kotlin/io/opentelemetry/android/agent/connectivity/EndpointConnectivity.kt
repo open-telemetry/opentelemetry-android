@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.agent.connectivity
 
-interface EndpointConnectivity {
+internal interface EndpointConnectivity {
     fun getUrl(): String
 
     fun getHeaders(): Map<String, String>

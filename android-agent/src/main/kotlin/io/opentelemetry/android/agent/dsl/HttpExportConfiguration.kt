@@ -13,6 +13,12 @@ class HttpExportConfiguration internal constructor() {
      * Global URL for HTTP export requests.
      */
     var baseUrl: String = ""
+        set(value) {
+            field = value
+            spansConfig.url = HttpEndpointConnectivity.forTraces(value).getUrl()
+            logsConfig.url = HttpEndpointConnectivity.forLogs(value).getUrl()
+            metricsConfig.url = HttpEndpointConnectivity.forMetrics(value).getUrl()
+        }
 
     /**
      * Global headers that should be attached to any HTTP export requests.

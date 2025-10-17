@@ -10,7 +10,7 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
 @OpenTelemetryDslMarker
-class SessionConfiguration internal constructor(
-    var backgroundInactivityTimeout: Duration = 15.minutes,
-    var maxLifetime: Duration = 4.hours,
-)
+class SessionConfiguration internal constructor() {
+    var backgroundInactivityTimeout: Duration = 15.minutes
+    var maxLifetime: Duration = 4.hours
+}
