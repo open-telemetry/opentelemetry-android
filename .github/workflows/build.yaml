@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
       - name: touch local props
         run: touch demo-app/local.properties
       - name: run gradle check
