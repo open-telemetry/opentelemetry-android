@@ -29,25 +29,6 @@ class OpenTelemetryRumInitializerTest {
         appLifecycle = mockk(relaxed = true)
     }
 
-    @OptIn(Incubating::class)
-    @Test
-    fun `Verify timeoutHandler initialization`() {
-        createAndSetServiceManager()
-
-        OpenTelemetryRumInitializer.initialize(
-            application = RuntimeEnvironment.getApplication(),
-            configuration = {
-                httpExport {
-                    baseUrl = "http://127.0.0.1:4318"
-                }
-            },
-        )
-
-        verify {
-            appLifecycle.registerListener(any<SessionIdTimeoutHandler>())
-        }
-    }
-
     @Test
     fun `Verify timeoutHandler initialization 2`() {
         createAndSetServiceManager()
