@@ -49,8 +49,6 @@ This instrumentation produces the following telemetry:
 * Attributes:
   * `activity.name`:  name of activity
   * `screen.name`:  name of screen
-  * `screen.view.nodes`: a recursive count of all View nodes under the window DecorView. This gives a measure of the amount of work being done in the *layout-and-measure* stage of the UI pipeline. A high count correlates with longer FirstDraw. System-defined layers are included in this count.
-  * `screen.view.depth`: the depth of the deepest-nested View under the window DecorView. This gives a measure of your UI complexity; more work must be done for a deeply-nested View heirarchy. A high count correlates with longer FirstDraw. System-defined layers (usually 4-6) are included when calculating the depth.
 
 ## Installation
 
