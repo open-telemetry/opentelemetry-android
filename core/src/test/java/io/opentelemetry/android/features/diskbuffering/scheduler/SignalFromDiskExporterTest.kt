@@ -8,30 +8,39 @@ package io.opentelemetry.android.features.diskbuffering.scheduler
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
-import io.opentelemetry.contrib.disk.buffering.LogRecordFromDiskExporter
-import io.opentelemetry.contrib.disk.buffering.MetricFromDiskExporter
-import io.opentelemetry.contrib.disk.buffering.SpanFromDiskExporter
-import io.opentelemetry.contrib.disk.buffering.internal.exporter.FromDiskExporter
+import io.opentelemetry.contrib.disk.buffering.storage.SignalStorage
+import io.opentelemetry.sdk.common.CompletableResultCode
+import io.opentelemetry.sdk.logs.data.LogRecordData
+import io.opentelemetry.sdk.logs.export.LogRecordExporter
+import io.opentelemetry.sdk.metrics.data.MetricData
+import io.opentelemetry.sdk.metrics.export.MetricExporter
+import io.opentelemetry.sdk.trace.data.SpanData
+import io.opentelemetry.sdk.trace.export.SpanExporter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.util.concurrent.TimeUnit
 
 class SignalFromDiskExporterTest {
-    companion object {
-        private val DEFAULT_EXPORT_TIMEOUT_IN_MILLIS: Long = TimeUnit.SECONDS.toMillis(5)
-    }
+    @MockK
+    private lateinit var spanStorage: SignalStorage.Span
 
     @MockK
-    private lateinit var spanFromDiskExporter: SpanFromDiskExporter
+    private lateinit var spanExporter: SpanExporter
 
     @MockK
-    private lateinit var metricFromDiskExporter: MetricFromDiskExporter
+    private lateinit var metricStorage: SignalStorage.Metric
 
     @MockK
-    private lateinit var logRecordFromDiskExporter: LogRecordFromDiskExporter
+    private lateinit var metricExporter: MetricExporter
+
+    @MockK
+    private lateinit var logStorage: SignalStorage.LogRecord
+
+    @MockK
+    private lateinit var logExporter: LogRecordExporter
 
     @BeforeEach
     fun setUp() {
@@ -39,144 +48,107 @@ class SignalFromDiskExporterTest {
     }
 
     @Test
-    fun `Exporting with custom timeout time`() {
-        val timeoutInMillis = TimeUnit.SECONDS.toMillis(10)
-        val instance =
-            createInstance(
-                spanFromDiskExporter,
-                metricFromDiskExporter,
-                logRecordFromDiskExporter,
-                timeoutInMillis,
-            )
-        every { spanFromDiskExporter.exportStoredBatch(any(), any()) }.returns(true)
-        assertThat(instance.exportBatchOfSpans()).isTrue()
-        verifyExportStoredBatchCall(spanFromDiskExporter, timeoutInMillis)
-    }
-
-    @Test
     fun `Verify exporting spans`() {
-        val instance =
-            createInstance(spanFromDiskExporter, metricFromDiskExporter, logRecordFromDiskExporter)
-        every { spanFromDiskExporter.exportStoredBatch(any(), any()) }.returns(true)
+        val instance = makeInstance()
+        every { spanStorage.iterator() }.returns(mutableListOf(listOf(mockk<SpanData>())).iterator())
+        every { spanExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
         assertThat(instance.exportBatchOfSpans()).isTrue()
-        verifyExportStoredBatchCall(spanFromDiskExporter, DEFAULT_EXPORT_TIMEOUT_IN_MILLIS)
+        verify { spanExporter.export(any()) }
     }
 
     @Test
     fun `Verify exporting metrics`() {
-        val instance =
-            createInstance(spanFromDiskExporter, metricFromDiskExporter, logRecordFromDiskExporter)
-        every { metricFromDiskExporter.exportStoredBatch(any(), any()) }.returns(true)
+        val instance = makeInstance()
+        every { metricStorage.iterator() }.returns(mutableListOf(listOf(mockk<MetricData>())).iterator())
+        every { metricExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
         assertThat(instance.exportBatchOfMetrics()).isTrue()
-        verifyExportStoredBatchCall(metricFromDiskExporter, DEFAULT_EXPORT_TIMEOUT_IN_MILLIS)
+        verify { metricExporter.export(any()) }
     }
 
     @Test
     fun `Verify exporting logs`() {
-        val instance =
-            createInstance(spanFromDiskExporter, metricFromDiskExporter, logRecordFromDiskExporter)
-        every { logRecordFromDiskExporter.exportStoredBatch(any(), any()) }.returns(true)
+        val instance = makeInstance()
+        every { logStorage.iterator() }.returns(mutableListOf(listOf(mockk<LogRecordData>())).iterator())
+        every { logExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
         assertThat(instance.exportBatchOfLogs()).isTrue()
-        verifyExportStoredBatchCall(logRecordFromDiskExporter, DEFAULT_EXPORT_TIMEOUT_IN_MILLIS)
+        verify { logExporter.export(any()) }
     }
 
     @Test
     fun `Return false when all exports fail`() {
-        val instance =
-            createInstance(spanFromDiskExporter, metricFromDiskExporter, logRecordFromDiskExporter)
-        every { spanFromDiskExporter.exportStoredBatch(any(), any()) }.returns(false)
-        every { metricFromDiskExporter.exportStoredBatch(any(), any()) }.returns(false)
-        every { logRecordFromDiskExporter.exportStoredBatch(any(), any()) }.returns(false)
+        val instance = makeInstance()
+        every { spanStorage.iterator() }.returns(mutableListOf(listOf(mockk<SpanData>())).iterator())
+        every { metricStorage.iterator() }.returns(mutableListOf(listOf(mockk<MetricData>())).iterator())
+        every { logStorage.iterator() }.returns(mutableListOf(listOf(mockk<LogRecordData>())).iterator())
+
+        every { spanExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
+        every { metricExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
+        every { logExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
+
         assertThat(instance.exportBatchOfEach()).isFalse()
-        verifyExportStoredBatchCall(spanFromDiskExporter, DEFAULT_EXPORT_TIMEOUT_IN_MILLIS)
-        verifyExportStoredBatchCall(metricFromDiskExporter, DEFAULT_EXPORT_TIMEOUT_IN_MILLIS)
-        verifyExportStoredBatchCall(logRecordFromDiskExporter, DEFAULT_EXPORT_TIMEOUT_IN_MILLIS)
+        verify { spanExporter.export(any()) }
+        verify { metricExporter.export(any()) }
+        verify { logExporter.export(any()) }
     }
 
     @Test
     fun `Return true when spans export succeeds`() {
-        val instance =
-            createInstance(spanFromDiskExporter, metricFromDiskExporter, logRecordFromDiskExporter)
-        every { spanFromDiskExporter.exportStoredBatch(any(), any()) }.returns(true)
-        every { metricFromDiskExporter.exportStoredBatch(any(), any()) }.returns(false)
-        every { logRecordFromDiskExporter.exportStoredBatch(any(), any()) }.returns(false)
+        val instance = makeInstance()
+        every { spanStorage.iterator() }.returns(mutableListOf(listOf(mockk<SpanData>())).iterator())
+        every { metricStorage.iterator() }.returns(mutableListOf(listOf(mockk<MetricData>())).iterator())
+        every { logStorage.iterator() }.returns(mutableListOf(listOf(mockk<LogRecordData>())).iterator())
+
+        every { spanExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
+        every { metricExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
+        every { logExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
+
         assertThat(instance.exportBatchOfEach()).isTrue()
-        verifyExportStoredBatchCall(spanFromDiskExporter, DEFAULT_EXPORT_TIMEOUT_IN_MILLIS)
-        verifyExportStoredBatchCall(metricFromDiskExporter, DEFAULT_EXPORT_TIMEOUT_IN_MILLIS)
-        verifyExportStoredBatchCall(logRecordFromDiskExporter, DEFAULT_EXPORT_TIMEOUT_IN_MILLIS)
+        verify { spanExporter.export(any()) }
+        verify { metricExporter.export(any()) }
+        verify { logExporter.export(any()) }
     }
 
     @Test
     fun `Return true when metrics export succeeds`() {
-        val instance =
-            createInstance(spanFromDiskExporter, metricFromDiskExporter, logRecordFromDiskExporter)
-        every { spanFromDiskExporter.exportStoredBatch(any(), any()) }.returns(false)
-        every { metricFromDiskExporter.exportStoredBatch(any(), any()) }.returns(true)
-        every { logRecordFromDiskExporter.exportStoredBatch(any(), any()) }.returns(false)
+        val instance = makeInstance()
+        every { spanStorage.iterator() }.returns(mutableListOf(listOf(mockk<SpanData>())).iterator())
+        every { metricStorage.iterator() }.returns(mutableListOf(listOf(mockk<MetricData>())).iterator())
+        every { logStorage.iterator() }.returns(mutableListOf(listOf(mockk<LogRecordData>())).iterator())
+
+        every { spanExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
+        every { metricExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
+        every { logExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
+
         assertThat(instance.exportBatchOfEach()).isTrue()
-        verifyExportStoredBatchCall(spanFromDiskExporter, DEFAULT_EXPORT_TIMEOUT_IN_MILLIS)
-        verifyExportStoredBatchCall(metricFromDiskExporter, DEFAULT_EXPORT_TIMEOUT_IN_MILLIS)
-        verifyExportStoredBatchCall(logRecordFromDiskExporter, DEFAULT_EXPORT_TIMEOUT_IN_MILLIS)
+        verify { spanExporter.export(any()) }
+        verify { metricExporter.export(any()) }
+        verify { logExporter.export(any()) }
     }
+
+    private fun makeInstance(): SignalFromDiskExporter =
+        SignalFromDiskExporter(
+            spanStorage,
+            spanExporter,
+            logStorage,
+            logExporter,
+            metricStorage,
+            metricExporter,
+        )
 
     @Test
     fun `Return true when logs export succeeds`() {
-        val instance =
-            createInstance(spanFromDiskExporter, metricFromDiskExporter, logRecordFromDiskExporter)
-        every { spanFromDiskExporter.exportStoredBatch(any(), any()) }.returns(false)
-        every { metricFromDiskExporter.exportStoredBatch(any(), any()) }.returns(false)
-        every { logRecordFromDiskExporter.exportStoredBatch(any(), any()) }.returns(true)
+        val instance = makeInstance()
+        every { spanStorage.iterator() }.returns(mutableListOf(listOf(mockk<SpanData>())).iterator())
+        every { metricStorage.iterator() }.returns(mutableListOf(listOf(mockk<MetricData>())).iterator())
+        every { logStorage.iterator() }.returns(mutableListOf(listOf(mockk<LogRecordData>())).iterator())
+
+        every { spanExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
+        every { metricExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
+        every { logExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
+
         assertThat(instance.exportBatchOfEach()).isTrue()
-        verifyExportStoredBatchCall(spanFromDiskExporter, DEFAULT_EXPORT_TIMEOUT_IN_MILLIS)
-        verifyExportStoredBatchCall(metricFromDiskExporter, DEFAULT_EXPORT_TIMEOUT_IN_MILLIS)
-        verifyExportStoredBatchCall(logRecordFromDiskExporter, DEFAULT_EXPORT_TIMEOUT_IN_MILLIS)
+        verify { spanExporter.export(any()) }
+        verify { metricExporter.export(any()) }
+        verify { logExporter.export(any()) }
     }
-
-    @Test
-    fun `Return false when spans exporter is not available`() {
-        val instance = createInstance(null, metricFromDiskExporter, logRecordFromDiskExporter)
-        assertThat(instance.exportBatchOfSpans()).isFalse()
-    }
-
-    @Test
-    fun `Return false when metrics exporter is not available`() {
-        val instance = createInstance(spanFromDiskExporter, null, logRecordFromDiskExporter)
-        assertThat(instance.exportBatchOfMetrics()).isFalse()
-    }
-
-    @Test
-    fun `Return false when logs exporter is not available`() {
-        val instance = createInstance(spanFromDiskExporter, metricFromDiskExporter, null)
-        assertThat(instance.exportBatchOfLogs()).isFalse()
-    }
-
-    private fun verifyExportStoredBatchCall(
-        exporter: FromDiskExporter,
-        timeoutInMillis: Long,
-    ) {
-        verify {
-            exporter.exportStoredBatch(timeoutInMillis, TimeUnit.MILLISECONDS)
-        }
-    }
-
-    private fun createInstance(
-        spanFromDiskExporter: SpanFromDiskExporter?,
-        metricFromDiskExporter: MetricFromDiskExporter?,
-        logRecordFromDiskExporter: LogRecordFromDiskExporter?,
-        exportTimeoutInMillis: Long? = null,
-    ): SignalFromDiskExporter =
-        if (exportTimeoutInMillis == null) {
-            SignalFromDiskExporter(
-                spanFromDiskExporter,
-                metricFromDiskExporter,
-                logRecordFromDiskExporter,
-            )
-        } else {
-            SignalFromDiskExporter(
-                spanFromDiskExporter,
-                metricFromDiskExporter,
-                logRecordFromDiskExporter,
-                exportTimeoutInMillis,
-            )
-        }
 }

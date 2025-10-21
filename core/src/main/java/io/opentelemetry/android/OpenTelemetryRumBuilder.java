@@ -38,15 +38,14 @@ import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.contrib.disk.buffering.LogRecordFromDiskExporter;
-import io.opentelemetry.contrib.disk.buffering.LogRecordToDiskExporter;
-import io.opentelemetry.contrib.disk.buffering.MetricFromDiskExporter;
-import io.opentelemetry.contrib.disk.buffering.MetricToDiskExporter;
-import io.opentelemetry.contrib.disk.buffering.SpanFromDiskExporter;
-import io.opentelemetry.contrib.disk.buffering.SpanToDiskExporter;
-import io.opentelemetry.contrib.disk.buffering.config.StorageConfiguration;
-import io.opentelemetry.contrib.disk.buffering.internal.storage.Storage;
-import io.opentelemetry.contrib.disk.buffering.internal.utils.SignalTypes;
+import io.opentelemetry.contrib.disk.buffering.exporters.LogRecordToDiskExporter;
+import io.opentelemetry.contrib.disk.buffering.exporters.MetricToDiskExporter;
+import io.opentelemetry.contrib.disk.buffering.exporters.SpanToDiskExporter;
+import io.opentelemetry.contrib.disk.buffering.storage.SignalStorage;
+import io.opentelemetry.contrib.disk.buffering.storage.impl.FileLogRecordStorage;
+import io.opentelemetry.contrib.disk.buffering.storage.impl.FileMetricStorage;
+import io.opentelemetry.contrib.disk.buffering.storage.impl.FileSpanStorage;
+import io.opentelemetry.contrib.disk.buffering.storage.impl.FileStorageConfiguration;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
@@ -67,6 +66,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -368,33 +368,31 @@ public final class OpenTelemetryRumBuilder {
         SignalFromDiskExporter signalFromDiskExporter = null;
         if (diskBufferingConfig.getEnabled()) {
             try {
-                StorageConfiguration storageConfiguration = createStorageConfiguration(services);
-                Storage spanStorage =
-                        Storage.builder(SignalTypes.spans)
-                                .setStorageConfiguration(storageConfiguration)
-                                .build();
-                Storage logsStorage =
-                        Storage.builder(SignalTypes.logs)
-                                .setStorageConfiguration(storageConfiguration)
-                                .build();
-                Storage metricsStorage =
-                        Storage.builder(SignalTypes.metrics)
-                                .setStorageConfiguration(storageConfiguration)
-                                .build();
+                CacheStorage storage = services.getCacheStorage();
+                DiskManager diskManager = new DiskManager(storage, diskBufferingConfig);
+
+                File signalsRoot = diskManager.getSignalsBufferDir();
+                File spansDir = new File(signalsRoot, "spans");
+                File metricsDir = new File(signalsRoot, "metrics");
+                File logsDir = new File(signalsRoot, "logs");
+                FileStorageConfiguration fileConfig = createStorageConfiguration(diskManager);
+                SignalStorage.Span spanStorage = FileSpanStorage.create(spansDir, fileConfig);
+                SignalStorage.LogRecord logStorage =
+                        FileLogRecordStorage.create(logsDir, fileConfig);
+                SignalStorage.Metric metricStorage =
+                        FileMetricStorage.create(metricsDir, fileConfig);
+
                 final SpanExporter originalSpanExporter = spanExporter;
-                spanExporter = SpanToDiskExporter.create(originalSpanExporter, spanStorage);
+                spanExporter = SpanToDiskExporter.builder(spanStorage).build();
                 final LogRecordExporter originalLogsExporter = logsExporter;
-                logsExporter = LogRecordToDiskExporter.create(originalLogsExporter, logsStorage);
+                logsExporter = LogRecordToDiskExporter.builder(logStorage).build();
                 final MetricExporter originalMetricExporter = metricExporter;
-                metricExporter =
-                        MetricToDiskExporter.create(originalMetricExporter, metricsStorage);
+                metricExporter = MetricToDiskExporter.builder(metricStorage).build();
                 signalFromDiskExporter =
                         new SignalFromDiskExporter(
-                                SpanFromDiskExporter.create(originalSpanExporter, spanStorage),
-                                MetricFromDiskExporter.create(
-                                        originalMetricExporter, metricsStorage),
-                                LogRecordFromDiskExporter.create(
-                                        originalLogsExporter, logsStorage));
+                                spanStorage, originalSpanExporter,
+                                logStorage, originalLogsExporter,
+                                metricStorage, originalMetricExporter);
             } catch (IOException e) {
                 Log.e(RumConstants.OTEL_RUM_LOG_TAG, "Could not initialize disk exporters.", e);
             }
@@ -422,18 +420,15 @@ public final class OpenTelemetryRumBuilder {
         return this;
     }
 
-    private StorageConfiguration createStorageConfiguration(Services services) throws IOException {
-        CacheStorage storage = services.getCacheStorage();
+    private FileStorageConfiguration createStorageConfiguration(DiskManager diskManager)
+            throws IOException {
         DiskBufferingConfig config = this.config.getDiskBufferingConfig();
-        DiskManager diskManager = new DiskManager(storage, config);
-        return StorageConfiguration.builder()
-                .setRootDir(diskManager.getSignalsBufferDir())
+        return FileStorageConfiguration.builder()
                 .setMaxFileSize(diskManager.getMaxCacheFileSize())
                 .setMaxFolderSize(diskManager.getMaxFolderSize())
                 .setMaxFileAgeForWriteMillis(config.getMaxFileAgeForWriteMillis())
                 .setMaxFileAgeForReadMillis(config.getMaxFileAgeForReadMillis())
                 .setMinFileAgeForReadMillis(config.getMinFileAgeForReadMillis())
-                .setDebugEnabled(config.getDebugEnabled())
                 .build();
     }
 
