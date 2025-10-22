@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android
 
-import android.app.Application
+import android.content.Context
 import android.os.Build
 import io.opentelemetry.android.common.RumConstants.RUM_SDK_VERSION
 import io.opentelemetry.sdk.resources.Resource
@@ -23,11 +23,11 @@ private const val DEFAULT_APP_NAME = "unknown_service:android"
 
 object AndroidResource {
     @JvmStatic
-    fun createDefault(application: Application): Resource {
-        val appName = readAppName(application)
+    fun createDefault(context: Context): Resource {
+        val appName = readAppName(context)
         val resourceBuilder =
             Resource.getDefault().toBuilder().put(SERVICE_NAME, appName)
-        val appVersion = readAppVersion(application)
+        val appVersion = readAppVersion(context)
         appVersion?.let { resourceBuilder.put(SERVICE_VERSION, it) }
 
         return resourceBuilder
@@ -42,24 +42,27 @@ object AndroidResource {
             .build()
     }
 
-    private fun readAppName(application: Application): String =
+    private fun readAppName(context: Context): String =
         try {
+            val ctx = context.applicationContext
             val stringId =
-                application.applicationContext.applicationInfo.labelRes
-            application.applicationContext.getString(stringId)
+                ctx.applicationInfo.labelRes
+            if (stringId == 0) {
+                ctx.applicationInfo.nonLocalizedLabel.toString()
+            } else {
+                ctx.getString(stringId)
+            }
         } catch (_: Exception) {
             DEFAULT_APP_NAME
         }
 
-    private fun readAppVersion(application: Application): String? {
-        val ctx = application.applicationContext
-        return try {
-            val packageInfo = ctx.packageManager.getPackageInfo(ctx.packageName, 0)
+    private fun readAppVersion(context: Context): String? =
+        try {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
             packageInfo.versionName
         } catch (_: Exception) {
             null
         }
-    }
 
     private val oSDescription: String
         get() {

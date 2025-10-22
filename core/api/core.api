@@ -1,6 +1,6 @@
 public final class io/opentelemetry/android/AndroidResource {
 	public static final field INSTANCE Lio/opentelemetry/android/AndroidResource;
-	public static final fun createDefault (Landroid/app/Application;)Lio/opentelemetry/sdk/resources/Resource;
+	public static final fun createDefault (Landroid/content/Context;)Lio/opentelemetry/sdk/resources/Resource;
 }
 
 public final class io/opentelemetry/android/BuildConfig {
@@ -12,17 +12,24 @@ public final class io/opentelemetry/android/BuildConfig {
 }
 
 public abstract interface class io/opentelemetry/android/OpenTelemetryRum {
-	public static fun builder (Landroid/app/Application;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
-	public static fun builder (Landroid/app/Application;Lio/opentelemetry/android/config/OtelRumConfig;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
-	public static fun builder (Landroid/app/Application;Lio/opentelemetry/sdk/OpenTelemetrySdk;Lio/opentelemetry/android/config/OtelRumConfig;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/android/SdkPreconfiguredRumBuilder;
-	public fun emitEvent (Ljava/lang/String;)V
-	public fun emitEvent (Ljava/lang/String;Lio/opentelemetry/api/common/Attributes;)V
-	public fun emitEvent (Ljava/lang/String;Ljava/lang/String;)V
+	public static final field Companion Lio/opentelemetry/android/OpenTelemetryRum$Companion;
+	public static fun builder (Landroid/content/Context;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public static fun builder (Landroid/content/Context;Lio/opentelemetry/android/config/OtelRumConfig;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public static fun builder (Landroid/content/Context;Lio/opentelemetry/sdk/OpenTelemetrySdk;Lio/opentelemetry/android/config/OtelRumConfig;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/android/SdkPreconfiguredRumBuilder;
 	public abstract fun emitEvent (Ljava/lang/String;Ljava/lang/String;Lio/opentelemetry/api/common/Attributes;)V
+	public static synthetic fun emitEvent$default (Lio/opentelemetry/android/OpenTelemetryRum;Ljava/lang/String;Ljava/lang/String;Lio/opentelemetry/api/common/Attributes;ILjava/lang/Object;)V
 	public abstract fun getOpenTelemetry ()Lio/opentelemetry/api/OpenTelemetry;
 	public abstract fun getRumSessionId ()Ljava/lang/String;
 	public static fun noop ()Lio/opentelemetry/android/OpenTelemetryRum;
 	public abstract fun shutdown ()V
+}
+
+public final class io/opentelemetry/android/OpenTelemetryRum$Companion {
+	public final fun builder (Landroid/content/Context;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun builder (Landroid/content/Context;Lio/opentelemetry/android/config/OtelRumConfig;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun builder (Landroid/content/Context;Lio/opentelemetry/sdk/OpenTelemetrySdk;Lio/opentelemetry/android/config/OtelRumConfig;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/android/SdkPreconfiguredRumBuilder;
+	public static synthetic fun builder$default (Lio/opentelemetry/android/OpenTelemetryRum$Companion;Landroid/content/Context;Lio/opentelemetry/android/config/OtelRumConfig;ILjava/lang/Object;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun noop ()Lio/opentelemetry/android/OpenTelemetryRum;
 }
 
 public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
@@ -36,7 +43,7 @@ public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
 	public fun addSpanExporterCustomizer (Ljava/util/function/Function;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public fun addTracerProviderCustomizer (Ljava/util/function/BiFunction;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public fun build ()Lio/opentelemetry/android/OpenTelemetryRum;
-	public static fun create (Landroid/app/Application;Lio/opentelemetry/android/config/OtelRumConfig;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public static fun create (Landroid/content/Context;Lio/opentelemetry/android/config/OtelRumConfig;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public fun mergeResource (Lio/opentelemetry/sdk/resources/Resource;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public fun setExportScheduleHandler (Lio/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public fun setResource (Lio/opentelemetry/sdk/resources/Resource;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;

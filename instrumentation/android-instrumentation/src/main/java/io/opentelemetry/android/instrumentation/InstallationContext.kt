@@ -6,11 +6,14 @@
 package io.opentelemetry.android.instrumentation
 
 import android.app.Application
+import android.content.Context
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.OpenTelemetry
 
-data class InstallationContext(
-    val application: Application,
+class InstallationContext(
+    val context: Context,
     val openTelemetry: OpenTelemetry,
     val sessionProvider: SessionProvider,
-)
+) {
+    val application: Application? = context as? Application
+}

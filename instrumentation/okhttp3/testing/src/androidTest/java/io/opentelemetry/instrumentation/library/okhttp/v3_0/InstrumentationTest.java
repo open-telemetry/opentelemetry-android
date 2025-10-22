@@ -19,13 +19,13 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+import mockwebserver3.MockResponse;
+import mockwebserver3.MockWebServer;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,12 +44,12 @@ public class InstrumentationTest {
 
     @After
     public void tearDown() throws IOException {
-        server.shutdown();
+        server.close();
     }
 
     @Test
     public void okhttpTraces() throws IOException {
-        server.enqueue(new MockResponse().setResponseCode(200));
+        server.enqueue(new MockResponse.Builder().code(200).build());
 
         Span span = openTelemetryRumRule.getSpan();
 
@@ -79,7 +79,7 @@ public class InstrumentationTest {
         Span span = openTelemetryRumRule.getSpan();
 
         try (Scope ignored = span.makeCurrent()) {
-            server.enqueue(new MockResponse().setResponseCode(200));
+            server.enqueue(new MockResponse.Builder().code(200).build());
 
             OkHttpClient client =
                     new OkHttpClient.Builder()
@@ -131,7 +131,7 @@ public class InstrumentationTest {
                                         .build())
                         .build();
 
-        server.enqueue(new MockResponse().setResponseCode(200));
+        server.enqueue(new MockResponse.Builder().code(200).build());
 
         // This span should trigger 1 export okhttp call, which is the only okhttp call expected
         // for this test case.

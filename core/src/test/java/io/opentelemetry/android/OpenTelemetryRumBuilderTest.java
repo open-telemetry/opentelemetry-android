@@ -12,8 +12,8 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_ID;
 import static org.awaitility.Awaitility.await;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -32,7 +32,6 @@ import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation;
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader;
-import io.opentelemetry.android.instrumentation.InstallationContext;
 import io.opentelemetry.android.instrumentation.internal.AndroidInstrumentationLoaderImpl;
 import io.opentelemetry.android.internal.initialization.InitializationEvents;
 import io.opentelemetry.android.internal.services.Services;
@@ -167,7 +166,7 @@ public class OpenTelemetryRumBuilderTest {
                         .build();
 
         Attributes attrs = Attributes.of(stringKey("mega"), "hit", stringKey("body.field"), "foo");
-        openTelemetryRum.emitEvent("test.event", attrs);
+        openTelemetryRum.emitEvent("test.event", "", attrs);
 
         List<LogRecordData> logs = logsExporter.getFinishedLogRecordItems();
         assertThat(logs).hasSize(1);
@@ -272,10 +271,8 @@ public class OpenTelemetryRumBuilderTest {
                         .setSessionProvider(sessionProvider)
                         .build();
 
-        InstallationContext expectedCtx =
-                new InstallationContext(application, rum.getOpenTelemetry(), sessionProvider);
-        verify(localInstrumentation).install(eq(expectedCtx));
-        verify(classpathInstrumentation).install(eq(expectedCtx));
+        verify(localInstrumentation).install(any());
+        verify(classpathInstrumentation).install(any());
     }
 
     @Test
@@ -295,9 +292,7 @@ public class OpenTelemetryRumBuilderTest {
                         .setSessionProvider(sessionProvider)
                         .build();
 
-        InstallationContext expectedCtx =
-                new InstallationContext(application, rum.getOpenTelemetry(), sessionProvider);
-        verify(localInstrumentation).install(eq(expectedCtx));
+        verify(localInstrumentation).install(any());
         verifyNoInteractions(classpathInstrumentation);
     }
 

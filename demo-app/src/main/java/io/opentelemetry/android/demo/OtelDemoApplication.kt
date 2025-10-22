@@ -11,8 +11,6 @@ import android.util.Log
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.agent.OpenTelemetryRumInitializer
-import io.opentelemetry.android.config.OtelRumConfig
-import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
@@ -25,26 +23,28 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter
 const val TAG = "otel.demo"
 
 class OtelDemoApplication : Application() {
+
+    @OptIn(Incubating::class)
     @SuppressLint("RestrictedApi")
     override fun onCreate() {
         super.onCreate()
 
         Log.i(TAG, "Initializing the opentelemetry-android-agent")
-        val diskBufferingConfig = DiskBufferingConfig(
-            enabled = true, maxCacheSize = 10_000_000, debugEnabled = true);
-        val config =
-            OtelRumConfig()
-                .setGlobalAttributes(Attributes.of(stringKey("toolkit"), "jetpack compose"))
-                .setDiskBufferingConfig(diskBufferingConfig)
 
-        // 10.0.2.2 is apparently a special binding to the host running the emulator
+        // 10.0.2.2 is a special binding to the host running the emulator
         try {
             rum = OpenTelemetryRumInitializer.initialize(
-                application = this,
-                endpointBaseUrl = "http://10.0.2.2:4318",
-                rumConfig = config
+                context = this@OtelDemoApplication,
+                configuration = {
+                    httpExport {
+                        baseUrl = "http://10.0.2.2:4318"
+                    }
+                    globalAttributes {
+                        Attributes.of(stringKey("toolkit"), "jetpack compose")
+                    }
+                }
             )
-            Log.d(TAG, "RUM session started: " + rum!!.rumSessionId)
+            Log.d(TAG, "RUM session started: " + rum?.getRumSessionId())
         } catch (e: Exception) {
             Log.e(TAG, "Oh no!", e)
         }
@@ -74,18 +74,19 @@ class OtelDemoApplication : Application() {
         var rum: OpenTelemetryRum? = null
 
         fun tracer(name: String): Tracer? {
-            return rum?.openTelemetry?.tracerProvider?.get(name)
+            return rum?.getOpenTelemetry()?.tracerProvider?.get(name)
         }
 
         fun counter(name: String): LongCounter? {
-            return rum?.openTelemetry?.meterProvider?.get("demo.app")?.counterBuilder(name)?.build()
+            return rum?.getOpenTelemetry()?.meterProvider?.get("demo.app")?.counterBuilder(name)
+                ?.build()
         }
 
         fun eventBuilder(scopeName: String, eventName: String): LogRecordBuilder {
             if (rum == null) {
                 return LoggerProvider.noop().get("noop").logRecordBuilder()
             }
-            val logger = rum!!.openTelemetry.logsBridge.loggerBuilder(scopeName).build()
+            val logger = rum!!.getOpenTelemetry().logsBridge.loggerBuilder(scopeName).build()
             return logger.logRecordBuilder().setEventName(eventName)
         }
     }

@@ -9,6 +9,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
@@ -18,6 +19,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RuntimeEnvironment
 
+@OptIn(Incubating::class)
 @RunWith(AndroidJUnit4::class)
 class OpenTelemetryRumInitializerTest {
     private lateinit var appLifecycle: AppLifecycle
@@ -28,12 +30,16 @@ class OpenTelemetryRumInitializerTest {
     }
 
     @Test
-    fun `Verify timeoutHandler initialization`() {
+    fun `Verify timeoutHandler initialization 2`() {
         createAndSetServiceManager()
 
         OpenTelemetryRumInitializer.initialize(
-            RuntimeEnvironment.getApplication(),
-            "http://127.0.0.1:4318",
+            context = RuntimeEnvironment.getApplication(),
+            configuration = {
+                httpExport {
+                    baseUrl = "http://127.0.0.1:4318"
+                }
+            },
         )
 
         verify {

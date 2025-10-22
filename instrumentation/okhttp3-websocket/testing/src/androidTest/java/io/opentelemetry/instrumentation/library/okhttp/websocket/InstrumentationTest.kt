@@ -10,13 +10,13 @@ import io.opentelemetry.instrumentation.library.okhttp.v3_0.websocket.internal.W
 import io.opentelemetry.semconv.HttpAttributes
 import io.opentelemetry.semconv.NetworkAttributes
 import io.opentelemetry.semconv.UrlAttributes
+import mockwebserver3.MockResponse
+import mockwebserver3.MockWebServer
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
-import okhttp3.mockwebserver.MockResponse
-import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -46,14 +46,14 @@ class InstrumentationTest {
     @After
     @Throws(IOException::class)
     fun tearDown() {
-        webServer.shutdown()
+        webServer.close()
     }
 
     @Test
     @Throws(InterruptedException::class)
     fun websocketOpenEvents() {
         val lock = CountDownLatch(1)
-        webServer.enqueue(MockResponse().withWebSocketUpgrade(webSocketListenerServer))
+        webServer.enqueue(MockResponse.Builder().webSocketUpgrade(webSocketListenerServer).build())
         val webSocketListenerClient: WebSocketListener =
             object : WebSocketListener() {
                 override fun onOpen(
@@ -95,7 +95,7 @@ class InstrumentationTest {
     @Throws(InterruptedException::class)
     fun websocketMessageEvent() {
         val lock = CountDownLatch(1)
-        webServer.enqueue(MockResponse().withWebSocketUpgrade(webSocketListenerServer))
+        webServer.enqueue(MockResponse.Builder().webSocketUpgrade(webSocketListenerServer).build())
         val webSocketListenerClient: WebSocketListener =
             object : WebSocketListener() {
                 override fun onMessage(

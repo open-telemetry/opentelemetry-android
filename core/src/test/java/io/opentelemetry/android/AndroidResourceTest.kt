@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android
 
-import android.app.Application
+import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.os.Build
 import io.mockk.MockKAnnotations
@@ -33,7 +33,7 @@ internal class AndroidResourceTest {
             ")"
 
     @RelaxedMockK
-    private lateinit var app: Application
+    private lateinit var ctx: Context
 
     @BeforeEach
     fun setUp() {
@@ -47,8 +47,8 @@ internal class AndroidResourceTest {
                 labelRes = 12345
             }
 
-        every { app.applicationContext.applicationInfo } returns appInfo
-        every { app.applicationContext.getString(appInfo.labelRes) } returns appName
+        every { ctx.applicationContext.applicationInfo } returns appInfo
+        every { ctx.applicationContext.getString(appInfo.labelRes) } returns appName
 
         val expected =
             Resource
@@ -68,14 +68,47 @@ internal class AndroidResourceTest {
                         .build(),
                 )
 
-        val result = AndroidResource.createDefault(app)
+        val result = AndroidResource.createDefault(ctx)
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun `fall back to nonLocalizedLabel if needed`() {
+        val appInfo =
+            ApplicationInfo().apply {
+                labelRes = 0
+                nonLocalizedLabel = "shim sham"
+            }
+
+        every { ctx.applicationContext.applicationInfo } returns appInfo
+        every { ctx.applicationInfo } returns appInfo
+
+        val expected =
+            Resource
+                .getDefault()
+                .merge(
+                    Resource
+                        .builder()
+                        .put(ServiceAttributes.SERVICE_NAME, "shim sham")
+                        .put(RumConstants.RUM_SDK_VERSION, rumSdkVersion)
+                        .put(DeviceIncubatingAttributes.DEVICE_MODEL_NAME, Build.MODEL)
+                        .put(DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER, Build.MODEL)
+                        .put(DeviceIncubatingAttributes.DEVICE_MANUFACTURER, Build.MANUFACTURER)
+                        .put(OsIncubatingAttributes.OS_NAME, "Android")
+                        .put(OsIncubatingAttributes.OS_TYPE, "linux")
+                        .put(OsIncubatingAttributes.OS_VERSION, Build.VERSION.RELEASE)
+                        .put(OsIncubatingAttributes.OS_DESCRIPTION, osDescription)
+                        .build(),
+                )
+
+        val result = AndroidResource.createDefault(ctx)
         assertEquals(expected, result)
     }
 
     @Test
     fun testProblematicContext() {
-        every { app.applicationContext.applicationInfo } throws SecurityException("cannot do that")
-        every { app.applicationContext.resources } throws SecurityException("boom")
+        every { ctx.applicationContext.applicationInfo } throws SecurityException("cannot do that")
+        every { ctx.applicationContext.resources } throws SecurityException("boom")
 
         val expected =
             Resource
@@ -95,7 +128,7 @@ internal class AndroidResourceTest {
                         .build(),
                 )
 
-        val result = AndroidResource.createDefault(app)
+        val result = AndroidResource.createDefault(ctx)
         assertEquals(expected, result)
     }
 }

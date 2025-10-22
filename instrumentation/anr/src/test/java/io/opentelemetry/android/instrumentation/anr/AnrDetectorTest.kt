@@ -13,7 +13,6 @@ import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.context.Context
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -41,7 +40,7 @@ internal class AnrDetectorTest {
         val openTelemetry: OpenTelemetry = OpenTelemetrySdk.builder().build()
 
         val extractor =
-            EventAttributesExtractor { parentContext: Context, o: Array<StackTraceElement> ->
+            EventAttributesExtractor { _, _: Array<StackTraceElement> ->
                 Attributes.of(AttributeKey.stringKey("test.key"), "abc")
             }
         val anrDetector =

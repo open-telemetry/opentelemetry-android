@@ -1,3 +1,3 @@
 #!/bin/bash -e
 
-grep -Po "version=\K[0=9]+.[0-9]+.[0-9]+" gradle.properties
+grep ^version= gradle.properties | sed s/version=// | tr -d '\r'
