@@ -6,6 +6,11 @@ import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.android.instrumentation.screen_orientation.model.Orientation
 
+/**
+ * An Android instrumentation module that installs and manages [ScreenOrientationDetector].
+ *
+ * Use [addAttributesExtractor] to attach custom extractors that enrich emitted orientation events.
+ */
 @AutoService(AndroidInstrumentation::class)
 class ScreenOrientationInstrumentation : AndroidInstrumentation {
     private lateinit var detector: ScreenOrientationDetector
@@ -13,6 +18,13 @@ class ScreenOrientationInstrumentation : AndroidInstrumentation {
     private val additionalExtractors: MutableList<EventAttributesExtractor<Orientation>> =
         mutableListOf()
 
+    /**
+     * Adds an [EventAttributesExtractor] that will be used to extract additional
+     * attributes from orientation events.
+     *
+     * @param extractor The extractor to add.
+     * @return The current [ScreenOrientationInstrumentation] instance for chaining.
+     */
     fun addAttributesExtractor(extractor: EventAttributesExtractor<Orientation>): ScreenOrientationInstrumentation {
         additionalExtractors.add(extractor)
         return this

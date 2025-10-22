@@ -10,6 +10,19 @@ import io.opentelemetry.android.instrumentation.screen_orientation.model.Orienta
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
 
+/**
+ * Detects and logs screen orientation changes in the Android application.
+ *
+ * This detector registers as a [ComponentCallbacks] to listen for configuration changes
+ * related to screen orientation (portrait, landscape). When a change occurs, it emits
+ * a log event via the provided [Logger].
+ *
+ * Additional metadata can be extracted and attached to logs using [EventAttributesExtractor] instances.
+ *
+ * @param applicationContext The application context used to access configuration changes.
+ * @param logger The [Logger] instance used to record orientation change events.
+ * @param additionalExtractors A list of [EventAttributesExtractor]s to extract and attach additional attributes.
+ */
 internal class ScreenOrientationDetector(
     applicationContext: Context,
     private val logger: Logger,
@@ -28,6 +41,7 @@ internal class ScreenOrientationDetector(
                 attributesBuilder.putAll(attributes)
             }
         }
+
 
         logger.logRecordBuilder()
             .setEventName(EVENT_NAME)
