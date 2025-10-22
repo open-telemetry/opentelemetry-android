@@ -36,7 +36,7 @@ class ScreenOrientationInstrumentation : AndroidInstrumentation {
                 .logsBridge
                 .loggerBuilder("io.opentelemetry.$name")
                 .build()
-        val applicationContext = ctx.application.applicationContext
+        val applicationContext = ctx.context.applicationContext
         detector = ScreenOrientationDetector(applicationContext, logger, additionalExtractors)
         applicationContext.registerComponentCallbacks(detector)
     }
@@ -44,7 +44,7 @@ class ScreenOrientationInstrumentation : AndroidInstrumentation {
     override fun uninstall(ctx: InstallationContext) {
         if (!::detector.isInitialized) return
 
-        ctx.application.applicationContext.unregisterComponentCallbacks(detector)
+        ctx.context.applicationContext.unregisterComponentCallbacks(detector)
     }
 
     override val name: String = "screen_orientation"
