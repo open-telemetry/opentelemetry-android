@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.agent.dsl.instrumentation
 
 import io.opentelemetry.android.agent.dsl.OpenTelemetryDslMarker
@@ -9,8 +14,9 @@ import io.opentelemetry.android.instrumentation.screenorientation.model.Orientat
 
 @OpenTelemetryDslMarker
 class ScreenOrientationConfiguration internal constructor(
-    private val config: OtelRumConfig
-) : WithEventAttributes<Orientation>, CanBeEnabledAndDisabled {
+    private val config: OtelRumConfig,
+) : WithEventAttributes<Orientation>,
+    CanBeEnabledAndDisabled {
     private val instrumentation: ScreenOrientationInstrumentation by lazy {
         AndroidInstrumentationLoader.getInstrumentation(
             ScreenOrientationInstrumentation::class.java,

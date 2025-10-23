@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.instrumentation.screenorientation
 
 import android.content.ComponentCallbacks
@@ -34,16 +39,24 @@ internal class ScreenOrientationDetector(
         const val EVENT_NAME = "device.screen_orientation"
     }
 
-    private fun emitLog(orientation: Orientation, body: String) {
+    private fun emitLog(
+        orientation: Orientation,
+        body: String,
+    ) {
         val attributesBuilder = Attributes.builder()
         additionalExtractors.forEach {
-            it.extract(io.opentelemetry.context.Context.current(), orientation).also { attributes ->
-                attributesBuilder.putAll(attributes)
-            }
+            it
+                .extract(
+                    io.opentelemetry.context.Context
+                        .current(),
+                    orientation,
+                ).also { attributes ->
+                    attributesBuilder.putAll(attributes)
+                }
         }
 
-
-        logger.logRecordBuilder()
+        logger
+            .logRecordBuilder()
             .setEventName(EVENT_NAME)
             .setBody(body)
             .setAllAttributes(attributesBuilder.build())
@@ -64,7 +77,7 @@ internal class ScreenOrientationDetector(
             currentOrientation = config.orientation
             emitLog(
                 Orientation(config.orientation),
-                "Screen orientation changed to ${config.orientation.name}."
+                "Screen orientation changed to ${config.orientation.name}.",
             )
         }
     }

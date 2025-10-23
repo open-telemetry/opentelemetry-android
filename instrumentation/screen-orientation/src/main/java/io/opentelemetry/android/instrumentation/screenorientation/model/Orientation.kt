@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.instrumentation.screenorientation.model
 
 import android.content.res.Configuration
@@ -11,4 +16,6 @@ import android.content.res.Configuration
  * @see Configuration.orientation
  */
 @JvmInline
-value class Orientation(val value: Int)
+value class Orientation(
+    val value: Int,
+)
