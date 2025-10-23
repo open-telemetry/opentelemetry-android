@@ -23,7 +23,7 @@ class ScreenOrientationInstrumentationTest {
 
         // then
         verify {
-            context.application.applicationContext.registerComponentCallbacks(any<ScreenOrientationDetector>())
+            context.context.applicationContext.registerComponentCallbacks(any<ScreenOrientationDetector>())
         }
     }
 
@@ -37,7 +37,7 @@ class ScreenOrientationInstrumentationTest {
 
         // then
         verify {
-            context.application.applicationContext.unregisterComponentCallbacks(any<ScreenOrientationDetector>())
+            context.context.applicationContext.unregisterComponentCallbacks(any<ScreenOrientationDetector>())
         }
     }
 }
