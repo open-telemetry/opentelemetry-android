@@ -7,6 +7,9 @@ package io.opentelemetry.android.agent.dsl
 
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 
+/**
+ * Type-safe config DSL that controls how HTTP export of telemetry should behave.
+ */
 @OpenTelemetryDslMarker
 class HttpExportConfiguration internal constructor() {
     /**
@@ -43,14 +46,23 @@ class HttpExportConfiguration internal constructor() {
 
     private fun chooseUrlSource(cfg: EndpointConfiguration): String = cfg.url.ifBlank { baseUrl }
 
+    /**
+     * Override the default configuration for the v1/metrics endpoint only.
+     */
     fun spans(action: EndpointConfiguration.() -> Unit) {
         spansConfig.action()
     }
 
+    /**
+     * Override the default configuration for the v1/logs endpoint only.
+     */
     fun logs(action: EndpointConfiguration.() -> Unit) {
         logsConfig.action()
     }
 
+    /**
+     * Override the default configuration for the v1/traces endpoint only.
+     */
     fun metrics(action: EndpointConfiguration.() -> Unit) {
         metricsConfig.action()
     }
