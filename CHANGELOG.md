@@ -25,7 +25,7 @@ The full list of commits included in this release
   Existing users of the initialization API may need to made some modifications,
   but we think this is a nice extensible pattern for the initializer. 
 - Unstable APIs now leverage a new `@Incubating` annotation, which leverages the 
-  kotlin  the kotlin add Incubating annotation to unstable APIs
+  kotlin compiler to emit warnings about use of unstable APIs
   ([#1238](https://github.com/open-telemetry/opentelemetry-android/pull/1238))
 
 ### 📈 Enhancements
