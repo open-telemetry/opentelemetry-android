@@ -16,7 +16,7 @@ dependencies {
     implementation(project(":services"))
     implementation(libs.opentelemetry.exporter.otlp)
 
-    // Default instrumentations:
+    // region Default instrumentations:
     api(project(":instrumentation:activity"))
     api(project(":instrumentation:anr"))
     api(project(":instrumentation:crash"))
@@ -25,6 +25,8 @@ dependencies {
     api(project(":instrumentation:slowrendering"))
     api(project(":instrumentation:startup"))
     api(project(":instrumentation:sessions"))
+    api(project(":instrumentation:screen-orientation"))
+    // endregion
 
     testImplementation(libs.robolectric)
 }
