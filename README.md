@@ -48,7 +48,7 @@ from all other opentelemetry dependencies:
 ```kotlin
 dependencies {
     //...
-    api(platform("io.opentelemetry.android:opentelemetry-android-bom:0.15.0-alpha"))
+    api(platform("io.opentelemetry.android:opentelemetry-android-bom:0.16.0-alpha"))
     implementation("io.opentelemetry.android:android-agent") // Version is resolved thru bom
     //...
 }
