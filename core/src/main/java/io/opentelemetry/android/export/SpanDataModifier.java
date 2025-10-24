@@ -132,7 +132,18 @@ public final class SpanDataModifier {
         if (!spanAttributeReplacements.isEmpty()) {
             modifier =
                     new AttributeModifyingSpanExporter(
-                            delegate, new HashMap<>(spanAttributeReplacements));
+                            delegate,
+                            (attributeKey, value) -> {
+                                //noinspection unchecked
+                                Function<Object, Object> function =
+                                        (Function<Object, Object>)
+                                                spanAttributeReplacements.get(attributeKey);
+                                if (function != null) {
+                                    return function.apply(value);
+                                } else {
+                                    return value;
+                                }
+                            });
         }
         return FilteringSpanExporter.builder(modifier)
                 .rejectSpansWithAttributesMatching(new HashMap<>(rejectSpanAttributesPredicates))

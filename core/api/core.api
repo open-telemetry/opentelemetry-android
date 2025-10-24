@@ -83,8 +83,8 @@ public class io/opentelemetry/android/config/OtelRumConfig {
 	public fun suppressInstrumentation (Ljava/lang/String;)Lio/opentelemetry/android/config/OtelRumConfig;
 }
 
-public class io/opentelemetry/android/export/AttributeModifyingSpanExporter : io/opentelemetry/sdk/trace/export/SpanExporter {
-	public fun <init> (Lio/opentelemetry/sdk/trace/export/SpanExporter;Ljava/util/Map;)V
+public final class io/opentelemetry/android/export/AttributeModifyingSpanExporter : io/opentelemetry/sdk/trace/export/SpanExporter {
+	public fun <init> (Lio/opentelemetry/sdk/trace/export/SpanExporter;Lkotlin/jvm/functions/Function2;)V
 	public fun export (Ljava/util/Collection;)Lio/opentelemetry/sdk/common/CompletableResultCode;
 	public fun flush ()Lio/opentelemetry/sdk/common/CompletableResultCode;
 	public fun shutdown ()Lio/opentelemetry/sdk/common/CompletableResultCode;
