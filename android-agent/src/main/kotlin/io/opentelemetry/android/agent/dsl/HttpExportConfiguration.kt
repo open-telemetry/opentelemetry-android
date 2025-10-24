@@ -47,7 +47,7 @@ class HttpExportConfiguration internal constructor() {
     private fun chooseUrlSource(cfg: EndpointConfiguration): String = cfg.url.ifBlank { baseUrl }
 
     /**
-     * Override the default configuration for the v1/metrics endpoint only.
+     * Override the default configuration for the v1/traces endpoint only.
      */
     fun spans(action: EndpointConfiguration.() -> Unit) {
         spansConfig.action()
@@ -61,7 +61,7 @@ class HttpExportConfiguration internal constructor() {
     }
 
     /**
-     * Override the default configuration for the v1/traces endpoint only.
+     * Override the default configuration for the v1/metrics endpoint only.
      */
     fun metrics(action: EndpointConfiguration.() -> Unit) {
         metricsConfig.action()

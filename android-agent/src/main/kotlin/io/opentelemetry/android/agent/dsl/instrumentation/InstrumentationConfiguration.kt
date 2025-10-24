@@ -67,7 +67,7 @@ class InstrumentationConfiguration internal constructor(
     }
 
     /**
-     * Configures network requests instrumentation.
+     * Configures network change instrumentation.
      */
     fun networkMonitoring(configure: NetworkMonitoringConfiguration.() -> Unit) {
         networkMonitoring.configure()

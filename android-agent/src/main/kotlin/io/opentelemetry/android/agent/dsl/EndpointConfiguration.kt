@@ -6,7 +6,7 @@
 package io.opentelemetry.android.agent.dsl
 
 /**
- * Type-safe config DSL that controls the endpoint that HTTP exports of telemetry are sent to.
+ * Type-safe config DSL that controls the HTTP endpoint for telemetry exports.
  */
 @OpenTelemetryDslMarker
 class EndpointConfiguration internal constructor(
