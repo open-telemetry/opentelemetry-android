@@ -12,6 +12,9 @@ import io.opentelemetry.android.instrumentation.activity.ActivityLifecycleInstru
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.api.trace.Tracer
 
+/**
+ * Type-safe config DSL that controls how activity lifecycle instrumentation should behave.
+ */
 @OpenTelemetryDslMarker
 class ActivityLifecycleConfiguration internal constructor(
     private val config: OtelRumConfig,

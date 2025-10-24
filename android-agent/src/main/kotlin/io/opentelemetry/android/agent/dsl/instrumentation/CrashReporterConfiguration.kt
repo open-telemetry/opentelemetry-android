@@ -12,6 +12,9 @@ import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.android.instrumentation.crash.CrashDetails
 import io.opentelemetry.android.instrumentation.crash.CrashReporterInstrumentation
 
+/**
+ * Type-safe config DSL that controls how crash reporting instrumentation should behave.
+ */
 @OpenTelemetryDslMarker
 class CrashReporterConfiguration internal constructor(
     private val config: OtelRumConfig,
