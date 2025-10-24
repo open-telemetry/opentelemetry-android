@@ -2,6 +2,49 @@
 
 ## Unreleased
 
+__Note: This version is not the first release candidate. We had previously announced that
+the October 2025 release would be our first release candidate, but this effort is temporarily
+paused.__
+
+We are still soliciting feedback from users as we approach a 1.0.0 milestone and
+mark the `android-agent` and `OpenTelemetryRumInitializer` api stable. Please see
+[#1257](https://github.com/open-telemetry/opentelemetry-android/issues/1257)
+to join the discussion.
+
+The full list of commits included in this release
+[may be viewed here](https://github.com/open-telemetry/opentelemetry-android/compare/release/v0.15.x...release/v0.16.x).
+
+### ⚠️⚠️ Breaking changes
+- Removing OTelRumConfig from initializer
+  ([#1272](https://github.com/open-telemetry/opentelemetry-android/pull/1272))
+- `SessionStorage` and `SessionIdGenerator` are now internal interfaces.
+  ([#1278](https://github.com/open-telemetry/opentelemetry-android/pull/1278))
+
+### 📣 Migration notes
+- The agent initializer now uses a typesafe DSL for configuration parameters.
+  Existing users of the initialization API may need to made some modifications,
+  but we think this is a nice extensible pattern for the initializer. 
+- Unstable APIs now leverage a new `@Incubating` annotation, which leverages the 
+  kotlin  the kotlin add Incubating annotation to unstable APIs
+  ([#1238](https://github.com/open-telemetry/opentelemetry-android/pull/1238))
+
+### 📈 Enhancements
+- Add functional interfaces to support config DSL via agent initializer.
+  ([#1275](https://github.com/open-telemetry/opentelemetry-android/pull/1275))
+- Config for disabling default instrumentations via agent initializer.
+  ([#1273](https://github.com/open-telemetry/opentelemetry-android/pull/1273))
+- Enhanced detection of `service.name` when the application label is populated with build
+  placeholders.
+  ([#1302](https://github.com/open-telemetry/opentelemetry-android/pull/1302))
+
+### 🧰 Tooling
+- Testing now uses Marshmallow as a lower bound.
+  ([#1230](https://github.com/open-telemetry/opentelemetry-android/pull/1230))
+- Improve PR code coverage reporting by running codecov on main branch
+  ([#1236](https://github.com/open-telemetry/opentelemetry-android/pull/1236))
+- Update main CI build from Java 17 to Java 21.
+  ([#1317](https://github.com/open-telemetry/opentelemetry-android/pull/1317))
+
 ## Version 0.15.0 (2025-09-18)
 
 ### ⚠️⚠️ Breaking changes
