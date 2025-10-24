@@ -1,6 +1,6 @@
 # OpenTelemetry Android Changelog
 
-## Unreleased
+## Version 0.16.0 (2025-10-24)
 
 __Note: This version is not the first release candidate. We had previously announced that
 the October 2025 release would be our first release candidate, but this effort is temporarily
