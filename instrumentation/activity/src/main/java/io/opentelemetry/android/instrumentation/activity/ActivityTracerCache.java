@@ -79,6 +79,10 @@ public class ActivityTracerCache {
         return getTracer(activity).startActivityCreation();
     }
 
+    public void endInitialDrawSpan(Activity activity) {
+        getTracer(activity).endInitialDrawSpan();
+    }
+
     private ActivityTracer getTracer(Activity activity) {
         ActivityTracer activityTracer =
                 tracersByActivityClassName.get(activity.getClass().getName());

@@ -38,6 +38,18 @@ This instrumentation produces the following telemetry:
   * `screen.name`:  name of screen
   * `last.screen.name`:  name of screen, only when span contains the `activityPostResumed` event.
 
+### First Draw
+
+* Type: Span
+* Name: `FirstDraw`
+* Description: On activity PreCreated or Created (pre API 29) callback, a span will be created
+  to represent the time that the UI pipeline took to render that Activity's first frame. The span ends
+  at the first draw of the window
+  [DecorView](https://developer.android.com/reference/android/view/Window#getDecorView())
+* Attributes:
+  * `activity.name`:  name of activity
+  * `screen.name`:  name of screen
+
 ## Installation
 
 This instrumentation comes with the [android agent](../../android-agent) out of the box, so
