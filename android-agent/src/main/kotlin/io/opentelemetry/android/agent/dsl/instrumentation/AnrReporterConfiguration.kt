@@ -11,6 +11,9 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.anr.AnrInstrumentation
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 
+/**
+ * Type-safe config DSL that controls how ANR instrumentation should behave.
+ */
 @OpenTelemetryDslMarker
 class AnrReporterConfiguration internal constructor(
     private val config: OtelRumConfig,

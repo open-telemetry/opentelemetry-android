@@ -6,5 +6,8 @@
 package io.opentelemetry.android.instrumentation.common
 
 fun interface ScreenNameExtractor {
+    /**
+     * Obtains a screen name from the supplied instance.
+     */
     fun extract(instance: Any): String
 }

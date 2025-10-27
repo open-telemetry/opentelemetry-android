@@ -12,6 +12,9 @@ import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.instrumentation.fragment.FragmentLifecycleInstrumentation
 import io.opentelemetry.api.trace.Tracer
 
+/**
+ * Type-safe config DSL that controls how fragment lifecycle instrumentation should behave.
+ */
 @OpenTelemetryDslMarker
 class FragmentLifecycleConfiguration internal constructor(
     private val config: OtelRumConfig,
