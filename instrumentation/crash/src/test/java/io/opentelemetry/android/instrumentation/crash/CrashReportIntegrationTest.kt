@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.instrumentation.crash
 
+import io.opentelemetry.android.common.internal.utils.threadIdCompat
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.api.common.AttributeKey
@@ -194,7 +195,7 @@ internal class CrashReportIntegrationTest {
         assertEquals(expectedStacktrace, attrs[ExceptionAttributes.EXCEPTION_STACKTRACE.key])
         assertEquals(expectedExcType, attrs[ExceptionAttributes.EXCEPTION_TYPE.key])
         assertEquals(expectedExcMessage, attrs[ExceptionAttributes.EXCEPTION_MESSAGE.key])
-        assertEquals(thread.id, attrs[ThreadIncubatingAttributes.THREAD_ID.key])
+        assertEquals(thread.threadIdCompat, attrs[ThreadIncubatingAttributes.THREAD_ID.key])
         assertEquals(thread.name, attrs[ThreadIncubatingAttributes.THREAD_NAME.key])
         assertNotNull(attrs["heap.free"])
         assertNotNull(attrs["storage.free"])

@@ -7,6 +7,7 @@ package io.opentelemetry.android.internal.services.periodicwork
 
 import android.os.Build
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.opentelemetry.android.common.internal.utils.threadIdCompat
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -55,7 +56,7 @@ class PeriodicWorkTest {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
             thread.threadId()
         } else {
-            thread.id
+            thread.threadIdCompat
         }
     }
 
