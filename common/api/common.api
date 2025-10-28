@@ -102,3 +102,7 @@ public final class io/opentelemetry/android/common/internal/tools/time/SystemTim
 	public fun getCurrentTimeMillis ()J
 }
 
+public final class io/opentelemetry/android/common/internal/utils/AndroidUtilsKt {
+	public static final fun getThreadIdCompat (Ljava/lang/Thread;)J
+}
+
