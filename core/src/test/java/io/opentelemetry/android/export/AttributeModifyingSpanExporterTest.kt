@@ -10,29 +10,21 @@ import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.sdk.common.CompletableResultCode
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
+import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.data.SpanData
-import io.opentelemetry.sdk.trace.export.SpanExporter
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.ArgumentCaptor
-import org.mockito.Captor
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
-import org.mockito.junit.jupiter.MockitoExtension
-import java.util.function.Function
 
-@ExtendWith(MockitoExtension::class)
 internal class AttributeModifyingSpanExporterTest {
-    @Mock
-    private lateinit var exporter: SpanExporter
+    private lateinit var exporter: InMemorySpanExporter
 
-    @Captor
-    private lateinit var spansCaptor: ArgumentCaptor<MutableCollection<SpanData>>
+    @BeforeEach
+    fun setUp() {
+        exporter = InMemorySpanExporter.create()
+    }
 
     @Test
     fun testEmptyMap() {
@@ -40,14 +32,10 @@ internal class AttributeModifyingSpanExporterTest {
         val span2 = span("span2")
         val span3 = span("span3")
         val spans = listOf(span1, span2, span3)
-        val expectedResult: CompletableResultCode? = mock(CompletableResultCode::class.java)
-        `when`(exporter.export(spans)).thenReturn(expectedResult)
-
-        val underTest =
-            AttributeModifyingSpanExporter(exporter, emptyMap())
+        val underTest = AttributeModifyingSpanExporter(exporter) { _, value -> value }
 
         val result = underTest.export(spans)
-        assertSame(expectedResult, result)
+        assertSame(CompletableResultCode.ofSuccess(), result)
     }
 
     @Test
@@ -55,19 +43,11 @@ internal class AttributeModifyingSpanExporterTest {
         val key = AttributeKey.stringKey("foo")
         val span1 = span("span1", Attributes.of(key, "bar"))
         val originalSpans = listOf(span1)
+        val underTest = AttributeModifyingSpanExporter(exporter) { _, value -> null }
+        val result = underTest.export(originalSpans)
 
-        val remappers = mutableMapOf<AttributeKey<*>, Function<*, *>>()
-        remappers.put(key, Function { _: Any? -> null })
-
-        val expectedResult = Mockito.mock(CompletableResultCode::class.java)
-        `when`(exporter.export(spansCaptor.capture()))
-            .thenReturn(expectedResult)
-
-        val underTest =
-            AttributeModifyingSpanExporter(exporter, remappers)
-
-        underTest.export(originalSpans)
-        assertThat(spansCaptor.getValue())
+        assertSame(CompletableResultCode.ofSuccess(), result)
+        assertThat(exporter.finishedSpanItems)
             .satisfiesExactly(
                 ThrowingConsumer { span: SpanData? ->
                     OpenTelemetryAssertions
@@ -87,23 +67,23 @@ internal class AttributeModifyingSpanExporterTest {
         val attr3 = buildAttr(3)
         val span3 = span("span3", attr3)
         val spans = listOf(span1, span2, span3)
-        val modifiers = mutableMapOf<AttributeKey<*>, Function<*, *>>()
-        modifiers.put(AttributeKey.stringKey("foo1"), Function { x: Any? -> "" + x + x })
-        modifiers.put(AttributeKey.stringKey("foo3"), Function { x: Any? -> "3$x$x" })
-        modifiers.put(AttributeKey.stringKey("boop2"), Function { x: Any? -> "2$x$x" })
 
-        val expectedResult = Mockito.mock(CompletableResultCode::class.java)
-        `when`(exporter.export(spansCaptor.capture()))
-            .thenReturn(expectedResult)
-
-        val underTest = AttributeModifyingSpanExporter(exporter, modifiers)
+        val underTest =
+            AttributeModifyingSpanExporter(exporter) { key, value ->
+                when (key) {
+                    AttributeKey.stringKey("foo1") -> "$value$value"
+                    AttributeKey.stringKey("foo3") -> "3$value$value"
+                    AttributeKey.stringKey("boop2") -> "2$value$value"
+                    else -> value
+                }
+            }
         val result = underTest.export(spans)
-        assertSame(expectedResult, result)
+        assertSame(CompletableResultCode.ofSuccess(), result)
         assertAttributes()
     }
 
     private fun assertAttributes() {
-        assertThat(spansCaptor.getValue())
+        assertThat(exporter.finishedSpanItems)
             .satisfiesExactly(
                 ThrowingConsumer {
                     OpenTelemetryAssertions
