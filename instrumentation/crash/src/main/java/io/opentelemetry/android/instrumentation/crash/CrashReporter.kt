@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.instrumentation.crash
 
+import io.opentelemetry.android.common.internal.utils.threadIdCompat
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.context.Context
@@ -46,7 +47,7 @@ internal class CrashReporter(
         val attributesBuilder =
             Attributes
                 .builder()
-                .put(THREAD_ID, thread.id)
+                .put(THREAD_ID, thread.threadIdCompat)
                 .put(THREAD_NAME, thread.name)
                 .put(EXCEPTION_MESSAGE, throwable.message)
                 .put(

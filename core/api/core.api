@@ -181,7 +181,7 @@ public final class io/opentelemetry/android/features/diskbuffering/DiskBuffering
 
 public final class io/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter {
 	public static final field Companion Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter$Companion;
-	public fun <init> (Lio/opentelemetry/contrib/disk/buffering/SpanFromDiskExporter;Lio/opentelemetry/contrib/disk/buffering/MetricFromDiskExporter;Lio/opentelemetry/contrib/disk/buffering/LogRecordFromDiskExporter;)V
+	public fun <init> (Lio/opentelemetry/contrib/disk/buffering/storage/SignalStorage$Span;Lio/opentelemetry/sdk/trace/export/SpanExporter;Lio/opentelemetry/contrib/disk/buffering/storage/SignalStorage$LogRecord;Lio/opentelemetry/sdk/logs/export/LogRecordExporter;Lio/opentelemetry/contrib/disk/buffering/storage/SignalStorage$Metric;Lio/opentelemetry/sdk/metrics/export/MetricExporter;)V
 	public final fun exportBatchOfEach ()Z
 	public final fun exportBatchOfLogs ()Z
 	public final fun exportBatchOfMetrics ()Z

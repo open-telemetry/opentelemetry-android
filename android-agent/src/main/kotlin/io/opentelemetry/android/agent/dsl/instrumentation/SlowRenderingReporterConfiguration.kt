@@ -12,6 +12,9 @@ import io.opentelemetry.android.instrumentation.slowrendering.SlowRenderingInstr
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
+/**
+ * Type-safe config DSL that controls how slow render event instrumentation should behave.
+ */
 @OpenTelemetryDslMarker
 class SlowRenderingReporterConfiguration internal constructor(
     private val config: OtelRumConfig,
@@ -22,10 +25,16 @@ class SlowRenderingReporterConfiguration internal constructor(
         )
     }
 
+    /**
+     * Sets the poll interval for slow rendering detection.
+     */
     fun detectionPollInterval(value: Duration) {
         slowRenderingInstrumentation.setSlowRenderingDetectionPollInterval(value.toJavaDuration())
     }
 
+    /**
+     * Enables verbose debug logging for slow rendering instrumentation.
+     */
     fun enableVerboseDebugLogging() {
         slowRenderingInstrumentation.enableVerboseDebugLogging()
     }

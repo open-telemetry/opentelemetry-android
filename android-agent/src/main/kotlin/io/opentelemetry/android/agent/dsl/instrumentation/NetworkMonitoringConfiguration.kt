@@ -8,9 +8,13 @@ package io.opentelemetry.android.agent.dsl.instrumentation
 import io.opentelemetry.android.agent.dsl.OpenTelemetryDslMarker
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
+import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.android.instrumentation.network.NetworkAttributesExtractor
 import io.opentelemetry.android.instrumentation.network.NetworkChangeInstrumentation
 
+/**
+ * Type-safe config DSL that controls how network request instrumentation should behave.
+ */
 @OpenTelemetryDslMarker
 class NetworkMonitoringConfiguration internal constructor(
     private val config: OtelRumConfig,
@@ -21,6 +25,10 @@ class NetworkMonitoringConfiguration internal constructor(
         )
     }
 
+    /**
+     * Supplies an attributes extractor, which can be used to customise the attributes on
+     * the network telemetry.
+     */
     fun addAttributesExtractor(value: NetworkAttributesExtractor) {
         networkInstrumentation.addAttributesExtractor(value)
     }

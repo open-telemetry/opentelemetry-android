@@ -6,9 +6,11 @@
 package io.opentelemetry.android.features.diskbuffering
 
 import androidx.annotation.WorkerThread
-import io.opentelemetry.contrib.disk.buffering.LogRecordFromDiskExporter
-import io.opentelemetry.contrib.disk.buffering.MetricFromDiskExporter
-import io.opentelemetry.contrib.disk.buffering.SpanFromDiskExporter
+import io.opentelemetry.contrib.disk.buffering.storage.SignalStorage
+import io.opentelemetry.sdk.common.CompletableResultCode
+import io.opentelemetry.sdk.logs.export.LogRecordExporter
+import io.opentelemetry.sdk.metrics.export.MetricExporter
+import io.opentelemetry.sdk.trace.export.SpanExporter
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -18,9 +20,12 @@ import java.util.concurrent.TimeUnit
 class SignalFromDiskExporter
     @JvmOverloads
     internal constructor(
-        private val spanFromDiskExporter: SpanFromDiskExporter?,
-        private val metricFromDiskExporter: MetricFromDiskExporter?,
-        private val logRecordFromDiskExporter: LogRecordFromDiskExporter?,
+        private val spanStorage: SignalStorage.Span,
+        private val spanExporter: SpanExporter,
+        private val logStorage: SignalStorage.LogRecord,
+        private val logExporter: LogRecordExporter,
+        private val metricStorage: SignalStorage.Metric,
+        private val metricExporter: MetricExporter,
         private val exportTimeoutInMillis: Long = TimeUnit.SECONDS.toMillis(5),
     ) {
         /**
@@ -33,11 +38,7 @@ class SignalFromDiskExporter
          */
         @WorkerThread
         @Throws(IOException::class)
-        fun exportBatchOfSpans(): Boolean =
-            spanFromDiskExporter?.exportStoredBatch(
-                exportTimeoutInMillis,
-                TimeUnit.MILLISECONDS,
-            ) ?: false
+        fun exportBatchOfSpans(): Boolean = export(spanStorage, spanExporter::export)
 
         /**
          * A batch contains all the signals that arrived in one call to [MetricFromDiskExporter.exportStoredBatch]. So if
@@ -49,11 +50,7 @@ class SignalFromDiskExporter
          */
         @WorkerThread
         @Throws(IOException::class)
-        fun exportBatchOfMetrics(): Boolean =
-            metricFromDiskExporter?.exportStoredBatch(
-                exportTimeoutInMillis,
-                TimeUnit.MILLISECONDS,
-            ) ?: false
+        fun exportBatchOfMetrics(): Boolean = export(metricStorage, metricExporter::export)
 
         /**
          * A batch contains all the signals that arrived in one call to [LogRecordFromDiskExporter.exportStoredBatch]. So if
@@ -65,11 +62,23 @@ class SignalFromDiskExporter
          */
         @WorkerThread
         @Throws(IOException::class)
-        fun exportBatchOfLogs(): Boolean =
-            logRecordFromDiskExporter?.exportStoredBatch(
-                exportTimeoutInMillis,
-                TimeUnit.MILLISECONDS,
-            ) ?: false
+        fun exportBatchOfLogs(): Boolean = export(logStorage, logExporter::export)
+
+        private fun <T> export(
+            storage: SignalStorage<T>,
+            exporter: (Collection<T>) -> CompletableResultCode,
+        ): Boolean {
+            var rc = false
+            val iter = storage.iterator()
+            while (iter.hasNext()) {
+                val result = exporter(iter.next()).join(exportTimeoutInMillis, TimeUnit.MILLISECONDS)
+                // TODO: What to do if a random export in the middle here just fails?
+                if (result.isDone && result.isSuccess) {
+                    rc = true
+                }
+            }
+            return rc
+        }
 
         /**
          * Convenience method that attempts to export all kinds of signals from disk.
