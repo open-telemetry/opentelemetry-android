@@ -10,9 +10,6 @@ import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
-import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
-import io.opentelemetry.android.instrumentation.screenorientation.model.Orientation
-import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
 
 /**
@@ -22,44 +19,25 @@ import io.opentelemetry.api.logs.Logger
  * related to screen orientation (portrait, landscape). When a change occurs, it emits
  * a log event via the provided [Logger].
  *
- * Additional metadata can be extracted and attached to logs using [EventAttributesExtractor] instances.
- *
  * @param applicationContext The application context used to access configuration changes.
  * @param logger The [Logger] instance used to record orientation change events.
- * @param additionalExtractors A list of [EventAttributesExtractor]s to extract and attach additional attributes.
  */
 internal class ScreenOrientationDetector(
     applicationContext: Context,
     private val logger: Logger,
-    private val additionalExtractors: List<EventAttributesExtractor<Orientation>> = emptyList(),
 ) : ComponentCallbacks {
     private var currentOrientation: Int = applicationContext.resources.configuration.orientation
 
     internal companion object {
         const val EVENT_NAME = "device.screen_orientation"
+        const val SCREEN_ORIENTATION = "screen.orientation"
     }
 
-    private fun emitLog(
-        orientation: Orientation,
-        body: String,
-    ) {
-        val attributesBuilder = Attributes.builder()
-        additionalExtractors.forEach {
-            it
-                .extract(
-                    io.opentelemetry.context.Context
-                        .current(),
-                    orientation,
-                ).also { attributes ->
-                    attributesBuilder.putAll(attributes)
-                }
-        }
-
+    private fun emitLog(orientation: String) {
         logger
             .logRecordBuilder()
             .setEventName(EVENT_NAME)
-            .setBody(body)
-            .setAllAttributes(attributesBuilder.build())
+            .setAttribute(SCREEN_ORIENTATION, orientation)
             .emit()
     }
 
@@ -68,17 +46,14 @@ internal class ScreenOrientationDetector(
             return when (this) {
                 ORIENTATION_LANDSCAPE -> "landscape"
                 ORIENTATION_PORTRAIT -> "portrait"
-                else -> "Undefined"
+                else -> "undefined"
             }
         }
 
     override fun onConfigurationChanged(config: Configuration) {
         if (config.orientation != currentOrientation) {
             currentOrientation = config.orientation
-            emitLog(
-                Orientation(config.orientation),
-                "Screen orientation changed to ${config.orientation.name}.",
-            )
+            emitLog(config.orientation.name)
         }
     }
 

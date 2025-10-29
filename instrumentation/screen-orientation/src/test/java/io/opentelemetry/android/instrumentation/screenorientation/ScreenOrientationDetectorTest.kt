@@ -10,11 +10,9 @@ import android.content.res.Configuration
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import io.mockk.every
 import io.mockk.mockk
-import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.android.instrumentation.screenorientation.ScreenOrientationDetector.Companion.EVENT_NAME
-import io.opentelemetry.android.instrumentation.screenorientation.model.Orientation
+import io.opentelemetry.android.instrumentation.screenorientation.ScreenOrientationDetector.Companion.SCREEN_ORIENTATION
 import io.opentelemetry.api.common.AttributeKey
-import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -35,9 +33,6 @@ class ScreenOrientationDetectorTest {
             .loggerBuilder("io.opentelemetry.test")
             .build()
     private val applicationContext = mockk<Context>()
-    private val testAttributeKey = AttributeKey.stringKey("test-key")
-    private val testValue = "test-value"
-    private val additionalExtractors = listOf(TestExtractor())
 
     @Before
     fun setup() {
@@ -53,7 +48,6 @@ class ScreenOrientationDetectorTest {
             ScreenOrientationDetector(
                 applicationContext,
                 logger,
-                additionalExtractors,
             )
     }
 
@@ -67,8 +61,10 @@ class ScreenOrientationDetectorTest {
         )
 
         // then
+        val record = openTelemetryRule.logRecords.find { it.eventName === EVENT_NAME }
         assertEquals(1, openTelemetryRule.logRecords.size)
-        assertNotNull(openTelemetryRule.logRecords.find { it.eventName === EVENT_NAME })
+        assertNotNull(record)
+        assertEquals("landscape", record.attributes.get(AttributeKey.stringKey(SCREEN_ORIENTATION)))
     }
 
     @Test
@@ -83,27 +79,5 @@ class ScreenOrientationDetectorTest {
         // then
         assertEquals(0, openTelemetryRule.logRecords.size)
         assertNull(openTelemetryRule.logRecords.find { it.eventName === EVENT_NAME })
-    }
-
-    @Test
-    fun `should add attributes from additional extractors`() {
-        // given
-        sut.onConfigurationChanged(
-            Configuration().apply {
-                orientation = Configuration.ORIENTATION_LANDSCAPE
-            },
-        )
-
-        // then
-        val logRecord = openTelemetryRule.logRecords.find { it.eventName === EVENT_NAME }
-        assertNotNull(logRecord)
-        assertEquals(testValue, logRecord.attributes.get(testAttributeKey))
-    }
-
-    private inner class TestExtractor : EventAttributesExtractor<Orientation> {
-        override fun extract(
-            parentContext: io.opentelemetry.context.Context,
-            subject: Orientation,
-        ): Attributes = Attributes.builder().put(testAttributeKey, testValue).build()
     }
 }

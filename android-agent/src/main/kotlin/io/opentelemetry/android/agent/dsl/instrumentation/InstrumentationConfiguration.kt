@@ -86,6 +86,9 @@ class InstrumentationConfiguration internal constructor(
         slowRendering.configure()
     }
 
+    /**
+     * Configures screen orientation event instrumentation
+     */
     fun screenOrientation(configure: ScreenOrientationConfiguration.() -> Unit) {
         screenOrientation.configure()
     }

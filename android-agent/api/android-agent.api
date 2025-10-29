@@ -80,8 +80,7 @@ public final class io/opentelemetry/android/agent/dsl/instrumentation/NetworkMon
 	public fun enabled (Z)V
 }
 
-public final class io/opentelemetry/android/agent/dsl/instrumentation/ScreenOrientationConfiguration : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled, io/opentelemetry/android/agent/dsl/instrumentation/WithEventAttributes {
-	public fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/common/EventAttributesExtractor;)V
+public final class io/opentelemetry/android/agent/dsl/instrumentation/ScreenOrientationConfiguration : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled {
 	public fun enabled (Z)V
 }
 
