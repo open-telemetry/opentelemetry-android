@@ -34,8 +34,7 @@ internal class ScreenOrientationDetector(
     }
 
     private fun emitLog(orientation: String) {
-        logger
-            .logRecordBuilder()
+        logger.logRecordBuilder()
             .setEventName(EVENT_NAME)
             .setAttribute(SCREEN_ORIENTATION, orientation)
             .emit()
