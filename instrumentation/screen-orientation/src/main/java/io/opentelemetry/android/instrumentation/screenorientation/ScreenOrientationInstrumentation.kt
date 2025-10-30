@@ -14,7 +14,7 @@ import io.opentelemetry.android.instrumentation.InstallationContext
  */
 @AutoService(AndroidInstrumentation::class)
 class ScreenOrientationInstrumentation : AndroidInstrumentation {
-    private lateinit var detector: ScreenOrientationDetector
+    private var detector: ScreenOrientationDetector? = null
 
     override fun install(ctx: InstallationContext) {
         val logger =
@@ -28,9 +28,9 @@ class ScreenOrientationInstrumentation : AndroidInstrumentation {
     }
 
     override fun uninstall(ctx: InstallationContext) {
-        if (!::detector.isInitialized) return
-
-        ctx.context.applicationContext.unregisterComponentCallbacks(detector)
+        detector?.let {
+            ctx.context.applicationContext.unregisterComponentCallbacks(it)
+        }
     }
 
     override val name: String = "screen_orientation"
