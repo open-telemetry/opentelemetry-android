@@ -230,6 +230,62 @@ class ActivityTracerTest {
         assertEquals("squarely", span.attributes.get(RumConstants.SCREEN_NAME_KEY))
     }
 
+    @Test
+    fun endInitialDrawSpan_whenSpanExists() {
+        val trackableTracer =
+            ActivityTracer
+                .builder(Mockito.mock(Activity::class.java))
+                .setTracer(tracer)
+                .setAppStartupTimer(appStartupTimer)
+                .setActiveSpan(activeSpan)
+                .build()
+
+        trackableTracer.startActivityCreation()
+        trackableTracer.endInitialDrawSpan()
+        trackableTracer.endActiveSpan()
+
+        val spans = otelTesting.spans
+        assertEquals(2, spans.size)
+        assertEquals("FirstDraw", spans[0].name)
+        assertEquals("Created", spans[1].name)
+    }
+
+    @Test
+    fun endInitialDrawSpan_whenSpanDoesNotExist() {
+        val trackableTracer =
+            ActivityTracer
+                .builder(Mockito.mock(Activity::class.java))
+                .setTracer(tracer)
+                .setAppStartupTimer(appStartupTimer)
+                .setActiveSpan(activeSpan)
+                .build()
+
+        trackableTracer.endInitialDrawSpan()
+
+        assertEquals(0, otelTesting.spans.size)
+    }
+
+    @Test
+    fun endInitialDrawSpan_multipleCallsOnlyEndsOnce() {
+        val trackableTracer =
+            ActivityTracer
+                .builder(Mockito.mock(Activity::class.java))
+                .setTracer(tracer)
+                .setAppStartupTimer(appStartupTimer)
+                .setActiveSpan(activeSpan)
+                .build()
+
+        trackableTracer.startActivityCreation()
+        trackableTracer.endInitialDrawSpan()
+        trackableTracer.endInitialDrawSpan()
+        trackableTracer.endActiveSpan()
+
+        val spans = otelTesting.spans
+        assertEquals(2, spans.size)
+        assertEquals("FirstDraw", spans[0].name)
+        assertEquals("Created", spans[1].name)
+    }
+
     private val singleSpan: SpanData
         get() {
             val generatedSpans =
