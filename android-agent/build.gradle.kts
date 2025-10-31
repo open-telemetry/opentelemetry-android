@@ -25,6 +25,7 @@ dependencies {
     api(project(":instrumentation:slowrendering"))
     api(project(":instrumentation:startup"))
     api(project(":instrumentation:sessions"))
+    api(project(":instrumentation:screen-orientation"))
 
     testImplementation(libs.robolectric)
 }

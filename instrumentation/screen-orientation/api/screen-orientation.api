@@ -1,0 +1,7 @@
+public final class io/opentelemetry/android/instrumentation/screenorientation/ScreenOrientationInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
+	public fun <init> ()V
+	public fun getName ()Ljava/lang/String;
+	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
+	public fun uninstall (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
+}
+

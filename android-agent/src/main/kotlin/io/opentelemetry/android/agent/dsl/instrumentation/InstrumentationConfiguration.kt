@@ -38,6 +38,12 @@ class InstrumentationConfiguration internal constructor(
         )
     }
 
+    private val screenOrientation: ScreenOrientationConfiguration by lazy {
+        ScreenOrientationConfiguration(
+            config,
+        )
+    }
+
     /**
      * Configures activity lifecycle instrumentation.
      */
@@ -78,5 +84,12 @@ class InstrumentationConfiguration internal constructor(
      */
     fun slowRenderingReporter(configure: SlowRenderingReporterConfiguration.() -> Unit) {
         slowRendering.configure()
+    }
+
+    /**
+     * Configures screen orientation event instrumentation
+     */
+    fun screenOrientation(configure: ScreenOrientationConfiguration.() -> Unit) {
+        screenOrientation.configure()
     }
 }

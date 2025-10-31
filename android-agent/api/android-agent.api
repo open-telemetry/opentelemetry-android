@@ -71,11 +71,16 @@ public final class io/opentelemetry/android/agent/dsl/instrumentation/Instrument
 	public final fun crashReporter (Lkotlin/jvm/functions/Function1;)V
 	public final fun fragment (Lkotlin/jvm/functions/Function1;)V
 	public final fun networkMonitoring (Lkotlin/jvm/functions/Function1;)V
+	public final fun screenOrientation (Lkotlin/jvm/functions/Function1;)V
 	public final fun slowRenderingReporter (Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class io/opentelemetry/android/agent/dsl/instrumentation/NetworkMonitoringConfiguration : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled {
 	public final fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/network/NetworkAttributesExtractor;)V
+	public fun enabled (Z)V
+}
+
+public final class io/opentelemetry/android/agent/dsl/instrumentation/ScreenOrientationConfiguration : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled {
 	public fun enabled (Z)V
 }
 
