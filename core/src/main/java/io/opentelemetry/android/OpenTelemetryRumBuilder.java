@@ -84,39 +84,59 @@ import kotlin.jvm.functions.Function0;
  */
 public final class OpenTelemetryRumBuilder {
 
-    private final Context context;
+    @NonNull private final Context context;
+
+    @NonNull
     private final List<BiFunction<SdkTracerProviderBuilder, Context, SdkTracerProviderBuilder>>
             tracerProviderCustomizers = new ArrayList<>();
+
+    @NonNull
     private final List<BiFunction<SdkMeterProviderBuilder, Context, SdkMeterProviderBuilder>>
             meterProviderCustomizers = new ArrayList<>();
+
+    @NonNull
     private final List<BiFunction<SdkLoggerProviderBuilder, Context, SdkLoggerProviderBuilder>>
             loggerProviderCustomizers = new ArrayList<>();
-    private final OtelRumConfig config;
-    private final List<AndroidInstrumentation> instrumentations = new ArrayList<>();
+
+    @NonNull private final OtelRumConfig config;
+
+    @NonNull private final List<AndroidInstrumentation> instrumentations = new ArrayList<>();
+
+    @NonNull
     private final List<Consumer<OpenTelemetrySdk>> otelSdkReadyListeners = new ArrayList<>();
+
+    @NonNull
     private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer = a -> a;
+
+    @NonNull
     private Function<? super MetricExporter, ? extends MetricExporter> metricExporterCustomizer =
             a -> a;
+
+    @NonNull
     private Function<? super LogRecordExporter, ? extends LogRecordExporter>
             logRecordExporterCustomizer = a -> a;
+
+    @NonNull
     private Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer =
             (a) -> a;
 
-    private Resource resource;
+    @NonNull private Resource resource;
 
     @Nullable private ExportScheduleHandler exportScheduleHandler;
     @Nullable private SessionProvider sessionProvider;
 
+    @NonNull
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
                 W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance());
     }
 
-    public static OpenTelemetryRumBuilder create(Context context, OtelRumConfig config) {
+    public static OpenTelemetryRumBuilder create(
+            @NonNull Context context, @NonNull OtelRumConfig config) {
         return new OpenTelemetryRumBuilder(context, config);
     }
 
-    OpenTelemetryRumBuilder(Context context, OtelRumConfig config) {
+    OpenTelemetryRumBuilder(@NonNull Context context, @NonNull OtelRumConfig config) {
         this.context = context;
         this.resource = AndroidResource.createDefault(context);
         this.config = config;
@@ -128,7 +148,8 @@ public final class OpenTelemetryRumBuilder {
      *
      * @return {@code this}
      */
-    public OpenTelemetryRumBuilder setResource(Resource resource) {
+    @NonNull
+    public OpenTelemetryRumBuilder setResource(@NonNull Resource resource) {
         this.resource = resource;
         return this;
     }
@@ -140,7 +161,8 @@ public final class OpenTelemetryRumBuilder {
      *
      * @return {@code this}
      */
-    public OpenTelemetryRumBuilder mergeResource(Resource resource) {
+    @NonNull
+    public OpenTelemetryRumBuilder mergeResource(@NonNull Resource resource) {
         this.resource = this.resource.merge(resource);
         return this;
     }
@@ -158,8 +180,11 @@ public final class OpenTelemetryRumBuilder {
      *
      * @return {@code this}
      */
+    @NonNull
     public OpenTelemetryRumBuilder addTracerProviderCustomizer(
-            BiFunction<SdkTracerProviderBuilder, Context, SdkTracerProviderBuilder> customizer) {
+            @NonNull
+                    BiFunction<SdkTracerProviderBuilder, Context, SdkTracerProviderBuilder>
+                            customizer) {
         tracerProviderCustomizers.add(customizer);
         return this;
     }
@@ -177,8 +202,11 @@ public final class OpenTelemetryRumBuilder {
      *
      * @return {@code this}
      */
+    @NonNull
     public OpenTelemetryRumBuilder addMeterProviderCustomizer(
-            BiFunction<SdkMeterProviderBuilder, Context, SdkMeterProviderBuilder> customizer) {
+            @NonNull
+                    BiFunction<SdkMeterProviderBuilder, Context, SdkMeterProviderBuilder>
+                            customizer) {
         meterProviderCustomizers.add(customizer);
         return this;
     }
@@ -196,8 +224,11 @@ public final class OpenTelemetryRumBuilder {
      *
      * @return {@code this}
      */
+    @NonNull
     public OpenTelemetryRumBuilder addLoggerProviderCustomizer(
-            BiFunction<SdkLoggerProviderBuilder, Context, SdkLoggerProviderBuilder> customizer) {
+            @NonNull
+                    BiFunction<SdkLoggerProviderBuilder, Context, SdkLoggerProviderBuilder>
+                            customizer) {
         loggerProviderCustomizers.add(customizer);
         return this;
     }
@@ -207,7 +238,9 @@ public final class OpenTelemetryRumBuilder {
      *
      * @return {@code this}
      */
-    public OpenTelemetryRumBuilder addInstrumentation(AndroidInstrumentation instrumentation) {
+    @NonNull
+    public OpenTelemetryRumBuilder addInstrumentation(
+            @NonNull AndroidInstrumentation instrumentation) {
         instrumentations.add(instrumentation);
         return this;
     }
@@ -220,8 +253,11 @@ public final class OpenTelemetryRumBuilder {
      *
      * <p>Multiple calls will execute the customizers in order.
      */
+    @NonNull
     public OpenTelemetryRumBuilder addPropagatorCustomizer(
-            Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer) {
+            @NonNull
+                    Function<? super TextMapPropagator, ? extends TextMapPropagator>
+                            propagatorCustomizer) {
         requireNonNull(propagatorCustomizer, "propagatorCustomizer");
         Function<? super TextMapPropagator, ? extends TextMapPropagator> existing =
                 this.propagatorCustomizer;
@@ -239,8 +275,10 @@ public final class OpenTelemetryRumBuilder {
      *
      * <p>Multiple calls will execute the customizers in order.
      */
+    @NonNull
     public OpenTelemetryRumBuilder addSpanExporterCustomizer(
-            Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer) {
+            @NonNull
+                    Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer) {
         requireNonNull(spanExporterCustomizer, "spanExporterCustomizer");
         Function<? super SpanExporter, ? extends SpanExporter> existing =
                 this.spanExporterCustomizer;
@@ -258,8 +296,11 @@ public final class OpenTelemetryRumBuilder {
      *
      * <p>Multiple calls will execute the customizers in order.
      */
+    @NonNull
     public OpenTelemetryRumBuilder addMetricExporterCustomizer(
-            Function<? super MetricExporter, ? extends MetricExporter> metricExporterCustomizer) {
+            @NonNull
+                    Function<? super MetricExporter, ? extends MetricExporter>
+                            metricExporterCustomizer) {
         requireNonNull(metricExporterCustomizer, "metricExporterCustomizer");
         Function<? super MetricExporter, ? extends MetricExporter> existing =
                 this.metricExporterCustomizer;
@@ -277,9 +318,11 @@ public final class OpenTelemetryRumBuilder {
      *
      * <p>Multiple calls will execute the customizers in order.
      */
+    @NonNull
     public OpenTelemetryRumBuilder addLogRecordExporterCustomizer(
-            Function<? super LogRecordExporter, ? extends LogRecordExporter>
-                    logRecordExporterCustomizer) {
+            @NonNull
+                    Function<? super LogRecordExporter, ? extends LogRecordExporter>
+                            logRecordExporterCustomizer) {
         Function<? super LogRecordExporter, ? extends LogRecordExporter> existing =
                 this.logRecordExporterCustomizer;
         this.logRecordExporterCustomizer =
@@ -299,6 +342,7 @@ public final class OpenTelemetryRumBuilder {
      *
      * @return A new {@link OpenTelemetryRum} instance.
      */
+    @NonNull
     public OpenTelemetryRum build() {
         Services services = Services.get(context);
         InitializationEvents initializationEvents = InitializationEvents.get();
@@ -355,11 +399,11 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private void initializeExporters(
-            Services services,
-            InitializationEvents initializationEvents,
-            BufferDelegatingSpanExporter bufferDelegatingSpanExporter,
-            BufferDelegatingLogExporter bufferedDelegatingLogExporter,
-            BufferDelegatingMetricExporter bufferDelegatingMetricExporter) {
+            @NonNull Services services,
+            @NonNull InitializationEvents initializationEvents,
+            @NonNull BufferDelegatingSpanExporter bufferDelegatingSpanExporter,
+            @NonNull BufferDelegatingLogExporter bufferedDelegatingLogExporter,
+            @NonNull BufferDelegatingMetricExporter bufferDelegatingMetricExporter) {
 
         DiskBufferingConfig diskBufferingConfig = config.getDiskBufferingConfig();
         SpanExporter spanExporter = buildSpanExporter();
@@ -413,6 +457,7 @@ public final class OpenTelemetryRumBuilder {
      * Sets a scheduler that will take care of periodically read data stored in disk and export it.
      * If not specified, the default schedule exporter will be used.
      */
+    @NonNull
     public OpenTelemetryRumBuilder setExportScheduleHandler(
             @NonNull ExportScheduleHandler exportScheduleHandler) {
         requireNonNull(exportScheduleHandler, "exportScheduleHandler cannot be null");
@@ -420,7 +465,8 @@ public final class OpenTelemetryRumBuilder {
         return this;
     }
 
-    private FileStorageConfiguration createStorageConfiguration(DiskManager diskManager)
+    @NonNull
+    private FileStorageConfiguration createStorageConfiguration(@NonNull DiskManager diskManager)
             throws IOException {
         DiskBufferingConfig config = this.config.getDiskBufferingConfig();
         return FileStorageConfiguration.builder()
@@ -433,7 +479,7 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private void scheduleDiskTelemetryReader(
-            Services services, @Nullable SignalFromDiskExporter signalExporter) {
+            @NonNull Services services, @Nullable SignalFromDiskExporter signalExporter) {
         if (exportScheduleHandler == null) {
             // TODO: Is it safe to get the work service yet here? If so, we can
             // avoid all this lazy supplier stuff....
@@ -466,13 +512,16 @@ public final class OpenTelemetryRumBuilder {
      * @param callback - A callback that receives the OpenTelemetry SDK instance.
      * @return this
      */
-    public OpenTelemetryRumBuilder addOtelSdkReadyListener(Consumer<OpenTelemetrySdk> callback) {
+    @NonNull
+    public OpenTelemetryRumBuilder addOtelSdkReadyListener(
+            @NonNull Consumer<OpenTelemetrySdk> callback) {
         otelSdkReadyListeners.add(callback);
         return this;
     }
 
     /** Leverage the configuration to wire up various instrumentation components. */
-    private void applyConfiguration(Services services, InitializationEvents initializationEvents) {
+    private void applyConfiguration(
+            @NonNull Services services, @NonNull InitializationEvents initializationEvents) {
         if (config.shouldGenerateSdkInitializationEvents()) {
             initializationEvents.recordConfiguration(config);
         }
@@ -526,8 +575,11 @@ public final class OpenTelemetryRumBuilder {
         }
     }
 
+    @NonNull
     private SdkTracerProvider buildTracerProvider(
-            SessionProvider sessionProvider, Context context, SpanExporter spanExporter) {
+            @NonNull SessionProvider sessionProvider,
+            @NonNull Context context,
+            @NonNull SpanExporter spanExporter) {
         SdkTracerProviderBuilder tracerProviderBuilder =
                 SdkTracerProvider.builder()
                         .setResource(resource)
@@ -543,8 +595,11 @@ public final class OpenTelemetryRumBuilder {
         return tracerProviderBuilder.build();
     }
 
+    @NonNull
     private SdkLoggerProvider buildLoggerProvider(
-            SessionProvider sessionProvider, Context context, LogRecordExporter logsExporter) {
+            @NonNull SessionProvider sessionProvider,
+            @NonNull Context context,
+            @NonNull LogRecordExporter logsExporter) {
         SdkLoggerProviderBuilder loggerProviderBuilder =
                 SdkLoggerProvider.builder()
                         .setResource(resource)
@@ -562,22 +617,27 @@ public final class OpenTelemetryRumBuilder {
         return loggerProviderBuilder.build();
     }
 
+    @NonNull
     private SpanExporter buildSpanExporter() {
         SpanExporter defaultExporter = LoggingSpanExporter.create();
         return spanExporterCustomizer.apply(defaultExporter);
     }
 
+    @NonNull
     private MetricExporter buildMetricExporter() {
         MetricExporter defaultExporter = LoggingMetricExporter.create();
         return metricExporterCustomizer.apply(defaultExporter);
     }
 
+    @NonNull
     private LogRecordExporter buildLogsExporter() {
         LogRecordExporter defaultExporter = SystemOutLogRecordExporter.create();
         return logRecordExporterCustomizer.apply(defaultExporter);
     }
 
-    private SdkMeterProvider buildMeterProvider(Context context, MetricExporter metricExporter) {
+    @NonNull
+    private SdkMeterProvider buildMeterProvider(
+            @NonNull Context context, @NonNull MetricExporter metricExporter) {
         MetricReader reader = PeriodicMetricReader.create(metricExporter);
         SdkMeterProviderBuilder meterProviderBuilder =
                 SdkMeterProvider.builder().registerMetricReader(reader).setResource(resource);
@@ -588,6 +648,7 @@ public final class OpenTelemetryRumBuilder {
         return meterProviderBuilder.build();
     }
 
+    @NonNull
     private ContextPropagators buildFinalPropagators() {
         TextMapPropagator defaultPropagator = buildDefaultPropagator();
         return ContextPropagators.create(propagatorCustomizer.apply(defaultPropagator));
