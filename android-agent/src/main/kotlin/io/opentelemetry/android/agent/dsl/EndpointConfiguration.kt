@@ -23,5 +23,5 @@ class EndpointConfiguration internal constructor(
     /**
      * Compression algorithm.
      */
-    var compression: Compression = Compression.GZIP,
+    var compression: Compression? = null,
 )
