@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.instrumentation.agent.spanannotation.advice.method
 
 import io.opentelemetry.api.trace.Span
@@ -6,18 +11,17 @@ import net.bytebuddy.asm.Advice
 import java.lang.reflect.Method
 
 object SpanAttributeMethodAdvice {
-
     @JvmStatic
     @Advice.OnMethodEnter(suppress = Throwable::class)
     fun onEnter(
         @Advice.AllArguments args: Array<Any?>,
-        @Advice.Origin method: Method
+        @Advice.Origin method: Method,
     ) {
         HelperFunctions.argAsAttribute(
             Span.current(),
             method.parameterAnnotations,
             args,
-            method.name
+            method.name,
         )
     }
 }

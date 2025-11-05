@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.instrumentation.library.spanannotation
 
 import io.opentelemetry.api.trace.Span
@@ -7,13 +12,16 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlin.text.ifEmpty
 
 object HelperFunctions {
-
     @JvmStatic
-    fun startSpan(withSpan: WithSpan, name: String): Pair<Span, Scope> {
-        val spanBuilder = SpanAnnotationInstrumentation
-            .tracer
-            .spanBuilder(withSpan.value.ifEmpty { name })
-            .setSpanKind(withSpan.kind)
+    fun startSpan(
+        withSpan: WithSpan,
+        name: String,
+    ): Pair<Span, Scope> {
+        val spanBuilder =
+            SpanAnnotationInstrumentation
+                .tracer
+                .spanBuilder(withSpan.value.ifEmpty { name })
+                .setSpanKind(withSpan.kind)
 
         if (!withSpan.inheritContext) {
             spanBuilder.setNoParent()
@@ -26,7 +34,10 @@ object HelperFunctions {
     }
 
     @JvmStatic
-    fun stopSpan(spanPair: Pair<Span, Scope>, throwable: Throwable?) {
+    fun stopSpan(
+        spanPair: Pair<Span, Scope>,
+        throwable: Throwable?,
+    ) {
         spanPair.let { (span, scope) ->
             throwable?.let {
                 span.recordException(throwable)
@@ -38,11 +49,17 @@ object HelperFunctions {
     }
 
     @JvmStatic
-    fun argAsAttribute(span: Span, parameterAnnotations:  Array<Array<Annotation>>, args: Array<Any?>, name: String) {
+    fun argAsAttribute(
+        span: Span,
+        parameterAnnotations: Array<Array<Annotation>>,
+        args: Array<Any?>,
+        name: String,
+    ) {
         args.forEachIndexed { index, arg ->
             parameterAnnotations[index]
                 .filterIsInstance<SpanAttribute>()
-                .firstOrNull()?.let { spanAttribute ->
+                .firstOrNull()
+                ?.let { spanAttribute ->
                     val attributeKey = spanAttribute.value.takeIf { it.isNotEmpty() } ?: "arg${index}_$name"
                     span.setAttribute(attributeKey, arg.toString())
                 }
@@ -50,7 +67,11 @@ object HelperFunctions {
     }
 
     @JvmStatic
-    fun argsAsAttributes(span: Span, args: Array<Any?>, name: String) {
+    fun argsAsAttributes(
+        span: Span,
+        args: Array<Any?>,
+        name: String,
+    ) {
         args.forEachIndexed { index, arg ->
             val attributeKey = "arg${index}_$name"
             span.setAttribute(attributeKey, arg.toString())
