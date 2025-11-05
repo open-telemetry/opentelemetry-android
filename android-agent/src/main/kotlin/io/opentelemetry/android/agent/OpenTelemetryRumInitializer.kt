@@ -9,6 +9,7 @@ import android.app.Application
 import android.content.Context
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.android.agent.connectivity.Compression
 import io.opentelemetry.android.agent.dsl.OpenTelemetryConfiguration
 import io.opentelemetry.android.agent.session.SessionConfig
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
@@ -65,21 +66,30 @@ object OpenTelemetryRumInitializer {
                     .builder()
                     .setEndpoint(spansEndpoint.getUrl())
                     .setHeaders(spansEndpoint::getHeaders)
+                    .setCompression(spansEndpoint.getCompression().getUpstreamName())
                     .build()
             }.addLogRecordExporterCustomizer {
                 OtlpHttpLogRecordExporter
                     .builder()
                     .setEndpoint(logsEndpoints.getUrl())
                     .setHeaders(logsEndpoints::getHeaders)
+                    .setCompression(logsEndpoints.getCompression().getUpstreamName())
                     .build()
             }.addMetricExporterCustomizer {
                 OtlpHttpMetricExporter
                     .builder()
                     .setEndpoint(metricsEndpoint.getUrl())
                     .setHeaders(metricsEndpoint::getHeaders)
+                    .setCompression(metricsEndpoint.getCompression().getUpstreamName())
                     .build()
             }.build()
     }
+
+    private fun Compression.getUpstreamName(): String =
+        when (this) {
+            Compression.GZIP -> "gzip"
+            else -> "none"
+        }
 
     private fun createSessionProvider(
         context: Context,
