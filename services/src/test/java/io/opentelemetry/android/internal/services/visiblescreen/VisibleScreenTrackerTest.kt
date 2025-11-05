@@ -11,47 +11,46 @@ import android.app.Application.ActivityLifecycleCallbacks
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
+import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentCaptor
-import org.mockito.Mockito
+import org.junit.jupiter.api.extension.ExtendWith
 
+@ExtendWith(MockKExtension::class)
 internal class VisibleScreenTrackerTest {
+    @RelaxedMockK
     private lateinit var application: Application
-
-    @BeforeEach
-    fun setUp() {
-        application = Mockito.mock()
-    }
 
     @Test
     fun verifyInitializationAndClose() {
         val visibleScreenTracker = this.visibleScreenService
-        val callbacksCaptor =
-            ArgumentCaptor.captor<ActivityLifecycleCallbacks?>()
+        val callbacksCaptors: MutableList<ActivityLifecycleCallbacks> = mutableListOf()
 
-        Mockito
-            .verify(application, Mockito.times(2))
-            .registerActivityLifecycleCallbacks(callbacksCaptor.capture())
-        val callbacks = callbacksCaptor.getAllValues()
-        assertEquals(2, callbacks.size)
+        verify(exactly = 2) {
+            application.registerActivityLifecycleCallbacks(
+                capture(
+                    callbacksCaptors,
+                ),
+            )
+        }
+        assertEquals(2, callbacksCaptors.size)
 
         // Closing
         visibleScreenTracker.close()
-        Mockito
-            .verify(application)
-            .unregisterActivityLifecycleCallbacks(callbacks[0])
-        Mockito
-            .verify(application)
-            .unregisterActivityLifecycleCallbacks(callbacks[1])
+
+        verify { application.unregisterActivityLifecycleCallbacks(callbacksCaptors[0]) }
+        verify { application.unregisterActivityLifecycleCallbacks(callbacksCaptors[1]) }
     }
 
     @Test
     fun activityLifecycle() {
         val visibleScreenTracker = this.visibleScreenService
-        val activity = Mockito.mock(Activity::class.java)
+        val activity = mockk<Activity>()
 
         assertEquals("unknown", visibleScreenTracker.currentlyVisibleScreen)
 
@@ -73,7 +72,7 @@ internal class VisibleScreenTrackerTest {
     @Test
     fun fragmentLifecycle() {
         val visibleScreenTracker = this.visibleScreenService
-        val fragment = Mockito.mock(Fragment::class.java)
+        val fragment = mockk<Fragment>()
 
         assertEquals("unknown", visibleScreenTracker.currentlyVisibleScreen)
 
@@ -95,8 +94,8 @@ internal class VisibleScreenTrackerTest {
     @Test
     fun fragmentLifecycle_navHostIgnored() {
         val visibleScreenTracker = this.visibleScreenService
-        val fragment = Mockito.mock(Fragment::class.java)
-        val navHostFragment = Mockito.mock(NavHostFragment::class.java)
+        val fragment = mockk<Fragment>()
+        val navHostFragment = mockk<NavHostFragment>()
 
         assertEquals("unknown", visibleScreenTracker.currentlyVisibleScreen)
 
@@ -120,8 +119,8 @@ internal class VisibleScreenTrackerTest {
     @Test
     fun fragmentLifecycle_dialogFragment() {
         val visibleScreenTracker = this.visibleScreenService
-        val fragment = Mockito.mock(Fragment::class.java)
-        val dialogFragment = Mockito.mock(DialogFragment::class.java)
+        val fragment = mockk<Fragment>()
+        val dialogFragment = mockk<DialogFragment>()
 
         assertEquals("unknown", visibleScreenTracker.currentlyVisibleScreen)
 
@@ -150,8 +149,8 @@ internal class VisibleScreenTrackerTest {
     @Test
     fun fragmentWinsOverActivityLifecycle() {
         val visibleScreenTracker = this.visibleScreenService
-        val activity = Mockito.mock(Activity::class.java)
-        val fragment = Mockito.mock(Fragment::class.java)
+        val activity = mockk<Activity>()
+        val fragment = mockk<Fragment>()
 
         assertEquals("unknown", visibleScreenTracker.currentlyVisibleScreen)
 

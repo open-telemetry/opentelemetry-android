@@ -35,41 +35,43 @@ import android.telephony.TelephonyManager.NETWORK_TYPE_UMTS
 import android.telephony.TelephonyManager.NETWORK_TYPE_UNKNOWN
 import androidx.core.content.ContextCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.MockedStatic
-import org.mockito.Mockito
 import org.robolectric.annotation.Config
 
 @RunWith(AndroidJUnit4::class)
 class NetworkUtilsTest {
     private lateinit var context: Context
-    private lateinit var contextCompatMock: MockedStatic<ContextCompat>
+    private lateinit var contextCompatMock: ContextCompat
 
     @Before
     fun setUp() {
-        context = Mockito.mock(Context::class.java)
-        contextCompatMock = Mockito.mockStatic(ContextCompat::class.java)
+        context = mockk<Context>()
+        mockkStatic(ContextCompat::class)
+        contextCompatMock = mockk<ContextCompat>()
     }
 
     @After
     fun tearDown() {
-        contextCompatMock.close()
+        unmockkStatic(ContextCompat::class)
     }
 
     @Test
     @Config(sdk = [Build.VERSION_CODES.M])
     fun testHasPhoneStatePermissionGranted_preApi33() {
-        contextCompatMock
-            .`when`<Int> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    READ_PHONE_STATE,
-                )
-            }.thenReturn(PERMISSION_GRANTED)
+        every {
+            ContextCompat.checkSelfPermission(
+                context,
+                READ_PHONE_STATE,
+            )
+        } returns PERMISSION_GRANTED
 
         val result = hasPhoneStatePermission(context)
         assertThat(result).isTrue()
@@ -78,13 +80,12 @@ class NetworkUtilsTest {
     @Test
     @Config(sdk = [Build.VERSION_CODES.M])
     fun testHasPhoneStatePermissionDenied_preApi33() {
-        contextCompatMock
-            .`when`<Int> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    READ_PHONE_STATE,
-                )
-            }.thenReturn(PERMISSION_DENIED)
+        every {
+            ContextCompat.checkSelfPermission(
+                context,
+                READ_PHONE_STATE,
+            )
+        } returns PERMISSION_DENIED
 
         val result = hasPhoneStatePermission(context)
         assertThat(result).isFalse()
@@ -94,21 +95,19 @@ class NetworkUtilsTest {
     @Config(sdk = [Build.VERSION_CODES.TIRAMISU])
     fun testHasPhoneStatePermissionWithBasicPermission_api33() {
         // Deny READ_PHONE_STATE but grant READ_BASIC_PHONE_STATE
-        contextCompatMock
-            .`when`<Int> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    READ_PHONE_STATE,
-                )
-            }.thenReturn(PERMISSION_DENIED)
+        every {
+            ContextCompat.checkSelfPermission(
+                context,
+                READ_PHONE_STATE,
+            )
+        } returns PERMISSION_DENIED
 
-        contextCompatMock
-            .`when`<Int> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    READ_BASIC_PHONE_STATE,
-                )
-            }.thenReturn(PERMISSION_GRANTED)
+        every {
+            ContextCompat.checkSelfPermission(
+                context,
+                READ_BASIC_PHONE_STATE,
+            )
+        } returns PERMISSION_GRANTED
 
         val result = hasPhoneStatePermission(context)
         assertThat(result).isTrue()
@@ -118,21 +117,19 @@ class NetworkUtilsTest {
     @Config(sdk = [Build.VERSION_CODES.TIRAMISU])
     fun testHasPhoneStatePermissionWithFullPermission_api33() {
         // Grant READ_PHONE_STATE, deny READ_BASIC_PHONE_STATE
-        contextCompatMock
-            .`when`<Int> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    READ_PHONE_STATE,
-                )
-            }.thenReturn(PERMISSION_GRANTED)
+        every {
+            ContextCompat.checkSelfPermission(
+                context,
+                READ_PHONE_STATE,
+            )
+        } returns PERMISSION_GRANTED
 
-        contextCompatMock
-            .`when`<Int> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    READ_BASIC_PHONE_STATE,
-                )
-            }.thenReturn(PERMISSION_DENIED)
+        every {
+            ContextCompat.checkSelfPermission(
+                context,
+                READ_BASIC_PHONE_STATE,
+            )
+        } returns PERMISSION_DENIED
 
         val result = hasPhoneStatePermission(context)
         assertThat(result).isTrue()
@@ -142,21 +139,19 @@ class NetworkUtilsTest {
     @Config(sdk = [Build.VERSION_CODES.TIRAMISU])
     fun testHasPhoneStatePermissionWithBothPermissions_api33() {
         // Grant both permissions
-        contextCompatMock
-            .`when`<Int> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    READ_PHONE_STATE,
-                )
-            }.thenReturn(PERMISSION_GRANTED)
+        every {
+            ContextCompat.checkSelfPermission(
+                context,
+                READ_PHONE_STATE,
+            )
+        } returns PERMISSION_GRANTED
 
-        contextCompatMock
-            .`when`<Int> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    READ_BASIC_PHONE_STATE,
-                )
-            }.thenReturn(PERMISSION_GRANTED)
+        every {
+            ContextCompat.checkSelfPermission(
+                context,
+                READ_BASIC_PHONE_STATE,
+            )
+        } returns PERMISSION_GRANTED
 
         val result = hasPhoneStatePermission(context)
         assertThat(result).isTrue()
@@ -166,21 +161,19 @@ class NetworkUtilsTest {
     @Config(sdk = [Build.VERSION_CODES.TIRAMISU])
     fun testHasPhoneStatePermissionWithoutAnyPermission_api33() {
         // Deny both permissions
-        contextCompatMock
-            .`when`<Int> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    READ_PHONE_STATE,
-                )
-            }.thenReturn(PERMISSION_DENIED)
+        every {
+            ContextCompat.checkSelfPermission(
+                context,
+                READ_PHONE_STATE,
+            )
+        } returns PERMISSION_DENIED
 
-        contextCompatMock
-            .`when`<Int> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    READ_BASIC_PHONE_STATE,
-                )
-            }.thenReturn(PERMISSION_DENIED)
+        every {
+            ContextCompat.checkSelfPermission(
+                context,
+                READ_BASIC_PHONE_STATE,
+            )
+        } returns PERMISSION_DENIED
 
         val result = hasPhoneStatePermission(context)
         assertThat(result).isFalse()
@@ -188,11 +181,9 @@ class NetworkUtilsTest {
 
     @Test
     fun testHasTelephonyFeatureTrue() {
-        val packageManager = Mockito.mock(PackageManager::class.java)
-        Mockito.`when`(context.packageManager).thenReturn(packageManager)
-        Mockito
-            .`when`(packageManager.hasSystemFeature(FEATURE_TELEPHONY))
-            .thenReturn(true)
+        val packageManager = mockk<PackageManager>()
+        every { context.packageManager } returns packageManager
+        every { packageManager.hasSystemFeature(FEATURE_TELEPHONY) } returns true
 
         val result = hasTelephonyFeature(context)
         assertThat(result).isTrue()
@@ -200,11 +191,9 @@ class NetworkUtilsTest {
 
     @Test
     fun testHasTelephonyFeatureFalse() {
-        val packageManager = Mockito.mock(PackageManager::class.java)
-        Mockito.`when`(context.packageManager).thenReturn(packageManager)
-        Mockito
-            .`when`(packageManager.hasSystemFeature(FEATURE_TELEPHONY))
-            .thenReturn(false)
+        val packageManager = mockk<PackageManager>()
+        every { context.packageManager } returns packageManager
+        every { packageManager.hasSystemFeature(FEATURE_TELEPHONY) } returns false
 
         val result = hasTelephonyFeature(context)
         assertThat(result).isFalse()

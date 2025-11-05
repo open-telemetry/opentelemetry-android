@@ -5,6 +5,11 @@
 
 package io.opentelemetry.android.export
 
+import io.mockk.every
+import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.junit5.MockKExtension
+import io.mockk.slot
+import io.mockk.verify
 import io.opentelemetry.android.export.TestSpanHelper.span
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
@@ -18,21 +23,15 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.ArgumentCaptor
-import org.mockito.Captor
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.junit.jupiter.MockitoExtension
 import java.util.function.Function
 import java.util.function.Predicate
 
-@ExtendWith(MockitoExtension::class)
+@ExtendWith(MockKExtension::class)
 internal class SpanDataModifierTest {
-    @Mock
+    @RelaxedMockK
     private lateinit var delegate: SpanExporter
 
-    @Captor
-    private lateinit var spansCaptor: ArgumentCaptor<MutableCollection<SpanData>>
+    private val spansCaptor = slot<MutableCollection<SpanData>>()
 
     @Test
     fun shouldRejectSpansByName() {
@@ -50,9 +49,7 @@ internal class SpanDataModifierTest {
         val span4 = span("span4")
 
         val expectedResult = CompletableResultCode()
-        Mockito
-            .`when`(delegate.export(spansCaptor.capture()))
-            .thenReturn(expectedResult)
+        every { delegate.export(capture(spansCaptor)) } returns expectedResult
 
         // when
         val result = underTest.export(listOf(span1, span2, span3, span4))
@@ -60,7 +57,7 @@ internal class SpanDataModifierTest {
         // then
         assertSame(expectedResult, result)
 
-        assertThat(spansCaptor.getValue())
+        assertThat(spansCaptor.captured)
             .satisfiesExactly(
                 ThrowingConsumer {
                     OpenTelemetryAssertions.assertThat(it).hasName(span1.name)
@@ -102,9 +99,7 @@ internal class SpanDataModifierTest {
             span("span", Attributes.of(ATTRIBUTE, "pass", LONG_ATTRIBUTE, 123L))
 
         val expectedResult = CompletableResultCode()
-        Mockito
-            .`when`(delegate.export(spansCaptor.capture()))
-            .thenReturn(expectedResult)
+        every { delegate.export(capture(spansCaptor)) } returns expectedResult
 
         // when
         val result =
@@ -121,7 +116,7 @@ internal class SpanDataModifierTest {
         // then
         assertSame(expectedResult, result)
 
-        assertThat(spansCaptor.getValue())
+        assertThat(spansCaptor.captured)
             .satisfiesExactly(
                 ThrowingConsumer {
                     OpenTelemetryAssertions
@@ -160,9 +155,7 @@ internal class SpanDataModifierTest {
             )
 
         val expectedResult = CompletableResultCode()
-        Mockito
-            .`when`(delegate.export(spansCaptor.capture()))
-            .thenReturn(expectedResult)
+        every { delegate.export(capture(spansCaptor)) } returns expectedResult
 
         // when
         val result = underTest.export(listOf(span1, span2))
@@ -170,7 +163,7 @@ internal class SpanDataModifierTest {
         // then
         assertSame(expectedResult, result)
 
-        val exportedSpans = spansCaptor.getValue().toList()
+        val exportedSpans = spansCaptor.captured.toList()
         assertEquals(2, exportedSpans.size)
         assertEquals("first", exportedSpans[0].name)
         assertEquals(
@@ -210,9 +203,7 @@ internal class SpanDataModifierTest {
         val span2 = span("second", Attributes.of(OTHER_ATTRIBUTE, "test"))
 
         val expectedResult = CompletableResultCode()
-        Mockito
-            .`when`(delegate.export(spansCaptor.capture()))
-            .thenReturn(expectedResult)
+        every { delegate.export(capture(spansCaptor)) } returns expectedResult
 
         // when
         val result = underTest.export(listOf(span1, span2))
@@ -220,7 +211,7 @@ internal class SpanDataModifierTest {
         // then
         assertSame(expectedResult, result)
 
-        val exportedSpans = spansCaptor.getValue().toList()
+        val exportedSpans = spansCaptor.captured.toList()
         assertEquals(2, exportedSpans.size)
         assertEquals("first", exportedSpans[0].name)
         assertEquals(
@@ -247,9 +238,7 @@ internal class SpanDataModifierTest {
             span("first", Attributes.of(ATTRIBUTE, "test", LONG_ATTRIBUTE, 42L))
 
         val expectedResult = CompletableResultCode()
-        Mockito
-            .`when`(delegate.export(spansCaptor.capture()))
-            .thenReturn(expectedResult)
+        every { delegate.export(capture(spansCaptor)) } returns expectedResult
 
         // when
         val result = underTest.export(listOf(span))
@@ -257,7 +246,7 @@ internal class SpanDataModifierTest {
         // then
         assertSame(expectedResult, result)
 
-        val exportedSpans = spansCaptor.getValue().toList()
+        val exportedSpans = spansCaptor.captured.toList()
         assertEquals(1, exportedSpans.size)
         assertEquals("first", exportedSpans[0].name)
         assertEquals(
@@ -281,9 +270,7 @@ internal class SpanDataModifierTest {
         val span = span("span", Attributes.of(ATTRIBUTE, "test"))
 
         val expectedResult = CompletableResultCode()
-        Mockito
-            .`when`(delegate.export(spansCaptor.capture()))
-            .thenReturn(expectedResult)
+        every { delegate.export(capture(spansCaptor)) } returns expectedResult
 
         // when
         val result = underTest.export(listOf(span))
@@ -291,7 +278,7 @@ internal class SpanDataModifierTest {
         // then
         assertSame(expectedResult, result)
 
-        assertThat(spansCaptor.getValue())
+        assertThat(spansCaptor.captured)
             .satisfiesExactly(
                 ThrowingConsumer {
                     OpenTelemetryAssertions
@@ -307,10 +294,10 @@ internal class SpanDataModifierTest {
         val underTest = SpanDataModifier.builder(delegate).build()
 
         underTest.flush()
-        Mockito.verify(delegate).flush()
+        verify(exactly = 1) { delegate.flush() }
 
         underTest.shutdown()
-        Mockito.verify(delegate).shutdown()
+        verify(exactly = 1) { delegate.shutdown() }
     }
 
     private companion object {

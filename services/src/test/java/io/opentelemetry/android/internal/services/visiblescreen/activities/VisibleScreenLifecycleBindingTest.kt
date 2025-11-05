@@ -6,28 +6,25 @@
 package io.opentelemetry.android.internal.services.visiblescreen.activities
 
 import android.app.Activity
+import io.mockk.confirmVerified
+import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
+import io.mockk.verify
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.junit.jupiter.MockitoExtension
 
-@ExtendWith(MockitoExtension::class)
 internal class VisibleScreenLifecycleBindingTest {
-    @Mock
-    private lateinit var activity: Activity
+    private val activity: Activity = mockk()
 
-    @Mock
-    private lateinit var visibleScreenTracker: VisibleScreenTracker
+    private val visibleScreenTracker: VisibleScreenTracker = mockk(relaxed = true)
 
     @Test
     fun postResumed() {
         val underTest =
             VisibleScreenLifecycleBinding(visibleScreenTracker)
         underTest.onActivityPostResumed(activity)
-        Mockito.verify(visibleScreenTracker).activityResumed(activity)
-        Mockito.verifyNoMoreInteractions(visibleScreenTracker)
+        verify { visibleScreenTracker.activityResumed(activity) }
+        confirmVerified(visibleScreenTracker)
     }
 
     @Test
@@ -35,6 +32,6 @@ internal class VisibleScreenLifecycleBindingTest {
         val underTest =
             VisibleScreenLifecycleBinding(visibleScreenTracker)
         underTest.onActivityPrePaused(activity)
-        Mockito.verify(visibleScreenTracker).activityPaused(activity)
+        verify { visibleScreenTracker.activityPaused(activity) }
     }
 }

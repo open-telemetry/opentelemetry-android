@@ -10,15 +10,15 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import org.mockito.Mockito
+import io.mockk.mockk
 
 internal class FragmentCallbackTestHarness(
     private val callbacks: RumFragmentLifecycleCallbacks,
 ) {
     fun runFragmentCreationLifecycle(fragment: Fragment) {
-        val context = Mockito.mock(Context::class.java)
-        val fragmentManager = Mockito.mock(FragmentManager::class.java)
-        val bundle = Mockito.mock(Bundle::class.java)
+        val context = mockk<Context>()
+        val fragmentManager = mockk<FragmentManager>()
+        val bundle = mockk<Bundle>()
 
         callbacks.onFragmentPreAttached(fragmentManager, fragment, context)
         callbacks.onFragmentAttached(fragmentManager, fragment, context)
@@ -28,27 +28,27 @@ internal class FragmentCallbackTestHarness(
     }
 
     fun runFragmentRestoredLifecycle(fragment: Fragment) {
-        val fragmentManager = Mockito.mock(FragmentManager::class.java)
-        val bundle = Mockito.mock(Bundle::class.java)
-        val view = Mockito.mock(View::class.java)
+        val fragmentManager = mockk<FragmentManager>()
+        val bundle = mockk<Bundle>()
+        val view = mockk<View>()
         callbacks.onFragmentViewCreated(fragmentManager, fragment, view, bundle)
         callbacks.onFragmentStarted(fragmentManager, fragment)
         callbacks.onFragmentResumed(fragmentManager, fragment)
     }
 
     fun runFragmentResumedLifecycle(fragment: Fragment) {
-        val fragmentManager = Mockito.mock(FragmentManager::class.java)
+        val fragmentManager = mockk<FragmentManager>()
         callbacks.onFragmentResumed(fragmentManager, fragment)
     }
 
     fun runFragmentPausedLifecycle(fragment: Fragment) {
-        val fragmentManager = Mockito.mock(FragmentManager::class.java)
+        val fragmentManager = mockk<FragmentManager>()
         callbacks.onFragmentPaused(fragmentManager, fragment)
         callbacks.onFragmentStopped(fragmentManager, fragment)
     }
 
     fun runFragmentDetachedFromActiveLifecycle(fragment: Fragment) {
-        val fragmentManager = Mockito.mock(FragmentManager::class.java)
+        val fragmentManager = mockk<FragmentManager>()
 
         runFragmentPausedLifecycle(fragment)
         callbacks.onFragmentViewDestroyed(fragmentManager, fragment)
@@ -57,13 +57,13 @@ internal class FragmentCallbackTestHarness(
     }
 
     fun runFragmentViewDestroyedFromStoppedLifecycle(fragment: Fragment) {
-        val fragmentManager = Mockito.mock(FragmentManager::class.java)
+        val fragmentManager = mockk<FragmentManager>()
 
         callbacks.onFragmentViewDestroyed(fragmentManager, fragment)
     }
 
     fun runFragmentDetachedFromStoppedLifecycle(fragment: Fragment) {
-        val fragmentManager = Mockito.mock(FragmentManager::class.java)
+        val fragmentManager = mockk<FragmentManager>()
 
         runFragmentViewDestroyedFromStoppedLifecycle(fragment)
         callbacks.onFragmentDestroyed(fragmentManager, fragment)
@@ -71,7 +71,7 @@ internal class FragmentCallbackTestHarness(
     }
 
     fun runFragmentDetachedLifecycle(fragment: Fragment) {
-        val fragmentManager = Mockito.mock(FragmentManager::class.java)
+        val fragmentManager = mockk<FragmentManager>()
 
         callbacks.onFragmentDetached(fragmentManager, fragment)
     }
