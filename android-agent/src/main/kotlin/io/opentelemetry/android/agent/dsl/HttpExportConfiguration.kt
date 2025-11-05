@@ -30,18 +30,21 @@ class HttpExportConfiguration internal constructor() {
         HttpEndpointConnectivity.forTraces(
             chooseUrlSource(spansConfig),
             spansConfig.headers + baseHeaders,
+            spansConfig.compression,
         )
 
     internal fun logsEndpoint(): HttpEndpointConnectivity =
         HttpEndpointConnectivity.forLogs(
             chooseUrlSource(logsConfig),
             logsConfig.headers + baseHeaders,
+            logsConfig.compression,
         )
 
     internal fun metricsEndpoint(): HttpEndpointConnectivity =
         HttpEndpointConnectivity.forMetrics(
             chooseUrlSource(metricsConfig),
             metricsConfig.headers + baseHeaders,
+            metricsConfig.compression,
         )
 
     private fun chooseUrlSource(cfg: EndpointConfiguration): String = cfg.url.ifBlank { baseUrl }
