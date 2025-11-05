@@ -16,15 +16,15 @@ class OtelRumConfigTest {
     fun `no global attributes by default`() {
         val config = OtelRumConfig()
         assertThat(config.hasGlobalAttributes()).isFalse()
-        assertThat(config.globalAttributesSupplier.get().isEmpty).isTrue()
+        assertThat(config.getGlobalAttributesSupplier().get().isEmpty).isTrue()
     }
 
     @Test
     fun `setting null Attributes does nothing`() {
         val config = OtelRumConfig()
-        config.setGlobalAttributes(null as Attributes?)
+        config.setGlobalAttributes(null)
         assertThat(config.hasGlobalAttributes()).isFalse()
-        assertThat(config.globalAttributesSupplier.get().isEmpty).isTrue()
+        assertThat(config.getGlobalAttributesSupplier().get().isEmpty).isTrue()
     }
 
     @Test
@@ -32,7 +32,7 @@ class OtelRumConfigTest {
         val config = OtelRumConfig()
         config.setGlobalAttributes(Attributes.empty())
         assertThat(config.hasGlobalAttributes()).isFalse()
-        assertThat(config.globalAttributesSupplier.get().isEmpty).isTrue()
+        assertThat(config.getGlobalAttributesSupplier().get().isEmpty).isTrue()
     }
 
     @Test
@@ -40,7 +40,9 @@ class OtelRumConfigTest {
         val config = OtelRumConfig()
         config.setGlobalAttributes(Attributes.of(stringKey("foo"), "bar"))
         assertThat(config.hasGlobalAttributes()).isTrue()
-        assertThat(config.globalAttributesSupplier.get().get(stringKey("foo"))).isEqualTo("bar")
+        assertThat(
+            config.getGlobalAttributesSupplier().get().get(stringKey("foo")),
+        ).isEqualTo("bar")
     }
 
     @Test
@@ -48,7 +50,7 @@ class OtelRumConfigTest {
         val config = OtelRumConfig()
         config.setGlobalAttributes(null as Supplier<Attributes>?)
         assertThat(config.hasGlobalAttributes()).isFalse()
-        assertThat(config.globalAttributesSupplier.get().isEmpty).isTrue()
+        assertThat(config.getGlobalAttributesSupplier().get().isEmpty).isTrue()
     }
 
     @Test
@@ -56,15 +58,7 @@ class OtelRumConfigTest {
         val config = OtelRumConfig()
         config.setGlobalAttributes { Attributes.empty() }
         assertThat(config.hasGlobalAttributes()).isTrue() // It might return some Attributes later
-        assertThat(config.globalAttributesSupplier.get().isEmpty).isTrue()
-    }
-
-    @Test
-    fun `setting a Supplier that returns null attributes is fine`() {
-        val config = OtelRumConfig()
-        config.setGlobalAttributes { null }
-        assertThat(config.hasGlobalAttributes()).isTrue() // It might return some Attributes later
-        assertThat(config.globalAttributesSupplier.get()).isNull()
+        assertThat(config.getGlobalAttributesSupplier().get().isEmpty).isTrue()
     }
 
     @Test
@@ -72,6 +66,8 @@ class OtelRumConfigTest {
         val config = OtelRumConfig()
         config.setGlobalAttributes { Attributes.of(stringKey("foo"), "bar") }
         assertThat(config.hasGlobalAttributes()).isTrue()
-        assertThat(config.globalAttributesSupplier.get().get(stringKey("foo"))).isEqualTo("bar")
+        assertThat(
+            config.getGlobalAttributesSupplier().get().get(stringKey("foo")),
+        ).isEqualTo("bar")
     }
 }

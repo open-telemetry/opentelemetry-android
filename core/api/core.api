@@ -62,25 +62,25 @@ public final class io/opentelemetry/android/SessionIdRatioBasedSampler : io/open
 	public fun shouldSample (Lio/opentelemetry/context/Context;Ljava/lang/String;Ljava/lang/String;Lio/opentelemetry/api/trace/SpanKind;Lio/opentelemetry/api/common/Attributes;Ljava/util/List;)Lio/opentelemetry/sdk/trace/samplers/SamplingResult;
 }
 
-public class io/opentelemetry/android/config/OtelRumConfig {
+public final class io/opentelemetry/android/config/OtelRumConfig {
 	public fun <init> ()V
-	public fun allowInstrumentation (Ljava/lang/String;)Lio/opentelemetry/android/config/OtelRumConfig;
-	public fun disableInstrumentationDiscovery ()Lio/opentelemetry/android/config/OtelRumConfig;
-	public fun disableNetworkAttributes ()Lio/opentelemetry/android/config/OtelRumConfig;
-	public fun disableScreenAttributes ()Lio/opentelemetry/android/config/OtelRumConfig;
-	public fun disableSdkInitializationEvents ()Lio/opentelemetry/android/config/OtelRumConfig;
-	public fun getDiskBufferingConfig ()Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
-	public fun getGlobalAttributesSupplier ()Ljava/util/function/Supplier;
-	public fun hasGlobalAttributes ()Z
-	public fun isSuppressed (Ljava/lang/String;)Z
-	public fun setDiskBufferingConfig (Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;)Lio/opentelemetry/android/config/OtelRumConfig;
-	public fun setGlobalAttributes (Lio/opentelemetry/api/common/Attributes;)Lio/opentelemetry/android/config/OtelRumConfig;
-	public fun setGlobalAttributes (Ljava/util/function/Supplier;)Lio/opentelemetry/android/config/OtelRumConfig;
-	public fun shouldDiscoverInstrumentations ()Z
-	public fun shouldGenerateSdkInitializationEvents ()Z
-	public fun shouldIncludeNetworkAttributes ()Z
-	public fun shouldIncludeScreenAttributes ()Z
-	public fun suppressInstrumentation (Ljava/lang/String;)Lio/opentelemetry/android/config/OtelRumConfig;
+	public final fun allowInstrumentation (Ljava/lang/String;)Lio/opentelemetry/android/config/OtelRumConfig;
+	public final fun disableInstrumentationDiscovery ()Lio/opentelemetry/android/config/OtelRumConfig;
+	public final fun disableNetworkAttributes ()Lio/opentelemetry/android/config/OtelRumConfig;
+	public final fun disableScreenAttributes ()Lio/opentelemetry/android/config/OtelRumConfig;
+	public final fun disableSdkInitializationEvents ()Lio/opentelemetry/android/config/OtelRumConfig;
+	public final fun getDiskBufferingConfig ()Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public final fun getGlobalAttributesSupplier ()Ljava/util/function/Supplier;
+	public final fun hasGlobalAttributes ()Z
+	public final fun isSuppressed (Ljava/lang/String;)Z
+	public final fun setDiskBufferingConfig (Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;)Lio/opentelemetry/android/config/OtelRumConfig;
+	public final fun setGlobalAttributes (Lio/opentelemetry/api/common/Attributes;)Lio/opentelemetry/android/config/OtelRumConfig;
+	public final fun setGlobalAttributes (Ljava/util/function/Supplier;)Lio/opentelemetry/android/config/OtelRumConfig;
+	public final fun shouldDiscoverInstrumentations ()Z
+	public final fun shouldGenerateSdkInitializationEvents ()Z
+	public final fun shouldIncludeNetworkAttributes ()Z
+	public final fun shouldIncludeScreenAttributes ()Z
+	public final fun suppressInstrumentation (Ljava/lang/String;)Lio/opentelemetry/android/config/OtelRumConfig;
 }
 
 public final class io/opentelemetry/android/export/AttributeModifyingSpanExporter : io/opentelemetry/sdk/trace/export/SpanExporter {
