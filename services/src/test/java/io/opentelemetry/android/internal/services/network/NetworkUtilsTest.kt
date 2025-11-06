@@ -35,6 +35,7 @@ import android.telephony.TelephonyManager.NETWORK_TYPE_UMTS
 import android.telephony.TelephonyManager.NETWORK_TYPE_UNKNOWN
 import androidx.core.content.ContextCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -60,6 +61,7 @@ class NetworkUtilsTest {
 
     @After
     fun tearDown() {
+        clearAllMocks()
         unmockkStatic(ContextCompat::class)
     }
 

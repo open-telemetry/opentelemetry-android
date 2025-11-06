@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.export
 
+import io.mockk.CapturingSlot
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
@@ -21,6 +22,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.util.function.Function
@@ -30,8 +32,12 @@ import java.util.function.Predicate
 internal class SpanDataModifierTest {
     @RelaxedMockK
     private lateinit var delegate: SpanExporter
+    private lateinit var spansCaptor: CapturingSlot<MutableCollection<SpanData>>
 
-    private val spansCaptor = slot<MutableCollection<SpanData>>()
+    @BeforeEach
+    fun init() {
+        spansCaptor = slot<MutableCollection<SpanData>>()
+    }
 
     @Test
     fun shouldRejectSpansByName() {

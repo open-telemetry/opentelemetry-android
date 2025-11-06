@@ -7,8 +7,9 @@ package io.opentelemetry.android.instrumentation.anr
 
 import android.os.Looper
 import io.mockk.every
+import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
@@ -23,15 +24,17 @@ import java.util.concurrent.TimeUnit
 
 @ExtendWith(MockKExtension::class)
 internal class AnrDetectorTest {
-    private val mainLooper: Looper = mockk()
+    @MockK
+    private lateinit var mainLooper: Looper
 
-    private val scheduler: ScheduledExecutorService = mockk(relaxed = true)
+    @RelaxedMockK
+    private lateinit var scheduler: ScheduledExecutorService
 
+    @RelaxedMockK
     private lateinit var appLifecycle: AppLifecycle
 
     @Test
     fun shouldInstallInstrumentation() {
-        appLifecycle = mockk(relaxed = true)
         every { mainLooper.thread } returns Thread()
         val openTelemetry: OpenTelemetry = OpenTelemetrySdk.builder().build()
 

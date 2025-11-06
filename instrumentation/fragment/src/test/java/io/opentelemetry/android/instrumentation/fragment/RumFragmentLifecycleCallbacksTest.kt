@@ -36,15 +36,13 @@ internal class RumFragmentLifecycleCallbacksTest {
     private lateinit var visibleScreenTracker: VisibleScreenTracker
     private lateinit var tracer: Tracer
 
+    @RelaxedMockK
     private lateinit var screenNameExtractor: ScreenNameExtractor
 
     @BeforeEach
     fun setup() {
         tracer = otelTesting.openTelemetry.getTracer("testTracer")
-        screenNameExtractor =
-            mockk(relaxed = true) {
-                every { extract(any()) } returns "Fragment"
-            }
+        every { screenNameExtractor.extract(any()) } returns "Fragment"
         every { visibleScreenTracker.previouslyVisibleScreen } returns null
     }
 

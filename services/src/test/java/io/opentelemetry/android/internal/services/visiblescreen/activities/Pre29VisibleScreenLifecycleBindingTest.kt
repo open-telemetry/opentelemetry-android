@@ -7,9 +7,9 @@ package io.opentelemetry.android.internal.services.visiblescreen.activities
 
 import android.app.Activity
 import io.mockk.confirmVerified
+import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import org.junit.jupiter.api.Test
@@ -17,7 +17,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
 internal class Pre29VisibleScreenLifecycleBindingTest {
-    private val activity: Activity = mockk()
+    @MockK
+    private lateinit var activity: Activity
 
     @RelaxedMockK
     private lateinit var visibleScreenTracker: VisibleScreenTracker

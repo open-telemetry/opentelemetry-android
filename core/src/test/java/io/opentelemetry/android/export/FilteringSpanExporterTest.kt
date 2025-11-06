@@ -24,8 +24,6 @@ import java.util.function.Predicate
 
 @ExtendWith(MockKExtension::class)
 internal class FilteringSpanExporterTest {
-    private val spansCaptor = slot<MutableCollection<SpanData>>()
-
     @Test
     fun filter() {
         val span1 = span("one")
@@ -53,6 +51,7 @@ internal class FilteringSpanExporterTest {
         val exporter = mockk<SpanExporter>()
         val expectedResult = mockk<CompletableResultCode>()
 
+        val spansCaptor = slot<MutableCollection<SpanData>>()
         every { exporter.export(capture(spansCaptor)) } returns expectedResult
 
         val underTest =

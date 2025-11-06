@@ -9,12 +9,17 @@ import android.app.Activity
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import io.mockk.every
+import io.mockk.impl.annotations.MockK
+import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 
+@ExtendWith(MockKExtension::class)
 internal class RumFragmentActivityRegistererTest {
-    private val fragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks = mockk()
+    @MockK
+    private lateinit var fragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks
 
     @Test
     fun createHappyPath() {
