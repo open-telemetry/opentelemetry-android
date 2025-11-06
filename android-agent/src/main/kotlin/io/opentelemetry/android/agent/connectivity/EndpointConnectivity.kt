@@ -9,4 +9,6 @@ internal interface EndpointConnectivity {
     fun getUrl(): String
 
     fun getHeaders(): Map<String, String>
+
+    fun getCompression(): Compression
 }

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.agent.dsl
 
+import io.opentelemetry.android.agent.connectivity.Compression
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 
 /**
@@ -22,6 +23,11 @@ class HttpExportConfiguration internal constructor() {
      */
     var baseHeaders: Map<String, String> = emptyMap()
 
+    /**
+     * Default compression algorithm for all export requests.
+     */
+    var compression: Compression = Compression.GZIP
+
     private val spansConfig: EndpointConfiguration = EndpointConfiguration("")
     private val logsConfig: EndpointConfiguration = EndpointConfiguration("")
     private val metricsConfig: EndpointConfiguration = EndpointConfiguration("")
@@ -30,21 +36,26 @@ class HttpExportConfiguration internal constructor() {
         HttpEndpointConnectivity.forTraces(
             chooseUrlSource(spansConfig),
             spansConfig.headers + baseHeaders,
+            chooseCompression(spansConfig.compression),
         )
 
     internal fun logsEndpoint(): HttpEndpointConnectivity =
         HttpEndpointConnectivity.forLogs(
             chooseUrlSource(logsConfig),
             logsConfig.headers + baseHeaders,
+            chooseCompression(logsConfig.compression),
         )
 
     internal fun metricsEndpoint(): HttpEndpointConnectivity =
         HttpEndpointConnectivity.forMetrics(
             chooseUrlSource(metricsConfig),
             metricsConfig.headers + baseHeaders,
+            chooseCompression(metricsConfig.compression),
         )
 
     private fun chooseUrlSource(cfg: EndpointConfiguration): String = cfg.url.ifBlank { baseUrl }
+
+    private fun chooseCompression(signalConfigCompression: Compression?): Compression = signalConfigCompression ?: this.compression
 
     /**
      * Override the default configuration for the v1/traces endpoint only.

@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.agent.dsl
 
+import io.opentelemetry.android.agent.connectivity.Compression
+
 /**
  * Type-safe config DSL that controls the HTTP endpoint for telemetry exports.
  */
@@ -18,4 +20,8 @@ class EndpointConfiguration internal constructor(
      * Headers that should be attached to HTTP export requests.
      */
     var headers: Map<String, String> = emptyMap(),
+    /**
+     * Compression algorithm.
+     */
+    var compression: Compression? = null,
 )
