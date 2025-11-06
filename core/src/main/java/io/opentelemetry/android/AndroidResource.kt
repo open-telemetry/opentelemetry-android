@@ -7,10 +7,10 @@ package io.opentelemetry.android
 
 import android.content.Context
 import android.os.Build
-import io.opentelemetry.android.common.RumConstants.RUM_SDK_VERSION
 import io.opentelemetry.sdk.resources.Resource
 import io.opentelemetry.semconv.ServiceAttributes.SERVICE_NAME
 import io.opentelemetry.semconv.ServiceAttributes.SERVICE_VERSION
+import io.opentelemetry.semconv.TelemetryAttributes.TELEMETRY_SDK_VERSION
 import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MANUFACTURER
 import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER
 import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MODEL_NAME
@@ -31,7 +31,7 @@ object AndroidResource {
         appVersion?.let { resourceBuilder.put(SERVICE_VERSION, it) }
 
         return resourceBuilder
-            .put(RUM_SDK_VERSION, BuildConfig.OTEL_ANDROID_VERSION)
+            .put(TELEMETRY_SDK_VERSION, BuildConfig.OTEL_ANDROID_VERSION)
             .put(DEVICE_MODEL_NAME, Build.MODEL)
             .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)
             .put(DEVICE_MANUFACTURER, Build.MANUFACTURER)

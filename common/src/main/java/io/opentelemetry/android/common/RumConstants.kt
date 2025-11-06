@@ -20,9 +20,6 @@ object RumConstants {
     val START_TYPE_KEY: AttributeKey<String> = AttributeKey.stringKey("start.type")
 
     @JvmField
-    val RUM_SDK_VERSION: AttributeKey<String> = AttributeKey.stringKey("rum.sdk.version")
-
-    @JvmField
     val STORAGE_SPACE_FREE_KEY: AttributeKey<Long> = AttributeKey.longKey("storage.free")
 
     @JvmField
