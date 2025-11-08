@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.instrumentation.activity
 
+import android.app.Application
 import android.os.Build
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
@@ -22,6 +23,9 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
     private val startupTimer: AppStartupTimer by lazy { AppStartupTimer() }
     private var screenNameExtractor: ScreenNameExtractor = DefaultScreenNameExtractor
     private var tracerCustomizer: (Tracer) -> Tracer = { it }
+    private var tracer: Tracer? = null
+    private var startupLifecycle: Application.ActivityLifecycleCallbacks? = null
+    private var activityLifecycle: Application.ActivityLifecycleCallbacks? = null
 
     override val name: String = "activity"
 
@@ -34,10 +38,30 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
     }
 
     override fun install(ctx: InstallationContext) {
-        startupTimer.start(ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE))
+        tracer = ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE).apply {
+            startupTimer.start(this)
+        }
         ctx.application?.let {
-            it.registerActivityLifecycleCallbacks(startupTimer.createLifecycleCallback())
-            it.registerActivityLifecycleCallbacks(buildActivityLifecycleTracer(ctx))
+            startupLifecycle = startupTimer.createLifecycleCallback().apply {
+                it.registerActivityLifecycleCallbacks(this)
+            }
+            activityLifecycle = buildActivityLifecycleTracer(ctx).apply {
+                it.registerActivityLifecycleCallbacks(this)
+            }
+        }
+    }
+
+    override fun uninstall(ctx: InstallationContext) {
+        tracer = null
+        ctx.application?.let {
+            if (startupLifecycle != null) {
+                it.unregisterActivityLifecycleCallbacks(startupLifecycle)
+                startupLifecycle = null
+            }
+            if (activityLifecycle != null) {
+                it.unregisterActivityLifecycleCallbacks(activityLifecycle)
+                activityLifecycle = null
+            }
         }
     }
 
