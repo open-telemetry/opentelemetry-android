@@ -127,6 +127,22 @@ builder.addSpanExporterCustomizer(prev -> OtlpHttpSpanExporter.builder()
 
 (You can wrap the OTLP exporter again if you need additional behavior.)
 
+## Session ID Injection for Metrics
+
+When a `SessionProvider` is configured, the SDK automatically injects session identifiers (`session.id` and `session.previous_id`) into all metric data points. This injection occurs **before** user customizers and **before** disk buffering:
+
+```text
+Base → SessionInjecting → UserCustomizers → ToDisk (if enabled) → Buffer
+```
+
+This ordering ensures that:
+
+1. **Disk-buffered metrics retain their original session ID**: Metrics written to disk include the session ID that was active when they were created, not the session ID active when they're exported later.
+2. **User customizers see metrics with session IDs**: Custom exporters receive metrics that already have session attributes, allowing for session-aware filtering, redaction, or routing.
+3. **Session IDs are preserved across app restarts**: If metrics are buffered to disk (e.g., during offline periods) and exported hours or days later, they maintain the correct session attribution.
+
+The session injection is internal to the SDK and applied automatically – you don't need to add it as a customizer.
+
 ## Flush and Shutdown Behavior
 
 If `flush()` or `shutdown()` is invoked before delegates are attached, the `DelegatingExporter` stores a pending result. Once the real delegate is set:

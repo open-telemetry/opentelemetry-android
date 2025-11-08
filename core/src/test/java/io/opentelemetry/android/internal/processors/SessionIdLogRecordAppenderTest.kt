@@ -16,8 +16,10 @@ import io.opentelemetry.sdk.logs.ReadWriteLogRecord
 import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 
 private const val SESSION_ID_VALUE = "0666"
+private const val PREVIOUS_SESSION_ID_VALUE = "0555"
 
 class SessionIdLogRecordAppenderTest {
     @MockK
@@ -30,6 +32,7 @@ class SessionIdLogRecordAppenderTest {
     fun setUp() {
         MockKAnnotations.init(this)
         every { sessionProvider.getSessionId() }.returns(SESSION_ID_VALUE)
+        every { sessionProvider.getPreviousSessionId() }.returns("")
         every { log.setAttribute(any<AttributeKey<String>>(), any<String>()) } returns log
     }
 
@@ -40,5 +43,39 @@ class SessionIdLogRecordAppenderTest {
         underTest.onEmit(Context.root(), log)
 
         verify { log.setAttribute(SessionIncubatingAttributes.SESSION_ID, SESSION_ID_VALUE) }
+    }
+
+    @Test
+    fun `should set both session IDs when previous session exists`() {
+        // Given
+        every { sessionProvider.getSessionId() }.returns(SESSION_ID_VALUE)
+        every { sessionProvider.getPreviousSessionId() }.returns(PREVIOUS_SESSION_ID_VALUE)
+        val underTest = SessionIdLogRecordAppender(sessionProvider)
+
+        // When
+        underTest.onEmit(Context.root(), log)
+
+        // Then
+        assertAll(
+            { verify { log.setAttribute(SessionIncubatingAttributes.SESSION_ID, SESSION_ID_VALUE) } },
+            { verify { log.setAttribute(SessionIncubatingAttributes.SESSION_PREVIOUS_ID, PREVIOUS_SESSION_ID_VALUE) } },
+        )
+    }
+
+    @Test
+    fun `should not set previous session ID when empty`() {
+        // Given
+        every { sessionProvider.getSessionId() }.returns(SESSION_ID_VALUE)
+        every { sessionProvider.getPreviousSessionId() }.returns("")
+        val underTest = SessionIdLogRecordAppender(sessionProvider)
+
+        // When
+        underTest.onEmit(Context.root(), log)
+
+        // Then
+        assertAll(
+            { verify { log.setAttribute(SessionIncubatingAttributes.SESSION_ID, SESSION_ID_VALUE) } },
+            { verify(exactly = 0) { log.setAttribute(SessionIncubatingAttributes.SESSION_PREVIOUS_ID, any()) } },
+        )
     }
 }

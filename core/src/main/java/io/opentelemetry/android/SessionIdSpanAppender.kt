@@ -5,15 +5,18 @@
 
 package io.opentelemetry.android
 
+import io.opentelemetry.android.ktx.setSessionIdentifiersWith
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.context.Context
 import io.opentelemetry.sdk.trace.ReadWriteSpan
 import io.opentelemetry.sdk.trace.ReadableSpan
 import io.opentelemetry.sdk.trace.SpanProcessor
-import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_ID
 
 /**
- * A [SpanProcessor] that sets the `session.id` attribute to the current span when the span is started.
+ * A [SpanProcessor] that sets the session identifiers to the current span when the span is started.
+ *
+ * This processor adds both the current session ID and the previous session ID (if available)
+ * to enable session transition tracking and correlation across session boundaries.
  */
 internal class SessionIdSpanAppender(
     private val sessionProvider: SessionProvider,
@@ -22,7 +25,7 @@ internal class SessionIdSpanAppender(
         parentContext: Context,
         span: ReadWriteSpan,
     ) {
-        span.setAttribute(SESSION_ID, sessionProvider.getSessionId())
+        span.setSessionIdentifiersWith(sessionProvider)
     }
 
     override fun isStartRequired(): Boolean = true

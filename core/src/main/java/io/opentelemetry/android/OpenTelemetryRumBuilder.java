@@ -16,6 +16,8 @@ import io.opentelemetry.android.config.OtelRumConfig;
 import io.opentelemetry.android.export.BufferDelegatingLogExporter;
 import io.opentelemetry.android.export.BufferDelegatingMetricExporter;
 import io.opentelemetry.android.export.BufferDelegatingSpanExporter;
+import io.opentelemetry.android.export.factories.MetricExporterAdapterFactory;
+import io.opentelemetry.android.export.factories.SessionMetricExporterAdapterFactory;
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig;
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter;
 import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduleHandler;
@@ -407,6 +409,31 @@ public final class OpenTelemetryRumBuilder {
         scheduleDiskTelemetryReader(services, signalFromDiskExporter);
     }
 
+    /**
+     * Sets the {@link SessionProvider} to be used for session management.
+     *
+     * <p>The session provider is responsible for generating and managing session identifiers that
+     * are automatically attached to all telemetry data (spans, logs, metrics). Session IDs provide
+     * a way to group related telemetry that occurs during a logical user interaction or application
+     * usage period.
+     *
+     * <p>If not set, a no-op session provider will be used that returns empty session IDs.
+     *
+     * <p>Session identifiers are automatically added to:
+     *
+     * <ul>
+     *   <li>All spans via {@link SessionIdSpanAppender}
+     *   <li>All log records via {@link
+     *       io.opentelemetry.android.internal.processors.SessionIdLogRecordAppender}
+     *   <li>All metrics via {@link
+     *       io.opentelemetry.android.export.SessionMetricExporterAdapterFactory}
+     *   <li>Public API events via {@link OpenTelemetryRum#emitEvent(String, String,
+     *       io.opentelemetry.api.common.Attributes)}
+     * </ul>
+     *
+     * @param sessionProvider the session provider to use for session management
+     * @return {@code this}
+     */
     public OpenTelemetryRumBuilder setSessionProvider(SessionProvider sessionProvider) {
         this.sessionProvider = sessionProvider;
         return this;
@@ -572,7 +599,19 @@ public final class OpenTelemetryRumBuilder {
 
     private MetricExporter buildMetricExporter() {
         MetricExporter defaultExporter = LoggingMetricExporter.create();
-        return metricExporterCustomizer.apply(defaultExporter);
+
+        // Apply session injection FIRST (before user customizers) so that session IDs are
+        // injected before metrics are written to disk. This ensures disk-buffered metrics
+        // retain the session ID from when they were created, not when they're exported later.
+        MetricExporter exporterWithSession = defaultExporter;
+        if (sessionProvider != null && sessionProvider != SessionProvider.getNoop()) {
+            MetricExporterAdapterFactory factory = new SessionMetricExporterAdapterFactory();
+            exporterWithSession =
+                    factory.createMetricExporterAdapter(defaultExporter, sessionProvider);
+        }
+
+        // Apply user customizers after session injection
+        return metricExporterCustomizer.apply(exporterWithSession);
     }
 
     private LogRecordExporter buildLogsExporter() {
