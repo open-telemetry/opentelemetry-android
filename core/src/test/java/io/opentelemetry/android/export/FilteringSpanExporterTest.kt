@@ -6,7 +6,6 @@
 package io.opentelemetry.android.export
 
 import io.mockk.every
-import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.slot
 import io.opentelemetry.android.export.TestSpanHelper.span
@@ -19,10 +18,8 @@ import io.opentelemetry.sdk.trace.export.SpanExporter
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import java.util.function.Predicate
 
-@ExtendWith(MockKExtension::class)
 internal class FilteringSpanExporterTest {
     @Test
     fun filter() {
