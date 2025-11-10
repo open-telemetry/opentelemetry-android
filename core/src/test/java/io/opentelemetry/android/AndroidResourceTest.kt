@@ -11,9 +11,9 @@ import android.os.Build
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
-import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.sdk.resources.Resource
 import io.opentelemetry.semconv.ServiceAttributes
+import io.opentelemetry.semconv.TelemetryAttributes
 import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes
 import io.opentelemetry.semconv.incubating.OsIncubatingAttributes
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -57,7 +57,7 @@ internal class AndroidResourceTest {
                     Resource
                         .builder()
                         .put(ServiceAttributes.SERVICE_NAME, appName)
-                        .put(RumConstants.RUM_SDK_VERSION, rumSdkVersion)
+                        .put(TelemetryAttributes.TELEMETRY_SDK_VERSION, rumSdkVersion)
                         .put(DeviceIncubatingAttributes.DEVICE_MODEL_NAME, Build.MODEL)
                         .put(DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER, Build.MODEL)
                         .put(DeviceIncubatingAttributes.DEVICE_MANUFACTURER, Build.MANUFACTURER)
@@ -90,7 +90,7 @@ internal class AndroidResourceTest {
                     Resource
                         .builder()
                         .put(ServiceAttributes.SERVICE_NAME, "shim sham")
-                        .put(RumConstants.RUM_SDK_VERSION, rumSdkVersion)
+                        .put(TelemetryAttributes.TELEMETRY_SDK_VERSION, rumSdkVersion)
                         .put(DeviceIncubatingAttributes.DEVICE_MODEL_NAME, Build.MODEL)
                         .put(DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER, Build.MODEL)
                         .put(DeviceIncubatingAttributes.DEVICE_MANUFACTURER, Build.MANUFACTURER)
@@ -117,7 +117,7 @@ internal class AndroidResourceTest {
                     Resource
                         .builder()
                         .put(ServiceAttributes.SERVICE_NAME, "unknown_service:android")
-                        .put(RumConstants.RUM_SDK_VERSION, rumSdkVersion)
+                        .put(TelemetryAttributes.TELEMETRY_SDK_VERSION, rumSdkVersion)
                         .put(DeviceIncubatingAttributes.DEVICE_MODEL_NAME, Build.MODEL)
                         .put(DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER, Build.MODEL)
                         .put(DeviceIncubatingAttributes.DEVICE_MANUFACTURER, Build.MANUFACTURER)
