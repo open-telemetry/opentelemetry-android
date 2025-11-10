@@ -7,7 +7,7 @@ package io.opentelemetry.android.instrumentation.activity
 
 import android.app.Activity
 import android.os.Bundle
-import org.mockito.Mockito
+import io.mockk.mockk
 
 internal class Pre29ActivityCallbackTestHarness(
     private val callbacks: Pre29ActivityCallbacks,
@@ -18,7 +18,7 @@ internal class Pre29ActivityCallbackTestHarness(
     }
 
     fun runActivityCreationLifecycle(activity: Activity) {
-        val bundle = Mockito.mock(Bundle::class.java)
+        val bundle = mockk<Bundle>()
         callbacks.onActivityCreated(activity, bundle)
         runActivityStartedLifecycle(activity)
         runActivityResumedLifecycle(activity)

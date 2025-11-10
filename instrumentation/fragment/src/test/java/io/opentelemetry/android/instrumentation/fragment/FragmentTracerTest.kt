@@ -6,19 +6,19 @@
 package io.opentelemetry.android.instrumentation.fragment
 
 import androidx.fragment.app.Fragment
+import io.mockk.every
+import io.mockk.mockk
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import io.opentelemetry.sdk.trace.data.SpanData
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
-import org.mockito.Mockito
 
 internal class FragmentTracerTest {
     private companion object {
@@ -32,8 +32,8 @@ internal class FragmentTracerTest {
     @BeforeEach
     fun setup() {
         tracer = otelTesting.openTelemetry.getTracer("testTracer")
-        val visibleScreenTracker =
-            Mockito.mock(VisibleScreenTracker::class.java)
+        val visibleScreenTracker = mockk<VisibleScreenTracker>(relaxed = true)
+        every { visibleScreenTracker.previouslyVisibleScreen } returns null
         activeSpan = ActiveSpan(visibleScreenTracker::previouslyVisibleScreen)
     }
 
@@ -41,7 +41,7 @@ internal class FragmentTracerTest {
     fun create() {
         val trackableTracer =
             FragmentTracer
-                .builder(Mockito.mock(Fragment::class.java))
+                .builder(mockk<Fragment>())
                 .setTracer(tracer)
                 .setActiveSpan(activeSpan)
                 .build()
@@ -55,7 +55,7 @@ internal class FragmentTracerTest {
     fun addPreviousScreen_noPrevious() {
         val trackableTracer =
             FragmentTracer
-                .builder(Mockito.mock(Fragment::class.java))
+                .builder(mockk<Fragment>())
                 .setTracer(tracer)
                 .setActiveSpan(activeSpan)
                 .build()
@@ -70,13 +70,12 @@ internal class FragmentTracerTest {
 
     @Test
     fun addPreviousScreen_currentSameAsPrevious() {
-        val visibleScreenTracker =
-            Mockito.mock(VisibleScreenTracker::class.java)
-        Mockito.`when`<String?>(visibleScreenTracker.previouslyVisibleScreen).thenReturn("Fragment")
+        val visibleScreenTracker = mockk<VisibleScreenTracker>(relaxed = true)
+        every { visibleScreenTracker.previouslyVisibleScreen } returns "Fragment"
 
         val trackableTracer =
             FragmentTracer
-                .builder(Mockito.mock(Fragment::class.java))
+                .builder(mockk<Fragment>())
                 .setTracer(tracer)
                 .setActiveSpan(activeSpan)
                 .build()
@@ -91,16 +90,13 @@ internal class FragmentTracerTest {
 
     @Test
     fun addPreviousScreen() {
-        val visibleScreenTracker =
-            Mockito.mock(VisibleScreenTracker::class.java)
-        Mockito
-            .`when`<String?>(visibleScreenTracker.previouslyVisibleScreen)
-            .thenReturn("previousScreen")
+        val visibleScreenTracker = mockk<VisibleScreenTracker>()
+        every { visibleScreenTracker.previouslyVisibleScreen } returns "previousScreen"
         activeSpan = ActiveSpan(visibleScreenTracker::previouslyVisibleScreen)
 
         val fragmentTracer =
             FragmentTracer
-                .builder(Mockito.mock(Fragment::class.java))
+                .builder(mockk<Fragment>())
                 .setTracer(tracer)
                 .setActiveSpan(activeSpan)
                 .build()

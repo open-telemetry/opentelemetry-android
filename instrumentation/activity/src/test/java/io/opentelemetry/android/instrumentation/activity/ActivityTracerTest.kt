@@ -6,6 +6,10 @@
 package io.opentelemetry.android.instrumentation.activity
 
 import android.app.Activity
+import io.mockk.every
+import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
@@ -17,9 +21,10 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.extension.RegisterExtension
-import org.mockito.Mockito
 
+@ExtendWith(MockKExtension::class)
 class ActivityTracerTest {
     private companion object {
         @RegisterExtension
@@ -27,8 +32,9 @@ class ActivityTracerTest {
     }
 
     private lateinit var tracer: Tracer
-    private val visibleScreenTracker: VisibleScreenTracker =
-        Mockito.mock(VisibleScreenTracker::class.java)
+
+    @RelaxedMockK
+    private lateinit var visibleScreenTracker: VisibleScreenTracker
     private val appStartupTimer = AppStartupTimer()
     private lateinit var activeSpan: ActiveSpan
 
@@ -36,13 +42,14 @@ class ActivityTracerTest {
     fun setup() {
         tracer = otelTesting.openTelemetry.getTracer("testTracer")
         activeSpan = ActiveSpan(visibleScreenTracker::previouslyVisibleScreen)
+        every { visibleScreenTracker.previouslyVisibleScreen } returns null
     }
 
     @Test
     fun restart_nonInitialActivity() {
         val trackableTracer =
             ActivityTracer
-                .builder(Mockito.mock(Activity::class.java))
+                .builder(mockk<Activity>())
                 .setInitialAppActivity("FirstActivity")
                 .setTracer(tracer)
                 .setAppStartupTimer(appStartupTimer)
@@ -59,7 +66,7 @@ class ActivityTracerTest {
     fun restart_initialActivity() {
         val trackableTracer =
             ActivityTracer
-                .builder(Mockito.mock(Activity::class.java))
+                .builder(mockk<Activity>())
                 .setInitialAppActivity("Activity")
                 .setTracer(tracer)
                 .setAppStartupTimer(appStartupTimer)
@@ -76,7 +83,7 @@ class ActivityTracerTest {
     fun restart_initialActivity_multiActivityApp() {
         val trackableTracer =
             ActivityTracer
-                .builder(Mockito.mock(Activity::class.java))
+                .builder(mockk<Activity>())
                 .setInitialAppActivity("Activity")
                 .setTracer(tracer)
                 .setAppStartupTimer(appStartupTimer)
@@ -93,7 +100,7 @@ class ActivityTracerTest {
     fun create_nonInitialActivity() {
         val trackableTracer =
             ActivityTracer
-                .builder(Mockito.mock(Activity::class.java))
+                .builder(mockk<Activity>())
                 .setInitialAppActivity("FirstActivity")
                 .setTracer(tracer)
                 .setAppStartupTimer(appStartupTimer)
@@ -111,7 +118,7 @@ class ActivityTracerTest {
     fun create_initialActivity() {
         val trackableTracer =
             ActivityTracer
-                .builder(Mockito.mock(Activity::class.java))
+                .builder(mockk<Activity>())
                 .setInitialAppActivity("Activity")
                 .setTracer(tracer)
                 .setAppStartupTimer(appStartupTimer)
@@ -129,7 +136,7 @@ class ActivityTracerTest {
         appStartupTimer.start(tracer)
         val trackableTracer =
             ActivityTracer
-                .builder(Mockito.mock(Activity::class.java))
+                .builder(mockk<Activity>())
                 .setTracer(tracer)
                 .setAppStartupTimer(appStartupTimer)
                 .setActiveSpan(activeSpan)
@@ -153,7 +160,7 @@ class ActivityTracerTest {
     fun addPreviousScreen_noPrevious() {
         val trackableTracer =
             ActivityTracer
-                .builder(Mockito.mock(Activity::class.java))
+                .builder(mockk<Activity>())
                 .setTracer(tracer)
                 .setAppStartupTimer(appStartupTimer)
                 .setActiveSpan(activeSpan)
@@ -169,13 +176,12 @@ class ActivityTracerTest {
 
     @Test
     fun addPreviousScreen_currentSameAsPrevious() {
-        val visibleScreenTracker =
-            Mockito.mock(VisibleScreenTracker::class.java)
-        Mockito.`when`(visibleScreenTracker.previouslyVisibleScreen).thenReturn("Activity")
+        val visibleScreenTracker = mockk<VisibleScreenTracker>(relaxed = true)
+        every { visibleScreenTracker.previouslyVisibleScreen } returns "Activity"
 
         val trackableTracer =
             ActivityTracer
-                .builder(Mockito.mock(Activity::class.java))
+                .builder(mockk<Activity>())
                 .setTracer(tracer)
                 .setAppStartupTimer(appStartupTimer)
                 .setActiveSpan(activeSpan)
@@ -191,13 +197,11 @@ class ActivityTracerTest {
 
     @Test
     fun addPreviousScreen() {
-        Mockito
-            .`when`(visibleScreenTracker.previouslyVisibleScreen)
-            .thenReturn("previousScreen")
+        every { visibleScreenTracker.previouslyVisibleScreen } returns "previousScreen"
 
         val trackableTracer =
             ActivityTracer
-                .builder(Mockito.mock(Activity::class.java))
+                .builder(mockk<Activity>())
                 .setTracer(tracer)
                 .setAppStartupTimer(appStartupTimer)
                 .setActiveSpan(activeSpan)
@@ -218,7 +222,7 @@ class ActivityTracerTest {
     fun testScreenName() {
         val activityTracer =
             ActivityTracer
-                .builder(Mockito.mock(Activity::class.java))
+                .builder(mockk<Activity>())
                 .setTracer(tracer)
                 .setScreenName("squarely")
                 .setAppStartupTimer(appStartupTimer)

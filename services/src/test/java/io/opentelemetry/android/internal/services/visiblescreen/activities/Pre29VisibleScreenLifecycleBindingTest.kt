@@ -6,19 +6,21 @@
 package io.opentelemetry.android.internal.services.visiblescreen.activities
 
 import android.app.Activity
+import io.mockk.confirmVerified
+import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.junit5.MockKExtension
+import io.mockk.verify
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.junit.jupiter.MockitoExtension
 
-@ExtendWith(MockitoExtension::class)
+@ExtendWith(MockKExtension::class)
 internal class Pre29VisibleScreenLifecycleBindingTest {
-    @Mock
+    @MockK
     private lateinit var activity: Activity
 
-    @Mock
+    @RelaxedMockK
     private lateinit var visibleScreenTracker: VisibleScreenTracker
 
     @Test
@@ -26,8 +28,8 @@ internal class Pre29VisibleScreenLifecycleBindingTest {
         val underTest =
             Pre29VisibleScreenLifecycleBinding(visibleScreenTracker)
         underTest.onActivityResumed(activity)
-        Mockito.verify(visibleScreenTracker).activityResumed(activity)
-        Mockito.verifyNoMoreInteractions(visibleScreenTracker)
+        verify { visibleScreenTracker.activityResumed(activity) }
+        confirmVerified(visibleScreenTracker)
     }
 
     @Test
@@ -35,7 +37,7 @@ internal class Pre29VisibleScreenLifecycleBindingTest {
         val underTest =
             Pre29VisibleScreenLifecycleBinding(visibleScreenTracker)
         underTest.onActivityPaused(activity)
-        Mockito.verify(visibleScreenTracker).activityPaused(activity)
-        Mockito.verifyNoMoreInteractions(visibleScreenTracker)
+        verify { visibleScreenTracker.activityPaused(activity) }
+        confirmVerified(visibleScreenTracker)
     }
 }
