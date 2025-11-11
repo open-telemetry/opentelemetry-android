@@ -104,3 +104,17 @@ interface OpenTelemetryRum {
         fun noop(): OpenTelemetryRum = NoopOpenTelemetryRum
     }
 }
+
+/**
+ * Property accessor for [OpenTelemetryRum.getOpenTelemetry]. Provided for backward compatibility
+ * with code that accessed this as a property when the class was in Java.
+ */
+val OpenTelemetryRum.openTelemetry: OpenTelemetry
+    get() = getOpenTelemetry()
+
+/**
+ * Property accessor for [OpenTelemetryRum.getRumSessionId]. Provided for backward compatibility
+ * with code that accessed this as a property when the class was in Java.
+ */
+val OpenTelemetryRum.rumSessionId: String
+    get() = getRumSessionId()
