@@ -38,16 +38,19 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
     }
 
     override fun install(ctx: InstallationContext) {
-        tracer = ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE).apply {
-            startupTimer.start(this)
-        }
+        tracer =
+            ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE).apply {
+                startupTimer.start(this)
+            }
         ctx.application?.let {
-            startupLifecycle = startupTimer.createLifecycleCallback().apply {
-                it.registerActivityLifecycleCallbacks(this)
-            }
-            activityLifecycle = buildActivityLifecycleTracer(ctx).apply {
-                it.registerActivityLifecycleCallbacks(this)
-            }
+            startupLifecycle =
+                startupTimer.createLifecycleCallback().apply {
+                    it.registerActivityLifecycleCallbacks(this)
+                }
+            activityLifecycle =
+                buildActivityLifecycleTracer(ctx).apply {
+                    it.registerActivityLifecycleCallbacks(this)
+                }
         }
     }
 

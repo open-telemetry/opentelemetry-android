@@ -34,9 +34,10 @@ class FragmentLifecycleInstrumentation : AndroidInstrumentation {
     override val name: String = "fragment"
 
     override fun install(ctx: InstallationContext) {
-        activityLifecycleCallbacks = buildFragmentRegisterer(ctx).apply {
-            ctx.application?.registerActivityLifecycleCallbacks(this)
-        }
+        activityLifecycleCallbacks =
+            buildFragmentRegisterer(ctx).apply {
+                ctx.application?.registerActivityLifecycleCallbacks(this)
+            }
     }
 
     override fun uninstall(ctx: InstallationContext) {
