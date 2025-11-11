@@ -90,18 +90,18 @@ public final class io/opentelemetry/android/export/AttributeModifyingSpanExporte
 	public fun shutdown ()Lio/opentelemetry/sdk/common/CompletableResultCode;
 }
 
-public class io/opentelemetry/android/export/FilteringSpanExporter {
-	public fun <init> ()V
-	public static fun builder (Lio/opentelemetry/sdk/trace/export/SpanExporter;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+public final class io/opentelemetry/android/export/FilteringSpanExporter {
+	public static final field INSTANCE Lio/opentelemetry/android/export/FilteringSpanExporter;
+	public static final fun builder (Lio/opentelemetry/sdk/trace/export/SpanExporter;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
 }
 
 public final class io/opentelemetry/android/export/FilteringSpanExporterBuilder {
-	public fun build ()Lio/opentelemetry/sdk/trace/export/SpanExporter;
-	public fun rejectSpansNamed (Ljava/lang/String;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
-	public fun rejectSpansNamed (Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
-	public fun rejectSpansWithAttributesMatching (Ljava/util/Map;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
-	public fun rejectSpansWithNameContaining (Ljava/lang/String;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
-	public fun rejecting (Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+	public final fun build ()Lio/opentelemetry/sdk/trace/export/SpanExporter;
+	public final fun rejectSpansNamed (Ljava/lang/String;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+	public final fun rejectSpansNamed (Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+	public final fun rejectSpansWithAttributesMatching (Ljava/util/Map;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+	public final fun rejectSpansWithNameContaining (Ljava/lang/String;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+	public final fun rejecting (Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
 }
 
 public final class io/opentelemetry/android/export/SpanDataModifier {
