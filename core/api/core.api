@@ -26,21 +26,26 @@ public abstract interface class io/opentelemetry/android/OpenTelemetryRum {
 }
 
 public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
-	public fun addInstrumentation (Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
-	public fun addLogRecordExporterCustomizer (Ljava/util/function/Function;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
-	public fun addLoggerProviderCustomizer (Ljava/util/function/BiFunction;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
-	public fun addMeterProviderCustomizer (Ljava/util/function/BiFunction;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
-	public fun addMetricExporterCustomizer (Ljava/util/function/Function;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
-	public fun addOtelSdkReadyListener (Ljava/util/function/Consumer;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
-	public fun addPropagatorCustomizer (Ljava/util/function/Function;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
-	public fun addSpanExporterCustomizer (Ljava/util/function/Function;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
-	public fun addTracerProviderCustomizer (Ljava/util/function/BiFunction;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
-	public fun build ()Lio/opentelemetry/android/OpenTelemetryRum;
-	public static fun create (Landroid/app/Application;Lio/opentelemetry/android/config/OtelRumConfig;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
-	public fun mergeResource (Lio/opentelemetry/sdk/resources/Resource;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
-	public fun setExportScheduleHandler (Lio/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
-	public fun setResource (Lio/opentelemetry/sdk/resources/Resource;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
-	public fun setSessionProvider (Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public static final field Companion Lio/opentelemetry/android/OpenTelemetryRumBuilder$Companion;
+	public final fun addInstrumentation (Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun addLogRecordExporterCustomizer (Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun addLoggerProviderCustomizer (Ljava/util/function/BiFunction;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun addMeterProviderCustomizer (Ljava/util/function/BiFunction;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun addMetricExporterCustomizer (Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun addOtelSdkReadyListener (Ljava/util/function/Consumer;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun addPropagatorCustomizer (Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun addSpanExporterCustomizer (Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun addTracerProviderCustomizer (Ljava/util/function/BiFunction;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun build ()Lio/opentelemetry/android/OpenTelemetryRum;
+	public static final fun create (Landroid/app/Application;Lio/opentelemetry/android/config/OtelRumConfig;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun mergeResource (Lio/opentelemetry/sdk/resources/Resource;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun setExportScheduleHandler (Lio/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun setResource (Lio/opentelemetry/sdk/resources/Resource;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun setSessionProvider (Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+}
+
+public final class io/opentelemetry/android/OpenTelemetryRumBuilder$Companion {
+	public final fun create (Landroid/app/Application;Lio/opentelemetry/android/config/OtelRumConfig;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 }
 
 public final class io/opentelemetry/android/SdkPreconfiguredRumBuilder {
