@@ -23,7 +23,6 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
     private val startupTimer: AppStartupTimer by lazy { AppStartupTimer() }
     private var screenNameExtractor: ScreenNameExtractor = DefaultScreenNameExtractor
     private var tracerCustomizer: (Tracer) -> Tracer = { it }
-    private var tracer: Tracer? = null
     private var startupLifecycle: Application.ActivityLifecycleCallbacks? = null
     private var activityLifecycle: Application.ActivityLifecycleCallbacks? = null
 
@@ -38,10 +37,7 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
     }
 
     override fun install(ctx: InstallationContext) {
-        tracer =
-            ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE).apply {
-                startupTimer.start(this)
-            }
+        startupTimer.start(ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE))
         ctx.application?.let {
             startupLifecycle =
                 startupTimer.createLifecycleCallback().apply {
@@ -55,7 +51,6 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
     }
 
     override fun uninstall(ctx: InstallationContext) {
-        tracer = null
         ctx.application?.let {
             if (startupLifecycle != null) {
                 it.unregisterActivityLifecycleCallbacks(startupLifecycle)

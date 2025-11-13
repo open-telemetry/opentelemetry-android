@@ -39,7 +39,7 @@ public class AppStartupTimer {
     // accessed only from UI thread
     private boolean isStartedFromBackground = false;
 
-    public Span start(@NonNull Tracer tracer) {
+    public Span start(Tracer tracer) {
         // guard against a double-start and just return what's already in flight.
         if (overallAppStartSpan != null) {
             return overallAppStartSpan;
