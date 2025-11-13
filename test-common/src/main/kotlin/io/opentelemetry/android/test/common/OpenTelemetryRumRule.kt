@@ -8,6 +8,7 @@ package io.opentelemetry.android.test.common
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.android.RumBuilder
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter
@@ -20,7 +21,7 @@ import org.junit.runners.model.Statement
 /**
  * Intended for Android Instrumentation tests only.
  *
- * This rule initializes a [OpenTelemetryRum] on every test and configures it to have
+ * This rule initializes a [io.opentelemetry.android.OpenTelemetryRum] on every test and configures it to have
  * in-memory exporters.
  */
 class OpenTelemetryRumRule : TestRule {
@@ -51,7 +52,7 @@ class OpenTelemetryRumRule : TestRule {
         inMemoryLogExporter = InMemoryLogRecordExporter.create()
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             openTelemetryRum =
-                OpenTelemetryRum
+                RumBuilder
                     .builder(ApplicationProvider.getApplicationContext())
                     .addLoggerProviderCustomizer { logger, _ ->
                         logger.addLogRecordProcessor(

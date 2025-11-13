@@ -45,12 +45,12 @@ class SdkPreconfiguredRumBuilder internal constructor(
     }
 
     /**
-     * Creates a new instance of [OpenTelemetryRum] with the settings of this [ ].
+     * Creates a new instance of [io.opentelemetry.android.OpenTelemetryRum] with the settings of this [ ].
      *
      * This method uses a preconfigured OpenTelemetry SDK and install built-in system
      * instrumentations in the passed Android [Context].
      *
-     * @return A new [OpenTelemetryRum] instance.
+     * @return A new [io.opentelemetry.android.OpenTelemetryRum] instance.
      */
     fun build(): OpenTelemetryRum {
         val ctx = InstallationContext(context, sdk, sessionProvider)
