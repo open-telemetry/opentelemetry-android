@@ -14,10 +14,8 @@ android {
 }
 
 dependencies {
-    api(platform(libs.opentelemetry.platform.alpha))
-    api(libs.opentelemetry.api)
-    api(project(":instrumentation:common-api"))
-    api(project(":instrumentation:android-instrumentation"))
+    implementation(project(":instrumentation:common-api"))
+    implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":services"))
     implementation(project(":session"))
     implementation(project(":common"))

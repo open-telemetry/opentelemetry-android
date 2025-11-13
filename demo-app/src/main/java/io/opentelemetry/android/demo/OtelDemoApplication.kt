@@ -17,8 +17,6 @@ import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.LoggerProvider
 import io.opentelemetry.api.metrics.LongCounter
 import io.opentelemetry.api.trace.Tracer
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter
 
 const val TAG = "otel.demo"
 
@@ -47,26 +45,6 @@ class OtelDemoApplication : Application() {
             Log.d(TAG, "RUM session started: " + rum?.getRumSessionId())
         } catch (e: Exception) {
             Log.e(TAG, "Oh no!", e)
-        }
-
-        // This is needed to get R8 missing rules warnings.
-        initializeOtelWithGrpc()
-    }
-
-    // This is not used but it's needed to verify that our consumer proguard rules cover this use case.
-    private fun initializeOtelWithGrpc() {
-        val builder = OpenTelemetryRum.builder(this)
-            .addSpanExporterCustomizer {
-                OtlpGrpcSpanExporter.builder().build()
-            }
-            .addLogRecordExporterCustomizer {
-                OtlpGrpcLogRecordExporter.builder().build()
-            }
-
-        // This is an overly-cautious measure to prevent R8 from discarding away the whole method
-        // in case it identifies that it's actually not doing anything meaningful.
-        if (System.currentTimeMillis() < 0) {
-            print(builder)
         }
     }
 
