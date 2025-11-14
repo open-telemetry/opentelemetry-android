@@ -9,6 +9,7 @@ import android.app.Application
 import android.content.Context
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.android.RumBuilder
 import io.opentelemetry.android.agent.connectivity.Compression
 import io.opentelemetry.android.agent.dsl.OpenTelemetryConfiguration
 import io.opentelemetry.android.agent.session.SessionConfig
@@ -23,7 +24,7 @@ import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
 @OptIn(Incubating::class)
 object OpenTelemetryRumInitializer {
     /**
-     * Opinionated [OpenTelemetryRum] initialization.
+     * Opinionated [io.opentelemetry.android.OpenTelemetryRum] initialization.
      *
      * @param context Your android app's application context. This should be from your Application
      * subclass or an appropriate context that allows retrieving the application context. If you
@@ -58,7 +59,7 @@ object OpenTelemetryRumInitializer {
         val spansEndpoint = cfg.exportConfig.spansEndpoint()
         val logsEndpoints = cfg.exportConfig.logsEndpoint()
         val metricsEndpoint = cfg.exportConfig.metricsEndpoint()
-        return OpenTelemetryRum
+        return RumBuilder
             .builder(ctx, cfg.rumConfig)
             .setSessionProvider(createSessionProvider(ctx, sessionConfig))
             .addSpanExporterCustomizer {

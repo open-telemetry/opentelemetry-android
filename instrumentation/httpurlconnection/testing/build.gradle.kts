@@ -9,6 +9,7 @@ android {
 
 dependencies {
     byteBuddy(project(":instrumentation:httpurlconnection:agent"))
+    implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":instrumentation:httpurlconnection:library"))
     implementation(project(":test-common"))
     androidTestImplementation(libs.assertj.core)

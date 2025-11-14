@@ -491,7 +491,7 @@ class OpenTelemetryRumBuilderTest {
         val config = buildConfig()
         config.setDiskBufferingConfig(DiskBufferingConfig(true))
 
-        OpenTelemetryRum
+        RumBuilder
             .builder(application, config)
             .setExportScheduleHandler(scheduleHandler)
             .build()
@@ -523,7 +523,7 @@ class OpenTelemetryRumBuilderTest {
         val config = buildConfig()
         config.setDiskBufferingConfig(DiskBufferingConfig(true))
 
-        OpenTelemetryRum
+        RumBuilder
             .builder(application, config)
             .setExportScheduleHandler(scheduleHandler)
             .build()
@@ -547,7 +547,7 @@ class OpenTelemetryRumBuilderTest {
         val config = buildConfig()
         val seen = AtomicReference<OpenTelemetrySdk>()
         createAndSetServiceManager()
-        OpenTelemetryRum
+        RumBuilder
             .builder(application, config)
             .addOtelSdkReadyListener { newValue: OpenTelemetrySdk -> seen.set(newValue) }
             .build()
@@ -565,7 +565,7 @@ class OpenTelemetryRumBuilderTest {
         val config = buildConfig()
         config.setDiskBufferingConfig(DiskBufferingConfig())
 
-        OpenTelemetryRum
+        RumBuilder
             .builder(application, config)
             .setExportScheduleHandler(scheduleHandler)
             .build()
@@ -597,7 +597,7 @@ class OpenTelemetryRumBuilderTest {
         }
 
         val rum =
-            OpenTelemetryRum
+            RumBuilder
                 .builder(application, otelRumConfig)
                 .addLoggerProviderCustomizer { sdkLoggerProviderBuilder: SdkLoggerProviderBuilder, application: Context ->
                     sdkLoggerProviderBuilder.addLogRecordProcessor(
@@ -632,7 +632,7 @@ class OpenTelemetryRumBuilderTest {
             )
     }
 
-    private fun makeBuilder(): OpenTelemetryRumBuilder = OpenTelemetryRum.builder(application, buildConfig())
+    private fun makeBuilder(): OpenTelemetryRumBuilder = RumBuilder.builder(application, buildConfig())
 
     private fun buildConfig(): OtelRumConfig = OtelRumConfig().disableNetworkAttributes().disableSdkInitializationEvents()
 

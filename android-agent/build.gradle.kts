@@ -8,24 +8,25 @@ android {
 }
 
 dependencies {
-    api(project(":core"))
-    api(platform(libs.opentelemetry.platform.alpha))
-    api(libs.opentelemetry.instrumentation.api)
+    api(project(":agent-api"))
+    implementation(project(":core"))
     implementation(project(":common"))
     implementation(project(":session"))
     implementation(project(":services"))
+    implementation(project(":instrumentation:android-instrumentation"))
+    implementation(project(":instrumentation:common-api"))
     implementation(libs.opentelemetry.exporter.otlp)
 
     // Default instrumentations:
-    api(project(":instrumentation:activity"))
-    api(project(":instrumentation:anr"))
-    api(project(":instrumentation:crash"))
-    api(project(":instrumentation:fragment"))
-    api(project(":instrumentation:network"))
-    api(project(":instrumentation:slowrendering"))
-    api(project(":instrumentation:startup"))
-    api(project(":instrumentation:sessions"))
-    api(project(":instrumentation:screen-orientation"))
+    implementation(project(":instrumentation:activity"))
+    implementation(project(":instrumentation:anr"))
+    implementation(project(":instrumentation:crash"))
+    implementation(project(":instrumentation:fragment"))
+    implementation(project(":instrumentation:network"))
+    implementation(project(":instrumentation:slowrendering"))
+    implementation(project(":instrumentation:startup"))
+    implementation(project(":instrumentation:sessions"))
+    implementation(project(":instrumentation:screen-orientation"))
 
     testImplementation(libs.robolectric)
 }
