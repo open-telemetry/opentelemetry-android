@@ -338,18 +338,16 @@ class OpenTelemetryRumBuilderTest {
                 .addSpanProcessorCustomizer { delegate: SpanProcessor -> DropSpanProcessor(delegate) }
                 .build()
 
-        val tracer = rum.getOpenTelemetry().getTracer(WRAPPER_TRACER_NAME)
+        val sdk = rum.getOpenTelemetry() as OpenTelemetrySdk
+        val tracer = sdk.getTracer("test")
         tracer.spanBuilder("dropped").startSpan().end()
         tracer.spanBuilder("kept").startSpan().end()
 
-        Awaitility
-            .await()
-            .atMost(Duration.ofSeconds(5))
-            .untilAsserted {
-                val spans = exporter.finishedSpanItems
-                assertThat(spans).hasSize(1)
-                OpenTelemetryAssertions.assertThat(spans[0]).hasName("kept")
-            }
+        sdk.sdkTracerProvider.forceFlush().join(5, TimeUnit.SECONDS)
+
+        val spans = exporter.finishedSpanItems
+        assertThat(spans).hasSize(1)
+        OpenTelemetryAssertions.assertThat(spans[0]).hasName("kept")
     }
 
     @Test
@@ -363,9 +361,9 @@ class OpenTelemetryRumBuilderTest {
                     DropFirstLogRecordProcessor(delegate)
                 }.build()
 
+        val sdk = rum.getOpenTelemetry() as OpenTelemetrySdk
         val logger =
-            rum
-                .getOpenTelemetry()
+            sdk
                 .logsBridge
                 .loggerBuilder("log-wrapper")
                 .build()
@@ -380,14 +378,11 @@ class OpenTelemetryRumBuilderTest {
             .setBody("second")
             .emit()
 
-        Awaitility
-            .await()
-            .atMost(Duration.ofSeconds(5))
-            .untilAsserted {
-                val logs = exporter.finishedLogRecordItems
-                assertThat(logs).hasSize(1)
-                assertThat(logs[0].body.asString()).isEqualTo("second")
-            }
+        sdk.sdkLoggerProvider.forceFlush().join(5, TimeUnit.SECONDS)
+
+        val logs = exporter.finishedLogRecordItems
+        assertThat(logs).hasSize(1)
+        assertThat(logs[0].bodyValue?.asString()).isEqualTo("second")
     }
 
     @Test
@@ -783,7 +778,7 @@ class OpenTelemetryRumBuilderTest {
         override fun isStartRequired(): Boolean = delegate.isStartRequired
 
         override fun onEnd(span: ReadableSpan) {
-            if (span.name == "dropped" && span.instrumentationScopeInfo.name == WRAPPER_TRACER_NAME) {
+            if (span.name == "dropped" && span.instrumentationScopeInfo.name == "test") {
                 return
             }
             delegate.onEnd(span)
@@ -852,7 +847,6 @@ class OpenTelemetryRumBuilderTest {
 
     companion object {
         const val CUR_SCREEN_NAME: String = "Celebratory Token"
-        const val WRAPPER_TRACER_NAME: String = "wrapper-test"
 
         private fun createAndSetServiceManager(): Services {
             val services = mockk<Services>()
