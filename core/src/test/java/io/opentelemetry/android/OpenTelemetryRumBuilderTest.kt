@@ -41,15 +41,22 @@ import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.contrib.disk.buffering.exporters.SpanToDiskExporter
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.common.CompletableResultCode
+import io.opentelemetry.sdk.common.export.MemoryMode
+import io.opentelemetry.sdk.logs.LogRecordProcessor
+import io.opentelemetry.sdk.logs.ReadWriteLogRecord
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder
 import io.opentelemetry.sdk.logs.data.LogRecordData
 import io.opentelemetry.sdk.logs.export.LogRecordExporter
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor
+import io.opentelemetry.sdk.metrics.Aggregation
+import io.opentelemetry.sdk.metrics.InstrumentType
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality
 import io.opentelemetry.sdk.metrics.data.MetricData
+import io.opentelemetry.sdk.metrics.export.CollectionRegistration
 import io.opentelemetry.sdk.metrics.export.MetricExporter
+import io.opentelemetry.sdk.metrics.export.MetricReader
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader
 import io.opentelemetry.sdk.resources.Resource
 import io.opentelemetry.sdk.testing.assertj.LongPointAssert
@@ -60,7 +67,10 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
+import io.opentelemetry.sdk.trace.ReadWriteSpan
+import io.opentelemetry.sdk.trace.ReadableSpan
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
+import io.opentelemetry.sdk.trace.SpanProcessor
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes
@@ -74,9 +84,11 @@ import org.junit.runner.RunWith
 import java.io.File
 import java.io.IOException
 import java.time.Duration
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Function
+import io.opentelemetry.context.Context as OtelContext
 
 @RunWith(AndroidJUnit4::class)
 class OpenTelemetryRumBuilderTest {
@@ -289,6 +301,96 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
+    fun metricReaderCustomizerCanWrapReader() {
+        val exporter = InMemoryMetricExporter.create(AggregationTemporality.CUMULATIVE)
+        val rum =
+            makeBuilder()
+                .addMetricExporterCustomizer(Function { exporter })
+                .addMetricReaderCustomizer { reader: MetricReader ->
+                    DropSecondMetricReader(reader)
+                }.build()
+
+        val sdk = rum.getOpenTelemetry() as OpenTelemetrySdk
+        val meter = sdk.sdkMeterProvider.meterBuilder("WRAPPED").build()
+        val counter = meter.counterBuilder("wrapped-counter").build()
+        counter.add(10)
+        sdk.sdkMeterProvider.forceFlush()
+        counter.add(5)
+        sdk.sdkMeterProvider.forceFlush()
+
+        val metrics = exporter.finishedMetricItems
+        assertThat(metrics).hasSize(1)
+        OpenTelemetryAssertions
+            .assertThat(metrics[0])
+            .hasName("wrapped-counter")
+            .hasLongSumSatisfying { sum: LongSumAssert ->
+                sum.hasPointsSatisfying({ pt: LongPointAssert -> pt.hasValue(10L) })
+            }
+    }
+
+    @Test
+    fun spanProcessorCustomizerCanWrapBatchProcessor() {
+        createAndSetServiceManager()
+        val exporter = InMemorySpanExporter.create()
+        val rum =
+            makeBuilder()
+                .addSpanExporterCustomizer(Function { exporter })
+                .addSpanProcessorCustomizer { delegate: SpanProcessor -> DropSpanProcessor(delegate) }
+                .build()
+
+        val tracer = rum.getOpenTelemetry().getTracer(WRAPPER_TRACER_NAME)
+        tracer.spanBuilder("dropped").startSpan().end()
+        tracer.spanBuilder("kept").startSpan().end()
+
+        Awaitility
+            .await()
+            .atMost(Duration.ofSeconds(5))
+            .untilAsserted {
+                val spans = exporter.finishedSpanItems
+                assertThat(spans).hasSize(1)
+                OpenTelemetryAssertions.assertThat(spans[0]).hasName("kept")
+            }
+    }
+
+    @Test
+    fun logRecordProcessorCustomizerCanWrapBatchProcessor() {
+        createAndSetServiceManager()
+        val exporter = InMemoryLogRecordExporter.create()
+        val rum =
+            makeBuilder()
+                .addLogRecordExporterCustomizer(Function { exporter })
+                .addLogRecordProcessorCustomizer { delegate: LogRecordProcessor ->
+                    DropFirstLogRecordProcessor(delegate)
+                }.build()
+
+        val logger =
+            rum
+                .getOpenTelemetry()
+                .logsBridge
+                .loggerBuilder("log-wrapper")
+                .build()
+        logger
+            .logRecordBuilder()
+            .setSeverity(Severity.INFO)
+            .setBody("first")
+            .emit()
+        logger
+            .logRecordBuilder()
+            .setSeverity(Severity.INFO)
+            .setBody("second")
+            .emit()
+
+        Awaitility
+            .await()
+            .atMost(Duration.ofSeconds(5))
+            .untilAsserted {
+                val logs = exporter.finishedLogRecordItems
+                assertThat(logs).hasSize(1)
+                assertThat(logs[0].body.asString()).isEqualTo("second")
+            }
+    }
+
+    @Test
     fun shouldInstallInstrumentation() {
         createAndSetServiceManager()
         val sessionProvider = mockk<SessionProvider>()
@@ -344,11 +446,11 @@ class OpenTelemetryRumBuilderTest {
     @Test
     fun canAddPropagator() {
         val context =
-            io.opentelemetry.context.Context
+            OtelContext
                 .root()
         val carrier = Any()
 
-        val expected = mockk<io.opentelemetry.context.Context>()
+        val expected = mockk<OtelContext>()
         val customPropagator = mockk<TextMapPropagator>()
 
         val getter: TextMapGetter<Any> = mockk()
@@ -475,6 +577,42 @@ class OpenTelemetryRumBuilderTest {
                     rum.getRumSessionId(),
                 ),
             ).hasSeverity(Severity.FATAL3)
+    }
+
+    @Test
+    fun spanBatchProcessorCustomizerIsApplied() {
+        createAndSetServiceManager()
+        val wasCalled = AtomicBoolean(false)
+        makeBuilder()
+            .addBatchSpanProcessorCustomizer { builder ->
+                wasCalled.set(true)
+                builder.setScheduleDelay(123, TimeUnit.MILLISECONDS)
+            }.build()
+        assertThat(wasCalled.get()).isTrue()
+    }
+
+    @Test
+    fun logBatchProcessorCustomizerIsApplied() {
+        createAndSetServiceManager()
+        val wasCalled = AtomicBoolean(false)
+        makeBuilder()
+            .addBatchLogRecordProcessorCustomizer { builder ->
+                wasCalled.set(true)
+                builder.setMaxQueueSize(10)
+            }.build()
+        assertThat(wasCalled.get()).isTrue()
+    }
+
+    @Test
+    fun periodicMetricReaderCustomizerIsApplied() {
+        createAndSetServiceManager()
+        val wasCalled = AtomicBoolean(false)
+        makeBuilder()
+            .addPeriodicMetricReaderCustomizer { builder ->
+                wasCalled.set(true)
+                builder.setInterval(7, TimeUnit.SECONDS)
+            }.build()
+        assertThat(wasCalled.get()).isTrue()
     }
 
     @Ignore("Earlier with mockito cacheDir was null which was causing this TC to pass")
@@ -632,12 +770,89 @@ class OpenTelemetryRumBuilderTest {
             )
     }
 
+    private class DropSpanProcessor(
+        private val delegate: SpanProcessor,
+    ) : SpanProcessor {
+        override fun onStart(
+            parentContext: OtelContext,
+            span: ReadWriteSpan,
+        ) {
+            delegate.onStart(parentContext, span)
+        }
+
+        override fun isStartRequired(): Boolean = delegate.isStartRequired
+
+        override fun onEnd(span: ReadableSpan) {
+            if (span.name == "dropped" && span.instrumentationScopeInfo.name == WRAPPER_TRACER_NAME) {
+                return
+            }
+            delegate.onEnd(span)
+        }
+
+        override fun isEndRequired(): Boolean = delegate.isEndRequired
+
+        override fun shutdown(): CompletableResultCode = delegate.shutdown()
+
+        override fun forceFlush(): CompletableResultCode = delegate.forceFlush()
+    }
+
+    private class DropSecondMetricReader(
+        private val delegate: MetricReader,
+    ) : MetricReader {
+        private val dropNext = AtomicBoolean(false)
+
+        override fun register(registration: CollectionRegistration) {
+            delegate.register(
+                object : CollectionRegistration {
+                    override fun collectAllMetrics(): Collection<MetricData> =
+                        if (!dropNext.getAndSet(true)) {
+                            registration.collectAllMetrics()
+                        } else {
+                            emptyList()
+                        }
+                },
+            )
+        }
+
+        override fun getAggregationTemporality(instrumentType: InstrumentType): AggregationTemporality =
+            delegate.getAggregationTemporality(instrumentType)
+
+        override fun getDefaultAggregation(instrumentType: InstrumentType): Aggregation = delegate.getDefaultAggregation(instrumentType)
+
+        override fun getMemoryMode(): MemoryMode = delegate.memoryMode
+
+        override fun forceFlush(): CompletableResultCode = delegate.forceFlush()
+
+        override fun shutdown(): CompletableResultCode = delegate.shutdown()
+    }
+
+    private class DropFirstLogRecordProcessor(
+        private val delegate: LogRecordProcessor,
+    ) : LogRecordProcessor {
+        private val dropNext = AtomicBoolean(true)
+
+        override fun onEmit(
+            context: OtelContext,
+            logRecord: ReadWriteLogRecord,
+        ) {
+            if (dropNext.getAndSet(false)) {
+                return
+            }
+            delegate.onEmit(context, logRecord)
+        }
+
+        override fun shutdown(): CompletableResultCode = delegate.shutdown()
+
+        override fun forceFlush(): CompletableResultCode = delegate.forceFlush()
+    }
+
     private fun makeBuilder(): OpenTelemetryRumBuilder = OpenTelemetryRum.builder(application, buildConfig())
 
     private fun buildConfig(): OtelRumConfig = OtelRumConfig().disableNetworkAttributes().disableSdkInitializationEvents()
 
     companion object {
         const val CUR_SCREEN_NAME: String = "Celebratory Token"
+        const val WRAPPER_TRACER_NAME: String = "wrapper-test"
 
         private fun createAndSetServiceManager(): Services {
             val services = mockk<Services>()
