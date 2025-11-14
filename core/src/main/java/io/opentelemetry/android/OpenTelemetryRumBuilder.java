@@ -54,17 +54,20 @@ import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
+import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.File;
 import java.io.IOException;
@@ -101,6 +104,15 @@ public final class OpenTelemetryRumBuilder {
             logRecordExporterCustomizer = a -> a;
     private Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer =
             (a) -> a;
+    private Function<BatchSpanProcessorBuilder, BatchSpanProcessorBuilder>
+            batchSpanProcessorCustomizer = a -> a;
+    private Function<BatchLogRecordProcessorBuilder, BatchLogRecordProcessorBuilder>
+            batchLogRecordProcessorCustomizer = a -> a;
+    private Function<PeriodicMetricReaderBuilder, PeriodicMetricReaderBuilder>
+            metricReaderBuilderCustomizer = a -> a;
+    private Function<MetricReader, MetricReader> metricReaderCustomizer = a -> a;
+    private Function<SpanProcessor, SpanProcessor> spanProcessorCustomizer = a -> a;
+    private Function<LogRecordProcessor, LogRecordProcessor> logRecordProcessorCustomizer = a -> a;
 
     private Resource resource;
 
@@ -287,6 +299,104 @@ public final class OpenTelemetryRumBuilder {
                     LogRecordExporter intermediate = existing.apply(exporter);
                     return logRecordExporterCustomizer.apply(intermediate);
                 };
+        return this;
+    }
+
+    /**
+     * Adds a {@link Function} to customize the {@link BatchSpanProcessorBuilder} used by the SDK.
+     *
+     * <p>Multiple calls will execute the customizers in order.
+     */
+    public OpenTelemetryRumBuilder addBatchSpanProcessorCustomizer(
+            Function<BatchSpanProcessorBuilder, BatchSpanProcessorBuilder> customizer) {
+        requireNonNull(customizer, "batchSpanProcessorCustomizer");
+        Function<BatchSpanProcessorBuilder, BatchSpanProcessorBuilder> existing =
+                this.batchSpanProcessorCustomizer;
+        this.batchSpanProcessorCustomizer = builder -> customizer.apply(existing.apply(builder));
+        return this;
+    }
+
+    /**
+     * Adds a {@link Function} to customize the {@link BatchLogRecordProcessorBuilder} used by the
+     * SDK.
+     *
+     * <p>Multiple calls will execute the customizers in order.
+     */
+    public OpenTelemetryRumBuilder addBatchLogRecordProcessorCustomizer(
+            Function<BatchLogRecordProcessorBuilder, BatchLogRecordProcessorBuilder> customizer) {
+        requireNonNull(customizer, "batchLogRecordProcessorCustomizer");
+        Function<BatchLogRecordProcessorBuilder, BatchLogRecordProcessorBuilder> existing =
+                this.batchLogRecordProcessorCustomizer;
+        this.batchLogRecordProcessorCustomizer =
+                builder -> customizer.apply(existing.apply(builder));
+        return this;
+    }
+
+    /**
+     * Adds a {@link Function} to customize the {@link PeriodicMetricReaderBuilder} used by the SDK.
+     *
+     * <p>Multiple calls will execute the customizers in order.
+     */
+    public OpenTelemetryRumBuilder addPeriodicMetricReaderCustomizer(
+            Function<PeriodicMetricReaderBuilder, PeriodicMetricReaderBuilder> customizer) {
+        requireNonNull(customizer, "periodicMetricReaderCustomizer");
+        Function<PeriodicMetricReaderBuilder, PeriodicMetricReaderBuilder> existing =
+                this.metricReaderBuilderCustomizer;
+        this.metricReaderBuilderCustomizer = builder -> customizer.apply(existing.apply(builder));
+        return this;
+    }
+
+    /**
+     * Adds a {@link Function} to wrap or replace the {@link MetricReader} created by this builder.
+     *
+     * <p>This hook executes after the {@link PeriodicMetricReaderBuilder} constructs its reader,
+     * allowing users to intercept metric collection without registering additional readers via
+     * {@link #addMeterProviderCustomizer(BiFunction)}.
+     *
+     * <p>Multiple calls will execute the customizers in order.
+     */
+    public OpenTelemetryRumBuilder addMetricReaderCustomizer(
+            Function<MetricReader, MetricReader> customizer) {
+        requireNonNull(customizer, "metricReaderCustomizer");
+        Function<MetricReader, MetricReader> existing = this.metricReaderCustomizer;
+        this.metricReaderCustomizer = reader -> customizer.apply(existing.apply(reader));
+        return this;
+    }
+
+    /**
+     * Adds a {@link Function} to wrap or replace the {@link SpanProcessor} created by this builder.
+     *
+     * <p>This hook executes after the {@link BatchSpanProcessor} is constructed, allowing users to
+     * intercept the processor chain without registering additional processors via {@link
+     * #addTracerProviderCustomizer(BiFunction)}.
+     *
+     * <p>Multiple calls will execute the customizers in order.
+     */
+    public OpenTelemetryRumBuilder addSpanProcessorCustomizer(
+            Function<SpanProcessor, SpanProcessor> customizer) {
+        requireNonNull(customizer, "spanProcessorCustomizer");
+        Function<SpanProcessor, SpanProcessor> existing = this.spanProcessorCustomizer;
+        this.spanProcessorCustomizer = processor -> customizer.apply(existing.apply(processor));
+        return this;
+    }
+
+    /**
+     * Adds a {@link Function} to wrap or replace the {@link LogRecordProcessor} created by this
+     * builder.
+     *
+     * <p>This hook executes after the {@link BatchLogRecordProcessor} is constructed, allowing
+     * users to intercept the processor chain without registering additional processors via {@link
+     * #addLoggerProviderCustomizer(BiFunction)}.
+     *
+     * <p>Multiple calls will execute the customizers in order.
+     */
+    public OpenTelemetryRumBuilder addLogRecordProcessorCustomizer(
+            Function<LogRecordProcessor, LogRecordProcessor> customizer) {
+        requireNonNull(customizer, "logRecordProcessorCustomizer");
+        Function<LogRecordProcessor, LogRecordProcessor> existing =
+                this.logRecordProcessorCustomizer;
+        this.logRecordProcessorCustomizer =
+                processor -> customizer.apply(existing.apply(processor));
         return this;
     }
 
@@ -533,7 +643,11 @@ public final class OpenTelemetryRumBuilder {
                         .setResource(resource)
                         .addSpanProcessor(new SessionIdSpanAppender(sessionProvider));
 
-        BatchSpanProcessor batchSpanProcessor = BatchSpanProcessor.builder(spanExporter).build();
+        BatchSpanProcessorBuilder batchSpanProcessorBuilder =
+                BatchSpanProcessor.builder(spanExporter);
+        batchSpanProcessorBuilder = batchSpanProcessorCustomizer.apply(batchSpanProcessorBuilder);
+        SpanProcessor batchSpanProcessor =
+                spanProcessorCustomizer.apply(batchSpanProcessorBuilder.build());
         tracerProviderBuilder.addSpanProcessor(batchSpanProcessor);
 
         for (BiFunction<SdkTracerProviderBuilder, Context, SdkTracerProviderBuilder> customizer :
@@ -552,8 +666,12 @@ public final class OpenTelemetryRumBuilder {
                         .addLogRecordProcessor(
                                 new GlobalAttributesLogRecordAppender(
                                         config.getGlobalAttributesSupplier()));
+        BatchLogRecordProcessorBuilder batchLogRecordProcessorBuilder =
+                BatchLogRecordProcessor.builder(logsExporter);
+        batchLogRecordProcessorBuilder =
+                batchLogRecordProcessorCustomizer.apply(batchLogRecordProcessorBuilder);
         LogRecordProcessor batchLogsProcessor =
-                BatchLogRecordProcessor.builder(logsExporter).build();
+                logRecordProcessorCustomizer.apply(batchLogRecordProcessorBuilder.build());
         loggerProviderBuilder.addLogRecordProcessor(batchLogsProcessor);
         for (BiFunction<SdkLoggerProviderBuilder, Context, SdkLoggerProviderBuilder> customizer :
                 loggerProviderCustomizers) {
@@ -578,7 +696,9 @@ public final class OpenTelemetryRumBuilder {
     }
 
     private SdkMeterProvider buildMeterProvider(Context context, MetricExporter metricExporter) {
-        MetricReader reader = PeriodicMetricReader.create(metricExporter);
+        PeriodicMetricReaderBuilder readerBuilder = PeriodicMetricReader.builder(metricExporter);
+        readerBuilder = metricReaderBuilderCustomizer.apply(readerBuilder);
+        MetricReader reader = metricReaderCustomizer.apply(readerBuilder.build());
         SdkMeterProviderBuilder meterProviderBuilder =
                 SdkMeterProvider.builder().registerMetricReader(reader).setResource(resource);
         for (BiFunction<SdkMeterProviderBuilder, Context, SdkMeterProviderBuilder> customizer :
