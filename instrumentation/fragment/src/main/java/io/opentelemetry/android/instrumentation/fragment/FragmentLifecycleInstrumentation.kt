@@ -21,6 +21,7 @@ import io.opentelemetry.api.trace.Tracer
 class FragmentLifecycleInstrumentation : AndroidInstrumentation {
     private var screenNameExtractor: ScreenNameExtractor = DefaultScreenNameExtractor
     private var tracerCustomizer: (Tracer) -> Tracer = { it }
+    private var activityLifecycleCallbacks: ActivityLifecycleCallbacks? = null
 
     fun setTracerCustomizer(customizer: (Tracer) -> Tracer) {
         tracerCustomizer = customizer
@@ -33,7 +34,16 @@ class FragmentLifecycleInstrumentation : AndroidInstrumentation {
     override val name: String = "fragment"
 
     override fun install(ctx: InstallationContext) {
-        ctx.application?.registerActivityLifecycleCallbacks(buildFragmentRegisterer(ctx))
+        activityLifecycleCallbacks =
+            buildFragmentRegisterer(ctx).apply {
+                ctx.application?.registerActivityLifecycleCallbacks(this)
+            }
+    }
+
+    override fun uninstall(ctx: InstallationContext) {
+        super.uninstall(ctx)
+        ctx.application?.unregisterActivityLifecycleCallbacks(activityLifecycleCallbacks)
+        activityLifecycleCallbacks = null
     }
 
     private fun buildFragmentRegisterer(ctx: InstallationContext): ActivityLifecycleCallbacks {

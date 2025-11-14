@@ -26,6 +26,7 @@ public final class io/opentelemetry/android/instrumentation/activity/ActivityLif
 	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
 	public final fun setScreenNameExtractor (Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;)V
 	public final fun setTracerCustomizer (Lkotlin/jvm/functions/Function1;)V
+	public fun uninstall (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
 }
 
 public class io/opentelemetry/android/instrumentation/activity/ActivityTracer {
