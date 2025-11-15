@@ -10,7 +10,7 @@ import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.TraceId
 
 internal object NoopOpenTelemetryRum : OpenTelemetryRum {
-    override fun getOpenTelemetry(): OpenTelemetry = OpenTelemetry.noop()
+    override val openTelemetry: OpenTelemetry = OpenTelemetry.noop()
 
     override fun getRumSessionId(): String {
         // RUM session.id has the same format as traceId

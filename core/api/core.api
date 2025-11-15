@@ -50,11 +50,6 @@ public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
 	public fun setSessionProvider (Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 }
 
-public final class io/opentelemetry/android/OpenTelemetryRumKt {
-	public static final fun getOpenTelemetry (Lio/opentelemetry/android/OpenTelemetryRum;)Lio/opentelemetry/api/OpenTelemetry;
-	public static final fun getRumSessionId (Lio/opentelemetry/android/OpenTelemetryRum;)Ljava/lang/String;
-}
-
 public final class io/opentelemetry/android/SdkPreconfiguredRumBuilder {
 	public final fun addInstrumentation (Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;)Lio/opentelemetry/android/SdkPreconfiguredRumBuilder;
 	public final fun build ()Lio/opentelemetry/android/OpenTelemetryRum;

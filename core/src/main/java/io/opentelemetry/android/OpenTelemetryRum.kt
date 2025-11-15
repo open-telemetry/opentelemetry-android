@@ -20,7 +20,7 @@ interface OpenTelemetryRum {
      * Get a handle to the instance of the OpenTelemetry API that this
      * instance is using for instrumentation.
      */
-    fun getOpenTelemetry(): OpenTelemetry
+    val openTelemetry: OpenTelemetry
 
     /**
      * Get the client session ID associated with this instance of the RUM instrumentation library.
@@ -104,17 +104,3 @@ interface OpenTelemetryRum {
         fun noop(): OpenTelemetryRum = NoopOpenTelemetryRum
     }
 }
-
-/**
- * Property accessor for [OpenTelemetryRum.getOpenTelemetry]. Provided for backward compatibility
- * with code that accessed this as a property when the class was in Java.
- */
-val OpenTelemetryRum.openTelemetry: OpenTelemetry
-    get() = getOpenTelemetry()
-
-/**
- * Property accessor for [OpenTelemetryRum.getRumSessionId]. Provided for backward compatibility
- * with code that accessed this as a property when the class was in Java.
- */
-val OpenTelemetryRum.rumSessionId: String
-    get() = getRumSessionId()
