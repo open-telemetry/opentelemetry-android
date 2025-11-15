@@ -13,7 +13,7 @@ internal class OpenTelemetryRumNoopTest {
     @Test
     fun testNoopOpenTelemetryRum() {
         val noop = OpenTelemetryRum.noop()
-        assertEquals(OpenTelemetry.noop(), noop.getOpenTelemetry())
+        assertEquals(OpenTelemetry.noop(), noop.openTelemetry)
         assertEquals("00000000000000000000000000000000", noop.getRumSessionId())
 
         // assert no exceptions thrown
