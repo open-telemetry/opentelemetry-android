@@ -3,161 +3,184 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.instrumentation.library.okhttp.v3_0;
+@file:Suppress("ktlint:standard:package-name")
 
-import static org.junit.Assert.assertEquals;
+package io.opentelemetry.instrumentation.library.okhttp.v3_0
 
-import androidx.annotation.NonNull;
-import io.opentelemetry.android.test.common.OpenTelemetryRumRule;
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-import mockwebserver3.MockResponse;
-import mockwebserver3.MockWebServer;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import io.opentelemetry.android.test.common.OpenTelemetryRumRule
+import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
+import io.opentelemetry.sdk.OpenTelemetrySdk
+import io.opentelemetry.sdk.trace.SdkTracerProvider
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
+import mockwebserver3.MockResponse
+import mockwebserver3.MockWebServer
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import org.junit.After
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import java.io.IOException
+import java.util.concurrent.CountDownLatch
 
-public class InstrumentationTest {
-    private MockWebServer server;
+class InstrumentationTest {
+    private lateinit var server: MockWebServer
 
-    @Rule public OpenTelemetryRumRule openTelemetryRumRule = new OpenTelemetryRumRule();
+    @get:Rule
+    internal var openTelemetryRumRule: OpenTelemetryRumRule = OpenTelemetryRumRule()
 
     @Before
-    public void setUp() throws IOException {
-        server = new MockWebServer();
-        server.start();
+    @Throws(IOException::class)
+    fun setUp() {
+        server = MockWebServer()
+        server.start()
     }
 
     @After
-    public void tearDown() throws IOException {
-        server.close();
+    @Throws(IOException::class)
+    fun tearDown() {
+        server.close()
     }
 
     @Test
-    public void okhttpTraces() throws IOException {
-        server.enqueue(new MockResponse.Builder().code(200).build());
+    @Throws(IOException::class)
+    fun okhttpTraces() {
+        server.enqueue(MockResponse.Builder().code(200).build())
 
-        Span span = openTelemetryRumRule.getSpan();
+        val span = openTelemetryRumRule.getSpan()
 
-        try (Scope ignored = span.makeCurrent()) {
-            OkHttpClient client =
-                    new OkHttpClient.Builder()
-                            .addInterceptor(
-                                    chain -> {
-                                        SpanContext currentSpan = Span.current().getSpanContext();
-                                        assertEquals(
-                                                span.getSpanContext().getTraceId(),
-                                                currentSpan.getTraceId());
-                                        return chain.proceed(chain.request());
-                                    })
-                            .build();
-            createCall(client, "/test/").execute().close();
+        span.makeCurrent().use { ignored ->
+            val client =
+                OkHttpClient
+                    .Builder()
+                    .addInterceptor(
+                        Interceptor { chain: Interceptor.Chain? ->
+                            val currentSpan = Span.current().spanContext
+                            Assert.assertEquals(
+                                span.spanContext.traceId,
+                                currentSpan.traceId,
+                            )
+                            chain!!.proceed(chain.request())
+                        },
+                    ).build()
+            createCall(client, "/test/").execute().close()
         }
+        span.end()
 
-        span.end();
-
-        assertEquals(2, openTelemetryRumRule.inMemorySpanExporter.getFinishedSpanItems().size());
+        Assert.assertEquals(
+            2,
+            openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size
+                .toLong(),
+        )
     }
 
     @Test
-    public void okhttpTraces_with_callback() throws InterruptedException {
-        CountDownLatch lock = new CountDownLatch(1);
-        Span span = openTelemetryRumRule.getSpan();
+    @Throws(InterruptedException::class)
+    fun okhttpTraces_with_callback() {
+        val lock = CountDownLatch(1)
+        val span = openTelemetryRumRule.getSpan()
 
-        try (Scope ignored = span.makeCurrent()) {
-            server.enqueue(new MockResponse.Builder().code(200).build());
-
-            OkHttpClient client =
-                    new OkHttpClient.Builder()
-                            .addInterceptor(
-                                    chain -> {
-                                        SpanContext currentSpan = Span.current().getSpanContext();
-                                        // Verify context propagation.
-                                        assertEquals(
-                                                span.getSpanContext().getTraceId(),
-                                                currentSpan.getTraceId());
-                                        return chain.proceed(chain.request());
-                                    })
-                            .build();
+        span.makeCurrent().use { ignored ->
+            server.enqueue(MockResponse.Builder().code(200).build())
+            val client =
+                OkHttpClient
+                    .Builder()
+                    .addInterceptor(
+                        Interceptor { chain: Interceptor.Chain? ->
+                            val currentSpan = Span.current().spanContext
+                            // Verify context propagation.
+                            Assert.assertEquals(
+                                span.spanContext.traceId,
+                                currentSpan.traceId,
+                            )
+                            chain!!.proceed(chain.request())
+                        },
+                    ).build()
             createCall(client, "/test/")
-                    .enqueue(
-                            new Callback() {
-                                @Override
-                                public void onFailure(@NonNull Call call, @NonNull IOException e) {}
+                .enqueue(
+                    object : Callback {
+                        override fun onFailure(
+                            call: Call,
+                            e: IOException,
+                        ) {}
 
-                                @Override
-                                public void onResponse(
-                                        @NonNull Call call, @NonNull Response response) {
-                                    // Verify that the original caller's context is the current one
-                                    // here.
-                                    assertEquals(span, Span.current());
-                                    lock.countDown();
-                                }
-                            });
+                        override fun onResponse(
+                            call: Call,
+                            response: Response,
+                        ) {
+                            // Verify that the original caller's context is the current one
+                            // here.
+                            Assert.assertEquals(span, Span.current())
+                            lock.countDown()
+                        }
+                    },
+                )
         }
+        lock.await()
+        span.end()
 
-        lock.await();
-        span.end();
-
-        assertEquals(2, openTelemetryRumRule.inMemorySpanExporter.getFinishedSpanItems().size());
+        Assert.assertEquals(
+            2,
+            openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size
+                .toLong(),
+        )
     }
 
     @Test
-    public void avoidCreatingSpansForInternalOkhttpRequests() throws InterruptedException {
+    @Throws(InterruptedException::class)
+    fun avoidCreatingSpansForInternalOkhttpRequests() {
         // NOTE: For some reason this test always passes when running all the tests in this file at
         // once,
         // so it should be run isolated to actually get it to fail when it's expected to fail.
-        OtlpHttpSpanExporter exporter =
-                OtlpHttpSpanExporter.builder().setEndpoint(server.url("").toString()).build();
-        OpenTelemetry openTelemetry =
-                OpenTelemetrySdk.builder()
-                        .setTracerProvider(
-                                SdkTracerProvider.builder()
-                                        .addSpanProcessor(SimpleSpanProcessor.create(exporter))
-                                        .build())
-                        .build();
+        val exporter =
+            OtlpHttpSpanExporter.builder().setEndpoint(server.url("").toString()).build()
+        val openTelemetry: OpenTelemetry =
+            OpenTelemetrySdk
+                .builder()
+                .setTracerProvider(
+                    SdkTracerProvider
+                        .builder()
+                        .addSpanProcessor(SimpleSpanProcessor.create(exporter))
+                        .build(),
+                ).build()
 
-        server.enqueue(new MockResponse.Builder().code(200).build());
+        server.enqueue(MockResponse.Builder().code(200).build())
 
         // This span should trigger 1 export okhttp call, which is the only okhttp call expected
         // for this test case.
         openTelemetry
-                .tracerBuilder("Some Scope")
-                .build()
-                .spanBuilder("Some Span")
-                .startSpan()
-                .end();
+            .tracerBuilder("Some Scope")
+            .build()
+            .spanBuilder("Some Span")
+            .startSpan()
+            .end()
 
         // Wait for unwanted extra okhttp requests.
-        int loop = 0;
+        var loop = 0
         while (loop < 10) {
-            Thread.sleep(100);
+            Thread.sleep(100)
             // Stop waiting if we get at least one unwanted request.
-            if (server.getRequestCount() > 1) {
-                break;
+            if (server.requestCount > 1) {
+                break
             }
-            loop++;
+            loop++
         }
 
-        assertEquals(1, server.getRequestCount());
+        Assert.assertEquals(1, server.requestCount.toLong())
     }
 
-    private Call createCall(OkHttpClient client, String urlPath) {
-        Request request = new Request.Builder().url(server.url(urlPath)).build();
-        return client.newCall(request);
+    private fun createCall(
+        client: OkHttpClient,
+        urlPath: String,
+    ): Call {
+        val request = Request.Builder().url(server.url(urlPath)).build()
+        return client.newCall(request)
     }
 }
