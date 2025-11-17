@@ -3,220 +3,287 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.slowrendering;
+package io.opentelemetry.android.instrumentation.slowrendering
 
-import static android.view.FrameMetrics.DRAW_DURATION;
-import static android.view.FrameMetrics.FIRST_DRAW_FRAME;
-import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import android.app.Activity
+import android.content.ComponentName
+import android.os.Build
+import android.os.Handler
+import android.view.FrameMetrics
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
+import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
+import io.opentelemetry.sdk.trace.data.SpanData
+import org.assertj.core.api.Assertions
+import org.assertj.core.api.ThrowingConsumer
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Answers
+import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers
+import org.mockito.Captor
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnit
+import org.mockito.junit.MockitoRule
+import org.mockito.stubbing.Answer
+import org.robolectric.annotation.Config
+import java.time.Duration
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
+import java.util.stream.Collectors
+import java.util.stream.Stream
 
-import android.app.Activity;
-import android.app.Application;
-import android.content.ComponentName;
-import android.os.Build;
-import android.os.Handler;
-import android.view.FrameMetrics;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Answers;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import org.robolectric.annotation.Config;
+@RunWith(AndroidJUnit4::class)
+@Config(sdk = [Build.VERSION_CODES.N])
+class SlowRenderListenerTest {
+    @get:Rule
+    var otelTesting: OpenTelemetryRule = OpenTelemetryRule.create()
 
-@RunWith(AndroidJUnit4.class)
-@Config(sdk = Build.VERSION_CODES.N)
-public class SlowRenderListenerTest {
+    @get:Rule
+    var mocks: MockitoRule = MockitoJUnit.rule()
 
-    private static final AttributeKey<Long> COUNT_KEY = AttributeKey.longKey("count");
-
-    @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
-    @Rule public MockitoRule mocks = MockitoJUnit.rule();
-
-    @Mock Handler frameMetricsHandler;
-    @Mock Application application;
+    @Mock
+    lateinit var frameMetricsHandler: Handler
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    Activity activity;
+    lateinit var activity: Activity
 
-    @Mock FrameMetrics frameMetrics;
-    @Mock JankReporter jankReporter;
-    ScheduledExecutorService executorService;
+    @Mock
+    lateinit var frameMetrics: FrameMetrics
 
-    @Captor ArgumentCaptor<PerActivityListener> activityListenerCaptor;
+    @Mock
+    internal lateinit var jankReporter: JankReporter
+    private lateinit var executorService: ScheduledExecutorService
+
+    @Captor
+    internal lateinit var activityListenerCaptor: ArgumentCaptor<PerActivityListener>
 
     @Before
-    public void setup() {
-        executorService = Executors.newSingleThreadScheduledExecutor();
-        ComponentName componentName = new ComponentName("io.otel", "Komponent");
-        when(activity.getComponentName()).thenReturn(componentName);
+    fun setup() {
+        executorService = Executors.newSingleThreadScheduledExecutor()
+        val componentName = ComponentName("io.otel", "Komponent")
+        Mockito.`when`(activity.componentName).thenReturn(componentName)
     }
 
     @Test
-    public void add() {
-        SlowRenderListener testInstance =
-                new SlowRenderListener(
-                        jankReporter, executorService, frameMetricsHandler, Duration.ZERO);
+    fun add() {
+        val testInstance =
+            SlowRenderListener(
+                jankReporter,
+                executorService,
+                frameMetricsHandler,
+                Duration.ZERO,
+            )
 
-        testInstance.onActivityResumed(activity);
+        testInstance.onActivityResumed(activity)
 
-        verify(activity.getWindow())
-                .addOnFrameMetricsAvailableListener(
-                        activityListenerCaptor.capture(), eq(frameMetricsHandler));
-        assertEquals("io.otel/Komponent", activityListenerCaptor.getValue().getActivityName());
+        Mockito
+            .verify(activity.window)
+            .addOnFrameMetricsAvailableListener(
+                activityListenerCaptor.capture(),
+                ArgumentMatchers.eq(frameMetricsHandler),
+            )
+        Assert.assertEquals(
+            "io.otel/Komponent",
+            activityListenerCaptor.getValue().getActivityName(),
+        )
     }
 
     @Test
-    public void removeBeforeAddOk() {
-        SlowRenderListener testInstance =
-                new SlowRenderListener(
-                        jankReporter, executorService, frameMetricsHandler, Duration.ZERO);
+    fun removeBeforeAddOk() {
+        val testInstance =
+            SlowRenderListener(
+                jankReporter,
+                executorService,
+                frameMetricsHandler,
+                Duration.ZERO,
+            )
 
-        testInstance.onActivityPaused(activity);
+        testInstance.onActivityPaused(activity)
 
-        verifyNoInteractions(activity);
-        assertThat(otelTesting.getSpans()).hasSize(0);
+        Mockito.verifyNoInteractions(activity)
+        Assertions.assertThat(otelTesting.spans).hasSize(0)
     }
 
     @Test
-    public void addAndRemove() {
-        SlowRenderListener testInstance =
-                new SlowRenderListener(
-                        jankReporter, executorService, frameMetricsHandler, Duration.ZERO);
+    fun addAndRemove() {
+        val testInstance =
+            SlowRenderListener(
+                jankReporter,
+                executorService,
+                frameMetricsHandler,
+                Duration.ZERO,
+            )
 
-        testInstance.onActivityResumed(activity);
-        testInstance.onActivityPaused(activity);
+        testInstance.onActivityResumed(activity)
+        testInstance.onActivityPaused(activity)
 
-        verify(activity.getWindow())
-                .addOnFrameMetricsAvailableListener(
-                        activityListenerCaptor.capture(), eq(frameMetricsHandler));
-        verify(activity.getWindow())
-                .removeOnFrameMetricsAvailableListener(activityListenerCaptor.getValue());
+        Mockito
+            .verify(activity.window)
+            .addOnFrameMetricsAvailableListener(
+                activityListenerCaptor.capture(),
+                ArgumentMatchers.eq(frameMetricsHandler),
+            )
+        Mockito
+            .verify(activity.window)
+            .removeOnFrameMetricsAvailableListener(activityListenerCaptor.getValue())
 
-        assertThat(otelTesting.getSpans()).hasSize(0);
+        Assertions.assertThat(otelTesting.spans).hasSize(0)
     }
 
     @Test
-    public void removeWithMetrics() {
-        Tracer tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
-        jankReporter = new SpanBasedJankReporter(tracer);
-        SlowRenderListener testInstance =
-                new SlowRenderListener(
-                        jankReporter, executorService, frameMetricsHandler, Duration.ZERO);
+    fun removeWithMetrics() {
+        val tracer = otelTesting.openTelemetry.getTracer("testTracer")
+        jankReporter = SpanBasedJankReporter(tracer)
+        val testInstance =
+            SlowRenderListener(
+                jankReporter,
+                executorService,
+                frameMetricsHandler,
+                Duration.ZERO,
+            )
 
-        testInstance.onActivityResumed(activity);
+        testInstance.onActivityResumed(activity)
 
-        verify(activity.getWindow())
-                .addOnFrameMetricsAvailableListener(activityListenerCaptor.capture(), any());
-        PerActivityListener listener = activityListenerCaptor.getValue();
-        for (long duration : makeSomeDurations()) {
-            when(frameMetrics.getMetric(DRAW_DURATION)).thenReturn(duration);
-            listener.onFrameMetricsAvailable(null, frameMetrics, 0);
+        Mockito
+            .verify(activity.window)
+            .addOnFrameMetricsAvailableListener(
+                activityListenerCaptor.capture(),
+                ArgumentMatchers.any(),
+            )
+        val listener = activityListenerCaptor.getValue()
+        for (duration in makeSomeDurations()) {
+            Mockito
+                .`when`(frameMetrics.getMetric(FrameMetrics.DRAW_DURATION))
+                .thenReturn(duration)
+            listener.onFrameMetricsAvailable(null, frameMetrics, 0)
         }
 
-        testInstance.onActivityPaused(activity);
+        testInstance.onActivityPaused(activity)
 
-        List<SpanData> spans = otelTesting.getSpans();
-        assertSpanContent(spans);
+        val spans = otelTesting.spans
+        assertSpanContent(spans)
     }
 
     @Test
-    public void start() {
-        ScheduledExecutorService exec = mock(ScheduledExecutorService.class);
+    fun start() {
+        val exec = Mockito.mock(ScheduledExecutorService::class.java)
 
-        doAnswer(
-                        invocation -> {
-                            Runnable runnable = invocation.getArgument(0);
-                            runnable.run(); // just call it immediately
-                            return null;
-                        })
-                .when(exec)
-                .scheduleWithFixedDelay(any(), eq(1001L), eq(1001L), eq(TimeUnit.MILLISECONDS));
+        Mockito
+            .doAnswer(
+                Answer { invocation ->
+                    val runnable = invocation.getArgument<Runnable>(0)
+                    runnable.run() // just call it immediately
+                    null
+                },
+            ).`when`(exec)
+            .scheduleWithFixedDelay(
+                ArgumentMatchers.any(),
+                ArgumentMatchers.eq(1001L),
+                ArgumentMatchers.eq(1001L),
+                ArgumentMatchers.eq(
+                    TimeUnit.MILLISECONDS,
+                ),
+            )
 
-        Tracer tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
-        jankReporter = new SpanBasedJankReporter(tracer);
-        SlowRenderListener testInstance =
-                new SlowRenderListener(
-                        jankReporter, exec, frameMetricsHandler, Duration.ofMillis(1001));
+        val tracer = otelTesting.openTelemetry.getTracer("testTracer")
+        jankReporter = SpanBasedJankReporter(tracer)
+        val testInstance =
+            SlowRenderListener(
+                jankReporter,
+                exec,
+                frameMetricsHandler,
+                Duration.ofMillis(1001),
+            )
 
-        testInstance.onActivityResumed(activity);
+        testInstance.onActivityResumed(activity)
 
-        verify(activity.getWindow())
-                .addOnFrameMetricsAvailableListener(activityListenerCaptor.capture(), any());
-        PerActivityListener listener = activityListenerCaptor.getValue();
-        for (long duration : makeSomeDurations()) {
-            when(frameMetrics.getMetric(DRAW_DURATION)).thenReturn(duration);
-            listener.onFrameMetricsAvailable(null, frameMetrics, 0);
+        Mockito
+            .verify(activity.window)
+            .addOnFrameMetricsAvailableListener(
+                activityListenerCaptor.capture(),
+                ArgumentMatchers.any(),
+            )
+        val listener = activityListenerCaptor.getValue()
+        for (duration in makeSomeDurations()) {
+            Mockito
+                .`when`(frameMetrics.getMetric(FrameMetrics.DRAW_DURATION))
+                .thenReturn(duration)
+            listener.onFrameMetricsAvailable(null, frameMetrics, 0)
         }
 
-        testInstance.start();
+        testInstance.start()
 
-        List<SpanData> spans = otelTesting.getSpans();
-        assertSpanContent(spans);
+        val spans = otelTesting.spans
+        assertSpanContent(spans)
     }
 
     @Test
-    public void activityListenerSkipsFirstFrame() {
-        PerActivityListener listener = new PerActivityListener(activity);
-        when(frameMetrics.getMetric(FIRST_DRAW_FRAME)).thenReturn(1L);
-        listener.onFrameMetricsAvailable(null, frameMetrics, 99);
-        verify(frameMetrics, never()).getMetric(DRAW_DURATION);
+    fun activityListenerSkipsFirstFrame() {
+        val listener = PerActivityListener(activity)
+        Mockito
+            .`when`(frameMetrics.getMetric(FrameMetrics.FIRST_DRAW_FRAME))
+            .thenReturn(1L)
+        listener.onFrameMetricsAvailable(null, frameMetrics, 99)
+        Mockito
+            .verify(frameMetrics, Mockito.never())
+            .getMetric(FrameMetrics.DRAW_DURATION)
     }
 
-    private static void assertSpanContent(List<SpanData> spans) {
-        assertThat(spans)
+    private fun makeSomeDurations(): MutableList<Long?> =
+        Stream
+            .of(
+                5L,
+                11L,
+                101L, // slow
+                701L, // frozen
+                17L, // slow
+                17L, // slow
+                16L,
+                11L,
+            ).map { duration ->
+                TimeUnit.MILLISECONDS.toNanos(
+                    duration,
+                )
+            }.collect(Collectors.toList())
+
+    companion object {
+        private val COUNT_KEY: AttributeKey<Long?> = AttributeKey.longKey("count")
+
+        private fun assertSpanContent(spans: MutableList<SpanData?>?) {
+            Assertions
+                .assertThat<SpanData?>(spans)
                 .hasSize(2)
                 .satisfiesExactly(
-                        span ->
-                                assertThat(span)
-                                        .hasName("slowRenders")
-                                        .endsAt(span.getStartEpochNanos())
-                                        .hasAttribute(COUNT_KEY, 3L)
-                                        .hasAttribute(
-                                                AttributeKey.stringKey("activity.name"),
-                                                "io.otel/Komponent"),
-                        span ->
-                                assertThat(span)
-                                        .hasName("frozenRenders")
-                                        .endsAt(span.getStartEpochNanos())
-                                        .hasAttribute(COUNT_KEY, 1L)
-                                        .hasAttribute(
-                                                AttributeKey.stringKey("activity.name"),
-                                                "io.otel/Komponent"));
-    }
-
-    private List<Long> makeSomeDurations() {
-        return Stream.of(
-                        5L, 11L, 101L, // slow
-                        701L, // frozen
-                        17L, // slow
-                        17L, // slow
-                        16L, 11L)
-                .map(TimeUnit.MILLISECONDS::toNanos)
-                .collect(Collectors.toList());
+                    ThrowingConsumer { span ->
+                        OpenTelemetryAssertions
+                            .assertThat(span)
+                            .hasName("slowRenders")
+                            .endsAt(span!!.startEpochNanos)
+                            .hasAttribute<Long?>(COUNT_KEY, 3L)
+                            .hasAttribute(
+                                AttributeKey.stringKey("activity.name"),
+                                "io.otel/Komponent",
+                            )
+                    },
+                    ThrowingConsumer { span ->
+                        OpenTelemetryAssertions
+                            .assertThat(span)
+                            .hasName("frozenRenders")
+                            .endsAt(span!!.startEpochNanos)
+                            .hasAttribute<Long?>(COUNT_KEY, 1L)
+                            .hasAttribute(
+                                AttributeKey.stringKey("activity.name"),
+                                "io.otel/Komponent",
+                            )
+                    },
+                )
+        }
     }
 }
