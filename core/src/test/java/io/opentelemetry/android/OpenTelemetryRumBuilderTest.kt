@@ -141,7 +141,7 @@ class OpenTelemetryRumBuilderTest {
             .untilAsserted {
                 val sessionId = openTelemetryRum.getRumSessionId()
                 openTelemetryRum
-                    .getOpenTelemetry()
+                    .openTelemetry
                     .getTracer("test")
                     .spanBuilder("test span")
                     .startSpan()
@@ -222,7 +222,7 @@ class OpenTelemetryRumBuilderTest {
                         .registerMetricReader(metricReader)
                 }.build()
 
-        val sdk = openTelemetryRum.getOpenTelemetry() as OpenTelemetrySdk
+        val sdk = openTelemetryRum.openTelemetry as OpenTelemetrySdk
         val meter = sdk.sdkMeterProvider.meterBuilder("myMeter").build()
         val counterAttrs = Attributes.of(AttributeKey.longKey("adams"), 42L)
         val counter = meter.counterBuilder("myCounter").build()
@@ -263,7 +263,7 @@ class OpenTelemetryRumBuilderTest {
                 }.addMetricExporterCustomizer(Function { x: MetricExporter -> exporter })
                 .build()
 
-        val sdk = openTelemetryRum.getOpenTelemetry() as OpenTelemetrySdk
+        val sdk = openTelemetryRum.openTelemetry as OpenTelemetrySdk
         val meter = sdk.sdkMeterProvider.meterBuilder("FOOMETER").build()
         val counter = meter.counterBuilder("FOOCOUNTER").build()
         counter.add(22)
@@ -366,7 +366,7 @@ class OpenTelemetryRumBuilderTest {
                 .build()
         val result =
             rum
-                .getOpenTelemetry()
+                .openTelemetry
                 .propagators
                 .textMapPropagator
                 .extract(context, carrier, getter)
@@ -381,7 +381,7 @@ class OpenTelemetryRumBuilderTest {
             makeBuilder()
                 .addPropagatorCustomizer(Function { x: TextMapPropagator -> customPropagator })
                 .build()
-        val result = rum.getOpenTelemetry().propagators.textMapPropagator
+        val result = rum.openTelemetry.propagators.textMapPropagator
         assertThat(result).isSameAs(customPropagator)
     }
 
@@ -406,7 +406,7 @@ class OpenTelemetryRumBuilderTest {
 
         val span =
             rum
-                .getOpenTelemetry()
+                .openTelemetry
                 .getTracer("test")
                 .spanBuilder("foo")
                 .startSpan()
@@ -443,7 +443,7 @@ class OpenTelemetryRumBuilderTest {
 
         val logger =
             rum
-                .getOpenTelemetry()
+                .openTelemetry
                 .logsBridge
                 .loggerBuilder("LogScope")
                 .build()
@@ -607,7 +607,7 @@ class OpenTelemetryRumBuilderTest {
 
         val logger =
             rum
-                .getOpenTelemetry()
+                .openTelemetry
                 .logsBridge
                 .loggerBuilder("LogScope")
                 .build()

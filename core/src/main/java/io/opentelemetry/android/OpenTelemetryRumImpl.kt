@@ -21,7 +21,7 @@ internal class OpenTelemetryRumImpl(
             .loggerBuilder("io.opentelemetry.rum.events")
             .build()
 
-    override fun getOpenTelemetry(): OpenTelemetry = openTelemetrySdk
+    override val openTelemetry: OpenTelemetry = openTelemetrySdk
 
     override fun getRumSessionId(): String = sessionProvider.getSessionId()
 

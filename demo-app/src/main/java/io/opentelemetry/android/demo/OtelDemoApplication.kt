@@ -74,11 +74,11 @@ class OtelDemoApplication : Application() {
         var rum: OpenTelemetryRum? = null
 
         fun tracer(name: String): Tracer? {
-            return rum?.getOpenTelemetry()?.tracerProvider?.get(name)
+            return rum?.openTelemetry?.tracerProvider?.get(name)
         }
 
         fun counter(name: String): LongCounter? {
-            return rum?.getOpenTelemetry()?.meterProvider?.get("demo.app")?.counterBuilder(name)
+            return rum?.openTelemetry?.meterProvider?.get("demo.app")?.counterBuilder(name)
                 ?.build()
         }
 
@@ -86,7 +86,7 @@ class OtelDemoApplication : Application() {
             if (rum == null) {
                 return LoggerProvider.noop().get("noop").logRecordBuilder()
             }
-            val logger = rum!!.getOpenTelemetry().logsBridge.loggerBuilder(scopeName).build()
+            val logger = rum!!.openTelemetry.logsBridge.loggerBuilder(scopeName).build()
             return logger.logRecordBuilder().setEventName(eventName)
         }
     }

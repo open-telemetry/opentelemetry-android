@@ -20,7 +20,7 @@ interface OpenTelemetryRum {
      * Get a handle to the instance of the OpenTelemetry API that this
      * instance is using for instrumentation.
      */
-    fun getOpenTelemetry(): OpenTelemetry
+    val openTelemetry: OpenTelemetry
 
     /**
      * Get the client session ID associated with this instance of the RUM instrumentation library.
