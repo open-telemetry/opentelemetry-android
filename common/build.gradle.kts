@@ -14,7 +14,7 @@ android {
 }
 
 dependencies {
-    api(project(":agent-api"))
+    implementation(project(":agent-api"))
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.instrumentation.api)
     implementation(libs.opentelemetry.semconv.incubating)

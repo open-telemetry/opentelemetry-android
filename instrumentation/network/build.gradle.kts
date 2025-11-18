@@ -22,7 +22,7 @@ dependencies {
     implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":services"))
     implementation(project(":common"))
-    api(project(":agent-api"))
+    implementation(project(":agent-api"))
     implementation(libs.androidx.core)
     implementation(libs.opentelemetry.semconv.incubating)
     implementation(libs.opentelemetry.sdk)

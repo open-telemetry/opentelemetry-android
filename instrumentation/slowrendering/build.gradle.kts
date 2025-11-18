@@ -22,7 +22,7 @@ dependencies {
     implementation(project(":services"))
     implementation(project(":session"))
     implementation(project(":common"))
-    api(project(":agent-api"))
+    implementation(project(":agent-api"))
     implementation(libs.androidx.core)
     implementation(libs.opentelemetry.semconv)
     implementation(libs.opentelemetry.sdk)

@@ -14,6 +14,6 @@ android {
 }
 
 dependencies {
-    api(project(":agent-api"))
+    implementation(project(":agent-api"))
     implementation(libs.opentelemetry.sdk)
 }

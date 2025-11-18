@@ -60,7 +60,7 @@ android {
 }
 
 dependencies {
-    api(project(":agent-api"))
+    implementation(project(":agent-api"))
     implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":common"))
     implementation(project(":services"))

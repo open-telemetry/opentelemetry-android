@@ -17,5 +17,5 @@ dependencies {
     implementation(project(":services"))
     implementation(project(":session"))
 
-    api(project(":agent-api"))
+    implementation(project(":agent-api"))
 }

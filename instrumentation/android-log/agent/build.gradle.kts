@@ -10,7 +10,7 @@ android {
 }
 
 dependencies {
-    api(project(":agent-api"))
+    implementation(project(":agent-api"))
 
     implementation(libs.androidx.core)
     implementation(libs.byteBuddy)

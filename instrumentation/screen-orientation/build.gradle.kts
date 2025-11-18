@@ -19,5 +19,5 @@ android {
 
 dependencies {
     implementation(project(":instrumentation:android-instrumentation"))
-    api(project(":agent-api"))
+    implementation(project(":agent-api"))
 }
