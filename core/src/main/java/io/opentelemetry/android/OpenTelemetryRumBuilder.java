@@ -387,7 +387,10 @@ public final class OpenTelemetryRumBuilder {
                 final LogRecordExporter originalLogsExporter = logsExporter;
                 logsExporter = LogRecordToDiskExporter.builder(logStorage).build();
                 final MetricExporter originalMetricExporter = metricExporter;
-                metricExporter = MetricToDiskExporter.builder(metricStorage).build();
+                metricExporter =
+                        MetricToDiskExporter.builder(metricStorage)
+                                .setAggregationTemporalitySelector(originalMetricExporter)
+                                .build();
                 signalFromDiskExporter =
                         new SignalFromDiskExporter(
                                 spanStorage, originalSpanExporter,
