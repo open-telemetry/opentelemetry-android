@@ -68,11 +68,11 @@ internal class ComposeTapTargetDetector(
         val queue = LinkedList<LayoutNode>()
         queue.addFirst(owner.root)
         var target: LayoutNode? = null
-
         while (queue.isNotEmpty()) {
             val node = queue.removeFirst()
             if (node.isPlaced && hitTest(node, x, y)) {
-                target = node
+//                target = node
+                return node
             }
 
             queue.addAll(node.zSortedChildren.asMutableList())
@@ -85,16 +85,22 @@ internal class ComposeTapTargetDetector(
             val modifier = info.modifier
             if (modifier is SemanticsModifier) {
                 with(modifier.semanticsConfiguration) {
+                    if (contains(OpentelemetrySemanticsPropertyKey)) {
+                        return true
+                    }
                     if (contains(SemanticsActions.OnClick)) {
+                        return true
+                    }
+                    if (contains(SemanticsProperties.ContentDescription)) {
                         return true
                     }
                 }
             } else {
                 val className = modifier::class.qualifiedName
                 if (
-                    className == CLASS_NAME_CLICKABLE_ELEMENT ||
-                    className == CLASS_NAME_COMBINED_CLICKABLE_ELEMENT ||
-                    className == CLASS_NAME_TOGGLEABLE_ELEMENT
+                    className.equals(CLASS_NAME_CLICKABLE_ELEMENT) ||
+                    className.equals(CLASS_NAME_COMBINED_CLICKABLE_ELEMENT) ||
+                    className.equals(CLASS_NAME_TOGGLEABLE_ELEMENT)
                 ) {
                     return true
                 }
@@ -106,10 +112,18 @@ internal class ComposeTapTargetDetector(
 
     private fun getNodeName(node: LayoutNode): String? {
         var className: String? = null
+
         for (info in node.getModifierInfo()) {
             val modifier = info.modifier
+
             if (modifier is SemanticsModifier) {
                 with(modifier.semanticsConfiguration) {
+
+                    val opentelemetrySemanticsPropertyKey = getOrNull(OpentelemetrySemanticsPropertyKey)
+                    if (!opentelemetrySemanticsPropertyKey.isNullOrBlank()) {
+                        return opentelemetrySemanticsPropertyKey
+                    }
+
                     val onClickSemanticsConfiguration = getOrNull(SemanticsActions.OnClick)
                     if (onClickSemanticsConfiguration != null) {
                         val accessibilityActionLabel = onClickSemanticsConfiguration.label
@@ -130,6 +144,10 @@ internal class ComposeTapTargetDetector(
                 }
             } else {
                 className = modifier::class.qualifiedName
+            }
+            val testTag = modifier.getTestTag()
+            if (!testTag.isNullOrBlank()) {
+                return testTag
             }
         }
 

@@ -201,6 +201,8 @@ internal class ComposeInstrumentationTest {
 
             every { semanticsModifier.semanticsConfiguration } returns semanticsConfiguration
             every { semanticsConfiguration.contains(eq(SemanticsActions.OnClick)) } returns true
+            every { semanticsConfiguration.contains(eq(OpentelemetrySemanticsPropertyKey)) } returns false
+            every { semanticsConfiguration.getOrNull(eq(OpentelemetrySemanticsPropertyKey)) } returns null
 
             if (useDescription) {
                 every { semanticsConfiguration.getOrNull(eq(SemanticsActions.OnClick)) } returns null
