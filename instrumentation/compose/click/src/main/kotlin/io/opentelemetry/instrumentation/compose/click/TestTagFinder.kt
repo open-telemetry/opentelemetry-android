@@ -14,7 +14,7 @@ import kotlin.text.isNullOrEmpty
 
 private const val TEST_TAG_FIELD_NAME = "tag"
 
-fun Modifier.getTestTag(): String? = findTestTagInModifier(this)
+internal fun Modifier.getTestTag(): String? = findTestTagInModifier(this)
 
 internal fun findTestTagInModifier(modifier: Modifier): String? {
     var testTag =
