@@ -54,6 +54,7 @@ class InstrumentationTest {
     fun okhttpTraces() {
         server.enqueue(MockResponse.Builder().code(200).build())
 
+        val lock = CountDownLatch(1)
         val span = openTelemetryRumRule.getSpan()
 
         span.makeCurrent().use { ignored ->
@@ -66,11 +67,13 @@ class InstrumentationTest {
                             Assertions
                                 .assertThat(span.spanContext.traceId)
                                 .isEqualTo(currentSpan.traceId)
+                            lock.countDown()
                             chain.proceed(chain.request())
                         },
                     ).build()
             createCall(client, "/test/").execute().close()
         }
+        lock.await()
         span.end()
 
         Assertions
@@ -83,7 +86,7 @@ class InstrumentationTest {
     @Test
     @Throws(InterruptedException::class)
     fun okhttpTraces_with_callback() {
-        val lock = CountDownLatch(1)
+        val lock = CountDownLatch(2)
         val span = openTelemetryRumRule.getSpan()
 
         span.makeCurrent().use { ignored ->
@@ -98,6 +101,7 @@ class InstrumentationTest {
                             Assertions
                                 .assertThat(span.spanContext.traceId)
                                 .isEqualTo(currentSpan.traceId)
+                            lock.countDown()
                             chain.proceed(chain.request())
                         },
                     ).build()
