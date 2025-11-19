@@ -187,6 +187,7 @@ internal class ComposeTapTargetDetectorTest {
         assertThat(name).isEqualTo("testTagClick")
     }
 
+    @Suppress("LongMethod")
     private fun createMockLayoutNode(
         targetX: Float = 0f,
         targetY: Float = 0f,
@@ -238,9 +239,7 @@ internal class ComposeTapTargetDetectorTest {
 
             if (useDescription) {
                 every { semanticsConfiguration.getOrNull(eq(SemanticsProperties.ContentDescription)) } returns
-                    listOf(
-                        "clickMe",
-                    )
+                    listOf("clickMe")
             } else {
                 every { semanticsConfiguration.getOrNull(eq(SemanticsProperties.ContentDescription)) } returns null
             }
@@ -268,11 +267,7 @@ internal class ComposeTapTargetDetectorTest {
         every { mockNode.zSortedChildren } returns mutableVectorOf()
         every { composeLayoutNodeUtil.getLayoutNodeBoundsInWindow(mockNode) } returns bounds
         every { composeLayoutNodeUtil.getLayoutNodePositionInWindow(mockNode) } returns
-            Offset(
-                x = bounds.left,
-                y = bounds.top,
-            )
-
+            Offset(x = bounds.left, y = bounds.top)
         return mockNode
     }
 }
