@@ -67,17 +67,15 @@ internal class ComposeTapTargetDetector(
     ): LayoutNode? {
         val queue = LinkedList<LayoutNode>()
         queue.addFirst(owner.root)
-        var target: LayoutNode? = null
         while (queue.isNotEmpty()) {
             val node = queue.removeFirst()
             if (node.isPlaced && hitTest(node, x, y)) {
-//                target = node
                 return node
             }
 
             queue.addAll(node.zSortedChildren.asMutableList())
         }
-        return target
+        return null
     }
 
     private fun isValidClickTarget(node: LayoutNode): Boolean {
@@ -91,16 +89,13 @@ internal class ComposeTapTargetDetector(
                     if (contains(SemanticsActions.OnClick)) {
                         return true
                     }
-                    if (contains(SemanticsProperties.ContentDescription)) {
-                        return true
-                    }
                 }
             } else {
                 val className = modifier::class.qualifiedName
                 if (
-                    className.equals(CLASS_NAME_CLICKABLE_ELEMENT) ||
-                    className.equals(CLASS_NAME_COMBINED_CLICKABLE_ELEMENT) ||
-                    className.equals(CLASS_NAME_TOGGLEABLE_ELEMENT)
+                    className == CLASS_NAME_CLICKABLE_ELEMENT ||
+                    className == CLASS_NAME_COMBINED_CLICKABLE_ELEMENT ||
+                    className == CLASS_NAME_TOGGLEABLE_ELEMENT
                 ) {
                     return true
                 }
@@ -112,13 +107,10 @@ internal class ComposeTapTargetDetector(
 
     private fun getNodeName(node: LayoutNode): String? {
         var className: String? = null
-
         for (info in node.getModifierInfo()) {
             val modifier = info.modifier
-
             if (modifier is SemanticsModifier) {
                 with(modifier.semanticsConfiguration) {
-
                     val opentelemetrySemanticsPropertyKey = getOrNull(OpentelemetrySemanticsPropertyKey)
                     if (!opentelemetrySemanticsPropertyKey.isNullOrBlank()) {
                         return opentelemetrySemanticsPropertyKey
