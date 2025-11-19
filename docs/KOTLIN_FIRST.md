@@ -1,6 +1,6 @@
 # Kotlin-First Policy
 
-The OpenTelemetry Android Agent was initially built when Java was the predominant language for Android development. Over the years, the platform has shifted towards being one that is primarily Kotlin, so this project will follow suit. This means that we consider the primary use case of this project to be apps written in Kotlin by folks who are familiar Android development in Kotlin.
+The OpenTelemetry Android Agent was initially built when Java was the predominant language for Android development. Over the years, the platform has shifted towards being one that is primarily Kotlin, so this project will follow suit. This means that we consider the primary use case of this project to be apps written in Kotlin by folks who are familiar with Android development in Kotlin.
 
 In practice, we want our API and code to be structured with the Kotlin language and idioms in mind. This will allow the project to feel more native and be more readable to modern Android developers, thereby reduce one layer of friction of adopting OpenTelemetry: the Java-ness of it all.
 
