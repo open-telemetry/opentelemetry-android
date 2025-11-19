@@ -37,3 +37,5 @@ style:
     excludeImportStatements: true
   ReturnCount:
     active: false
+  UnusedImports:
+    active: true

@@ -8,7 +8,6 @@ package io.opentelemetry.android.agent.dsl.instrumentation
 import io.opentelemetry.android.agent.dsl.OpenTelemetryDslMarker
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
-import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.android.instrumentation.network.NetworkAttributesExtractor
 import io.opentelemetry.android.instrumentation.network.NetworkChangeInstrumentation
 
