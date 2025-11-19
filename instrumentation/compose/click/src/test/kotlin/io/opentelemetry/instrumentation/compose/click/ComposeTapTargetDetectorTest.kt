@@ -60,12 +60,13 @@ internal class ComposeTapTargetDetectorTest {
 
     @Test
     fun `name from onClick label`() {
-        val name = composeTapTargetDetector.nodeToName(
-            createMockLayoutNode(
-                clickable = true,
-                useOnClick = true,
-            ),
-        )
+        val name =
+            composeTapTargetDetector.nodeToName(
+                createMockLayoutNode(
+                    clickable = true,
+                    useOnClick = true,
+                ),
+            )
         assertThat(name).isEqualTo("click")
     }
 
@@ -186,7 +187,6 @@ internal class ComposeTapTargetDetectorTest {
         assertThat(name).isEqualTo("testTagClick")
     }
 
-
     private fun createMockLayoutNode(
         targetX: Float = 0f,
         targetY: Float = 0f,
@@ -247,7 +247,7 @@ internal class ComposeTapTargetDetectorTest {
 
             if (useOnClick) {
                 every { semanticsConfiguration.getOrNull(eq(SemanticsActions.OnClick)) } returns
-                        AccessibilityAction<() -> Boolean>("click") { true }
+                    AccessibilityAction<() -> Boolean>("click") { true }
             } else {
                 every { semanticsConfiguration.getOrNull(eq(SemanticsActions.OnClick)) } returns null
             }
