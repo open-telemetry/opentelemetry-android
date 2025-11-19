@@ -22,8 +22,8 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import org.assertj.core.api.Assertions
 import org.junit.After
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -61,24 +61,23 @@ class InstrumentationTest {
                 OkHttpClient
                     .Builder()
                     .addInterceptor(
-                        Interceptor { chain: Interceptor.Chain? ->
+                        Interceptor { chain: Interceptor.Chain ->
                             val currentSpan = Span.current().spanContext
-                            Assert.assertEquals(
-                                span.spanContext.traceId,
-                                currentSpan.traceId,
-                            )
-                            chain!!.proceed(chain.request())
+                            Assertions
+                                .assertThat(span.spanContext.traceId)
+                                .isEqualTo(currentSpan.traceId)
+                            chain.proceed(chain.request())
                         },
                     ).build()
             createCall(client, "/test/").execute().close()
         }
         span.end()
 
-        Assert.assertEquals(
-            2,
-            openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size
-                .toLong(),
-        )
+        Assertions
+            .assertThat(
+                openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size
+                    .toLong(),
+            ).isEqualTo(2)
     }
 
     @Test
@@ -93,14 +92,13 @@ class InstrumentationTest {
                 OkHttpClient
                     .Builder()
                     .addInterceptor(
-                        Interceptor { chain: Interceptor.Chain? ->
+                        Interceptor { chain: Interceptor.Chain ->
                             val currentSpan = Span.current().spanContext
                             // Verify context propagation.
-                            Assert.assertEquals(
-                                span.spanContext.traceId,
-                                currentSpan.traceId,
-                            )
-                            chain!!.proceed(chain.request())
+                            Assertions
+                                .assertThat(span.spanContext.traceId)
+                                .isEqualTo(currentSpan.traceId)
+                            chain.proceed(chain.request())
                         },
                     ).build()
             createCall(client, "/test/")
@@ -117,7 +115,7 @@ class InstrumentationTest {
                         ) {
                             // Verify that the original caller's context is the current one
                             // here.
-                            Assert.assertEquals(span, Span.current())
+                            Assertions.assertThat(span).isEqualTo(Span.current())
                             lock.countDown()
                         }
                     },
@@ -126,11 +124,11 @@ class InstrumentationTest {
         lock.await()
         span.end()
 
-        Assert.assertEquals(
-            2,
-            openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size
-                .toLong(),
-        )
+        Assertions
+            .assertThat(
+                openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size
+                    .toLong(),
+            ).isEqualTo(2)
     }
 
     @Test
@@ -173,7 +171,7 @@ class InstrumentationTest {
             loop++
         }
 
-        Assert.assertEquals(1, server.requestCount.toLong())
+        Assertions.assertThat(server.requestCount.toLong()).isEqualTo(1)
     }
 
     private fun createCall(

@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import io.opentelemetry.sdk.trace.data.SpanData
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.ThrowingConsumer
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -89,10 +88,9 @@ class SlowRenderListenerTest {
                 activityListenerCaptor.capture(),
                 ArgumentMatchers.eq(frameMetricsHandler),
             )
-        Assert.assertEquals(
-            "io.otel/Komponent",
-            activityListenerCaptor.getValue().getActivityName(),
-        )
+        Assertions
+            .assertThat(activityListenerCaptor.getValue().getActivityName())
+            .isEqualTo("io.otel/Komponent")
     }
 
     @Test
