@@ -11,25 +11,26 @@ import android.os.Build
 import android.os.Handler
 import android.view.FrameMetrics
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.mockk.CapturingSlot
+import io.mockk.confirmVerified
+import io.mockk.every
+import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.junit4.MockKRule
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import io.opentelemetry.sdk.trace.data.SpanData
+import kotlinx.coroutines.Runnable
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.ThrowingConsumer
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Answers
-import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers
-import org.mockito.Captor
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.junit.MockitoJUnit
-import org.mockito.junit.MockitoRule
-import org.mockito.stubbing.Answer
 import org.robolectric.annotation.Config
 import java.time.Duration
 import java.util.concurrent.Executors
@@ -45,29 +46,29 @@ class SlowRenderListenerTest {
     var otelTesting: OpenTelemetryRule = OpenTelemetryRule.create()
 
     @get:Rule
-    var mocks: MockitoRule = MockitoJUnit.rule()
+    var mocks = MockKRule(this)
 
-    @Mock
+    @MockK
     lateinit var frameMetricsHandler: Handler
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    @RelaxedMockK
     lateinit var activity: Activity
 
-    @Mock
+    @RelaxedMockK
     lateinit var frameMetrics: FrameMetrics
 
-    @Mock
+    @RelaxedMockK
     internal lateinit var jankReporter: JankReporter
     private lateinit var executorService: ScheduledExecutorService
 
-    @Captor
-    internal lateinit var activityListenerCaptor: ArgumentCaptor<PerActivityListener>
+    internal lateinit var activityListenerCaptor: CapturingSlot<PerActivityListener>
 
     @Before
     fun setup() {
+        activityListenerCaptor = slot()
         executorService = Executors.newSingleThreadScheduledExecutor()
         val componentName = ComponentName("io.otel", "Komponent")
-        Mockito.`when`(activity.componentName).thenReturn(componentName)
+        every { activity.componentName } returns componentName
     }
 
     @Test
@@ -82,14 +83,10 @@ class SlowRenderListenerTest {
 
         testInstance.onActivityResumed(activity)
 
-        Mockito
-            .verify(activity.window)
-            .addOnFrameMetricsAvailableListener(
-                activityListenerCaptor.capture(),
-                ArgumentMatchers.eq(frameMetricsHandler),
-            )
+        verify { activity.window.addOnFrameMetricsAvailableListener(capture(activityListenerCaptor), eq(frameMetricsHandler)) }
+
         Assertions
-            .assertThat(activityListenerCaptor.getValue().getActivityName())
+            .assertThat(activityListenerCaptor.captured.getActivityName())
             .isEqualTo("io.otel/Komponent")
     }
 
@@ -105,7 +102,7 @@ class SlowRenderListenerTest {
 
         testInstance.onActivityPaused(activity)
 
-        Mockito.verifyNoInteractions(activity)
+        confirmVerified(activity)
         Assertions.assertThat(otelTesting.spans).hasSize(0)
     }
 
@@ -122,15 +119,8 @@ class SlowRenderListenerTest {
         testInstance.onActivityResumed(activity)
         testInstance.onActivityPaused(activity)
 
-        Mockito
-            .verify(activity.window)
-            .addOnFrameMetricsAvailableListener(
-                activityListenerCaptor.capture(),
-                ArgumentMatchers.eq(frameMetricsHandler),
-            )
-        Mockito
-            .verify(activity.window)
-            .removeOnFrameMetricsAvailableListener(activityListenerCaptor.getValue())
+        verify { activity.window.addOnFrameMetricsAvailableListener(capture(activityListenerCaptor), eq(frameMetricsHandler)) }
+        verify { activity.window.removeOnFrameMetricsAvailableListener(eq(activityListenerCaptor.captured)) }
 
         Assertions.assertThat(otelTesting.spans).hasSize(0)
     }
@@ -149,17 +139,10 @@ class SlowRenderListenerTest {
 
         testInstance.onActivityResumed(activity)
 
-        Mockito
-            .verify(activity.window)
-            .addOnFrameMetricsAvailableListener(
-                activityListenerCaptor.capture(),
-                ArgumentMatchers.any(),
-            )
-        val listener = activityListenerCaptor.getValue()
+        verify { activity.window.addOnFrameMetricsAvailableListener(capture(activityListenerCaptor), any()) }
+        val listener = activityListenerCaptor.captured
         for (duration in makeSomeDurations()) {
-            Mockito
-                .`when`(frameMetrics.getMetric(FrameMetrics.DRAW_DURATION))
-                .thenReturn(duration)
+            every { frameMetrics.getMetric(FrameMetrics.DRAW_DURATION) } returns duration
             listener.onFrameMetricsAvailable(null, frameMetrics, 0)
         }
 
@@ -171,24 +154,12 @@ class SlowRenderListenerTest {
 
     @Test
     fun start() {
-        val exec = Mockito.mock(ScheduledExecutorService::class.java)
-
-        Mockito
-            .doAnswer(
-                Answer { invocation ->
-                    val runnable = invocation.getArgument<Runnable>(0)
-                    runnable.run() // just call it immediately
-                    null
-                },
-            ).`when`(exec)
-            .scheduleWithFixedDelay(
-                ArgumentMatchers.any(),
-                ArgumentMatchers.eq(1001L),
-                ArgumentMatchers.eq(1001L),
-                ArgumentMatchers.eq(
-                    TimeUnit.MILLISECONDS,
-                ),
-            )
+        val exec = mockk<ScheduledExecutorService>(relaxed = true)
+        every { exec.scheduleWithFixedDelay(any(), eq(1001L), eq(1001L), eq(TimeUnit.MILLISECONDS)) } answers {
+            val runnable = invocation.args[0] as Runnable
+            runnable.run() // just call it immediately
+            null
+        }
 
         val tracer = otelTesting.openTelemetry.getTracer("testTracer")
         jankReporter = SpanBasedJankReporter(tracer)
@@ -202,17 +173,10 @@ class SlowRenderListenerTest {
 
         testInstance.onActivityResumed(activity)
 
-        Mockito
-            .verify(activity.window)
-            .addOnFrameMetricsAvailableListener(
-                activityListenerCaptor.capture(),
-                ArgumentMatchers.any(),
-            )
-        val listener = activityListenerCaptor.getValue()
+        verify { activity.window.addOnFrameMetricsAvailableListener(capture(activityListenerCaptor), any()) }
+        val listener = activityListenerCaptor.captured
         for (duration in makeSomeDurations()) {
-            Mockito
-                .`when`(frameMetrics.getMetric(FrameMetrics.DRAW_DURATION))
-                .thenReturn(duration)
+            every { frameMetrics.getMetric(FrameMetrics.DRAW_DURATION) } returns duration
             listener.onFrameMetricsAvailable(null, frameMetrics, 0)
         }
 
@@ -225,16 +189,13 @@ class SlowRenderListenerTest {
     @Test
     fun activityListenerSkipsFirstFrame() {
         val listener = PerActivityListener(activity)
-        Mockito
-            .`when`(frameMetrics.getMetric(FrameMetrics.FIRST_DRAW_FRAME))
-            .thenReturn(1L)
+        every { frameMetrics.getMetric(FrameMetrics.FIRST_DRAW_FRAME) } returns 1L
         listener.onFrameMetricsAvailable(null, frameMetrics, 99)
-        Mockito
-            .verify(frameMetrics, Mockito.never())
-            .getMetric(FrameMetrics.DRAW_DURATION)
+        every { frameMetrics.getMetric(FrameMetrics.DRAW_DURATION) }
+        verify(exactly = 0) { frameMetrics.getMetric(FrameMetrics.DRAW_DURATION) }
     }
 
-    private fun makeSomeDurations(): MutableList<Long?> =
+    private fun makeSomeDurations(): List<Long> =
         Stream
             .of(
                 5L,
