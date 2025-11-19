@@ -213,11 +213,11 @@ class SlowRenderListenerTest {
             }.collect(Collectors.toList())
 
     companion object {
-        private val COUNT_KEY: AttributeKey<Long?> = AttributeKey.longKey("count")
+        private val COUNT_KEY: AttributeKey<Long> = AttributeKey.longKey("count")
 
-        private fun assertSpanContent(spans: MutableList<SpanData?>?) {
+        private fun assertSpanContent(spans: MutableList<SpanData?>) {
             Assertions
-                .assertThat<SpanData?>(spans)
+                .assertThat<SpanData>(spans)
                 .hasSize(2)
                 .satisfiesExactly(
                     ThrowingConsumer { span ->
@@ -225,7 +225,7 @@ class SlowRenderListenerTest {
                             .assertThat(span)
                             .hasName("slowRenders")
                             .endsAt(span!!.startEpochNanos)
-                            .hasAttribute<Long?>(COUNT_KEY, 3L)
+                            .hasAttribute<Long>(COUNT_KEY, 3L)
                             .hasAttribute(
                                 AttributeKey.stringKey("activity.name"),
                                 "io.otel/Komponent",
@@ -236,7 +236,7 @@ class SlowRenderListenerTest {
                             .assertThat(span)
                             .hasName("frozenRenders")
                             .endsAt(span!!.startEpochNanos)
-                            .hasAttribute<Long?>(COUNT_KEY, 1L)
+                            .hasAttribute(COUNT_KEY, 1L)
                             .hasAttribute(
                                 AttributeKey.stringKey("activity.name"),
                                 "io.otel/Komponent",
