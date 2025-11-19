@@ -150,7 +150,7 @@ internal class ComposeTapTargetDetectorTest {
                 createMockLayoutNode(
                     clickable = true,
                     useDescription = true,
-                    useCustomModifier = true
+                    useCustomModifier = true,
                 ),
             )
         assertThat(name).isEqualTo("opentelemetryClick")
@@ -162,7 +162,7 @@ internal class ComposeTapTargetDetectorTest {
             composeTapTargetDetector.nodeToName(
                 createMockLayoutNode(
                     clickable = true,
-                    testTag = true
+                    testTag = true,
                 ),
             )
         assertThat(name).isEqualTo("testTagClick")
@@ -177,7 +177,7 @@ internal class ComposeTapTargetDetectorTest {
         clickable: Boolean = false,
         useDescription: Boolean = false,
         useCustomModifier: Boolean = false,
-        testTag: Boolean = false
+        testTag: Boolean = false,
     ): LayoutNode {
         val mockNode = mockkClass(LayoutNode::class)
         every { mockNode.isPlaced } returns true
@@ -207,7 +207,6 @@ internal class ComposeTapTargetDetectorTest {
             every { semanticsModifier.semanticsConfiguration } returns semanticsConfiguration
             every { semanticsConfiguration.contains(eq(SemanticsActions.OnClick)) } returns true
 
-
             if (useCustomModifier) {
                 every { semanticsConfiguration.contains(eq(OpentelemetrySemanticsPropertyKey)) } returns true
                 every { semanticsConfiguration.getOrNull(eq(OpentelemetrySemanticsPropertyKey)) } returns "opentelemetryClick"
@@ -226,7 +225,7 @@ internal class ComposeTapTargetDetectorTest {
                 every { semanticsConfiguration.getOrNull(eq(SemanticsActions.OnClick)) } returns null
                 every { semanticsConfiguration.getOrNull(eq(SemanticsProperties.ContentDescription)) } returns null
                 every { semanticsConfiguration.getOrNull(eq(SemanticsProperties.TestTag)) } returns "testTagClick"
-            }  else {
+            } else {
                 every { semanticsConfiguration.getOrNull(eq(SemanticsActions.OnClick)) } returns
                     AccessibilityAction<() -> Boolean>("click") { true }
             }
