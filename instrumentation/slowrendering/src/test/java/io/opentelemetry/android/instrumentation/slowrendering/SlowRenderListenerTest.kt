@@ -25,7 +25,7 @@ import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import io.opentelemetry.sdk.trace.data.SpanData
 import kotlinx.coroutines.Runnable
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.ThrowingConsumer
 import org.junit.Before
 import org.junit.Rule
@@ -36,8 +36,6 @@ import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
-import java.util.stream.Collectors
-import java.util.stream.Stream
 
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [Build.VERSION_CODES.N])
@@ -83,10 +81,14 @@ class SlowRenderListenerTest {
 
         testInstance.onActivityResumed(activity)
 
-        verify { activity.window.addOnFrameMetricsAvailableListener(capture(activityListenerCaptor), eq(frameMetricsHandler)) }
+        verify {
+            activity.window.addOnFrameMetricsAvailableListener(
+                capture(activityListenerCaptor),
+                eq(frameMetricsHandler),
+            )
+        }
 
-        Assertions
-            .assertThat(activityListenerCaptor.captured.getActivityName())
+        assertThat(activityListenerCaptor.captured.getActivityName())
             .isEqualTo("io.otel/Komponent")
     }
 
@@ -103,7 +105,7 @@ class SlowRenderListenerTest {
         testInstance.onActivityPaused(activity)
 
         confirmVerified(activity)
-        Assertions.assertThat(otelTesting.spans).hasSize(0)
+        assertThat(otelTesting.spans).hasSize(0)
     }
 
     @Test
@@ -119,10 +121,15 @@ class SlowRenderListenerTest {
         testInstance.onActivityResumed(activity)
         testInstance.onActivityPaused(activity)
 
-        verify { activity.window.addOnFrameMetricsAvailableListener(capture(activityListenerCaptor), eq(frameMetricsHandler)) }
+        verify {
+            activity.window.addOnFrameMetricsAvailableListener(
+                capture(activityListenerCaptor),
+                eq(frameMetricsHandler),
+            )
+        }
         verify { activity.window.removeOnFrameMetricsAvailableListener(eq(activityListenerCaptor.captured)) }
 
-        Assertions.assertThat(otelTesting.spans).hasSize(0)
+        assertThat(otelTesting.spans).hasSize(0)
     }
 
     @Test
@@ -139,7 +146,12 @@ class SlowRenderListenerTest {
 
         testInstance.onActivityResumed(activity)
 
-        verify { activity.window.addOnFrameMetricsAvailableListener(capture(activityListenerCaptor), any()) }
+        verify {
+            activity.window.addOnFrameMetricsAvailableListener(
+                capture(activityListenerCaptor),
+                any(),
+            )
+        }
         val listener = activityListenerCaptor.captured
         for (duration in makeSomeDurations()) {
             every { frameMetrics.getMetric(FrameMetrics.DRAW_DURATION) } returns duration
@@ -155,7 +167,14 @@ class SlowRenderListenerTest {
     @Test
     fun start() {
         val exec = mockk<ScheduledExecutorService>(relaxed = true)
-        every { exec.scheduleWithFixedDelay(any(), eq(1001L), eq(1001L), eq(TimeUnit.MILLISECONDS)) } answers {
+        every {
+            exec.scheduleWithFixedDelay(
+                any(),
+                eq(1001L),
+                eq(1001L),
+                eq(TimeUnit.MILLISECONDS),
+            )
+        } answers {
             val runnable = invocation.args[0] as Runnable
             runnable.run() // just call it immediately
             null
@@ -173,7 +192,12 @@ class SlowRenderListenerTest {
 
         testInstance.onActivityResumed(activity)
 
-        verify { activity.window.addOnFrameMetricsAvailableListener(capture(activityListenerCaptor), any()) }
+        verify {
+            activity.window.addOnFrameMetricsAvailableListener(
+                capture(activityListenerCaptor),
+                any(),
+            )
+        }
         val listener = activityListenerCaptor.captured
         for (duration in makeSomeDurations()) {
             every { frameMetrics.getMetric(FrameMetrics.DRAW_DURATION) } returns duration
@@ -196,28 +220,26 @@ class SlowRenderListenerTest {
     }
 
     private fun makeSomeDurations(): List<Long> =
-        Stream
-            .of(
-                5L,
-                11L,
-                101L, // slow
-                701L, // frozen
-                17L, // slow
-                17L, // slow
-                16L,
-                11L,
-            ).map { duration ->
-                TimeUnit.MILLISECONDS.toNanos(
-                    duration,
-                )
-            }.collect(Collectors.toList())
+        listOf(
+            5L,
+            11L,
+            101L, // slow
+            701L, // frozen
+            17L, // slow
+            17L, // slow
+            16L,
+            11L,
+        ).map { duration ->
+            TimeUnit.MILLISECONDS.toNanos(
+                duration,
+            )
+        }
 
     companion object {
         private val COUNT_KEY: AttributeKey<Long> = AttributeKey.longKey("count")
 
         private fun assertSpanContent(spans: MutableList<SpanData?>) {
-            Assertions
-                .assertThat<SpanData>(spans)
+            assertThat<SpanData>(spans)
                 .hasSize(2)
                 .satisfiesExactly(
                     ThrowingConsumer { span ->
@@ -225,7 +247,7 @@ class SlowRenderListenerTest {
                             .assertThat(span)
                             .hasName("slowRenders")
                             .endsAt(span!!.startEpochNanos)
-                            .hasAttribute<Long>(COUNT_KEY, 3L)
+                            .hasAttribute(COUNT_KEY, 3L)
                             .hasAttribute(
                                 AttributeKey.stringKey("activity.name"),
                                 "io.otel/Komponent",

@@ -22,7 +22,7 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -64,8 +64,7 @@ class InstrumentationTest {
                     .addInterceptor(
                         Interceptor { chain: Interceptor.Chain ->
                             val currentSpan = Span.current().spanContext
-                            Assertions
-                                .assertThat(span.spanContext.traceId)
+                            assertThat(span.spanContext.traceId)
                                 .isEqualTo(currentSpan.traceId)
                             lock.countDown()
                             chain.proceed(chain.request())
@@ -76,11 +75,10 @@ class InstrumentationTest {
         lock.await()
         span.end()
 
-        Assertions
-            .assertThat(
-                openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size
-                    .toLong(),
-            ).isEqualTo(2)
+        assertThat(
+            openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size
+                .toLong(),
+        ).isEqualTo(2)
     }
 
     @Test
@@ -98,8 +96,7 @@ class InstrumentationTest {
                         Interceptor { chain: Interceptor.Chain ->
                             val currentSpan = Span.current().spanContext
                             // Verify context propagation.
-                            Assertions
-                                .assertThat(span.spanContext.traceId)
+                            assertThat(span.spanContext.traceId)
                                 .isEqualTo(currentSpan.traceId)
                             lock.countDown()
                             chain.proceed(chain.request())
@@ -111,7 +108,8 @@ class InstrumentationTest {
                         override fun onFailure(
                             call: Call,
                             e: IOException,
-                        ) {}
+                        ) {
+                        }
 
                         override fun onResponse(
                             call: Call,
@@ -119,7 +117,7 @@ class InstrumentationTest {
                         ) {
                             // Verify that the original caller's context is the current one
                             // here.
-                            Assertions.assertThat(span).isEqualTo(Span.current())
+                            assertThat(span).isEqualTo(Span.current())
                             lock.countDown()
                         }
                     },
@@ -128,11 +126,10 @@ class InstrumentationTest {
         lock.await()
         span.end()
 
-        Assertions
-            .assertThat(
-                openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size
-                    .toLong(),
-            ).isEqualTo(2)
+        assertThat(
+            openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size
+                .toLong(),
+        ).isEqualTo(2)
     }
 
     @Test
@@ -175,7 +172,7 @@ class InstrumentationTest {
             loop++
         }
 
-        Assertions.assertThat(server.requestCount.toLong()).isEqualTo(1)
+        assertThat(server.requestCount.toLong()).isEqualTo(1)
     }
 
     private fun createCall(
