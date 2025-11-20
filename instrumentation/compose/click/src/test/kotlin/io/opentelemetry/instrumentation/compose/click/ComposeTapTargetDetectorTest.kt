@@ -16,6 +16,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.ModifierInfo
 import androidx.compose.ui.node.LayoutNode
 import androidx.compose.ui.platform.AndroidComposeView
+import androidx.compose.ui.platform.TestTagElement
 import androidx.compose.ui.semantics.AccessibilityAction
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsConfiguration
@@ -59,7 +60,13 @@ internal class ComposeTapTargetDetectorTest {
 
     @Test
     fun `name from onClick label`() {
-        val name = composeTapTargetDetector.nodeToName(createMockLayoutNode(clickable = true))
+        val name =
+            composeTapTargetDetector.nodeToName(
+                createMockLayoutNode(
+                    clickable = true,
+                    useOnClick = true,
+                ),
+            )
         assertThat(name).isEqualTo("click")
     }
 
@@ -143,6 +150,44 @@ internal class ComposeTapTargetDetectorTest {
         assertThat(actual).isNull()
     }
 
+    @Test
+    fun `name from opentelemetry modifier`() {
+        val name =
+            composeTapTargetDetector.nodeToName(
+                createMockLayoutNode(
+                    clickable = true,
+                    useDescription = true,
+                    useOpenTelemetryModifier = true,
+                ),
+            )
+        assertThat(name).isEqualTo("opentelemetryClick")
+    }
+
+    @Test
+    fun `name from test tag modifier`() {
+        val name =
+            composeTapTargetDetector.nodeToName(
+                createMockLayoutNode(
+                    clickable = true,
+                    useTestTag = true,
+                ),
+            )
+        assertThat(name).isEqualTo("testTagClick")
+    }
+
+    @Test
+    fun `name from test tag element using reflection`() {
+        val name =
+            composeTapTargetDetector.nodeToName(
+                createMockLayoutNode(
+                    clickable = true,
+                    useTestTagWithReflection = true,
+                ),
+            )
+        assertThat(name).isEqualTo("testTagClick")
+    }
+
+    @Suppress("LongMethod")
     private fun createMockLayoutNode(
         targetX: Float = 0f,
         targetY: Float = 0f,
@@ -151,6 +196,10 @@ internal class ComposeTapTargetDetectorTest {
         hit: Boolean = false,
         clickable: Boolean = false,
         useDescription: Boolean = false,
+        useOnClick: Boolean = false,
+        useOpenTelemetryModifier: Boolean = false,
+        useTestTag: Boolean = false,
+        useTestTagWithReflection: Boolean = false,
     ): LayoutNode {
         val mockNode = mockkClass(LayoutNode::class)
         every { mockNode.isPlaced } returns true
@@ -180,15 +229,34 @@ internal class ComposeTapTargetDetectorTest {
             every { semanticsModifier.semanticsConfiguration } returns semanticsConfiguration
             every { semanticsConfiguration.contains(eq(SemanticsActions.OnClick)) } returns true
 
-            if (useDescription) {
-                every { semanticsConfiguration.getOrNull(eq(SemanticsActions.OnClick)) } returns null
-                every { semanticsConfiguration.getOrNull(eq(SemanticsProperties.ContentDescription)) } returns
-                    listOf(
-                        "clickMe",
-                    )
+            if (useOpenTelemetryModifier) {
+                every { semanticsConfiguration.contains(eq(OpentelemetrySemanticsPropertyKey)) } returns true
+                every { semanticsConfiguration.getOrNull(eq(OpentelemetrySemanticsPropertyKey)) } returns "opentelemetryClick"
             } else {
+                every { semanticsConfiguration.contains(eq(OpentelemetrySemanticsPropertyKey)) } returns false
+                every { semanticsConfiguration.getOrNull(eq(OpentelemetrySemanticsPropertyKey)) } returns null
+            }
+
+            if (useDescription) {
+                every { semanticsConfiguration.getOrNull(eq(SemanticsProperties.ContentDescription)) } returns
+                    listOf("clickMe")
+            } else {
+                every { semanticsConfiguration.getOrNull(eq(SemanticsProperties.ContentDescription)) } returns null
+            }
+
+            if (useOnClick) {
                 every { semanticsConfiguration.getOrNull(eq(SemanticsActions.OnClick)) } returns
                     AccessibilityAction<() -> Boolean>("click") { true }
+            } else {
+                every { semanticsConfiguration.getOrNull(eq(SemanticsActions.OnClick)) } returns null
+            }
+
+            if (useTestTag) {
+                every { semanticsConfiguration.getOrNull(eq(SemanticsProperties.TestTag)) } returns "testTagClick"
+            } else if (useTestTagWithReflection) {
+                every { mockModifierInfo.modifier } returns TestTagElement("testTagClick")
+            } else {
+                every { semanticsConfiguration.getOrNull(eq(SemanticsProperties.TestTag)) } returns null
             }
 
             every { mockNode.semanticsId } returns id
@@ -199,11 +267,7 @@ internal class ComposeTapTargetDetectorTest {
         every { mockNode.zSortedChildren } returns mutableVectorOf()
         every { composeLayoutNodeUtil.getLayoutNodeBoundsInWindow(mockNode) } returns bounds
         every { composeLayoutNodeUtil.getLayoutNodePositionInWindow(mockNode) } returns
-            Offset(
-                x = bounds.left,
-                y = bounds.top,
-            )
-
+            Offset(x = bounds.left, y = bounds.top)
         return mockNode
     }
 }
