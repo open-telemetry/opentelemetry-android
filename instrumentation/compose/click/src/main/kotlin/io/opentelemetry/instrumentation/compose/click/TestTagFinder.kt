@@ -17,12 +17,13 @@ private const val TEST_TAG_FIELD_NAME = "tag"
 internal fun Modifier.getTestTag(): String? = findTestTagInModifier(this)
 
 internal fun findTestTagInModifier(modifier: Modifier): String? {
-    var testTag =
-        (modifier as? SemanticsModifier)?.semanticsConfiguration?.getOrNull(
-            SemanticsProperties.TestTag,
-        )
-    if (!testTag.isNullOrEmpty()) {
-        return testTag
+    if (modifier is SemanticsModifier) {
+        with(modifier.semanticsConfiguration) {
+            val testTag = getOrNull(SemanticsProperties.TestTag)
+            if (!testTag.isNullOrEmpty()) {
+                return testTag
+            }
+        }
     }
     // Often the Modifier is a TestTagElement. As this class is private there is only a way to
     // get the TestTag value using reflection
@@ -30,8 +31,8 @@ internal fun findTestTagInModifier(modifier: Modifier): String? {
         try {
             val testTagField = modifier::class.java.getDeclaredField(TEST_TAG_FIELD_NAME)
             testTagField.isAccessible = true
-            testTag = testTagField.get(modifier) as? String
-            if (!testTag.isNullOrEmpty()) {
+            val testTag = testTagField.get(modifier) as String
+            if (testTag.isNotEmpty()) {
                 return testTag
             }
         } catch (_: Exception) {
