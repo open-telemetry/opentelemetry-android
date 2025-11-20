@@ -40,6 +40,7 @@ public final class io/opentelemetry/android/agent/dsl/HttpExportConfiguration {
 }
 
 public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration {
+	public fun <init> ()V
 	public final fun diskBuffering (Lkotlin/jvm/functions/Function1;)V
 	public final fun globalAttributes (Lkotlin/jvm/functions/Function0;)V
 	public final fun httpExport (Lkotlin/jvm/functions/Function1;)V
