@@ -16,12 +16,17 @@ import io.opentelemetry.api.common.Attributes
  */
 @OptIn(Incubating::class)
 @OpenTelemetryDslMarker
-class OpenTelemetryConfiguration internal constructor() {
-    internal val rumConfig: OtelRumConfig = OtelRumConfig()
+class OpenTelemetryConfiguration internal constructor(
+    internal val rumConfig: OtelRumConfig = OtelRumConfig(),
+) {
     internal val exportConfig = HttpExportConfiguration()
     internal val sessionConfig = SessionConfiguration()
     internal val diskBufferingConfig = DiskBufferingConfigurationSpec()
     internal val instrumentations = InstrumentationConfiguration(rumConfig)
+
+    init {
+        diskBuffering {}
+    }
 
     /**
      * Configures how OpenTelemetry should export telemetry over HTTP.
