@@ -138,7 +138,7 @@ internal class ComposeTapTargetDetector(
                 className = modifier::class.qualifiedName
             }
             val testTag = modifier.getTestTag()
-            if (!testTag.isNullOrBlank()) {
+            if (testTag != null) {
                 return testTag
             }
         }

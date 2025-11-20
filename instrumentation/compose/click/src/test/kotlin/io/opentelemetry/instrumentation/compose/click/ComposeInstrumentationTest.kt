@@ -97,6 +97,74 @@ internal class ComposeInstrumentationTest {
 
     @Test
     fun capture_compose_click() {
+        val motionEvent =
+            MotionEvent.obtain(0L, SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, 250f, 50f, 0)
+        val mockLayoutNode =
+            createMockLayoutNode(
+                targetX = motionEvent.x,
+                targetY = motionEvent.y,
+                hit = true,
+                clickable = true,
+                useDescription = true,
+            )
+        mockComposeClick(mockLayoutNode, motionEvent)
+        val events = openTelemetryRule.logRecords
+        assertThat(events).hasSize(2)
+
+        var event = events[0]
+        assertThat(event)
+            .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
+            .hasAttributesSatisfyingExactly(
+                equalTo(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong()),
+                equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
+            )
+
+        event = events[1]
+        assertThat(event)
+            .hasEventName(VIEW_CLICK_EVENT_NAME)
+            .hasAttributesSatisfying(
+                equalTo(APP_WIDGET_ID, mockLayoutNode.semanticsId.toString()),
+                equalTo(APP_WIDGET_NAME, "clickMe"),
+            )
+    }
+
+    @Test
+    fun capture_compose_click_using_modifier() {
+        val motionEvent =
+            MotionEvent.obtain(0L, SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, 250f, 50f, 0)
+        val mockLayoutNode =
+            createMockLayoutNode(
+                targetX = motionEvent.x,
+                targetY = motionEvent.y,
+                hit = true,
+                clickable = true,
+                useOpenTelemetryModifier = true,
+            )
+        mockComposeClick(mockLayoutNode, motionEvent)
+        val events = openTelemetryRule.logRecords
+        assertThat(events).hasSize(2)
+
+        var event = events[0]
+        assertThat(event)
+            .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
+            .hasAttributesSatisfyingExactly(
+                equalTo(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong()),
+                equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
+            )
+
+        event = events[1]
+        assertThat(event)
+            .hasEventName(VIEW_CLICK_EVENT_NAME)
+            .hasAttributesSatisfying(
+                equalTo(APP_WIDGET_ID, mockLayoutNode.semanticsId.toString()),
+                equalTo(APP_WIDGET_NAME, "opentelemetryClick"),
+            )
+    }
+
+    private fun mockComposeClick(
+        mockLayoutNode: LayoutNode,
+        motionEvent: MotionEvent,
+    ) {
         val installationContext =
             InstallationContext(
                 application,
@@ -121,19 +189,9 @@ internal class ComposeInstrumentationTest {
         val wrapperCapturingSlot = slot<WindowCallbackWrapper>()
         every { window.callback = any() } returns Unit
 
-        val motionEvent =
-            MotionEvent.obtain(0L, SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, 250f, 50f, 0)
         every { window.decorView } returns composeView
         every { composeView.childCount } returns 0
 
-        val mockLayoutNode =
-            createMockLayoutNode(
-                targetX = motionEvent.x,
-                targetY = motionEvent.y,
-                hit = true,
-                clickable = true,
-                useDescription = true,
-            )
         every { composeView.root } returns mockLayoutNode
 
         viewClickActivityCallback.onActivityResumed(activity)
@@ -144,25 +202,6 @@ internal class ComposeInstrumentationTest {
         wrapperCapturingSlot.captured.dispatchTouchEvent(
             motionEvent,
         )
-
-        val events = openTelemetryRule.logRecords
-        assertThat(events).hasSize(2)
-
-        var event = events[0]
-        assertThat(event)
-            .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
-            .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
-            )
-
-        event = events[1]
-        assertThat(event)
-            .hasEventName(VIEW_CLICK_EVENT_NAME)
-            .hasAttributesSatisfying(
-                equalTo(APP_WIDGET_ID, mockLayoutNode.semanticsId.toString()),
-                equalTo(APP_WIDGET_NAME, "clickMe"),
-            )
     }
 
     private fun createMockLayoutNode(
@@ -173,6 +212,7 @@ internal class ComposeInstrumentationTest {
         hit: Boolean = false,
         clickable: Boolean = false,
         useDescription: Boolean = false,
+        useOpenTelemetryModifier: Boolean = false,
     ): LayoutNode {
         val mockNode = mockkClass(LayoutNode::class)
         every { mockNode.isPlaced } returns true
@@ -199,9 +239,14 @@ internal class ComposeInstrumentationTest {
             every { modifierInfo.modifier } returns semanticsModifier
 
             every { semanticsModifier.semanticsConfiguration } returns semanticsConfiguration
+            if (useOpenTelemetryModifier) {
+                every { semanticsConfiguration.contains(eq(OpentelemetrySemanticsPropertyKey)) } returns true
+                every { semanticsConfiguration.getOrNull(eq(OpentelemetrySemanticsPropertyKey)) } returns "opentelemetryClick"
+            } else {
+                every { semanticsConfiguration.contains(eq(OpentelemetrySemanticsPropertyKey)) } returns false
+                every { semanticsConfiguration.getOrNull(eq(OpentelemetrySemanticsPropertyKey)) } returns null
+            }
             every { semanticsConfiguration.contains(eq(SemanticsActions.OnClick)) } returns true
-            every { semanticsConfiguration.contains(eq(OpentelemetrySemanticsPropertyKey)) } returns false
-            every { semanticsConfiguration.getOrNull(eq(OpentelemetrySemanticsPropertyKey)) } returns null
 
             if (useDescription) {
                 every { semanticsConfiguration.getOrNull(eq(SemanticsActions.OnClick)) } returns null
