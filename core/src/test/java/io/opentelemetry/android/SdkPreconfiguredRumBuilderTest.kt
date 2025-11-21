@@ -37,7 +37,7 @@ class SdkPreconfiguredRumBuilderTest {
                 }
             }
 
-        val builder = OpenTelemetryRum.builder(context, sdk, config, sessionProvider)
+        val builder = RumBuilder.builder(context, sdk, config, sessionProvider)
         builder.addInstrumentation(fooInstrumentation)
         builder.addInstrumentation(sessionInstrumentation)
 
