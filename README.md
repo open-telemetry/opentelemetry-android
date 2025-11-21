@@ -43,6 +43,53 @@ dependencies {
 }
 ```
 
+## Agent Initialization
+
+To initialize the Agent, call `OpenTelemetryRumInitializer.initialize()` in the `onCreate()` function in your app's `Application` object, ideally as early as possible after calling `super.onCreate()`.
+
+```kotlin
+class MainApplication: Application() {
+    var otelRum: OpenTelemetryRum? = null
+    
+    override fun onCreate() {
+        super.onCreate()
+        otelRum = initOTel(this)
+    }
+}
+
+private fun initOTel(context: Context): OpenTelemetryRum? =
+    runCatching {
+        OpenTelemetryRumInitializer.initialize(
+            context = context,
+            configuration = {
+                httpExport {
+                    baseUrl = "http://10.0.2.2:4318"
+                    baseHeaders = mapOf("foo" to "bar")
+                }
+                instrumentations {
+                    activity {
+                        enabled(true)
+                    }
+                    fragment {
+                        enabled(false)
+                    }
+                }
+                session {
+                    backgroundInactivityTimeout = 5.minutes
+                    maxLifetime = 1.days
+                }
+                globalAttributes {
+                    Attributes.of(stringKey("demo-version"), "test")
+                }
+            }
+        )
+    }.onFailure {
+        Log.e("OpenTelemetryRumInitializer", "Initialization failed", it)
+    }.getOrNull()
+```
+
+This call will return an `OpenTelemetryRum` instance with which you can use the Agent and OTel APIs.
+
 # Features
 
 In addition to exposing the OTel Java API for manual instrumentation, agent also offers the following features:
