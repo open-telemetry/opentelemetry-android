@@ -23,7 +23,7 @@ internal class AgentInitTest {
     fun startOpenTelemetryRumInAndroid() {
         val application = getApplicationContext<Application>()
         val otelRum =
-            OpenTelemetryRum
+            RumBuilder
                 .builder(
                     application,
                     OtelRumConfig(),

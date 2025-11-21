@@ -12,6 +12,7 @@ develocity {
     }
 }
 
+include(":agent-api")
 include(":core")
 include(":android-agent")
 include(":test-common")
@@ -38,3 +39,4 @@ fun includeFromDir(
         }
     }
 }
+ 

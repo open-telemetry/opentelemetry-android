@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 internal class OpenTelemetryRumNoopTest {
     @Test
     fun testNoopOpenTelemetryRum() {
-        val noop = OpenTelemetryRum.noop()
+        val noop = RumBuilder.noop()
         assertEquals(OpenTelemetry.noop(), noop.openTelemetry)
         assertEquals("00000000000000000000000000000000", noop.getRumSessionId())
 

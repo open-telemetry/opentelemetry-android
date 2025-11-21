@@ -13,10 +13,9 @@ android {
 }
 
 dependencies {
-    api(project(":core"))
-    api(platform(libs.opentelemetry.platform.alpha))
+    implementation(project(":core"))
+    api(project(":agent-api"))
     api(libs.opentelemetry.sdk)
-    api(libs.opentelemetry.api)
     api(libs.opentelemetry.sdk.testing)
     api(libs.assertj.core)
     implementation(libs.androidx.core)
