@@ -1,0 +1,30 @@
+public final class io/opentelemetry/instrumentation/agent/spanannotation/SpanAnnotationPlugin : net/bytebuddy/build/Plugin {
+	public fun <init> ()V
+	public fun apply (Lnet/bytebuddy/dynamic/DynamicType$Builder;Lnet/bytebuddy/description/type/TypeDescription;Lnet/bytebuddy/dynamic/ClassFileLocator;)Lnet/bytebuddy/dynamic/DynamicType$Builder;
+	public fun close ()V
+	public synthetic fun matches (Ljava/lang/Object;)Z
+	public fun matches (Lnet/bytebuddy/description/type/TypeDescription;)Z
+}
+
+public final class io/opentelemetry/instrumentation/agent/spanannotation/SpanAnnotationPluginKt {
+	public static final field ADDING_SPAN_ATTRIBUTES_ANNOTATION Ljava/lang/String;
+	public static final field SPAN_ATTRIBUTE_ANNOTATION Ljava/lang/String;
+	public static final field WITH_SPAN_ANNOTATION Ljava/lang/String;
+}
+
+public final class io/opentelemetry/instrumentation/agent/spanannotation/advice/method/AddingSpanAttributesMethodAdvice {
+	public static final field INSTANCE Lio/opentelemetry/instrumentation/agent/spanannotation/advice/method/AddingSpanAttributesMethodAdvice;
+	public static final fun onEnter ([Ljava/lang/Object;Ljava/lang/String;)V
+}
+
+public final class io/opentelemetry/instrumentation/agent/spanannotation/advice/method/SpanAttributeMethodAdvice {
+	public static final field INSTANCE Lio/opentelemetry/instrumentation/agent/spanannotation/advice/method/SpanAttributeMethodAdvice;
+	public static final fun onEnter ([Ljava/lang/Object;Ljava/lang/reflect/Method;)V
+}
+
+public final class io/opentelemetry/instrumentation/agent/spanannotation/advice/method/WithSpanMethodAdvice {
+	public static final field INSTANCE Lio/opentelemetry/instrumentation/agent/spanannotation/advice/method/WithSpanMethodAdvice;
+	public static final fun onEnter (Ljava/lang/reflect/Method;)Lkotlin/Pair;
+	public static final fun onExit (Lkotlin/Pair;Ljava/lang/Throwable;)V
+}
+
