@@ -81,8 +81,8 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
         }
 
         val logger = ctx.openTelemetry.logsBridge.get("app.jank")
-        var jankReporter: JankReporter = EventJankReporter(logger, SLOW_THRESHOLD_MS / 1000.0, debugVerbose)
-        jankReporter = jankReporter.combine(EventJankReporter(logger, FROZEN_THRESHOLD_MS / 1000.0, debugVerbose))
+        var jankReporter: JankReporter = EventJankReporter(logger, ctx.sessionProvider, SLOW_THRESHOLD_MS / 1000.0, debugVerbose)
+        jankReporter = jankReporter.combine(EventJankReporter(logger, ctx.sessionProvider, FROZEN_THRESHOLD_MS / 1000.0, debugVerbose))
 
         if (useDeprecatedSpan) {
             val tracer = ctx.openTelemetry.getTracer("io.opentelemetry.slow-rendering")

@@ -8,6 +8,7 @@ package io.opentelemetry.android.instrumentation.slowrendering
 import android.util.Log
 import io.mockk.every
 import io.mockk.mockkStatic
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Rule
@@ -20,7 +21,7 @@ class EventJankReporterTest {
     @Test
     fun `event is generated`() {
         val eventLogger = otelTesting.openTelemetry.logsBridge.get("JANK!")
-        val jankReporter = EventJankReporter(eventLogger, 0.600)
+        val jankReporter = EventJankReporter(eventLogger, SessionProvider.getNoop(), 0.600)
         val histogramData = HashMap<Int, Int>()
         histogramData[17] = 3
         histogramData[701] = 1

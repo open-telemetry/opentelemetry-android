@@ -50,6 +50,9 @@ public final class io/opentelemetry/android/SessionIdRatioBasedSampler : io/open
 	public fun shouldSample (Lio/opentelemetry/context/Context;Ljava/lang/String;Ljava/lang/String;Lio/opentelemetry/api/trace/SpanKind;Lio/opentelemetry/api/common/Attributes;Ljava/util/List;)Lio/opentelemetry/sdk/trace/samplers/SamplingResult;
 }
 
+public abstract interface annotation class io/opentelemetry/android/annotations/Incubating : java/lang/annotation/Annotation {
+}
+
 public final class io/opentelemetry/android/config/OtelRumConfig {
 	public fun <init> ()V
 	public final fun allowInstrumentation (Ljava/lang/String;)Lio/opentelemetry/android/config/OtelRumConfig;
@@ -241,5 +244,41 @@ public final class io/opentelemetry/android/internal/processors/ScreenAttributes
 	public fun <init> (Lio/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker;)V
 	public final fun getVisibleScreenTracker ()Lio/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker;
 	public fun onEmit (Lio/opentelemetry/context/Context;Lio/opentelemetry/sdk/logs/ReadWriteLogRecord;)V
+}
+
+public final class io/opentelemetry/android/ktx/SessionExtensionsKt {
+	public static final fun addIfValueIsNotNullBlankAndEmpty (Lio/opentelemetry/api/common/AttributesBuilder;Ljava/lang/String;Ljava/lang/String;)Lio/opentelemetry/api/common/AttributesBuilder;
+	public static final fun setSessionIdentifiersWith (Lio/opentelemetry/api/common/AttributesBuilder;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/api/common/AttributesBuilder;
+	public static final fun setSessionIdentifiersWith (Lio/opentelemetry/api/logs/LogRecordBuilder;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/api/logs/LogRecordBuilder;
+	public static final fun setSessionIdentifiersWith (Lio/opentelemetry/api/trace/Span;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/api/trace/Span;
+	public static final fun setSessionIdentifiersWith (Lio/opentelemetry/sdk/logs/ReadWriteLogRecord;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/sdk/logs/ReadWriteLogRecord;
+}
+
+public abstract interface class io/opentelemetry/android/session/SessionIdFacade {
+	public abstract fun getSessionIdentifiers ()Lio/opentelemetry/android/session/SessionIdentifiers;
+}
+
+public final class io/opentelemetry/android/session/SessionIdentifierFacade : io/opentelemetry/android/session/SessionIdFacade {
+	public fun <init> (Lio/opentelemetry/android/session/SessionProvider;)V
+	public fun getSessionIdentifiers ()Lio/opentelemetry/android/session/SessionIdentifiers;
+}
+
+public final class io/opentelemetry/android/session/SessionIdentifiers {
+	public static final field Companion Lio/opentelemetry/android/session/SessionIdentifiers$Companion;
+	public static final field SESSION_ID Lio/opentelemetry/api/common/AttributeKey;
+	public static final field SESSION_PREVIOUS_ID Lio/opentelemetry/api/common/AttributeKey;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lio/opentelemetry/android/session/SessionIdentifiers;
+	public static synthetic fun copy$default (Lio/opentelemetry/android/session/SessionIdentifiers;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/opentelemetry/android/session/SessionIdentifiers;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCurrentSessionId ()Ljava/lang/String;
+	public final fun getPreviousSessionId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/opentelemetry/android/session/SessionIdentifiers$Companion {
 }
 

@@ -6,8 +6,11 @@
 package io.opentelemetry.android.instrumentation.anr
 
 import android.os.Handler
+import io.opentelemetry.android.annotations.Incubating
 import io.opentelemetry.android.common.internal.utils.threadIdCompat
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
+import io.opentelemetry.android.ktx.setSessionIdentifiersWith
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.context.Context
@@ -28,26 +31,29 @@ internal val DEFAULT_POLL_DURATION_NS = SECONDS.toNanos(1)
  *
  * @param pollDurationNs - exists for testing
  */
+@OptIn(Incubating::class)
 internal class AnrWatcher(
     private val uiHandler: Handler,
     private val mainThread: Thread,
     private val anrLogger: Logger,
+    private val sessionProvider: SessionProvider,
     private val additionalExtractors: List<EventAttributesExtractor<Array<StackTraceElement>>>,
     private val pollDurationNs: Long = DEFAULT_POLL_DURATION_NS,
 ) : Runnable {
     private val anrCounter = AtomicInteger()
 
-    constructor(uiHandler: Handler, mainThread: Thread, anrLogger: Logger) :
-        this(uiHandler, mainThread, anrLogger, emptyList(), DEFAULT_POLL_DURATION_NS)
+    constructor(uiHandler: Handler, mainThread: Thread, anrLogger: Logger, sessionProvider: SessionProvider) :
+        this(uiHandler, mainThread, anrLogger, sessionProvider, emptyList(), DEFAULT_POLL_DURATION_NS)
 
     // A constructor that can be called from Java
     constructor(
         uiHandler: Handler,
         mainThread: Thread,
         anrLogger: Logger,
+        sessionProvider: SessionProvider,
         additionalExtractors: List<EventAttributesExtractor<Array<StackTraceElement>>>,
     ) :
-        this(uiHandler, mainThread, anrLogger, additionalExtractors, DEFAULT_POLL_DURATION_NS)
+        this(uiHandler, mainThread, anrLogger, sessionProvider, additionalExtractors, DEFAULT_POLL_DURATION_NS)
 
     override fun run() {
         val response = CountDownLatch(1)
@@ -88,8 +94,9 @@ internal class AnrWatcher(
             attributesBuilder.putAll(extractedAttributes)
         }
 
-        val eventBuilder = anrLogger.logRecordBuilder()
-        eventBuilder
+        anrLogger
+            .logRecordBuilder()
+            .setSessionIdentifiersWith(sessionProvider)
             .setEventName("device.anr")
             .setAllAttributes(attributesBuilder.build())
             .emit()

@@ -18,6 +18,7 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":services"))
     implementation(project(":session"))
+    implementation(project(":core"))
     implementation(project(":instrumentation:common-api"))
     implementation(project(":agent-api"))
     implementation(libs.androidx.core)
