@@ -1,0 +1,48 @@
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#E3F2FD','primaryTextColor':'#000','primaryBorderColor':'#1976D2','lineColor':'#1976D2','secondaryColor':'#f4f4f4','tertiaryColor':'#fff','background':'#ffffff','mainBkg':'#ffffff','secondaryBkg':'#E3F2FD','clusterBkg':'#E8EAF6','clusterBorder':'#3F51B5','labelBackground':'#ffffff','textColor':'#000','fontSize':'18px','nodeTextColor':'#000','edgeLabelBackground':'#ffffff'}}}%%
+graph LR
+    subgraph "User Activity"
+        UA[User Interaction]
+    end
+    
+    subgraph "Session Management"
+        SM[SessionManager]
+        SO[SessionObserver]
+    end
+    
+    subgraph "Telemetry Signals"
+        direction TB
+        SPANS[Spans<br/>Distributed Traces]
+        LOGS[Logs<br/>Application Events]
+        METRICS[Metrics<br/>Measurements]
+    end
+    
+    subgraph "Appenders/Adapters"
+        SA[SessionIdSpanAppender]
+        LA[SessionIdLogRecordAppender]
+        MA[SessionMetricExporterAdapter]
+    end
+    
+    subgraph "Backend"
+        BE[Observability Platform]
+    end
+    
+    UA -->|triggers| SM
+    SM -->|notifies| SO
+    SM -->|provides ID| SA
+    SM -->|provides ID| LA
+    SM -->|provides ID| MA
+    
+    SA -->|session.id| SPANS
+    LA -->|session.id| LOGS
+    MA -->|session.id| METRICS
+    
+    SPANS -->|export| BE
+    LOGS -->|export| BE
+    METRICS -->|export| BE
+    
+    style SM fill:#FFB6C1
+    style SA fill:#87CEEB
+    style LA fill:#87CEEB
+    style MA fill:#87CEEB
+    style BE fill:#FFD700
+

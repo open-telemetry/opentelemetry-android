@@ -17,7 +17,7 @@ class StartupInstrumentation : AndroidInstrumentation {
     override fun install(ctx: InstallationContext) {
         val events = InitializationEvents.get()
         if (events is SdkInitializationEvents) {
-            events.finish(ctx.openTelemetry)
+            events.finish(ctx.openTelemetry, ctx.sessionProvider)
         }
     }
 }

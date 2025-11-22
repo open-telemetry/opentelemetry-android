@@ -29,6 +29,7 @@ import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockkClass
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
@@ -77,6 +78,7 @@ internal class ComposeClickEventGeneratorTest {
                 openTelemetryRule.openTelemetry.logsBridge
                     .loggerBuilder("io.opentelemetry.android.instrumentation.compose")
                     .build(),
+                SessionProvider.getNoop(),
                 composeLayoutNodeUtil,
             )
 
@@ -110,7 +112,7 @@ internal class ComposeClickEventGeneratorTest {
         OpenTelemetryAssertions
             .assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
-            .hasAttributesSatisfyingExactly(
+            .hasAttributesSatisfying(
                 equalTo(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong()),
                 equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
             )
@@ -147,7 +149,7 @@ internal class ComposeClickEventGeneratorTest {
         OpenTelemetryAssertions
             .assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
-            .hasAttributesSatisfyingExactly(
+            .hasAttributesSatisfying(
                 equalTo(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong()),
                 equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
             )
@@ -185,7 +187,7 @@ internal class ComposeClickEventGeneratorTest {
         OpenTelemetryAssertions
             .assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
-            .hasAttributesSatisfyingExactly(
+            .hasAttributesSatisfying(
                 equalTo(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong()),
                 equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
             )

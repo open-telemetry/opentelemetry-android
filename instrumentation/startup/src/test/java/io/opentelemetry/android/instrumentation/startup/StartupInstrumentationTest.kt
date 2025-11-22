@@ -14,6 +14,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.internal.initialization.InitializationEvents
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -39,13 +40,13 @@ class StartupInstrumentationTest {
     @Test
     fun `Call finish on SdkInitializationEvents`() {
         val sdkInitializationEvents = mockk<SdkInitializationEvents>()
-        every { sdkInitializationEvents.finish(any()) } just Runs
+        every { sdkInitializationEvents.finish(any(), any()) } just Runs
         InitializationEvents.set(sdkInitializationEvents)
 
         instrumentation.install(makeContext())
 
         verify {
-            sdkInitializationEvents.finish(otelTesting.openTelemetry)
+            sdkInitializationEvents.finish(otelTesting.openTelemetry, any())
         }
     }
 
@@ -63,6 +64,6 @@ class StartupInstrumentationTest {
         InstallationContext(
             mockk<Application>(),
             otelTesting.openTelemetry,
-            mockk(),
+            SessionProvider.getNoop(),
         )
 }

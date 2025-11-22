@@ -33,7 +33,7 @@ class NetworkChangeInstrumentation : AndroidInstrumentation {
     override fun install(ctx: InstallationContext) {
         additionalAttributeExtractors.add(NetworkChangeAttributesExtractor())
         val services = get(ctx.context)
-        val networkApplicationListener = NetworkApplicationListener(services.currentNetworkProvider)
+        val networkApplicationListener = NetworkApplicationListener(services.currentNetworkProvider, ctx.sessionProvider)
         val logger = ctx.openTelemetry.logsBridge["io.opentelemetry.network"]
         networkApplicationListener.startMonitoring(logger, additionalAttributeExtractors)
         services.appLifecycle.registerListener(networkApplicationListener)

@@ -5,13 +5,14 @@
 
 package io.opentelemetry.android.agent.session
 
-import io.opentelemetry.android.Incubating
+import io.opentelemetry.android.annotations.Incubating
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.android.session.SessionPublisher
 import io.opentelemetry.sdk.common.Clock
 import java.util.Collections.synchronizedList
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 import kotlin.time.Duration
 
@@ -23,12 +24,12 @@ internal class SessionManager(
     private val maxSessionLifetime: Duration,
 ) : SessionProvider,
     SessionPublisher {
-    // TODO: Make thread safe / wrap with AtomicReference?
-    private var session: Session = Session.NONE
+    private var session: AtomicReference<Session> = AtomicReference(Session.NONE)
+    private var previousSession: AtomicReference<Session> = AtomicReference(Session.NONE)
     private val observers = synchronizedList(ArrayList<SessionObserver>())
 
     init {
-        sessionStorage.save(session)
+        sessionStorage.save(session.get())
     }
 
     override fun addObserver(observer: SessionObserver) {
@@ -36,38 +37,50 @@ internal class SessionManager(
     }
 
     override fun getSessionId(): String {
-        // value will never be null
-        var newSession = session
+        val currentSession = session.get()
 
-        if (sessionHasExpired() || timeoutHandler.hasTimedOut()) {
+        // Check if we need to create a new session.
+        return if (sessionHasExpired() || timeoutHandler.hasTimedOut()) {
             val newId = idGenerator.generateSessionId()
+            val newSession = Session.DefaultSession(newId, clock.now())
 
-            // TODO FIXME: This is not threadsafe -- if two threads call getSessionId()
-            // at the same time while timed out, two new sessions are created
-            // Could require SessionStorage impls to be atomic/threadsafe or
-            // do the locking in this class?
-
-            newSession = Session.DefaultSession(newId, clock.now())
-            sessionStorage.save(newSession)
-        }
-
-        timeoutHandler.bump()
-
-        // observers need to be called after bumping the timer because it may
-        // create a new span
-        if (newSession != session) {
-            val previousSession = session
-            session = newSession
-            observers.forEach {
-                it.onSessionEnded(previousSession)
-                it.onSessionStarted(session, previousSession)
+            // Atomically update the session only if it hasn't been changed by another thread.
+            if (session.compareAndSet(currentSession, newSession)) {
+                sessionStorage.save(newSession)
+                timeoutHandler.bump()
+                // Track the previous session for session transition correlation
+                previousSession.set(currentSession)
+                // Observers need to be called after bumping the timer because it may create a new
+                // span.
+                notifyObserversOfSessionUpdate(currentSession, newSession)
+                newSession.getId()
+            } else {
+                // Another thread accessed this function prior to creating a new session. Use the
+                // current session.
+                timeoutHandler.bump()
+                session.get().getId()
             }
+        } else {
+            // No new session needed, just bump the timeout and return current session ID
+            timeoutHandler.bump()
+            currentSession.getId()
         }
-        return session.getId()
+    }
+
+    override fun getPreviousSessionId(): String = previousSession.get().getId()
+
+    private fun notifyObserversOfSessionUpdate(
+        currentSession: Session,
+        newSession: Session,
+    ) {
+        observers.forEach {
+            it.onSessionEnded(currentSession)
+            it.onSessionStarted(newSession, currentSession)
+        }
     }
 
     private fun sessionHasExpired(): Boolean {
-        val elapsedTime = clock.now() - session.getStartTimestamp()
+        val elapsedTime = clock.now() - session.get().getStartTimestamp()
         return elapsedTime >= maxSessionLifetime.inWholeNanoseconds
     }
 

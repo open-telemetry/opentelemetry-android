@@ -8,7 +8,7 @@ package io.opentelemetry.android.demo
 import android.annotation.SuppressLint
 import android.app.Application
 import android.util.Log
-import io.opentelemetry.android.Incubating
+import io.opentelemetry.android.annotations.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.agent.OpenTelemetryRumInitializer
 import io.opentelemetry.api.common.AttributeKey.stringKey
@@ -40,6 +40,14 @@ class OtelDemoApplication : Application() {
                     globalAttributes {
                         Attributes.of(stringKey("toolkit"), "jetpack compose")
                     }
+                    // To quickly observe session transitions in the demo app, you can temporarily
+                    // reduce the timeout values here. For example:
+                    // session {
+                    //     backgroundInactivityTimeout = 30.seconds
+                    //     maxLifetime = 2.minutes
+                    // }
+                    // Then, put the app in background for 30+ seconds or wait 2 minutes to see
+                    // the session ID change. Be sure to revert these changes before committing.
                 }
             )
             Log.d(TAG, "RUM session started: " + rum?.getRumSessionId())

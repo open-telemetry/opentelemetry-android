@@ -1,0 +1,20 @@
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#C8E6C9','primaryTextColor':'#000','primaryBorderColor':'#2E7D32','lineColor':'#000','textColor':'#000','fontSize':'18px','background':'#ffffff','actorBkg':'#C8E6C9','actorBorder':'#2E7D32','actorTextColor':'#000','labelBoxBkgColor':'#FFF9C4','labelBoxBorderColor':'#F57C00','noteBkgColor':'#E8F5E9','noteBorderColor':'#2E7D32','noteTextColor':'#000'}}}%%
+sequenceDiagram
+    participant T1 as Thread 1
+    participant T2 as Thread 2
+    participant AR as AtomicReference<Session>
+    
+    Note over T1,AR: Session timeout occurs
+    T1->>AR: getSessionId()
+    T2->>AR: getSessionId()
+    AR->>AR: Check expired? YES
+    AR->>AR: Check expired? YES
+    AR->>AR: Create new session (ID: abc)
+    AR->>AR: compareAndSet(old, new) ✓
+    AR->>AR: Create new session (ID: xyz)
+    AR->>AR: compareAndSet(old, new) ✗
+    AR->>AR: Use current session
+    AR-->>T1: Return "abc"
+    AR-->>T2: Return "abc"
+    Note over T1,T2: ✅ Same session ID!
+

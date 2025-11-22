@@ -10,6 +10,9 @@ package io.opentelemetry.instrumentation.compose.click
 import android.view.MotionEvent
 import android.view.Window
 import androidx.compose.ui.node.LayoutNode
+import io.opentelemetry.android.annotations.Incubating
+import io.opentelemetry.android.ktx.setSessionIdentifiersWith
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.Logger
@@ -20,8 +23,10 @@ import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_NA
 import java.lang.ref.WeakReference
 import kotlin.let
 
+@OptIn(Incubating::class)
 internal class ComposeClickEventGenerator(
     private val eventLogger: Logger,
+    private val sessionProvider: SessionProvider,
     private val composeLayoutNodeUtil: ComposeLayoutNodeUtil = ComposeLayoutNodeUtil(),
     private val composeTapTargetDetector: ComposeTapTargetDetector = ComposeTapTargetDetector(composeLayoutNodeUtil),
 ) {
@@ -62,6 +67,7 @@ internal class ComposeClickEventGenerator(
     private fun createEvent(name: String): LogRecordBuilder =
         eventLogger
             .logRecordBuilder()
+            .setSessionIdentifiersWith(sessionProvider)
             .setEventName(name)
 
     private fun createNodeAttributes(node: LayoutNode): Attributes {

@@ -50,6 +50,7 @@ class AnrInstrumentation : AndroidInstrumentation {
                 scheduler,
                 get(ctx.context).appLifecycle,
                 ctx.openTelemetry,
+                ctx.sessionProvider,
             )
         anrDetector.start()
     }

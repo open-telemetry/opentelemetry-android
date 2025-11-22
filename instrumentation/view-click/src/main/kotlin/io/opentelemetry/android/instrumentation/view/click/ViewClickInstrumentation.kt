@@ -21,6 +21,7 @@ class ViewClickInstrumentation : AndroidInstrumentation {
                         .logsBridge
                         .loggerBuilder("io.opentelemetry.android.instrumentation.view.click")
                         .build(),
+                    ctx.sessionProvider,
                 ),
             ),
         )

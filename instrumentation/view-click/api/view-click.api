@@ -5,7 +5,7 @@ public final class io/opentelemetry/android/instrumentation/view/click/ViewClick
 }
 
 public final class io/opentelemetry/android/instrumentation/view/click/ViewClickEventGenerator {
-	public fun <init> (Lio/opentelemetry/api/logs/Logger;)V
+	public fun <init> (Lio/opentelemetry/api/logs/Logger;Lio/opentelemetry/android/session/SessionProvider;)V
 	public final fun generateClick (Landroid/view/MotionEvent;)V
 	public final fun startTracking (Landroid/view/Window;)V
 	public final fun stopTracking ()V

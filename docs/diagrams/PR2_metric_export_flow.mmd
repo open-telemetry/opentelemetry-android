@@ -1,0 +1,20 @@
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#E3F2FD','primaryTextColor':'#000','primaryBorderColor':'#1976D2','lineColor':'#000','secondaryColor':'#f4f4f4','tertiaryColor':'#fff','background':'#ffffff','mainBkg':'#ffffff','secondaryBkg':'#f4f4f4','textColor':'#000','fontSize':'18px','actorBkg':'#E3F2FD','actorBorder':'#1976D2','actorTextColor':'#000','labelBoxBkgColor':'#FFF9C4','labelBoxBorderColor':'#F57C00','noteBkgColor':'#FFF9C4','noteBorderColor':'#F57C00','noteTextColor':'#000'}}}%%
+sequenceDiagram
+    participant App as Application
+    participant MR as MetricReader
+    participant SMEA as SessionMetricExporterAdapter
+    participant SF as SessionIdentifierFacade
+    participant ME as MetricExporter
+    participant Backend as Backend/OTLP
+    
+    App->>MR: Flush metrics
+    MR->>SMEA: export(metrics)
+    SMEA->>SF: getCurrentSessionId()
+    SF-->>SMEA: "session-abc-123"
+    SMEA->>SMEA: Inject session.id attribute<br/>into all metric points
+    SMEA->>ME: export(enriched metrics)
+    ME->>Backend: Send to backend
+    Backend-->>ME: Success
+    ME-->>SMEA: CompletableResultCode
+    SMEA-->>MR: CompletableResultCode
+

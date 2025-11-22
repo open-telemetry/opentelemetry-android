@@ -1,0 +1,32 @@
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#E3F2FD','primaryTextColor':'#000','primaryBorderColor':'#1976D2','lineColor':'#1976D2','secondaryColor':'#f4f4f4','tertiaryColor':'#fff','background':'#ffffff','mainBkg':'#ffffff','secondaryBkg':'#E3F2FD','clusterBkg':'#E8EAF6','clusterBorder':'#3F51B5','labelBackground':'#ffffff','textColor':'#000','fontSize':'18px','nodeTextColor':'#000','edgeLabelBackground':'#ffffff'}}}%%
+graph TB
+    subgraph "OpenTelemetry SDK"
+        ME[MetricExporter<br/>Backend/OTLP]
+        MR[MetricReader]
+    end
+    
+    subgraph "Session Infrastructure Core"
+        SMEA[SessionMetricExporterAdapter<br/>Decorator Pattern]
+        SF[SessionIdentifierFacade<br/>Unified Access]
+        SE[SessionExtensions<br/>Kotlin Extensions]
+    end
+    
+    subgraph "Session Management Agent"
+        SP[SessionProvider<br/>Interface]
+        SM[SessionManager<br/>Implementation]
+        SC[SessionConfig<br/>Configuration]
+    end
+    
+    MR -->|wraps| SMEA
+    SMEA -->|delegates to| ME
+    SMEA -->|queries| SF
+    SF -->|facade| SP
+    SP <-->|implements| SM
+    SM -->|configured by| SC
+    SE -.->|extends| SP
+    
+    style SMEA fill:#90EE90
+    style SF fill:#90EE90
+    style SE fill:#90EE90
+    style SM fill:#FFB6C1
+

@@ -11,6 +11,8 @@ import android.view.ViewGroup
 import android.view.Window
 import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_CLICK_EVENT_NAME
 import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_EVENT_NAME
+import io.opentelemetry.android.ktx.setSessionIdentifiersWith
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.Logger
@@ -23,6 +25,7 @@ import java.util.LinkedList
 
 class ViewClickEventGenerator(
     private val eventLogger: Logger,
+    private val sessionProvider: SessionProvider,
 ) {
     private var windowRef: WeakReference<Window>? = null
 
@@ -63,6 +66,7 @@ class ViewClickEventGenerator(
     private fun createEvent(name: String): LogRecordBuilder =
         eventLogger
             .logRecordBuilder()
+            .setSessionIdentifiersWith(sessionProvider)
             .setEventName(name)
 
     private fun createViewAttributes(view: View): Attributes {

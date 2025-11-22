@@ -1,0 +1,17 @@
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#FFCDD2','primaryTextColor':'#000','primaryBorderColor':'#C62828','lineColor':'#000','textColor':'#000','fontSize':'18px','background':'#ffffff','actorBkg':'#FFCDD2','actorBorder':'#C62828','actorTextColor':'#000','labelBoxBkgColor':'#FFF9C4','labelBoxBorderColor':'#F57C00','noteBkgColor':'#FFEBEE','noteBorderColor':'#C62828','noteTextColor':'#000'}}}%%
+sequenceDiagram
+    participant T1 as Thread 1
+    participant T2 as Thread 2
+    participant SM as SessionManager
+    
+    Note over T1,SM: Session timeout occurs
+    T1->>SM: getSessionId()
+    T2->>SM: getSessionId()
+    SM->>SM: Check expired? YES
+    SM->>SM: Check expired? YES
+    SM->>SM: Create new session (ID: abc)
+    SM->>SM: Create new session (ID: xyz)
+    SM-->>T1: Return "abc"
+    SM-->>T2: Return "xyz"
+    Note over T1,T2: ❌ Two different sessions!
+

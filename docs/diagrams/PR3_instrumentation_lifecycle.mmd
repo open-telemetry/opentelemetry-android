@@ -1,0 +1,33 @@
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#E3F2FD','primaryTextColor':'#000','primaryBorderColor':'#1976D2','lineColor':'#000','textColor':'#000','fontSize':'18px','background':'#ffffff','actorBkg':'#E3F2FD','actorBorder':'#1976D2','actorTextColor':'#000','labelBoxBkgColor':'#FFF9C4','labelBoxBorderColor':'#F57C00','noteBkgColor':'#FFF9C4','noteBorderColor':'#F57C00','noteTextColor':'#000'}}}%%
+sequenceDiagram
+    participant App as Application
+    participant OTel as OpenTelemetryRum
+    participant Inst as Instrumentation
+    participant SM as SessionManager
+    participant SO as SessionObserver
+    participant Span as SpanAppender
+    
+    App->>OTel: install(config)
+    OTel->>SM: Initialize SessionManager
+    OTel->>Inst: Install instrumentation<br/>(ANR, Network, etc.)
+    Inst->>SO: Register as observer
+    
+    Note over App,Span: User Session Starts
+    
+    SM->>SO: onSessionStarted(session)
+    SO->>Span: Create session span
+    Span->>Span: Set session.id attribute
+    
+    App->>Inst: Network call / ANR event
+    Inst->>Span: Create span
+    Span->>SM: getCurrentSessionId()
+    SM-->>Span: "session-123"
+    Span->>Span: Inject session.id
+    
+    Note over App,Span: Session Timeout
+    
+    SM->>SO: onSessionEnded(oldSession)
+    SM->>SO: onSessionStarted(newSession)
+    SO->>Span: End old session span
+    SO->>Span: Create new session span
+

@@ -18,6 +18,8 @@ dependencies {
     implementation(project(":agent-api"))
     implementation(project(":instrumentation:android-instrumentation"))
 
+    implementation(project(":core"))
+    implementation(project(":session"))
     implementation(libs.opentelemetry.instrumentation.apiSemconv)
     implementation(libs.opentelemetry.semconv.incubating)
     implementation(libs.opentelemetry.api.incubator)

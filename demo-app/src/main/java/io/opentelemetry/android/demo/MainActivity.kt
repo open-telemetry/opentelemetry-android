@@ -73,6 +73,11 @@ class MainActivity : ComponentActivity() {
                                     },
                             )
                         }
+                        // Displays the current RUM session ID. To observe session transitions:
+                        // 1. Modify OtelDemoApplication.kt to reduce session timeout values
+                        //    (see comments in the configuration block)
+                        // 2. Put the app in background for the configured timeout period
+                        // 3. Return to the app and observe the session ID change
                         SessionId(viewModel.sessionIdState)
                         MainOtelButton(
                             painterResource(id = R.drawable.otel_icon),

@@ -101,7 +101,7 @@ internal class ComposeInstrumentationTest {
             InstallationContext(
                 application,
                 openTelemetryRule.openTelemetry,
-                mockk<SessionProvider>(),
+                mockk<SessionProvider>(relaxed = true),
             )
 
         val callbackCapturingSlot = slot<ComposeClickActivityCallback>()
@@ -151,7 +151,7 @@ internal class ComposeInstrumentationTest {
         var event = events[0]
         assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
-            .hasAttributesSatisfyingExactly(
+            .hasAttributesSatisfying(
                 equalTo(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong()),
                 equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
             )

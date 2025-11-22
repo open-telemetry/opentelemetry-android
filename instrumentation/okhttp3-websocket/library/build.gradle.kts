@@ -15,9 +15,13 @@ android {
 
 dependencies {
     implementation(project(":agent-api"))
-    implementation(project(":instrumentation:android-instrumentation"))
+    api(platform(libs.opentelemetry.platform.alpha))
+    api(project(":instrumentation:android-instrumentation"))
+    implementation(project(":core"))
+    implementation(project(":session"))
     compileOnly(libs.okhttp)
     api(libs.opentelemetry.instrumentation.okhttp)
     implementation(libs.opentelemetry.instrumentation.apiSemconv)
     implementation(libs.opentelemetry.api.incubator)
+    implementation(libs.opentelemetry.sdk)
 }

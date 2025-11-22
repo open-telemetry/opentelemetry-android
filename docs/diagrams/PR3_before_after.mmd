@@ -1,0 +1,21 @@
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#E3F2FD','primaryTextColor':'#000','primaryBorderColor':'#1976D2','lineColor':'#1976D2','secondaryColor':'#f4f4f4','tertiaryColor':'#fff','background':'#ffffff','mainBkg':'#ffffff','secondaryBkg':'#E3F2FD','clusterBkg':'#E8EAF6','clusterBorder':'#3F51B5','labelBackground':'#ffffff','textColor':'#000','fontSize':'18px','nodeTextColor':'#000','edgeLabelBackground':'#ffffff'}}}%%
+graph TB
+    subgraph "Before: Partial Coverage"
+        direction LR
+        B_SPANS[✅ Spans<br/>session.id]
+        B_LOGS[✅ Logs<br/>session.id]
+        B_METRICS[❌ Metrics<br/>NO session.id]
+    end
+    
+    subgraph "After: Complete Coverage"
+        direction LR
+        A_SPANS[✅ Spans<br/>session.id]
+        A_LOGS[✅ Logs<br/>session.id]
+        A_METRICS[✅ Metrics<br/>session.id]
+    end
+    
+    B_METRICS -.->|gap| A_METRICS
+    
+    style B_METRICS fill:#FFB6C1
+    style A_METRICS fill:#90EE90
+

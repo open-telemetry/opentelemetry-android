@@ -70,7 +70,7 @@ class NetworkChangeInstrumentationTest {
         val event = events[0]
         assertThat(event)
             .hasEventName("network.change")
-            .hasAttributesSatisfyingExactly(
+            .hasAttributesSatisfying(
                 equalTo(NETWORK_STATUS_KEY, "available"),
                 equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE, "wifi"),
             )
@@ -100,7 +100,7 @@ class NetworkChangeInstrumentationTest {
         val event = events[0]
         assertThat(event)
             .hasEventName("network.change")
-            .hasAttributesSatisfyingExactly(
+            .hasAttributesSatisfying(
                 equalTo(NETWORK_STATUS_KEY, "available"),
                 equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE, "cell"),
                 equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_SUBTYPE, "LTE"),
@@ -128,7 +128,7 @@ class NetworkChangeInstrumentationTest {
         val event = events[0]
         assertThat(event)
             .hasEventName("network.change")
-            .hasAttributesSatisfyingExactly(
+            .hasAttributesSatisfying(
                 equalTo(NETWORK_STATUS_KEY, "lost"),
                 equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE, "unavailable"),
             )
@@ -167,7 +167,7 @@ class NetworkChangeInstrumentationTest {
         val event = otelTesting.logRecords[0]
         assertThat(event)
             .hasEventName("network.change")
-            .hasAttributesSatisfyingExactly(
+            .hasAttributesSatisfying(
                 equalTo(NETWORK_STATUS_KEY, "lost"),
                 equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE, "unavailable"),
             )
@@ -179,6 +179,6 @@ class NetworkChangeInstrumentationTest {
         every { services.currentNetworkProvider } returns currentNetworkProvider
         every { services.appLifecycle } returns appLifecycle
         Services.set(services)
-        return InstallationContext(app, otelTesting.openTelemetry, mockk<SessionProvider>())
+        return InstallationContext(app, otelTesting.openTelemetry, mockk<SessionProvider>(relaxed = true))
     }
 }

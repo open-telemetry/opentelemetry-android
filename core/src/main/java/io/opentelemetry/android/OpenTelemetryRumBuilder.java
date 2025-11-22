@@ -407,6 +407,29 @@ public final class OpenTelemetryRumBuilder {
         scheduleDiskTelemetryReader(services, signalFromDiskExporter);
     }
 
+    /**
+     * Sets the {@link SessionProvider} to be used for session management.
+     *
+     * <p>The session provider is responsible for generating and managing session identifiers that
+     * are automatically attached to all telemetry data (spans, logs, metrics). Session IDs provide
+     * a way to group related telemetry that occurs during a logical user interaction or application
+     * usage period.
+     *
+     * <p>If not set, a no-op session provider will be used that returns empty session IDs.
+     *
+     * <p>Session identifiers are automatically added to:
+     *
+     * <ul>
+     *   <li>All spans via {@link SessionIdSpanAppender}
+     *   <li>All log records via {@link
+     *       io.opentelemetry.android.internal.processors.SessionIdLogRecordAppender}
+     *   <li>Public API events via {@link OpenTelemetryRum#emitEvent(String, String,
+     *       io.opentelemetry.api.common.Attributes)}
+     * </ul>
+     *
+     * @param sessionProvider the session provider to use for session management
+     * @return {@code this}
+     */
     public OpenTelemetryRumBuilder setSessionProvider(SessionProvider sessionProvider) {
         this.sessionProvider = sessionProvider;
         return this;
