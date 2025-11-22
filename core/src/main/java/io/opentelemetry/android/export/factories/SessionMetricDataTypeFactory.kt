@@ -13,14 +13,11 @@ import io.opentelemetry.android.export.models.SummaryWithSessionData
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.sdk.metrics.data.Data
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData
 import io.opentelemetry.sdk.metrics.data.GaugeData
 import io.opentelemetry.sdk.metrics.data.HistogramData
-import io.opentelemetry.sdk.metrics.data.HistogramPointData
 import io.opentelemetry.sdk.metrics.data.PointData
 import io.opentelemetry.sdk.metrics.data.SumData
 import io.opentelemetry.sdk.metrics.data.SummaryData
-import io.opentelemetry.sdk.metrics.data.SummaryPointData
 
 /**
  * A [MetricDataTypeFactory] that creates metric Data instances with session attributes injected.

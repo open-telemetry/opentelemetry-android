@@ -6,12 +6,7 @@
 package io.opentelemetry.android.export.factories
 
 import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.sdk.metrics.data.DoublePointData
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData
-import io.opentelemetry.sdk.metrics.data.HistogramPointData
-import io.opentelemetry.sdk.metrics.data.LongPointData
 import io.opentelemetry.sdk.metrics.data.PointData
-import io.opentelemetry.sdk.metrics.data.SummaryPointData
 
 /**
  * Factory for creating [PointData] instances with injected attributes.
