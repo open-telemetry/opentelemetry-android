@@ -13,6 +13,7 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.verify
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
@@ -49,6 +50,7 @@ internal class AnrDetectorTest {
                 scheduler,
                 appLifecycle,
                 openTelemetry,
+                SessionProvider.getNoop(),
             )
         anrDetector.start()
 

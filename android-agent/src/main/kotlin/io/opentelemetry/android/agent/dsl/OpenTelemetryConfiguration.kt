@@ -5,8 +5,8 @@
 
 package io.opentelemetry.android.agent.dsl
 
-import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.dsl.instrumentation.InstrumentationConfiguration
+import io.opentelemetry.android.annotations.Incubating
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.api.common.Attributes

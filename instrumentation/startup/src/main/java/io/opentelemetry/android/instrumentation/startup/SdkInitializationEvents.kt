@@ -9,6 +9,8 @@ import com.google.auto.service.AutoService
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.internal.initialization.InitializationEvents
+import io.opentelemetry.android.ktx.setSessionIdentifiersWith
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
@@ -26,6 +28,7 @@ class SdkInitializationEvents(
 ) : InitializationEvents {
     private val events = ConcurrentLinkedQueue<Event>()
     private val eventLogger = AtomicReference<Logger?>()
+    private val sessionProvider = AtomicReference<SessionProvider?>()
 
     override fun sdkInitializationStarted() {
         addEvent(RumConstants.Events.INIT_EVENT_STARTED)
@@ -61,9 +64,13 @@ class SdkInitializationEvents(
         addEvent(RumConstants.Events.INIT_EVENT_SPAN_EXPORTER, attr = attributes)
     }
 
-    internal fun finish(openTelemetry: OpenTelemetry) {
+    internal fun finish(
+        openTelemetry: OpenTelemetry,
+        provider: SessionProvider,
+    ) {
         val logger = openTelemetry.logsBridge.loggerBuilder("otel.initialization.events").build()
         eventLogger.set(logger)
+        sessionProvider.set(provider)
         logger.emitInitEvents()
     }
 
@@ -75,8 +82,13 @@ class SdkInitializationEvents(
 
     private fun Event.emit(logger: Logger) {
         val eventBuilder = logger.logRecordBuilder()
+        val provider = sessionProvider.get()
         eventBuilder
-            .setEventName(name)
+            .apply {
+                if (provider != null) {
+                    setSessionIdentifiersWith(provider)
+                }
+            }.setEventName(name)
             .setTimestamp(timestamp)
             .apply {
                 if (attributes != null) {

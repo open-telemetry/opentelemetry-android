@@ -1,0 +1,21 @@
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#000','lineColor':'#000','secondaryColor':'#f4f4f4','tertiaryColor':'#fff','background':'#ffffff','mainBkg':'#ffffff','secondaryBkg':'#f4f4f4','labelBackground':'#ffffff','textColor':'#000','fontSize':'16px','nodeTextColor':'#000','edgeLabelBackground':'#ffffff'}}}%%
+graph TB
+    subgraph "Before: Partial Coverage"
+        direction LR
+        B_SPANS[✅ Spans<br/>session.id]
+        B_LOGS[✅ Logs<br/>session.id]
+        B_METRICS[❌ Metrics<br/>NO session.id]
+    end
+    
+    subgraph "After: Complete Coverage"
+        direction LR
+        A_SPANS[✅ Spans<br/>session.id]
+        A_LOGS[✅ Logs<br/>session.id]
+        A_METRICS[✅ Metrics<br/>session.id]
+    end
+    
+    B_METRICS -.->|gap| A_METRICS
+    
+    style B_METRICS fill:#FFB6C1
+    style A_METRICS fill:#90EE90
+

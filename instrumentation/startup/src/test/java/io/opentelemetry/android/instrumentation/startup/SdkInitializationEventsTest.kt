@@ -10,6 +10,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.common.RumConstants
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.common.Value
@@ -65,7 +66,7 @@ class SdkInitializationEventsTest {
         verify { listOf(processor) wasNot called }
         verify(exactly = 0) { exporter.export(any()) }
 
-        events.finish(sdk)
+        events.finish(sdk, SessionProvider.getNoop())
         events.spanExporterInitialized(exporter)
 
         assertThat(seen).satisfiesExactly(
@@ -100,8 +101,9 @@ class SdkInitializationEventsTest {
             } else {
                 assertThat(logData.bodyValue).isNotNull()
             }
-            if (attrs != null) {
-                assertThat(logData.attributes).isEqualTo(attrs)
+            // Check that expected attributes are present (allows additional attributes like session IDs)
+            attrs?.forEach { key, value ->
+                assertThat(logData.attributes.get(key)).isEqualTo(value)
             }
         }
 

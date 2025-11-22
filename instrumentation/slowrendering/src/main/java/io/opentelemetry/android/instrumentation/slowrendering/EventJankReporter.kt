@@ -6,7 +6,10 @@
 package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.util.Log
+import io.opentelemetry.android.annotations.Incubating
 import io.opentelemetry.android.common.RumConstants
+import io.opentelemetry.android.ktx.setSessionIdentifiersWith
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
@@ -16,8 +19,10 @@ internal val FRAME_COUNT: AttributeKey<Long> = AttributeKey.longKey("app.jank.fr
 internal val PERIOD: AttributeKey<Double> = AttributeKey.doubleKey("app.jank.period")
 internal val THRESHOLD: AttributeKey<Double> = AttributeKey.doubleKey("app.jank.threshold")
 
+@OptIn(Incubating::class)
 internal class EventJankReporter(
     private val eventLogger: Logger,
+    private val sessionProvider: SessionProvider,
     private val threshold: Double,
     private val debugVerbose: Boolean = false,
 ) : JankReporter {
@@ -42,7 +47,6 @@ internal class EventJankReporter(
         }
 
         if (frameCount > 0) {
-            val eventBuilder = eventLogger.logRecordBuilder()
             val attributes =
                 Attributes
                     .builder()
@@ -50,7 +54,9 @@ internal class EventJankReporter(
                     .put(PERIOD, periodSeconds)
                     .put(THRESHOLD, threshold)
                     .build()
-            eventBuilder
+            eventLogger
+                .logRecordBuilder()
+                .setSessionIdentifiersWith(sessionProvider)
                 .setEventName("app.jank")
                 .setAllAttributes(attributes)
                 .emit()

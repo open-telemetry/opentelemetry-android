@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android
+package io.opentelemetry.android.annotations
 
 /**
  * Marks an API as incubating. Incubating APIs can be subject to breaking change without warning

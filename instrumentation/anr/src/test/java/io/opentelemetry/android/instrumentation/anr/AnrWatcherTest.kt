@@ -10,6 +10,7 @@ import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.Logger
@@ -45,7 +46,7 @@ class AnrWatcherTest {
 
     @Test
     fun mainThreadDisappearing() {
-        val anrWatcher = AnrWatcher(handler, mainThread, logger)
+        val anrWatcher = AnrWatcher(handler, mainThread, logger, SessionProvider.getNoop())
         for (i in 0..4) {
             every { handler.post(any()) } returns false
             anrWatcher.run()
@@ -55,7 +56,7 @@ class AnrWatcherTest {
 
     @Test
     fun noAnr() {
-        val anrWatcher = AnrWatcher(handler, mainThread, logger)
+        val anrWatcher = AnrWatcher(handler, mainThread, logger, SessionProvider.getNoop())
         for (i in 0..4) {
             every { handler.post(any()) } answers {
                 val callback = it.invocation.args[0] as Runnable
@@ -70,7 +71,7 @@ class AnrWatcherTest {
 
     @Test
     fun noAnr_temporaryPause() {
-        val anrWatcher = AnrWatcher(handler, mainThread, logger)
+        val anrWatcher = AnrWatcher(handler, mainThread, logger, SessionProvider.getNoop())
         for (i in 0..4) {
             val index = i
             every { handler.post(any()) } answers {
@@ -88,7 +89,7 @@ class AnrWatcherTest {
 
     @Test
     fun anr_detected() {
-        val anrWatcher = AnrWatcher(handler, mainThread, logger, emptyList(), 1)
+        val anrWatcher = AnrWatcher(handler, mainThread, logger, SessionProvider.getNoop(), emptyList(), 1)
         every { handler.post(any()) } returns true
 
         for (i in 0..4) {

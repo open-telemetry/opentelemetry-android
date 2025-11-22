@@ -7,12 +7,14 @@ package io.opentelemetry.instrumentation.library.okhttp.v3_0.websocket.internal;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import io.opentelemetry.android.annotations.Incubating;
 import io.opentelemetry.api.common.Attributes;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
 
+@Incubating
 public class WebsocketListenerWrapper extends WebSocketListener {
     private final WebSocketListener delegate;
 

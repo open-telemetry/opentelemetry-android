@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.agent.session
 
-import io.opentelemetry.android.Incubating
+import io.opentelemetry.android.annotations.Incubating
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener
 import io.opentelemetry.sdk.common.Clock
 import kotlin.time.Duration

@@ -35,6 +35,10 @@ class SdkPreconfiguredRumBuilderTest {
                 override fun getSessionId(): String {
                     fail("Should not have been called!")
                 }
+
+                override fun getPreviousSessionId(): String {
+                    fail("Should not have been called!")
+                }
             }
 
         val builder = RumBuilder.builder(context, sdk, config, sessionProvider)
