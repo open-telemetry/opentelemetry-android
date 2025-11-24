@@ -632,6 +632,17 @@ class OpenTelemetryRumBuilderTest {
             )
     }
 
+    @Test
+    fun setIncludeSessionInMetricsCanBeConfigured() {
+        // Test that the setIncludeSessionInMetrics builder method works
+        // This is a configuration API test to ensure the method exists and is callable
+        val builder1 = makeBuilder().setIncludeSessionInMetrics(false)
+        assertThat(builder1).isNotNull
+
+        val builder2 = makeBuilder().setIncludeSessionInMetrics(true)
+        assertThat(builder2).isNotNull
+    }
+
     private fun makeBuilder(): OpenTelemetryRumBuilder = RumBuilder.builder(application, buildConfig())
 
     private fun buildConfig(): OtelRumConfig = OtelRumConfig().disableNetworkAttributes().disableSdkInitializationEvents()

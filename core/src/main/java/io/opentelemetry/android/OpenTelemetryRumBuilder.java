@@ -108,6 +108,7 @@ public final class OpenTelemetryRumBuilder {
 
     @Nullable private ExportScheduleHandler exportScheduleHandler;
     @Nullable private SessionProvider sessionProvider;
+    private boolean includeSessionInMetrics = false;
 
     private static TextMapPropagator buildDefaultPropagator() {
         return TextMapPropagator.composite(
@@ -413,9 +414,8 @@ public final class OpenTelemetryRumBuilder {
      * Sets the {@link SessionProvider} to be used for session management.
      *
      * <p>The session provider is responsible for generating and managing session identifiers that
-     * are automatically attached to all telemetry data (spans, logs, metrics). Session IDs provide
-     * a way to group related telemetry that occurs during a logical user interaction or application
-     * usage period.
+     * are attached to telemetry data. Session IDs provide a way to group related telemetry that
+     * occurs during a logical user interaction or application usage period.
      *
      * <p>If not set, a no-op session provider will be used that returns empty session IDs.
      *
@@ -425,8 +425,9 @@ public final class OpenTelemetryRumBuilder {
      *   <li>All spans via {@link SessionIdSpanAppender}
      *   <li>All log records via {@link
      *       io.opentelemetry.android.internal.processors.SessionIdLogRecordAppender}
-     *   <li>All metrics via {@link
-     *       io.opentelemetry.android.export.SessionMetricExporterAdapterFactory}
+     *   <li><strong>Metrics (Opt-In)</strong> - Session IDs are not added to metrics by default.
+     *       Use {@link #setIncludeSessionInMetrics(boolean)} to enable this feature. See that
+     *       method's documentation for information about high-cardinality considerations.
      *   <li>Public API events via {@link OpenTelemetryRum#emitEvent(String, String,
      *       io.opentelemetry.api.common.Attributes)}
      * </ul>
@@ -436,6 +437,53 @@ public final class OpenTelemetryRumBuilder {
      */
     public OpenTelemetryRumBuilder setSessionProvider(SessionProvider sessionProvider) {
         this.sessionProvider = sessionProvider;
+        return this;
+    }
+
+    /**
+     * Configures whether session identifiers should be included as attributes in metric data.
+     *
+     * <p><strong>Note:</strong> This is an opt-in feature due to cardinality considerations.
+     *
+     * <p>Session IDs are high-cardinality attributes, meaning each unique session creates a
+     * separate time series in your metrics backend. Depending on your application's usage patterns
+     * and observability platform, this may:
+     *
+     * <ul>
+     *   <li>Increase the number of unique time series
+     *   <li>Impact storage costs and retention policies
+     *   <li>Affect query performance for large-scale applications
+     *   <li>Approach or exceed cardinality limits on some observability platforms
+     * </ul>
+     *
+     * <p><strong>When to enable:</strong> This feature is useful when you need to correlate metrics
+     * directly with specific user sessions. Consider enabling if:
+     *
+     * <ul>
+     *   <li>Your observability backend supports high-cardinality metrics
+     *   <li>You need session-level metric filtering and analysis
+     *   <li>Your application's session volume is within your backend's capacity
+     * </ul>
+     *
+     * <p><strong>Alternative approaches:</strong> For linking metrics to session context without
+     * increasing cardinality, consider using OpenTelemetry Exemplars (when available) or
+     * correlating metrics with traces and logs that contain session information.
+     *
+     * <p>This opt-in design follows the OpenTelemetry specification's requirement that
+     * high-cardinality attributes in metrics should not be included by default.
+     *
+     * @param include {@code true} to include session IDs in metrics (opt-in), {@code false} to
+     *     exclude them (default)
+     * @return {@code this}
+     * @see <a
+     *     href="https://opentelemetry.io/docs/specs/otel/common/attribute-requirement-level/">OpenTelemetry
+     *     Attribute Requirement Level</a>
+     * @see <a
+     *     href="https://opentelemetry.io/docs/specs/otel/metrics/data-model/#exemplars">OpenTelemetry
+     *     Exemplars</a>
+     */
+    public OpenTelemetryRumBuilder setIncludeSessionInMetrics(boolean include) {
+        this.includeSessionInMetrics = include;
         return this;
     }
 
@@ -603,8 +651,13 @@ public final class OpenTelemetryRumBuilder {
         // Apply session injection FIRST (before user customizers) so that session IDs are
         // injected before metrics are written to disk. This ensures disk-buffered metrics
         // retain the session ID from when they were created, not when they're exported later.
+        //
+        // Session injection is opt-in (disabled by default) due to cardinality considerations.
+        // It must be explicitly enabled via setIncludeSessionInMetrics(true).
         MetricExporter exporterWithSession = defaultExporter;
-        if (sessionProvider != null && sessionProvider != SessionProvider.getNoop()) {
+        if (includeSessionInMetrics
+                && sessionProvider != null
+                && sessionProvider != SessionProvider.getNoop()) {
             MetricExporterAdapterFactory factory = new SessionMetricExporterAdapterFactory();
             exporterWithSession =
                     factory.createMetricExporterAdapter(defaultExporter, sessionProvider);
