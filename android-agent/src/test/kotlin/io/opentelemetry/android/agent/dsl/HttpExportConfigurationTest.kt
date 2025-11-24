@@ -13,7 +13,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 internal class HttpExportConfigurationTest {
     @Test
     fun testDefaults() {
-        val config = HttpExportConfiguration()
+        val otelConfig = OpenTelemetryConfiguration()
+        val config = otelConfig.exportConfig
         val expectedHeaders = emptyMap<String, String>()
         val expectedCompression = Compression.GZIP
         config
@@ -30,10 +31,11 @@ internal class HttpExportConfigurationTest {
 
     @Test
     fun testBaseValueOverride() {
+        val otelConfig = OpenTelemetryConfiguration()
         val url = "http://localhost:4318/"
         val headers = mapOf("my-header" to "my-value")
         val config =
-            HttpExportConfiguration().apply {
+            otelConfig.exportConfig.apply {
                 baseUrl = url
                 baseHeaders = headers
             }
@@ -47,6 +49,7 @@ internal class HttpExportConfigurationTest {
 
     @Test
     fun testIndividualEndpointOverrides() {
+        val otelConfig = OpenTelemetryConfiguration()
         val baseUrl = "http://localhost:4318/"
         val baseHeaders = mapOf("my-header" to "my-value")
 
@@ -62,7 +65,7 @@ internal class HttpExportConfigurationTest {
         val expectedCompression = Compression.NONE
 
         val config =
-            HttpExportConfiguration().apply {
+            otelConfig.exportConfig.apply {
                 this.baseUrl = baseUrl
                 this.baseHeaders = baseHeaders
 
@@ -104,6 +107,7 @@ internal class HttpExportConfigurationTest {
 
     @Test
     fun testIndividualEndpointOverrides2() {
+        val otelConfig = OpenTelemetryConfiguration()
         val baseUrl = "http://localhost:4318/"
         val baseHeaders = mapOf("my-header" to "my-value")
 
@@ -119,7 +123,7 @@ internal class HttpExportConfigurationTest {
         val expectedCompression = Compression.GZIP
 
         val config =
-            HttpExportConfiguration().apply {
+            otelConfig.exportConfig.apply {
                 spans {
                     url = spanUrl
                     headers = spanHeaders
