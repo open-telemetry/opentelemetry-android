@@ -159,7 +159,7 @@ internal class SessionManagerTest {
         val sessionId =
             SessionManager(
                 timeoutHandler = timeoutHandler,
-                maxSessionLifetime = MAX_SESSION_LIFETIME.hours
+                maxSessionLifetime = MAX_SESSION_LIFETIME.hours,
             )
 
         // When - access session ID twice, should be same
@@ -203,15 +203,16 @@ internal class SessionManagerTest {
         val sessionIdCount = AtomicInteger(0)
 
         // When - multiple threads access session concurrently after timeout
-        val params = AddSessionIdsParameters(
-            numThreads,
-            executor,
-            firstLatch,
-            lastLatch,
-            sessionManager,
-            sessionIds,
-            sessionIdCount
-        )
+        val params =
+            AddSessionIdsParameters(
+                numThreads,
+                executor,
+                firstLatch,
+                lastLatch,
+                sessionManager,
+                sessionIds,
+                sessionIdCount,
+            )
         addSessionIdsAcrossThreads(params)
 
         val isCountZero = lastLatch.await(SESSION_AWAIT_SECONDS, TimeUnit.SECONDS)
@@ -245,15 +246,16 @@ internal class SessionManagerTest {
         val sessionIdCount = AtomicInteger(0)
 
         // When - multiple threads access session with timeout handler indicating timeout
-        val params = AddSessionIdsParameters(
-            numThreads,
-            executor,
-            firstLatch,
-            lastLatch,
-            sessionManager,
-            sessionIds,
-            sessionIdCount
-        )
+        val params =
+            AddSessionIdsParameters(
+                numThreads,
+                executor,
+                firstLatch,
+                lastLatch,
+                sessionManager,
+                sessionIds,
+                sessionIdCount,
+            )
         addSessionIdsAcrossThreads(params)
 
         val isCountZero = lastLatch.await(SESSION_AWAIT_SECONDS, TimeUnit.SECONDS)
@@ -283,15 +285,16 @@ internal class SessionManagerTest {
         val sessionIdCount = AtomicInteger(0)
 
         // When - multiple threads access session concurrently
-        val params = AddSessionIdsParameters(
-            numThreads,
-            executor,
-            firstLatch,
-            lastLatch,
-            sessionManager,
-            sessionIds,
-            sessionIdCount
-        )
+        val params =
+            AddSessionIdsParameters(
+                numThreads,
+                executor,
+                firstLatch,
+                lastLatch,
+                sessionManager,
+                sessionIds,
+                sessionIdCount,
+            )
         addSessionIdsAcrossThreads(params)
 
         val isCountZero = lastLatch.await(SESSION_AWAIT_SECONDS, TimeUnit.SECONDS)
@@ -354,9 +357,7 @@ internal class SessionManagerTest {
         assertThat(thirdSessionId).isNotEqualTo(secondSessionId)
     }
 
-    private fun addSessionIdsAcrossThreads(
-        params: AddSessionIdsParameters
-    ) {
+    private fun addSessionIdsAcrossThreads(params: AddSessionIdsParameters) {
         repeat(params.numThreads) {
             params.executor.submit {
                 try {
