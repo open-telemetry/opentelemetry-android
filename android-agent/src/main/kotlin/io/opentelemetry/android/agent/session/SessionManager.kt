@@ -39,7 +39,7 @@ internal class SessionManager(
         val currentSession = session.get()
 
         // Check if we need to create a new session.
-        return if (sessionHasExpired() || timeoutHandler.hasTimedOut()) {
+        return if (sessionHasExpired(currentSession) || timeoutHandler.hasTimedOut()) {
             val newId = idGenerator.generateSessionId()
             val newSession = Session.DefaultSession(newId, clock.now())
 
@@ -74,8 +74,8 @@ internal class SessionManager(
         }
     }
 
-    private fun sessionHasExpired(): Boolean {
-        val elapsedTime = clock.now() - session.get().getStartTimestamp()
+    private fun sessionHasExpired(session: Session): Boolean {
+        val elapsedTime = clock.now() - session.getStartTimestamp()
         return elapsedTime >= maxSessionLifetime.inWholeNanoseconds
     }
 

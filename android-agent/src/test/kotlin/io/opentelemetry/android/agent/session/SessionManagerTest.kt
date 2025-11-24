@@ -20,16 +20,17 @@ import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.time.TestClock
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern
 import kotlin.time.Duration.Companion.hours
 
+private const val SESSION_AWAIT_SECONDS: Long = 5
 private const val SESSION_ID_LENGTH = 32
-private const val MAX_SESSION_LIFETIME = 4L
+private const val MAX_SESSION_LIFETIME: Long = 4
 
 /**
  * Verifies [SessionManager] functionality including session ID generation, timeout handling,
@@ -47,9 +48,7 @@ internal class SessionManagerTest {
     }
 
     @Test
-    fun valueValid() {
-        // Verifies that generated session IDs are valid 32-character hex strings
-
+    fun `generated session IDs are valid 32-character hex strings`() {
         // Given/When
         val sessionManager =
             SessionManager(
@@ -58,19 +57,16 @@ internal class SessionManagerTest {
                 maxSessionLifetime = MAX_SESSION_LIFETIME.hours,
             )
         val sessionId = sessionManager.getSessionId()
+        val sessionIdPattern = "[a-f0-9]+"
 
         // Then
-        assertAll(
-            { assertThat(sessionId).isNotNull() },
-            { assertThat(sessionId).hasSize(SESSION_ID_LENGTH) },
-            { assertThat(Pattern.compile("[a-f0-9]+").matcher(sessionId).matches()).isTrue() },
-        )
+        assertThat(sessionId).isNotNull()
+        assertThat(sessionId).hasSize(SESSION_ID_LENGTH)
+        assertThat(Pattern.compile(sessionIdPattern).matcher(sessionId).matches()).isTrue()
     }
 
     @Test
     fun valueSameUntil4Hours() {
-        // Verifies that session ID remains unchanged until maxLifetime is exceeded
-
         // Given
         val clock = TestClock.create()
         val sessionManager =
@@ -97,16 +93,12 @@ internal class SessionManagerTest {
         val newSessionId = sessionManager.getSessionId()
 
         // Then - should create new session
-        assertAll(
-            { assertThat(newSessionId).isNotNull() },
-            { assertThat(value).isNotEqualTo(newSessionId) },
-        )
+        assertThat(newSessionId).isNotNull()
+        assertThat(value).isNotEqualTo(newSessionId)
     }
 
     @Test
     fun shouldCallSessionIdChangeListener() {
-        // Verifies that session observers are notified correctly during session transitions
-
         // Given
         val clock = TestClock.create()
         val observer = mockk<SessionObserver>()
@@ -125,36 +117,30 @@ internal class SessionManagerTest {
         val firstSessionId = sessionManager.getSessionId()
 
         // Then
-        assertAll(
-            { verify(exactly = 1) { timeoutHandler.bump() } },
-            { verify(exactly = 0) { timeoutHandler.hasTimedOut() } },
-            { verify(exactly = 1) { observer.onSessionStarted(any<Session>(), eq(Session.NONE)) } },
-            { verify(exactly = 1) { observer.onSessionEnded(eq(Session.NONE)) } },
-        )
+        verify(exactly = 1) { timeoutHandler.bump() }
+        verify(exactly = 0) { timeoutHandler.hasTimedOut() }
+        verify(exactly = 1) { observer.onSessionStarted(any<Session>(), eq(Session.NONE)) }
+        verify(exactly = 1) { observer.onSessionEnded(eq(Session.NONE)) }
 
         // When
         clock.advance(3, TimeUnit.HOURS)
         val secondSessionId = sessionManager.getSessionId()
 
         // Then
-        assertAll(
-            { assertThat(firstSessionId).isEqualTo(secondSessionId) },
-            { verify(exactly = 2) { timeoutHandler.bump() } },
-            { verify(exactly = 1) { timeoutHandler.hasTimedOut() } },
-            { verify(exactly = 1) { observer.onSessionStarted(any<Session>(), any<Session>()) } },
-            { verify(exactly = 1) { observer.onSessionEnded(any<Session>()) } },
-        )
+        assertThat(firstSessionId).isEqualTo(secondSessionId)
+        verify(exactly = 2) { timeoutHandler.bump() }
+        verify(exactly = 1) { timeoutHandler.hasTimedOut() }
+        verify(exactly = 1) { observer.onSessionStarted(any<Session>(), any<Session>()) }
+        verify(exactly = 1) { observer.onSessionEnded(any<Session>()) }
 
         // When
         clock.advance(1, TimeUnit.HOURS)
         val thirdSessionId = sessionManager.getSessionId()
 
         // Then
-        assertAll(
-            { verify(exactly = 3) { timeoutHandler.bump() } },
-            { verify(exactly = 1) { timeoutHandler.hasTimedOut() } },
-            { assertThat(thirdSessionId).isNotEqualTo(secondSessionId) },
-        )
+        verify(exactly = 3) { timeoutHandler.bump() }
+        verify(exactly = 1) { timeoutHandler.hasTimedOut() }
+        assertThat(thirdSessionId).isNotEqualTo(secondSessionId)
         verifyOrder {
             timeoutHandler.bump()
             observer.onSessionEnded(match { it.getId() == secondSessionId })
@@ -169,11 +155,12 @@ internal class SessionManagerTest {
 
     @Test
     fun shouldCreateNewSessionIdAfterTimeout() {
-        // Verifies that a new session is created when the timeout handler indicates a timeout
-
         // Given
         val sessionId =
-            SessionManager(timeoutHandler = timeoutHandler, maxSessionLifetime = MAX_SESSION_LIFETIME.hours)
+            SessionManager(
+                timeoutHandler = timeoutHandler,
+                maxSessionLifetime = MAX_SESSION_LIFETIME.hours
+            )
 
         // When - access session ID twice, should be same
         val value = sessionId.getSessionId()
@@ -193,8 +180,6 @@ internal class SessionManagerTest {
 
     @Test
     fun `concurrent access during timeout should create only one new session`() {
-        // Verifies that concurrent access during session timeout creates exactly one new session
-
         // Given
         val clock = TestClock.create()
         val sessionManager =
@@ -212,41 +197,35 @@ internal class SessionManagerTest {
 
         val numThreads = 10
         val executor = Executors.newFixedThreadPool(numThreads)
-        val latch = CountDownLatch(numThreads)
+        val firstLatch = CountDownLatch(numThreads)
+        val lastLatch = CountDownLatch(numThreads)
         val sessionIds = mutableSetOf<String>()
         val sessionIdCount = AtomicInteger(0)
 
         // When - multiple threads access session concurrently after timeout
-        repeat(numThreads) {
-            executor.submit {
-                try {
-                    val sessionId = sessionManager.getSessionId()
-                    synchronized(sessionIds) {
-                        sessionIds.add(sessionId)
-                        sessionIdCount.incrementAndGet()
-                    }
-                } finally {
-                    latch.countDown()
-                }
-            }
-        }
+        val params = AddSessionIdsParameters(
+            numThreads,
+            executor,
+            firstLatch,
+            lastLatch,
+            sessionManager,
+            sessionIds,
+            sessionIdCount
+        )
+        addSessionIdsAcrossThreads(params)
 
-        assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue()
+        val isCountZero = lastLatch.await(SESSION_AWAIT_SECONDS, TimeUnit.SECONDS)
+        assertThat(isCountZero).isTrue()
         executor.shutdown()
 
         // Then - verify that only one new session was created
-        assertAll(
-            "Session creation validation",
-            { assertThat(sessionIds).hasSize(1) },
-            { assertThat(sessionIds.first()).isNotEqualTo(initialSessionId) },
-            { assertThat(sessionIdCount.get()).isEqualTo(numThreads) },
-        )
+        assertThat(sessionIds).hasSize(1)
+        assertThat(sessionIds.first()).isNotEqualTo(initialSessionId)
+        assertThat(sessionIdCount.get()).isEqualTo(numThreads)
     }
 
     @Test
     fun `concurrent access with timeout handler should create only one new session`() {
-        // Verifies that when timeout handler indicates timeout, concurrent threads handle session creation safely
-
         // Given
         val clock = TestClock.create()
         val sessionManager =
@@ -260,41 +239,33 @@ internal class SessionManagerTest {
 
         val numThreads = 5
         val executor = Executors.newFixedThreadPool(numThreads)
-        val latch = CountDownLatch(numThreads)
+        val firstLatch = CountDownLatch(numThreads)
+        val lastLatch = CountDownLatch(numThreads)
         val sessionIds = mutableSetOf<String>()
         val sessionIdCount = AtomicInteger(0)
 
         // When - multiple threads access session with timeout handler indicating timeout
-        repeat(numThreads) {
-            executor.submit {
-                try {
-                    val sessionId = sessionManager.getSessionId()
-                    synchronized(sessionIds) {
-                        sessionIds.add(sessionId)
-                        sessionIdCount.incrementAndGet()
-                    }
-                } finally {
-                    latch.countDown()
-                }
-            }
-        }
+        val params = AddSessionIdsParameters(
+            numThreads,
+            executor,
+            firstLatch,
+            lastLatch,
+            sessionManager,
+            sessionIds,
+            sessionIdCount
+        )
+        addSessionIdsAcrossThreads(params)
 
-        assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue()
+        val isCountZero = lastLatch.await(SESSION_AWAIT_SECONDS, TimeUnit.SECONDS)
+        assertThat(isCountZero).isTrue()
         executor.shutdown()
 
         // Then - verify the expected number of session IDs
-        assertAll(
-            "Race condition validation",
-            { assertThat(sessionIdCount.get()).isEqualTo(numThreads) },
-            { assertThat(sessionIds).isNotEmpty() },
-            { assertThat(sessionIds.size).isLessThanOrEqualTo(numThreads) },
-        )
+        assertThat(sessionIdCount.get()).isEqualTo(numThreads)
     }
 
     @Test
-    fun `concurrent access should maintain session consistency`() {
-        // Verifies that all concurrent accesses see the same session ID when no timeout occurs
-
+    fun `concurrent access should accesses see the same session ID when no timeout occurs`() {
         // Given
         val clock = TestClock.create()
         val sessionManager =
@@ -306,33 +277,111 @@ internal class SessionManagerTest {
 
         val numThreads = 20
         val executor = Executors.newFixedThreadPool(numThreads)
-        val latch = CountDownLatch(numThreads)
+        val firstLatch = CountDownLatch(numThreads)
+        val lastLatch = CountDownLatch(numThreads)
         val sessionIds = mutableSetOf<String>()
         val sessionIdCount = AtomicInteger(0)
 
         // When - multiple threads access session concurrently
-        repeat(numThreads) {
-            executor.submit {
-                try {
-                    val sessionId = sessionManager.getSessionId()
-                    synchronized(sessionIds) {
-                        sessionIds.add(sessionId)
-                        sessionIdCount.incrementAndGet()
-                    }
-                } finally {
-                    latch.countDown()
-                }
-            }
-        }
+        val params = AddSessionIdsParameters(
+            numThreads,
+            executor,
+            firstLatch,
+            lastLatch,
+            sessionManager,
+            sessionIds,
+            sessionIdCount
+        )
+        addSessionIdsAcrossThreads(params)
 
-        assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue()
+        val isCountZero = lastLatch.await(SESSION_AWAIT_SECONDS, TimeUnit.SECONDS)
+        assertThat(isCountZero).isTrue()
         executor.shutdown()
 
         // Then - all threads should have gotten the same session ID
-        assertAll(
-            "Session consistency validation",
-            { assertThat(sessionIds).hasSize(1) },
-            { assertThat(sessionIdCount.get()).isEqualTo(numThreads) },
-        )
+        assertThat(sessionIds).hasSize(1)
+        assertThat(sessionIdCount.get()).isEqualTo(numThreads)
     }
+
+    @Test
+    fun `session expiration check uses correct session instance`() {
+        // Given
+        val clock = TestClock.create()
+        val sessionManager =
+            SessionManager(
+                clock,
+                timeoutHandler = timeoutHandler,
+                maxSessionLifetime = MAX_SESSION_LIFETIME.hours,
+            )
+
+        // When - get initial session
+        val firstSessionId = sessionManager.getSessionId()
+
+        // Then - verify session is stable with ids match
+        clock.advance(2, TimeUnit.HOURS)
+        assertThat(sessionManager.getSessionId()).isEqualTo(firstSessionId)
+
+        clock.advance(1, TimeUnit.HOURS)
+        assertThat(sessionManager.getSessionId()).isEqualTo(firstSessionId)
+
+        // When - advance time to exactly the expiration boundary
+        clock.advance(59, TimeUnit.MINUTES)
+        clock.advance(59, TimeUnit.SECONDS)
+
+        // Then - session should still be the same (3h 59m 59s < 4h)
+        assertThat(sessionManager.getSessionId()).isEqualTo(firstSessionId)
+
+        // When - advance 1 second to exceed maxLifetime
+        clock.advance(1, TimeUnit.SECONDS)
+        val secondSessionId = sessionManager.getSessionId()
+
+        // Then - new session should have been created
+        assertThat(secondSessionId).isNotEqualTo(firstSessionId)
+        assertThat(secondSessionId).isNotNull()
+        assertThat(secondSessionId).hasSize(SESSION_ID_LENGTH)
+
+        // When - verify ids match
+        clock.advance(3, TimeUnit.HOURS)
+        assertThat(sessionManager.getSessionId()).isEqualTo(secondSessionId)
+
+        // When - expire second session
+        clock.advance(1, TimeUnit.HOURS)
+        clock.advance(1, TimeUnit.SECONDS)
+        val thirdSessionId = sessionManager.getSessionId()
+
+        // Then - third session should be different from both previous sessions
+        assertThat(thirdSessionId).isNotEqualTo(firstSessionId)
+        assertThat(thirdSessionId).isNotEqualTo(secondSessionId)
+    }
+
+    private fun addSessionIdsAcrossThreads(
+        params: AddSessionIdsParameters
+    ) {
+        repeat(params.numThreads) {
+            params.executor.submit {
+                try {
+                    params.firstLatch.countDown()
+                    params.firstLatch.await(SESSION_AWAIT_SECONDS, TimeUnit.SECONDS)
+
+                    val sessionId = params.sessionManager.getSessionId()
+                    synchronized(params.sessionIds) {
+                        params.sessionIds.add(sessionId)
+                        params.sessionIdCount.incrementAndGet()
+                    }
+                } finally {
+                    params.lastLatch.countDown()
+                }
+            }
+        }
+    }
+
+    private data class AddSessionIdsParameters(
+        val numThreads: Int,
+        val executor: ExecutorService,
+        val firstLatch: CountDownLatch,
+        val lastLatch: CountDownLatch,
+        val sessionManager: SessionManager,
+        val sessionIds: MutableSet<String>,
+        val sessionIdCount: AtomicInteger,
+    )
 }
