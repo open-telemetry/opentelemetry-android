@@ -15,6 +15,9 @@
 The repository contains the `OpenTelemetry Android Agent`, which initializes the [OpenTelemetry Java SDK](https://github.com/open-telemetry/opentelemetry-java) and provides
 auto-instrumentation of Android apps for real user monitoring (RUM).
 
+While this project isn't 100% Kotlin, it has a "Kotlin-First" policy where usage in Kotlin-based Android apps will be prioritized in terms
+of API and idioms. More details about this policy can be found [here](./docs/KOTLIN_FIRST.md).
+
 # Getting Started
 
 > If your project's minSdk is lower than 26, then you must enable
@@ -115,6 +118,7 @@ The following instrumentations are bundled with the Android Agent:
 
 See the following pages for details about the related topics:
 
+- [Kotlin-First Policy](./docs/KOTLIN_FIRST.md)
 - [StrictMode Guidance](./docs/STRICTMODE.md)
 - [Exporter Management](./docs/EXPORTER_CHAIN.md)
 
