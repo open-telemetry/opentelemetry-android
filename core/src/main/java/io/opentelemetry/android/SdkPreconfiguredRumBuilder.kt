@@ -14,6 +14,7 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.OpenTelemetrySdk
+import kotlin.collections.remove
 
 class SdkPreconfiguredRumBuilder internal constructor(
     private val context: Context,
@@ -44,12 +45,12 @@ class SdkPreconfiguredRumBuilder internal constructor(
     }
 
     /**
-     * Creates a new instance of [OpenTelemetryRum] with the settings of this [ ].
+     * Creates a new instance of [io.opentelemetry.android.OpenTelemetryRum] with the settings of this [ ].
      *
      * This method uses a preconfigured OpenTelemetry SDK and install built-in system
      * instrumentations in the passed Android [Context].
      *
-     * @return A new [OpenTelemetryRum] instance.
+     * @return A new [io.opentelemetry.android.OpenTelemetryRum] instance.
      */
     fun build(): OpenTelemetryRum {
         val ctx = InstallationContext(context, sdk, sessionProvider)
@@ -81,8 +82,23 @@ class SdkPreconfiguredRumBuilder internal constructor(
         return openTelemetryRum
     }
 
-    private fun getEnabledInstrumentations(): List<AndroidInstrumentation> =
-        getInstrumentations().filter { inst -> !config.isSuppressed(inst.name) }
+    /**
+     * Enabled means non-suppressed. This method returns all non-suppressed instrumentations, and may
+     * reorder them so that the session instrumentation (when enabled/available) is at the front
+     * of the list.
+     */
+    internal fun getEnabledInstrumentations(): List<AndroidInstrumentation> {
+        val instrumentations = getInstrumentations().filter { inst -> !config.isSuppressed(inst.name) }
+        val result = instrumentations.toMutableList()
+        val sessionInstrumentation = instrumentations.find { it.name == "session" }
+        sessionInstrumentation?.let {
+            // If session instrumentation is available, slam it to the front of the list.
+            // This helps prevent a session id from being created before the observers can be added.
+            result.remove(it)
+            result.add(0, it)
+        }
+        return result.toList()
+    }
 
     private fun getInstrumentations(): List<AndroidInstrumentation> {
         if (config.shouldDiscoverInstrumentations()) {

@@ -5,20 +5,18 @@
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/open-telemetry/opentelemetry-android/badge)](https://scorecard.dev/viewer/?uri=github.com/open-telemetry/opentelemetry-android)
 [![android api](https://img.shields.io/badge/Android_API-21-green.svg "Android min API 21")](VERSIONING.md)
 
-## Status: development
-
 * [About](#about)
 * [Getting Started](#getting-started)
-* [Features](#contributing)
+* [Features](#features)
 * [Contributing](#contributing)
-* [StrictMode Policy](./docs/STRICTMODE.md)
-* [Exporter Chain](./docs/EXPORTER_CHAIN.md)
 
 # About
 
-The repository contains the OpenTelemetry Android SDK for generating mobile
-client telemetry for real user monitoring (RUM). It is built on top
-of the [OpenTelemetry Java SDK](https://github.com/open-telemetry/opentelemetry-java).
+The repository contains the `OpenTelemetry Android Agent`, which initializes the [OpenTelemetry Java SDK](https://github.com/open-telemetry/opentelemetry-java) and provides
+auto-instrumentation of Android apps for real user monitoring (RUM).
+
+While this project isn't 100% Kotlin, it has a "Kotlin-First" policy where usage in Kotlin-based Android apps will be prioritized in terms
+of API and idioms. More details about this policy can be found [here](./docs/KOTLIN_FIRST.md).
 
 # Getting Started
 
@@ -30,79 +28,121 @@ of the [OpenTelemetry Java SDK](https://github.com/open-telemetry/opentelemetry-
 > context for this workaround, please see
 > [this issue](https://issuetracker.google.com/issues/230454566#comment18).
 
-For an overview of how to contribute, see the contributing guide
-in [CONTRIBUTING.md](CONTRIBUTING.md).
+## Gradle Setup
 
-We are also available in the [#otel-android](https://cloud-native.slack.com/archives/C05J0T9K27Q)
-channel in the [CNCF slack](https://slack.cncf.io/). Please join us there for further discussions.
-
-## Gradle
-
-To use this android instrumentation library in your application, you will first need to add
+To use the Android Agent in your application, you will first need to add
 a dependency in your application's `build.gradle.kts`. We publish a bill of materials (BOM) that
-helps to coordinate versions of the opentelemetry-android components and the upstream
+helps to coordinate versions of the this project's components and the upstream
 `opentelemetry-java-instrumentation` and `opentelemetry-java` dependencies. We recommend
-using the bom as a platform dependency, and then omitting explicit version information
+using the BOM as a platform dependency, and then omitting explicit version information
 from all other opentelemetry dependencies:
 
 ```kotlin
 dependencies {
     //...
     api(platform("io.opentelemetry.android:opentelemetry-android-bom:0.16.0-alpha"))
-    implementation("io.opentelemetry.android:android-agent") // Version is resolved thru bom
+    implementation("io.opentelemetry.android:android-agent") // Version is resolved through the BOM
     //...
 }
 ```
 
+## Agent Initialization
+
+To initialize the Agent, call `OpenTelemetryRumInitializer.initialize()` in the `onCreate()` function in your app's `Application` object, ideally as early as possible after calling `super.onCreate()`.
+
+```kotlin
+class MainApplication: Application() {
+    var otelRum: OpenTelemetryRum? = null
+    
+    override fun onCreate() {
+        super.onCreate()
+        otelRum = initOTel(this)
+    }
+}
+
+private fun initOTel(context: Context): OpenTelemetryRum? =
+    runCatching {
+        OpenTelemetryRumInitializer.initialize(
+            context = context,
+            configuration = {
+                httpExport {
+                    baseUrl = "http://10.0.2.2:4318"
+                    baseHeaders = mapOf("foo" to "bar")
+                }
+                instrumentations {
+                    activity {
+                        enabled(true)
+                    }
+                    fragment {
+                        enabled(false)
+                    }
+                }
+                session {
+                    backgroundInactivityTimeout = 5.minutes
+                    maxLifetime = 1.days
+                }
+                globalAttributes {
+                    Attributes.of(stringKey("demo-version"), "test")
+                }
+            }
+        )
+    }.onFailure {
+        Log.e("OpenTelemetryRumInitializer", "Initialization failed", it)
+    }.getOrNull()
+```
+
+This call will return an `OpenTelemetryRum` instance with which you can use the Agent and OTel APIs.
+
 # Features
 
-This android library builds on top of
-the [OpenTelemetry Java SDK](https://github.com/open-telemetry/opentelemetry-java).
-Some of the additional features provided include:
+In addition to exposing the OTel Java API for manual instrumentation, agent also offers the following features:
+
+* Streamlined initialization and configuration of the Java SDK instance
+* Installation and management of bundled instrumentation
+* Offline buffering of telemetry via disk persistence
+* Redact and change span attributes before export
+
+## Instrumentation
+
+The following instrumentations are bundled with the Android Agent:
 
 * [Crash reporting](./instrumentation/crash/)
 * [ANR detection](./instrumentation/anr/)
 * [Network change detection](./instrumentation/network/)
-* Android [Activity lifecycle instrumentation](./instrumentation/activity/)
-* Android [Fragment lifecycle monitoring](./instrumentation/fragment)
-* [View click instrumentation](./instrumentation/view-click/)
-* Access to the OpenTelemetry APIs for manual instrumentation
-* Helpers to redact any span from export, or change span attributes before export
-* [Slow / frozen render detection](./instrumentation/slowrendering)
-* Offline buffering of telemetry via storage
+* [Activity lifecycle](./instrumentation/activity/)
+* [Fragment lifecycle](./instrumentation/fragment)
+* [View click](./instrumentation/view-click/)
+* [Slow/frozen frame render detection](./instrumentation/slowrendering)
 
-Note: Use of these features is not yet well documented.
+## Additional Documentation
 
-## StrictMode
+See the following pages for details about the related topics:
 
-For guidance on Android StrictMode violations (disk / network I/O warnings) triggered by SDK initialization
-and instrumentation, expected one-time operations, plus available mitigations and workarounds, see
-[StrictMode Policy](./docs/STRICTMODE.md).
-
-## Exporter Chain
-
-The SDK performs asynchronous exporter initialization with an in-memory buffering layer and optional
-disk buffering for offline scenarios. See [Exporter Chain documentation](./docs/EXPORTER_CHAIN.md)
-for details, customization hooks, and ordering semantics.
+- [Kotlin-First Policy](./docs/KOTLIN_FIRST.md)
+- [StrictMode Guidance](./docs/STRICTMODE.md)
+- [Exporter Management](./docs/EXPORTER_CHAIN.md)
 
 # Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+For an overview of how to contribute, see the contributing guide in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-### Maintainers
+We are also available in the [#otel-android](https://cloud-native.slack.com/archives/C05J0T9K27Q)
+channel in the [CNCF Slack](https://slack.cncf.io/). Please join us there for further discussions.
+
+## Maintainers
 
 - [Cesar Munoz](https://github.com/likethesalad), Elastic
 - [Jason Plumb](https://github.com/breedx-splk), Splunk
 
 For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
 
-### Approvers
+## Approvers
 
 - [Hanson Ho](https://github.com/bidetofevil), Embrace
 - [Jamie Lynch](https://github.com/fractalwrench), Embrace
 - [Manoel Aranda Neto](https://github.com/marandaneto), PostHog
 
-For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
+For more information about the Approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
 
 [ci-image]: https://github.com/open-telemetry/opentelemetry-android/actions/workflows/build.yaml/badge.svg
 

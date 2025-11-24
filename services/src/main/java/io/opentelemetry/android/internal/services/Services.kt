@@ -6,7 +6,6 @@
 package io.opentelemetry.android.internal.services
 
 import android.annotation.SuppressLint
-import android.app.Application
 import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
 import android.net.ConnectivityManager

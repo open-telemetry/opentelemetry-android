@@ -19,7 +19,7 @@ jobs:
             echo This workflow can only be run against release branches
             exit 1
           fi
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       - name: Set environment variables
         run: |
           version=$(.github/scripts/get-version.sh)
@@ -48,7 +48,7 @@ jobs:
 
         # check out main branch to verify there won't be problems with merging the change log
         # at the end of this workflow
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           ref: main
 
@@ -63,7 +63,7 @@ jobs:
           fi
 
       # back to the release branch
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           # tags are needed for the generate-release-contributors.sh script
           fetch-depth: 0

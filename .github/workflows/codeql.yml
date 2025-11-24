@@ -23,7 +23,7 @@ jobs:
       security-events: write  # for github/codeql-action/analyze to upload SARIF results
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
       - name: Set up Java
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
@@ -38,7 +38,7 @@ jobs:
         run: touch demo-app/local.properties
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@014f16e7ab1402f30e7c3329d33797e7948572db # v4.31.3
+        uses: github/codeql-action/init@fdbfb4d2750291e159f0156def62b853c2798ca2 # v4.31.5
         with:
           languages: java, actions
           # using "linked" helps to keep up with the latest Kotlin support
@@ -53,7 +53,7 @@ jobs:
         run: ./gradlew assemble --no-build-cache --no-daemon
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@014f16e7ab1402f30e7c3329d33797e7948572db # v4.31.3
+        uses: github/codeql-action/analyze@fdbfb4d2750291e159f0156def62b853c2798ca2 # v4.31.5
 
       - name: Enable KVM for Android tests
         run: |

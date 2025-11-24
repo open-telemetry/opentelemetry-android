@@ -14,13 +14,12 @@ android {
 }
 
 dependencies {
-    api(project(":instrumentation:android-instrumentation"))
+    implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":common"))
     implementation(project(":services"))
     implementation(project(":session"))
     implementation(project(":instrumentation:common-api"))
-    api(platform(libs.opentelemetry.platform.alpha))
-    api(libs.opentelemetry.api)
+    implementation(project(":agent-api"))
     implementation(libs.androidx.core)
     implementation(libs.opentelemetry.semconv.incubating)
     implementation(libs.opentelemetry.sdk)

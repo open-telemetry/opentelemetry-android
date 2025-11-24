@@ -9,7 +9,6 @@ import android.os.Handler
 import io.opentelemetry.android.common.internal.utils.threadIdCompat
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.context.Context
 import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE

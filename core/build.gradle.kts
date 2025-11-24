@@ -60,6 +60,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":agent-api"))
     implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":common"))
     implementation(project(":services"))
@@ -67,8 +68,6 @@ dependencies {
 
     implementation(libs.androidx.core)
 
-    api(platform(libs.opentelemetry.platform.alpha))
-    api(libs.opentelemetry.api)
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.api.incubator)
     implementation(libs.opentelemetry.exporter.logging)
