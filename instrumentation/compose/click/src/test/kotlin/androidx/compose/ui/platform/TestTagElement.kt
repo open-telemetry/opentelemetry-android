@@ -1,0 +1,14 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package androidx.compose.ui.platform
+
+import androidx.compose.ui.Modifier
+
+// Test-only stand-in for the private Compose TestTagElement.
+// Must have a private field named `tag` so reflection in the production code finds it.
+class TestTagElement(
+    @Suppress("UnusedPrivateProperty") private val tag: String,
+) : Modifier.Element
