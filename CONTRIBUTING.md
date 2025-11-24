@@ -39,6 +39,29 @@ The output artifacts will be in `instrumentation/build/outputs/`.
 ./gradlew check
 ```
 
+## Submitting Pull Requests (PRs)
+
+Pull requests are welcome! As an open source community project, OpenTelemetry Android
+relies on code submissions from its contributors. There are a few things to consider
+before submitting a pull request.
+
+1. Before starting work, check
+   [the open issues list](https://github.com/open-telemetry/opentelemetry-android/issues)
+   to see if an issue already exists. If it does, you may comment on the issue and
+   ask to be assigned. Assignments communicate to other contributors that the work
+   has already been started and is in progress.
+2. Issues are NOT required for every PR. You may readily submit a PR without an issue.
+3. Keep your PRs small! This cannot be emphasized enough. There is no formal upper bound
+   oin size, but PRs that are thousands of lines long take a very long time and lots
+   of effort to review. Find ways of decomposing the work into smaller units to keep the
+   size of your PRs down. Incremental changes are favored over widespread/far-reaching
+   refactors. 
+4. If an issue exists, mention it in the PR description. If the PR is the final effort
+   for a given issue, please add `Resolves #nnn` (where nnn is the issue number) somewhere
+   in the PR description, so that the issue can be automatically closed when the PR is
+   merged. This also leaves a nice audit trail for future developers.
+
+
 ## Code Conventions
 
 We use [spotless](https://github.com/diffplug/spotless) to enforce a consistent code style
@@ -62,6 +85,22 @@ By default we use JUnit 5, with some exceptions:
 - When writing [Robolectric tests](https://robolectric.org/).
 
 For both, Android and Robolectric tests, we use JUnit 4 as they currently don't support JUnit 5.
+
+#### Assertions
+
+This project has standardized on 
+[AssertJ](https://joel-costigliola.github.io/assertj/)
+for fluent test assertions, rather than the default JUnit assertions. Please
+use AssertJ when writing tests. For example, instead of `assertEquals(that, thiz)`
+you should write `assertThat(thiz).isEqualTo(that)`.
+
+For clarity, assert methods should be brought in via static import.
+
+#### Mocks
+
+OpenTelemetry Android has standardized on 
+[MockK](https://mockk.io/) as the preferred Kotlin mocking framework for tests. 
+When writing test code, please use MockK instead of Mockito.
 
 #### Instrumentation tests
 
