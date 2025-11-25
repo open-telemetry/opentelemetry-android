@@ -18,6 +18,7 @@ android {
 }
 
 dependencies {
+    api(platform(libs.opentelemetry.platform.alpha)) // Required for sonatype publishing
     implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":services"))
     implementation(project(":session"))
@@ -27,6 +28,5 @@ dependencies {
     implementation(libs.opentelemetry.semconv)
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.instrumentation.api)
-    implementation(libs.opentelemetry.sdk.extension.incubator)
     testImplementation(libs.robolectric)
 }

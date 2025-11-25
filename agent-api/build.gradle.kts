@@ -3,6 +3,8 @@ plugins {
     id("otel.publish-conventions")
 }
 
+description = "OpenTelemetry android agent api"
+
 android {
     namespace = "io.opentelemetry.android.agent.api"
 
