@@ -2,6 +2,75 @@
 
 ## Unreleased
 
+Good news, everyone! This denotes the first "stable" release candidate (`rc.1`)
+of OpenTelemetry Android. In a future release, after we have concluded that
+there are no significant issues or changes to the `android-agent` API,
+we will drop the `rc` (release candidate) designation and consider the 
+`android-agent` a "stable" release.
+
+Take note that even after the `rc` designation is removed, most modules
+will still contain an `-alpha` suffix to indicate that they are a future
+stability target.
+
+### Migration notes
+
+Please note that, as part of our stabilization effort, we have introduced
+a few breaking changes in this release. The `OpenTelemetryRumInitializer` API, 
+which we expect most users to be leveraging, should _not_ have breaking 
+changes in this release (with one exception noted below).
+
+Users who may have been utilizing the `OpenTelemetryRumBuilder` class directly
+through a transitive dependency from the `android-agent` module, without declaring
+a direct dependency on the `core` module, will have compilation errors.
+These errors can be resolved by declaring a direct gradle dependency on the
+`core` module.
+
+By default, the agent now enables gzip compression for exported data.
+Most users should benefit from this, but if gzip is not desired it may 
+be disabled by setting `compression = Compression.NONE` in the `httpExport`
+block of the agent configuration. 
+
+### ⚠️⚠️ Breaking changes
+
+- The OpenTelemetryRumBuilder is now a Kotlin class.
+  ([#1372](https://github.com/open-telemetry/opentelemetry-android/pull/1372))
+- Gzip compression is now enabled by default for exporters.
+  ([#1360](https://github.com/open-telemetry/opentelemetry-android/pull/1360))
+- Drop `RUM_SDK_VERSION` in favour of `TELEMETRY_SDK_VERSION`
+  ([#1365](https://github.com/open-telemetry/opentelemetry-android/pull/1365))
+- Move OpenTelemetryRum to a new API module.
+  ([#1387](https://github.com/open-telemetry/opentelemetry-android/pull/1387))
+
+### 🌟 New instrumentation
+
+- New instrumentation that reports screen orientation changes.
+  ([#1333](https://github.com/open-telemetry/opentelemetry-android/pull/1333))
+
+### 📈 Enhancements
+
+- Activity and Fragment instrumentation may now be uninstalled.
+  ([#1369](https://github.com/open-telemetry/opentelemetry-android/pull/1369))
+
+### 🛠️ Bug fixes
+
+- Add compat fix for obtaining the thread id on versions >= `BAKLAVA` (36).
+  ([#1346](https://github.com/open-telemetry/opentelemetry-android/pull/1346))
+- Rename event name `event.app.widget.click` to [`app.widget.click`](https://opentelemetry.io/docs/specs/semconv/app/app-events/#event-appwidgetclick)
+  ([#1391](https://github.com/open-telemetry/opentelemetry-android/pull/1391))
+- Add `openTelemetry` getter to `OpenTelemetryRum` to fix breaking API change
+  ([#1373](https://github.com/open-telemetry/opentelemetry-android/pull/1373))
+- Fix metrics aggregation temporality when using disk buffering.
+  ([#1405](https://github.com/open-telemetry/opentelemetry-android/pull/1405))
+- Fix instrumentation ordering problem, which could prevent `session.start` event from firing in some cases.
+  ([#1413](https://github.com/open-telemetry/opentelemetry-android/pull/1413))
+- Enable disk buffering by default.
+  ([#1416](https://github.com/open-telemetry/opentelemetry-android/pull/1416))
+
+### 🧰 Tooling
+
+- Remove final remaining usages of mockito in favor of mockk.
+  ([#1362](https://github.com/open-telemetry/opentelemetry-android/pull/1362))
+
 ## Version 0.16.0 (2025-10-24)
 
 __Note: This version is not the first release candidate. We had previously announced that

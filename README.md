@@ -104,15 +104,24 @@ In addition to exposing the OTel Java API for manual instrumentation, agent also
 
 ## Instrumentation
 
-The following instrumentations are bundled with the Android Agent:
+The following instrumentation modules are bundled with the Android Agent:
 
-* [Crash reporting](./instrumentation/crash/)
-* [ANR detection](./instrumentation/anr/)
-* [Network change detection](./instrumentation/network/)
 * [Activity lifecycle](./instrumentation/activity/)
+* [ANR detection](./instrumentation/anr/)
+* [Crash reporting](./instrumentation/crash/)
 * [Fragment lifecycle](./instrumentation/fragment)
-* [View click](./instrumentation/view-click/)
+* [Network change detection](./instrumentation/network/)
 * [Slow/frozen frame render detection](./instrumentation/slowrendering)
+* [Startup](./instrumentation/startup)
+* [Sessions](./instrumentation/sessions)
+* [Screen orientation](./instrumentation/screen-orientation)
+* [View click](./instrumentation/view-click/)
+
+There are also other
+[additional instrumentation modules](https://github.com/open-telemetry/opentelemetry-android/tree/main/instrumentation)
+that application developers can include through a gradle dependency. 
+Instrumentations are detected at runtime via the classpath, and
+are installed automatically.
 
 ## Additional Documentation
 
