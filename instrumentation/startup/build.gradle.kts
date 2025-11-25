@@ -23,7 +23,6 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.opentelemetry.semconv)
     implementation(libs.opentelemetry.sdk)
-    implementation(libs.opentelemetry.api.incubator)
     implementation(libs.opentelemetry.instrumentation.api)
     testImplementation(project(":test-common"))
 }

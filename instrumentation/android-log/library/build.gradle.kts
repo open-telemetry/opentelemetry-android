@@ -14,5 +14,4 @@ dependencies {
     implementation(project(":agent-api"))
 
     implementation(libs.opentelemetry.instrumentation.apiSemconv)
-    implementation(libs.opentelemetry.api.incubator)
 }
