@@ -16,8 +16,8 @@ scope of `io.opentelemetry.screen_orientation`.
 * Name: `device.screen_orientation`
 * Description: An event representing a change in screen orientation.
 * Attributes:
-    * `screen.orientation` - A string value that contains the new screen orientation. 
-    Values are `landscape` or `portrait`. 
+    * `screen.orientation` - A string value that contains the new screen orientation.
+    Values are `landscape` or `portrait`.
 
 ## Installation
 
