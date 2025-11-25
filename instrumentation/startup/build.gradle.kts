@@ -24,7 +24,6 @@ dependencies {
     implementation(libs.opentelemetry.semconv)
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.api.incubator)
-    implementation(libs.opentelemetry.sdk.extension.incubator)
     implementation(libs.opentelemetry.instrumentation.api)
     testImplementation(project(":test-common"))
 }
