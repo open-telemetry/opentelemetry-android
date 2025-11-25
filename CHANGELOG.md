@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.0.0-rc.1 (2025-11-25)
+
 Good news, everyone! This denotes the first "stable" release candidate (`rc.1`)
 of OpenTelemetry Android. In a future release, after we have concluded that
 there are no significant issues or changes to the `android-agent` API,

@@ -40,7 +40,7 @@ from all other opentelemetry dependencies:
 ```kotlin
 dependencies {
     //...
-    api(platform("io.opentelemetry.android:opentelemetry-android-bom:0.16.0-alpha"))
+    api(platform("io.opentelemetry.android:opentelemetry-android-bom:1.0.0-rc.1-alpha"))
     implementation("io.opentelemetry.android:android-agent") // Version is resolved through the BOM
     //...
 }

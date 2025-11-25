@@ -35,5 +35,5 @@ manually install this instrumentation by following the steps below.
 ### Adding dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:crash:0.16.0-alpha")
+implementation("io.opentelemetry.android.instrumentation:crash:1.0.0-rc.1-alpha")
 ```
