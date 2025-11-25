@@ -52,7 +52,7 @@ before submitting a pull request.
    has already been started and is in progress.
 2. Issues are NOT required for every PR. You may readily submit a PR without an issue.
 3. Keep your PRs small! This cannot be emphasized enough. There is no formal upper bound
-   oin size, but PRs that are thousands of lines long take a very long time and lots
+   on size, but PRs that are thousands of lines long take a very long time and lots
    of effort to review. Find ways of decomposing the work into smaller units to keep the
    size of your PRs down. Incremental changes are favored over widespread/far-reaching
    refactors. 
