@@ -4,3 +4,12 @@ exemptions:
     reason: "Artifact Hub doesn't support Android packages"
   - check: openssf_badge
     reason: "ETOOMANYBADGES, but the work has been done: https://www.bestpractices.dev/projects/10007"
+# License scanning information
+licenseScanning:
+  # URL with the repository's license scanning results
+  #
+  # CLOMonitor can extract license scanning results from FOSSA and Snyk badges
+  # in the repository README.md file automatically. If your repository uses a
+  # different scanning solution, this url can be set to pass the corresponding
+  # check.
+  url: https://app.fossa.com/projects/custom%2B162%2Fgithub.com%2Fopen-telemetry%2Fopentelemetry-android
