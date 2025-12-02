@@ -67,13 +67,6 @@
       "enabled": false
     },
     {
-      // navigation-fragment 2.7.0 and above require android api 34+, which we are not ready for
-      // yet due to android gradle plugin only supporting min 33.
-      "matchPackageNames": ["androidx.browser:browser"],
-      "matchUpdateTypes": ["major", "minor"],
-      "enabled": false
-    },
-    {
       // somehow renovate gets confused by the android property in gradle.properties,
       // so let's just exclude it and hopefully clean up the dashboard
       "matchPackageNames": [
