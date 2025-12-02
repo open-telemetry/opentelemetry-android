@@ -67,6 +67,12 @@
       "enabled": false
     },
     {
+      // androidx.lifecycle 1.12.0+ requires minSdk 23, but we still support minSdk 21 in 1.x
+      "matchPackageNames": ["androidx.activity:activity-compose"],
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
+    },
+    {
       // somehow renovate gets confused by the android property in gradle.properties,
       // so let's just exclude it and hopefully clean up the dashboard
       "matchPackageNames": [
