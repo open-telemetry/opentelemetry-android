@@ -38,6 +38,10 @@ data class DiskBufferingConfig
          * This value controls how frequently the SDK attempts to export buffered signals from disk.
          * The configured value represents the minimum delay between export attempts.
          *
+         * When [autoDetectExportSchedule] is true, this value is used as an override:
+         * - If explicitly set to a non-default value, it overrides auto-detection
+         * - If left at the default value, auto-detection will be used
+         *
          * Trade-offs to consider:
          * - Lower values (e.g., 10 seconds): More frequent exports mean fresher data in RUM sessions,
          *   but higher resource consumption (CPU, disk I/O, network activity) and potentially higher
@@ -66,6 +70,27 @@ data class DiskBufferingConfig
          * to find the optimal balance for your use case.
          */
         val exportScheduleDelayMillis: Long = DEFAULT_EXPORT_SCHEDULE_DELAY_MILLIS,
+        /**
+         * Enables automatic detection of optimal export schedule based on device conditions.
+         *
+         * When enabled, the SDK will analyze device state and adjust export frequency accordingly:
+         * - On low battery or battery saver: Increase interval (less frequent exports)
+         * - Under memory pressure: Increase interval (reduce memory consumption)
+         * - Normal conditions: Use default or user-configured interval
+         *
+         * Auto-detection respects user configuration:
+         * - If [exportScheduleDelayMillis] is explicitly set to a non-default value,
+         *   it will be used (auto-detection is overridden)
+         * - If left at default value, auto-detection suggestions are applied
+         *
+         * Default: false (preserves current behavior - no auto-detection)
+         *
+         * This feature is useful for:
+         * - Applications that need to adapt to device conditions
+         * - High-volume telemetry scenarios where battery life is critical
+         * - Scenarios where users want the best of both worlds: sensible defaults plus explicit control
+         */
+        val autoDetectExportSchedule: Boolean = false,
     ) {
         companion object {
             /**
@@ -85,6 +110,7 @@ data class DiskBufferingConfig
                 debugEnabled: Boolean = false,
                 signalsBufferDir: File? = null,
                 exportScheduleDelayMillis: Long = DEFAULT_EXPORT_SCHEDULE_DELAY_MILLIS,
+                autoDetectExportSchedule: Boolean = false,
             ): DiskBufferingConfig {
                 var minRead = minFileAgeForReadMillis
                 if (minFileAgeForReadMillis <= maxFileAgeForWriteMillis) {
@@ -108,6 +134,7 @@ data class DiskBufferingConfig
                     debugEnabled = debugEnabled,
                     signalsBufferDir = signalsBufferDir,
                     exportScheduleDelayMillis = validatedExportDelay,
+                    autoDetectExportSchedule = autoDetectExportSchedule,
                 )
             }
         }
