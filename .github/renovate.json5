@@ -73,6 +73,12 @@
       "enabled": false
     },
     {
+      // androidx.compose:compose-bom 12.00+ requires minSdk 23, but we still support minSdk 21
+      "matchPackageNames": ["androidx.compose:compose-bom"],
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
+    },
+    {
       // somehow renovate gets confused by the android property in gradle.properties,
       // so let's just exclude it and hopefully clean up the dashboard
       "matchPackageNames": [
