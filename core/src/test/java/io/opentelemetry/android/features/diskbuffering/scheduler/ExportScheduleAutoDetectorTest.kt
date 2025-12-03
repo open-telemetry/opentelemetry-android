@@ -6,10 +6,6 @@
 package io.opentelemetry.android.features.diskbuffering.scheduler
 
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.os.BatteryManager
-import io.mockk.every
 import io.mockk.mockk
 import java.util.concurrent.TimeUnit
 import org.junit.Test

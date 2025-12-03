@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit
 import org.junit.Test
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import org.junit.Assert.assertFalse
 import org.junit.Before
 
 /**
@@ -257,7 +256,7 @@ class ExportScheduleAutoDetectorIntegrationTest {
     @Test
     fun `integration - Auto-detection handles various battery scenarios`() {
         // Test that battery detection returns valid values
-        for (i in 0..10) {
+        repeat(10) {
             val batteryDelay = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
             assertTrue(batteryDelay in setOf(
                 TimeUnit.SECONDS.toMillis(10),
@@ -269,7 +268,7 @@ class ExportScheduleAutoDetectorIntegrationTest {
     @Test
     fun `integration - Auto-detection handles memory variations`() {
         // Test multiple memory checks
-        for (i in 0..10) {
+        repeat(10) {
             val memoryDelay = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
             assertTrue(memoryDelay in setOf(
                 TimeUnit.SECONDS.toMillis(10),
