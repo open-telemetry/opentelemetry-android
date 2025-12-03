@@ -73,7 +73,7 @@ class DefaultExportSchedulerTest {
     @Test
     fun `Verify minimum delay`() {
         assertThat(scheduler.minimumDelayUntilNextRunInMillis()).isEqualTo(
-            TimeUnit.MINUTES.toMillis(1),
+            TimeUnit.SECONDS.toMillis(10),
         )
     }
 

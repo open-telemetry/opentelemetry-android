@@ -15,7 +15,7 @@ const val MAX_CACHE_FILE_SIZE: Int = 1024 * 1024
 const val DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS = 30L
 const val DEFAULT_MIN_FILE_AGE_FOR_READ_MS = 33L
 const val DEFAULT_MAX_FILE_AGE_FOR_READ_MS = 18L
-const val DEFAULT_EXPORT_SCHEDULE_DELAY_MILLIS: Long = 60000L // 1 minute
+const val DEFAULT_EXPORT_SCHEDULE_DELAY_MILLIS: Long = 10000L // 10 seconds
 
 data class DiskBufferingConfig
     @JvmOverloads
@@ -33,32 +33,37 @@ data class DiskBufferingConfig
          */
         val signalsBufferDir: File? = null,
         /**
-         * The delay in milliseconds between consecutive export attempts. Defaults to 1 minute (60000 ms).
+         * The delay in milliseconds between consecutive export attempts. Defaults to 10 seconds (10000 ms).
          *
          * This value controls how frequently the SDK attempts to export buffered signals from disk.
-         * The configured value represents the minimum delay between export attempts. Due to the
-         * periodic work scheduling mechanism, the actual export frequency may be limited by the
-         * loop interval of the periodic work executor (default: 60 seconds).
+         * The configured value represents the minimum delay between export attempts.
          *
-         * Recommended values:
-         * - 60000 ms (1 minute) or higher: Standard configuration, provides good balance between
-         *   data freshness and resource consumption. This matches the default periodic work loop
-         *   interval and ensures exports happen at the configured frequency.
-         * - 300000 ms (5 minutes) or higher: For high-volume scenarios where reducing backend load
-         *   and battery consumption is critical. Suitable for applications where near-real-time
-         *   data is not essential.
-         * - Values less than 60000 ms: Not recommended. While the SDK supports values down to
-         *   1000 ms (1 second), the periodic work executor's 60-second loop interval may prevent
-         *   the configured frequency from being achieved. If you configure a value less than
-         *   60 seconds, the actual export frequency will still be approximately 60 seconds.
+         * Trade-offs to consider:
+         * - Lower values (e.g., 10 seconds): More frequent exports mean fresher data in RUM sessions,
+         *   but higher resource consumption (CPU, disk I/O, network activity) and potentially higher
+         *   backend load from more frequent requests.
+         * - Higher values (e.g., 60 seconds or more): Reduced resource consumption and backend load,
+         *   but longer delay before data becomes available in RUM sessions.
          *
-         * Important: For each 8-hour workday, configure thoughtfully to balance between:
-         * - Data freshness (prefer lower values)
-         * - Device battery consumption (prefer higher values)
-         * - Backend load (prefer higher values)
+         * Configuration recommendations:
+         * - 10000 ms (10 seconds): Default value, provides balance between data freshness and
+         *   resource consumption for typical applications.
+         * - 5000 ms (5 seconds) or lower: For applications with critical real-time monitoring needs,
+         *   where fresher data is worth the additional resource cost.
+         * - 30000 ms (30 seconds) or higher: For applications with high telemetry volume where reducing
+         *   backend load and device resource consumption is prioritized over data freshness.
          *
-         * Example impact: A 10-second export interval means ~2880 export attempts per 8-hour day.
-         * A 60-second interval reduces this to ~480 attempts. A 5-minute interval reduces it to ~96 attempts.
+         * Performance considerations:
+         * - Each export cycle may involve reading, serializing, and transmitting buffered signals.
+         *   Higher export frequency means more frequent resource usage.
+         * - Lower export frequency means more data accumulates per export cycle, which could impact
+         *   memory usage and delay in data availability.
+         *
+         * Minimum supported value: 1000 ms (1 second). Values less than this will be automatically
+         * increased to 1000 ms with a warning.
+         *
+         * Best practice: Test your configuration with your specific telemetry volume and workload
+         * to find the optimal balance for your use case.
          */
         val exportScheduleDelayMillis: Long = DEFAULT_EXPORT_SCHEDULE_DELAY_MILLIS,
     ) {
@@ -92,22 +97,6 @@ data class DiskBufferingConfig
                     validatedExportDelay = 1000L
                     Log.w(OTEL_RUM_LOG_TAG, "exportScheduleDelayMillis must be at least 1000 ms (1 second)")
                     Log.w(OTEL_RUM_LOG_TAG, "overriding exportScheduleDelayMillis from $exportScheduleDelayMillis to $validatedExportDelay")
-                } else if (exportScheduleDelayMillis < 60000L) {
-                    // Warn users about the periodic work loop interval limitation
-                    Log.w(
-                        OTEL_RUM_LOG_TAG,
-                        "exportScheduleDelayMillis is set to $exportScheduleDelayMillis ms, which is less " +
-                            "than the periodic work loop interval (60000 ms)",
-                    )
-                    Log.w(
-                        OTEL_RUM_LOG_TAG,
-                        "The actual export frequency may be limited to approximately 60 seconds " +
-                            "regardless of the configured value",
-                    )
-                    Log.w(
-                        OTEL_RUM_LOG_TAG,
-                        "Consider using 60000 ms (1 minute) or higher for more predictable export behavior",
-                    )
                 }
                 return DiskBufferingConfig(
                     enabled = enabled,

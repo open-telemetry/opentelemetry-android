@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
 
 class DefaultExportScheduler(
     periodicWorkProvider: () -> PeriodicWork,
-    private val exportScheduleDelayMillis: Long = TimeUnit.MINUTES.toMillis(1),
+    private val exportScheduleDelayMillis: Long = TimeUnit.SECONDS.toMillis(10),
 ) : PeriodicRunnable(periodicWorkProvider) {
     @Volatile
     private var isShutDown: Boolean = false
