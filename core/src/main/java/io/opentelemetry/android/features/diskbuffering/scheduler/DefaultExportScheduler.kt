@@ -15,13 +15,10 @@ import java.util.concurrent.TimeUnit
 
 class DefaultExportScheduler(
     periodicWorkProvider: () -> PeriodicWork,
+    private val exportScheduleDelayMillis: Long = TimeUnit.MINUTES.toMillis(1),
 ) : PeriodicRunnable(periodicWorkProvider) {
     @Volatile
     private var isShutDown: Boolean = false
-
-    companion object {
-        private val DELAY_BEFORE_NEXT_EXPORT_IN_MILLIS = TimeUnit.SECONDS.toMillis(10)
-    }
 
     override fun onRun() {
         val exporter = SignalFromDiskExporter.get() ?: return
@@ -41,5 +38,5 @@ class DefaultExportScheduler(
 
     override fun shouldStopRunning(): Boolean = isShutDown || (SignalFromDiskExporter.get() == null)
 
-    override fun minimumDelayUntilNextRunInMillis(): Long = DELAY_BEFORE_NEXT_EXPORT_IN_MILLIS
+    override fun minimumDelayUntilNextRunInMillis(): Long = exportScheduleDelayMillis
 }

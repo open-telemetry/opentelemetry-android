@@ -15,6 +15,7 @@ const val MAX_CACHE_FILE_SIZE: Int = 1024 * 1024
 const val DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS = 30L
 const val DEFAULT_MIN_FILE_AGE_FOR_READ_MS = 33L
 const val DEFAULT_MAX_FILE_AGE_FOR_READ_MS = 18L
+const val DEFAULT_EXPORT_SCHEDULE_DELAY_MILLIS: Long = 60000L // 1 minute
 
 data class DiskBufferingConfig
     @JvmOverloads
@@ -31,6 +32,11 @@ data class DiskBufferingConfig
          * `null`, a default directory inside the application's cache directory will be used.
          */
         val signalsBufferDir: File? = null,
+        /**
+         * The delay in milliseconds between consecutive export attempts. Defaults to 1 minute (60000 ms).
+         * A higher value reduces battery consumption, while a lower value provides more real-time exporting.
+         */
+        val exportScheduleDelayMillis: Long = DEFAULT_EXPORT_SCHEDULE_DELAY_MILLIS,
     ) {
         companion object {
             /**
@@ -49,6 +55,7 @@ data class DiskBufferingConfig
                 maxCacheFileSize: Int = MAX_CACHE_FILE_SIZE,
                 debugEnabled: Boolean = false,
                 signalsBufferDir: File? = null,
+                exportScheduleDelayMillis: Long = DEFAULT_EXPORT_SCHEDULE_DELAY_MILLIS,
             ): DiskBufferingConfig {
                 var minRead = minFileAgeForReadMillis
                 if (minFileAgeForReadMillis <= maxFileAgeForWriteMillis) {
@@ -65,6 +72,7 @@ data class DiskBufferingConfig
                     maxCacheFileSize = maxCacheFileSize,
                     debugEnabled = debugEnabled,
                     signalsBufferDir = signalsBufferDir,
+                    exportScheduleDelayMillis = exportScheduleDelayMillis,
                 )
             }
         }

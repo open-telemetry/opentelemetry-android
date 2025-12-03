@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
 @RunWith(AndroidJUnit4::class)
 class PeriodicWorkTest {
     companion object {
-        private const val DELAY_BETWEEN_EXECUTIONS_IN_SECONDS = 10L
+        private const val DELAY_BETWEEN_EXECUTIONS_IN_SECONDS = 60L
     }
 
     private lateinit var service: PeriodicWork

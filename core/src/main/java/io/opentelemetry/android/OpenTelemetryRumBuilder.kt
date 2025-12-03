@@ -418,9 +418,10 @@ class OpenTelemetryRumBuilder internal constructor(
     ) {
         // TODO: Is it safe to get the work service yet here? If so, we can
         // avoid all this lazy supplier stuff....
+        val diskBufferingConfig = config.getDiskBufferingConfig()
         val handler =
             exportScheduleHandler ?: DefaultExportScheduleHandler(
-                DefaultExportScheduler(services::periodicWork),
+                DefaultExportScheduler(services::periodicWork, diskBufferingConfig.exportScheduleDelayMillis),
                 services::periodicWork,
             )
 

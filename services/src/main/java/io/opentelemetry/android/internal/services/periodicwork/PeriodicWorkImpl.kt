@@ -20,8 +20,10 @@ import java.util.concurrent.atomic.AtomicBoolean
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
-internal class PeriodicWorkImpl : PeriodicWork {
-    private val delegator = WorkerDelegator()
+internal class PeriodicWorkImpl(
+    private val loopIntervalMillis: Long = DEFAULT_LOOP_INTERVAL_MILLIS,
+) : PeriodicWork {
+    private val delegator = WorkerDelegator(loopIntervalMillis)
 
     init {
         delegator.run()
@@ -35,12 +37,17 @@ internal class PeriodicWorkImpl : PeriodicWork {
         delegator.close()
     }
 
-    private class WorkerDelegator :
+    companion object {
+        internal const val DEFAULT_LOOP_INTERVAL_MILLIS: Long = 60000L // 1 minute
+    }
+
+    private class WorkerDelegator(
+        private val loopIntervalMillis: Long,
+    ) :
         Runnable,
         Closeable {
         companion object {
             private const val SECONDS_TO_KILL_IDLE_THREADS = 30L
-            private const val SECONDS_FOR_NEXT_LOOP = 10L
             private const val MAX_AMOUNT_OF_WORKER_THREADS = 1
             private const val NUMBER_OF_PERMANENT_WORKER_THREADS = 0
         }
@@ -86,7 +93,7 @@ internal class PeriodicWorkImpl : PeriodicWork {
         }
 
         private fun scheduleNextLookUp() {
-            handler.postDelayed(this, TimeUnit.SECONDS.toMillis(SECONDS_FOR_NEXT_LOOP))
+            handler.postDelayed(this, loopIntervalMillis)
         }
     }
 }
