@@ -56,7 +56,11 @@ before submitting a pull request.
    of effort to review. Find ways of decomposing the work into smaller units to keep the
    size of your PRs down. Incremental changes are favored over widespread/far-reaching
    refactors. 
-4. If an issue exists, mention it in the PR description. If the PR is the final effort
+4. Keep your PRs single-purpose! This is subjective, but PRs should usually have a single
+   purpose/idea/goal and make one clear change. Contributors should avoid making unrelated
+   changes to separate code areas in the same PR. Keeping PRs single-purpose will also
+   help to keep them small.
+5. If an issue exists, mention it in the PR description. If the PR is the final effort
    for a given issue, please add `Resolves #nnn` (where nnn is the issue number) somewhere
    in the PR description, so that the issue can be automatically closed when the PR is
    merged. This also leaves a nice audit trail for future developers.
