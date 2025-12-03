@@ -7,11 +7,11 @@ package io.opentelemetry.android.features.diskbuffering.scheduler
 
 import android.content.Context
 import io.mockk.mockk
-import java.util.concurrent.TimeUnit
-import org.junit.Test
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Test
+import java.util.concurrent.TimeUnit
 
 /**
  * Integration tests for ExportScheduleAutoDetector with DiskBufferingConfig.
@@ -31,11 +31,12 @@ class ExportScheduleAutoDetectorIntegrationTest {
 
     @Test
     fun `integration - DiskBufferingConfig with auto-detection disabled uses fixed interval`() {
-        val config = io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig(
-            enabled = true,
-            autoDetectExportSchedule = false,
-            exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(10)
-        )
+        val config =
+            io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig(
+                enabled = true,
+                autoDetectExportSchedule = false,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(10),
+            )
 
         assertEquals(false, config.autoDetectExportSchedule)
         assertEquals(TimeUnit.SECONDS.toMillis(10), config.exportScheduleDelayMillis)
@@ -43,11 +44,12 @@ class ExportScheduleAutoDetectorIntegrationTest {
 
     @Test
     fun `integration - DiskBufferingConfig with auto-detection enabled uses detection`() {
-        val config = io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
-            enabled = true,
-            autoDetectExportSchedule = true,
-            exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(10)
-        )
+        val config =
+            io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = true,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(10),
+            )
 
         assertEquals(true, config.autoDetectExportSchedule)
         assertEquals(TimeUnit.SECONDS.toMillis(10), config.exportScheduleDelayMillis)
@@ -55,11 +57,12 @@ class ExportScheduleAutoDetectorIntegrationTest {
 
     @Test
     fun `integration - User override takes precedence over auto-detection setting`() {
-        val config = io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
-            enabled = true,
-            autoDetectExportSchedule = true,
-            exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(60)
-        )
+        val config =
+            io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = true,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(60),
+            )
 
         // Even with auto-detect enabled, explicit config should be honored
         assertEquals(TimeUnit.SECONDS.toMillis(60), config.exportScheduleDelayMillis)
@@ -68,10 +71,11 @@ class ExportScheduleAutoDetectorIntegrationTest {
 
     @Test
     fun `integration - Validation enforces minimum export delay of 1 second`() {
-        val config = io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
-            enabled = true,
-            exportScheduleDelayMillis = 500L  // Below minimum
-        )
+        val config =
+            io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
+                enabled = true,
+                exportScheduleDelayMillis = 500L, // Below minimum
+            )
 
         // Should be corrected to 1000ms minimum
         assertTrue(config.exportScheduleDelayMillis >= TimeUnit.SECONDS.toMillis(1))
@@ -87,7 +91,7 @@ class ExportScheduleAutoDetectorIntegrationTest {
 
         // Should return valid delay
         assertTrue(result > 0)
-        assertTrue(result % 1000L == 0L)  // Milliseconds in full seconds
+        assertTrue(result % 1000L == 0L) // Milliseconds in full seconds
         assertTrue(result >= TimeUnit.SECONDS.toMillis(10))
     }
 
@@ -105,15 +109,21 @@ class ExportScheduleAutoDetectorIntegrationTest {
         val memoryDelay = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
 
         // Both should return valid intervals
-        assertTrue(batteryDelay in setOf(
-            TimeUnit.SECONDS.toMillis(10),
-            TimeUnit.SECONDS.toMillis(30)
-        ))
+        assertTrue(
+            batteryDelay in
+                setOf(
+                    TimeUnit.SECONDS.toMillis(10),
+                    TimeUnit.SECONDS.toMillis(30),
+                ),
+        )
 
-        assertTrue(memoryDelay in setOf(
-            TimeUnit.SECONDS.toMillis(10),
-            TimeUnit.SECONDS.toMillis(20)
-        ))
+        assertTrue(
+            memoryDelay in
+                setOf(
+                    TimeUnit.SECONDS.toMillis(10),
+                    TimeUnit.SECONDS.toMillis(20),
+                ),
+        )
     }
 
     @Test
@@ -156,19 +166,21 @@ class ExportScheduleAutoDetectorIntegrationTest {
 
     @Test
     fun `integration scenario - Standard mobile application (auto-detect enabled)`() {
-        val config = io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
-            enabled = true,
-            autoDetectExportSchedule = true,
-            exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(10)
-        )
+        val config =
+            io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = true,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(10),
+            )
 
         assertEquals(true, config.autoDetectExportSchedule)
         assertEquals(TimeUnit.SECONDS.toMillis(10), config.exportScheduleDelayMillis)
 
-        val detectedDelay = ExportScheduleAutoDetector.detectOptimalExportDelay(
-            mockContext,
-            if (config.exportScheduleDelayMillis == TimeUnit.SECONDS.toMillis(10)) null else config.exportScheduleDelayMillis
-        )
+        val detectedDelay =
+            ExportScheduleAutoDetector.detectOptimalExportDelay(
+                mockContext,
+                if (config.exportScheduleDelayMillis == TimeUnit.SECONDS.toMillis(10)) null else config.exportScheduleDelayMillis,
+            )
 
         assertTrue(detectedDelay >= TimeUnit.SECONDS.toMillis(10))
         assertTrue(detectedDelay <= TimeUnit.SECONDS.toMillis(30))
@@ -176,31 +188,34 @@ class ExportScheduleAutoDetectorIntegrationTest {
 
     @Test
     fun `integration scenario - High volume telemetry (explicit user config)`() {
-        val config = io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
-            enabled = true,
-            autoDetectExportSchedule = true,
-            exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(60)
-        )
+        val config =
+            io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = true,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(60),
+            )
 
         assertEquals(true, config.autoDetectExportSchedule)
         assertEquals(TimeUnit.SECONDS.toMillis(60), config.exportScheduleDelayMillis)
 
         // User explicit value should be returned
-        val delay = ExportScheduleAutoDetector.detectOptimalExportDelay(
-            mockContext,
-            config.exportScheduleDelayMillis
-        )
+        val delay =
+            ExportScheduleAutoDetector.detectOptimalExportDelay(
+                mockContext,
+                config.exportScheduleDelayMillis,
+            )
 
         assertEquals(TimeUnit.SECONDS.toMillis(60), delay)
     }
 
     @Test
     fun `integration scenario - Real-time monitoring (auto-detect disabled)`() {
-        val config = io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig(
-            enabled = true,
-            autoDetectExportSchedule = false,
-            exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(5)
-        )
+        val config =
+            io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig(
+                enabled = true,
+                autoDetectExportSchedule = false,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(5),
+            )
 
         assertEquals(false, config.autoDetectExportSchedule)
         assertEquals(TimeUnit.SECONDS.toMillis(5), config.exportScheduleDelayMillis)
@@ -208,11 +223,12 @@ class ExportScheduleAutoDetectorIntegrationTest {
 
     @Test
     fun `integration scenario - Battery optimization (explicit long delay)`() {
-        val config = io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
-            enabled = true,
-            autoDetectExportSchedule = true,
-            exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(300)  // 5 minutes
-        )
+        val config =
+            io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = true,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(300), // 5 minutes
+            )
 
         assertEquals(true, config.autoDetectExportSchedule)
         assertEquals(TimeUnit.SECONDS.toMillis(300), config.exportScheduleDelayMillis)
@@ -224,20 +240,22 @@ class ExportScheduleAutoDetectorIntegrationTest {
 
     @Test
     fun `integration - Minimum delay value is enforced (1 second)`() {
-        val config = io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
-            enabled = true,
-            exportScheduleDelayMillis = 100L  // Way below minimum
-        )
+        val config =
+            io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
+                enabled = true,
+                exportScheduleDelayMillis = 100L, // Way below minimum
+            )
 
         assertTrue(config.exportScheduleDelayMillis >= TimeUnit.SECONDS.toMillis(1))
     }
 
     @Test
     fun `integration - Very long delay is accepted (30 minutes)`() {
-        val config = io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
-            enabled = true,
-            exportScheduleDelayMillis = TimeUnit.MINUTES.toMillis(30)
-        )
+        val config =
+            io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
+                enabled = true,
+                exportScheduleDelayMillis = TimeUnit.MINUTES.toMillis(30),
+            )
 
         assertEquals(TimeUnit.MINUTES.toMillis(30), config.exportScheduleDelayMillis)
     }
@@ -258,10 +276,13 @@ class ExportScheduleAutoDetectorIntegrationTest {
         // Test that battery detection returns valid values
         repeat(10) {
             val batteryDelay = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
-            assertTrue(batteryDelay in setOf(
-                TimeUnit.SECONDS.toMillis(10),
-                TimeUnit.SECONDS.toMillis(30)
-            ))
+            assertTrue(
+                batteryDelay in
+                    setOf(
+                        TimeUnit.SECONDS.toMillis(10),
+                        TimeUnit.SECONDS.toMillis(30),
+                    ),
+            )
         }
     }
 
@@ -270,10 +291,13 @@ class ExportScheduleAutoDetectorIntegrationTest {
         // Test multiple memory checks
         repeat(10) {
             val memoryDelay = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
-            assertTrue(memoryDelay in setOf(
-                TimeUnit.SECONDS.toMillis(10),
-                TimeUnit.SECONDS.toMillis(20)
-            ))
+            assertTrue(
+                memoryDelay in
+                    setOf(
+                        TimeUnit.SECONDS.toMillis(10),
+                        TimeUnit.SECONDS.toMillis(20),
+                    ),
+            )
         }
     }
 
@@ -284,25 +308,27 @@ class ExportScheduleAutoDetectorIntegrationTest {
     @Test
     fun `integration complete workflow - Config creation to scheduler initialization`() {
         // 1. Create config with auto-detection
-        val config = io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
-            enabled = true,
-            autoDetectExportSchedule = true,
-            exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(10)
-        )
+        val config =
+            io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = true,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(10),
+            )
 
         // 2. Determine export delay using auto-detector
-        val exportDelay = if (config.autoDetectExportSchedule) {
-            ExportScheduleAutoDetector.detectOptimalExportDelay(
-                mockContext,
-                if (config.exportScheduleDelayMillis == TimeUnit.SECONDS.toMillis(10)) {
-                    null  // Use auto-detection
-                } else {
-                    config.exportScheduleDelayMillis  // Use user override
-                }
-            )
-        } else {
-            config.exportScheduleDelayMillis
-        }
+        val exportDelay =
+            if (config.autoDetectExportSchedule) {
+                ExportScheduleAutoDetector.detectOptimalExportDelay(
+                    mockContext,
+                    if (config.exportScheduleDelayMillis == TimeUnit.SECONDS.toMillis(10)) {
+                        null // Use auto-detection
+                    } else {
+                        config.exportScheduleDelayMillis // Use user override
+                    },
+                )
+            } else {
+                config.exportScheduleDelayMillis
+            }
 
         // 3. Create scheduler with determined delay
         val mockPeriodicWork = { mockk<io.opentelemetry.android.internal.services.periodicwork.PeriodicWork>() }
@@ -317,17 +343,19 @@ class ExportScheduleAutoDetectorIntegrationTest {
     @Test
     fun `integration complete workflow - User override bypasses auto-detection`() {
         // 1. Create config with explicit user override
-        val config = io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
-            enabled = true,
-            autoDetectExportSchedule = true,
-            exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(45)  // Explicit override
-        )
+        val config =
+            io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = true,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(45), // Explicit override
+            )
 
         // 2. Determine export delay
-        val exportDelay = ExportScheduleAutoDetector.detectOptimalExportDelay(
-            mockContext,
-            config.exportScheduleDelayMillis  // Not null, so auto-detection skipped
-        )
+        val exportDelay =
+            ExportScheduleAutoDetector.detectOptimalExportDelay(
+                mockContext,
+                config.exportScheduleDelayMillis, // Not null, so auto-detection skipped
+            )
 
         // 3. Should use user-configured value
         assertEquals(TimeUnit.SECONDS.toMillis(45), exportDelay)
@@ -345,10 +373,11 @@ class ExportScheduleAutoDetectorIntegrationTest {
 
     @Test
     fun `integration - All return values are positive and in milliseconds`() {
-        val config = io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
-            enabled = true,
-            exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(15)
-        )
+        val config =
+            io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
+                enabled = true,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(15),
+            )
 
         val batteryDelay = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
         val memoryDelay = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
@@ -372,11 +401,12 @@ class ExportScheduleAutoDetectorIntegrationTest {
     @Test
     fun `integration - Configuration immutability and correctness`() {
         val delay = TimeUnit.SECONDS.toMillis(25)
-        val config = io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
-            enabled = true,
-            autoDetectExportSchedule = true,
-            exportScheduleDelayMillis = delay
-        )
+        val config =
+            io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = true,
+                exportScheduleDelayMillis = delay,
+            )
 
         // Verify all properties are correctly set
         assertEquals(true, config.enabled)
@@ -384,11 +414,12 @@ class ExportScheduleAutoDetectorIntegrationTest {
         assertEquals(delay, config.exportScheduleDelayMillis)
 
         // Create another config and verify independence
-        val config2 = io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
-            enabled = true,
-            autoDetectExportSchedule = false,
-            exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(60)
-        )
+        val config2 =
+            io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = false,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(60),
+            )
 
         assertEquals(false, config2.autoDetectExportSchedule)
         assertEquals(TimeUnit.SECONDS.toMillis(60), config2.exportScheduleDelayMillis)
@@ -398,4 +429,3 @@ class ExportScheduleAutoDetectorIntegrationTest {
         assertEquals(delay, config.exportScheduleDelayMillis)
     }
 }
-

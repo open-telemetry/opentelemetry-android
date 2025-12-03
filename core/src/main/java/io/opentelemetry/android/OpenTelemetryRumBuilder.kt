@@ -423,18 +423,19 @@ class OpenTelemetryRumBuilder internal constructor(
         val diskBufferingConfig = config.getDiskBufferingConfig()
 
         // Determine actual export delay: either auto-detected or user-configured
-        val exportDelay = if (diskBufferingConfig.autoDetectExportSchedule) {
-            ExportScheduleAutoDetector.detectOptimalExportDelay(
-                context,
-                if (diskBufferingConfig.exportScheduleDelayMillis == DEFAULT_EXPORT_SCHEDULE_DELAY_MILLIS) {
-                    null // Auto-detect since using default
-                } else {
-                    diskBufferingConfig.exportScheduleDelayMillis // Use user override
-                },
-            )
-        } else {
-            diskBufferingConfig.exportScheduleDelayMillis
-        }
+        val exportDelay =
+            if (diskBufferingConfig.autoDetectExportSchedule) {
+                ExportScheduleAutoDetector.detectOptimalExportDelay(
+                    context,
+                    if (diskBufferingConfig.exportScheduleDelayMillis == DEFAULT_EXPORT_SCHEDULE_DELAY_MILLIS) {
+                        null // Auto-detect since using default
+                    } else {
+                        diskBufferingConfig.exportScheduleDelayMillis // Use user override
+                    },
+                )
+            } else {
+                diskBufferingConfig.exportScheduleDelayMillis
+            }
 
         val handler =
             exportScheduleHandler ?: DefaultExportScheduleHandler(

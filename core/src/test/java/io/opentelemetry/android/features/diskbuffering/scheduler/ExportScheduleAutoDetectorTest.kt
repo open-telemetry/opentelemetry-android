@@ -7,10 +7,10 @@ package io.opentelemetry.android.features.diskbuffering.scheduler
 
 import android.content.Context
 import io.mockk.mockk
-import java.util.concurrent.TimeUnit
-import org.junit.Test
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Test
+import java.util.concurrent.TimeUnit
 
 /**
  * Comprehensive test coverage for ExportScheduleAutoDetector.
@@ -31,10 +31,11 @@ class ExportScheduleAutoDetectorTest {
 
     @Test
     fun `line 47 - User configured delay equals DEFAULT - returns auto-detected value`() {
-        val result = ExportScheduleAutoDetector.detectOptimalExportDelay(
-            mockContext,
-            10000L  // DEFAULT_EXPORT_INTERVAL_MILLIS
-        )
+        val result =
+            ExportScheduleAutoDetector.detectOptimalExportDelay(
+                mockContext,
+                10000L, // DEFAULT_EXPORT_INTERVAL_MILLIS
+            )
         // Should trigger auto-detection (not the override path)
         assertTrue(result >= 10000L)
     }
@@ -54,7 +55,7 @@ class ExportScheduleAutoDetectorTest {
     fun `line 48 - User override 30 seconds logs debug and returns value`() {
         val userDelay = TimeUnit.SECONDS.toMillis(30)
         val result = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, userDelay)
-        assertEquals(userDelay, result)  // Line 49 - returns userConfiguredDelay
+        assertEquals(userDelay, result) // Line 49 - returns userConfiguredDelay
     }
 
     @Test
@@ -149,7 +150,7 @@ class ExportScheduleAutoDetectorTest {
     @Test
     fun `line 104 - Battery intent null check`() {
         val result = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
-        assertTrue(result > 0)  // Should return DEFAULT when intent is null
+        assertTrue(result > 0) // Should return DEFAULT when intent is null
     }
 
     @Test
@@ -338,11 +339,11 @@ class ExportScheduleAutoDetectorTest {
         // Should use only valid intervals (10, 20, or 30 seconds)
         assertTrue(
             battery == TimeUnit.SECONDS.toMillis(10) ||
-            battery == TimeUnit.SECONDS.toMillis(30)
+                battery == TimeUnit.SECONDS.toMillis(30),
         )
         assertTrue(
             memory == TimeUnit.SECONDS.toMillis(10) ||
-            memory == TimeUnit.SECONDS.toMillis(20)
+                memory == TimeUnit.SECONDS.toMillis(20),
         )
     }
 
@@ -371,4 +372,3 @@ class ExportScheduleAutoDetectorTest {
         assertTrue(result4 > 0)
     }
 }
-
