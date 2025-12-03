@@ -1,4 +1,3 @@
-// Kotlin
 /*
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
@@ -81,7 +80,7 @@ class ExportScheduleAutoDetectorTest {
     fun `battery healthy and charging - returns default`() {
         val batteryIntent = mockk<Intent>()
         every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns 80
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 1  // Charging
+        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 1 // Charging
         every { batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1) } returns BatteryManager.BATTERY_STATUS_CHARGING
 
         every { mockContext.registerReceiver(null, any<IntentFilter>()) } returns batteryIntent
@@ -93,8 +92,8 @@ class ExportScheduleAutoDetectorTest {
     @Test
     fun `battery low not charging - returns battery saver interval`() {
         val batteryIntent = mockk<Intent>()
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns 15  // 15% - in range 1..19
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 0  // Not charging
+        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns 15 // 15% - in range 1..19
+        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 0 // Not charging
         every { batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1) } returns BatteryManager.BATTERY_STATUS_DISCHARGING
 
         every { mockContext.registerReceiver(null, any<IntentFilter>()) } returns batteryIntent
@@ -119,7 +118,7 @@ class ExportScheduleAutoDetectorTest {
     @Test
     fun `battery level negative - returns battery saver interval`() {
         val batteryIntent = mockk<Intent>()
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns -1  // Invalid level
+        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns -1 // Invalid level
         every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 0
         every { batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1) } returns BatteryManager.BATTERY_STATUS_UNKNOWN
 
@@ -203,8 +202,8 @@ class ExportScheduleAutoDetectorTest {
     @Test
     fun `auto detection with low battery - returns extended interval`() {
         val batteryIntent = mockk<Intent>()
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns 10  // Low battery
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 0  // Not charging
+        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns 10 // Low battery
+        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 0 // Not charging
         every { batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1) } returns BatteryManager.BATTERY_STATUS_DISCHARGING
 
         every { mockContext.registerReceiver(null, any<IntentFilter>()) } returns batteryIntent
@@ -285,7 +284,7 @@ class ExportScheduleAutoDetectorTest {
     @Test
     fun `max selection between battery and memory`() {
         val batteryIntent = mockk<Intent>()
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns 10  // Low - will trigger 30s
+        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns 10 // Low - will trigger 30s
         every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 0
         every { batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1) } returns BatteryManager.BATTERY_STATUS_DISCHARGING
 
