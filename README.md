@@ -157,6 +157,6 @@ For more information about the Approver role, see the [community repository](htt
 
 [ci-url]: https://github.com/open-telemetry/opentelemetry-android/actions?query=workflow%3Abuild+branch%3Amain
 
-[maven-image]: https://maven-badges.sml.io/maven-central/io.opentelemetry.android/android-agent/badge.svg
+[maven-image]: https://img.shields.io/maven-central/v/io.opentelemetry.android/android-agent.svg
 
-[maven-url]: https://maven-badges.sml.io/maven-central/io.opentelemetry.android/android-agent
+[maven-url]: https://central.sonatype.com/artifact/io.opentelemetry.android/android-agent
