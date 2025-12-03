@@ -19,9 +19,15 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * <p>This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
+ *
+ * <p>The loop interval determines how frequently this service checks its work queue for pending
+ * tasks. For optimal performance with exporters, the loop interval should typically match or be
+ * slightly shorter than the export frequency configured in the exporter (e.g.,
+ * exportScheduleDelayMillis). If the loop interval is significantly longer than the export
+ * frequency, the actual export timing may be delayed.
  */
 internal class PeriodicWorkImpl(
-    private val loopIntervalMillis: Long = DEFAULT_LOOP_INTERVAL_MILLIS,
+    private val loopIntervalMillis: Long = PeriodicWork.DEFAULT_LOOP_INTERVAL_MILLIS,
 ) : PeriodicWork {
     private val delegator = WorkerDelegator(loopIntervalMillis)
 
@@ -38,13 +44,13 @@ internal class PeriodicWorkImpl(
     }
 
     companion object {
-        internal const val DEFAULT_LOOP_INTERVAL_MILLIS: Long = 60000L // 1 minute
+        // The minimum loop interval is 1 second to allow for flexible scheduling
+        internal const val MINIMUM_LOOP_INTERVAL_MILLIS: Long = 1000L // 1 second
     }
 
     private class WorkerDelegator(
         private val loopIntervalMillis: Long,
-    ) :
-        Runnable,
+    ) : Runnable,
         Closeable {
         companion object {
             private const val SECONDS_TO_KILL_IDLE_THREADS = 30L

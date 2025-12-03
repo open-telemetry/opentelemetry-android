@@ -117,7 +117,8 @@ public final class io/opentelemetry/android/features/diskbuffering/DiskBuffering
 	public fun <init> (ZIJJJI)V
 	public fun <init> (ZIJJJIZ)V
 	public fun <init> (ZIJJJIZLjava/io/File;)V
-	public synthetic fun <init> (ZIJJJIZLjava/io/File;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZIJJJIZLjava/io/File;J)V
+	public synthetic fun <init> (ZIJJJIZLjava/io/File;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Z
 	public final fun component2 ()I
 	public final fun component3 ()J
@@ -126,8 +127,9 @@ public final class io/opentelemetry/android/features/diskbuffering/DiskBuffering
 	public final fun component6 ()I
 	public final fun component7 ()Z
 	public final fun component8 ()Ljava/io/File;
-	public final fun copy (ZIJJJIZLjava/io/File;)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
-	public static synthetic fun copy$default (Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;ZIJJJIZLjava/io/File;ILjava/lang/Object;)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public final fun component9 ()J
+	public final fun copy (ZIJJJIZLjava/io/File;J)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public static synthetic fun copy$default (Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;ZIJJJIZLjava/io/File;JILjava/lang/Object;)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
 	public static final fun create ()Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
 	public static final fun create (Z)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
 	public static final fun create (ZI)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
@@ -137,9 +139,11 @@ public final class io/opentelemetry/android/features/diskbuffering/DiskBuffering
 	public static final fun create (ZIJJJI)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
 	public static final fun create (ZIJJJIZ)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
 	public static final fun create (ZIJJJIZLjava/io/File;)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public static final fun create (ZIJJJIZLjava/io/File;J)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDebugEnabled ()Z
 	public final fun getEnabled ()Z
+	public final fun getExportScheduleDelayMillis ()J
 	public final fun getMaxCacheFileSize ()I
 	public final fun getMaxCacheSize ()I
 	public final fun getMaxFileAgeForReadMillis ()J
@@ -160,10 +164,12 @@ public final class io/opentelemetry/android/features/diskbuffering/DiskBuffering
 	public final fun create (ZIJJJI)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
 	public final fun create (ZIJJJIZ)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
 	public final fun create (ZIJJJIZLjava/io/File;)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
-	public static synthetic fun create$default (Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig$Companion;ZIJJJIZLjava/io/File;ILjava/lang/Object;)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public final fun create (ZIJJJIZLjava/io/File;J)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
+	public static synthetic fun create$default (Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig$Companion;ZIJJJIZLjava/io/File;JILjava/lang/Object;)Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
 }
 
 public final class io/opentelemetry/android/features/diskbuffering/DiskBufferingConfigKt {
+	public static final field DEFAULT_EXPORT_SCHEDULE_DELAY_MILLIS J
 	public static final field DEFAULT_MAX_CACHE_SIZE I
 	public static final field DEFAULT_MAX_FILE_AGE_FOR_READ_MS J
 	public static final field DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS J
@@ -196,15 +202,12 @@ public final class io/opentelemetry/android/features/diskbuffering/scheduler/Def
 }
 
 public final class io/opentelemetry/android/features/diskbuffering/scheduler/DefaultExportScheduler : io/opentelemetry/android/internal/services/periodicwork/PeriodicRunnable {
-	public static final field Companion Lio/opentelemetry/android/features/diskbuffering/scheduler/DefaultExportScheduler$Companion;
-	public fun <init> (Lkotlin/jvm/functions/Function0;)V
+	public fun <init> (Lkotlin/jvm/functions/Function0;J)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function0;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun minimumDelayUntilNextRunInMillis ()J
 	public fun onRun ()V
 	public fun shouldStopRunning ()Z
 	public final fun shutdown ()V
-}
-
-public final class io/opentelemetry/android/features/diskbuffering/scheduler/DefaultExportScheduler$Companion {
 }
 
 public abstract interface class io/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler {
