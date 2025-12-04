@@ -93,7 +93,10 @@ dependencies {
     testImplementation(libs.findBundle("mocking").get())
     testImplementation(libs.findBundle("junit").get())
     testRuntimeOnly(libs.findLibrary("junit-platform-launcher").get())
-    testImplementation(platform(libs.findLibrary("opentelemetry-platform-alpha").get()))
+    val platform = platform(libs.findLibrary("opentelemetry-platform-alpha").get())
+    implementation(platform)
+    testImplementation(platform)
+    androidTestImplementation(platform)
     testImplementation(libs.findLibrary("opentelemetry-sdk-testing").get())
     testImplementation(libs.findLibrary("androidx-junit").get())
 }
