@@ -43,7 +43,7 @@ internal class AttributeModifyingSpanExporterTest {
         val key = AttributeKey.stringKey("foo")
         val span1 = span("span1", Attributes.of(key, "bar"))
         val originalSpans = listOf(span1)
-        val underTest = AttributeModifyingSpanExporter(exporter) { _, value -> null }
+        val underTest = AttributeModifyingSpanExporter(exporter) { _, _ -> null }
         val result = underTest.export(originalSpans)
 
         assertSame(CompletableResultCode.ofSuccess(), result)

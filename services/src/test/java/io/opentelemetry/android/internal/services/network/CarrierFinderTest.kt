@@ -90,7 +90,7 @@ class CarrierFinderTest {
         every { telephonyManager.simOperator } returns "31026"
         every { telephonyManager.simCountryIso } returns "nl"
 
-        val carrier = carrierFinder!!.get()
+        val carrier = carrierFinder.get()
 
         assertThat(carrier!!.id).isEqualTo(-1)
         assertThat(carrier.name).isEqualTo("testCarrier")
@@ -104,12 +104,12 @@ class CarrierFinderTest {
     fun testPreApi28WithValidName() {
         setupTelephonyCapability(true)
 
-        every { telephonyManager.getSimOperatorName() } returns ""
-        every { telephonyManager.getNetworkOperatorName() } returns "LegacyCarrier"
-        every { telephonyManager.getSimOperator() } returns "31026"
-        every { telephonyManager.getSimCountryIso() } returns "nl"
+        every { telephonyManager.simOperatorName } returns ""
+        every { telephonyManager.networkOperatorName } returns "LegacyCarrier"
+        every { telephonyManager.simOperator } returns "31026"
+        every { telephonyManager.simCountryIso } returns "nl"
 
-        val carrier = carrierFinder!!.get()
+        val carrier = carrierFinder.get()
 
         assertThat(carrier!!.id).isEqualTo(-1)
         assertThat(carrier.name).isEqualTo("LegacyCarrier")
@@ -128,7 +128,7 @@ class CarrierFinderTest {
         every { telephonyManager.simOperator } returns "31026"
         every { telephonyManager.simCountryIso } returns "nl"
 
-        val carrier = carrierFinder!!.get()
+        val carrier = carrierFinder.get()
 
         assertThat(carrier!!.id).isEqualTo(-1)
         assertThat(carrier.name).isNull()
@@ -188,7 +188,7 @@ class CarrierFinderTest {
     fun testNoTelephonyCapability() {
         setupTelephonyCapability(false)
 
-        val carrier = carrierFinder!!.get()
+        val carrier = carrierFinder.get()
 
         assertThat<Carrier?>(carrier).isNull()
     }
@@ -213,7 +213,7 @@ class CarrierFinderTest {
         every { telephonyManager.simOperatorName } returns "bmobile"
         every { telephonyManager.simCountryIso } returns "nl"
 
-        val carrier = carrierFinder!!.get()
+        val carrier = carrierFinder.get()
 
         assertThat(carrier!!.mobileCountryCode).isNull()
         assertThat(carrier.mobileNetworkCode).isNull()
@@ -243,7 +243,7 @@ class CarrierFinderTest {
         every { telephonyManager.simOperatorName } returns "bmobile"
         every { telephonyManager.simCountryIso } returns ""
 
-        val carrier = carrierFinder!!.get()
+        val carrier = carrierFinder.get()
 
         assertThat(carrier!!.mobileCountryCode).isEqualTo("310")
         assertThat(carrier.mobileNetworkCode).isEqualTo("26")
