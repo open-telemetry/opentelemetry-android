@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.resources.Resource
 import io.opentelemetry.semconv.ServiceAttributes.SERVICE_NAME
 import io.opentelemetry.semconv.ServiceAttributes.SERVICE_VERSION
 import io.opentelemetry.semconv.TelemetryAttributes.TELEMETRY_SDK_VERSION
+import io.opentelemetry.semconv.incubating.AndroidIncubatingAttributes.ANDROID_OS_API_LEVEL
 import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MANUFACTURER
 import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER
 import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MODEL_NAME
@@ -36,6 +37,7 @@ object AndroidResource {
             .put(DEVICE_MODEL_IDENTIFIER, Build.MODEL)
             .put(DEVICE_MANUFACTURER, Build.MANUFACTURER)
             .put(OS_NAME, "Android")
+            .put(ANDROID_OS_API_LEVEL, Build.VERSION.SDK_INT.toString())
             .put(OS_TYPE, "linux")
             .put(OS_VERSION, Build.VERSION.RELEASE)
             .put(OS_DESCRIPTION, oSDescription)
