@@ -55,6 +55,8 @@ tasks {
             disable("CanIgnoreReturnValueSuggester")
             // Common to avoid an allocation
             disable("MixedMutabilityReturnType")
+            // Snuck in from NullAway see https://github.com/uber/NullAway/issues/1363#issuecomment-3607506788
+            disable("RequireExplicitNullMarking")
         }
     }
 }
