@@ -107,6 +107,7 @@ class SlowRenderingInstrumentationTest {
         every { openTelemetry.getTracer(any()) }.returns(mockk())
         every { application.registerActivityLifecycleCallbacks(any()) } just Runs
         val ctx = InstallationContext(application, openTelemetry, mockk())
+        @Suppress("DEPRECATION")
         slowRenderingInstrumentation.enableDeprecatedZeroDurationSpan().install(ctx)
 
         verify { openTelemetry.getTracer("io.opentelemetry.slow-rendering") }

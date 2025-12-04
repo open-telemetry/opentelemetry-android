@@ -129,7 +129,7 @@ class OpenTelemetryRumBuilderTest {
         val openTelemetryRum =
             makeBuilder()
                 .setResource(resource)
-                .addTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, app: Context ->
+                .addTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
                     tracerProviderBuilder.addSpanProcessor(
                         SimpleSpanProcessor.create(spanExporter),
                     )
@@ -172,7 +172,7 @@ class OpenTelemetryRumBuilderTest {
         val openTelemetryRum =
             makeBuilder()
                 .setResource(resource)
-                .addLoggerProviderCustomizer { logRecordProviderBuilder: SdkLoggerProviderBuilder, app: Context ->
+                .addLoggerProviderCustomizer { logRecordProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
                     logRecordProviderBuilder.addLogRecordProcessor(
                         SimpleLogRecordProcessor.create(logsExporter),
                     )
@@ -214,7 +214,7 @@ class OpenTelemetryRumBuilderTest {
         val openTelemetryRum =
             makeBuilder()
                 .setResource(resource)
-                .addMeterProviderCustomizer { sdkMeterProviderBuilder: SdkMeterProviderBuilder, application: Context ->
+                .addMeterProviderCustomizer { sdkMeterProviderBuilder: SdkMeterProviderBuilder, _: Context ->
                     val metricResAttrs =
                         Attributes.of(AttributeKey.stringKey("mmm"), "nnn")
                     sdkMeterProviderBuilder
@@ -256,11 +256,11 @@ class OpenTelemetryRumBuilderTest {
         val openTelemetryRum =
             makeBuilder()
                 .setResource(resource)
-                .addMeterProviderCustomizer { builder: SdkMeterProviderBuilder, app: Context ->
+                .addMeterProviderCustomizer { _: SdkMeterProviderBuilder, _: Context ->
                     SdkMeterProvider
                         .builder()
                         .registerMetricReader(periodicReader)
-                }.addMetricExporterCustomizer(Function { x: MetricExporter -> exporter })
+                }.addMetricExporterCustomizer(Function { _: MetricExporter -> exporter })
                 .build()
 
         val sdk = openTelemetryRum.openTelemetry as OpenTelemetrySdk
@@ -362,7 +362,7 @@ class OpenTelemetryRumBuilderTest {
 
         val rum =
             makeBuilder()
-                .addPropagatorCustomizer(Function { x: TextMapPropagator -> customPropagator })
+                .addPropagatorCustomizer(Function { _: TextMapPropagator -> customPropagator })
                 .build()
         val result =
             rum
@@ -379,7 +379,7 @@ class OpenTelemetryRumBuilderTest {
 
         val rum =
             makeBuilder()
-                .addPropagatorCustomizer(Function { x: TextMapPropagator -> customPropagator })
+                .addPropagatorCustomizer(Function { _: TextMapPropagator -> customPropagator })
                 .build()
         val result = rum.openTelemetry.propagators.textMapPropagator
         assertThat(result).isSameAs(customPropagator)
@@ -435,7 +435,7 @@ class OpenTelemetryRumBuilderTest {
         createAndSetServiceManager()
         val wasCalled = AtomicBoolean(false)
         val customizer: Function<LogRecordExporter, LogRecordExporter> =
-            Function { x: LogRecordExporter ->
+            Function { _: LogRecordExporter ->
                 wasCalled.set(true)
                 logsExporter
             }
@@ -599,7 +599,7 @@ class OpenTelemetryRumBuilderTest {
         val rum =
             RumBuilder
                 .builder(application, otelRumConfig)
-                .addLoggerProviderCustomizer { sdkLoggerProviderBuilder: SdkLoggerProviderBuilder, application: Context ->
+                .addLoggerProviderCustomizer { sdkLoggerProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
                     sdkLoggerProviderBuilder.addLogRecordProcessor(
                         SimpleLogRecordProcessor.create(logsExporter),
                     )
