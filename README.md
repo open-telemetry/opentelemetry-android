@@ -18,6 +18,9 @@ auto-instrumentation of Android apps for real user monitoring (RUM).
 While this project isn't 100% Kotlin, it has a "Kotlin-First" policy where usage in Kotlin-based Android apps will be prioritized in terms
 of API and idioms. More details about this policy can be found [here](./docs/KOTLIN_FIRST.md).
 
+> [!IMPORTANT]
+> We are currently seeking additional contributors! See [Contributing](#contributing) for details.
+
 # Getting Started
 
 > If your project's minSdk is lower than 26, then you must enable
@@ -133,10 +136,20 @@ See the following pages for details about the related topics:
 
 # Contributing
 
-For an overview of how to contribute, see the contributing guide in [CONTRIBUTING.md](CONTRIBUTING.md).
+We are currently resource constrained and are actively seeking new contributors interested in working towards [approver](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver) / [maintainer](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer) roles.
+In addition to the documentation for approver / maintainer roles and the [contributing](./CONTRIBUTING.md) guide, here are some additional notes on engaging:
 
-We are also available in the [#otel-android](https://cloud-native.slack.com/archives/C05J0T9K27Q)
-channel in the [CNCF Slack](https://slack.cncf.io/). Please join us there for further discussions.
+- [Pull request](https://github.com/open-telemetry/opentelemetry-android/pulls) reviews are equally or more helpful than code contributions. Comments and approvals are valuable with or without a formal project role. They're also a great forcing function to explore a fairly complex codebase.
+- Attending the [Android: SDK + Automatic Instrumentation](https://github.com/open-telemetry/community?tab=readme-ov-file#implementation-sigs) Special Interest Group (SIG) is a great way to get to know community members and learn about project priorities.
+- Issues labeled [help wanted](https://github.com/open-telemetry/opentelemetry-android/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) are project priorities. Code contributions (or pull request reviews when a PR is linked) for these issues are particularly important.
+- Triaging / responding to new issues and discussions is a great way to engage with the project.
+- We are available in the [#otel-android](https://cloud-native.slack.com/archives/C05J0T9K27Q) channel in the [CNCF Slack](https://slack.cncf.io/). Please join us there for further discussions.
+
+### Thanks to all of our contributors!
+
+<a href="https://github.com/open-telemetry/opentelemetry-android/graphs/contributors">
+  <img alt="Repo contributors" src="https://contrib.rocks/image?repo=open-telemetry/opentelemetry-android" />
+</a>
 
 ## Maintainers
 
