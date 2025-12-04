@@ -1,0 +1,21 @@
+public final class io/opentelemetry/instrumentation/library/spanannotation/HelperFunctions {
+	public static final field INSTANCE Lio/opentelemetry/instrumentation/library/spanannotation/HelperFunctions;
+	public static final fun argAsAttribute (Lio/opentelemetry/api/trace/Span;[[Ljava/lang/annotation/Annotation;[Ljava/lang/Object;Ljava/lang/String;)V
+	public static final fun argsAsAttributes (Lio/opentelemetry/api/trace/Span;[Ljava/lang/Object;Ljava/lang/String;)V
+	public static final fun startSpan (Lio/opentelemetry/instrumentation/annotations/WithSpan;Ljava/lang/String;)Lkotlin/Pair;
+	public static final fun stopSpan (Lkotlin/Pair;Ljava/lang/Throwable;)V
+}
+
+public final class io/opentelemetry/instrumentation/library/spanannotation/SpanAnnotationInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
+	public static final field Companion Lio/opentelemetry/instrumentation/library/spanannotation/SpanAnnotationInstrumentation$Companion;
+	public static field tracer Lio/opentelemetry/api/trace/Tracer;
+	public fun <init> ()V
+	public fun getName ()Ljava/lang/String;
+	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
+}
+
+public final class io/opentelemetry/instrumentation/library/spanannotation/SpanAnnotationInstrumentation$Companion {
+	public final fun getTracer ()Lio/opentelemetry/api/trace/Tracer;
+	public final fun setTracer (Lio/opentelemetry/api/trace/Tracer;)V
+}
+
