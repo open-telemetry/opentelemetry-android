@@ -12,8 +12,10 @@ import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.opentelemetry.sdk.resources.Resource
+import io.opentelemetry.sdk.resources.ResourceBuilder
 import io.opentelemetry.semconv.ServiceAttributes
 import io.opentelemetry.semconv.TelemetryAttributes
+import io.opentelemetry.semconv.incubating.AndroidIncubatingAttributes
 import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes
 import io.opentelemetry.semconv.incubating.OsIncubatingAttributes
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -34,10 +36,24 @@ internal class AndroidResourceTest {
 
     @RelaxedMockK
     private lateinit var ctx: Context
+    private lateinit var resourceBuilder: ResourceBuilder
 
     @BeforeEach
     fun setUp() {
         MockKAnnotations.init(this)
+        resourceBuilder =
+            Resource
+                .builder()
+                .put(ServiceAttributes.SERVICE_NAME, appName)
+                .put(TelemetryAttributes.TELEMETRY_SDK_VERSION, rumSdkVersion)
+                .put(DeviceIncubatingAttributes.DEVICE_MODEL_NAME, Build.MODEL)
+                .put(DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER, Build.MODEL)
+                .put(DeviceIncubatingAttributes.DEVICE_MANUFACTURER, Build.MANUFACTURER)
+                .put(OsIncubatingAttributes.OS_NAME, "Android")
+                .put(OsIncubatingAttributes.OS_TYPE, "linux")
+                .put(OsIncubatingAttributes.OS_VERSION, Build.VERSION.RELEASE)
+                .put(AndroidIncubatingAttributes.ANDROID_OS_API_LEVEL, Build.VERSION.SDK_INT.toString())
+                .put(OsIncubatingAttributes.OS_DESCRIPTION, osDescription)
     }
 
     @Test
@@ -50,24 +66,7 @@ internal class AndroidResourceTest {
         every { ctx.applicationContext.applicationInfo } returns appInfo
         every { ctx.applicationContext.getString(appInfo.labelRes) } returns appName
 
-        val expected =
-            Resource
-                .getDefault()
-                .merge(
-                    Resource
-                        .builder()
-                        .put(ServiceAttributes.SERVICE_NAME, appName)
-                        .put(TelemetryAttributes.TELEMETRY_SDK_VERSION, rumSdkVersion)
-                        .put(DeviceIncubatingAttributes.DEVICE_MODEL_NAME, Build.MODEL)
-                        .put(DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER, Build.MODEL)
-                        .put(DeviceIncubatingAttributes.DEVICE_MANUFACTURER, Build.MANUFACTURER)
-                        .put(OsIncubatingAttributes.OS_NAME, "Android")
-                        .put(OsIncubatingAttributes.OS_TYPE, "linux")
-                        .put(OsIncubatingAttributes.OS_VERSION, Build.VERSION.RELEASE)
-                        .put(OsIncubatingAttributes.OS_DESCRIPTION, osDescription)
-                        .build(),
-                )
-
+        val expected = Resource.getDefault().merge(resourceBuilder.build())
         val result = AndroidResource.createDefault(ctx)
         assertEquals(expected, result)
     }
@@ -84,22 +83,9 @@ internal class AndroidResourceTest {
         every { ctx.applicationInfo } returns appInfo
 
         val expected =
-            Resource
-                .getDefault()
-                .merge(
-                    Resource
-                        .builder()
-                        .put(ServiceAttributes.SERVICE_NAME, "shim sham")
-                        .put(TelemetryAttributes.TELEMETRY_SDK_VERSION, rumSdkVersion)
-                        .put(DeviceIncubatingAttributes.DEVICE_MODEL_NAME, Build.MODEL)
-                        .put(DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER, Build.MODEL)
-                        .put(DeviceIncubatingAttributes.DEVICE_MANUFACTURER, Build.MANUFACTURER)
-                        .put(OsIncubatingAttributes.OS_NAME, "Android")
-                        .put(OsIncubatingAttributes.OS_TYPE, "linux")
-                        .put(OsIncubatingAttributes.OS_VERSION, Build.VERSION.RELEASE)
-                        .put(OsIncubatingAttributes.OS_DESCRIPTION, osDescription)
-                        .build(),
-                )
+            Resource.getDefault().merge(
+                resourceBuilder.put(ServiceAttributes.SERVICE_NAME, "shim sham").build(),
+            )
 
         val result = AndroidResource.createDefault(ctx)
         assertEquals(expected, result)
@@ -111,22 +97,11 @@ internal class AndroidResourceTest {
         every { ctx.applicationContext.resources } throws SecurityException("boom")
 
         val expected =
-            Resource
-                .getDefault()
-                .merge(
-                    Resource
-                        .builder()
-                        .put(ServiceAttributes.SERVICE_NAME, "unknown_service:android")
-                        .put(TelemetryAttributes.TELEMETRY_SDK_VERSION, rumSdkVersion)
-                        .put(DeviceIncubatingAttributes.DEVICE_MODEL_NAME, Build.MODEL)
-                        .put(DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER, Build.MODEL)
-                        .put(DeviceIncubatingAttributes.DEVICE_MANUFACTURER, Build.MANUFACTURER)
-                        .put(OsIncubatingAttributes.OS_NAME, "Android")
-                        .put(OsIncubatingAttributes.OS_TYPE, "linux")
-                        .put(OsIncubatingAttributes.OS_VERSION, Build.VERSION.RELEASE)
-                        .put(OsIncubatingAttributes.OS_DESCRIPTION, osDescription)
-                        .build(),
-                )
+            Resource.getDefault().merge(
+                resourceBuilder
+                    .put(ServiceAttributes.SERVICE_NAME, "unknown_service:android")
+                    .build(),
+            )
 
         val result = AndroidResource.createDefault(ctx)
         assertEquals(expected, result)
