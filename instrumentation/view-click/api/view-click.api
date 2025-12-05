@@ -35,7 +35,9 @@ public final class io/opentelemetry/android/instrumentation/view/click/WindowCal
 	public fun onMenuItemSelected (ILandroid/view/MenuItem;)Z
 	public fun onMenuOpened (ILandroid/view/Menu;)Z
 	public fun onPanelClosed (ILandroid/view/Menu;)V
+	public fun onPointerCaptureChanged (Z)V
 	public fun onPreparePanel (ILandroid/view/View;Landroid/view/Menu;)Z
+	public fun onProvideKeyboardShortcuts (Ljava/util/List;Landroid/view/Menu;I)V
 	public fun onSearchRequested ()Z
 	public fun onSearchRequested (Landroid/view/SearchEvent;)Z
 	public fun onWindowAttributesChanged (Landroid/view/WindowManager$LayoutParams;)V
