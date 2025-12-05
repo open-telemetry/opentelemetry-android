@@ -14,36 +14,24 @@ class JankReporterTest {
     fun combine() {
         val state = StringBuilder("")
         val inner =
-            object : JankReporter {
-                override fun reportSlow(
-                    durationToCountHistogram: Map<Int, Int>,
-                    periodSeconds: Double,
-                    activityName: String,
-                ) {
-                    state
-                        .append(".inner.")
-                        .append(durationToCountHistogram)
-                        .append(".")
-                        .append(periodSeconds)
-                        .append(".")
-                        .append(activityName)
-                }
+            JankReporter { durationToCountHistogram, periodSeconds, activityName ->
+                state
+                    .append(".inner.")
+                    .append(durationToCountHistogram)
+                    .append(".")
+                    .append(periodSeconds)
+                    .append(".")
+                    .append(activityName)
             }
         val outer =
-            object : JankReporter {
-                override fun reportSlow(
-                    durationToCountHistogram: Map<Int, Int>,
-                    periodSeconds: Double,
-                    activityName: String,
-                ) {
-                    state
-                        .append(".outer.")
-                        .append(durationToCountHistogram)
-                        .append(".")
-                        .append(periodSeconds)
-                        .append(".")
-                        .append(activityName)
-                }
+            JankReporter { durationToCountHistogram, periodSeconds, activityName ->
+                state
+                    .append(".outer.")
+                    .append(durationToCountHistogram)
+                    .append(".")
+                    .append(periodSeconds)
+                    .append(".")
+                    .append(activityName)
             }
 
         val both = inner.combine(outer)
@@ -58,14 +46,7 @@ class JankReporterTest {
     @Test
     fun `combine with self fails`() {
         val reporter =
-            object : JankReporter {
-                override fun reportSlow(
-                    durationToCountHistogram: Map<Int, Int>,
-                    periodSeconds: Double,
-                    activityName: String,
-                ) {
-                }
-            }
+            JankReporter { _, _, _ -> }
         assertThatExceptionOfType(IllegalArgumentException::class.java)
             .isThrownBy { reporter.combine(reporter) }
             .withMessage("cannot combine with self")

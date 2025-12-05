@@ -29,7 +29,7 @@ class HttpUrlInstrumentation : AndroidInstrumentation {
      *
      * @param capturedRequestHeaders A list of HTTP header names.
      */
-    var capturedRequestHeaders: MutableList<String> = mutableListOf()
+    var capturedRequestHeaders: List<String> = emptyList()
         set(requestHeaders) {
             field = requestHeaders.toMutableList()
         }
@@ -44,7 +44,7 @@ class HttpUrlInstrumentation : AndroidInstrumentation {
      *
      * @param capturedResponseHeaders A list of HTTP header names.
      */
-    var capturedResponseHeaders: MutableList<String> = mutableListOf()
+    var capturedResponseHeaders: List<String> = emptyList()
         set(responseHeaders) {
             field = responseHeaders.toMutableList()
         }
@@ -64,12 +64,12 @@ class HttpUrlInstrumentation : AndroidInstrumentation {
      *
      * @param knownMethods A set of recognized HTTP request methods.
      */
-    var knownMethods: MutableSet<String> = HttpConstants.KNOWN_METHODS
+    var knownMethods: Set<String> = HttpConstants.KNOWN_METHODS
         set(knownMethods) {
             field = knownMethods.toMutableSet()
         }
 
-    private var peerServiceMapping: MutableMap<String, String> = mutableMapOf()
+    private var peerServiceMapping: Map<String, String> = emptyMap()
     private var emitExperimentalHttpClientMetrics = false
 
     /**

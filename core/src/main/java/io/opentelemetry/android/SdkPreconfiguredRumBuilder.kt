@@ -14,7 +14,6 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.OpenTelemetrySdk
-import kotlin.collections.remove
 
 class SdkPreconfiguredRumBuilder internal constructor(
     private val context: Context,

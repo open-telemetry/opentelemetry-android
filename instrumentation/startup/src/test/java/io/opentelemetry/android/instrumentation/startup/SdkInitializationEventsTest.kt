@@ -88,7 +88,7 @@ class SdkInitializationEventsTest {
         private val timeNs: Long,
     ) : Consumer<ReadWriteLogRecord> {
         private lateinit var name: String
-        private var body: Value<*>? = null
+        private val body: Value<*>? = null
         private var attrs: Attributes? = null
 
         override fun accept(log: ReadWriteLogRecord) {

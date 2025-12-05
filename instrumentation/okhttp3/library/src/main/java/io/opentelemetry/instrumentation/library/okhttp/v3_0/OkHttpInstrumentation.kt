@@ -36,7 +36,7 @@ class OkHttpInstrumentation : AndroidInstrumentation {
      *
      * @param capturedRequestHeaders A list of HTTP header names.
      */
-    var capturedRequestHeaders: MutableList<String> = mutableListOf()
+    var capturedRequestHeaders: List<String> = listOf()
         set(requestHeaders) {
             field = requestHeaders.toMutableList()
         }
@@ -51,7 +51,7 @@ class OkHttpInstrumentation : AndroidInstrumentation {
      *
      * @param capturedResponseHeaders A list of HTTP header names.
      */
-    var capturedResponseHeaders: MutableList<String> = mutableListOf()
+    var capturedResponseHeaders: List<String> = listOf()
         set(responseHeaders) {
             field = responseHeaders.toMutableList()
         }
@@ -71,7 +71,7 @@ class OkHttpInstrumentation : AndroidInstrumentation {
      *
      * @param knownMethods A set of recognized HTTP request methods.
      */
-    var knownMethods: MutableSet<String> = HttpConstants.KNOWN_METHODS
+    var knownMethods: Set<String> = HttpConstants.KNOWN_METHODS
         set(knownMethods) {
             field = knownMethods.toMutableSet()
         }
