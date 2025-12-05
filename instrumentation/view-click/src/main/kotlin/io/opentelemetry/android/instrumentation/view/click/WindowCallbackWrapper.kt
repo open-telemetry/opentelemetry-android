@@ -7,6 +7,8 @@ package io.opentelemetry.android.instrumentation.view.click
 
 import android.os.Build.VERSION_CODES
 import android.view.ActionMode
+import android.view.KeyboardShortcutGroup
+import android.view.Menu
 import android.view.MotionEvent
 import android.view.SearchEvent
 import android.view.Window.Callback
@@ -19,6 +21,20 @@ class WindowCallbackWrapper(
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
         viewClickEventGenerator.generateClick(event)
         return callback.dispatchTouchEvent(event)
+    }
+
+    @RequiresApi(api = VERSION_CODES.O)
+    override fun onPointerCaptureChanged(hasCapture: Boolean) {
+        callback.onPointerCaptureChanged(hasCapture)
+    }
+
+    @RequiresApi(api = VERSION_CODES.N)
+    override fun onProvideKeyboardShortcuts(
+        data: List<KeyboardShortcutGroup?>?,
+        menu: Menu?,
+        deviceId: Int,
+    ) {
+        callback.onProvideKeyboardShortcuts(data, menu, deviceId)
     }
 
     @RequiresApi(api = VERSION_CODES.M)
