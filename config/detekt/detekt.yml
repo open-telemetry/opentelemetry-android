@@ -39,3 +39,6 @@ style:
     active: false
   UnusedImports:
     active: true
+  VarCouldBeVal:
+    active: true
+    ignoreAnnotated: [ "Mock", "MockK", "RelaxedMockK", "InjectMocks", "Captor" ]

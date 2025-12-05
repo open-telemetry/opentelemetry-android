@@ -24,7 +24,7 @@ jobs:
       - name: touch local props
         run: touch demo-app/local.properties
       - name: run gradle check
-        run: ./gradlew check
+        run: ./gradlew check -x detekt detektDebug detektDebugUnitTest detektDebugAndroidTest
       - name: create test coverage report
         run: ./gradlew check koverXmlReport
       - name: Upload coverage reports to Codecov

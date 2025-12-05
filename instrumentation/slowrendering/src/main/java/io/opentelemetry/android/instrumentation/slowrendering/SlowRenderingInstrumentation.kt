@@ -92,7 +92,7 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
         detector = SlowRenderListener(jankReporter, slowRenderingDetectionPollInterval)
 
         ctx.application?.registerActivityLifecycleCallbacks(detector)
-        detector!!.start()
+        detector?.start()
     }
 
     override fun uninstall(ctx: InstallationContext) {

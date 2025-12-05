@@ -24,7 +24,7 @@ internal class SessionManager(
     private val maxSessionLifetime: Duration,
 ) : SessionProvider,
     SessionPublisher {
-    private var session: AtomicReference<Session> = AtomicReference(Session.NONE)
+    private val session: AtomicReference<Session> = AtomicReference(Session.NONE)
     private val observers = synchronizedList(ArrayList<SessionObserver>())
 
     init {
