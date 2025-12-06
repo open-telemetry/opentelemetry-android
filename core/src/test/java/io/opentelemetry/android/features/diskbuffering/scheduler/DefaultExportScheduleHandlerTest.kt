@@ -26,7 +26,7 @@ class DefaultExportScheduleHandlerTest {
         periodicWork = createPeriodicWorkServiceMock()
         handler =
             DefaultExportScheduleHandler(
-                DefaultExportScheduler { periodicWork },
+                DefaultExportScheduler(periodicWorkProvider = { periodicWork }),
             ) { periodicWork }
     }
 
