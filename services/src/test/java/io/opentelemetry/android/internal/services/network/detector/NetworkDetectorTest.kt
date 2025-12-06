@@ -67,6 +67,8 @@ class NetworkDetectorTest {
         every { connectivityManager.getNetworkCapabilities(network) } returns networkCapabilities
         every { networkCapabilities.hasTransport(any()) } returns false // default
         every { telephonyManager.simOperatorName } returns "JibroCom" // default
+        every { telephonyManager.simOperator } returns "JibroComSimOperator" // default
+        every { telephonyManager.simCountryIso } returns "JibroComSimCountryIso" // default
 
         // Mock telephony feature as available by default
         every { packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY) } returns true
@@ -106,7 +108,19 @@ class NetworkDetectorTest {
         every { networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) } returns true
         val networkDetector = NetworkDetector.create(context)
         val currentNetwork = networkDetector.detectCurrentNetwork()
-        assertThat(currentNetwork).isEqualTo(CurrentNetwork(NetworkState.TRANSPORT_WIFI))
+        assertThat(currentNetwork).isEqualTo(
+            CurrentNetwork(
+                NetworkState.TRANSPORT_WIFI,
+                carrier =
+                    Carrier(
+                        -1,
+                        name = "JibroCom",
+                        mobileCountryCode = "Jib",
+                        mobileNetworkCode = "roComSimOperator",
+                        isoCountryCode = "JibroComSimCountryIso",
+                    ),
+            ),
+        )
     }
 
     @Test
