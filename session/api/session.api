@@ -26,11 +26,14 @@ public abstract interface class io/opentelemetry/android/session/SessionObserver
 
 public abstract interface class io/opentelemetry/android/session/SessionProvider {
 	public static final field Companion Lio/opentelemetry/android/session/SessionProvider$Companion;
+	public static final field NO_SESSION_ID Ljava/lang/String;
 	public static fun getNoop ()Lio/opentelemetry/android/session/SessionProvider;
+	public abstract fun getPreviousSessionId ()Ljava/lang/String;
 	public abstract fun getSessionId ()Ljava/lang/String;
 }
 
 public final class io/opentelemetry/android/session/SessionProvider$Companion {
+	public static final field NO_SESSION_ID Ljava/lang/String;
 	public final fun getNoop ()Lio/opentelemetry/android/session/SessionProvider;
 }
 

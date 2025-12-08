@@ -24,7 +24,8 @@ internal class SessionManager(
     private val maxSessionLifetime: Duration,
 ) : SessionProvider,
     SessionPublisher {
-    private var session: AtomicReference<Session> = AtomicReference(Session.NONE)
+    private val session: AtomicReference<Session> = AtomicReference(Session.NONE)
+    private val previousSession: AtomicReference<Session> = AtomicReference(Session.NONE)
     private val observers = synchronizedList(ArrayList<SessionObserver>())
 
     init {
@@ -47,6 +48,10 @@ internal class SessionManager(
             if (session.compareAndSet(currentSession, newSession)) {
                 sessionStorage.save(newSession)
                 timeoutHandler.bump()
+
+                // Track the previous session for session transition correlation
+                previousSession.set(currentSession)
+
                 // Observers need to be called after bumping the timer because it may create a new
                 // span.
                 notifyObserversOfSessionUpdate(currentSession, newSession)
@@ -78,6 +83,8 @@ internal class SessionManager(
         val elapsedTime = clock.now() - session.getStartTimestamp()
         return elapsedTime >= maxSessionLifetime.inWholeNanoseconds
     }
+
+    override fun getPreviousSessionId(): String = previousSession.get().getId()
 
     companion object {
         @OptIn(Incubating::class)
