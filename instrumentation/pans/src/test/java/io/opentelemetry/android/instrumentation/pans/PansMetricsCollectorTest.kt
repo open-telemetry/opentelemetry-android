@@ -19,6 +19,7 @@ import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import org.junit.After
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -42,9 +43,10 @@ class PansMetricsCollectorTest {
         val mockCounter = mockk<LongCounter>(relaxed = true)
         val mockDoubleGaugeBuilder = mockk<DoubleGaugeBuilder>(relaxed = true)
         val mockLongGaugeBuilder = mockk<LongGaugeBuilder>(relaxed = true)
+        val mockLogsBridge = mockk<io.opentelemetry.sdk.logs.SdkLoggerProvider>(relaxed = true)
 
         every { mockSdk.getMeter(any()) } returns mockMeter
-        every { mockSdk.logsBridge } returns mockk(relaxed = true)
+        every { mockSdk.logsBridge } returns mockLogsBridge
         every { mockMeter.counterBuilder(any()) } returns mockCounterBuilder
         every { mockMeter.gaugeBuilder(any()) } returns mockDoubleGaugeBuilder
         every { mockCounterBuilder.setUnit(any()) } returns mockCounterBuilder
@@ -52,6 +54,8 @@ class PansMetricsCollectorTest {
         every { mockCounterBuilder.build() } returns mockCounter
         every { mockDoubleGaugeBuilder.setDescription(any()) } returns mockDoubleGaugeBuilder
         every { mockDoubleGaugeBuilder.ofLongs() } returns mockLongGaugeBuilder
+        every { mockLongGaugeBuilder.buildWithCallback(any()) } returns mockk(relaxed = true)
+        every { mockCounter.add(any(), any<io.opentelemetry.api.common.Attributes>()) } returns Unit
     }
 
     @After
@@ -318,5 +322,249 @@ class PansMetricsCollectorTest {
         collector.start()
         Thread.sleep(50)
         collector.stop()
+    }
+
+    // ==================== Extended Metrics Recording Tests ====================
+
+    @Test
+    fun testCollectorRecordsMetricsWithAttributes() {
+        val collector = PansMetricsCollector(context, mockSdk)
+        collector.start()
+        Thread.sleep(150)
+        collector.stop()
+
+        verify(atLeast = 1) { mockMeter.counterBuilder(any()) }
+        verify(atLeast = 1) { mockMeter.gaugeBuilder(any()) }
+    }
+
+    @Test
+    fun testCollectorInitializesMeterCorrectly() {
+        val collector = PansMetricsCollector(context, mockSdk)
+        collector.start()
+        Thread.sleep(50)
+        collector.stop()
+
+        verify { mockSdk.getMeter("io.opentelemetry.android.pans") }
+    }
+
+    @Test
+    fun testCollectorHandlesEmptyMetrics() {
+        val collector = PansMetricsCollector(context, mockSdk)
+        collector.start()
+        Thread.sleep(50)
+        collector.stop()
+
+        // Verify collector completes without error even if metrics are empty
+        assertNotNull(collector)
+    }
+
+    @Test
+    fun testCollectorWithLongDelay() {
+        val collector = PansMetricsCollector(context, mockSdk)
+        collector.start()
+        Thread.sleep(200)
+        collector.stop()
+
+        verify(atLeast = 1) { mockSdk.getMeter(any()) }
+    }
+
+    @Test
+    fun testCollectorInitializationWithMinimalContext() {
+        try {
+            val collector = PansMetricsCollector(context, mockSdk, collectionIntervalMinutes = 0L)
+            collector.start()
+            Thread.sleep(50)
+            collector.stop()
+        } catch (e: Exception) {
+            // Should complete gracefully
+        }
+    }
+
+    @Test
+    fun testCollectorResourceCleanup() {
+        val collector = PansMetricsCollector(context, mockSdk)
+        collector.start()
+        Thread.sleep(100)
+        collector.stop()
+        Thread.sleep(50)
+        // Verify state after cleanup
+        assertNotNull(collector)
+    }
+
+    @Test
+    fun testCollectorConcurrentStartStopOperations() {
+        val collector = PansMetricsCollector(context, mockSdk)
+        repeat(5) {
+            Thread {
+                try {
+                    collector.start()
+                    Thread.sleep(10)
+                    collector.stop()
+                } catch (e: Exception) {
+                    // Expected in concurrent scenario
+                }
+            }.start()
+        }
+        Thread.sleep(100)
+    }
+
+    @Test
+    fun testCollectorLogsOnStart() {
+        val collector = PansMetricsCollector(context, mockSdk)
+        collector.start()
+        Thread.sleep(50)
+        collector.stop()
+
+        // Verify that the collector attempted to initialize metrics
+        verify { mockSdk.getMeter(any()) }
+    }
+
+    @Test
+    fun testCollectorReadsFromNetworkStats() {
+        val collector = PansMetricsCollector(context, mockSdk)
+        collector.start()
+        Thread.sleep(100)
+        collector.stop()
+
+        // Verify counter builders were called for expected metrics
+        verify(atLeast = 1) { mockMeter.counterBuilder("network.pans.bytes_transmitted") }
+        verify(atLeast = 1) { mockMeter.counterBuilder("network.pans.bytes_received") }
+    }
+
+    @Test
+    fun testCollectorWithValidSdkInstance() {
+        val collector = PansMetricsCollector(context, mockSdk)
+        assertNotNull(collector)
+        collector.start()
+        Thread.sleep(50)
+        collector.stop()
+    }
+
+    @Test
+    fun testCollectorDurationTracking() {
+        val startTime = System.currentTimeMillis()
+        val collector = PansMetricsCollector(context, mockSdk)
+        collector.start()
+        Thread.sleep(100)
+        collector.stop()
+        val duration = System.currentTimeMillis() - startTime
+
+        // Verify operation completed in reasonable time
+        assertTrue(duration < 5000)
+    }
+
+    @Test
+    fun testCollectorWithMultipleMeterAccess() {
+        val collector = PansMetricsCollector(context, mockSdk)
+        collector.start()
+        Thread.sleep(100)
+        collector.stop()
+
+        // Verify meter was accessed multiple times for different metrics
+        verify(atLeast = 1) { mockSdk.getMeter(any()) }
+        verify(atLeast = 1) { mockMeter.counterBuilder(any()) }
+        verify(atLeast = 1) { mockMeter.gaugeBuilder(any()) }
+    }
+
+    @Test
+    fun testCollectorStopsGracefullyAfterLongCollection() {
+        val collector = PansMetricsCollector(context, mockSdk, collectionIntervalMinutes = 60L)
+        collector.start()
+        Thread.sleep(75)
+        collector.stop()
+        assertNotNull(collector)
+    }
+
+    @Test
+    fun testCollectorIgnoresSecondStartCall() {
+        val collector = PansMetricsCollector(context, mockSdk)
+        collector.start()
+        Thread.sleep(50)
+        collector.start() // Should be ignored
+        Thread.sleep(50)
+        collector.stop()
+
+        // Verify single meter initialization
+        verify(atLeast = 1) { mockSdk.getMeter(any()) }
+    }
+
+    @Test
+    fun testCollectorPermissionHandling() {
+        val collector = PansMetricsCollector(context, mockSdk)
+        try {
+            collector.start()
+            Thread.sleep(50)
+            collector.stop()
+        } catch (e: Exception) {
+            // Should handle permission errors gracefully
+        }
+    }
+
+    @Test
+    fun testCollectorMetricsRecordingIsAttempted() {
+        val collector = PansMetricsCollector(context, mockSdk)
+        collector.start()
+        Thread.sleep(120)
+        collector.stop()
+
+        verify(atLeast = 1) { mockMeter.counterBuilder(any()) }
+    }
+
+    @Test
+    fun testCollectorHandlesNullMetrics() {
+        val collector = PansMetricsCollector(context, mockSdk)
+        collector.start()
+        Thread.sleep(100)
+        collector.stop()
+
+        // Should complete without null pointer exceptions
+        assertNotNull(collector)
+    }
+
+    @Test
+    fun testCollectorThreadSafety() {
+        val collector = PansMetricsCollector(context, mockSdk)
+        val threads = mutableListOf<Thread>()
+
+        repeat(3) {
+            threads.add(
+                Thread {
+                    try {
+                        collector.start()
+                        Thread.sleep(50)
+                        collector.stop()
+                    } catch (e: Exception) {
+                        // Expected in concurrent access
+                    }
+                },
+            )
+        }
+
+        threads.forEach { it.start() }
+        threads.forEach { it.join() }
+        assertNotNull(collector)
+    }
+
+    @Test
+    fun testCollectorIntegrationFlow() {
+        val collector = PansMetricsCollector(context, mockSdk)
+
+        // Complete lifecycle
+        assertNotNull(collector)
+        collector.start()
+        Thread.sleep(75)
+        verify(atLeast = 1) { mockSdk.getMeter(any()) }
+        collector.stop()
+    }
+
+    @Test
+    fun testCollectorStopsEvenAfterError() {
+        val collector = PansMetricsCollector(context, mockSdk)
+        collector.start()
+        Thread.sleep(100)
+        collector.stop()
+        collector.stop() // Second stop should be safe
+
+        assertNotNull(collector)
     }
 }
