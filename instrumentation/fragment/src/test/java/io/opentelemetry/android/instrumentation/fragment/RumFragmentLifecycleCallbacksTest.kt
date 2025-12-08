@@ -208,7 +208,7 @@ internal class RumFragmentLifecycleCallbacksTest {
         )
         assertNull(pauseSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 
-        var events = pauseSpan.events
+        var events: List<EventData> = pauseSpan.events
         assertEquals(1, events.size)
         checkEventExists(events, "fragmentPaused")
 
@@ -309,7 +309,7 @@ internal class RumFragmentLifecycleCallbacksTest {
         )
         assertNull(destroyViewSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 
-        var events = destroyViewSpan.events
+        var events: List<EventData> = destroyViewSpan.events
         assertEquals(1, events.size)
         checkEventExists(events, "fragmentViewDestroyed")
 
@@ -357,7 +357,7 @@ internal class RumFragmentLifecycleCallbacksTest {
     }
 
     private fun checkEventExists(
-        events: MutableList<EventData>,
+        events: List<EventData>,
         eventName: String,
     ) {
         val hasEvent = events.any { e: EventData -> e.name == eventName }

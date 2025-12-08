@@ -22,7 +22,7 @@ class AnrWatcherTest {
     companion object {
         @JvmField
         @RegisterExtension
-        val testing = OpenTelemetryExtension.create()
+        val testing: OpenTelemetryExtension = OpenTelemetryExtension.create()
     }
 
     private lateinit var handler: Handler

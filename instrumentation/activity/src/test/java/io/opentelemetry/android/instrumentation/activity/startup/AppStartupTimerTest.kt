@@ -18,7 +18,7 @@ import org.junit.jupiter.api.extension.RegisterExtension
 internal class AppStartupTimerTest {
     companion object {
         @RegisterExtension
-        private var otelTesting: OpenTelemetryExtension = OpenTelemetryExtension.create()
+        private val otelTesting: OpenTelemetryExtension = OpenTelemetryExtension.create()
     }
 
     private lateinit var tracer: Tracer

@@ -21,9 +21,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 
 class StartupInstrumentationTest {
-    @JvmField
-    @RegisterExtension
-    val otelTesting = OpenTelemetryExtension.create()
+    companion object {
+        @JvmField
+        @RegisterExtension
+        val otelTesting: OpenTelemetryExtension = OpenTelemetryExtension.create()
+    }
+
     private lateinit var instrumentation: StartupInstrumentation
 
     @BeforeEach

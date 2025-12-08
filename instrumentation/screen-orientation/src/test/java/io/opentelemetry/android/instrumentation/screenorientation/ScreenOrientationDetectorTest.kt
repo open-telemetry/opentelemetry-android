@@ -61,7 +61,7 @@ class ScreenOrientationDetectorTest {
         )
 
         // then
-        val record = openTelemetryRule.logRecords.find { it.eventName === EVENT_NAME }
+        val record = openTelemetryRule.logRecords.find { it.eventName == EVENT_NAME }
         assertEquals(1, openTelemetryRule.logRecords.size)
         assertNotNull(record)
         assertEquals("landscape", record.attributes.get(AttributeKey.stringKey(SCREEN_ORIENTATION)))
@@ -78,6 +78,6 @@ class ScreenOrientationDetectorTest {
 
         // then
         assertEquals(0, openTelemetryRule.logRecords.size)
-        assertNull(openTelemetryRule.logRecords.find { it.eventName === EVENT_NAME })
+        assertNull(openTelemetryRule.logRecords.find { it.eventName == EVENT_NAME })
     }
 }
