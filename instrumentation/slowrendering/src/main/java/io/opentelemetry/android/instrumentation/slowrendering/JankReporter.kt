@@ -23,15 +23,9 @@ internal fun interface JankReporter {
     fun combine(jankReporter: JankReporter): JankReporter {
         require(jankReporter != this) { "cannot combine with self" }
         val exec = this::reportSlow
-        return object : JankReporter {
-            override fun reportSlow(
-                durationToCountHistogram: Map<Int, Int>,
-                periodSeconds: Double,
-                activityName: String,
-            ) {
-                exec(durationToCountHistogram, periodSeconds, activityName)
-                jankReporter.reportSlow(durationToCountHistogram, periodSeconds, activityName)
-            }
+        return JankReporter { durationToCountHistogram, periodSeconds, activityName ->
+            exec(durationToCountHistogram, periodSeconds, activityName)
+            jankReporter.reportSlow(durationToCountHistogram, periodSeconds, activityName)
         }
     }
 }

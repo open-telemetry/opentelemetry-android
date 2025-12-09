@@ -267,7 +267,7 @@ internal class ActivityCallbacksTest {
         )
         assertNull(stoppedSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 
-        var events = stoppedSpan.events
+        var events: List<EventData> = stoppedSpan.events
         assertEquals(3, events.size)
 
         checkEventExists(events, "activityPreStopped")
@@ -321,7 +321,7 @@ internal class ActivityCallbacksTest {
         )
         assertNull(stoppedSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 
-        var events = stoppedSpan.events
+        var events: List<EventData> = stoppedSpan.events
         assertEquals(3, events.size)
 
         checkEventExists(events, "activityPrePaused")
@@ -350,7 +350,7 @@ internal class ActivityCallbacksTest {
     }
 
     private fun checkEventExists(
-        events: MutableList<EventData>,
+        events: List<EventData>,
         eventName: String,
     ) {
         val event = events.any { e: EventData -> e.name == eventName }

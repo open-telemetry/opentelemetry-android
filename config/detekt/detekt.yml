@@ -27,6 +27,8 @@ exceptions:
     active: false
 
 style:
+  CollapsibleIfStatements:
+    active: true
   ForbiddenComment:
     active: false
   MagicNumber:
@@ -39,3 +41,6 @@ style:
     active: false
   UnusedImports:
     active: true
+  VarCouldBeVal:
+    active: true
+    ignoreAnnotated: [ "Mock", "MockK", "RelaxedMockK", "InjectMocks", "Captor" ]

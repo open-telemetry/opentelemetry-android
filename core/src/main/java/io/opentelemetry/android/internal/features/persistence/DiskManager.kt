@@ -57,7 +57,7 @@ internal class DiskManager(
             val files = dir.listFiles()
             if (files != null) {
                 for (file in files) {
-                    if (file.isDirectory()) {
+                    if (file.isDirectory) {
                         deleteFiles(file)
                     }
                     file.delete()
@@ -66,10 +66,8 @@ internal class DiskManager(
         }
 
         private fun ensureExistingOrThrow(dir: File) {
-            if (!dir.exists()) {
-                if (!dir.mkdirs()) {
-                    throw IOException("Could not create dir $dir")
-                }
+            if (!dir.exists() && !dir.mkdirs()) {
+                throw IOException("Could not create dir $dir")
             }
         }
     }
