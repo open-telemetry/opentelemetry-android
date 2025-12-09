@@ -50,7 +50,7 @@ internal class ConnectivityManagerWrapper(
             val allNetworks = connectivityManager?.allNetworks ?: return networks
             allNetworks.forEach { network ->
                 try {
-                    val capabilities = connectivityManager?.getNetworkCapabilities(network)
+                    val capabilities = connectivityManager.getNetworkCapabilities(network)
                     if (capabilities != null) {
                         networks.add(
                             NetworkInfo(
