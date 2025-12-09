@@ -430,4 +430,3 @@ class ExportScheduleAutoDetectorTest {
         assertEquals(delay, config.exportScheduleDelayMillis)
     }
 }
-
