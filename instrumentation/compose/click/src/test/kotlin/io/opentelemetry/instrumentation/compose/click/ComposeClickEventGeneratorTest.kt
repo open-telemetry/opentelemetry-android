@@ -235,6 +235,8 @@ internal class ComposeClickEventGeneratorTest {
 
             every { semanticsModifier.semanticsConfiguration } returns semanticsConfiguration
             every { semanticsConfiguration.contains(eq(SemanticsActions.OnClick)) } returns true
+            every { semanticsConfiguration.contains(eq(OpentelemetrySemanticsPropertyKey)) } returns false
+            every { semanticsConfiguration.getOrNull(eq(OpentelemetrySemanticsPropertyKey)) } returns null
 
             if (useDescription) {
                 every { semanticsConfiguration.getOrNull(eq(SemanticsActions.OnClick)) } returns null
@@ -284,7 +286,7 @@ internal class ComposeClickEventGeneratorTest {
         }
 
         every { nodeList[0].zSortedChildren } returns mutableVectorOf(nodeList[1], nodeList[2])
-        every { nodeList[1].zSortedChildren } returns mutableVectorOf(nodeList[4], nodeList[3])
+        every { nodeList[1].zSortedChildren } returns mutableVectorOf(nodeList[3], nodeList[4])
         every { nodeList[2].zSortedChildren } returns mutableVectorOf()
 
         every { nodeList[3].zSortedChildren } returns mutableVectorOf()
