@@ -34,6 +34,7 @@ dependencies {
     ksp(libs.auto.service.processor)
 
     testImplementation(project(":test-common"))
+    testImplementation(project(":session"))
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.mockk)
