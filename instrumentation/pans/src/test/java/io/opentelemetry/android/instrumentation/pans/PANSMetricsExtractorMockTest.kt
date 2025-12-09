@@ -6,7 +6,6 @@
 package io.opentelemetry.android.instrumentation.pans
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk

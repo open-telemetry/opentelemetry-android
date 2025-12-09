@@ -283,7 +283,7 @@ class PansMetricsCollectorCoverageTest {
         var callCount = 0
         every { mockMeter.counterBuilder(any()) } answers {
             callCount++
-            if (callCount == 1) throw RuntimeException("First call fails")
+            if (callCount == 1) error("First call fails")
             mockCounterBuilder
         }
 
