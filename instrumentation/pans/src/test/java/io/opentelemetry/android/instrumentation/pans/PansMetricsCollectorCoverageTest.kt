@@ -335,11 +335,15 @@ class PansMetricsCollectorCoverageTest {
     fun testConcurrentOperations() {
         val collector = PansMetricsCollector(context, mockSdk)
 
-        val threads = listOf(
-            Thread { collector.start() },
-            Thread { collector.start() },
-            Thread { Thread.sleep(30); collector.stop() }
-        )
+        val threads =
+            listOf(
+                Thread { collector.start() },
+                Thread { collector.start() },
+                Thread {
+                    Thread.sleep(30)
+                    collector.stop()
+                },
+            )
 
         threads.forEach { it.start() }
         threads.forEach { it.join() }
@@ -348,4 +352,3 @@ class PansMetricsCollectorCoverageTest {
         collector.stop()
     }
 }
-

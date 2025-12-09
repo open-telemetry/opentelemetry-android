@@ -171,28 +171,30 @@ class NetStatsManagerCoverageTest {
 
     @Test
     fun testAppNetworkStatsCreation() {
-        val stats = NetStatsManager.AppNetworkStats(
-            uid = 1000,
-            packageName = "com.test.app",
-            networkType = "OEM_PAID",
-            rxBytes = 1000L,
-            txBytes = 500L,
-            timestamp = System.currentTimeMillis()
-        )
+        val stats =
+            NetStatsManager.AppNetworkStats(
+                uid = 1000,
+                packageName = "com.test.app",
+                networkType = "OEM_PAID",
+                rxBytes = 1000L,
+                txBytes = 500L,
+                timestamp = System.currentTimeMillis(),
+            )
         assertNotNull(stats)
     }
 
     @Test
     fun testAppNetworkStatsProperties() {
         val timestamp = System.currentTimeMillis()
-        val stats = NetStatsManager.AppNetworkStats(
-            uid = 1000,
-            packageName = "com.test.app",
-            networkType = "OEM_PAID",
-            rxBytes = 1000L,
-            txBytes = 500L,
-            timestamp = timestamp
-        )
+        val stats =
+            NetStatsManager.AppNetworkStats(
+                uid = 1000,
+                packageName = "com.test.app",
+                networkType = "OEM_PAID",
+                rxBytes = 1000L,
+                txBytes = 500L,
+                timestamp = timestamp,
+            )
 
         assertEquals(1000, stats.uid)
         assertEquals("com.test.app", stats.packageName)
@@ -205,13 +207,14 @@ class NetStatsManagerCoverageTest {
     @Test
     fun testAppNetworkStatsWithDefaultTimestamp() {
         val beforeCreate = System.currentTimeMillis()
-        val stats = NetStatsManager.AppNetworkStats(
-            uid = 1000,
-            packageName = "com.test.app",
-            networkType = "OEM_PAID",
-            rxBytes = 1000L,
-            txBytes = 500L
-        )
+        val stats =
+            NetStatsManager.AppNetworkStats(
+                uid = 1000,
+                packageName = "com.test.app",
+                networkType = "OEM_PAID",
+                rxBytes = 1000L,
+                txBytes = 500L,
+            )
         val afterCreate = System.currentTimeMillis()
 
         assertTrue(stats.timestamp >= beforeCreate)
@@ -220,14 +223,15 @@ class NetStatsManagerCoverageTest {
 
     @Test
     fun testAppNetworkStatsWithZeroBytes() {
-        val stats = NetStatsManager.AppNetworkStats(
-            uid = 1000,
-            packageName = "com.test.app",
-            networkType = "OEM_PAID",
-            rxBytes = 0L,
-            txBytes = 0L,
-            timestamp = System.currentTimeMillis()
-        )
+        val stats =
+            NetStatsManager.AppNetworkStats(
+                uid = 1000,
+                packageName = "com.test.app",
+                networkType = "OEM_PAID",
+                rxBytes = 0L,
+                txBytes = 0L,
+                timestamp = System.currentTimeMillis(),
+            )
 
         assertEquals(0L, stats.rxBytes)
         assertEquals(0L, stats.txBytes)
@@ -235,14 +239,15 @@ class NetStatsManagerCoverageTest {
 
     @Test
     fun testAppNetworkStatsWithMaxBytes() {
-        val stats = NetStatsManager.AppNetworkStats(
-            uid = 1000,
-            packageName = "com.test.app",
-            networkType = "OEM_PAID",
-            rxBytes = Long.MAX_VALUE,
-            txBytes = Long.MAX_VALUE,
-            timestamp = System.currentTimeMillis()
-        )
+        val stats =
+            NetStatsManager.AppNetworkStats(
+                uid = 1000,
+                packageName = "com.test.app",
+                networkType = "OEM_PAID",
+                rxBytes = Long.MAX_VALUE,
+                txBytes = Long.MAX_VALUE,
+                timestamp = System.currentTimeMillis(),
+            )
 
         assertEquals(Long.MAX_VALUE, stats.rxBytes)
         assertEquals(Long.MAX_VALUE, stats.txBytes)
@@ -250,28 +255,30 @@ class NetStatsManagerCoverageTest {
 
     @Test
     fun testAppNetworkStatsWithNegativeUid() {
-        val stats = NetStatsManager.AppNetworkStats(
-            uid = -1,
-            packageName = "com.system.app",
-            networkType = "OEM_PAID",
-            rxBytes = 100L,
-            txBytes = 50L,
-            timestamp = System.currentTimeMillis()
-        )
+        val stats =
+            NetStatsManager.AppNetworkStats(
+                uid = -1,
+                packageName = "com.system.app",
+                networkType = "OEM_PAID",
+                rxBytes = 100L,
+                txBytes = 50L,
+                timestamp = System.currentTimeMillis(),
+            )
 
         assertEquals(-1, stats.uid)
     }
 
     @Test
     fun testAppNetworkStatsWithEmptyPackageName() {
-        val stats = NetStatsManager.AppNetworkStats(
-            uid = 1000,
-            packageName = "",
-            networkType = "OEM_PAID",
-            rxBytes = 100L,
-            txBytes = 50L,
-            timestamp = System.currentTimeMillis()
-        )
+        val stats =
+            NetStatsManager.AppNetworkStats(
+                uid = 1000,
+                packageName = "",
+                networkType = "OEM_PAID",
+                rxBytes = 100L,
+                txBytes = 50L,
+                timestamp = System.currentTimeMillis(),
+            )
 
         assertEquals("", stats.packageName)
     }
@@ -279,36 +286,39 @@ class NetStatsManagerCoverageTest {
     @Test
     fun testAppNetworkStatsEquality() {
         val timestamp = System.currentTimeMillis()
-        val stats1 = NetStatsManager.AppNetworkStats(
-            uid = 1000,
-            packageName = "com.test.app",
-            networkType = "OEM_PAID",
-            rxBytes = 1000L,
-            txBytes = 500L,
-            timestamp = timestamp
-        )
-        val stats2 = NetStatsManager.AppNetworkStats(
-            uid = 1000,
-            packageName = "com.test.app",
-            networkType = "OEM_PAID",
-            rxBytes = 1000L,
-            txBytes = 500L,
-            timestamp = timestamp
-        )
+        val stats1 =
+            NetStatsManager.AppNetworkStats(
+                uid = 1000,
+                packageName = "com.test.app",
+                networkType = "OEM_PAID",
+                rxBytes = 1000L,
+                txBytes = 500L,
+                timestamp = timestamp,
+            )
+        val stats2 =
+            NetStatsManager.AppNetworkStats(
+                uid = 1000,
+                packageName = "com.test.app",
+                networkType = "OEM_PAID",
+                rxBytes = 1000L,
+                txBytes = 500L,
+                timestamp = timestamp,
+            )
 
         assertEquals(stats1, stats2)
     }
 
     @Test
     fun testAppNetworkStatsCopy() {
-        val stats1 = NetStatsManager.AppNetworkStats(
-            uid = 1000,
-            packageName = "com.test.app",
-            networkType = "OEM_PAID",
-            rxBytes = 1000L,
-            txBytes = 500L,
-            timestamp = System.currentTimeMillis()
-        )
+        val stats1 =
+            NetStatsManager.AppNetworkStats(
+                uid = 1000,
+                packageName = "com.test.app",
+                networkType = "OEM_PAID",
+                rxBytes = 1000L,
+                txBytes = 500L,
+                timestamp = System.currentTimeMillis(),
+            )
         val stats2 = stats1.copy(rxBytes = 2000L)
 
         assertEquals(2000L, stats2.rxBytes)
@@ -318,14 +328,15 @@ class NetStatsManagerCoverageTest {
 
     @Test
     fun testAppNetworkStatsToString() {
-        val stats = NetStatsManager.AppNetworkStats(
-            uid = 1000,
-            packageName = "com.test.app",
-            networkType = "OEM_PAID",
-            rxBytes = 1000L,
-            txBytes = 500L,
-            timestamp = System.currentTimeMillis()
-        )
+        val stats =
+            NetStatsManager.AppNetworkStats(
+                uid = 1000,
+                packageName = "com.test.app",
+                networkType = "OEM_PAID",
+                rxBytes = 1000L,
+                txBytes = 500L,
+                timestamp = System.currentTimeMillis(),
+            )
         val str = stats.toString()
 
         assertTrue(str.contains("uid=1000"))
@@ -336,36 +347,39 @@ class NetStatsManagerCoverageTest {
     @Test
     fun testAppNetworkStatsHashCode() {
         val timestamp = System.currentTimeMillis()
-        val stats1 = NetStatsManager.AppNetworkStats(
-            uid = 1000,
-            packageName = "com.test.app",
-            networkType = "OEM_PAID",
-            rxBytes = 1000L,
-            txBytes = 500L,
-            timestamp = timestamp
-        )
-        val stats2 = NetStatsManager.AppNetworkStats(
-            uid = 1000,
-            packageName = "com.test.app",
-            networkType = "OEM_PAID",
-            rxBytes = 1000L,
-            txBytes = 500L,
-            timestamp = timestamp
-        )
+        val stats1 =
+            NetStatsManager.AppNetworkStats(
+                uid = 1000,
+                packageName = "com.test.app",
+                networkType = "OEM_PAID",
+                rxBytes = 1000L,
+                txBytes = 500L,
+                timestamp = timestamp,
+            )
+        val stats2 =
+            NetStatsManager.AppNetworkStats(
+                uid = 1000,
+                packageName = "com.test.app",
+                networkType = "OEM_PAID",
+                rxBytes = 1000L,
+                txBytes = 500L,
+                timestamp = timestamp,
+            )
 
         assertEquals(stats1.hashCode(), stats2.hashCode())
     }
 
     @Test
     fun testAppNetworkStatsWithOemPrivateType() {
-        val stats = NetStatsManager.AppNetworkStats(
-            uid = 1000,
-            packageName = "com.test.app",
-            networkType = "OEM_PRIVATE",
-            rxBytes = 1000L,
-            txBytes = 500L,
-            timestamp = System.currentTimeMillis()
-        )
+        val stats =
+            NetStatsManager.AppNetworkStats(
+                uid = 1000,
+                packageName = "com.test.app",
+                networkType = "OEM_PRIVATE",
+                rxBytes = 1000L,
+                txBytes = 500L,
+                timestamp = System.currentTimeMillis(),
+            )
 
         assertEquals("OEM_PRIVATE", stats.networkType)
     }
@@ -383,16 +397,16 @@ class NetStatsManagerCoverageTest {
 
     @Test
     fun testConcurrentGetNetworkStats() {
-        val threads = (1..5).map {
-            Thread {
-                repeat(10) {
-                    netStatsManager.getNetworkStats()
+        val threads =
+            (1..5).map {
+                Thread {
+                    repeat(10) {
+                        netStatsManager.getNetworkStats()
+                    }
                 }
             }
-        }
 
         threads.forEach { it.start() }
         threads.forEach { it.join() }
     }
 }
-

@@ -193,12 +193,13 @@ class ConnectivityManagerWrapperCoverageTest {
 
     @Test
     fun testNetworkInfoWithAllTrue() {
-        val info = ConnectivityManagerWrapper.NetworkInfo(
-            isOemPaid = true,
-            isOemPrivate = true,
-            isMetered = true,
-            isConnected = true
-        )
+        val info =
+            ConnectivityManagerWrapper.NetworkInfo(
+                isOemPaid = true,
+                isOemPrivate = true,
+                isMetered = true,
+                isConnected = true,
+            )
         assertTrue(info.isOemPaid)
         assertTrue(info.isOemPrivate)
         assertTrue(info.isMetered)
@@ -207,12 +208,13 @@ class ConnectivityManagerWrapperCoverageTest {
 
     @Test
     fun testNetworkInfoWithMixedValues() {
-        val info = ConnectivityManagerWrapper.NetworkInfo(
-            isOemPaid = true,
-            isOemPrivate = false,
-            isMetered = true,
-            isConnected = false
-        )
+        val info =
+            ConnectivityManagerWrapper.NetworkInfo(
+                isOemPaid = true,
+                isOemPrivate = false,
+                isMetered = true,
+                isConnected = false,
+            )
         assertTrue(info.isOemPaid)
         assertFalse(info.isOemPrivate)
         assertTrue(info.isMetered)
@@ -221,29 +223,32 @@ class ConnectivityManagerWrapperCoverageTest {
 
     @Test
     fun testNetworkInfoEquality() {
-        val info1 = ConnectivityManagerWrapper.NetworkInfo(
-            isOemPaid = true,
-            isOemPrivate = false,
-            isMetered = true,
-            isConnected = false
-        )
-        val info2 = ConnectivityManagerWrapper.NetworkInfo(
-            isOemPaid = true,
-            isOemPrivate = false,
-            isMetered = true,
-            isConnected = false
-        )
+        val info1 =
+            ConnectivityManagerWrapper.NetworkInfo(
+                isOemPaid = true,
+                isOemPrivate = false,
+                isMetered = true,
+                isConnected = false,
+            )
+        val info2 =
+            ConnectivityManagerWrapper.NetworkInfo(
+                isOemPaid = true,
+                isOemPrivate = false,
+                isMetered = true,
+                isConnected = false,
+            )
         assertEquals(info1, info2)
     }
 
     @Test
     fun testNetworkInfoCopy() {
-        val info1 = ConnectivityManagerWrapper.NetworkInfo(
-            isOemPaid = true,
-            isOemPrivate = true,
-            isMetered = true,
-            isConnected = true
-        )
+        val info1 =
+            ConnectivityManagerWrapper.NetworkInfo(
+                isOemPaid = true,
+                isOemPrivate = true,
+                isMetered = true,
+                isConnected = true,
+            )
         val info2 = info1.copy(isOemPaid = false)
 
         assertFalse(info2.isOemPaid)
@@ -292,4 +297,3 @@ class ConnectivityManagerWrapperCoverageTest {
         wrapper3.getAvailableNetworks()
     }
 }
-

@@ -121,15 +121,16 @@ class PansMetricsCollectorMockTest {
     @Test
     fun testConcurrentStartCalls() {
         val collector = PansMetricsCollector(context, mockSdk)
-        val threads = (1..5).map {
-            Thread {
-                try {
-                    collector.start()
-                } catch (e: Exception) {
-                    // Ignore - concurrent access may cause issues
+        val threads =
+            (1..5).map {
+                Thread {
+                    try {
+                        collector.start()
+                    } catch (e: Exception) {
+                        // Ignore - concurrent access may cause issues
+                    }
                 }
             }
-        }
 
         threads.forEach { it.start() }
         threads.forEach { it.join() }
@@ -338,4 +339,3 @@ class PansMetricsCollectorMockTest {
         collector.stop() // Double stop
     }
 }
-

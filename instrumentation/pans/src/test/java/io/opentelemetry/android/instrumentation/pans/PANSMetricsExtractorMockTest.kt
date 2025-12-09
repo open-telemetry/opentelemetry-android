@@ -43,24 +43,25 @@ class PANSMetricsExtractorMockTest {
 
     @Test
     fun testExtractMetricsWithNetworkStats() {
-        val stats = listOf(
-            NetStatsManager.AppNetworkStats(
-                uid = 1000,
-                packageName = "com.test.app1",
-                networkType = "OEM_PAID",
-                rxBytes = 1000L,
-                txBytes = 500L,
-                timestamp = System.currentTimeMillis()
-            ),
-            NetStatsManager.AppNetworkStats(
-                uid = 1001,
-                packageName = "com.test.app2",
-                networkType = "OEM_PRIVATE",
-                rxBytes = 2000L,
-                txBytes = 1000L,
-                timestamp = System.currentTimeMillis()
+        val stats =
+            listOf(
+                NetStatsManager.AppNetworkStats(
+                    uid = 1000,
+                    packageName = "com.test.app1",
+                    networkType = "OEM_PAID",
+                    rxBytes = 1000L,
+                    txBytes = 500L,
+                    timestamp = System.currentTimeMillis(),
+                ),
+                NetStatsManager.AppNetworkStats(
+                    uid = 1001,
+                    packageName = "com.test.app2",
+                    networkType = "OEM_PRIVATE",
+                    rxBytes = 2000L,
+                    txBytes = 1000L,
+                    timestamp = System.currentTimeMillis(),
+                ),
             )
-        )
         every { mockNetStatsManager.getNetworkStats() } returns stats
 
         val extractor = PANSMetricsExtractor(context, mockNetStatsManager)
@@ -77,16 +78,17 @@ class PANSMetricsExtractorMockTest {
 
     @Test
     fun testExtractMetricsWithSingleNetworkStat() {
-        val stats = listOf(
-            NetStatsManager.AppNetworkStats(
-                uid = 1000,
-                packageName = "com.single.app",
-                networkType = "OEM_PAID",
-                rxBytes = 500L,
-                txBytes = 250L,
-                timestamp = System.currentTimeMillis()
+        val stats =
+            listOf(
+                NetStatsManager.AppNetworkStats(
+                    uid = 1000,
+                    packageName = "com.single.app",
+                    networkType = "OEM_PAID",
+                    rxBytes = 500L,
+                    txBytes = 250L,
+                    timestamp = System.currentTimeMillis(),
+                ),
             )
-        )
         every { mockNetStatsManager.getNetworkStats() } returns stats
 
         val extractor = PANSMetricsExtractor(context, mockNetStatsManager)
@@ -98,16 +100,17 @@ class PANSMetricsExtractorMockTest {
 
     @Test
     fun testExtractMetricsWithLargeNetworkStats() {
-        val stats = (1..100).map { i ->
-            NetStatsManager.AppNetworkStats(
-                uid = 1000 + i,
-                packageName = "com.test.app$i",
-                networkType = if (i % 2 == 0) "OEM_PAID" else "OEM_PRIVATE",
-                rxBytes = i * 1000L,
-                txBytes = i * 500L,
-                timestamp = System.currentTimeMillis()
-            )
-        }
+        val stats =
+            (1..100).map { i ->
+                NetStatsManager.AppNetworkStats(
+                    uid = 1000 + i,
+                    packageName = "com.test.app$i",
+                    networkType = if (i % 2 == 0) "OEM_PAID" else "OEM_PRIVATE",
+                    rxBytes = i * 1000L,
+                    txBytes = i * 500L,
+                    timestamp = System.currentTimeMillis(),
+                )
+            }
         every { mockNetStatsManager.getNetworkStats() } returns stats
 
         val extractor = PANSMetricsExtractor(context, mockNetStatsManager)
@@ -161,16 +164,17 @@ class PANSMetricsExtractorMockTest {
         prefs.edit().putString("1000:com.test.app", "OEM_PAID").apply()
 
         // Return stats with different network type
-        val stats = listOf(
-            NetStatsManager.AppNetworkStats(
-                uid = 1000,
-                packageName = "com.test.app",
-                networkType = "OEM_PRIVATE", // Changed from OEM_PAID
-                rxBytes = 1000L,
-                txBytes = 500L,
-                timestamp = System.currentTimeMillis()
+        val stats =
+            listOf(
+                NetStatsManager.AppNetworkStats(
+                    uid = 1000,
+                    packageName = "com.test.app",
+                    networkType = "OEM_PRIVATE", // Changed from OEM_PAID
+                    rxBytes = 1000L,
+                    txBytes = 500L,
+                    timestamp = System.currentTimeMillis(),
+                ),
             )
-        )
         every { mockNetStatsManager.getNetworkStats() } returns stats
 
         val extractor = PANSMetricsExtractor(context, mockNetStatsManager)
@@ -190,16 +194,17 @@ class PANSMetricsExtractorMockTest {
         prefs.edit().clear().apply()
         prefs.edit().putString("1000:com.test.app", "OEM_PAID").apply()
 
-        val stats = listOf(
-            NetStatsManager.AppNetworkStats(
-                uid = 1000,
-                packageName = "com.test.app",
-                networkType = "OEM_PAID", // Same as stored
-                rxBytes = 1000L,
-                txBytes = 500L,
-                timestamp = System.currentTimeMillis()
+        val stats =
+            listOf(
+                NetStatsManager.AppNetworkStats(
+                    uid = 1000,
+                    packageName = "com.test.app",
+                    networkType = "OEM_PAID", // Same as stored
+                    rxBytes = 1000L,
+                    txBytes = 500L,
+                    timestamp = System.currentTimeMillis(),
+                ),
             )
-        )
         every { mockNetStatsManager.getNetworkStats() } returns stats
 
         val extractor = PANSMetricsExtractor(context, mockNetStatsManager)
@@ -212,29 +217,31 @@ class PANSMetricsExtractorMockTest {
     fun testPreferenceChangesMultipleApps() {
         val prefs = context.getSharedPreferences("pans_preferences", Context.MODE_PRIVATE)
         prefs.edit().clear().apply()
-        prefs.edit()
+        prefs
+            .edit()
             .putString("1000:com.app1", "OEM_PAID")
             .putString("1001:com.app2", "OEM_PRIVATE")
             .apply()
 
-        val stats = listOf(
-            NetStatsManager.AppNetworkStats(
-                uid = 1000,
-                packageName = "com.app1",
-                networkType = "OEM_PRIVATE", // Changed
-                rxBytes = 1000L,
-                txBytes = 500L,
-                timestamp = System.currentTimeMillis()
-            ),
-            NetStatsManager.AppNetworkStats(
-                uid = 1001,
-                packageName = "com.app2",
-                networkType = "OEM_PAID", // Changed
-                rxBytes = 2000L,
-                txBytes = 1000L,
-                timestamp = System.currentTimeMillis()
+        val stats =
+            listOf(
+                NetStatsManager.AppNetworkStats(
+                    uid = 1000,
+                    packageName = "com.app1",
+                    networkType = "OEM_PRIVATE", // Changed
+                    rxBytes = 1000L,
+                    txBytes = 500L,
+                    timestamp = System.currentTimeMillis(),
+                ),
+                NetStatsManager.AppNetworkStats(
+                    uid = 1001,
+                    packageName = "com.app2",
+                    networkType = "OEM_PAID", // Changed
+                    rxBytes = 2000L,
+                    txBytes = 1000L,
+                    timestamp = System.currentTimeMillis(),
+                ),
             )
-        )
         every { mockNetStatsManager.getNetworkStats() } returns stats
 
         val extractor = PANSMetricsExtractor(context, mockNetStatsManager)
@@ -269,7 +276,11 @@ class PANSMetricsExtractorMockTest {
 
         metrics.networkAvailability.forEach { availability ->
             assertNotNull(availability.attributes)
-            val networkTypeAttr = availability.attributes.get(io.opentelemetry.api.common.AttributeKey.stringKey("network_type"))
+            val networkTypeAttr =
+                availability.attributes.get(
+                    io.opentelemetry.api.common.AttributeKey
+                        .stringKey("network_type"),
+                )
             assertEquals(availability.networkType, networkTypeAttr)
         }
     }
@@ -288,16 +299,17 @@ class PANSMetricsExtractorMockTest {
 
     @Test
     fun testExtractMetricsWithZeroBytesStats() {
-        val stats = listOf(
-            NetStatsManager.AppNetworkStats(
-                uid = 1000,
-                packageName = "com.zero.app",
-                networkType = "OEM_PAID",
-                rxBytes = 0L,
-                txBytes = 0L,
-                timestamp = System.currentTimeMillis()
+        val stats =
+            listOf(
+                NetStatsManager.AppNetworkStats(
+                    uid = 1000,
+                    packageName = "com.zero.app",
+                    networkType = "OEM_PAID",
+                    rxBytes = 0L,
+                    txBytes = 0L,
+                    timestamp = System.currentTimeMillis(),
+                ),
             )
-        )
         every { mockNetStatsManager.getNetworkStats() } returns stats
 
         val extractor = PANSMetricsExtractor(context, mockNetStatsManager)
@@ -310,16 +322,17 @@ class PANSMetricsExtractorMockTest {
 
     @Test
     fun testExtractMetricsWithMaxLongBytes() {
-        val stats = listOf(
-            NetStatsManager.AppNetworkStats(
-                uid = 1000,
-                packageName = "com.max.app",
-                networkType = "OEM_PAID",
-                rxBytes = Long.MAX_VALUE,
-                txBytes = Long.MAX_VALUE,
-                timestamp = System.currentTimeMillis()
+        val stats =
+            listOf(
+                NetStatsManager.AppNetworkStats(
+                    uid = 1000,
+                    packageName = "com.max.app",
+                    networkType = "OEM_PAID",
+                    rxBytes = Long.MAX_VALUE,
+                    txBytes = Long.MAX_VALUE,
+                    timestamp = System.currentTimeMillis(),
+                ),
             )
-        )
         every { mockNetStatsManager.getNetworkStats() } returns stats
 
         val extractor = PANSMetricsExtractor(context, mockNetStatsManager)
@@ -334,16 +347,17 @@ class PANSMetricsExtractorMockTest {
         val prefs = context.getSharedPreferences("pans_preferences", Context.MODE_PRIVATE)
         prefs.edit().clear().apply()
 
-        val stats = listOf(
-            NetStatsManager.AppNetworkStats(
-                uid = 1000,
-                packageName = "com.test.app",
-                networkType = "OEM_PAID",
-                rxBytes = 1000L,
-                txBytes = 500L,
-                timestamp = System.currentTimeMillis()
+        val stats =
+            listOf(
+                NetStatsManager.AppNetworkStats(
+                    uid = 1000,
+                    packageName = "com.test.app",
+                    networkType = "OEM_PAID",
+                    rxBytes = 1000L,
+                    txBytes = 500L,
+                    timestamp = System.currentTimeMillis(),
+                ),
             )
-        )
         every { mockNetStatsManager.getNetworkStats() } returns stats
 
         val extractor = PANSMetricsExtractor(context, mockNetStatsManager)
@@ -365,30 +379,32 @@ class PANSMetricsExtractorMockTest {
         val extractor = PANSMetricsExtractor(context, mockNetStatsManager)
 
         // First extraction with OEM_PAID
-        val stats1 = listOf(
-            NetStatsManager.AppNetworkStats(
-                uid = 1000,
-                packageName = "com.test.app",
-                networkType = "OEM_PAID",
-                rxBytes = 1000L,
-                txBytes = 500L,
-                timestamp = System.currentTimeMillis()
+        val stats1 =
+            listOf(
+                NetStatsManager.AppNetworkStats(
+                    uid = 1000,
+                    packageName = "com.test.app",
+                    networkType = "OEM_PAID",
+                    rxBytes = 1000L,
+                    txBytes = 500L,
+                    timestamp = System.currentTimeMillis(),
+                ),
             )
-        )
         every { mockNetStatsManager.getNetworkStats() } returns stats1
         extractor.extractMetrics()
 
         // Second extraction with OEM_PRIVATE - should detect change
-        val stats2 = listOf(
-            NetStatsManager.AppNetworkStats(
-                uid = 1000,
-                packageName = "com.test.app",
-                networkType = "OEM_PRIVATE",
-                rxBytes = 2000L,
-                txBytes = 1000L,
-                timestamp = System.currentTimeMillis()
+        val stats2 =
+            listOf(
+                NetStatsManager.AppNetworkStats(
+                    uid = 1000,
+                    packageName = "com.test.app",
+                    networkType = "OEM_PRIVATE",
+                    rxBytes = 2000L,
+                    txBytes = 1000L,
+                    timestamp = System.currentTimeMillis(),
+                ),
             )
-        )
         every { mockNetStatsManager.getNetworkStats() } returns stats2
         val metrics2 = extractor.extractMetrics()
 
@@ -400,16 +416,17 @@ class PANSMetricsExtractorMockTest {
     @Test
     fun testAppNetworkUsageAttributesComplete() {
         val timestamp = System.currentTimeMillis()
-        val stats = listOf(
-            NetStatsManager.AppNetworkStats(
-                uid = 1000,
-                packageName = "com.test.app",
-                networkType = "OEM_PAID",
-                rxBytes = 1000L,
-                txBytes = 500L,
-                timestamp = timestamp
+        val stats =
+            listOf(
+                NetStatsManager.AppNetworkStats(
+                    uid = 1000,
+                    packageName = "com.test.app",
+                    networkType = "OEM_PAID",
+                    rxBytes = 1000L,
+                    txBytes = 500L,
+                    timestamp = timestamp,
+                ),
             )
-        )
         every { mockNetStatsManager.getNetworkStats() } returns stats
 
         val extractor = PANSMetricsExtractor(context, mockNetStatsManager)
@@ -418,10 +435,26 @@ class PANSMetricsExtractorMockTest {
         val usage = metrics.appNetworkUsage[0]
         assertNotNull(usage.attributes)
 
-        val packageAttr = usage.attributes.get(io.opentelemetry.api.common.AttributeKey.stringKey("app_package_name"))
-        val networkTypeAttr = usage.attributes.get(io.opentelemetry.api.common.AttributeKey.stringKey("network_type"))
-        val uidAttr = usage.attributes.get(io.opentelemetry.api.common.AttributeKey.longKey("uid"))
-        val timestampAttr = usage.attributes.get(io.opentelemetry.api.common.AttributeKey.longKey("timestamp_ms"))
+        val packageAttr =
+            usage.attributes.get(
+                io.opentelemetry.api.common.AttributeKey
+                    .stringKey("app_package_name"),
+            )
+        val networkTypeAttr =
+            usage.attributes.get(
+                io.opentelemetry.api.common.AttributeKey
+                    .stringKey("network_type"),
+            )
+        val uidAttr =
+            usage.attributes.get(
+                io.opentelemetry.api.common.AttributeKey
+                    .longKey("uid"),
+            )
+        val timestampAttr =
+            usage.attributes.get(
+                io.opentelemetry.api.common.AttributeKey
+                    .longKey("timestamp_ms"),
+            )
 
         assertEquals("com.test.app", packageAttr)
         assertEquals("OEM_PAID", networkTypeAttr)
@@ -435,16 +468,17 @@ class PANSMetricsExtractorMockTest {
         prefs.edit().clear().apply()
         prefs.edit().putString("1000:com.test.app", "OEM_PAID").apply()
 
-        val stats = listOf(
-            NetStatsManager.AppNetworkStats(
-                uid = 1000,
-                packageName = "com.test.app",
-                networkType = "OEM_PRIVATE",
-                rxBytes = 1000L,
-                txBytes = 500L,
-                timestamp = System.currentTimeMillis()
+        val stats =
+            listOf(
+                NetStatsManager.AppNetworkStats(
+                    uid = 1000,
+                    packageName = "com.test.app",
+                    networkType = "OEM_PRIVATE",
+                    rxBytes = 1000L,
+                    txBytes = 500L,
+                    timestamp = System.currentTimeMillis(),
+                ),
             )
-        )
         every { mockNetStatsManager.getNetworkStats() } returns stats
 
         val extractor = PANSMetricsExtractor(context, mockNetStatsManager)
@@ -453,10 +487,26 @@ class PANSMetricsExtractorMockTest {
         val change = metrics.preferenceChanges[0]
         assertNotNull(change.attributes)
 
-        val packageAttr = change.attributes.get(io.opentelemetry.api.common.AttributeKey.stringKey("app_package_name"))
-        val oldPrefAttr = change.attributes.get(io.opentelemetry.api.common.AttributeKey.stringKey("old_preference"))
-        val newPrefAttr = change.attributes.get(io.opentelemetry.api.common.AttributeKey.stringKey("new_preference"))
-        val uidAttr = change.attributes.get(io.opentelemetry.api.common.AttributeKey.longKey("uid"))
+        val packageAttr =
+            change.attributes.get(
+                io.opentelemetry.api.common.AttributeKey
+                    .stringKey("app_package_name"),
+            )
+        val oldPrefAttr =
+            change.attributes.get(
+                io.opentelemetry.api.common.AttributeKey
+                    .stringKey("old_preference"),
+            )
+        val newPrefAttr =
+            change.attributes.get(
+                io.opentelemetry.api.common.AttributeKey
+                    .stringKey("new_preference"),
+            )
+        val uidAttr =
+            change.attributes.get(
+                io.opentelemetry.api.common.AttributeKey
+                    .longKey("uid"),
+            )
 
         assertEquals("com.test.app", packageAttr)
         assertEquals("OEM_PAID", oldPrefAttr)
@@ -464,4 +514,3 @@ class PANSMetricsExtractorMockTest {
         assertEquals(1000L, uidAttr)
     }
 }
-

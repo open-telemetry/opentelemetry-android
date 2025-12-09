@@ -232,15 +232,16 @@ class PansInstrumentationCoverageTest {
         val instrumentation = PansInstrumentation()
         val installContext = InstallationContext(context, mockSdk as OpenTelemetry, mockSessionProvider)
 
-        val threads = (1..5).map {
-            Thread {
-                try {
-                    instrumentation.install(installContext)
-                } catch (_: Exception) {
-                    // Expected
+        val threads =
+            (1..5).map {
+                Thread {
+                    try {
+                        instrumentation.install(installContext)
+                    } catch (_: Exception) {
+                        // Expected
+                    }
                 }
             }
-        }
 
         threads.forEach { it.start() }
         threads.forEach { it.join() }
@@ -265,4 +266,3 @@ class PansInstrumentationCoverageTest {
         }
     }
 }
-

@@ -21,7 +21,6 @@ import org.robolectric.RobolectricTestRunner
  */
 @RunWith(RobolectricTestRunner::class)
 class PANSMetricsCoverageTest {
-
     // ==================== PANSMetrics Data Class ====================
 
     @Test
@@ -34,39 +33,43 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testPANSMetricsWithAllLists() {
-        val usage = listOf(
-            AppNetworkUsage(
-                packageName = "com.test",
-                uid = 1000,
-                networkType = "OEM_PAID",
-                bytesTransmitted = 100L,
-                bytesReceived = 200L,
-                attributes = Attributes.empty()
+        val usage =
+            listOf(
+                AppNetworkUsage(
+                    packageName = "com.test",
+                    uid = 1000,
+                    networkType = "OEM_PAID",
+                    bytesTransmitted = 100L,
+                    bytesReceived = 200L,
+                    attributes = Attributes.empty(),
+                ),
             )
-        )
-        val changes = listOf(
-            PreferenceChange(
-                packageName = "com.test",
-                uid = 1000,
-                oldPreference = "OEM_PAID",
-                newPreference = "OEM_PRIVATE",
-                timestamp = System.currentTimeMillis(),
-                attributes = Attributes.empty()
+        val changes =
+            listOf(
+                PreferenceChange(
+                    packageName = "com.test",
+                    uid = 1000,
+                    oldPreference = "OEM_PAID",
+                    newPreference = "OEM_PRIVATE",
+                    timestamp = System.currentTimeMillis(),
+                    attributes = Attributes.empty(),
+                ),
             )
-        )
-        val availability = listOf(
-            NetworkAvailability(
-                networkType = "OEM_PAID",
-                isAvailable = true,
-                attributes = Attributes.empty()
+        val availability =
+            listOf(
+                NetworkAvailability(
+                    networkType = "OEM_PAID",
+                    isAvailable = true,
+                    attributes = Attributes.empty(),
+                ),
             )
-        )
 
-        val metrics = PANSMetrics(
-            appNetworkUsage = usage,
-            preferenceChanges = changes,
-            networkAvailability = availability
-        )
+        val metrics =
+            PANSMetrics(
+                appNetworkUsage = usage,
+                preferenceChanges = changes,
+                networkAvailability = availability,
+            )
 
         assertEquals(1, metrics.appNetworkUsage.size)
         assertEquals(1, metrics.preferenceChanges.size)
@@ -83,16 +86,17 @@ class PANSMetricsCoverageTest {
     @Test
     fun testPANSMetricsCopy() {
         val metrics1 = PANSMetrics()
-        val usage = listOf(
-            AppNetworkUsage(
-                packageName = "com.test",
-                uid = 1000,
-                networkType = "OEM_PAID",
-                bytesTransmitted = 100L,
-                bytesReceived = 200L,
-                attributes = Attributes.empty()
+        val usage =
+            listOf(
+                AppNetworkUsage(
+                    packageName = "com.test",
+                    uid = 1000,
+                    networkType = "OEM_PAID",
+                    bytesTransmitted = 100L,
+                    bytesReceived = 200L,
+                    attributes = Attributes.empty(),
+                ),
             )
-        )
         val metrics2 = metrics1.copy(appNetworkUsage = usage)
 
         assertEquals(1, metrics2.appNetworkUsage.size)
@@ -103,14 +107,15 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testAppNetworkUsageCreation() {
-        val usage = AppNetworkUsage(
-            packageName = "com.test.app",
-            uid = 1000,
-            networkType = "OEM_PAID",
-            bytesTransmitted = 500L,
-            bytesReceived = 1000L,
-            attributes = Attributes.empty()
-        )
+        val usage =
+            AppNetworkUsage(
+                packageName = "com.test.app",
+                uid = 1000,
+                networkType = "OEM_PAID",
+                bytesTransmitted = 500L,
+                bytesReceived = 1000L,
+                attributes = Attributes.empty(),
+            )
 
         assertEquals("com.test.app", usage.packageName)
         assertEquals(1000, usage.uid)
@@ -122,14 +127,15 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testAppNetworkUsageWithZeroBytes() {
-        val usage = AppNetworkUsage(
-            packageName = "com.test",
-            uid = 1000,
-            networkType = "OEM_PAID",
-            bytesTransmitted = 0L,
-            bytesReceived = 0L,
-            attributes = Attributes.empty()
-        )
+        val usage =
+            AppNetworkUsage(
+                packageName = "com.test",
+                uid = 1000,
+                networkType = "OEM_PAID",
+                bytesTransmitted = 0L,
+                bytesReceived = 0L,
+                attributes = Attributes.empty(),
+            )
 
         assertEquals(0L, usage.bytesTransmitted)
         assertEquals(0L, usage.bytesReceived)
@@ -137,14 +143,15 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testAppNetworkUsageWithMaxBytes() {
-        val usage = AppNetworkUsage(
-            packageName = "com.test",
-            uid = 1000,
-            networkType = "OEM_PAID",
-            bytesTransmitted = Long.MAX_VALUE,
-            bytesReceived = Long.MAX_VALUE,
-            attributes = Attributes.empty()
-        )
+        val usage =
+            AppNetworkUsage(
+                packageName = "com.test",
+                uid = 1000,
+                networkType = "OEM_PAID",
+                bytesTransmitted = Long.MAX_VALUE,
+                bytesReceived = Long.MAX_VALUE,
+                attributes = Attributes.empty(),
+            )
 
         assertEquals(Long.MAX_VALUE, usage.bytesTransmitted)
         assertEquals(Long.MAX_VALUE, usage.bytesReceived)
@@ -160,14 +167,15 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testAppNetworkUsageCopy() {
-        val usage1 = AppNetworkUsage(
-            packageName = "com.test",
-            uid = 1000,
-            networkType = "OEM_PAID",
-            bytesTransmitted = 100L,
-            bytesReceived = 200L,
-            attributes = Attributes.empty()
-        )
+        val usage1 =
+            AppNetworkUsage(
+                packageName = "com.test",
+                uid = 1000,
+                networkType = "OEM_PAID",
+                bytesTransmitted = 100L,
+                bytesReceived = 200L,
+                attributes = Attributes.empty(),
+            )
         val usage2 = usage1.copy(bytesTransmitted = 500L)
 
         assertEquals(500L, usage2.bytesTransmitted)
@@ -176,14 +184,15 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testAppNetworkUsageToString() {
-        val usage = AppNetworkUsage(
-            packageName = "com.test.app",
-            uid = 1000,
-            networkType = "OEM_PAID",
-            bytesTransmitted = 100L,
-            bytesReceived = 200L,
-            attributes = Attributes.empty()
-        )
+        val usage =
+            AppNetworkUsage(
+                packageName = "com.test.app",
+                uid = 1000,
+                networkType = "OEM_PAID",
+                bytesTransmitted = 100L,
+                bytesReceived = 200L,
+                attributes = Attributes.empty(),
+            )
         val str = usage.toString()
 
         assertTrue(str.contains("com.test.app"))
@@ -196,14 +205,15 @@ class PANSMetricsCoverageTest {
     @Test
     fun testPreferenceChangeCreation() {
         val timestamp = System.currentTimeMillis()
-        val change = PreferenceChange(
-            packageName = "com.test.app",
-            uid = 1000,
-            oldPreference = "OEM_PAID",
-            newPreference = "OEM_PRIVATE",
-            timestamp = timestamp,
-            attributes = Attributes.empty()
-        )
+        val change =
+            PreferenceChange(
+                packageName = "com.test.app",
+                uid = 1000,
+                oldPreference = "OEM_PAID",
+                newPreference = "OEM_PRIVATE",
+                timestamp = timestamp,
+                attributes = Attributes.empty(),
+            )
 
         assertEquals("com.test.app", change.packageName)
         assertEquals(1000, change.uid)
@@ -215,13 +225,14 @@ class PANSMetricsCoverageTest {
     @Test
     fun testPreferenceChangeDefaultTimestamp() {
         val before = System.currentTimeMillis()
-        val change = PreferenceChange(
-            packageName = "com.test",
-            uid = 1000,
-            oldPreference = "A",
-            newPreference = "B",
-            attributes = Attributes.empty()
-        )
+        val change =
+            PreferenceChange(
+                packageName = "com.test",
+                uid = 1000,
+                oldPreference = "A",
+                newPreference = "B",
+                attributes = Attributes.empty(),
+            )
         val after = System.currentTimeMillis()
 
         assertTrue(change.timestamp >= before)
@@ -239,14 +250,15 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testPreferenceChangeCopy() {
-        val change1 = PreferenceChange(
-            packageName = "com.test",
-            uid = 1000,
-            oldPreference = "A",
-            newPreference = "B",
-            timestamp = System.currentTimeMillis(),
-            attributes = Attributes.empty()
-        )
+        val change1 =
+            PreferenceChange(
+                packageName = "com.test",
+                uid = 1000,
+                oldPreference = "A",
+                newPreference = "B",
+                timestamp = System.currentTimeMillis(),
+                attributes = Attributes.empty(),
+            )
         val change2 = change1.copy(newPreference = "C")
 
         assertEquals("C", change2.newPreference)
@@ -257,12 +269,13 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testNetworkAvailabilityCreation() {
-        val availability = NetworkAvailability(
-            networkType = "OEM_PAID",
-            isAvailable = true,
-            signalStrength = 80,
-            attributes = Attributes.empty()
-        )
+        val availability =
+            NetworkAvailability(
+                networkType = "OEM_PAID",
+                isAvailable = true,
+                signalStrength = 80,
+                attributes = Attributes.empty(),
+            )
 
         assertEquals("OEM_PAID", availability.networkType)
         assertTrue(availability.isAvailable)
@@ -271,22 +284,24 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testNetworkAvailabilityDefaultSignalStrength() {
-        val availability = NetworkAvailability(
-            networkType = "OEM_PAID",
-            isAvailable = true,
-            attributes = Attributes.empty()
-        )
+        val availability =
+            NetworkAvailability(
+                networkType = "OEM_PAID",
+                isAvailable = true,
+                attributes = Attributes.empty(),
+            )
 
         assertEquals(-1, availability.signalStrength)
     }
 
     @Test
     fun testNetworkAvailabilityNotAvailable() {
-        val availability = NetworkAvailability(
-            networkType = "OEM_PRIVATE",
-            isAvailable = false,
-            attributes = Attributes.empty()
-        )
+        val availability =
+            NetworkAvailability(
+                networkType = "OEM_PRIVATE",
+                isAvailable = false,
+                attributes = Attributes.empty(),
+            )
 
         assertFalse(availability.isAvailable)
     }
@@ -301,12 +316,13 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testNetworkAvailabilityCopy() {
-        val avail1 = NetworkAvailability(
-            networkType = "OEM_PAID",
-            isAvailable = true,
-            signalStrength = 80,
-            attributes = Attributes.empty()
-        )
+        val avail1 =
+            NetworkAvailability(
+                networkType = "OEM_PAID",
+                isAvailable = true,
+                signalStrength = 80,
+                attributes = Attributes.empty(),
+            )
         val avail2 = avail1.copy(isAvailable = false)
 
         assertFalse(avail2.isAvailable)
@@ -317,11 +333,12 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testBuildPansAttributesBasic() {
-        val attrs = buildPansAttributes(
-            packageName = "com.test.app",
-            networkType = "OEM_PAID",
-            uid = 1000
-        )
+        val attrs =
+            buildPansAttributes(
+                packageName = "com.test.app",
+                networkType = "OEM_PAID",
+                uid = 1000,
+            )
 
         assertNotNull(attrs)
         assertEquals("com.test.app", attrs.get(AttributeKey.stringKey("app_package_name")))
@@ -331,14 +348,15 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testBuildPansAttributesWithAdditionalBuilder() {
-        val attrs = buildPansAttributes(
-            packageName = "com.test.app",
-            networkType = "OEM_PAID",
-            uid = 1000
-        ) { builder ->
-            builder.put("custom_key", "custom_value")
-            builder.put("timestamp_ms", 123456789L)
-        }
+        val attrs =
+            buildPansAttributes(
+                packageName = "com.test.app",
+                networkType = "OEM_PAID",
+                uid = 1000,
+            ) { builder ->
+                builder.put("custom_key", "custom_value")
+                builder.put("timestamp_ms", 123456789L)
+            }
 
         assertNotNull(attrs)
         assertEquals("custom_value", attrs.get(AttributeKey.stringKey("custom_key")))
@@ -347,22 +365,24 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testBuildPansAttributesWithEmptyPackageName() {
-        val attrs = buildPansAttributes(
-            packageName = "",
-            networkType = "OEM_PAID",
-            uid = 1000
-        )
+        val attrs =
+            buildPansAttributes(
+                packageName = "",
+                networkType = "OEM_PAID",
+                uid = 1000,
+            )
 
         assertEquals("", attrs.get(AttributeKey.stringKey("app_package_name")))
     }
 
     @Test
     fun testBuildPansAttributesWithNegativeUid() {
-        val attrs = buildPansAttributes(
-            packageName = "com.test",
-            networkType = "OEM_PAID",
-            uid = -1
-        )
+        val attrs =
+            buildPansAttributes(
+                packageName = "com.test",
+                networkType = "OEM_PAID",
+                uid = -1,
+            )
 
         assertEquals(-1L, attrs.get(AttributeKey.longKey("uid")))
     }
@@ -371,12 +391,13 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testBuildPreferenceChangeAttributesBasic() {
-        val attrs = buildPreferenceChangeAttributes(
-            packageName = "com.test.app",
-            oldPreference = "OEM_PAID",
-            newPreference = "OEM_PRIVATE",
-            uid = 1000
-        )
+        val attrs =
+            buildPreferenceChangeAttributes(
+                packageName = "com.test.app",
+                oldPreference = "OEM_PAID",
+                newPreference = "OEM_PRIVATE",
+                uid = 1000,
+            )
 
         assertNotNull(attrs)
         assertEquals("com.test.app", attrs.get(AttributeKey.stringKey("app_package_name")))
@@ -387,12 +408,13 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testBuildPreferenceChangeAttributesWithEmptyStrings() {
-        val attrs = buildPreferenceChangeAttributes(
-            packageName = "",
-            oldPreference = "",
-            newPreference = "",
-            uid = 0
-        )
+        val attrs =
+            buildPreferenceChangeAttributes(
+                packageName = "",
+                oldPreference = "",
+                newPreference = "",
+                uid = 0,
+            )
 
         assertEquals("", attrs.get(AttributeKey.stringKey("app_package_name")))
         assertEquals("", attrs.get(AttributeKey.stringKey("old_preference")))
@@ -403,9 +425,10 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testBuildNetworkAvailabilityAttributesBasic() {
-        val attrs = buildNetworkAvailabilityAttributes(
-            networkType = "OEM_PAID"
-        )
+        val attrs =
+            buildNetworkAvailabilityAttributes(
+                networkType = "OEM_PAID",
+            )
 
         assertNotNull(attrs)
         assertEquals("OEM_PAID", attrs.get(AttributeKey.stringKey("network_type")))
@@ -415,10 +438,11 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testBuildNetworkAvailabilityAttributesWithSignalStrength() {
-        val attrs = buildNetworkAvailabilityAttributes(
-            networkType = "OEM_PAID",
-            signalStrength = 80
-        )
+        val attrs =
+            buildNetworkAvailabilityAttributes(
+                networkType = "OEM_PAID",
+                signalStrength = 80,
+            )
 
         assertEquals("OEM_PAID", attrs.get(AttributeKey.stringKey("network_type")))
         assertEquals(80L, attrs.get(AttributeKey.longKey("signal_strength")))
@@ -426,20 +450,22 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testBuildNetworkAvailabilityAttributesWithZeroSignalStrength() {
-        val attrs = buildNetworkAvailabilityAttributes(
-            networkType = "OEM_PRIVATE",
-            signalStrength = 0
-        )
+        val attrs =
+            buildNetworkAvailabilityAttributes(
+                networkType = "OEM_PRIVATE",
+                signalStrength = 0,
+            )
 
         assertEquals(0L, attrs.get(AttributeKey.longKey("signal_strength")))
     }
 
     @Test
     fun testBuildNetworkAvailabilityAttributesWithNegativeSignalStrength() {
-        val attrs = buildNetworkAvailabilityAttributes(
-            networkType = "OEM_PAID",
-            signalStrength = -1
-        )
+        val attrs =
+            buildNetworkAvailabilityAttributes(
+                networkType = "OEM_PAID",
+                signalStrength = -1,
+            )
 
         // Negative signal strength should not add the attribute
         assertNull(attrs.get(AttributeKey.longKey("signal_strength")))
@@ -447,11 +473,11 @@ class PANSMetricsCoverageTest {
 
     @Test
     fun testBuildNetworkAvailabilityAttributesWithEmptyNetworkType() {
-        val attrs = buildNetworkAvailabilityAttributes(
-            networkType = ""
-        )
+        val attrs =
+            buildNetworkAvailabilityAttributes(
+                networkType = "",
+            )
 
         assertEquals("", attrs.get(AttributeKey.stringKey("network_type")))
     }
 }
-
