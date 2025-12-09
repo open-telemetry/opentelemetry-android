@@ -16,7 +16,7 @@ import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.export.BufferDelegatingLogExporter
 import io.opentelemetry.android.export.BufferDelegatingMetricExporter
 import io.opentelemetry.android.export.BufferDelegatingSpanExporter
-import io.opentelemetry.android.features.diskbuffering.DEFAULT_EXPORT_SCHEDULE_DELAY_MILLIS
+import io.opentelemetry.android.features.diskbuffering.DEFAULT_EXPORT_SCHEDULE_DELAY_MS
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter.Companion.set
 import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduleHandler
@@ -427,7 +427,7 @@ class OpenTelemetryRumBuilder internal constructor(
             if (diskBufferingConfig.autoDetectExportSchedule) {
                 ExportScheduleAutoDetector.detectOptimalExportDelay(
                     context,
-                    if (diskBufferingConfig.exportScheduleDelayMillis == DEFAULT_EXPORT_SCHEDULE_DELAY_MILLIS) {
+                    if (diskBufferingConfig.exportScheduleDelayMillis == DEFAULT_EXPORT_SCHEDULE_DELAY_MS) {
                         null // Auto-detect since using default
                     } else {
                         diskBufferingConfig.exportScheduleDelayMillis // Use user override

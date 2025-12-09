@@ -85,12 +85,12 @@ public abstract class io/opentelemetry/android/internal/services/periodicwork/Pe
 
 public abstract interface class io/opentelemetry/android/internal/services/periodicwork/PeriodicWork : io/opentelemetry/android/internal/services/Service {
 	public static final field Companion Lio/opentelemetry/android/internal/services/periodicwork/PeriodicWork$Companion;
-	public static final field DEFAULT_LOOP_INTERVAL_MILLIS J
+	public static final field DEFAULT_LOOP_INTERVAL_MS J
 	public abstract fun enqueue (Ljava/lang/Runnable;)V
 }
 
 public final class io/opentelemetry/android/internal/services/periodicwork/PeriodicWork$Companion {
-	public static final field DEFAULT_LOOP_INTERVAL_MILLIS J
+	public static final field DEFAULT_LOOP_INTERVAL_MS J
 }
 
 public abstract interface class io/opentelemetry/android/internal/services/storage/CacheStorage : io/opentelemetry/android/internal/services/Service {

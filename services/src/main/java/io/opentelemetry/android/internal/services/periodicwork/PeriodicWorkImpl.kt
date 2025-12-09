@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * frequency, the actual export timing may be delayed.
  */
 internal class PeriodicWorkImpl(
-    private val loopIntervalMillis: Long = PeriodicWork.DEFAULT_LOOP_INTERVAL_MILLIS,
+    private val loopIntervalMillis: Long = PeriodicWork.DEFAULT_LOOP_INTERVAL_MS,
 ) : PeriodicWork {
     private val delegator = WorkerDelegator(loopIntervalMillis)
 
@@ -45,7 +45,7 @@ internal class PeriodicWorkImpl(
 
     companion object {
         // The minimum loop interval is 1 second to allow for flexible scheduling
-        internal const val MINIMUM_LOOP_INTERVAL_MILLIS: Long = 1000L // 1 second
+        internal const val MINIMUM_LOOP_INTERVAL_MILLIS: Long = 1000L
     }
 
     private class WorkerDelegator(

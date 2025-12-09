@@ -15,7 +15,7 @@ const val MAX_CACHE_FILE_SIZE: Int = 1024 * 1024
 const val DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS = 30L
 const val DEFAULT_MIN_FILE_AGE_FOR_READ_MS = 33L
 const val DEFAULT_MAX_FILE_AGE_FOR_READ_MS = 18L
-const val DEFAULT_EXPORT_SCHEDULE_DELAY_MILLIS: Long = 10000L // 10 seconds
+const val DEFAULT_EXPORT_SCHEDULE_DELAY_MS: Long = 10000L
 
 data class DiskBufferingConfig
     @JvmOverloads
@@ -69,7 +69,7 @@ data class DiskBufferingConfig
          * Best practice: Test your configuration with your specific telemetry volume and workload
          * to find the optimal balance for your use case.
          */
-        val exportScheduleDelayMillis: Long = DEFAULT_EXPORT_SCHEDULE_DELAY_MILLIS,
+        val exportScheduleDelayMillis: Long = DEFAULT_EXPORT_SCHEDULE_DELAY_MS,
         /**
          * Enables automatic detection of optimal export schedule based on device conditions.
          *
@@ -109,7 +109,7 @@ data class DiskBufferingConfig
                 maxCacheFileSize: Int = MAX_CACHE_FILE_SIZE,
                 debugEnabled: Boolean = false,
                 signalsBufferDir: File? = null,
-                exportScheduleDelayMillis: Long = DEFAULT_EXPORT_SCHEDULE_DELAY_MILLIS,
+                exportScheduleDelayMillis: Long = DEFAULT_EXPORT_SCHEDULE_DELAY_MS,
                 autoDetectExportSchedule: Boolean = false,
             ): DiskBufferingConfig {
                 var minRead = minFileAgeForReadMillis

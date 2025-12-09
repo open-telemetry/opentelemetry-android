@@ -174,7 +174,7 @@ public final class io/opentelemetry/android/features/diskbuffering/DiskBuffering
 }
 
 public final class io/opentelemetry/android/features/diskbuffering/DiskBufferingConfigKt {
-	public static final field DEFAULT_EXPORT_SCHEDULE_DELAY_MILLIS J
+	public static final field DEFAULT_EXPORT_SCHEDULE_DELAY_MS J
 	public static final field DEFAULT_MAX_CACHE_SIZE I
 	public static final field DEFAULT_MAX_FILE_AGE_FOR_READ_MS J
 	public static final field DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS J

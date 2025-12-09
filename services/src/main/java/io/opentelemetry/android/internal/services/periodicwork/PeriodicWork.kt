@@ -16,6 +16,6 @@ interface PeriodicWork : Service {
          * queue is checked for pending tasks. This interval controls the granularity of task
          * scheduling and should be set based on the specific use case and performance requirements.
          */
-        const val DEFAULT_LOOP_INTERVAL_MILLIS: Long = 10000L // 10 seconds
+        const val DEFAULT_LOOP_INTERVAL_MS: Long = 10000L
     }
 }

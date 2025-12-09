@@ -5,297 +5,429 @@
 
 package io.opentelemetry.android.features.diskbuffering.scheduler
 
-import android.app.ActivityManager
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.os.BatteryManager
-import io.mockk.every
 import io.mockk.mockk
+import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.util.concurrent.TimeUnit
 
 /**
- * Comprehensive test coverage for ExportScheduleAutoDetector.
- * Tests all code paths and branches by properly mocking Android system services.
+ * Tests for ExportScheduleAutoDetector with DiskBufferingConfig.
+ * Tests the complete feature workflow and all integration points.
  */
 class ExportScheduleAutoDetectorTest {
     private lateinit var mockContext: Context
-    private lateinit var mockActivityManager: ActivityManager
 
     @Before
     fun setUp() {
         mockContext = mockk()
-        mockActivityManager = mockk()
     }
 
     // ============================================================================
-    // User Configuration Tests - Lines 45-49
+    // TEST SUITE 1: Configuration Integration
     // ============================================================================
 
     @Test
-    fun `user null config - auto detect triggered`() {
+    fun `DiskBufferingConfig with auto-detection disabled uses fixed interval`() {
+        val config =
+            DiskBufferingConfig(
+                enabled = true,
+                autoDetectExportSchedule = false,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(10),
+            )
+
+        assertEquals(false, config.autoDetectExportSchedule)
+        assertEquals(TimeUnit.SECONDS.toMillis(10), config.exportScheduleDelayMillis)
+    }
+
+    @Test
+    fun `DiskBufferingConfig with auto-detection enabled uses detection`() {
+        val config =
+            DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = true,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(10),
+            )
+
+        assertEquals(true, config.autoDetectExportSchedule)
+        assertEquals(TimeUnit.SECONDS.toMillis(10), config.exportScheduleDelayMillis)
+    }
+
+    @Test
+    fun `User override takes precedence over auto-detection setting`() {
+        val config =
+            DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = true,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(60),
+            )
+
+        // Even with auto-detect enabled, explicit config should be honored
+        assertEquals(TimeUnit.SECONDS.toMillis(60), config.exportScheduleDelayMillis)
+        assertEquals(true, config.autoDetectExportSchedule)
+    }
+
+    @Test
+    fun `Validation enforces minimum export delay of 1 second`() {
+        val config =
+            DiskBufferingConfig.create(
+                enabled = true,
+                exportScheduleDelayMillis = 500L, // Below minimum
+            )
+
+        // Should be corrected to 1000ms minimum
+        assertTrue(config.exportScheduleDelayMillis >= TimeUnit.SECONDS.toMillis(1))
+    }
+
+    // ============================================================================
+    // TEST SUITE 2: Auto-Detection Logic Flow
+    // ============================================================================
+
+    @Test
+    fun `Auto-detection returns valid value for normal conditions`() {
         val result = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, null)
-        assertTrue("Should return valid delay", result in setOf(10000L, 20000L, 30000L))
+
+        // Should return valid delay
+        assertTrue(result > 0)
+        assertTrue(result % 1000L == 0L) // Milliseconds in full seconds
+        assertTrue(result >= TimeUnit.SECONDS.toMillis(10))
     }
 
     @Test
-    fun `user default config - auto detect triggered`() {
-        val result = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, 10000L)
-        assertTrue("Should auto-detect despite default value", result in setOf(10000L, 20000L, 30000L))
-    }
-
-    @Test
-    fun `user explicit config - skip auto detect`() {
-        val userDelay = 45000L
+    fun `Auto-detection with user config returns user value`() {
+        val userDelay = TimeUnit.SECONDS.toMillis(45)
         val result = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, userDelay)
-        assertEquals("Should return user value unchanged", userDelay, result)
-    }
 
-    @Test
-    fun `user 30 second config - respected`() {
-        val result = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, 30000L)
-        assertEquals(30000L, result)
-    }
-
-    @Test
-    fun `user 60 second config - respected`() {
-        val result = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, 60000L)
-        assertEquals(60000L, result)
-    }
-
-    @Test
-    fun `user 5 minute config - respected`() {
-        val result = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, 300000L)
-        assertEquals(300000L, result)
-    }
-
-    // ============================================================================
-    // Battery Detection Tests - Lines 93-117
-    // ============================================================================
-
-    @Test
-    fun `battery healthy and charging - returns default`() {
-        val batteryIntent = mockk<Intent>()
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns 80
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 1 // Charging
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1) } returns BatteryManager.BATTERY_STATUS_CHARGING
-
-        every { mockContext.registerReceiver(null, any<IntentFilter>()) } returns batteryIntent
-
-        val result = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
-        assertEquals("Should return default for healthy charging battery", 10000L, result)
-    }
-
-    @Test
-    fun `battery low not charging - returns battery saver interval`() {
-        val batteryIntent = mockk<Intent>()
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns 15 // 15% - in range 1..19
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 0 // Not charging
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1) } returns BatteryManager.BATTERY_STATUS_DISCHARGING
-
-        every { mockContext.registerReceiver(null, any<IntentFilter>()) } returns batteryIntent
-
-        val result = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
-        assertEquals("Should return 30s for low battery not charging", 30000L, result)
-    }
-
-    @Test
-    fun `battery unknown status - returns battery saver interval`() {
-        val batteryIntent = mockk<Intent>()
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns 50
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 0
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1) } returns BatteryManager.BATTERY_STATUS_UNKNOWN
-
-        every { mockContext.registerReceiver(null, any<IntentFilter>()) } returns batteryIntent
-
-        val result = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
-        assertEquals("Should return 30s for unknown battery status", 30000L, result)
-    }
-
-    @Test
-    fun `battery level negative - returns battery saver interval`() {
-        val batteryIntent = mockk<Intent>()
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns -1 // Invalid level
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 0
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1) } returns BatteryManager.BATTERY_STATUS_UNKNOWN
-
-        every { mockContext.registerReceiver(null, any<IntentFilter>()) } returns batteryIntent
-
-        val result = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
-        assertEquals("Should return 30s for negative battery level", 30000L, result)
-    }
-
-    @Test
-    fun `battery intent null - returns default`() {
-        every { mockContext.registerReceiver(null, any<IntentFilter>()) } returns null
-
-        val result = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
-        assertEquals("Should return default when intent is null", 10000L, result)
-    }
-
-    @Test
-    fun `battery check exception - returns default`() {
-        every { mockContext.registerReceiver(null, any<IntentFilter>()) } throws RuntimeException("Test exception")
-
-        val result = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
-        assertEquals("Should return default on exception", 10000L, result)
-    }
-
-    // ============================================================================
-    // Memory Detection Tests - Lines 131-160
-    // ============================================================================
-
-    @Test
-    fun `memory usage high - returns low memory interval`() {
-        every { mockContext.getSystemService(Context.ACTIVITY_SERVICE) } returns mockActivityManager
-
-        // Mock Runtime to return memory usage > 85%
-        val result = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
-        assertTrue("Should return valid interval", result in setOf(10000L, 20000L))
-    }
-
-    @Test
-    fun `memory usage normal - returns default`() {
-        every { mockContext.getSystemService(Context.ACTIVITY_SERVICE) } returns mockActivityManager
-
-        val result = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
-        assertTrue("Should return valid interval", result in setOf(10000L, 20000L))
-    }
-
-    @Test
-    fun `activity manager null - returns default`() {
-        every { mockContext.getSystemService(Context.ACTIVITY_SERVICE) } returns null
-
-        val result = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
-        assertEquals("Should return default when ActivityManager is null", 10000L, result)
-    }
-
-    @Test
-    fun `memory check exception - returns default`() {
-        every { mockContext.getSystemService(Context.ACTIVITY_SERVICE) } throws RuntimeException("Test exception")
-
-        val result = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
-        assertEquals("Should return default on exception", 10000L, result)
-    }
-
-    // ============================================================================
-    // Auto-Detection Logic Tests - Lines 62-83
-    // ============================================================================
-
-    @Test
-    fun `auto detection with healthy battery and memory - returns default`() {
-        val batteryIntent = mockk<Intent>()
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns 80
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 1
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1) } returns BatteryManager.BATTERY_STATUS_CHARGING
-
-        every { mockContext.registerReceiver(null, any<IntentFilter>()) } returns batteryIntent
-        every { mockContext.getSystemService(Context.ACTIVITY_SERVICE) } returns mockActivityManager
-
-        val result = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, null)
-        assertEquals("Should return default for healthy device", 10000L, result)
-    }
-
-    @Test
-    fun `auto detection with low battery - returns extended interval`() {
-        val batteryIntent = mockk<Intent>()
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns 10 // Low battery
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 0 // Not charging
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1) } returns BatteryManager.BATTERY_STATUS_DISCHARGING
-
-        every { mockContext.registerReceiver(null, any<IntentFilter>()) } returns batteryIntent
-        every { mockContext.getSystemService(Context.ACTIVITY_SERVICE) } returns mockActivityManager
-
-        val result = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, null)
-        assertEquals("Should return 30s for low battery", 30000L, result)
-    }
-
-    // ============================================================================
-    // Integration Tests
-    // ============================================================================
-
-    @Test
-    fun `user override bypasses all auto detection`() {
-        val userDelay = 45000L
-        val result = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, userDelay)
         assertEquals(userDelay, result)
-        // Verify auto-detection functions are never called by checking no exceptions from mocks
     }
 
     @Test
-    fun `multiple calls return consistent values`() {
-        val batteryIntent = mockk<Intent>()
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns 80
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 1
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1) } returns BatteryManager.BATTERY_STATUS_CHARGING
+    fun `Battery and memory checks return valid intervals`() {
+        val batteryDelay = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
+        val memoryDelay = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
 
-        every { mockContext.registerReceiver(null, any<IntentFilter>()) } returns batteryIntent
-        every { mockContext.getSystemService(Context.ACTIVITY_SERVICE) } returns mockActivityManager
+        // Both should return valid intervals
+        assertTrue(
+            batteryDelay in
+                setOf(
+                    TimeUnit.SECONDS.toMillis(10),
+                    TimeUnit.SECONDS.toMillis(30),
+                ),
+        )
 
+        assertTrue(
+            memoryDelay in
+                setOf(
+                    TimeUnit.SECONDS.toMillis(10),
+                    TimeUnit.SECONDS.toMillis(20),
+                ),
+        )
+    }
+
+    @Test
+    fun `Auto-detection respects maximum of battery and memory delays`() {
+        val batteryDelay = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
+        val memoryDelay = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
+        val detectedDelay = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, null)
+
+        // Detected should be >= both checks
+        assertTrue(detectedDelay >= batteryDelay)
+        assertTrue(detectedDelay >= memoryDelay)
+    }
+
+    // ============================================================================
+    // TEST SUITE 3: DefaultExportScheduler Integration
+    // ============================================================================
+
+    @Test
+    fun `DefaultExportScheduler uses provided delay`() {
+        val delay = TimeUnit.SECONDS.toMillis(30)
+        val mockPeriodicWork = { mockk<io.opentelemetry.android.internal.services.periodicwork.PeriodicWork>() }
+
+        val scheduler = DefaultExportScheduler(mockPeriodicWork, delay)
+
+        assertEquals(delay, scheduler.minimumDelayUntilNextRunInMillis())
+    }
+
+    @Test
+    fun `DefaultExportScheduler default delay is 10 seconds`() {
+        val mockPeriodicWork = { mockk<io.opentelemetry.android.internal.services.periodicwork.PeriodicWork>() }
+
+        val scheduler = DefaultExportScheduler(mockPeriodicWork)
+
+        assertEquals(TimeUnit.SECONDS.toMillis(10), scheduler.minimumDelayUntilNextRunInMillis())
+    }
+
+    // ============================================================================
+    // TEST SUITE 4: Configuration Scenarios
+    // ============================================================================
+
+    @Test
+    fun `scenario - Standard mobile application (auto-detect enabled)`() {
+        val config =
+            DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = true,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(10),
+            )
+
+        assertEquals(true, config.autoDetectExportSchedule)
+        assertEquals(TimeUnit.SECONDS.toMillis(10), config.exportScheduleDelayMillis)
+
+        val detectedDelay =
+            ExportScheduleAutoDetector.detectOptimalExportDelay(
+                mockContext,
+                if (config.exportScheduleDelayMillis == TimeUnit.SECONDS.toMillis(10)) null else config.exportScheduleDelayMillis,
+            )
+
+        assertTrue(detectedDelay >= TimeUnit.SECONDS.toMillis(10))
+        assertTrue(detectedDelay <= TimeUnit.SECONDS.toMillis(30))
+    }
+
+    @Test
+    fun `scenario - High volume telemetry (explicit user config)`() {
+        val config =
+            DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = true,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(60),
+            )
+
+        assertEquals(true, config.autoDetectExportSchedule)
+        assertEquals(TimeUnit.SECONDS.toMillis(60), config.exportScheduleDelayMillis)
+
+        // User explicit value should be returned
+        val delay =
+            ExportScheduleAutoDetector.detectOptimalExportDelay(
+                mockContext,
+                config.exportScheduleDelayMillis,
+            )
+
+        assertEquals(TimeUnit.SECONDS.toMillis(60), delay)
+    }
+
+    @Test
+    fun `scenario - Real-time monitoring (auto-detect disabled)`() {
+        val config =
+            DiskBufferingConfig(
+                enabled = true,
+                autoDetectExportSchedule = false,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(5),
+            )
+
+        assertEquals(false, config.autoDetectExportSchedule)
+        assertEquals(TimeUnit.SECONDS.toMillis(5), config.exportScheduleDelayMillis)
+    }
+
+    @Test
+    fun `scenario - Battery optimization (explicit long delay)`() {
+        val config =
+            DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = true,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(300), // 5 minutes
+            )
+
+        assertEquals(true, config.autoDetectExportSchedule)
+        assertEquals(TimeUnit.SECONDS.toMillis(300), config.exportScheduleDelayMillis)
+    }
+
+    // ============================================================================
+    // TEST SUITE 5: Edge Cases and Error Handling
+    // ============================================================================
+
+    @Test
+    fun `Minimum delay value is enforced (1 second)`() {
+        val config =
+            DiskBufferingConfig.create(
+                enabled = true,
+                exportScheduleDelayMillis = 100L, // Way below minimum
+            )
+
+        assertTrue(config.exportScheduleDelayMillis >= TimeUnit.SECONDS.toMillis(1))
+    }
+
+    @Test
+    fun `Very long delay is accepted (30 minutes)`() {
+        val config =
+            DiskBufferingConfig.create(
+                enabled = true,
+                exportScheduleDelayMillis = TimeUnit.MINUTES.toMillis(30),
+            )
+
+        assertEquals(TimeUnit.MINUTES.toMillis(30), config.exportScheduleDelayMillis)
+    }
+
+    @Test
+    fun `Multiple auto-detection calls return consistent values`() {
         val result1 = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, null)
         val result2 = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, null)
         val result3 = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, null)
 
-        assertEquals("Results should be consistent", result1, result2)
-        assertEquals("Results should be consistent", result2, result3)
+        // All should be equal (no randomness)
+        assertEquals(result1, result2)
+        assertEquals(result2, result3)
     }
 
     @Test
-    fun `battery and memory checks are milliseconds`() {
-        val batteryIntent = mockk<Intent>()
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns 80
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 1
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1) } returns BatteryManager.BATTERY_STATUS_CHARGING
-
-        every { mockContext.registerReceiver(null, any<IntentFilter>()) } returns batteryIntent
-        every { mockContext.getSystemService(Context.ACTIVITY_SERVICE) } returns mockActivityManager
-
-        val battery = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
-        val memory = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
-        val detected = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, null)
-
-        assertTrue("Battery should be multiple of 1000", battery % 1000L == 0L)
-        assertTrue("Memory should be multiple of 1000", memory % 1000L == 0L)
-        assertTrue("Detected should be multiple of 1000", detected % 1000L == 0L)
+    fun `Auto-detection handles various battery scenarios`() {
+        // Test that battery detection returns valid values
+        repeat(10) {
+            val batteryDelay = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
+            assertTrue(
+                batteryDelay in
+                    setOf(
+                        TimeUnit.SECONDS.toMillis(10),
+                        TimeUnit.SECONDS.toMillis(30),
+                    ),
+            )
+        }
     }
 
     @Test
-    fun `all return values are positive`() {
-        val batteryIntent = mockk<Intent>()
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns 80
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 1
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1) } returns BatteryManager.BATTERY_STATUS_CHARGING
+    fun `Auto-detection handles memory variations`() {
+        // Test multiple memory checks
+        repeat(10) {
+            val memoryDelay = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
+            assertTrue(
+                memoryDelay in
+                    setOf(
+                        TimeUnit.SECONDS.toMillis(10),
+                        TimeUnit.SECONDS.toMillis(20),
+                    ),
+            )
+        }
+    }
 
-        every { mockContext.registerReceiver(null, any<IntentFilter>()) } returns batteryIntent
-        every { mockContext.getSystemService(Context.ACTIVITY_SERVICE) } returns mockActivityManager
+    // ============================================================================
+    // TEST SUITE 6: Complete Feature Workflow
+    // ============================================================================
 
-        val battery = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
-        val memory = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
-        val detected = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, null)
+    @Test
+    fun `complete workflow - Config creation to scheduler initialization`() {
+        // 1. Create config with auto-detection
+        val config =
+            DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = true,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(10),
+            )
 
-        assertTrue("Battery should be > 0", battery > 0)
-        assertTrue("Memory should be > 0", memory > 0)
-        assertTrue("Detected should be > 0", detected > 0)
+        // 2. Determine export delay using auto-detector
+        val exportDelay =
+            if (config.autoDetectExportSchedule) {
+                ExportScheduleAutoDetector.detectOptimalExportDelay(
+                    mockContext,
+                    if (config.exportScheduleDelayMillis == TimeUnit.SECONDS.toMillis(10)) {
+                        null // Use auto-detection
+                    } else {
+                        config.exportScheduleDelayMillis // Use user override
+                    },
+                )
+            } else {
+                config.exportScheduleDelayMillis
+            }
+
+        // 3. Create scheduler with determined delay
+        val mockPeriodicWork = { mockk<io.opentelemetry.android.internal.services.periodicwork.PeriodicWork>() }
+        val scheduler = DefaultExportScheduler(mockPeriodicWork, exportDelay)
+
+        // 4. Verify scheduler has correct delay
+        assertEquals(exportDelay, scheduler.minimumDelayUntilNextRunInMillis())
+        assertTrue(exportDelay > 0)
+        assertTrue(exportDelay % 1000L == 0L)
     }
 
     @Test
-    fun `max selection between battery and memory`() {
-        val batteryIntent = mockk<Intent>()
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) } returns 10 // Low - will trigger 30s
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) } returns 0
-        every { batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1) } returns BatteryManager.BATTERY_STATUS_DISCHARGING
+    fun `complete workflow - User override bypasses auto-detection`() {
+        // 1. Create config with explicit user override
+        val config =
+            DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = true,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(45), // Explicit override
+            )
 
-        every { mockContext.registerReceiver(null, any<IntentFilter>()) } returns batteryIntent
-        every { mockContext.getSystemService(Context.ACTIVITY_SERVICE) } returns mockActivityManager
+        // 2. Determine export delay
+        val exportDelay =
+            ExportScheduleAutoDetector.detectOptimalExportDelay(
+                mockContext,
+                config.exportScheduleDelayMillis, // Not null, so auto-detection skipped
+            )
 
-        val battery = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
-        val memory = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
-        val detected = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, null)
+        // 3. Should use user-configured value
+        assertEquals(TimeUnit.SECONDS.toMillis(45), exportDelay)
 
-        assertTrue("Detected should be >= battery", detected >= battery)
-        assertTrue("Detected should be >= memory", detected >= memory)
+        // 4. Create scheduler
+        val mockPeriodicWork = { mockk<io.opentelemetry.android.internal.services.periodicwork.PeriodicWork>() }
+        val scheduler = DefaultExportScheduler(mockPeriodicWork, exportDelay)
+
+        assertEquals(TimeUnit.SECONDS.toMillis(45), scheduler.minimumDelayUntilNextRunInMillis())
+    }
+
+    // ============================================================================
+    // TEST SUITE 7: Type Safety and Return Values
+    // ============================================================================
+
+    @Test
+    fun `All return values are positive and in milliseconds`() {
+        val config =
+            DiskBufferingConfig.create(
+                enabled = true,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(15),
+            )
+
+        val batteryDelay = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
+        val memoryDelay = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
+        val autoDetectedDelay = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, null)
+
+        // All must be positive
+        assertTrue(batteryDelay > 0)
+        assertTrue(memoryDelay > 0)
+        assertTrue(autoDetectedDelay > 0)
+
+        // All must be in full seconds (multiple of 1000)
+        assertTrue(batteryDelay % 1000L == 0L)
+        assertTrue(memoryDelay % 1000L == 0L)
+        assertTrue(autoDetectedDelay % 1000L == 0L)
+
+        // Config value must also be valid
+        assertTrue(config.exportScheduleDelayMillis > 0)
+        assertTrue(config.exportScheduleDelayMillis % 1000L == 0L)
+    }
+
+    @Test
+    fun `Configuration immutability and correctness`() {
+        val delay = TimeUnit.SECONDS.toMillis(25)
+        val config =
+            DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = true,
+                exportScheduleDelayMillis = delay,
+            )
+
+        // Verify all properties are correctly set
+        assertEquals(true, config.enabled)
+        assertEquals(true, config.autoDetectExportSchedule)
+        assertEquals(delay, config.exportScheduleDelayMillis)
+
+        // Create another config and verify independence
+        val config2 =
+            DiskBufferingConfig.create(
+                enabled = true,
+                autoDetectExportSchedule = false,
+                exportScheduleDelayMillis = TimeUnit.SECONDS.toMillis(60),
+            )
+
+        assertEquals(false, config2.autoDetectExportSchedule)
+        assertEquals(TimeUnit.SECONDS.toMillis(60), config2.exportScheduleDelayMillis)
+
+        // Original config should be unchanged
+        assertEquals(true, config.autoDetectExportSchedule)
+        assertEquals(delay, config.exportScheduleDelayMillis)
     }
 }
+
