@@ -11,6 +11,9 @@ public final class io/opentelemetry/android/BuildConfig {
 	public fun <init> ()V
 }
 
+public abstract interface annotation class io/opentelemetry/android/Incubating : java/lang/annotation/Annotation {
+}
+
 public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
 	public static final field Companion Lio/opentelemetry/android/OpenTelemetryRumBuilder$Companion;
 	public final fun addInstrumentation (Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
@@ -245,5 +248,12 @@ public final class io/opentelemetry/android/internal/processors/ScreenAttributes
 	public fun <init> (Lio/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker;)V
 	public final fun getVisibleScreenTracker ()Lio/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker;
 	public fun onEmit (Lio/opentelemetry/context/Context;Lio/opentelemetry/sdk/logs/ReadWriteLogRecord;)V
+}
+
+public final class io/opentelemetry/android/ktx/SessionExtensionsKt {
+	public static final fun setSessionIdentifiersWith (Lio/opentelemetry/api/common/AttributesBuilder;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/api/common/AttributesBuilder;
+	public static final fun setSessionIdentifiersWith (Lio/opentelemetry/api/logs/LogRecordBuilder;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/api/logs/LogRecordBuilder;
+	public static final fun setSessionIdentifiersWith (Lio/opentelemetry/api/trace/Span;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/api/trace/Span;
+	public static final fun setSessionIdentifiersWith (Lio/opentelemetry/sdk/logs/ReadWriteLogRecord;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/sdk/logs/ReadWriteLogRecord;
 }
 
