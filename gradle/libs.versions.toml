@@ -19,7 +19,7 @@ compose = "1.10.0"
 detekt = "1.23.8"
 binaryCompatValidator = "0.18.1"
 fragment = "1.8.9"
-koverGradlePlugin = "0.9.3"
+koverGradlePlugin = "0.9.4"
 
 [libraries]
 opentelemetry-platform-alpha = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-instrumentation-alpha" }
