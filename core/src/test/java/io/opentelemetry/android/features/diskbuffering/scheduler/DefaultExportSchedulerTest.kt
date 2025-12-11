@@ -73,9 +73,14 @@ class DefaultExportSchedulerTest {
     @Test
     fun `Verify minimum delay`() {
         assertThat(scheduler.minimumDelayUntilNextRunInMillis()).isEqualTo(
-            TimeUnit.SECONDS.toMillis(
-                10,
-            ),
+            TimeUnit.SECONDS.toMillis(10),
         )
+    }
+
+    @Test
+    fun `Verify custom delay can be set`() {
+        val customDelay = TimeUnit.SECONDS.toMillis(30)
+        val customScheduler = DefaultExportScheduler(mockk(), customDelay)
+        assertThat(customScheduler.minimumDelayUntilNextRunInMillis()).isEqualTo(customDelay)
     }
 }
