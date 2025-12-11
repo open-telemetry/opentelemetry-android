@@ -50,7 +50,6 @@ internal class NetStatsManager(
             // Collect stats for OEM_PRIVATE network
             stats.addAll(getNetworkStatsForType(NETWORK_TYPE_OEM_PRIVATE, "OEM_PRIVATE"))
 
-            Log.d(TAG, "Collected network stats for ${stats.size} apps")
             stats
         } catch (e: Exception) {
             Log.e(TAG, "Error collecting network statistics", e)
@@ -78,7 +77,6 @@ internal class NetStatsManager(
             // For Android M-S (API 23-32), we use the available queryDetailsForUid API
             // Note: Full OEM network type filtering requires API 34+
             // The networkType parameter will be used when API 34+ support is added
-            Log.d(TAG, "Network stats for type $typeName not available on this API level")
 
             stats
         } catch (e: SecurityException) {

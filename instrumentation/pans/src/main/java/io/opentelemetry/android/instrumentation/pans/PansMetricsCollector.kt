@@ -21,7 +21,7 @@ internal class PansMetricsCollector(
     private val sdk: OpenTelemetrySdk,
     private val collectionIntervalMinutes: Long = DEFAULT_COLLECTION_INTERVAL_MINUTES,
 ) {
-    private val logger: Meter = sdk.getMeter("io.opentelemetry.android.pans")
+    private val meter: Meter = sdk.getMeter("io.opentelemetry.android.pans")
     private val isRunning = AtomicBoolean(false)
     private val netStatsManager: NetStatsManager = NetStatsManager(context)
     private val metricsExtractor: PANSMetricsExtractor = PANSMetricsExtractor(context, netStatsManager)
@@ -88,14 +88,14 @@ internal class PansMetricsCollector(
         try {
             // Record per-app network usage counters
             val bytesTransmittedCounter =
-                logger
+                meter
                     .counterBuilder("network.pans.bytes_transmitted")
                     .setUnit("By")
                     .setDescription("Bytes transmitted via OEM networks")
                     .build()
 
             val bytesReceivedCounter =
-                logger
+                meter
                     .counterBuilder("network.pans.bytes_received")
                     .setUnit("By")
                     .setDescription("Bytes received via OEM networks")
@@ -130,7 +130,7 @@ internal class PansMetricsCollector(
             }
 
             // Record OEM network availability
-            logger
+            meter
                 .gaugeBuilder("network.pans.network_available")
                 .setDescription("Whether OEM network is available")
                 .ofLongs()
@@ -139,8 +139,6 @@ internal class PansMetricsCollector(
                         callback.record(if (availability.isAvailable) 1L else 0L, availability.attributes)
                     }
                 }
-
-            Log.d(TAG, "Recorded ${metrics.appNetworkUsage.size} app network usage metrics")
         } catch (e: Exception) {
             Log.e(TAG, "Error recording metrics", e)
         }

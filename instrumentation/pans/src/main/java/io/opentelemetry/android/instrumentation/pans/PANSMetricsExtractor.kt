@@ -17,7 +17,6 @@ internal class PANSMetricsExtractor(
     private val netStatsManager: NetStatsManager,
 ) {
     private val connectivityManager = ConnectivityManagerWrapper(context)
-    private val preferencesCache = mutableMapOf<String, String>()
 
     /**
      * Extracts all available PANS metrics.
@@ -69,8 +68,6 @@ internal class PANSMetricsExtractor(
                     ),
                 )
             }
-
-            Log.d(TAG, "Extracted network usage for ${usage.size} apps")
         } catch (e: Exception) {
             Log.e(TAG, "Error extracting app network usage", e)
         }
@@ -87,16 +84,14 @@ internal class PANSMetricsExtractor(
 
         try {
             val sharedPrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            val currentPreferences = mutableMapOf<String, String>()
 
             // For each app, track preference changes
             val stats = netStatsManager.getNetworkStats()
             stats.forEach { stat ->
                 val key = "${stat.uid}:${stat.packageName}"
                 val currentPref = stat.networkType
-                currentPreferences[key] = currentPref
-
                 val previousPref = sharedPrefs.getString(key, null)
+
                 if (previousPref != null && previousPref != currentPref) {
                     val attributes =
                         buildPreferenceChangeAttributes(
@@ -124,17 +119,14 @@ internal class PANSMetricsExtractor(
                 sharedPrefs
                     .edit()
                     .apply {
-                        currentPreferences.forEach { (key, pref) ->
-                            putString(key, pref)
+                        stats.forEach { stat ->
+                            val key = "${stat.uid}:${stat.packageName}"
+                            putString(key, stat.networkType)
                         }
                     }.apply()
             } catch (e: Exception) {
                 Log.w(TAG, "Error saving preference cache", e)
             }
-
-            preferencesCache.clear()
-            preferencesCache.putAll(currentPreferences)
-            Log.d(TAG, "Detected ${changes.size} preference changes")
         } catch (e: Exception) {
             Log.e(TAG, "Error detecting preference changes", e)
         }
@@ -188,8 +180,6 @@ internal class PANSMetricsExtractor(
                     ),
                 )
             }
-
-            Log.d(TAG, "Network availability: $availability")
         } catch (e: Exception) {
             Log.e(TAG, "Error extracting network availability", e)
         }
