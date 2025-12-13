@@ -6,6 +6,7 @@
 package io.opentelemetry.android.agent.session
 
 import io.opentelemetry.android.Incubating
+import io.opentelemetry.android.common.internal.tools.time.AndroidClock
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener
 import io.opentelemetry.sdk.common.Clock
 import kotlin.time.Duration
@@ -37,7 +38,7 @@ internal class SessionIdTimeoutHandler(
     // for testing
     @OptIn(Incubating::class)
     internal constructor(sessionConfig: SessionConfig) : this(
-        Clock.getDefault(),
+        AndroidClock.INSTANCE,
         sessionConfig.backgroundInactivityTimeout,
     )
 
