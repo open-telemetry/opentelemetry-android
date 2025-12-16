@@ -14,7 +14,18 @@ import io.opentelemetry.android.agent.dsl.instrumentation.CanBeEnabledAndDisable
 class DiskBufferingConfigurationSpec internal constructor() : CanBeEnabledAndDisabled {
     internal var enabled: Boolean = true
 
+    internal var exportScheduleDelay: Long? = null
+    internal var autoDetectExportSchedule: Boolean = false
+
     override fun enabled(enabled: Boolean) {
         this.enabled = enabled
+    }
+
+    fun exportScheduleDelay(limit: Long) {
+        this.exportScheduleDelay = limit
+    }
+
+    fun autoDetectExportSchedule(enabled: Boolean) {
+        this.autoDetectExportSchedule = enabled
     }
 }

@@ -16,10 +16,12 @@ import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.export.BufferDelegatingLogExporter
 import io.opentelemetry.android.export.BufferDelegatingMetricExporter
 import io.opentelemetry.android.export.BufferDelegatingSpanExporter
+import io.opentelemetry.android.features.diskbuffering.DEFAULT_EXPORT_SCHEDULE_DELAY_MS
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter.Companion.set
 import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduleHandler
 import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduler
+import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleAutoDetector
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.internal.features.networkattrs.NetworkAttributesLogRecordAppender
@@ -418,9 +420,26 @@ class OpenTelemetryRumBuilder internal constructor(
     ) {
         // TODO: Is it safe to get the work service yet here? If so, we can
         // avoid all this lazy supplier stuff....
+        val diskBufferingConfig = config.getDiskBufferingConfig()
+
+        // Determine actual export delay: either auto-detected or user-configured
+        val exportDelay =
+            if (diskBufferingConfig.autoDetectExportSchedule) {
+                ExportScheduleAutoDetector.detectOptimalExportDelay(
+                    context,
+                    if (diskBufferingConfig.exportScheduleDelayMillis == DEFAULT_EXPORT_SCHEDULE_DELAY_MS) {
+                        null // Auto-detect since using default
+                    } else {
+                        diskBufferingConfig.exportScheduleDelayMillis // Use user override
+                    },
+                )
+            } else {
+                diskBufferingConfig.exportScheduleDelayMillis
+            }
+
         val handler =
             exportScheduleHandler ?: DefaultExportScheduleHandler(
-                DefaultExportScheduler(services::periodicWork),
+                DefaultExportScheduler(services::periodicWork, exportDelay),
                 services::periodicWork,
             )
 
