@@ -15,7 +15,9 @@ public final class io/opentelemetry/android/agent/connectivity/Compression : jav
 }
 
 public final class io/opentelemetry/android/agent/dsl/DiskBufferingConfigurationSpec : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled {
+	public final fun autoDetectExportSchedule (Z)V
 	public fun enabled (Z)V
+	public final fun exportScheduleDelay (J)V
 }
 
 public final class io/opentelemetry/android/agent/dsl/EndpointConfiguration {
