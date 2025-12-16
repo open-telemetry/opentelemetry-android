@@ -8,6 +8,7 @@ package io.opentelemetry.android.agent.dsl
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.dsl.instrumentation.InstrumentationConfiguration
 import io.opentelemetry.android.config.OtelRumConfig
+import io.opentelemetry.android.features.diskbuffering.DEFAULT_EXPORT_SCHEDULE_DELAY_MS
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.api.common.Attributes
 
@@ -61,6 +62,13 @@ class OpenTelemetryConfiguration internal constructor(
      */
     fun diskBuffering(action: DiskBufferingConfigurationSpec.() -> Unit) {
         diskBufferingConfig.action()
-        rumConfig.setDiskBufferingConfig(DiskBufferingConfig.create(enabled = diskBufferingConfig.enabled))
+        val delay = diskBufferingConfig.exportScheduleDelay ?: DEFAULT_EXPORT_SCHEDULE_DELAY_MS
+        rumConfig.setDiskBufferingConfig(
+            DiskBufferingConfig.create(
+                enabled = diskBufferingConfig.enabled,
+                exportScheduleDelayMillis = delay,
+                autoDetectExportSchedule = diskBufferingConfig.autoDetectExportSchedule,
+            ),
+        )
     }
 }

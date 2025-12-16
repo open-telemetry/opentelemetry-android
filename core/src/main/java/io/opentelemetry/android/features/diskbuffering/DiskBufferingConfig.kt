@@ -115,14 +115,28 @@ data class DiskBufferingConfig
                 var minRead = minFileAgeForReadMillis
                 if (minFileAgeForReadMillis <= maxFileAgeForWriteMillis) {
                     minRead = maxFileAgeForWriteMillis + 5
-                    Log.w(OTEL_RUM_LOG_TAG, "minFileAgeForReadMillis must be greater than maxFileAgeForWriteMillis")
-                    Log.w(OTEL_RUM_LOG_TAG, "overriding minFileAgeForReadMillis from $minFileAgeForReadMillis to $minRead")
+                    try {
+                        Log.w(OTEL_RUM_LOG_TAG, "minFileAgeForReadMillis must be greater than maxFileAgeForWriteMillis")
+                        Log.w(
+                            OTEL_RUM_LOG_TAG,
+                            "overriding minFileAgeForReadMillis from $minFileAgeForReadMillis to $minRead",
+                        )
+                    } catch (e: RuntimeException) {
+                        // Keep going, this is just a warning, and we might be running in a unit test
+                    }
                 }
                 var validatedExportDelay = exportScheduleDelayMillis
                 if (exportScheduleDelayMillis < 1000L) {
                     validatedExportDelay = 1000L
-                    Log.w(OTEL_RUM_LOG_TAG, "exportScheduleDelayMillis must be at least 1000 ms (1 second)")
-                    Log.w(OTEL_RUM_LOG_TAG, "overriding exportScheduleDelayMillis from $exportScheduleDelayMillis to $validatedExportDelay")
+                    try {
+                        Log.w(OTEL_RUM_LOG_TAG, "exportScheduleDelayMillis must be at least 1000 ms (1 second)")
+                        Log.w(
+                            OTEL_RUM_LOG_TAG,
+                            "overriding exportScheduleDelayMillis from $exportScheduleDelayMillis to $validatedExportDelay",
+                        )
+                    } catch (e: RuntimeException) {
+                        // Keep going, this is just a warning, and we might be running in a unit test
+                    }
                 }
                 return DiskBufferingConfig(
                     enabled = enabled,

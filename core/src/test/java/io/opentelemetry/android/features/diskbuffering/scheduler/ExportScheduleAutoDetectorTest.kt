@@ -429,4 +429,47 @@ class ExportScheduleAutoDetectorTest {
         assertEquals(true, config.autoDetectExportSchedule)
         assertEquals(delay, config.exportScheduleDelayMillis)
     }
+
+    @Test
+    fun `checkBatteryStatus returns BATTERY_SAVER_INTERVAL when battery is low and not charging`() {
+        val intent = mockk<android.content.Intent>()
+        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) } returns 10
+        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, -1) } returns 0
+        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) } returns
+            android.os.BatteryManager.BATTERY_STATUS_DISCHARGING
+        io.mockk.every { mockContext.registerReceiver(null, any()) } returns intent
+
+        val result = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
+
+        assertEquals(30000L, result)
+    }
+
+    @Test
+    fun `checkBatteryStatus returns DEFAULT_EXPORT_INTERVAL when battery is low but charging`() {
+        val intent = mockk<android.content.Intent>()
+        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) } returns 10
+        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, -1) } returns
+            android.os.BatteryManager.BATTERY_PLUGGED_USB
+        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) } returns
+            android.os.BatteryManager.BATTERY_STATUS_CHARGING
+        io.mockk.every { mockContext.registerReceiver(null, any()) } returns intent
+
+        val result = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
+
+        assertEquals(10000L, result)
+    }
+
+    @Test
+    fun `checkBatteryStatus returns DEFAULT_EXPORT_INTERVAL when battery is good`() {
+        val intent = mockk<android.content.Intent>()
+        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) } returns 80
+        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, -1) } returns 0
+        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) } returns
+            android.os.BatteryManager.BATTERY_STATUS_DISCHARGING
+        io.mockk.every { mockContext.registerReceiver(null, any()) } returns intent
+
+        val result = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
+
+        assertEquals(10000L, result)
+    }
 }
