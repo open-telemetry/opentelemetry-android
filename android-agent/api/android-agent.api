@@ -45,6 +45,7 @@ public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration
 	public final fun globalAttributes (Lkotlin/jvm/functions/Function0;)V
 	public final fun httpExport (Lkotlin/jvm/functions/Function1;)V
 	public final fun instrumentations (Lkotlin/jvm/functions/Function1;)V
+	public final fun resource (Lkotlin/jvm/functions/Function1;)V
 	public final fun session (Lkotlin/jvm/functions/Function1;)V
 }
 

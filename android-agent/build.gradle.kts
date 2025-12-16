@@ -30,6 +30,8 @@ dependencies {
     implementation(project(":instrumentation:sessions"))
     implementation(project(":instrumentation:screen-orientation"))
 
+    testImplementation(libs.opentelemetry.semconv)
+    testImplementation(libs.opentelemetry.semconv.incubating)
     testImplementation(libs.robolectric)
 }
 

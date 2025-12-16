@@ -10,6 +10,7 @@ import io.opentelemetry.android.agent.dsl.instrumentation.InstrumentationConfigu
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.sdk.resources.ResourceBuilder
 
 /**
  * Type-safe config DSL that controls how OpenTelemetry should behave.
@@ -23,6 +24,7 @@ class OpenTelemetryConfiguration internal constructor(
     internal val sessionConfig = SessionConfiguration()
     internal val diskBufferingConfig = DiskBufferingConfigurationSpec()
     internal val instrumentations = InstrumentationConfiguration(rumConfig)
+    internal var resourceAction: ResourceBuilder.() -> Unit = {}
 
     init {
         diskBuffering {}
@@ -62,5 +64,12 @@ class OpenTelemetryConfiguration internal constructor(
     fun diskBuffering(action: DiskBufferingConfigurationSpec.() -> Unit) {
         diskBufferingConfig.action()
         rumConfig.setDiskBufferingConfig(DiskBufferingConfig.create(enabled = diskBufferingConfig.enabled))
+    }
+
+    /**
+     * Configures the resource attributes that are used globally by acting on a [ResourceBuilder].
+     */
+    fun resource(action: ResourceBuilder.() -> Unit) {
+        resourceAction = action
     }
 }
