@@ -5,7 +5,9 @@
 
 package io.opentelemetry.android.features.diskbuffering.scheduler
 
+import android.app.ActivityManager
 import android.content.Context
+import io.mockk.every
 import io.mockk.mockk
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import org.junit.Assert.assertEquals
@@ -433,11 +435,11 @@ class ExportScheduleAutoDetectorTest {
     @Test
     fun `checkBatteryStatus returns BATTERY_SAVER_INTERVAL when battery is low and not charging`() {
         val intent = mockk<android.content.Intent>()
-        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) } returns 10
-        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, -1) } returns 0
-        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) } returns
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) } returns 10
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, -1) } returns 0
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) } returns
             android.os.BatteryManager.BATTERY_STATUS_DISCHARGING
-        io.mockk.every { mockContext.registerReceiver(null, any()) } returns intent
+        every { mockContext.registerReceiver(null, any()) } returns intent
 
         val result = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
 
@@ -447,12 +449,12 @@ class ExportScheduleAutoDetectorTest {
     @Test
     fun `checkBatteryStatus returns DEFAULT_EXPORT_INTERVAL when battery is low but charging`() {
         val intent = mockk<android.content.Intent>()
-        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) } returns 10
-        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, -1) } returns
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) } returns 10
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, -1) } returns
             android.os.BatteryManager.BATTERY_PLUGGED_USB
-        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) } returns
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) } returns
             android.os.BatteryManager.BATTERY_STATUS_CHARGING
-        io.mockk.every { mockContext.registerReceiver(null, any()) } returns intent
+        every { mockContext.registerReceiver(null, any()) } returns intent
 
         val result = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
 
@@ -462,14 +464,167 @@ class ExportScheduleAutoDetectorTest {
     @Test
     fun `checkBatteryStatus returns DEFAULT_EXPORT_INTERVAL when battery is good`() {
         val intent = mockk<android.content.Intent>()
-        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) } returns 80
-        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, -1) } returns 0
-        io.mockk.every { intent.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) } returns
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) } returns 80
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, -1) } returns 0
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) } returns
             android.os.BatteryManager.BATTERY_STATUS_DISCHARGING
-        io.mockk.every { mockContext.registerReceiver(null, any()) } returns intent
+        every { mockContext.registerReceiver(null, any()) } returns intent
 
         val result = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
 
         assertEquals(10000L, result)
+    }
+
+    @Test
+    fun `checkMemoryPressure returns LOW_MEMORY_INTERVAL when usage is above 85 percent`() {
+        // Max: 100, Total: 100, Free: 10 -> Used: 90 (90%)
+        ExportScheduleAutoDetector.memoryInfoProvider = {
+            ExportScheduleAutoDetector.MemoryInfo(100L, 100L, 10L)
+        }
+
+        val mockActivityManager = mockk<ActivityManager>()
+        every { mockContext.getSystemService(Context.ACTIVITY_SERVICE) } returns mockActivityManager
+
+        val result = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
+
+        assertEquals(20000L, result)
+
+        // Reset
+        ExportScheduleAutoDetector.memoryInfoProvider = {
+            val runtime = Runtime.getRuntime()
+            ExportScheduleAutoDetector.MemoryInfo(runtime.maxMemory(), runtime.totalMemory(), runtime.freeMemory())
+        }
+    }
+
+    @Test
+    fun `checkMemoryPressure returns DEFAULT_EXPORT_INTERVAL when usage is below 85 percent`() {
+        // Max: 100, Total: 100, Free: 50 -> Used: 50 (50%)
+        ExportScheduleAutoDetector.memoryInfoProvider = {
+            ExportScheduleAutoDetector.MemoryInfo(100L, 100L, 50L)
+        }
+
+        val mockActivityManager = mockk<ActivityManager>()
+        every { mockContext.getSystemService(Context.ACTIVITY_SERVICE) } returns mockActivityManager
+
+        val result = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
+
+        assertEquals(10000L, result)
+
+        // Reset
+        ExportScheduleAutoDetector.memoryInfoProvider = {
+            val runtime = Runtime.getRuntime()
+            ExportScheduleAutoDetector.MemoryInfo(runtime.maxMemory(), runtime.totalMemory(), runtime.freeMemory())
+        }
+    }
+
+    // ============================================================================
+    // TEST SUITE 8: Exception Handling and Edge Cases for Coverage
+    // ============================================================================
+
+    @Test
+    fun `checkBatteryStatus returns BATTERY_SAVER_INTERVAL when status is UNKNOWN`() {
+        val intent = mockk<android.content.Intent>()
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) } returns -1
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, -1) } returns 0
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) } returns
+            android.os.BatteryManager.BATTERY_STATUS_UNKNOWN
+        every { mockContext.registerReceiver(null, any()) } returns intent
+
+        val result = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
+
+        assertEquals(30000L, result)
+    }
+
+    @Test
+    fun `checkBatteryStatus returns DEFAULT when registerReceiver returns null`() {
+        every { mockContext.registerReceiver(null, any()) } returns null
+
+        val result = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
+
+        assertEquals(10000L, result)
+    }
+
+    @Test
+    fun `checkBatteryStatus returns DEFAULT when exception is thrown`() {
+        every { mockContext.registerReceiver(null, any()) } throws RuntimeException("Test exception")
+
+        val result = ExportScheduleAutoDetector.checkBatteryStatus(mockContext)
+
+        assertEquals(10000L, result)
+    }
+
+    @Test
+    fun `checkMemoryPressure returns DEFAULT when ActivityManager is null`() {
+        every { mockContext.getSystemService(Context.ACTIVITY_SERVICE) } returns null
+
+        val result = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
+
+        assertEquals(10000L, result)
+    }
+
+    @Test
+    fun `checkMemoryPressure returns DEFAULT when exception is thrown`() {
+        every { mockContext.getSystemService(Context.ACTIVITY_SERVICE) } throws RuntimeException("Test exception")
+
+        val result = ExportScheduleAutoDetector.checkMemoryPressure(mockContext)
+
+        assertEquals(10000L, result)
+    }
+
+    @Test
+    fun `detectOptimalExportDelay with default value triggers auto-detection`() {
+        // When userConfiguredDelay equals DEFAULT (10000L), it should trigger auto-detection
+        val result = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, 10000L)
+
+        // Should return detected delay (10000L with mocked context that fails)
+        assertTrue(result >= 10000L)
+    }
+
+    @Test
+    fun `detectOptimalExportDelay with null triggers auto-detection path`() {
+        // Setup battery to return extended interval
+        val intent = mockk<android.content.Intent>()
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) } returns 10
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, -1) } returns 0
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) } returns
+            android.os.BatteryManager.BATTERY_STATUS_DISCHARGING
+        every { mockContext.registerReceiver(null, any()) } returns intent
+
+        // Setup memory to return default
+        every { mockContext.getSystemService(Context.ACTIVITY_SERVICE) } returns null
+
+        val result = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, null)
+
+        // Battery is low, so should return 30000L
+        assertEquals(30000L, result)
+    }
+
+    @Test
+    fun `detection uses max of battery and memory delays`() {
+        // Setup battery to return saver interval (30s)
+        val intent = mockk<android.content.Intent>()
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) } returns 10
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, -1) } returns 0
+        every { intent.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) } returns
+            android.os.BatteryManager.BATTERY_STATUS_DISCHARGING
+        every { mockContext.registerReceiver(null, any()) } returns intent
+
+        // Setup memory to return pressure interval (20s)
+        ExportScheduleAutoDetector.memoryInfoProvider = {
+            ExportScheduleAutoDetector.MemoryInfo(100L, 100L, 10L)
+        }
+        val mockActivityManager = mockk<ActivityManager>()
+        every { mockContext.getSystemService(Context.ACTIVITY_SERVICE) } returns mockActivityManager
+
+        val result = ExportScheduleAutoDetector.detectOptimalExportDelay(mockContext, null)
+
+        // Should use max of battery (30s) and memory (20s) = 30s
+        assertEquals(30000L, result)
+
+        // Reset
+        ExportScheduleAutoDetector.memoryInfoProvider = {
+            val runtime = Runtime.getRuntime()
+            ExportScheduleAutoDetector.MemoryInfo(runtime.maxMemory(), runtime.totalMemory(), runtime.freeMemory())
+        }
     }
 }

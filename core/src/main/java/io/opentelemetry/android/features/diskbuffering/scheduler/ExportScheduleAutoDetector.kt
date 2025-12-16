@@ -126,6 +126,12 @@ internal object ExportScheduleAutoDetector {
         }
     }
 
+    @VisibleForTesting
+    internal var memoryInfoProvider: () -> MemoryInfo = {
+        val runtime = Runtime.getRuntime()
+        MemoryInfo(runtime.maxMemory(), runtime.totalMemory(), runtime.freeMemory())
+    }
+
     /**
      * Checks memory pressure and suggests interval adjustment.
      *
@@ -138,10 +144,9 @@ internal object ExportScheduleAutoDetector {
         return try {
             val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
             if (activityManager != null) {
-                val runtime = Runtime.getRuntime()
-                val maxMemory = runtime.maxMemory()
-                val usedMemory = runtime.totalMemory() - runtime.freeMemory()
-                val memoryUsagePercent = usedMemory.toFloat() / maxMemory
+                val memInfo = memoryInfoProvider()
+                val usedMemory = memInfo.total - memInfo.free
+                val memoryUsagePercent = usedMemory.toFloat() / memInfo.max
 
                 // If using more than 85% of available memory, extend interval
                 if (memoryUsagePercent > 0.85f) {
@@ -159,4 +164,10 @@ internal object ExportScheduleAutoDetector {
             DEFAULT_EXPORT_INTERVAL_MILLIS
         }
     }
+
+    internal data class MemoryInfo(
+        val max: Long,
+        val total: Long,
+        val free: Long,
+    )
 }
