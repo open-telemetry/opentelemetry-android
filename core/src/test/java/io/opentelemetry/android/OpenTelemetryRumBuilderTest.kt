@@ -63,7 +63,6 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.export.SpanExporter
-import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility
 import org.junit.After
@@ -139,7 +138,6 @@ class OpenTelemetryRumBuilderTest {
             .await()
             .atMost(Duration.ofSeconds(5))
             .untilAsserted {
-                val sessionId = openTelemetryRum.getRumSessionId()
                 openTelemetryRum
                     .openTelemetry
                     .getTracer("test")
@@ -154,10 +152,6 @@ class OpenTelemetryRumBuilderTest {
                     .hasName("test span")
                     .hasResource(resource)
                     .hasAttributesSatisfyingExactly(
-                        OpenTelemetryAssertions.equalTo(
-                            SessionIncubatingAttributes.SESSION_ID,
-                            sessionId,
-                        ),
                         OpenTelemetryAssertions.equalTo(
                             SCREEN_NAME_KEY,
                             CUR_SCREEN_NAME,
@@ -192,10 +186,6 @@ class OpenTelemetryRumBuilderTest {
         OpenTelemetryAssertions
             .assertThat(logs[0])
             .hasAttributesSatisfyingExactly(
-                OpenTelemetryAssertions.equalTo(
-                    SessionIncubatingAttributes.SESSION_ID,
-                    openTelemetryRum.getRumSessionId(),
-                ),
                 OpenTelemetryAssertions.equalTo(SCREEN_NAME_KEY, CUR_SCREEN_NAME),
                 OpenTelemetryAssertions.equalTo(AttributeKey.stringKey("mega"), "hit"),
                 OpenTelemetryAssertions.equalTo(
@@ -470,10 +460,6 @@ class OpenTelemetryRumBuilderTest {
             .hasAttributesSatisfyingExactly(
                 OpenTelemetryAssertions.equalTo(AttributeKey.stringKey("bing"), "bang"),
                 OpenTelemetryAssertions.equalTo(SCREEN_NAME_KEY, CUR_SCREEN_NAME),
-                OpenTelemetryAssertions.equalTo(
-                    SessionIncubatingAttributes.SESSION_ID,
-                    rum.getRumSessionId(),
-                ),
             ).hasSeverity(Severity.FATAL3)
     }
 
@@ -624,7 +610,6 @@ class OpenTelemetryRumBuilderTest {
             .hasAttributes(
                 Attributes
                     .builder()
-                    .put(SessionIncubatingAttributes.SESSION_ID, rum.getRumSessionId())
                     .put("someGlobalKey", "someGlobalValue")
                     .put("localAttrKey", "localAttrValue")
                     .put(SCREEN_NAME_KEY, CUR_SCREEN_NAME)
