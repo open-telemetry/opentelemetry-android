@@ -15,6 +15,7 @@ import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import io.opentelemetry.sdk.trace.data.SpanData
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -133,7 +134,7 @@ class ActivityTracerTest {
 
     @Test
     fun create_initialActivity_firstTime() {
-        appStartupTimer.start(tracer)
+        appStartupTimer.start(tracer, Clock.getDefault())
         val trackableTracer =
             ActivityTracer
                 .builder(mockk<Activity>())
