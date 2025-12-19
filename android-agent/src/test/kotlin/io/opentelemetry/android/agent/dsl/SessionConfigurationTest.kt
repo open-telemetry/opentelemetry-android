@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.agent.dsl
 
+import io.opentelemetry.android.agent.FakeClock
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import kotlin.time.Duration.Companion.hours
@@ -13,7 +14,7 @@ import kotlin.time.Duration.Companion.minutes
 internal class SessionConfigurationTest {
     @Test
     fun testDefaults() {
-        val otelConfig = OpenTelemetryConfiguration()
+        val otelConfig = OpenTelemetryConfiguration(clock = FakeClock())
         assertEquals(15.minutes, otelConfig.sessionConfig.backgroundInactivityTimeout)
         assertEquals(4.hours, otelConfig.sessionConfig.maxLifetime)
     }
@@ -23,7 +24,7 @@ internal class SessionConfigurationTest {
         val customTimeout = 30.minutes
         val customLifetime = 2.hours
         val otelConfig =
-            OpenTelemetryConfiguration().apply {
+            OpenTelemetryConfiguration(clock = FakeClock()).apply {
                 session {
                     backgroundInactivityTimeout = customTimeout
                     maxLifetime = customLifetime
