@@ -12,6 +12,7 @@ import io.opentelemetry.semconv.ServiceAttributes.SERVICE_NAME
 import io.opentelemetry.semconv.ServiceAttributes.SERVICE_VERSION
 import io.opentelemetry.semconv.TelemetryAttributes.TELEMETRY_SDK_VERSION
 import io.opentelemetry.semconv.incubating.AndroidIncubatingAttributes.ANDROID_OS_API_LEVEL
+import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_INSTALLATION_ID
 import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MANUFACTURER
 import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER
 import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MODEL_NAME
@@ -19,7 +20,9 @@ import io.opentelemetry.semconv.incubating.OsIncubatingAttributes.OS_DESCRIPTION
 import io.opentelemetry.semconv.incubating.OsIncubatingAttributes.OS_NAME
 import io.opentelemetry.semconv.incubating.OsIncubatingAttributes.OS_TYPE
 import io.opentelemetry.semconv.incubating.OsIncubatingAttributes.OS_VERSION
+import java.util.UUID
 
+private const val SHARED_PREF_FILE = "opentelemetry-android"
 private const val DEFAULT_APP_NAME = "unknown_service:android"
 
 object AndroidResource {
@@ -41,7 +44,21 @@ object AndroidResource {
             .put(OS_TYPE, "linux")
             .put(OS_VERSION, Build.VERSION.RELEASE)
             .put(OS_DESCRIPTION, oSDescription)
+            .put(APP_INSTALLATION_ID, readInstallId(context))
             .build()
+    }
+
+    private fun readInstallId(context: Context): String {
+        // install ID is persisted using the app.installation.id semconv as its key
+        val prefs = context.getSharedPreferences(SHARED_PREF_FILE, 0)
+        val installId = prefs.getString(APP_INSTALLATION_ID.key, null)
+
+        if (installId == null) {
+            val id = UUID.randomUUID().toString()
+            prefs.edit().putString(APP_INSTALLATION_ID.key, id).apply()
+            return id
+        }
+        return installId
     }
 
     private fun readAppName(context: Context): String =
