@@ -16,6 +16,7 @@ import io.mockk.verify
 import io.mockk.verifyOrder
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.time.TestClock
 import org.junit.jupiter.api.BeforeEach
@@ -160,6 +161,7 @@ internal class SessionManagerTest {
             SessionManager(
                 timeoutHandler = timeoutHandler,
                 maxSessionLifetime = MAX_SESSION_LIFETIME.hours,
+                clock = Clock.getDefault(),
             )
 
         // When - access session ID twice, should be same

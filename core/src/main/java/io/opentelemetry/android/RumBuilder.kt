@@ -9,6 +9,7 @@ import android.content.Context
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.OpenTelemetrySdk
+import io.opentelemetry.sdk.common.Clock
 
 object RumBuilder {
     /**
@@ -55,6 +56,7 @@ object RumBuilder {
             openTelemetrySdk,
             sessionProvider,
             config,
+            Clock.getDefault(),
         )
 
     /**
