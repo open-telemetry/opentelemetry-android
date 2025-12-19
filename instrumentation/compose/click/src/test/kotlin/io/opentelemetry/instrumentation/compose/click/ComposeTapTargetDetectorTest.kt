@@ -107,7 +107,7 @@ internal class ComposeTapTargetDetectorTest {
             MotionEvent.obtain(0L, SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, 250f, 50f, 0)
         every { composeView.childCount } returns 0
 
-        val mockLayoutNode =
+        val mockLayoutNode: LayoutNode =
             createMockLayoutNode(
                 targetX = motionEvent.x,
                 targetY = motionEvent.y,
@@ -128,7 +128,7 @@ internal class ComposeTapTargetDetectorTest {
             MotionEvent.obtain(0L, SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, 250f, 50f, 0)
         every { composeView.childCount } returns 0
 
-        val mockLayoutNode =
+        val mockLayoutNode: LayoutNode =
             createMockLayoutNode(
                 targetX = motionEvent.x,
                 targetY = motionEvent.y,

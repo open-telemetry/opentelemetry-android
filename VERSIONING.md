@@ -25,7 +25,7 @@ builds, but their use in production is strongly discouraged.
 
 The android-agent currently supports the following minimum versions:
 
-- Kotlin 1.8
+- Kotlin 2.0
 - API 21+ ([desugaring of the core library](https://developer.android.com/studio/write/java8-support#library-desugaring) required for API <26)
 - Android Gradle Plugin (AGP) 7.4 and Gradle 7.5
 - JDK 11 (build-time)

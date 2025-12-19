@@ -20,7 +20,7 @@ plugins {
 
 extra["java_version"] = JavaVersion.VERSION_1_8
 extra["jvm_target"] = JvmTarget.JVM_1_8
-extra["kotlin_min_supported_version"] = KotlinVersion.KOTLIN_1_8
+extra["kotlin_min_supported_version"] = KotlinVersion.KOTLIN_2_0
 
 allprojects {
     repositories {
