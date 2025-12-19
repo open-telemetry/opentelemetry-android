@@ -7,6 +7,7 @@ package io.opentelemetry.android.instrumentation.activity.startup
 
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -31,7 +32,7 @@ internal class AppStartupTimerTest {
     @Test
     fun start_end() {
         val appStartupTimer = AppStartupTimer()
-        val startSpan = appStartupTimer.start(tracer)
+        val startSpan = appStartupTimer.start(tracer, Clock.getDefault())
         assertNotNull(startSpan)
         appStartupTimer.end()
 
@@ -42,14 +43,14 @@ internal class AppStartupTimerTest {
         assertEquals("AppStart", spanData.name)
         assertEquals(
             "cold",
-            spanData.attributes.get<String>(RumConstants.START_TYPE_KEY),
+            spanData.attributes.get(RumConstants.START_TYPE_KEY),
         )
     }
 
     @Test
     fun multi_end() {
         val appStartupTimer = AppStartupTimer()
-        appStartupTimer.start(tracer)
+        appStartupTimer.start(tracer, Clock.getDefault())
         appStartupTimer.end()
         appStartupTimer.end()
 
@@ -59,8 +60,9 @@ internal class AppStartupTimerTest {
     @Test
     fun multi_start() {
         val appStartupTimer = AppStartupTimer()
-        appStartupTimer.start(tracer)
-        assertSame(appStartupTimer.start(tracer), appStartupTimer.start(tracer))
+        val clock = Clock.getDefault()
+        appStartupTimer.start(tracer, clock)
+        assertSame(appStartupTimer.start(tracer, clock), appStartupTimer.start(tracer, clock))
 
         appStartupTimer.end()
         assertEquals(1, otelTesting.spans.size)

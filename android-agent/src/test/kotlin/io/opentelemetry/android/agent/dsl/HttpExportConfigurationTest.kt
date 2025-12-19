@@ -5,15 +5,23 @@
 
 package io.opentelemetry.android.agent.dsl
 
+import io.opentelemetry.android.agent.FakeClock
 import io.opentelemetry.android.agent.connectivity.Compression
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
+import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 
 internal class HttpExportConfigurationTest {
+    private lateinit var otelConfig: OpenTelemetryConfiguration
+
+    @Before
+    fun setUp() {
+        otelConfig = OpenTelemetryConfiguration(clock = FakeClock())
+    }
+
     @Test
     fun testDefaults() {
-        val otelConfig = OpenTelemetryConfiguration()
         val config = otelConfig.exportConfig
         val expectedHeaders = emptyMap<String, String>()
         val expectedCompression = Compression.GZIP
@@ -31,7 +39,6 @@ internal class HttpExportConfigurationTest {
 
     @Test
     fun testBaseValueOverride() {
-        val otelConfig = OpenTelemetryConfiguration()
         val url = "http://localhost:4318/"
         val headers = mapOf("my-header" to "my-value")
         val config =
@@ -49,7 +56,6 @@ internal class HttpExportConfigurationTest {
 
     @Test
     fun testIndividualEndpointOverrides() {
-        val otelConfig = OpenTelemetryConfiguration()
         val baseUrl = "http://localhost:4318/"
         val baseHeaders = mapOf("my-header" to "my-value")
 
@@ -107,7 +113,6 @@ internal class HttpExportConfigurationTest {
 
     @Test
     fun testIndividualEndpointOverrides2() {
-        val otelConfig = OpenTelemetryConfiguration()
         val baseUrl = "http://localhost:4318/"
         val baseHeaders = mapOf("my-header" to "my-value")
 

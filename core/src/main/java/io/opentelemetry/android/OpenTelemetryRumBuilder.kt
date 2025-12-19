@@ -47,6 +47,7 @@ import io.opentelemetry.exporter.logging.LoggingMetricExporter
 import io.opentelemetry.exporter.logging.LoggingSpanExporter
 import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter
 import io.opentelemetry.sdk.OpenTelemetrySdk
+import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.logs.LogRecordProcessor
 import io.opentelemetry.sdk.logs.SdkLoggerProvider
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder
@@ -91,6 +92,7 @@ class OpenTelemetryRumBuilder internal constructor(
         ): OpenTelemetryRumBuilder = OpenTelemetryRumBuilder(context, config)
     }
 
+    private var clock: Clock = OtelAndroidClock()
     private val tracerProviderCustomizers: MutableList<BiFunction<SdkTracerProviderBuilder, Context, SdkTracerProviderBuilder>> =
         mutableListOf()
     private val meterProviderCustomizers: MutableList<BiFunction<SdkMeterProviderBuilder, Context, SdkMeterProviderBuilder>> =
@@ -282,6 +284,14 @@ class OpenTelemetryRumBuilder internal constructor(
     }
 
     /**
+     * Sets a custom [Clock] implementation.
+     */
+    fun setClock(clock: Clock): OpenTelemetryRumBuilder {
+        this.clock = clock
+        return this
+    }
+
+    /**
      * Creates a new instance of [OpenTelemetryRum] with the settings of this [OpenTelemetryRum].
      *
      * This method will initialize the OpenTelemetry SDK and install built-in system
@@ -306,15 +316,21 @@ class OpenTelemetryRumBuilder internal constructor(
                         sessionProvider,
                         context,
                         bufferDelegatingSpanExporter,
+                        clock,
                     ),
                 ).setLoggerProvider(
                     buildLoggerProvider(
                         sessionProvider,
                         context,
                         bufferDelegatingLogExporter,
+                        clock,
                     ),
                 ).setMeterProvider(
-                    buildMeterProvider(context, bufferDelegatingMetricExporter),
+                    buildMeterProvider(
+                        context,
+                        bufferDelegatingMetricExporter,
+                        clock,
+                    ),
                 ).setPropagators(buildFinalPropagators())
                 .build()
 
@@ -325,7 +341,7 @@ class OpenTelemetryRumBuilder internal constructor(
         )
 
         val delegate =
-            SdkPreconfiguredRumBuilder(context, sdk, sessionProvider, config)
+            SdkPreconfiguredRumBuilder(context, sdk, sessionProvider, config, clock)
                 .setShutdownHook {
                     exportScheduleHandler?.disable()
                     services.close()
@@ -501,11 +517,13 @@ class OpenTelemetryRumBuilder internal constructor(
         sessionProvider: SessionProvider,
         context: Context,
         spanExporter: SpanExporter,
+        clock: Clock,
     ): SdkTracerProvider {
         var tracerProviderBuilder =
             SdkTracerProvider
                 .builder()
                 .setResource(resource)
+                .setClock(clock)
                 .addSpanProcessor(SessionIdSpanAppender(sessionProvider))
 
         val batchSpanProcessor = BatchSpanProcessor.builder(spanExporter).build()
@@ -521,11 +539,13 @@ class OpenTelemetryRumBuilder internal constructor(
         sessionProvider: SessionProvider,
         context: Context,
         logsExporter: LogRecordExporter,
+        clock: Clock,
     ): SdkLoggerProvider {
         var loggerProviderBuilder =
             SdkLoggerProvider
                 .builder()
                 .setResource(resource)
+                .setClock(clock)
                 .addLogRecordProcessor(SessionIdLogRecordAppender(sessionProvider))
                 .addLogRecordProcessor(
                     GlobalAttributesLogRecordAppender(
@@ -559,10 +579,15 @@ class OpenTelemetryRumBuilder internal constructor(
     private fun buildMeterProvider(
         context: Context,
         metricExporter: MetricExporter,
+        clock: Clock,
     ): SdkMeterProvider {
         val reader: MetricReader = PeriodicMetricReader.create(metricExporter)
         var meterProviderBuilder =
-            SdkMeterProvider.builder().registerMetricReader(reader).setResource(resource)
+            SdkMeterProvider
+                .builder()
+                .registerMetricReader(reader)
+                .setResource(resource)
+                .setClock(clock)
         for (customizer in meterProviderCustomizers) {
             meterProviderBuilder = customizer.apply(meterProviderBuilder, context)
         }

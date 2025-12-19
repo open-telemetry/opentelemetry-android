@@ -14,12 +14,14 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.OpenTelemetrySdk
+import io.opentelemetry.sdk.common.Clock
 
 class SdkPreconfiguredRumBuilder internal constructor(
     private val context: Context,
     private val sdk: OpenTelemetrySdk,
     private val sessionProvider: SessionProvider,
     private val config: OtelRumConfig,
+    private val clock: Clock,
 ) {
     private var onShutdown: Runnable = Runnable {} // nop
     private val instrumentations = mutableListOf<AndroidInstrumentation>()
@@ -52,7 +54,7 @@ class SdkPreconfiguredRumBuilder internal constructor(
      * @return A new [io.opentelemetry.android.OpenTelemetryRum] instance.
      */
     fun build(): OpenTelemetryRum {
-        val ctx = InstallationContext(context, sdk, sessionProvider)
+        val ctx = InstallationContext(context, sdk, sessionProvider, clock)
         if (ctx.application == null) {
             Log.w(
                 RumConstants.OTEL_RUM_LOG_TAG,

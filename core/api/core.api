@@ -24,6 +24,7 @@ public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
 	public final fun addTracerProviderCustomizer (Ljava/util/function/BiFunction;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun build ()Lio/opentelemetry/android/OpenTelemetryRum;
 	public final fun mergeResource (Lio/opentelemetry/sdk/resources/Resource;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun setClock (Lio/opentelemetry/sdk/common/Clock;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun setExportScheduleHandler (Lio/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun setResource (Lio/opentelemetry/sdk/resources/Resource;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun setSessionProvider (Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
@@ -31,6 +32,12 @@ public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
 
 public final class io/opentelemetry/android/OpenTelemetryRumBuilder$Companion {
 	public final fun create (Landroid/content/Context;Lio/opentelemetry/android/config/OtelRumConfig;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+}
+
+public final class io/opentelemetry/android/OtelAndroidClock : io/opentelemetry/sdk/common/Clock {
+	public fun <init> ()V
+	public fun nanoTime ()J
+	public fun now ()J
 }
 
 public final class io/opentelemetry/android/RumBuilder {

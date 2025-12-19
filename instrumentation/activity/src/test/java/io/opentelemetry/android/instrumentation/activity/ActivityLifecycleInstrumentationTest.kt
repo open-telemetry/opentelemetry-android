@@ -19,6 +19,7 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanBuilder
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.sdk.OpenTelemetrySdk
+import io.opentelemetry.sdk.common.Clock
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -56,7 +57,7 @@ class ActivityLifecycleInstrumentationTest {
         )
         every { startupSpanBuilder.startSpan() }.returns(startupSpan)
 
-        val ctx = InstallationContext(application, openTelemetry, sessionProvider)
+        val ctx = InstallationContext(application, openTelemetry, sessionProvider, Clock.getDefault())
         activityLifecycleInstrumentation.install(ctx)
 
         verify {
