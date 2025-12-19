@@ -85,7 +85,13 @@ internal class NetworkDetectorImpl(
     /**
      * Builds a network for non-cellular networks.
      */
-    private fun buildNetwork(networkState: NetworkState) = CurrentNetwork(networkState)
+    private fun buildNetwork(networkState: NetworkState): CurrentNetwork {
+        val carrier = carrierFinder.get()
+        return CurrentNetwork(
+            state = networkState,
+            carrier = carrier,
+        )
+    }
 
     /**
      * Builds a cellular network with carrier and subtype information.
