@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.agent.dsl
 
+import io.opentelemetry.android.agent.FakeClock
 import io.opentelemetry.api.common.Attributes
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -12,7 +13,7 @@ import org.junit.Test
 class GlobalAttributesConfigTest {
     @Test
     fun testDefaults() {
-        val otelConfig = OpenTelemetryConfiguration()
+        val otelConfig = OpenTelemetryConfiguration(clock = FakeClock())
         val attrs = otelConfig.rumConfig.getGlobalAttributesSupplier().get()
         assertEquals(Attributes.empty(), attrs)
     }
@@ -21,7 +22,7 @@ class GlobalAttributesConfigTest {
     fun testOverride() {
         val expectedAttrs = Attributes.builder().put("key", "value").build()
         val otelConfig =
-            OpenTelemetryConfiguration().apply {
+            OpenTelemetryConfiguration(clock = FakeClock()).apply {
                 globalAttributes {
                     expectedAttrs
                 }
