@@ -10,6 +10,7 @@ import io.opentelemetry.android.agent.dsl.instrumentation.InstrumentationConfigu
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.resources.ResourceBuilder
 
 /**
@@ -29,6 +30,11 @@ class OpenTelemetryConfiguration internal constructor(
     init {
         diskBuffering {}
     }
+
+    /**
+     * Configures the [Clock] used for capturing telemetry. Defaults to [Clock.getDefault].
+     */
+    var clock: Clock = Clock.getDefault()
 
     /**
      * Configures how OpenTelemetry should export telemetry over HTTP.
