@@ -1,8 +1,3 @@
-public final class io/opentelemetry/android/AndroidResource {
-	public static final field INSTANCE Lio/opentelemetry/android/AndroidResource;
-	public static final fun createDefault (Landroid/content/Context;)Lio/opentelemetry/sdk/resources/Resource;
-}
-
 public final class io/opentelemetry/android/BuildConfig {
 	public static final field BUILD_TYPE Ljava/lang/String;
 	public static final field DEBUG Z

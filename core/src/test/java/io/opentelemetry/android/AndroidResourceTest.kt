@@ -6,25 +6,34 @@
 package io.opentelemetry.android
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
 import android.os.Build
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.mockk
+import io.mockk.slot
+import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.sdk.resources.Resource
 import io.opentelemetry.sdk.resources.ResourceBuilder
 import io.opentelemetry.semconv.ServiceAttributes
 import io.opentelemetry.semconv.TelemetryAttributes
 import io.opentelemetry.semconv.incubating.AndroidIncubatingAttributes
+import io.opentelemetry.semconv.incubating.AppIncubatingAttributes
 import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes
 import io.opentelemetry.semconv.incubating.OsIncubatingAttributes
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
+import java.util.UUID
 
 internal class AndroidResourceTest {
     private val appName: String = "robotron"
+    private val prefsName: String = "opentelemetry-android"
     private val rumSdkVersion: String = BuildConfig.OTEL_ANDROID_VERSION
+    private val installId: String = "install-id"
     private val osDescription: String =
         "Android Version " +
             Build.VERSION.RELEASE +
@@ -36,12 +45,31 @@ internal class AndroidResourceTest {
 
     @RelaxedMockK
     private lateinit var ctx: Context
-    private lateinit var resourceBuilder: ResourceBuilder
+    private lateinit var expectedResourceBuilder: ResourceBuilder
+    private lateinit var appInfo: ApplicationInfo
 
     @BeforeEach
     fun setUp() {
         MockKAnnotations.init(this)
-        resourceBuilder =
+        every { ctx.getSharedPreferences(prefsName, 0) } returns
+            mockk {
+                every {
+                    getString(
+                        AppIncubatingAttributes.APP_INSTALLATION_ID.key,
+                        null,
+                    )
+                } returns installId
+            }
+
+        appInfo =
+            ApplicationInfo().apply {
+                labelRes = 12345
+            }
+
+        every { ctx.applicationContext.applicationInfo } returns appInfo
+        every { ctx.applicationContext.getString(appInfo.labelRes) } returns appName
+
+        expectedResourceBuilder =
             Resource
                 .builder()
                 .put(ServiceAttributes.SERVICE_NAME, appName)
@@ -52,43 +80,30 @@ internal class AndroidResourceTest {
                 .put(OsIncubatingAttributes.OS_NAME, "Android")
                 .put(OsIncubatingAttributes.OS_TYPE, "linux")
                 .put(OsIncubatingAttributes.OS_VERSION, Build.VERSION.RELEASE)
-                .put(AndroidIncubatingAttributes.ANDROID_OS_API_LEVEL, Build.VERSION.SDK_INT.toString())
-                .put(OsIncubatingAttributes.OS_DESCRIPTION, osDescription)
+                .put(
+                    AndroidIncubatingAttributes.ANDROID_OS_API_LEVEL,
+                    Build.VERSION.SDK_INT.toString(),
+                ).put(OsIncubatingAttributes.OS_DESCRIPTION, osDescription)
+                .put(AppIncubatingAttributes.APP_INSTALLATION_ID, installId)
     }
 
     @Test
     fun testFullResource() {
-        val appInfo =
-            ApplicationInfo().apply {
-                labelRes = 12345
-            }
-
-        every { ctx.applicationContext.applicationInfo } returns appInfo
-        every { ctx.applicationContext.getString(appInfo.labelRes) } returns appName
-
-        val expected = Resource.getDefault().merge(resourceBuilder.build())
-        val result = AndroidResource.createDefault(ctx)
-        assertEquals(expected, result)
+        assertResourceMatches()
     }
 
     @Test
     fun `fall back to nonLocalizedLabel if needed`() {
-        val appInfo =
+        appInfo =
             ApplicationInfo().apply {
                 labelRes = 0
                 nonLocalizedLabel = "shim sham"
             }
-
         every { ctx.applicationContext.applicationInfo } returns appInfo
-        every { ctx.applicationInfo } returns appInfo
 
-        val expected =
-            Resource.getDefault().merge(
-                resourceBuilder.put(ServiceAttributes.SERVICE_NAME, "shim sham").build(),
-            )
-
-        val result = AndroidResource.createDefault(ctx)
-        assertEquals(expected, result)
+        assertResourceMatches(
+            extraAttributes = mapOf(ServiceAttributes.SERVICE_NAME to "shim sham"),
+        )
     }
 
     @Test
@@ -96,14 +111,49 @@ internal class AndroidResourceTest {
         every { ctx.applicationContext.applicationInfo } throws SecurityException("cannot do that")
         every { ctx.applicationContext.resources } throws SecurityException("boom")
 
-        val expected =
-            Resource.getDefault().merge(
-                resourceBuilder
-                    .put(ServiceAttributes.SERVICE_NAME, "unknown_service:android")
-                    .build(),
-            )
+        assertResourceMatches(
+            extraAttributes = mapOf(ServiceAttributes.SERVICE_NAME to "unknown_service:android"),
+        )
+    }
 
-        val result = AndroidResource.createDefault(ctx)
-        assertEquals(expected, result)
+    @Test
+    fun `test install id generated if none available`() {
+        val slot = slot<String>()
+        val editor = mockk<SharedPreferences.Editor>(relaxed = true)
+
+        every { ctx.getSharedPreferences(prefsName, 0) } returns
+            mockk {
+                every {
+                    getString(
+                        AppIncubatingAttributes.APP_INSTALLATION_ID.key,
+                        null,
+                    )
+                } returns null
+                every { edit() } returns editor
+            }
+
+        every {
+            editor.putString(
+                AppIncubatingAttributes.APP_INSTALLATION_ID.key,
+                capture(slot),
+            )
+        } returns editor
+
+        assertResourceMatches(
+            resource = AndroidResource.createDefault(ctx),
+            extraAttributes = mapOf(AppIncubatingAttributes.APP_INSTALLATION_ID to slot.captured),
+        )
+        assertNotNull(UUID.fromString(slot.captured))
+    }
+
+    private fun assertResourceMatches(
+        resource: Resource = AndroidResource.createDefault(ctx),
+        extraAttributes: Map<AttributeKey<*>, String> = emptyMap(),
+    ) {
+        extraAttributes.forEach { entry ->
+            expectedResourceBuilder.put(entry.key.key, entry.value)
+        }
+        val expected = Resource.getDefault().merge(expectedResourceBuilder.build())
+        assertEquals(expected, resource)
     }
 }
