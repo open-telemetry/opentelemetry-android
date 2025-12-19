@@ -32,6 +32,11 @@ class OpenTelemetryConfiguration internal constructor(
     var clock: Clock = Clock.getDefault()
 
     /**
+     * Configures the [Clock] used for capturing telemetry. Defaults to [Clock.getDefault].
+     */
+    var clock: Clock = Clock.getDefault()
+
+    /**
      * Configures how OpenTelemetry should export telemetry over HTTP.
      */
     fun httpExport(action: HttpExportConfiguration.() -> Unit) {
