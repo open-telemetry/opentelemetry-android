@@ -41,7 +41,8 @@ internal class ComposeClickEventGenerator(
                     .setAttribute(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong())
                     .emit()
 
-                composeTapTargetDetector.findTapTarget(window.decorView, motionEvent.x, motionEvent.y)?.let { layoutNode ->
+                val node: LayoutNode? = composeTapTargetDetector.findTapTarget(window.decorView, motionEvent.x, motionEvent.y)
+                node?.let { layoutNode ->
                     createEvent(VIEW_CLICK_EVENT_NAME)
                         .setAllAttributes(createNodeAttributes(layoutNode))
                         .emit()
