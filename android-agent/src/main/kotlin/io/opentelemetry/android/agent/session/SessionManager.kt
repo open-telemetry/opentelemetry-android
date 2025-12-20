@@ -6,6 +6,7 @@
 package io.opentelemetry.android.agent.session
 
 import io.opentelemetry.android.Incubating
+import io.opentelemetry.android.common.internal.tools.time.AndroidClock
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.android.session.SessionProvider
@@ -17,7 +18,7 @@ import kotlin.random.Random
 import kotlin.time.Duration
 
 internal class SessionManager(
-    private val clock: Clock = Clock.getDefault(),
+    private val clock: Clock = AndroidClock.INSTANCE,
     private val sessionStorage: SessionStorage = InMemorySessionStorage(),
     private val timeoutHandler: SessionIdTimeoutHandler,
     private val idGenerator: SessionIdGenerator = DefaultSessionIdGenerator(Random.Default),
