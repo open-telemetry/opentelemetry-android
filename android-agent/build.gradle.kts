@@ -5,6 +5,11 @@ plugins {
 
 android {
     namespace = "io.opentelemetry.android.agent"
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+        unitTests.isIncludeAndroidResources = true
+    }
 }
 
 dependencies {

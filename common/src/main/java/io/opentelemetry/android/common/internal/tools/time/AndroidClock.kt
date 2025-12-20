@@ -10,8 +10,13 @@ import io.opentelemetry.sdk.common.Clock
 import javax.annotation.concurrent.ThreadSafe
 
 @ThreadSafe
-class AndroidClock : Clock by Clock.getDefault() {
-    override fun nanoTime(): Long = SystemClock.elapsedRealtimeNanos()
+class AndroidClock internal constructor(
+    timeSinceEpochMillisProvider: () -> Long = System::currentTimeMillis,
+    private val timeHighPrecisionMillisProvider: () -> Long = SystemClock::elapsedRealtime,
+) : Clock by Clock.getDefault() {
+    private val baseline = timeSinceEpochMillisProvider() - timeHighPrecisionMillisProvider()
+
+    override fun nanoTime(): Long = baseline + timeHighPrecisionMillisProvider()
 
     companion object {
         @JvmStatic
