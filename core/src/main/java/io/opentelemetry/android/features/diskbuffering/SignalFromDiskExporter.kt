@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode
 import io.opentelemetry.sdk.logs.export.LogRecordExporter
 import io.opentelemetry.sdk.metrics.export.MetricExporter
 import io.opentelemetry.sdk.trace.export.SpanExporter
-import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 /**
@@ -29,75 +28,58 @@ class SignalFromDiskExporter
         private val exportTimeoutInMillis: Long = TimeUnit.SECONDS.toMillis(5),
     ) {
         /**
-         * A batch contains all the signals that arrived in one call to [SpanFromDiskExporter.exportStoredBatch]. So if
-         * that function is called 5 times, then there will be 5 batches in disk. This function reads
-         * and exports ONE batch every time is called.
+         * Exports all persisted spans from the disk and deletes the successfully consumed batches
+         * from the disk. It aborts the exporting on the first failure.
          *
-         * @return TRUE if it found data in disk and the exporter succeeded. FALSE if any of those conditions were
-         * not met.
+         * @return `true`, if the exporting completely succeeded, `false` otherwise.
          */
         @WorkerThread
-        @Throws(IOException::class)
-        fun exportBatchOfSpans(): Boolean = export(spanStorage, spanExporter::export)
+        fun exportSpansFromDisk(): Boolean = export(spanStorage, spanExporter::export)
 
         /**
-         * A batch contains all the signals that arrived in one call to [MetricFromDiskExporter.exportStoredBatch]. So if
-         * that function is called 5 times, then there will be 5 batches in disk. This function reads
-         * and exports ONE batch every time is called.
+         * Exports all persisted metrics from the disk and deletes the successfully consumed batches
+         * from the disk. It aborts the exporting on the first failure.
          *
-         * @return TRUE if it found data in disk and the exporter succeeded. FALSE if any of those conditions were
-         * not met.
+         * @return `true`, if the exporting completely succeeded, `false` otherwise.
          */
         @WorkerThread
-        @Throws(IOException::class)
-        fun exportBatchOfMetrics(): Boolean = export(metricStorage, metricExporter::export)
+        fun exportMetricsFromDisk(): Boolean = export(metricStorage, metricExporter::export)
 
         /**
-         * A batch contains all the signals that arrived in one call to [LogRecordFromDiskExporter.exportStoredBatch]. So if
-         * that function is called 5 times, then there will be 5 batches in disk. This function reads
-         * and exports ONE batch every time is called.
+         * Exports all persisted logs from the disk and deletes the successfully consumed batches
+         * from the disk. It aborts the exporting on the first failure.
          *
-         * @return TRUE if it found data in disk and the exporter succeeded. FALSE if any of those conditions were
-         * not met.
+         * @return `true`, if the exporting completely succeeded, `false` otherwise.
          */
         @WorkerThread
-        @Throws(IOException::class)
-        fun exportBatchOfLogs(): Boolean = export(logStorage, logExporter::export)
+        fun exportLogsFromDisk(): Boolean = export(logStorage, logExporter::export)
 
+        /**
+         * Exports all persisted spans/metrics/logs from the disk and deletes the successfully
+         * consumed batches from the disk. It aborts the exporting on the first failure.
+         *
+         * @return `true`, if the exporting completely succeeded, `false` otherwise.
+         */
         private fun <T> export(
             storage: SignalStorage<T>,
             exporter: (Collection<T>) -> CompletableResultCode,
         ): Boolean {
-            var rc = false
-            val iter = storage.iterator()
-            while (iter.hasNext()) {
-                val result = exporter(iter.next()).join(exportTimeoutInMillis, TimeUnit.MILLISECONDS)
-                // TODO: What to do if a random export in the middle here just fails?
-                if (result.isDone && result.isSuccess) {
-                    rc = true
+            for (batch in storage) {
+                val result = exporter(batch).join(exportTimeoutInMillis, TimeUnit.MILLISECONDS)
+                if (!result.isSuccess) {
+                    return false
                 }
             }
-            return rc
+            return true
         }
 
         /**
          * Convenience method that attempts to export all kinds of signals from disk.
          *
-         * @return TRUE if at least one of the signals were successfully exported, FALSE if no signal
-         * of any kind was exported.
+         * @return `true`, if all exporting completed successfully, `false` otherwise.`
          */
         @WorkerThread
-        @Throws(IOException::class)
-        fun exportBatchOfEach(): Boolean {
-            var atLeastOneWorked = exportBatchOfSpans()
-            if (exportBatchOfMetrics()) {
-                atLeastOneWorked = true
-            }
-            if (exportBatchOfLogs()) {
-                atLeastOneWorked = true
-            }
-            return atLeastOneWorked
-        }
+        fun exportAllSignalsFromDisk(): Boolean = exportSpansFromDisk() && exportMetricsFromDisk() && exportLogsFromDisk()
 
         companion object {
             private var instance: SignalFromDiskExporter? = null

@@ -13,8 +13,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
-import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 class DefaultExportSchedulerTest {
@@ -33,30 +31,13 @@ class DefaultExportSchedulerTest {
     @Test
     fun `Try to export all available signals when running`() {
         val signalFromDiskExporter = mockk<SignalFromDiskExporter>()
-        every { signalFromDiskExporter.exportBatchOfEach() }
+        every { signalFromDiskExporter.exportAllSignalsFromDisk() }
             .returns(true)
-            .andThen(true)
-            .andThen(false)
         SignalFromDiskExporter.set(signalFromDiskExporter)
 
         scheduler.onRun()
 
-        verify(exactly = 3) {
-            signalFromDiskExporter.exportBatchOfEach()
-        }
-    }
-
-    @Test
-    fun `Avoid crashing when an exception happens during execution`() {
-        val signalFromDiskExporter = mockk<SignalFromDiskExporter>()
-        every { signalFromDiskExporter.exportBatchOfEach() }.throws(IOException())
-        SignalFromDiskExporter.set(signalFromDiskExporter)
-
-        try {
-            scheduler.onRun()
-        } catch (e: IOException) {
-            fail(e)
-        }
+        verify { signalFromDiskExporter.exportAllSignalsFromDisk() }
     }
 
     @Test
