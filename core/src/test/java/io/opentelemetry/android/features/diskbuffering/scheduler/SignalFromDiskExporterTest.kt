@@ -39,14 +39,16 @@ class SignalFromDiskExporterTest {
     @MockK
     private lateinit var logExporter: LogRecordExporter
 
+    private lateinit var instance: SignalFromDiskExporter
+
     @BeforeEach
     fun setUp() {
         MockKAnnotations.init(this)
+        instance = makeInstance()
     }
 
     @Test
     fun `export spans successfully`() {
-        val instance = makeInstance()
         every { spanStorage.iterator() }.returns(makeIterator(size = 2))
         every { spanExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
         assertThat(instance.exportSpansFromDisk()).isTrue()
@@ -55,7 +57,6 @@ class SignalFromDiskExporterTest {
 
     @Test
     fun `export metrics successfully`() {
-        val instance = makeInstance()
         every { metricStorage.iterator() }.returns(makeIterator(size = 2))
         every { metricExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
         assertThat(instance.exportMetricsFromDisk()).isTrue()
@@ -64,7 +65,6 @@ class SignalFromDiskExporterTest {
 
     @Test
     fun `export logs successfully`() {
-        val instance = makeInstance()
         every { logStorage.iterator() }.returns(makeIterator(size = 2))
         every { logExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
         assertThat(instance.exportLogsFromDisk()).isTrue()
@@ -73,7 +73,6 @@ class SignalFromDiskExporterTest {
 
     @Test
     fun `stop exporting spans on first failure`() {
-        val instance = makeInstance()
         every { spanStorage.iterator() }.returns(makeIterator(size = 3))
         every { spanExporter.export(any()) }
             .returns(CompletableResultCode.ofSuccess())
@@ -84,7 +83,6 @@ class SignalFromDiskExporterTest {
 
     @Test
     fun `stop exporting metrics on first failure`() {
-        val instance = makeInstance()
         every { metricStorage.iterator() }.returns(makeIterator(size = 3))
         every { metricExporter.export(any()) }
             .returns(CompletableResultCode.ofSuccess())
@@ -95,7 +93,6 @@ class SignalFromDiskExporterTest {
 
     @Test
     fun `stop exporting logs on first failure`() {
-        val instance = makeInstance()
         every { logStorage.iterator() }.returns(makeIterator(size = 3))
         every { logExporter.export(any()) }
             .returns(CompletableResultCode.ofSuccess())
@@ -106,7 +103,6 @@ class SignalFromDiskExporterTest {
 
     @Test
     fun `Return true when all exports succeed`() {
-        val instance = makeInstance()
         every { spanStorage.iterator() }.returns(makeIterator(size = 1))
         every { metricStorage.iterator() }.returns(makeIterator(size = 1))
         every { logStorage.iterator() }.returns(makeIterator(size = 1))
@@ -123,7 +119,6 @@ class SignalFromDiskExporterTest {
 
     @Test
     fun `Return false when spans export fails`() {
-        val instance = makeInstance()
         every { spanStorage.iterator() }.returns(makeIterator(size = 1))
 
         every { spanExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
@@ -134,7 +129,6 @@ class SignalFromDiskExporterTest {
 
     @Test
     fun `Return false when metrics export fails`() {
-        val instance = makeInstance()
         every { spanStorage.iterator() }.returns(makeIterator(size = 1))
         every { metricStorage.iterator() }.returns(makeIterator(size = 1))
 
@@ -148,7 +142,6 @@ class SignalFromDiskExporterTest {
 
     @Test
     fun `Return false when logs export fails`() {
-        val instance = makeInstance()
         every { spanStorage.iterator() }.returns(makeIterator(size = 1))
         every { metricStorage.iterator() }.returns(makeIterator(size = 1))
         every { logStorage.iterator() }.returns(makeIterator(size = 1))
