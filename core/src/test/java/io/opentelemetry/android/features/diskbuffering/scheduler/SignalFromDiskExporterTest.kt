@@ -52,7 +52,7 @@ class SignalFromDiskExporterTest {
         val instance = makeInstance()
         every { spanStorage.iterator() }.returns(mutableListOf(listOf(mockk<SpanData>())).iterator())
         every { spanExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
-        assertThat(instance.exportBatchOfSpans()).isTrue()
+        assertThat(instance.exportSpansFromDisk()).isTrue()
         verify { spanExporter.export(any()) }
     }
 
@@ -61,7 +61,7 @@ class SignalFromDiskExporterTest {
         val instance = makeInstance()
         every { metricStorage.iterator() }.returns(mutableListOf(listOf(mockk<MetricData>())).iterator())
         every { metricExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
-        assertThat(instance.exportBatchOfMetrics()).isTrue()
+        assertThat(instance.exportMetricsFromDisk()).isTrue()
         verify { metricExporter.export(any()) }
     }
 
@@ -70,56 +70,64 @@ class SignalFromDiskExporterTest {
         val instance = makeInstance()
         every { logStorage.iterator() }.returns(mutableListOf(listOf(mockk<LogRecordData>())).iterator())
         every { logExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
-        assertThat(instance.exportBatchOfLogs()).isTrue()
+        assertThat(instance.exportLogsFromDisk()).isTrue()
         verify { logExporter.export(any()) }
     }
 
     @Test
-    fun `Return false when all exports fail`() {
-        val instance = makeInstance()
-        every { spanStorage.iterator() }.returns(mutableListOf(listOf(mockk<SpanData>())).iterator())
-        every { metricStorage.iterator() }.returns(mutableListOf(listOf(mockk<MetricData>())).iterator())
-        every { logStorage.iterator() }.returns(mutableListOf(listOf(mockk<LogRecordData>())).iterator())
-
-        every { spanExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
-        every { metricExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
-        every { logExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
-
-        assertThat(instance.exportBatchOfEach()).isFalse()
-        verify { spanExporter.export(any()) }
-        verify { metricExporter.export(any()) }
-        verify { logExporter.export(any()) }
-    }
-
-    @Test
-    fun `Return true when spans export succeeds`() {
+    fun `Return true when all exports succeed`() {
         val instance = makeInstance()
         every { spanStorage.iterator() }.returns(mutableListOf(listOf(mockk<SpanData>())).iterator())
         every { metricStorage.iterator() }.returns(mutableListOf(listOf(mockk<MetricData>())).iterator())
         every { logStorage.iterator() }.returns(mutableListOf(listOf(mockk<LogRecordData>())).iterator())
 
         every { spanExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
-        every { metricExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
-        every { logExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
+        every { metricExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
+        every { logExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
 
-        assertThat(instance.exportBatchOfEach()).isTrue()
+        assertThat(instance.exportAllSignalsFromDisk()).isTrue()
         verify { spanExporter.export(any()) }
         verify { metricExporter.export(any()) }
         verify { logExporter.export(any()) }
     }
 
     @Test
-    fun `Return true when metrics export succeeds`() {
+    fun `Return false when spans export fails`() {
+        val instance = makeInstance()
+        every { spanStorage.iterator() }.returns(mutableListOf(listOf(mockk<SpanData>())).iterator())
+
+        every { spanExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
+
+        assertThat(instance.exportAllSignalsFromDisk()).isFalse()
+        verify { spanExporter.export(any()) }
+    }
+
+    @Test
+    fun `Return false when metrics export fails`() {
+        val instance = makeInstance()
+        every { spanStorage.iterator() }.returns(mutableListOf(listOf(mockk<SpanData>())).iterator())
+        every { metricStorage.iterator() }.returns(mutableListOf(listOf(mockk<MetricData>())).iterator())
+
+        every { spanExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
+        every { metricExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
+
+        assertThat(instance.exportAllSignalsFromDisk()).isFalse()
+        verify { spanExporter.export(any()) }
+        verify { metricExporter.export(any()) }
+    }
+
+    @Test
+    fun `Return false when logs export fails`() {
         val instance = makeInstance()
         every { spanStorage.iterator() }.returns(mutableListOf(listOf(mockk<SpanData>())).iterator())
         every { metricStorage.iterator() }.returns(mutableListOf(listOf(mockk<MetricData>())).iterator())
         every { logStorage.iterator() }.returns(mutableListOf(listOf(mockk<LogRecordData>())).iterator())
 
-        every { spanExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
+        every { spanExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
         every { metricExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
         every { logExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
 
-        assertThat(instance.exportBatchOfEach()).isTrue()
+        assertThat(instance.exportAllSignalsFromDisk()).isFalse()
         verify { spanExporter.export(any()) }
         verify { metricExporter.export(any()) }
         verify { logExporter.export(any()) }
@@ -134,21 +142,4 @@ class SignalFromDiskExporterTest {
             metricStorage,
             metricExporter,
         )
-
-    @Test
-    fun `Return true when logs export succeeds`() {
-        val instance = makeInstance()
-        every { spanStorage.iterator() }.returns(mutableListOf(listOf(mockk<SpanData>())).iterator())
-        every { metricStorage.iterator() }.returns(mutableListOf(listOf(mockk<MetricData>())).iterator())
-        every { logStorage.iterator() }.returns(mutableListOf(listOf(mockk<LogRecordData>())).iterator())
-
-        every { spanExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
-        every { metricExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
-        every { logExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
-
-        assertThat(instance.exportBatchOfEach()).isTrue()
-        verify { spanExporter.export(any()) }
-        verify { metricExporter.export(any()) }
-        verify { logExporter.export(any()) }
-    }
 }
