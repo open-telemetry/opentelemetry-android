@@ -7,6 +7,7 @@ package io.opentelemetry.android.agent
 
 import android.app.Application
 import android.content.Context
+import io.opentelemetry.android.AndroidResource
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.RumBuilder
@@ -59,9 +60,15 @@ object OpenTelemetryRumInitializer {
         val spansEndpoint = cfg.exportConfig.spansEndpoint()
         val logsEndpoints = cfg.exportConfig.logsEndpoint()
         val metricsEndpoint = cfg.exportConfig.metricsEndpoint()
+
+        val resourceBuilder = AndroidResource.createDefault(ctx).toBuilder()
+        cfg.resourceAction(resourceBuilder)
+        val resource = resourceBuilder.build()
+
         return RumBuilder
             .builder(ctx, cfg.rumConfig)
             .setSessionProvider(createSessionProvider(ctx, sessionConfig))
+            .setResource(resource)
             .addSpanExporterCustomizer {
                 OtlpHttpSpanExporter
                     .builder()
