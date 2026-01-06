@@ -11,9 +11,11 @@ import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Severity
+import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.context.Context
 import io.opentelemetry.sdk.logs.data.LogRecordData
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
+import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.semconv.ExceptionAttributes
 import io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes
 import org.junit.Assert.assertEquals
@@ -167,6 +169,95 @@ internal class CrashReportIntegrationTest {
         simulateUncaughtException(exc)
     }
 
+    @Test
+    fun `test crash emits span when mode is SPANS_ONLY`() {
+        instrumentation.setCrashReportingMode(CrashReportingMode.SPANS_ONLY)
+        val exc = IllegalStateException("Crash!")
+        triggerUncaughtException(exc)
+
+        // Verify span was emitted
+        val spans = rule.spans
+        assertEquals(1, spans.size)
+        val span = spans.single()
+        span.assertCrashSpanCaptured(
+            thread = Thread.currentThread(),
+            expectedExcType = "java.lang.IllegalStateException",
+            expectedExcMessage = "Crash!",
+        )
+
+        // Verify NO log was emitted
+        assertTrue(rule.logRecords.isEmpty())
+    }
+
+    @Test
+    fun `test crash emits both log and span when mode is LOGS_AND_SPANS`() {
+        instrumentation.setCrashReportingMode(CrashReportingMode.LOGS_AND_SPANS)
+        val exc = IllegalStateException("Crash!")
+        triggerUncaughtException(exc)
+
+        // Verify log was emitted
+        assertEquals(1, rule.logRecords.size)
+        val log = rule.logRecords.single()
+        log.assertCrashCaptured(
+            expectedStacktrace = exc.stackTraceToString(),
+            thread = Thread.currentThread(),
+            expectedExcType = "java.lang.IllegalStateException",
+            expectedExcMessage = "Crash!",
+        )
+
+        // Verify span was emitted
+        assertEquals(1, rule.spans.size)
+        val span = rule.spans.single()
+        span.assertCrashSpanCaptured(
+            thread = Thread.currentThread(),
+            expectedExcType = "java.lang.IllegalStateException",
+            expectedExcMessage = "Crash!",
+        )
+    }
+
+    @Test
+    fun `test default mode emits only logs`() {
+        // Don't set mode - use default (LOGS_ONLY)
+        val exc = IllegalStateException("Crash!")
+        triggerUncaughtException(exc)
+
+        // Verify log was emitted
+        assertEquals(1, rule.logRecords.size)
+
+        // Verify NO span was emitted
+        assertTrue(rule.spans.isEmpty())
+    }
+
+    @Test
+    fun `test span has exception event with correct attributes`() {
+        instrumentation.setCrashReportingMode(CrashReportingMode.SPANS_ONLY)
+        val exc = IllegalStateException("Test exception message")
+        triggerUncaughtException(exc)
+
+        val span = rule.spans.single()
+
+        // Verify exception event on span
+        val exceptionEvent = span.events.find { it.name == "exception" }
+        assertNotNull("Expected exception event on span", exceptionEvent)
+
+        // Verify exception event attributes
+        val eventAttrs = exceptionEvent!!.attributes.asMap().mapKeys { it.key.key }
+        assertEquals("java.lang.IllegalStateException", eventAttrs[ExceptionAttributes.EXCEPTION_TYPE.key])
+        assertEquals("Test exception message", eventAttrs[ExceptionAttributes.EXCEPTION_MESSAGE.key])
+        assertNotNull(eventAttrs[ExceptionAttributes.EXCEPTION_STACKTRACE.key])
+    }
+
+    /**
+     * Triggers an uncaught exception without assuming a log is emitted.
+     * Use this for tests that verify different CrashReportingMode settings.
+     */
+    private fun triggerUncaughtException(throwable: Throwable) {
+        instrumentation.install(fakeInstallationContext(rule.openTelemetry))
+        val handler = checkNotNull(Thread.getDefaultUncaughtExceptionHandler())
+        val thread = Thread.currentThread()
+        handler.uncaughtException(thread, throwable)
+    }
+
     /**
      * Simulates an uncaught exception on the current thread and returns the log record
      * from [FakeLogRecordExporter]
@@ -199,6 +290,31 @@ internal class CrashReportIntegrationTest {
         assertEquals(thread.name, attrs[ThreadIncubatingAttributes.THREAD_NAME.key])
         assertNotNull(attrs["heap.free"])
         assertNotNull(attrs["storage.free"])
+    }
+
+    /**
+     * Asserts that a span was created with the expected crash details.
+     */
+    private fun SpanData.assertCrashSpanCaptured(
+        thread: Thread,
+        expectedExcType: String,
+        expectedExcMessage: String? = null,
+    ) {
+        assertEquals("device.crash", name)
+        assertEquals(StatusCode.ERROR, status.statusCode)
+
+        // Check span attributes
+        val attrs = attributes.asMap().mapKeys { it.key.key }
+        assertEquals(expectedExcType, attrs[ExceptionAttributes.EXCEPTION_TYPE.key])
+        assertEquals(expectedExcMessage, attrs[ExceptionAttributes.EXCEPTION_MESSAGE.key])
+        assertEquals(thread.threadIdCompat, attrs[ThreadIncubatingAttributes.THREAD_ID.key])
+        assertEquals(thread.name, attrs[ThreadIncubatingAttributes.THREAD_NAME.key])
+        assertNotNull(attrs["heap.free"])
+        assertNotNull(attrs["storage.free"])
+
+        // Verify exception event exists
+        val exceptionEvent = events.find { it.name == "exception" }
+        assertNotNull("Expected exception event on span", exceptionEvent)
     }
 
     private fun generateLargeStacktraceException(depth: Int = 1000): Throwable {
