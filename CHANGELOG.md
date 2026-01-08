@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## Version 1.0.1 (2026-01-07)
+
+* Patch release to drop `-alpha` suffix for the agent module. Sorry for any
+  confusion this may have caused.
+
 ## Version 1.0.0 (2026-01-07)
 
 ⭐ Promote rc.1 to v1.0.0.
