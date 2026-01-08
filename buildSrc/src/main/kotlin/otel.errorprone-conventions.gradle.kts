@@ -33,6 +33,7 @@ nullaway {
 
 tasks {
     withType<JavaCompile>().configureEach {
+        options.compilerArgs.add("-XDaddTypeAnnotationsToSymbol=true")
         options.errorprone {
             if (name.lowercase(Locale.getDefault()).contains("test")) {
                 // just disable all error prone checks for test
@@ -50,6 +51,7 @@ tasks {
                 // Prevent generated binding code in demo app from failing the build
                 unannotatedSubPackages.add("io.opentelemetry.android.demo.databinding")
             }
+
 
             // Builder 'return this;' pattern
             disable("CanIgnoreReturnValueSuggester")
