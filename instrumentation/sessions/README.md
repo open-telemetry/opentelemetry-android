@@ -41,7 +41,7 @@ manually install this instrumentation by following the steps below.
 ### Adding dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:sessions:1.0.0-rc.1-alpha")
+implementation("io.opentelemetry.android.instrumentation:sessions:1.0.1-alpha")
 ```
 
 1. You can find the latest version [here](https://central.sonatype.com/artifact/io.opentelemetry.android.instrumentation/sessions).
