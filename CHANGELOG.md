@@ -1,5 +1,19 @@
 # OpenTelemetry Android Changelog
 
+## Version 1.0.0 (2026-01-07)
+
+⭐ Promote rc.1 to v1.0.0.
+
+This release promotes v1.0.0-rc1 to v1.0.0 without any additional changes.
+This release also denotes the first stable version of the OpenTelemetry
+Android Agent!
+
+Going forward, we will prevent breaking changes to the agent API until 
+the next major version. Other modules, including instrumentation, are still
+marked as alpha and will each have an individual trajectory toward stability.
+
+Thanks to everyone involved in making this stable release a success!
+
 ## Version 1.0.0-rc.1 (2025-11-25)
 
 Good news, everyone! This denotes the first "stable" release candidate (`rc.1`)
