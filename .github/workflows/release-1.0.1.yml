@@ -1,5 +1,5 @@
 ---
-name: "Special one-off 1.0.0 release"
+name: "Special one-off 1.0.1 release"
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ jobs:
   release-1-0-0:
     permissions:
       contents: write # for creating the release
-    name: "release v1.0.0"
+    name: "release v1.0.1"
     runs-on: ubuntu-latest
     steps:
       - run: |
@@ -33,7 +33,7 @@ jobs:
                         sed -e "s/.* -> //" | sed -e "s/ .*//" | \
                         sort | head -1)
           
-          echo "VERSION=1.0.0" >> $GITHUB_ENV
+          echo "VERSION=1.0.1" >> $GITHUB_ENV
           echo "INST_VERSION=$inst_version" >> $GITHUB_ENV
           echo "OTEL_SDK_VERSION=$sdk_version" >> $GITHUB_ENV
 
@@ -53,4 +53,4 @@ jobs:
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
 
       - name: "Great success!"
-        run: echo "v1.0.0 release complete"
+        run: echo "v1.0.1 release complete"
