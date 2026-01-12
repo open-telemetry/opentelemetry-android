@@ -21,7 +21,7 @@ binaryCompatValidator = "0.18.1"
 fragment = "1.8.9"
 koverGradlePlugin = "0.9.4"
 openTelemetryProto = "1.9.0-alpha"
-protobufKotlin = "4.33.2"
+protobufKotlin = "4.33.3"
 
 [libraries]
 opentelemetry-platform-alpha = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-instrumentation-alpha" }
