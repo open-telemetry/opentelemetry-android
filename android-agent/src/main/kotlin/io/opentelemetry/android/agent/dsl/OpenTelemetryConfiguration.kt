@@ -9,6 +9,7 @@ import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.dsl.instrumentation.InstrumentationConfiguration
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.resources.ResourceBuilder
 
 /**
@@ -24,6 +25,11 @@ class OpenTelemetryConfiguration internal constructor(
     internal val sessionConfig = SessionConfiguration()
     internal val instrumentations = InstrumentationConfiguration(rumConfig)
     internal var resourceAction: ResourceBuilder.() -> Unit = {}
+
+    /**
+     * Configures the [Clock] used for capturing telemetry. Defaults to [Clock.getDefault].
+     */
+    var clock: Clock = Clock.getDefault()
 
     /**
      * Configures how OpenTelemetry should export telemetry over HTTP.

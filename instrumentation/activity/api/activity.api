@@ -61,13 +61,10 @@ public final class io/opentelemetry/android/instrumentation/activity/startup/Anc
 
 public class io/opentelemetry/android/instrumentation/activity/startup/AppStartupTimer {
 	public fun <init> ()V
-	public fun clockNow ()J
 	public fun createLifecycleCallback ()Landroid/app/Application$ActivityLifecycleCallbacks;
-	public fun detectBackgroundStart (Landroid/os/Handler;)V
 	public fun end ()V
 	public fun getStartupSpan ()Lio/opentelemetry/api/trace/Span;
 	public fun runCompletionCallback ()V
-	public fun setCompletionCallback (Ljava/lang/Runnable;)V
-	public fun start (Lio/opentelemetry/api/trace/Tracer;)Lio/opentelemetry/api/trace/Span;
+	public fun start (Lio/opentelemetry/api/trace/Tracer;Lio/opentelemetry/sdk/common/Clock;)Lio/opentelemetry/api/trace/Span;
 }
 

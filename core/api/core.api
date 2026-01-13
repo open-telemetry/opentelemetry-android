@@ -24,6 +24,7 @@ public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
 	public final fun addTracerProviderCustomizer (Ljava/util/function/BiFunction;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun build ()Lio/opentelemetry/android/OpenTelemetryRum;
 	public final fun mergeResource (Lio/opentelemetry/sdk/resources/Resource;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun setClock (Lio/opentelemetry/sdk/common/Clock;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun setExportScheduleHandler (Lio/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun setResource (Lio/opentelemetry/sdk/resources/Resource;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun setSessionProvider (Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;

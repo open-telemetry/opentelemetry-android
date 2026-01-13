@@ -42,12 +42,6 @@ object OpenTelemetryRumInitializer {
         val cfg = OpenTelemetryConfiguration()
         configuration(cfg)
 
-        val sessionConfig =
-            SessionConfig(
-                cfg.sessionConfig.backgroundInactivityTimeout,
-                cfg.sessionConfig.maxLifetime,
-            )
-
         // ensure we're using the Application Context to prevent potential leaks.
         // if context.applicationContext is null (e.g. called from within attachBaseContext),
         // fallback to the supplied context.
@@ -67,8 +61,9 @@ object OpenTelemetryRumInitializer {
 
         return RumBuilder
             .builder(ctx, cfg.rumConfig)
-            .setSessionProvider(createSessionProvider(ctx, sessionConfig))
+            .setSessionProvider(createSessionProvider(ctx, cfg))
             .setResource(resource)
+            .setClock(cfg.clock)
             .addSpanExporterCustomizer {
                 OtlpHttpSpanExporter
                     .builder()
@@ -101,10 +96,16 @@ object OpenTelemetryRumInitializer {
 
     private fun createSessionProvider(
         context: Context,
-        sessionConfig: SessionConfig,
+        cfg: OpenTelemetryConfiguration,
     ): SessionProvider {
-        val timeoutHandler = SessionIdTimeoutHandler(sessionConfig)
+        val sessionConfig =
+            SessionConfig(
+                cfg.sessionConfig.backgroundInactivityTimeout,
+                cfg.sessionConfig.maxLifetime,
+            )
+        val clock = cfg.clock
+        val timeoutHandler = SessionIdTimeoutHandler(sessionConfig, clock)
         Services.get(context).appLifecycle.registerListener(timeoutHandler)
-        return SessionManager.create(timeoutHandler, sessionConfig)
+        return SessionManager.create(timeoutHandler, sessionConfig, clock)
     }
 }
