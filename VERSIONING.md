@@ -21,26 +21,24 @@ Every commit to the `main` branch will cause a
 to be published to Sonatype. Users may choose to build and test and file issues against SNAPSHOT
 builds, but their use in production is strongly discouraged.
 
-## Android API Compatibility
+## Android ecosystem compatibility
 
-The core Android instrumentation provided here is designed to be used with
-Android API Level 21 and above. API levels 21 to 25 require
-[desugaring of the core library](https://developer.android.com/studio/write/java8-support#library-desugaring).
-The desugaring library should be version 2.0.4 or newer, and the Android Gradle Plugin (AGP)
-should be version 7.4 or newer. You can consult the
-[Android docs for Gradle and AGP compatibility](https://developer.android.com/build/releases/gradle-plugin#updating-gradle)
+The android-agent currently supports the following minimum versions:
 
-The API compatibility level outlined here is aligned with the Android compatibility
-in [opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java/blob/main/VERSIONING.md#language-version-compatibility).
-The minimum compatibility version is subject to change when the minimum requirement
-for [Google Play Services](https://developers.google.com/android/guides/setup) changes.
+- Kotlin 1.8
+- API 21+ ([desugaring of the core library](https://developer.android.com/studio/write/java8-support#library-desugaring) required for API <26)
+- Android Gradle Plugin (AGP) 7.4 and Gradle 7.5
+- JDK 11 (build-time)
+- Java language level 8 as per [opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java/blob/main/VERSIONING.md#language-version-compatibility)
 
-The various `auto-instrumentation` modules provided here are NOT required to follow this
-same compatibility level. That is, certain auto-instrumentation modules MAY choose to use a
-newer minimum Android SDK level. When an instrumentation differs from the default,
-the minimum supported sdk will be listed in the `build.gradle.kts` file for that module. For example
-`otelAndroid.minSdk = 26` would indicate that the instrumentation requires a minimum sdk version 26
-to be used.
+These versions can be bumped in a major version release when:
+
+1. [Google Play Services](https://developers.google.com/android/guides/setup) drops support for any of the above versions
+2. A new version of Kotlin is released that does not support targeting the minimum Kotlin version
+3. At the discretion of maintainers after discussing in the SIG
+
+These are **minimum** supported versions. We would strongly recommend using newer versions where
+possible as that's where our testing will be focused.
 
 ## Release schedule
 
