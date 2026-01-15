@@ -21,7 +21,7 @@ jobs:
       - name: touch local props
         run: touch demo-app/local.properties
       - name: run gradle
-        run: ./gradlew check -x detekt detektDebug detektDebugUnitTest detektDebugAndroidTest koverXmlReport
+        run: ./gradlew check -x detekt detektDebug detektDebugUnitTest detektDebugAndroidTest koverXmlReport --stacktrace
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
@@ -30,7 +30,7 @@ jobs:
           slug: open-telemetry/opentelemetry-android
       - name: build demo app
         working-directory: ./demo-app
-        run: ./gradlew assembleRelease
+        run: ./gradlew assembleRelease --stacktrace
 
   required-status-check:
     needs:

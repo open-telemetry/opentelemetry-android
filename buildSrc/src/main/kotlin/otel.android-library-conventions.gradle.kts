@@ -1,4 +1,5 @@
 import io.gitlab.arturbosch.detekt.Detekt
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
@@ -50,6 +51,7 @@ android {
     testOptions {
         unitTests {
             all { test ->
+                test.testLogging.exceptionFormat = TestExceptionFormat.FULL
                 test.maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2) + 1
             }
         }

@@ -50,7 +50,7 @@ jobs:
         # --no-build-cache is required for codeql to analyze all modules
         # --no-daemon is required for codeql to observe the compilation
         # (see https://docs.github.com/en/code-security/codeql-cli/getting-started-with-the-codeql-cli/preparing-your-code-for-codeql-analysis#specifying-build-commands)
-        run: ./gradlew assemble --no-build-cache --no-daemon
+        run: ./gradlew assemble --no-build-cache --no-daemon --stacktrace
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # v4.31.10
@@ -65,4 +65,4 @@ jobs:
         uses: reactivecircus/android-emulator-runner@b530d96654c385303d652368551fb075bc2f0b6b # v2.35.0
         with:
           api-level: 29
-          script: ./gradlew connectedCheck
+          script: ./gradlew connectedCheck --stacktrace
