@@ -79,7 +79,12 @@ class SignalFromDiskExporter
          * @return `true`, if all exporting completed successfully, `false` otherwise.`
          */
         @WorkerThread
-        fun exportAllSignalsFromDisk(): Boolean = exportSpansFromDisk() && exportMetricsFromDisk() && exportLogsFromDisk()
+        fun exportAllSignalsFromDisk(): Boolean {
+            val successSpans = exportSpansFromDisk()
+            val successMetrics = exportMetricsFromDisk()
+            val successLogs = exportLogsFromDisk()
+            return successSpans && successMetrics && successLogs
+        }
 
         companion object {
             private var instance: SignalFromDiskExporter? = null

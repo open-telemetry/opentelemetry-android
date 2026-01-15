@@ -120,8 +120,12 @@ class SignalFromDiskExporterTest {
     @Test
     fun `Return false when spans export fails`() {
         every { spanStorage.iterator() }.returns(makeIterator(size = 1))
+        every { metricStorage.iterator() }.returns(makeIterator(size = 1))
+        every { logStorage.iterator() }.returns(makeIterator(size = 1))
 
         every { spanExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
+        every { metricExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
+        every { logExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
 
         assertThat(instance.exportAllSignalsFromDisk()).isFalse()
         verify { spanExporter.export(any()) }
@@ -131,9 +135,11 @@ class SignalFromDiskExporterTest {
     fun `Return false when metrics export fails`() {
         every { spanStorage.iterator() }.returns(makeIterator(size = 1))
         every { metricStorage.iterator() }.returns(makeIterator(size = 1))
+        every { logStorage.iterator() }.returns(makeIterator(size = 1))
 
         every { spanExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
         every { metricExporter.export(any()) }.returns(CompletableResultCode.ofFailure())
+        every { logExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
 
         assertThat(instance.exportAllSignalsFromDisk()).isFalse()
         verify { spanExporter.export(any()) }
