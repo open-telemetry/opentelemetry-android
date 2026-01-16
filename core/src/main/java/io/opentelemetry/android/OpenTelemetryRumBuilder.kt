@@ -92,7 +92,7 @@ class OpenTelemetryRumBuilder internal constructor(
         ): OpenTelemetryRumBuilder = OpenTelemetryRumBuilder(context, config)
     }
 
-    private var clock: Clock = Clock.getDefault()
+    private var clock: Clock = OtelAndroidClock()
     private val tracerProviderCustomizers: MutableList<BiFunction<SdkTracerProviderBuilder, Context, SdkTracerProviderBuilder>> =
         mutableListOf()
     private val meterProviderCustomizers: MutableList<BiFunction<SdkMeterProviderBuilder, Context, SdkMeterProviderBuilder>> =

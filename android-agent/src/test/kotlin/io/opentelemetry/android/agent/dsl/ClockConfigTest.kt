@@ -5,25 +5,24 @@
 
 package io.opentelemetry.android.agent.dsl
 
-import io.opentelemetry.sdk.common.Clock
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.opentelemetry.android.OtelAndroidClock
+import io.opentelemetry.android.agent.FakeClock
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import org.junit.Test
+import org.junit.runner.RunWith
 
+@RunWith(AndroidJUnit4::class)
 class ClockConfigTest {
     @Test
     fun testDefaults() {
         val otelConfig = OpenTelemetryConfiguration()
-        assertThat(otelConfig.clock).isSameAs(Clock.getDefault())
+        assertThat(otelConfig.clock).isInstanceOf(OtelAndroidClock::class.java)
     }
 
     @Test
     fun testOverride() {
-        val fakeClock =
-            object : Clock {
-                override fun now(): Long = 0
-
-                override fun nanoTime(): Long = 0
-            }
+        val fakeClock = FakeClock()
         val otelConfig =
             OpenTelemetryConfiguration().apply {
                 clock = fakeClock
