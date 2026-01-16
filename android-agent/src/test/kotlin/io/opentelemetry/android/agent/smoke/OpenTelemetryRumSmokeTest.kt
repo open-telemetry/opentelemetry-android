@@ -46,20 +46,27 @@ class OpenTelemetryRumSmokeTest {
         )
 
         val logRequest =
-            server.awaitLogRequest {
-                it
-                    .getResourceLogs(0)
-                    .scopeLogsList
-                    .find { scopeLogs ->
-                        scopeLogs.scope.name == logScopeName
-                    }?.logRecordsList
-                    .orEmpty()
-                    .map { logRecord ->
-                        logRecord.body.stringValue
-                    }.contains(logMessage)
-            }
+            server.awaitLogRequest(findLogBodyWithinScope(logScopeName, logMessage))
+
         assertLogRequestReceived(logRequest)
     }
+
+    private fun findLogBodyWithinScope(
+        logScopeName: String,
+        logMessage: String,
+    ): (ExportLogsServiceRequest) -> Boolean =
+        {
+            it
+                .getResourceLogs(0)
+                .scopeLogsList
+                .find { scopeLogs ->
+                    scopeLogs.scope.name == logScopeName
+                }?.logRecordsList
+                .orEmpty()
+                .map { logRecord ->
+                    logRecord.body.stringValue
+                }.contains(logMessage)
+        }
 
     @Test
     fun testTraceExported() {
