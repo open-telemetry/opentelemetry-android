@@ -4,7 +4,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(rootLibs.plugins.androidApp)
-    alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.compose.compiler)
 }
 
@@ -42,6 +41,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        resValues = true
     }
     val javaVersion = JavaVersion.VERSION_11
     compileOptions {
