@@ -31,6 +31,7 @@ class OpenTelemetryRumSmokeTest {
     @Test
     fun testLogExported() {
         val logMessage = "Hello world"
+        val logScopeName = "logger"
         performOpenTelemetryRumAction(
             config = {
                 httpExport {
@@ -39,7 +40,7 @@ class OpenTelemetryRumSmokeTest {
                 diskBufferingConfig.enabled(false)
             },
             action = {
-                val logger = openTelemetry.logsBridge.get("logger")
+                val logger = openTelemetry.logsBridge.get(logScopeName)
                 logger.logRecordBuilder().setBody(logMessage).emit()
             },
         )
@@ -48,9 +49,14 @@ class OpenTelemetryRumSmokeTest {
             server.awaitLogRequest {
                 it
                     .getResourceLogs(0)
-                    .getScopeLogs(0)
-                    .getLogRecords(0)
-                    .body.stringValue == logMessage
+                    .scopeLogsList
+                    .find { scopeLogs ->
+                        scopeLogs.scope.name == logScopeName
+                    }?.logRecordsList
+                    .orEmpty()
+                    .map { logRecord ->
+                        logRecord.body.stringValue
+                    }.contains(logMessage)
             }
         assertLogRequestReceived(logRequest)
     }
