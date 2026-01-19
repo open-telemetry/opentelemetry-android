@@ -81,6 +81,7 @@ public final class io/opentelemetry/android/common/internal/features/networkattr
 	public static final field TRANSPORT_VPN Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;
 	public static final field TRANSPORT_WIFI Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;
 	public static final field TRANSPORT_WIRED Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public final fun getHumanName ()Ljava/lang/String;
 	public static fun valueOf (Ljava/lang/String;)Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;
 	public static fun values ()[Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;
