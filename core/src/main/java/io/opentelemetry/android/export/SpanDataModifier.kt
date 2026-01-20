@@ -3,14 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.export;
+package io.opentelemetry.android.export
 
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.sdk.trace.export.SpanExporter
+import java.util.function.Function
+import java.util.function.Predicate
 
 /**
  * A utility that can be used to create a SpanExporter that allows filtering and modification of
@@ -18,21 +16,15 @@ import java.util.function.Predicate;
  * exporter. Spans can be rejected entirely based on their name or attribute content, or their
  * attributes may be modified.
  */
-public final class SpanDataModifier {
+class SpanDataModifier private constructor(
+    private val delegate: SpanExporter
+) {
 
-    private final SpanExporter delegate;
-    private Predicate<String> rejectSpanNamesPredicate = spanName -> false;
-    private final Map<AttributeKey<?>, Predicate<?>> rejectSpanAttributesPredicates =
-            new HashMap<>();
-    private final Map<AttributeKey<?>, Function<?, ?>> spanAttributeReplacements = new HashMap<>();
+    private var rejectSpanNamesPredicate: Predicate<String> = Predicate { false }
+    private val rejectSpanAttributesPredicates = mutableMapOf<AttributeKey<*>, Predicate<*>>()
 
-    public static SpanDataModifier builder(SpanExporter delegate) {
-        return new SpanDataModifier(delegate);
-    }
+    private val spanAttributeReplacements = mutableMapOf<AttributeKey<*>, Function<*, *>>()
 
-    private SpanDataModifier(SpanExporter delegate) {
-        this.delegate = delegate;
-    }
 
     /**
      * Remove matching spans from the exporter pipeline.
@@ -43,9 +35,9 @@ public final class SpanDataModifier {
      *     rejected.
      * @return {@code this}.
      */
-    public SpanDataModifier rejectSpansByName(Predicate<String> spanNamePredicate) {
-        rejectSpanNamesPredicate = rejectSpanNamesPredicate.or(spanNamePredicate);
-        return this;
+    fun rejectSpansByName(spanNamePredicate: Predicate<String>): SpanDataModifier {
+        rejectSpanNamesPredicate = rejectSpanNamesPredicate.or(spanNamePredicate)
+        return this
     }
 
     /**
@@ -59,16 +51,19 @@ public final class SpanDataModifier {
      *     with matching value should be rejected.
      * @return {@code this}.
      */
-    public <T> SpanDataModifier rejectSpansByAttributeValue(
-            AttributeKey<T> attributeKey, Predicate<? super T> attributeValuePredicate) {
-
-        rejectSpanAttributesPredicates.compute(
-                attributeKey,
-                (k, oldValue) ->
-                        oldValue == null
-                                ? attributeValuePredicate
-                                : ((Predicate<T>) oldValue).or(attributeValuePredicate));
-        return this;
+    fun <T> rejectSpansByAttributeValue(
+        attributeKey: AttributeKey<T>,
+        attributeValuePredicate: Predicate<in T>
+    ): SpanDataModifier {
+        rejectSpanAttributesPredicates.compute(attributeKey) { _, oldValue ->
+            if (oldValue == null) {
+                attributeValuePredicate
+            } else {
+                @Suppress("UNCHECKED_CAST")
+                (oldValue as Predicate<T>).or(attributeValuePredicate)
+            }
+        }
+        return this
     }
 
     /**
@@ -80,8 +75,8 @@ public final class SpanDataModifier {
      * @param attributeKey An attribute key to match.
      * @return {@code this}.
      */
-    public <T> SpanDataModifier removeSpanAttribute(AttributeKey<T> attributeKey) {
-        return removeSpanAttribute(attributeKey, value -> true);
+    fun <T> removeSpanAttribute(attributeKey: AttributeKey<T>): SpanDataModifier {
+        return removeSpanAttribute(attributeKey, Predicate { true })
     }
 
     /**
@@ -95,11 +90,15 @@ public final class SpanDataModifier {
      *     value should be removed from the span.
      * @return {@code this}.
      */
-    public <T> SpanDataModifier removeSpanAttribute(
-            AttributeKey<T> attributeKey, Predicate<? super T> attributeValuePredicate) {
 
-        return replaceSpanAttribute(
-                attributeKey, old -> attributeValuePredicate.test(old) ? null : old);
+
+    fun <T> removeSpanAttribute(
+        attributeKey: AttributeKey<T>,
+        attributeValuePredicate: Predicate<in T>
+    ): SpanDataModifier {
+        return replaceSpanAttribute(attributeKey, Function { old ->
+            if (attributeValuePredicate.test(old)) null else old
+        })
     }
 
     /**
@@ -115,39 +114,59 @@ public final class SpanDataModifier {
      *     the new one.
      * @return {@code this}.
      */
-    public <T> SpanDataModifier replaceSpanAttribute(
-            AttributeKey<T> attributeKey, Function<? super T, ? extends T> attributeValueModifier) {
-
-        spanAttributeReplacements.compute(
-                attributeKey,
-                (k, oldValue) ->
-                        oldValue == null
-                                ? attributeValueModifier
-                                : ((Function<T, T>) oldValue).andThen(attributeValueModifier));
-        return this;
+    fun <T> replaceSpanAttribute(
+        attributeKey: AttributeKey<T>,
+        attributeValueModifier: Function<in T, out T?>
+    ): SpanDataModifier {
+        spanAttributeReplacements.compute(attributeKey) { _, oldValue ->
+            if (oldValue == null) {
+                attributeValueModifier
+            } else {
+                @Suppress("UNCHECKED_CAST")
+                val previous = oldValue as Function<T, T?>
+                Function<T, T?> { t: T ->
+                    val intermediate = previous.apply(t)
+                    if (intermediate == null) null else attributeValueModifier.apply(intermediate)
+                }
+            }
+        }
+        return this
     }
 
-    public SpanExporter build() {
-        SpanExporter modifier = delegate;
-        if (!spanAttributeReplacements.isEmpty()) {
-            modifier =
-                    new AttributeModifyingSpanExporter(
-                            delegate,
-                            (attributeKey, value) -> {
-                                //noinspection unchecked
-                                Function<Object, Object> function =
-                                        (Function<Object, Object>)
-                                                spanAttributeReplacements.get(attributeKey);
-                                if (function != null) {
-                                    return function.apply(value);
-                                } else {
-                                    return value;
-                                }
-                            });
+
+    fun build(): SpanExporter {
+        var modifier = delegate
+
+        if (spanAttributeReplacements.isNotEmpty()) {
+            modifier = AttributeModifyingSpanExporter(
+                delegate
+            ) { attributeKey, value ->
+                @Suppress("UNCHECKED_CAST")
+                val function = spanAttributeReplacements[attributeKey] as? Function<Any?, Any?>
+                if (function != null) {
+                    function.apply(value)
+                } else {
+                    value
+                }
+            }
         }
+
         return FilteringSpanExporter.builder(modifier)
-                .rejectSpansWithAttributesMatching(new HashMap<>(rejectSpanAttributesPredicates))
-                .rejectSpansNamed(rejectSpanNamesPredicate)
-                .build();
+            .rejectSpansWithAttributesMatching(HashMap(rejectSpanAttributesPredicates))
+            .rejectSpansNamed(rejectSpanNamesPredicate)
+            .build()
+    }
+
+    companion object {
+        /**
+         * Creates a new SpanDataModifier builder.
+         *
+         * @param delegate The underlying SpanExporter to wrap.
+         * @return A new SpanDataModifier instance.
+         */
+        @JvmStatic
+        fun builder(delegate: SpanExporter): SpanDataModifier {
+            return SpanDataModifier(delegate)
+        }
     }
 }
