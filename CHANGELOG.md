@@ -1,6 +1,6 @@
 # OpenTelemetry Android Changelog
 
-## Unreleased
+## Version 1.1.0 (2026-01-23)
 
 This is a regular monthly release that builds on the following OpenTelemetry dependencies:
 
