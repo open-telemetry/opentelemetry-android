@@ -48,7 +48,9 @@ internal class FakeOpenTelemetryServer {
                         )
                     }
 
-                    else -> error("Unsupported request path: ${request.target}")
+                    else -> {
+                        error("Unsupported request path: ${request.target}")
+                    }
                 }
                 return MockResponse(200)
             }

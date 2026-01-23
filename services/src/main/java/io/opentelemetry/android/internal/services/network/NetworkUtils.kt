@@ -80,13 +80,20 @@ private fun getGsmNetworkTypeName(networkType: Int): String? =
 private fun getCdmaNetworkTypeName(networkType: Int): String? =
     when (networkType) {
         TelephonyManager.NETWORK_TYPE_CDMA -> "CDMA"
+
         TelephonyManager.NETWORK_TYPE_1xRTT -> "1xRTT"
+
         TelephonyManager.NETWORK_TYPE_EVDO_0 -> "EVDO_0"
+
         TelephonyManager.NETWORK_TYPE_EVDO_A -> "EVDO_A"
+
         TelephonyManager.NETWORK_TYPE_EVDO_B -> "EVDO_B"
+
         TelephonyManager.NETWORK_TYPE_EHRPD -> "EHRPD"
+
         TelephonyManager.NETWORK_TYPE_IDEN,
         -> "IDEN"
+
         else -> null
     }
 
