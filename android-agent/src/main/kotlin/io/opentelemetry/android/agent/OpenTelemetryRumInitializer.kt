@@ -92,6 +92,7 @@ object OpenTelemetryRumInitializer {
             else -> "none"
         }
 
+    @OptIn(Incubating::class)
     private fun createSessionProvider(
         context: Context,
         sessionConfig: SessionConfig,
