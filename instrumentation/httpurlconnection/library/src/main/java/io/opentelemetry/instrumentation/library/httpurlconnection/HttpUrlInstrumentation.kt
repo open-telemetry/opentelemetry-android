@@ -143,14 +143,14 @@ class HttpUrlInstrumentation : AndroidInstrumentation {
         this.reportIdleConnectionInterval = timeoutMsForTesting
     }
 
+    /**
+     * Returns a runnable that can be scheduled to run periodically at a fixed interval to close
+     * open spans if connection is left idle for connectionInactivityTimeoutMs duration.
+     * connectionInactivityTimeoutMs can be obtained via getReportIdleConnectionInterval() API.
+     *
+     * @return The idle connection reporting runnable
+     */
     val reportIdleConnectionRunnable: Runnable
-        /**
-         * Returns a runnable that can be scheduled to run periodically at a fixed interval to close
-         * open spans if connection is left idle for connectionInactivityTimeoutMs duration.
-         * connectionInactivityTimeoutMs can be obtained via getReportIdleConnectionInterval() API.
-         *
-         * @return The idle connection reporting runnable
-         */
         get() =
             object : Runnable {
                 override fun run() {
