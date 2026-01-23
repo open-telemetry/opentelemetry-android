@@ -6,6 +6,7 @@
 package io.opentelemetry.android.agent.session.factory
 
 import android.app.Application
+import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.session.SessionConfig
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.agent.session.SessionManager
@@ -38,6 +39,7 @@ open class SessionManagerFactory(
      * @param sessionConfig the configuration for session management.
      * @return a session manager instance.
      */
+    @OptIn(Incubating::class)
     override fun createSessionProvider(sessionConfig: SessionConfig): SessionProvider {
         val timeoutHandler = SessionIdTimeoutHandler(sessionConfig)
         Services.get(application).appLifecycle.registerListener(timeoutHandler)
