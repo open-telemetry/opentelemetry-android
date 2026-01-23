@@ -5,7 +5,6 @@
 
 package io.opentelemetry.android.agent.session.factory
 
-import android.app.Application
 import io.opentelemetry.android.agent.session.SessionConfig
 import io.opentelemetry.android.session.SessionProvider
 
@@ -23,12 +22,8 @@ interface SessionProviderFactory {
     /**
      * Creates a session provider instance.
      *
-     * @param application the Android application instance.
      * @param sessionConfig the configuration for session management.
      * @return a session provider instance.
      */
-    fun createSessionProvider(
-        application: Application,
-        sessionConfig: SessionConfig,
-    ): SessionProvider
+    fun createSessionProvider(sessionConfig: SessionConfig): SessionProvider
 }

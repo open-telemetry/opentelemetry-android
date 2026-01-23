@@ -1,3 +1,6 @@
+public abstract interface annotation class io/opentelemetry/android/Incubating : java/lang/annotation/Annotation {
+}
+
 public abstract interface class io/opentelemetry/android/OpenTelemetryRum {
 	public abstract fun emitEvent (Ljava/lang/String;Ljava/lang/String;Lio/opentelemetry/api/common/Attributes;)V
 	public static synthetic fun emitEvent$default (Lio/opentelemetry/android/OpenTelemetryRum;Ljava/lang/String;Ljava/lang/String;Lio/opentelemetry/api/common/Attributes;ILjava/lang/Object;)V

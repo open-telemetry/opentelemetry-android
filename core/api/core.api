@@ -11,9 +11,6 @@ public final class io/opentelemetry/android/BuildConfig {
 	public fun <init> ()V
 }
 
-public abstract interface annotation class io/opentelemetry/android/Incubating : java/lang/annotation/Annotation {
-}
-
 public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
 	public static final field Companion Lio/opentelemetry/android/OpenTelemetryRumBuilder$Companion;
 	public final fun addInstrumentation (Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;

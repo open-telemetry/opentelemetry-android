@@ -5,7 +5,6 @@
 
 package io.opentelemetry.android.agent.session.factory
 
-import android.app.Application
 import io.mockk.mockk
 import io.opentelemetry.android.agent.session.SessionConfig
 import io.opentelemetry.android.session.SessionProvider
@@ -25,16 +24,12 @@ class SessionProviderFactoryTest {
         val mockProvider = mockk<SessionProvider>(relaxed = true)
         val factory =
             object : SessionProviderFactory {
-                override fun createSessionProvider(
-                    application: Application,
-                    sessionConfig: SessionConfig,
-                ): SessionProvider = mockProvider
+                override fun createSessionProvider(sessionConfig: SessionConfig): SessionProvider = mockProvider
             }
-        val mockApplication = mockk<Application>(relaxed = true)
         val config = SessionConfig.withDefaults()
 
         // When
-        val provider = factory.createSessionProvider(mockApplication, config)
+        val provider = factory.createSessionProvider(config)
 
         // Then
         assertAll(
@@ -51,10 +46,7 @@ class SessionProviderFactoryTest {
         val lifetimeThreshold = 2.hours
         val factory =
             object : SessionProviderFactory {
-                override fun createSessionProvider(
-                    application: Application,
-                    sessionConfig: SessionConfig,
-                ): SessionProvider {
+                override fun createSessionProvider(sessionConfig: SessionConfig): SessionProvider {
                     val sessionId = if (sessionConfig.maxLifetime < lifetimeThreshold) sessionId1 else sessionId2
                     return object : SessionProvider {
                         override fun getSessionId(): String = sessionId
@@ -63,15 +55,14 @@ class SessionProviderFactoryTest {
                     }
                 }
             }
-        val mockApplication = mockk<Application>(relaxed = true)
         val shortLifetime = 1.hours
         val longLifetime = 4.hours
         val shortConfig = SessionConfig(maxLifetime = shortLifetime)
         val longConfig = SessionConfig(maxLifetime = longLifetime)
 
         // When
-        val shortProvider = factory.createSessionProvider(mockApplication, shortConfig)
-        val longProvider = factory.createSessionProvider(mockApplication, longConfig)
+        val shortProvider = factory.createSessionProvider(shortConfig)
+        val longProvider = factory.createSessionProvider(longConfig)
 
         // Then
         assertAll(
@@ -87,21 +78,17 @@ class SessionProviderFactoryTest {
         val testPreviousSessionId = "test-previous-session-id"
         val factory =
             object : SessionProviderFactory {
-                override fun createSessionProvider(
-                    application: Application,
-                    sessionConfig: SessionConfig,
-                ): SessionProvider =
+                override fun createSessionProvider(sessionConfig: SessionConfig): SessionProvider =
                     object : SessionProvider {
                         override fun getSessionId(): String = testSessionId
 
                         override fun getPreviousSessionId(): String = testPreviousSessionId
                     }
             }
-        val mockApplication = mockk<Application>(relaxed = true)
         val config = SessionConfig.withDefaults()
 
         // When
-        val provider = factory.createSessionProvider(mockApplication, config)
+        val provider = factory.createSessionProvider(config)
 
         // Then
         assertAll(
@@ -117,15 +104,11 @@ class SessionProviderFactoryTest {
             object : SessionProviderFactory {
                 var lastConfig: SessionConfig? = null
 
-                override fun createSessionProvider(
-                    application: Application,
-                    sessionConfig: SessionConfig,
-                ): SessionProvider {
+                override fun createSessionProvider(sessionConfig: SessionConfig): SessionProvider {
                     lastConfig = sessionConfig
                     return SessionProvider.getNoop()
                 }
             }
-        val mockApplication = mockk<Application>(relaxed = true)
 
         // Given
         val firstBackgroundTimeout = 5.minutes
@@ -133,7 +116,7 @@ class SessionProviderFactoryTest {
 
         // When
         val config1 = SessionConfig(backgroundInactivityTimeout = firstBackgroundTimeout, maxLifetime = firstMaxLifetime)
-        factory.createSessionProvider(mockApplication, config1)
+        factory.createSessionProvider(config1)
 
         // Then
         assertAll(
@@ -148,7 +131,7 @@ class SessionProviderFactoryTest {
 
         // When
         val config2 = SessionConfig(backgroundInactivityTimeout = secondBackgroundTimeout, maxLifetime = secondMaxLifetime)
-        factory.createSessionProvider(mockApplication, config2)
+        factory.createSessionProvider(config2)
 
         // Then
         assertAll(
@@ -164,21 +147,17 @@ class SessionProviderFactoryTest {
         val expectedCreationCount = 3
         val factory =
             object : SessionProviderFactory {
-                override fun createSessionProvider(
-                    application: Application,
-                    sessionConfig: SessionConfig,
-                ): SessionProvider {
+                override fun createSessionProvider(sessionConfig: SessionConfig): SessionProvider {
                     creationCount++
                     return SessionProvider.getNoop()
                 }
             }
-        val mockApplication = mockk<Application>(relaxed = true)
         val config = SessionConfig.withDefaults()
 
         // When
-        factory.createSessionProvider(mockApplication, config)
-        factory.createSessionProvider(mockApplication, config)
-        factory.createSessionProvider(mockApplication, config)
+        factory.createSessionProvider(config)
+        factory.createSessionProvider(config)
+        factory.createSessionProvider(config)
 
         // Then
         assertThat(creationCount).isEqualTo(expectedCreationCount)
@@ -192,10 +171,7 @@ class SessionProviderFactoryTest {
             object : SessionProviderFactory {
                 private var counter = 0
 
-                override fun createSessionProvider(
-                    application: Application,
-                    sessionConfig: SessionConfig,
-                ): SessionProvider {
+                override fun createSessionProvider(sessionConfig: SessionConfig): SessionProvider {
                     val providerNumber = counter++
                     return object : SessionProvider {
                         override fun getSessionId(): String = "$expectedSessionLabelPrefix$providerNumber"
@@ -204,13 +180,12 @@ class SessionProviderFactoryTest {
                     }
                 }
             }
-        val mockApplication = mockk<Application>(relaxed = true)
         val config = SessionConfig.withDefaults()
 
         // When
-        val provider1 = factory.createSessionProvider(mockApplication, config)
-        val provider2 = factory.createSessionProvider(mockApplication, config)
-        val provider3 = factory.createSessionProvider(mockApplication, config)
+        val provider1 = factory.createSessionProvider(config)
+        val provider2 = factory.createSessionProvider(config)
+        val provider3 = factory.createSessionProvider(config)
 
         // Then
         assertAll(

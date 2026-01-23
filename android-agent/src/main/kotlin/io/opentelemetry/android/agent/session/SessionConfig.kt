@@ -49,10 +49,34 @@ import kotlin.time.Duration.Companion.minutes
  * @see io.opentelemetry.android.agent.session.SessionManager
  * @see io.opentelemetry.android.session.SessionProvider
  */
-data class SessionConfig(
+class SessionConfig(
     val backgroundInactivityTimeout: Duration = 15.minutes,
     val maxLifetime: Duration = 4.hours,
 ) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as SessionConfig
+
+        if (backgroundInactivityTimeout != other.backgroundInactivityTimeout) return false
+        if (maxLifetime != other.maxLifetime) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = backgroundInactivityTimeout.hashCode()
+        result = 31 * result + maxLifetime.hashCode()
+        return result
+    }
+
+    override fun toString(): String =
+        "SessionConfig(" +
+            "backgroundInactivityTimeout=$backgroundInactivityTimeout, " +
+            "maxLifetime=$maxLifetime" +
+            ")"
+
     companion object {
         /**
          * Creates a SessionConfig with default values.

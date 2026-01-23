@@ -32,7 +32,6 @@ class SessionManagerFactoryTest {
 
     @BeforeEach
     fun setUp() {
-        factory = SessionManagerFactory()
         mockApplication = mockk(relaxed = true)
         mockAppLifecycle = mockk(relaxed = true)
 
@@ -40,6 +39,8 @@ class SessionManagerFactoryTest {
         val mockServices = mockk<Services>(relaxed = true)
         every { mockServices.appLifecycle } returns mockAppLifecycle
         Services.set(mockServices)
+
+        factory = SessionManagerFactory(mockApplication)
     }
 
     @AfterEach
@@ -53,7 +54,7 @@ class SessionManagerFactoryTest {
         val config = SessionConfig.withDefaults()
 
         // When
-        val provider = factory.createSessionProvider(mockApplication, config)
+        val provider = factory.createSessionProvider(config)
 
         // Then
         assertThat(provider).isNotNull()
@@ -71,7 +72,7 @@ class SessionManagerFactoryTest {
             )
 
         // When
-        val provider = factory.createSessionProvider(mockApplication, config)
+        val provider = factory.createSessionProvider(config)
 
         // Then
         assertThat(provider).isNotNull()
@@ -83,7 +84,7 @@ class SessionManagerFactoryTest {
         val config = SessionConfig.withDefaults()
 
         // When
-        factory.createSessionProvider(mockApplication, config)
+        factory.createSessionProvider(config)
 
         // Then
         verify { mockAppLifecycle.registerListener(any()) }
@@ -95,8 +96,8 @@ class SessionManagerFactoryTest {
         val config = SessionConfig.withDefaults()
 
         // When
-        val provider1 = factory.createSessionProvider(mockApplication, config)
-        val provider2 = factory.createSessionProvider(mockApplication, config)
+        val provider1 = factory.createSessionProvider(config)
+        val provider2 = factory.createSessionProvider(config)
 
         // Then
         assertAll(
@@ -112,7 +113,7 @@ class SessionManagerFactoryTest {
         val config = SessionConfig.withDefaults()
 
         // When
-        val provider = factory.createSessionProvider(mockApplication, config)
+        val provider = factory.createSessionProvider(config)
         val sessionId1 = provider.getSessionId()
         val sessionId2 = provider.getSessionId()
 
@@ -129,7 +130,7 @@ class SessionManagerFactoryTest {
         val config = SessionConfig.withDefaults()
 
         // When
-        val provider = factory.createSessionProvider(mockApplication, config)
+        val provider = factory.createSessionProvider(config)
         val previousSessionId = provider.getPreviousSessionId()
 
         // Then
@@ -147,7 +148,7 @@ class SessionManagerFactoryTest {
             )
 
         // When
-        val provider = factory.createSessionProvider(mockApplication, minimalConfig)
+        val provider = factory.createSessionProvider(minimalConfig)
 
         // Then
         assertAll(
@@ -161,22 +162,19 @@ class SessionManagerFactoryTest {
         // Given
         val expectedCallCount = 2
         val testFactory =
-            object : SessionManagerFactory() {
+            object : SessionManagerFactory(mockApplication) {
                 var callCount = 0
 
-                override fun createSessionProvider(
-                    application: Application,
-                    sessionConfig: SessionConfig,
-                ): SessionProvider {
+                override fun createSessionProvider(sessionConfig: SessionConfig): SessionProvider {
                     callCount++
-                    return super.createSessionProvider(application, sessionConfig)
+                    return super.createSessionProvider(sessionConfig)
                 }
             }
         val config = SessionConfig.withDefaults()
 
         // When
-        testFactory.createSessionProvider(mockApplication, config)
-        testFactory.createSessionProvider(mockApplication, config)
+        testFactory.createSessionProvider(config)
+        testFactory.createSessionProvider(config)
 
         // Then
         assertThat(testFactory.callCount).isEqualTo(expectedCallCount)

@@ -103,10 +103,6 @@ public final class io/opentelemetry/android/agent/session/SessionConfig {
 	public static final field Companion Lio/opentelemetry/android/agent/session/SessionConfig$Companion;
 	public synthetic fun <init> (JJILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (JJLkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1-UwyO8pc ()J
-	public final fun component2-UwyO8pc ()J
-	public final fun copy-QTBD994 (JJ)Lio/opentelemetry/android/agent/session/SessionConfig;
-	public static synthetic fun copy-QTBD994$default (Lio/opentelemetry/android/agent/session/SessionConfig;JJILjava/lang/Object;)Lio/opentelemetry/android/agent/session/SessionConfig;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getBackgroundInactivityTimeout-UwyO8pc ()J
 	public final fun getMaxLifetime-UwyO8pc ()J
@@ -120,11 +116,11 @@ public final class io/opentelemetry/android/agent/session/SessionConfig$Companio
 }
 
 public class io/opentelemetry/android/agent/session/factory/SessionManagerFactory : io/opentelemetry/android/agent/session/factory/SessionProviderFactory {
-	public fun <init> ()V
-	public fun createSessionProvider (Landroid/app/Application;Lio/opentelemetry/android/agent/session/SessionConfig;)Lio/opentelemetry/android/session/SessionProvider;
+	public fun <init> (Landroid/app/Application;)V
+	public fun createSessionProvider (Lio/opentelemetry/android/agent/session/SessionConfig;)Lio/opentelemetry/android/session/SessionProvider;
 }
 
 public abstract interface class io/opentelemetry/android/agent/session/factory/SessionProviderFactory {
-	public abstract fun createSessionProvider (Landroid/app/Application;Lio/opentelemetry/android/agent/session/SessionConfig;)Lio/opentelemetry/android/session/SessionProvider;
+	public abstract fun createSessionProvider (Lio/opentelemetry/android/agent/session/SessionConfig;)Lio/opentelemetry/android/session/SessionProvider;
 }
 

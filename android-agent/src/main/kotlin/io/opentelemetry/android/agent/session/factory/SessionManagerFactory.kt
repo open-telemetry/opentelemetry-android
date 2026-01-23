@@ -21,25 +21,24 @@ import io.opentelemetry.android.session.SessionProvider
  *
  * This class is open to allow custom implementations for specialized use cases.
  *
+ * @param application the Android application instance used to access platform services.
  * @see SessionProviderFactory
  * @see SessionManager
  * @see SessionConfig
  */
-open class SessionManagerFactory : SessionProviderFactory {
+open class SessionManagerFactory(
+    private val application: Application,
+) : SessionProviderFactory {
     /**
      * Creates a session manager instance.
      *
      * This implementation creates a [SessionManager] with a timeout handler that is
      * registered with the application lifecycle service.
      *
-     * @param application the Android application instance.
      * @param sessionConfig the configuration for session management.
      * @return a session manager instance.
      */
-    override fun createSessionProvider(
-        application: Application,
-        sessionConfig: SessionConfig,
-    ): SessionProvider {
+    override fun createSessionProvider(sessionConfig: SessionConfig): SessionProvider {
         val timeoutHandler = SessionIdTimeoutHandler(sessionConfig)
         Services.get(application).appLifecycle.registerListener(timeoutHandler)
         return SessionManager.create(timeoutHandler, sessionConfig)
