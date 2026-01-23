@@ -2,6 +2,46 @@
 
 ## Unreleased
 
+This is a regular monthly release that builds on the following OpenTelemetry dependencies:
+
+* OpenTelemetry java instrumentation [2.24.0](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v2.24.0).
+* OpenTelemetry java contrib [1.53.0](https://github.com/open-telemetry/opentelemetry-java-contrib/releases/tag/v1.53.0).
+* OpenTelemetry java [1.58.0](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.58.0).
+
+### 📈 Enhancements
+
+- The OpenTelemetry Resource now contains `android.os.api_level`. The value is set 
+  to the Android API level used by the application build.
+  ([#1455](https://github.com/open-telemetry/opentelemetry-android/pull/1455))
+- Add the ability to customize the OpenTelemetry resource via the OpenTelemetryRumInitializer DSL
+  ([#1476](https://github.com/open-telemetry/opentelemetry-android/pull/1476))
+- The OpenTelemetry Resource now contains the `app.installation.id` attribute. The value
+  is set a random UUID which is persisted in SharedPreferences across launches.
+  ([#1488](https://github.com/open-telemetry/opentelemetry-android/pull/1488))
+- The OpenTelemetryRumInitializer now exposes a means of setting the OpenTelemetry 
+  clock. Please note that most users will never need to do this, and an enhanced clock 
+  implementation is provided as an internal detail.
+  ([#1486](https://github.com/open-telemetry/opentelemetry-android/pull/1486))
+- New OpenTelemetry clock implementation that is no longer impacted by deep sleeps.
+  This yields more accurate elapsed time semantics for timeouts and background tasks.
+  ([#1487](https://github.com/open-telemetry/opentelemetry-android/pull/1487))
+- Retry exporting unsuccessfully exported batches
+  ([#1493](https://github.com/open-telemetry/opentelemetry-android/pull/1493))
+
+### 🛠️ Bug fixes
+
+- Fix a concurrency issue in the Session Manager
+  ([#1419](https://github.com/open-telemetry/opentelemetry-android/pull/1419))
+- Add missing default method override in compose click instrumentation.
+  ([#1464](https://github.com/open-telemetry/opentelemetry-android/pull/1464))
+- Don't obfuscate fragment names
+  ([#1490](https://github.com/open-telemetry/opentelemetry-android/pull/1490))
+
+### 🧰 Tooling
+
+- Leverage detekt type resolution for enahanced static analysis.
+  ([#1463](https://github.com/open-telemetry/opentelemetry-android/pull/1463))
+
 ## Version 1.0.1 (2026-01-07)
 
 * Patch release to drop `-alpha` suffix for the agent module. Sorry for any
