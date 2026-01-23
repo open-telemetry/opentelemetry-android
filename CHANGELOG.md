@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.1.0 (2026-01-23)
+
 This is a regular monthly release that builds on the following OpenTelemetry dependencies:
 
 * OpenTelemetry java instrumentation [2.24.0](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v2.24.0).
