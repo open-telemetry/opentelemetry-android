@@ -37,7 +37,7 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
     }
 
     override fun install(ctx: InstallationContext) {
-        startupTimer.start(ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE))
+        startupTimer.start(ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE), ctx.clock)
         ctx.application?.let {
             startupLifecycle =
                 startupTimer.createLifecycleCallback().apply {

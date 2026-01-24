@@ -39,11 +39,11 @@ public final class OkHttp3Singletons {
                         .setCapturedRequestHeaders(instrumentation.getCapturedRequestHeaders())
                         .setCapturedResponseHeaders(instrumentation.getCapturedResponseHeaders())
                         .setKnownMethods(instrumentation.getKnownMethods())
-                        // TODO: Do we really need to set the known methods on the span
-                        // name
-                        // extractor as well?
-                        .setSpanNameExtractor(
-                                x ->
+                        .setSpanNameExtractorCustomizer(
+                                /* Note: The instrumentation allows configuring/overriding the known
+                                methods, so even if the underlying extractor has them, we have
+                                to pass them along here. */
+                                _ignored ->
                                         HttpSpanNameExtractor.builder(
                                                         OkHttpAttributesGetter.INSTANCE)
                                                 .setKnownMethods(instrumentation.getKnownMethods())

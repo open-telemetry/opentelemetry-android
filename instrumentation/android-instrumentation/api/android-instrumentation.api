@@ -20,8 +20,9 @@ public final class io/opentelemetry/android/instrumentation/AndroidInstrumentati
 }
 
 public final class io/opentelemetry/android/instrumentation/InstallationContext {
-	public fun <init> (Landroid/content/Context;Lio/opentelemetry/api/OpenTelemetry;Lio/opentelemetry/android/session/SessionProvider;)V
+	public fun <init> (Landroid/content/Context;Lio/opentelemetry/api/OpenTelemetry;Lio/opentelemetry/android/session/SessionProvider;Lio/opentelemetry/sdk/common/Clock;)V
 	public final fun getApplication ()Landroid/app/Application;
+	public final fun getClock ()Lio/opentelemetry/sdk/common/Clock;
 	public final fun getContext ()Landroid/content/Context;
 	public final fun getOpenTelemetry ()Lio/opentelemetry/api/OpenTelemetry;
 	public final fun getSessionProvider ()Lio/opentelemetry/android/session/SessionProvider;

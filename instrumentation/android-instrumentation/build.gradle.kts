@@ -16,6 +16,6 @@ android {
 dependencies {
     implementation(project(":services"))
     implementation(project(":session"))
-
     implementation(project(":agent-api"))
+    implementation(libs.opentelemetry.sdk)
 }

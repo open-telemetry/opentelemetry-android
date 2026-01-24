@@ -30,7 +30,16 @@ dependencies {
     implementation(project(":instrumentation:sessions"))
     implementation(project(":instrumentation:screen-orientation"))
 
+    testImplementation(libs.opentelemetry.semconv)
+    testImplementation(libs.opentelemetry.semconv.incubating)
     testImplementation(libs.robolectric)
+    testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.test.rules)
+    testImplementation(libs.androidx.test.runner)
+    testImplementation(libs.androidx.junit.ktx)
+    testImplementation(libs.opentelemetry.proto)
+    testImplementation(libs.protobuf.kotlin)
 }
 
 extra["pomName"] = "OpenTelemetry Android Agent"

@@ -51,17 +51,33 @@ internal class NetworkDetectorImpl(
             }
 
         return when {
-            network == null -> CurrentNetworkProvider.NO_NETWORK
-            capabilities == null -> CurrentNetworkProvider.UNKNOWN_NETWORK
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ->
+            network == null -> {
+                CurrentNetworkProvider.NO_NETWORK
+            }
+
+            capabilities == null -> {
+                CurrentNetworkProvider.UNKNOWN_NETWORK
+            }
+
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
                 buildCellularNetwork()
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ->
+            }
+
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
                 buildNetwork(NetworkState.TRANSPORT_WIFI)
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN) ->
+            }
+
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> {
                 buildNetwork(NetworkState.TRANSPORT_VPN)
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) ->
+            }
+
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
                 buildNetwork(NetworkState.TRANSPORT_WIRED)
-            else -> CurrentNetworkProvider.UNKNOWN_NETWORK
+            }
+
+            else -> {
+                CurrentNetworkProvider.UNKNOWN_NETWORK
+            }
         }
     }
 
@@ -71,14 +87,25 @@ internal class NetworkDetectorImpl(
             connectivityManager.activeNetworkInfo
                 ?: return CurrentNetworkProvider.NO_NETWORK
         return when (activeNetwork.type) {
-            ConnectivityManager.TYPE_MOBILE -> buildCellularNetwork()
-            ConnectivityManager.TYPE_WIFI ->
+            ConnectivityManager.TYPE_MOBILE -> {
+                buildCellularNetwork()
+            }
+
+            ConnectivityManager.TYPE_WIFI -> {
                 buildNetwork(NetworkState.TRANSPORT_WIFI)
-            ConnectivityManager.TYPE_VPN ->
+            }
+
+            ConnectivityManager.TYPE_VPN -> {
                 buildNetwork(NetworkState.TRANSPORT_VPN)
-            ConnectivityManager.TYPE_ETHERNET ->
+            }
+
+            ConnectivityManager.TYPE_ETHERNET -> {
                 buildNetwork(NetworkState.TRANSPORT_WIRED)
-            else -> CurrentNetworkProvider.UNKNOWN_NETWORK
+            }
+
+            else -> {
+                CurrentNetworkProvider.UNKNOWN_NETWORK
+            }
         }
     }
 

@@ -7,6 +7,7 @@ package io.opentelemetry.android.agent
 
 import android.app.Application
 import android.content.Context
+import io.opentelemetry.android.AndroidResource
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.RumBuilder
@@ -41,12 +42,6 @@ object OpenTelemetryRumInitializer {
         val cfg = OpenTelemetryConfiguration()
         configuration(cfg)
 
-        val sessionConfig =
-            SessionConfig(
-                cfg.sessionConfig.backgroundInactivityTimeout,
-                cfg.sessionConfig.maxLifetime,
-            )
-
         // ensure we're using the Application Context to prevent potential leaks.
         // if context.applicationContext is null (e.g. called from within attachBaseContext),
         // fallback to the supplied context.
@@ -59,9 +54,16 @@ object OpenTelemetryRumInitializer {
         val spansEndpoint = cfg.exportConfig.spansEndpoint()
         val logsEndpoints = cfg.exportConfig.logsEndpoint()
         val metricsEndpoint = cfg.exportConfig.metricsEndpoint()
+
+        val resourceBuilder = AndroidResource.createDefault(ctx).toBuilder()
+        cfg.resourceAction(resourceBuilder)
+        val resource = resourceBuilder.build()
+
         return RumBuilder
             .builder(ctx, cfg.rumConfig)
-            .setSessionProvider(createSessionProvider(ctx, sessionConfig))
+            .setSessionProvider(createSessionProvider(ctx, cfg))
+            .setResource(resource)
+            .setClock(cfg.clock)
             .addSpanExporterCustomizer {
                 OtlpHttpSpanExporter
                     .builder()
@@ -95,10 +97,16 @@ object OpenTelemetryRumInitializer {
     @OptIn(Incubating::class)
     private fun createSessionProvider(
         context: Context,
-        sessionConfig: SessionConfig,
+        cfg: OpenTelemetryConfiguration,
     ): SessionProvider {
-        val timeoutHandler = SessionIdTimeoutHandler(sessionConfig)
+        val sessionConfig =
+            SessionConfig(
+                cfg.sessionConfig.backgroundInactivityTimeout,
+                cfg.sessionConfig.maxLifetime,
+            )
+        val clock = cfg.clock
+        val timeoutHandler = SessionIdTimeoutHandler(sessionConfig, clock)
         Services.get(context).appLifecycle.registerListener(timeoutHandler)
-        return SessionManager.create(timeoutHandler, sessionConfig)
+        return SessionManager.create(timeoutHandler, sessionConfig, clock)
     }
 }

@@ -6,10 +6,12 @@
 package io.opentelemetry.android.agent.dsl
 
 import io.opentelemetry.android.Incubating
+import io.opentelemetry.android.OtelAndroidClock
 import io.opentelemetry.android.agent.dsl.instrumentation.InstrumentationConfiguration
 import io.opentelemetry.android.config.OtelRumConfig
-import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.sdk.common.Clock
+import io.opentelemetry.sdk.resources.ResourceBuilder
 
 /**
  * Type-safe config DSL that controls how OpenTelemetry should behave.
@@ -18,15 +20,16 @@ import io.opentelemetry.api.common.Attributes
 @OpenTelemetryDslMarker
 class OpenTelemetryConfiguration internal constructor(
     internal val rumConfig: OtelRumConfig = OtelRumConfig(),
+    internal val diskBufferingConfig: DiskBufferingConfigurationSpec = DiskBufferingConfigurationSpec(rumConfig),
+    /**
+     * Configures the [Clock] used for capturing telemetry.
+     */
+    var clock: Clock = OtelAndroidClock(),
 ) {
     internal val exportConfig = HttpExportConfiguration()
     internal val sessionConfig = SessionConfiguration()
-    internal val diskBufferingConfig = DiskBufferingConfigurationSpec()
     internal val instrumentations = InstrumentationConfiguration(rumConfig)
-
-    init {
-        diskBuffering {}
-    }
+    internal var resourceAction: ResourceBuilder.() -> Unit = {}
 
     /**
      * Configures how OpenTelemetry should export telemetry over HTTP.
@@ -61,6 +64,12 @@ class OpenTelemetryConfiguration internal constructor(
      */
     fun diskBuffering(action: DiskBufferingConfigurationSpec.() -> Unit) {
         diskBufferingConfig.action()
-        rumConfig.setDiskBufferingConfig(DiskBufferingConfig.create(enabled = diskBufferingConfig.enabled))
+    }
+
+    /**
+     * Configures the resource attributes that are used globally by acting on a [ResourceBuilder].
+     */
+    fun resource(action: ResourceBuilder.() -> Unit) {
+        resourceAction = action
     }
 }

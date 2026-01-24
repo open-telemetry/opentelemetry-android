@@ -23,7 +23,7 @@ jobs:
       security-events: write  # for github/codeql-action/analyze to upload SARIF results
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Set up Java
         uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
@@ -38,7 +38,7 @@ jobs:
         run: touch demo-app/local.properties
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@cf1bb45a277cb3c205638b2cd5c984db1c46a412 # v4.31.7
+        uses: github/codeql-action/init@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # v4.31.10
         with:
           languages: java, actions
           # using "linked" helps to keep up with the latest Kotlin support
@@ -50,10 +50,10 @@ jobs:
         # --no-build-cache is required for codeql to analyze all modules
         # --no-daemon is required for codeql to observe the compilation
         # (see https://docs.github.com/en/code-security/codeql-cli/getting-started-with-the-codeql-cli/preparing-your-code-for-codeql-analysis#specifying-build-commands)
-        run: ./gradlew assemble --no-build-cache --no-daemon
+        run: ./gradlew assemble --no-build-cache --no-daemon --stacktrace
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@cf1bb45a277cb3c205638b2cd5c984db1c46a412 # v4.31.7
+        uses: github/codeql-action/analyze@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # v4.31.10
 
       - name: Enable KVM for Android tests
         run: |
@@ -65,4 +65,4 @@ jobs:
         uses: reactivecircus/android-emulator-runner@b530d96654c385303d652368551fb075bc2f0b6b # v2.35.0
         with:
           api-level: 29
-          script: ./gradlew connectedCheck
+          script: ./gradlew connectedCheck --stacktrace

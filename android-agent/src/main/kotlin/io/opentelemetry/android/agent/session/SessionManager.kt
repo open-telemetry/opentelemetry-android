@@ -17,7 +17,7 @@ import kotlin.random.Random
 import kotlin.time.Duration
 
 internal class SessionManager(
-    private val clock: Clock = Clock.getDefault(),
+    private val clock: Clock,
     private val sessionStorage: SessionStorage = InMemorySessionStorage(),
     private val timeoutHandler: SessionIdTimeoutHandler,
     private val idGenerator: SessionIdGenerator = DefaultSessionIdGenerator(Random.Default),
@@ -92,10 +92,12 @@ internal class SessionManager(
         fun create(
             timeoutHandler: SessionIdTimeoutHandler,
             sessionConfig: SessionConfig,
+            clock: Clock,
         ): SessionManager =
             SessionManager(
                 timeoutHandler = timeoutHandler,
                 maxSessionLifetime = sessionConfig.maxLifetime,
+                clock = clock,
             )
     }
 }

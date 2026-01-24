@@ -36,8 +36,8 @@ internal class SessionIdTimeoutHandler(
 
     // for testing
     @OptIn(Incubating::class)
-    internal constructor(sessionConfig: SessionConfig) : this(
-        Clock.getDefault(),
+    internal constructor(sessionConfig: SessionConfig, clock: Clock) : this(
+        clock,
         sessionConfig.backgroundInactivityTimeout,
     )
 

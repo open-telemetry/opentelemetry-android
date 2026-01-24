@@ -105,8 +105,8 @@ plugins {
 #### Project dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:httpurlconnection-library:1.0.0-rc.1-alpha")
-byteBuddy("io.opentelemetry.android.instrumentation:httpurlconnection-agent:1.0.0-rc.1-alpha")
+implementation("io.opentelemetry.android.instrumentation:httpurlconnection-library:1.1.0-alpha")
+byteBuddy("io.opentelemetry.android.instrumentation:httpurlconnection-agent:1.1.0-alpha")
 ```
 
 ### Configurations
