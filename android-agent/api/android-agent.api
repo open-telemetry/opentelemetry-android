@@ -119,7 +119,8 @@ public final class io/opentelemetry/android/agent/session/SessionConfig$Companio
 }
 
 public class io/opentelemetry/android/agent/session/factory/SessionManagerFactory : io/opentelemetry/android/agent/session/factory/SessionProviderFactory {
-	public fun <init> (Landroid/app/Application;)V
+	public fun <init> (Landroid/app/Application;Lio/opentelemetry/sdk/common/Clock;)V
+	public synthetic fun <init> (Landroid/app/Application;Lio/opentelemetry/sdk/common/Clock;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun createSessionProvider (Lio/opentelemetry/android/agent/session/SessionConfig;)Lio/opentelemetry/android/session/SessionProvider;
 }
 
