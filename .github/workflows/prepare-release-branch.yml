@@ -104,15 +104,10 @@ jobs:
           patch=$(echo "$version_json" | jq -r '.patch')
           rc=$(echo "$version_json" | jq -r '.rc')
           
-          if [[ -n $version_rc ]]; then
-            next_version="$major.$minor.$patch-rc.$((rc + 1))"
+          if [ -z "$rc" ]; then
+            next_version="${major}.$((minor + 1)).0"
           else
-            if [[ $patch == 0 ]]; then
-              next_version="$major.$((minor + 1)).0"
-            else
-              echo "unexpected version: $version"
-              exit 1
-            fi
+            next_version="${major}.${minor}.${patch}-rc.$((rc + 1))"
           fi
           
           echo "NEXT_VERSION=${next_version}" >> $GITHUB_ENV
