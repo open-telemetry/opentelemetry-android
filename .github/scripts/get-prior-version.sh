@@ -12,8 +12,7 @@ else
   if [ "$patch" -eq 0 ]; then
     if [ "$minor" -eq 0 ]; then
       prior_major=$((major - 1))
-      prior_minor_and_patch=$(grep -m 1 -Po "^## Version $prior_major\.\K[0-9]+\.[0-9]+ " CHANGELOG.md)
-      prior_version="$prior_major.${prior_minor_and_patch% }"
+      prior_version=$(grep -m 1 -Eo "^## Version $prior_major\.[0-9]+\.[0-9]+ " CHANGELOG.md | grep -Eo "[0-9]+\.[0-9]+\.[0-9]+" )
     else
       prior_version="$major.$((minor - 1)).0"
     fi
