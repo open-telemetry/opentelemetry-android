@@ -7,13 +7,13 @@ package io.opentelemetry.android.instrumentation
 
 import android.app.Application
 import android.content.Context
+import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.session.SessionProvider
-import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.sdk.common.Clock
 
 class InstallationContext(
     val context: Context,
-    val openTelemetry: OpenTelemetry,
+    val openTelemetry: OpenTelemetryRum,
     val sessionProvider: SessionProvider,
     val clock: Clock,
 ) {

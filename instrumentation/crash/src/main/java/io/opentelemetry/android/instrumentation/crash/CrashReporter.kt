@@ -5,11 +5,11 @@
 
 package io.opentelemetry.android.instrumentation.crash
 
+import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.common.internal.utils.threadIdCompat
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.context.Context
-import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_MESSAGE
 import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE
 import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_TYPE
@@ -24,7 +24,7 @@ internal class CrashReporter(
         additionalExtractors.toList()
 
     /** Installs the crash reporting instrumentation.  */
-    fun install(openTelemetry: OpenTelemetrySdk) {
+    fun install(openTelemetry: OpenTelemetryRum) {
         val handler =
             CrashReportingExceptionHandler(
                 crashProcessor = { crashDetails: CrashDetails ->
@@ -38,10 +38,13 @@ internal class CrashReporter(
     }
 
     private fun processCrash(
-        openTelemetry: OpenTelemetrySdk,
+        openTelemetry: OpenTelemetryRum,
         crashDetails: CrashDetails,
     ) {
-        val logger = openTelemetry.sdkLoggerProvider.loggerBuilder("io.opentelemetry.crash").build()
+        val logger =
+            openTelemetry.openTelemetry.logsBridge
+                .loggerBuilder("io.opentelemetry.crash")
+                .build()
         val throwable = crashDetails.cause
         val thread = crashDetails.thread
         val attributesBuilder =
@@ -66,7 +69,7 @@ internal class CrashReporter(
             .emit()
     }
 
-    private fun waitForCrashFlush(openTelemetry: OpenTelemetrySdk) {
+    private fun waitForCrashFlush(openTelemetry: OpenTelemetryRum) {
         val flushResult = openTelemetry.sdkLoggerProvider.forceFlush()
         flushResult.join(10, TimeUnit.SECONDS)
     }
