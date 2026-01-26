@@ -70,7 +70,7 @@ internal class CrashReporter(
     }
 
     private fun waitForCrashFlush(openTelemetry: OpenTelemetryRum) {
-        val flushResult = openTelemetry.sdkLoggerProvider.forceFlush()
+        val flushResult = openTelemetry.flushLogRecords()
         flushResult.join(10, TimeUnit.SECONDS)
     }
 }
