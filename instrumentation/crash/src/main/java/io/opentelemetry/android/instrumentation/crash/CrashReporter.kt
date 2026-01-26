@@ -8,6 +8,7 @@ package io.opentelemetry.android.instrumentation.crash
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.common.internal.utils.threadIdCompat
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
+import io.opentelemetry.android.tools.LogRecordFlusher
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.context.Context
 import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_MESSAGE
@@ -70,7 +71,9 @@ internal class CrashReporter(
     }
 
     private fun waitForCrashFlush(openTelemetry: OpenTelemetryRum) {
-        val flushResult = openTelemetry.sdkLoggerProvider.forceFlush()
-        flushResult.join(10, TimeUnit.SECONDS)
+        if (openTelemetry is LogRecordFlusher) {
+            val flushResult = openTelemetry.flushLogRecords()
+            flushResult.join(10, TimeUnit.SECONDS)
+        }
     }
 }
