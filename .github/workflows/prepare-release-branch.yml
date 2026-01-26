@@ -104,7 +104,7 @@ jobs:
           patch=$(echo "$version_json" | jq -r '.patch')
           rc=$(echo "$version_json" | jq -r '.rc')
           
-          if [ -z "$version_rc" ]; then
+          if [ -z "$rc" ]; then
             next_version="${major}.$((minor + 1)).0"
           else
             next_version="${major}.${minor}.${patch}-rc.$((rc + 1))"
