@@ -70,6 +70,11 @@ object OpenTelemetryRumInitializer {
                     .setEndpoint(spansEndpoint.getUrl())
                     .setHeaders(spansEndpoint::getHeaders)
                     .setCompression(spansEndpoint.getCompression().getUpstreamName())
+                    .apply {
+                        spansEndpoint.getSslContext()?.let {
+                            setSslContext(it.sslContext, it.sslX509TrustManager)
+                        }
+                    }
                     .build()
             }.addLogRecordExporterCustomizer {
                 OtlpHttpLogRecordExporter
@@ -77,6 +82,11 @@ object OpenTelemetryRumInitializer {
                     .setEndpoint(logsEndpoints.getUrl())
                     .setHeaders(logsEndpoints::getHeaders)
                     .setCompression(logsEndpoints.getCompression().getUpstreamName())
+                    .apply {
+                        logsEndpoints.getSslContext()?.let {
+                            setSslContext(it.sslContext, it.sslX509TrustManager)
+                        }
+                    }
                     .build()
             }.addMetricExporterCustomizer {
                 OtlpHttpMetricExporter
@@ -84,6 +94,11 @@ object OpenTelemetryRumInitializer {
                     .setEndpoint(metricsEndpoint.getUrl())
                     .setHeaders(metricsEndpoint::getHeaders)
                     .setCompression(metricsEndpoint.getCompression().getUpstreamName())
+                    .apply {
+                        metricsEndpoint.getSslContext()?.let {
+                            setSslContext(it.sslContext, it.sslX509TrustManager)
+                        }
+                    }
                     .build()
             }.build()
     }

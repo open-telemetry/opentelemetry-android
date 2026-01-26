@@ -11,4 +11,6 @@ internal interface EndpointConnectivity {
     fun getHeaders(): Map<String, String>
 
     fun getCompression(): Compression
+
+    fun getSslContext(): SSLContextConnectivity?
 }
