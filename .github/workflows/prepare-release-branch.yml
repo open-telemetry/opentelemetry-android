@@ -105,12 +105,7 @@ jobs:
           rc=$(echo "$version_json" | jq -r '.rc')
           
           if [ -z "$version_rc" ]; then
-            if [ "$patch" -eq 0 ]; then
-              next_version="${major}.$((minor + 1)).0"
-            else
-              echo "unexpected version: $version"
-              exit 1
-            fi
+            next_version="${major}.$((minor + 1)).0"
           else
             next_version="${major}.${minor}.${patch}-rc.$((rc + 1))"
           fi
