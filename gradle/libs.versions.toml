@@ -64,7 +64,7 @@ androidx-test-core = "androidx.test:core:1.7.0"
 androidx-test-rules = "androidx.test:rules:1.7.0"
 androidx-test-runner = "androidx.test:runner:1.7.0"
 androidx-junit = "androidx.test.ext:junit:1.3.0"
-mockk = "io.mockk:mockk:1.14.7"
+mockk = "io.mockk:mockk:1.14.9"
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "junit" }
@@ -78,7 +78,7 @@ protobuf-kotlin = { module = "com.google.protobuf:protobuf-kotlin", version.ref 
 
 #Compilation tools
 desugarJdkLibs = "com.android.tools:desugar_jdk_libs:2.1.5"
-nullaway = "com.uber.nullaway:nullaway:0.13.0"
+nullaway = "com.uber.nullaway:nullaway:0.13.1"
 errorprone-core = "com.google.errorprone:error_prone_core:2.46.0"
 errorprone-javac = "com.google.errorprone:javac:9+181-r4173-1"
 spotless-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
