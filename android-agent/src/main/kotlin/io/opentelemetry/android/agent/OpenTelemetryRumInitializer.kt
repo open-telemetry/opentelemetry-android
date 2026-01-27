@@ -74,8 +74,7 @@ object OpenTelemetryRumInitializer {
                         spansEndpoint.getSslContext()?.let {
                             setSslContext(it.sslContext, it.sslX509TrustManager)
                         }
-                    }
-                    .build()
+                    }.build()
             }.addLogRecordExporterCustomizer {
                 OtlpHttpLogRecordExporter
                     .builder()
@@ -86,8 +85,7 @@ object OpenTelemetryRumInitializer {
                         logsEndpoints.getSslContext()?.let {
                             setSslContext(it.sslContext, it.sslX509TrustManager)
                         }
-                    }
-                    .build()
+                    }.build()
             }.addMetricExporterCustomizer {
                 OtlpHttpMetricExporter
                     .builder()
@@ -98,8 +96,7 @@ object OpenTelemetryRumInitializer {
                         metricsEndpoint.getSslContext()?.let {
                             setSslContext(it.sslContext, it.sslX509TrustManager)
                         }
-                    }
-                    .build()
+                    }.build()
             }.build()
     }
 
