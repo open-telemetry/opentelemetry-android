@@ -7,6 +7,8 @@ package io.opentelemetry.android.agent
 
 import android.app.Application
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import io.opentelemetry.android.AndroidResource
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
@@ -105,7 +107,16 @@ object OpenTelemetryRumInitializer {
             )
         val clock = cfg.clock
         val timeoutHandler = SessionIdTimeoutHandler(sessionConfig, clock)
-        Services.get(context).appLifecycle.registerListener(timeoutHandler)
+
+        val services = Services.get(context)
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            services.appLifecycle.registerListener(timeoutHandler)
+        } else {
+            Handler(Looper.getMainLooper()).post {
+                services.appLifecycle.registerListener(timeoutHandler)
+            }
+        }
+
         return SessionManager.create(timeoutHandler, sessionConfig, clock)
     }
 }
