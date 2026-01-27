@@ -5,7 +5,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
     id("otel.errorprone-conventions")
     id("com.google.devtools.ksp")
     id("otel.animalsniffer-conventions")
@@ -71,6 +70,16 @@ detekt {
 
     // suppress pre-existing issues on a per-project basis
     baseline = project.file("config/detekt/baseline.xml")
+
+    // Include main and test sources (replaces variant-specific tasks removed in AGP 9)
+    source.setFrom(
+        "src/main/java",
+        "src/main/kotlin",
+        "src/test/java",
+        "src/test/kotlin",
+        "src/androidTest/java",
+        "src/androidTest/kotlin"
+    )
 }
 
 project.tasks.withType(Detekt::class.java).configureEach {
