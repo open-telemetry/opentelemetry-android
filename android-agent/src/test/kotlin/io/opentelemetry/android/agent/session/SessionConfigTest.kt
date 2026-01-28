@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.agent.session
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -169,6 +170,48 @@ class SessionConfigTest {
         assertAll(
             { assertEquals(largeBackgroundTimeout, largeConfig.backgroundInactivityTimeout) },
             { assertEquals(largeMaxLifetime, largeConfig.maxLifetime) },
+        )
+    }
+
+    @Test
+    fun `equals and hashCode should work correctly`() {
+        // Given / When
+        val config1 =
+            SessionConfig(
+                backgroundInactivityTimeout = ALTERNATIVE_BACKGROUND_TIMEOUT,
+                maxLifetime = ALTERNATIVE_MAX_LIFETIME,
+            )
+        val config2 =
+            SessionConfig(
+                backgroundInactivityTimeout = ALTERNATIVE_BACKGROUND_TIMEOUT,
+                maxLifetime = ALTERNATIVE_MAX_LIFETIME,
+            )
+
+        // Then
+        assertAll(
+            { assertEquals(config1, config2) },
+            { assertEquals(config1.hashCode(), config2.hashCode()) },
+            { assertThat(config1).isNotEqualTo(null) },
+        )
+    }
+
+    @Test
+    fun `toString should contain property values`() {
+        // Given / When
+        val config =
+            SessionConfig(
+                backgroundInactivityTimeout = ALTERNATIVE_BACKGROUND_TIMEOUT,
+                maxLifetime = ALTERNATIVE_MAX_LIFETIME,
+            )
+        val result = config.toString()
+        val expectedNameContents = "SessionConfig"
+        val expectedTimeoutName = "backgroundInactivityTimeout"
+
+        // Then
+        assertAll(
+            { assertThat(result).contains(expectedNameContents) },
+            { assertThat(result).contains(expectedTimeoutName) },
+            { assertThat(result).contains(ALTERNATIVE_BACKGROUND_TIMEOUT.toString()) },
         )
     }
 }

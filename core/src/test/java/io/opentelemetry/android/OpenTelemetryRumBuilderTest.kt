@@ -63,6 +63,8 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.export.SpanExporter
+import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_ID
+import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_PREVIOUS_ID
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility
 import org.junit.After
@@ -196,6 +198,44 @@ class OpenTelemetryRumBuilderTest {
         // TODO: verify event name inline above when the assertions framework can handle it
         val log0 = logs[0]
         assertThat(log0.eventName).isEqualTo("test.event")
+    }
+
+    @Test
+    fun emitEventShouldAddSessionIdentifiersWithActiveSession() {
+        // Given
+        createAndSetServiceManager()
+        val testSessionId = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
+        val testPreviousSessionId = "f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1"
+        val sessionProvider =
+            mockk<SessionProvider> {
+                every { getSessionId() } returns testSessionId
+                every { getPreviousSessionId() } returns testPreviousSessionId
+            }
+        val logRecordProcessor = SimpleLogRecordProcessor.create(logsExporter)
+        val openTelemetryRum =
+            makeBuilder()
+                .setResource(resource)
+                .setSessionProvider(sessionProvider)
+                .addLoggerProviderCustomizer { logRecordProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
+                    logRecordProviderBuilder.addLogRecordProcessor(logRecordProcessor)
+                }.build()
+        val eventName = "test.event.with.session"
+        val eventBody = "test body"
+
+        // When
+        openTelemetryRum.emitEvent(eventName, eventBody, Attributes.empty())
+
+        // Then
+        val logs = logsExporter.finishedLogRecordItems
+        assertThat(logs).hasSize(1)
+        OpenTelemetryAssertions
+            .assertThat(logs[0])
+            .hasAttributesSatisfying { attributes ->
+                assertThat(attributes.get(SESSION_ID))
+                    .isEqualTo(testSessionId)
+                assertThat(attributes.get(SESSION_PREVIOUS_ID))
+                    .isEqualTo(testPreviousSessionId)
+            }
     }
 
     @Test
@@ -619,7 +659,9 @@ class OpenTelemetryRumBuilderTest {
 
     private fun makeBuilder(): OpenTelemetryRumBuilder = RumBuilder.builder(application, buildConfig())
 
-    private fun buildConfig(): OtelRumConfig = OtelRumConfig().disableNetworkAttributes().disableSdkInitializationEvents()
+    private fun buildConfig(): OtelRumConfig = OtelRumConfig()
+        .disableNetworkAttributes()
+        .disableSdkInitializationEvents()
 
     companion object {
         const val CUR_SCREEN_NAME: String = "Celebratory Token"
