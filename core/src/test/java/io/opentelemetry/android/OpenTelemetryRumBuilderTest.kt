@@ -659,9 +659,10 @@ class OpenTelemetryRumBuilderTest {
 
     private fun makeBuilder(): OpenTelemetryRumBuilder = RumBuilder.builder(application, buildConfig())
 
-    private fun buildConfig(): OtelRumConfig = OtelRumConfig()
-        .disableNetworkAttributes()
-        .disableSdkInitializationEvents()
+    private fun buildConfig(): OtelRumConfig =
+        OtelRumConfig()
+            .disableNetworkAttributes()
+            .disableSdkInitializationEvents()
 
     companion object {
         const val CUR_SCREEN_NAME: String = "Celebratory Token"

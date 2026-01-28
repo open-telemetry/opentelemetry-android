@@ -21,4 +21,3 @@ class SessionProviderTest {
         assertThat(noop.getPreviousSessionId()).isEqualTo(NO_SESSION_ID).isEmpty()
     }
 }
-
