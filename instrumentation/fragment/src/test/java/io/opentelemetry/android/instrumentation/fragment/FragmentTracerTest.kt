@@ -40,11 +40,12 @@ internal class FragmentTracerTest {
     @Test
     fun create() {
         val trackableTracer =
-            FragmentTracer
-                .builder(mockk<Fragment>())
-                .setTracer(tracer)
-                .setActiveSpan(activeSpan)
-                .build()
+            FragmentTracer(
+                fragment = mockk<Fragment>(),
+                tracer = tracer,
+                screenName = "",
+                activeSpan = activeSpan,
+            )
         trackableTracer.startFragmentCreation()
         trackableTracer.endActiveSpan()
         val span = this.singleSpan
@@ -54,11 +55,12 @@ internal class FragmentTracerTest {
     @Test
     fun addPreviousScreen_noPrevious() {
         val trackableTracer =
-            FragmentTracer
-                .builder(mockk<Fragment>())
-                .setTracer(tracer)
-                .setActiveSpan(activeSpan)
-                .build()
+            FragmentTracer(
+                fragment = mockk<Fragment>(),
+                tracer = tracer,
+                screenName = "",
+                activeSpan = activeSpan,
+            )
 
         trackableTracer.startSpanIfNoneInProgress("starting")
         trackableTracer.addPreviousScreenAttribute()
@@ -74,11 +76,12 @@ internal class FragmentTracerTest {
         every { visibleScreenTracker.previouslyVisibleScreen } returns "Fragment"
 
         val trackableTracer =
-            FragmentTracer
-                .builder(mockk<Fragment>())
-                .setTracer(tracer)
-                .setActiveSpan(activeSpan)
-                .build()
+            FragmentTracer(
+                fragment = mockk<Fragment>(),
+                tracer = tracer,
+                screenName = "",
+                activeSpan = activeSpan,
+            )
 
         trackableTracer.startSpanIfNoneInProgress("starting")
         trackableTracer.addPreviousScreenAttribute()
@@ -95,11 +98,12 @@ internal class FragmentTracerTest {
         activeSpan = ActiveSpan(visibleScreenTracker::previouslyVisibleScreen)
 
         val fragmentTracer =
-            FragmentTracer
-                .builder(mockk<Fragment>())
-                .setTracer(tracer)
-                .setActiveSpan(activeSpan)
-                .build()
+            FragmentTracer(
+                fragment = mockk<Fragment>(),
+                tracer = tracer,
+                screenName = "",
+                activeSpan = activeSpan,
+            )
 
         fragmentTracer.startSpanIfNoneInProgress("starting")
         fragmentTracer.addPreviousScreenAttribute()
