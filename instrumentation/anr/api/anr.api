@@ -1,7 +1,3 @@
-public final class io/opentelemetry/android/instrumentation/anr/AnrDetector {
-	public fun start ()V
-}
-
 public final class io/opentelemetry/android/instrumentation/anr/AnrInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
 	public fun <init> ()V
 	public final fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/common/EventAttributesExtractor;)Lio/opentelemetry/android/instrumentation/anr/AnrInstrumentation;
