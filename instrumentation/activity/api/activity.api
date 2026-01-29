@@ -44,27 +44,3 @@ public class io/opentelemetry/android/instrumentation/activity/ActivityTracerCac
 	public fun startSpanIfNoneInProgress (Landroid/app/Activity;Ljava/lang/String;)Lio/opentelemetry/android/instrumentation/activity/ActivityTracer;
 }
 
-public class io/opentelemetry/android/instrumentation/activity/Pre29ActivityCallbacks : io/opentelemetry/android/internal/services/visiblescreen/activities/DefaultingActivityLifecycleCallbacks {
-	public fun <init> (Lio/opentelemetry/android/instrumentation/activity/ActivityTracerCache;)V
-	public fun onActivityCreated (Landroid/app/Activity;Landroid/os/Bundle;)V
-	public fun onActivityDestroyed (Landroid/app/Activity;)V
-	public fun onActivityPaused (Landroid/app/Activity;)V
-	public fun onActivityResumed (Landroid/app/Activity;)V
-	public fun onActivityStarted (Landroid/app/Activity;)V
-	public fun onActivityStopped (Landroid/app/Activity;)V
-}
-
-public final class io/opentelemetry/android/instrumentation/activity/startup/AnchoredClock {
-	public static fun create (Lio/opentelemetry/sdk/common/Clock;)Lio/opentelemetry/android/instrumentation/activity/startup/AnchoredClock;
-	public fun now ()J
-}
-
-public class io/opentelemetry/android/instrumentation/activity/startup/AppStartupTimer {
-	public fun <init> ()V
-	public fun createLifecycleCallback ()Landroid/app/Application$ActivityLifecycleCallbacks;
-	public fun end ()V
-	public fun getStartupSpan ()Lio/opentelemetry/api/trace/Span;
-	public fun runCompletionCallback ()V
-	public fun start (Lio/opentelemetry/api/trace/Tracer;Lio/opentelemetry/sdk/common/Clock;)Lio/opentelemetry/api/trace/Span;
-}
-
