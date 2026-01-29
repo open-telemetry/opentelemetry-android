@@ -2,13 +2,13 @@ public abstract interface annotation class io/opentelemetry/android/instrumentat
 	public abstract fun value ()Ljava/lang/String;
 }
 
-public class io/opentelemetry/android/instrumentation/common/ActiveSpan {
-	public fun <init> (Ljava/util/function/Supplier;)V
-	public fun addEvent (Ljava/lang/String;)V
-	public fun addPreviousScreenAttribute (Ljava/lang/String;)V
-	public fun endActiveSpan ()V
-	public fun spanInProgress ()Z
-	public fun startSpan (Ljava/util/function/Supplier;)V
+public final class io/opentelemetry/android/instrumentation/common/ActiveSpan {
+	public fun <init> (Lkotlin/jvm/functions/Function0;)V
+	public final fun addEvent (Ljava/lang/String;)V
+	public final fun addPreviousScreenAttribute (Ljava/lang/String;)V
+	public final fun endActiveSpan ()V
+	public final fun spanInProgress ()Z
+	public final fun startSpan (Lkotlin/jvm/functions/Function0;)V
 }
 
 public final class io/opentelemetry/android/instrumentation/common/Constants {
