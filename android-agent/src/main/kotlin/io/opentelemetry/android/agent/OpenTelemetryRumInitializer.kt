@@ -70,21 +70,33 @@ object OpenTelemetryRumInitializer {
                     .setEndpoint(spansEndpoint.getUrl())
                     .setHeaders(spansEndpoint::getHeaders)
                     .setCompression(spansEndpoint.getCompression().getUpstreamName())
-                    .build()
+                    .apply {
+                        spansEndpoint.getSslContext()?.let {
+                            setSslContext(it.sslContext, it.sslX509TrustManager)
+                        }
+                    }.build()
             }.addLogRecordExporterCustomizer {
                 OtlpHttpLogRecordExporter
                     .builder()
                     .setEndpoint(logsEndpoints.getUrl())
                     .setHeaders(logsEndpoints::getHeaders)
                     .setCompression(logsEndpoints.getCompression().getUpstreamName())
-                    .build()
+                    .apply {
+                        logsEndpoints.getSslContext()?.let {
+                            setSslContext(it.sslContext, it.sslX509TrustManager)
+                        }
+                    }.build()
             }.addMetricExporterCustomizer {
                 OtlpHttpMetricExporter
                     .builder()
                     .setEndpoint(metricsEndpoint.getUrl())
                     .setHeaders(metricsEndpoint::getHeaders)
                     .setCompression(metricsEndpoint.getCompression().getUpstreamName())
-                    .build()
+                    .apply {
+                        metricsEndpoint.getSslContext()?.let {
+                            setSslContext(it.sslContext, it.sslX509TrustManager)
+                        }
+                    }.build()
             }.build()
     }
 
