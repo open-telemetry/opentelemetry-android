@@ -153,7 +153,7 @@ public class RumFragmentLifecycleCallbacks extends FragmentManager.FragmentLifec
                     FragmentTracer.builder(fragment)
                             .setTracer(tracer)
                             .setScreenName(screenNameExtractor.extract(fragment))
-                            .setActiveSpan(new ActiveSpan(lastVisibleScreen))
+                            .setActiveSpan(new ActiveSpan(lastVisibleScreen::get))
                             .build();
             tracersByFragmentClassName.put(fragment.getClass().getName(), activityTracer);
         }
