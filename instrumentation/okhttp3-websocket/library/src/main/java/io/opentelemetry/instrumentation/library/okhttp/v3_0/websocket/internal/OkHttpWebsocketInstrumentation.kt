@@ -14,7 +14,7 @@ import io.opentelemetry.android.instrumentation.InstallationContext
 @AutoService(AndroidInstrumentation::class)
 class OkHttpWebsocketInstrumentation : AndroidInstrumentation {
     override fun install(ctx: InstallationContext) {
-        WebsocketEventGenerator.configure(ctx)
+        WebsocketListenerWrapper.configure(ctx)
     }
 
     override val name: String = "okhttp-websocket"
