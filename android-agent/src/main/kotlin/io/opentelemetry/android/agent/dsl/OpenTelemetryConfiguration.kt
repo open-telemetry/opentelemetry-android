@@ -21,21 +21,25 @@ import io.opentelemetry.sdk.resources.ResourceBuilder
 class OpenTelemetryConfiguration internal constructor(
     internal val rumConfig: OtelRumConfig = OtelRumConfig(),
     internal val diskBufferingConfig: DiskBufferingConfigurationSpec = DiskBufferingConfigurationSpec(rumConfig),
-    /**
-     * Configures the [Clock] used for capturing telemetry.
-     */
     var clock: Clock = OtelAndroidClock(),
 ) {
     internal val exportConfig = HttpExportConfiguration()
+    internal var grpcExportConfig: GrpcExportConfiguration? = null
+    internal var unifiedExportConfig: ExportConfiguration? = null
     internal val sessionConfig = SessionConfiguration()
     internal val instrumentations = InstrumentationConfiguration(rumConfig)
     internal var resourceAction: ResourceBuilder.() -> Unit = {}
 
-    /**
-     * Configures how OpenTelemetry should export telemetry over HTTP.
-     */
     fun httpExport(action: HttpExportConfiguration.() -> Unit) {
         exportConfig.action()
+    }
+
+    fun grpcExport(action: GrpcExportConfiguration.() -> Unit) {
+        grpcExportConfig = GrpcExportConfiguration().apply(action)
+    }
+
+    fun export(action: ExportConfiguration.() -> Unit) {
+        unifiedExportConfig = ExportConfiguration().apply(action)
     }
 
     /**
