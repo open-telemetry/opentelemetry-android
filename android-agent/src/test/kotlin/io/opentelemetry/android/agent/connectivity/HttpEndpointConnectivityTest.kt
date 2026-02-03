@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.agent.connectivity
 
+import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
@@ -13,21 +14,25 @@ class HttpEndpointConnectivityTest {
     fun `Validate exporter endpoint configuration`() {
         val headers = mapOf("Authorization" to "Basic something")
         val compression = Compression.NONE
+        val sslContext = SSLContextConnectivity(mockk(), mockk())
         val tracesConnectivity =
-            HttpEndpointConnectivity.forTraces("http://some.endpoint", headers, compression)
+            HttpEndpointConnectivity.forTraces("http://some.endpoint", headers, compression, sslContext)
         val logsConnectivity =
-            HttpEndpointConnectivity.forLogs("http://some.endpoint/", headers, compression)
+            HttpEndpointConnectivity.forLogs("http://some.endpoint/", headers, compression, sslContext)
         val metricsConnectivity =
-            HttpEndpointConnectivity.forMetrics("http://some.endpoint", headers, compression)
+            HttpEndpointConnectivity.forMetrics("http://some.endpoint", headers, compression, sslContext)
 
         assertThat(tracesConnectivity.getUrl()).isEqualTo("http://some.endpoint/v1/traces")
         assertThat(tracesConnectivity.getHeaders()).isEqualTo(headers)
         assertThat(tracesConnectivity.getCompression()).isEqualTo(Compression.NONE)
+        assertThat(tracesConnectivity.getSslContext()).isEqualTo(sslContext)
         assertThat(logsConnectivity.getUrl()).isEqualTo("http://some.endpoint/v1/logs")
         assertThat(logsConnectivity.getHeaders()).isEqualTo(headers)
         assertThat(logsConnectivity.getCompression()).isEqualTo(Compression.NONE)
+        assertThat(logsConnectivity.getSslContext()).isEqualTo(sslContext)
         assertThat(metricsConnectivity.getUrl()).isEqualTo("http://some.endpoint/v1/metrics")
         assertThat(metricsConnectivity.getHeaders()).isEqualTo(headers)
         assertThat(metricsConnectivity.getCompression()).isEqualTo(Compression.NONE)
+        assertThat(metricsConnectivity.getSslContext()).isEqualTo(sslContext)
     }
 }
