@@ -20,4 +20,7 @@ class StartupInstrumentation : AndroidInstrumentation {
             events.finish(ctx.openTelemetry)
         }
     }
+
+    override fun uninstall(ctx: InstallationContext) {
+    }
 }

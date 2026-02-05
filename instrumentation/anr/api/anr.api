@@ -4,5 +4,6 @@ public final class io/opentelemetry/android/instrumentation/anr/AnrInstrumentati
 	public fun getName ()Ljava/lang/String;
 	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
 	public final fun setMainLooper (Landroid/os/Looper;)Lio/opentelemetry/android/instrumentation/anr/AnrInstrumentation;
+	public fun uninstall (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
 }
 

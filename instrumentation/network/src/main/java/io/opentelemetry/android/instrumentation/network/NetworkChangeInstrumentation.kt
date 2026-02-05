@@ -38,4 +38,7 @@ class NetworkChangeInstrumentation : AndroidInstrumentation {
         networkApplicationListener.startMonitoring(logger, additionalAttributeExtractors)
         services.appLifecycle.registerListener(networkApplicationListener)
     }
+
+    override fun uninstall(ctx: InstallationContext) {
+    }
 }

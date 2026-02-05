@@ -21,7 +21,7 @@ class CrashReporterConfiguration internal constructor(
 ) : WithEventAttributes<CrashDetails>,
     CanBeEnabledAndDisabled {
     private val crashReporterInstrumentation: CrashReporterInstrumentation by lazy {
-        AndroidInstrumentationLoader.getInstrumentation(
+        AndroidInstrumentationLoader.get().getByType(
             CrashReporterInstrumentation::class.java,
         )
     }

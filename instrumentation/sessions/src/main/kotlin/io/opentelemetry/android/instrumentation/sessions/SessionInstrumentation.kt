@@ -24,4 +24,7 @@ class SessionInstrumentation : AndroidInstrumentation {
             sessionProvider.addObserver(SessionIdEventSender(eventLogger))
         }
     }
+
+    override fun uninstall(ctx: InstallationContext) {
+    }
 }
