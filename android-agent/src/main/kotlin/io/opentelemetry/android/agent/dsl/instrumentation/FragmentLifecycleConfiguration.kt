@@ -21,7 +21,7 @@ class FragmentLifecycleConfiguration internal constructor(
 ) : ScreenLifecycleConfigurable,
     CanBeEnabledAndDisabled {
     private val fragmentLifecycleInstrumentation: FragmentLifecycleInstrumentation by lazy {
-        AndroidInstrumentationLoader.getInstrumentation(FragmentLifecycleInstrumentation::class.java)
+        AndroidInstrumentationLoader.get().getByType(FragmentLifecycleInstrumentation::class.java)
     }
 
     override fun tracerCustomizer(value: (Tracer) -> Tracer) {

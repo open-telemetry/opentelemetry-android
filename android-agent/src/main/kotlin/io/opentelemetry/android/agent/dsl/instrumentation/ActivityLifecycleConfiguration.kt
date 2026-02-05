@@ -21,7 +21,7 @@ class ActivityLifecycleConfiguration internal constructor(
 ) : ScreenLifecycleConfigurable,
     CanBeEnabledAndDisabled {
     private val activityLifecycleInstrumentation: ActivityLifecycleInstrumentation by lazy {
-        AndroidInstrumentationLoader.getInstrumentation(ActivityLifecycleInstrumentation::class.java)
+        AndroidInstrumentationLoader.get().getByType(ActivityLifecycleInstrumentation::class.java)
     }
 
     override fun tracerCustomizer(value: (Tracer) -> Tracer) {

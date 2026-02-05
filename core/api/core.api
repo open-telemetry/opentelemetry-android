@@ -219,6 +219,19 @@ public abstract interface class io/opentelemetry/android/features/diskbuffering/
 	public abstract fun enable ()V
 }
 
+public abstract interface class io/opentelemetry/android/instrumentation/AndroidInstrumentationLoader {
+	public static final field Companion Lio/opentelemetry/android/instrumentation/AndroidInstrumentationLoader$Companion;
+	public static fun get ()Lio/opentelemetry/android/instrumentation/AndroidInstrumentationLoader;
+	public abstract fun getAll ()Ljava/util/Collection;
+	public abstract fun getByType (Ljava/lang/Class;)Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;
+	public static fun resetForTest ()V
+}
+
+public final class io/opentelemetry/android/instrumentation/AndroidInstrumentationLoader$Companion {
+	public final fun get ()Lio/opentelemetry/android/instrumentation/AndroidInstrumentationLoader;
+	public final fun resetForTest ()V
+}
+
 public final class io/opentelemetry/android/internal/features/networkattrs/NetworkAttributesLogRecordAppender : io/opentelemetry/sdk/logs/LogRecordProcessor {
 	public fun <init> (Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;)V
 	public fun <init> (Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;Lio/opentelemetry/android/common/internal/features/networkattributes/CurrentNetworkAttributesExtractor;)V

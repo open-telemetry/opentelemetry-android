@@ -36,9 +36,7 @@ interface AndroidInstrumentation {
      *
      * @param ctx The InstallationContext under which the instrumentation had been removed.
      */
-    fun uninstall(ctx: InstallationContext) {
-        // NOP default implementation
-    }
+    fun uninstall(ctx: InstallationContext) {}
 
     /**
      * The canonical short name for this instrumentation.

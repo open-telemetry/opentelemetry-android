@@ -41,7 +41,6 @@ class FragmentLifecycleInstrumentation : AndroidInstrumentation {
     }
 
     override fun uninstall(ctx: InstallationContext) {
-        super.uninstall(ctx)
         ctx.application?.unregisterActivityLifecycleCallbacks(activityLifecycleCallbacks)
         activityLifecycleCallbacks = null
     }
