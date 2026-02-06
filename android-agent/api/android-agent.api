@@ -14,6 +14,13 @@ public final class io/opentelemetry/android/agent/connectivity/Compression : jav
 	public static fun values ()[Lio/opentelemetry/android/agent/connectivity/Compression;
 }
 
+public final class io/opentelemetry/android/agent/connectivity/ExportProtocol : java/lang/Enum {
+	public static final field GRPC Lio/opentelemetry/android/agent/connectivity/ExportProtocol;
+	public static final field HTTP Lio/opentelemetry/android/agent/connectivity/ExportProtocol;
+	public static fun valueOf (Ljava/lang/String;)Lio/opentelemetry/android/agent/connectivity/ExportProtocol;
+	public static fun values ()[Lio/opentelemetry/android/agent/connectivity/ExportProtocol;
+}
+
 public final class io/opentelemetry/android/agent/dsl/DiskBufferingConfigurationSpec : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled {
 	public fun enabled (Z)V
 }
@@ -25,6 +32,32 @@ public final class io/opentelemetry/android/agent/dsl/EndpointConfiguration {
 	public final fun setCompression (Lio/opentelemetry/android/agent/connectivity/Compression;)V
 	public final fun setHeaders (Ljava/util/Map;)V
 	public final fun setUrl (Ljava/lang/String;)V
+}
+
+public final class io/opentelemetry/android/agent/dsl/ExportConfiguration {
+	public final fun getCompression ()Lio/opentelemetry/android/agent/connectivity/Compression;
+	public final fun getEndpoint ()Ljava/lang/String;
+	public final fun getHeaders ()Ljava/util/Map;
+	public final fun getProtocol ()Lio/opentelemetry/android/agent/connectivity/ExportProtocol;
+	public final fun logs (Lkotlin/jvm/functions/Function1;)V
+	public final fun metrics (Lkotlin/jvm/functions/Function1;)V
+	public final fun setCompression (Lio/opentelemetry/android/agent/connectivity/Compression;)V
+	public final fun setEndpoint (Ljava/lang/String;)V
+	public final fun setHeaders (Ljava/util/Map;)V
+	public final fun setProtocol (Lio/opentelemetry/android/agent/connectivity/ExportProtocol;)V
+	public final fun spans (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class io/opentelemetry/android/agent/dsl/GrpcExportConfiguration {
+	public final fun getCompression ()Lio/opentelemetry/android/agent/connectivity/Compression;
+	public final fun getEndpoint ()Ljava/lang/String;
+	public final fun getHeaders ()Ljava/util/Map;
+	public final fun logs (Lkotlin/jvm/functions/Function1;)V
+	public final fun metrics (Lkotlin/jvm/functions/Function1;)V
+	public final fun setCompression (Lio/opentelemetry/android/agent/connectivity/Compression;)V
+	public final fun setEndpoint (Ljava/lang/String;)V
+	public final fun setHeaders (Ljava/util/Map;)V
+	public final fun spans (Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class io/opentelemetry/android/agent/dsl/HttpExportConfiguration {
@@ -42,8 +75,10 @@ public final class io/opentelemetry/android/agent/dsl/HttpExportConfiguration {
 public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration {
 	public fun <init> ()V
 	public final fun diskBuffering (Lkotlin/jvm/functions/Function1;)V
+	public final fun export (Lkotlin/jvm/functions/Function1;)V
 	public final fun getClock ()Lio/opentelemetry/sdk/common/Clock;
 	public final fun globalAttributes (Lkotlin/jvm/functions/Function0;)V
+	public final fun grpcExport (Lkotlin/jvm/functions/Function1;)V
 	public final fun httpExport (Lkotlin/jvm/functions/Function1;)V
 	public final fun instrumentations (Lkotlin/jvm/functions/Function1;)V
 	public final fun resource (Lkotlin/jvm/functions/Function1;)V

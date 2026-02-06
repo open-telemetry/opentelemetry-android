@@ -12,6 +12,8 @@ import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.RumBuilder
 import io.opentelemetry.android.agent.connectivity.Compression
+import io.opentelemetry.android.agent.connectivity.EndpointConnectivity
+import io.opentelemetry.android.agent.connectivity.ExportProtocol
 import io.opentelemetry.android.agent.dsl.OpenTelemetryConfiguration
 import io.opentelemetry.android.agent.session.SessionConfig
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
@@ -21,19 +23,15 @@ import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter
+import io.opentelemetry.sdk.logs.export.LogRecordExporter
+import io.opentelemetry.sdk.metrics.export.MetricExporter
+import io.opentelemetry.sdk.trace.export.SpanExporter
 
 @OptIn(Incubating::class)
 object OpenTelemetryRumInitializer {
-    /**
-     * Opinionated [io.opentelemetry.android.OpenTelemetryRum] initialization.
-     *
-     * @param context Your android app's application context. This should be from your Application
-     * subclass or an appropriate context that allows retrieving the application context. If you
-     * supply an inappropriate context (e.g. from attachBaseContext) then instrumentation relying
-     * on activity lifecycle callbacks will not function correctly.
-     * @param configuration Type-safe config DSL that controls how OpenTelemetry
-     * should behave.
-     */
     @JvmStatic
     fun initialize(
         context: Context,
@@ -42,18 +40,13 @@ object OpenTelemetryRumInitializer {
         val cfg = OpenTelemetryConfiguration()
         configuration(cfg)
 
-        // ensure we're using the Application Context to prevent potential leaks.
-        // if context.applicationContext is null (e.g. called from within attachBaseContext),
-        // fallback to the supplied context.
         val ctx =
             when (context) {
                 is Application -> context
                 else -> context.applicationContext ?: context
             }
 
-        val spansEndpoint = cfg.exportConfig.spansEndpoint()
-        val logsEndpoints = cfg.exportConfig.logsEndpoint()
-        val metricsEndpoint = cfg.exportConfig.metricsEndpoint()
+        val exportEndpoints = resolveExportEndpoints(cfg)
 
         val resourceBuilder = AndroidResource.createDefault(ctx).toBuilder()
         cfg.resourceAction(resourceBuilder)
@@ -65,28 +58,119 @@ object OpenTelemetryRumInitializer {
             .setResource(resource)
             .setClock(cfg.clock)
             .addSpanExporterCustomizer {
-                OtlpHttpSpanExporter
-                    .builder()
-                    .setEndpoint(spansEndpoint.getUrl())
-                    .setHeaders(spansEndpoint::getHeaders)
-                    .setCompression(spansEndpoint.getCompression().getUpstreamName())
-                    .build()
+                createSpanExporter(exportEndpoints.spans, exportEndpoints.protocol)
             }.addLogRecordExporterCustomizer {
-                OtlpHttpLogRecordExporter
-                    .builder()
-                    .setEndpoint(logsEndpoints.getUrl())
-                    .setHeaders(logsEndpoints::getHeaders)
-                    .setCompression(logsEndpoints.getCompression().getUpstreamName())
-                    .build()
+                createLogRecordExporter(exportEndpoints.logs, exportEndpoints.protocol)
             }.addMetricExporterCustomizer {
-                OtlpHttpMetricExporter
-                    .builder()
-                    .setEndpoint(metricsEndpoint.getUrl())
-                    .setHeaders(metricsEndpoint::getHeaders)
-                    .setCompression(metricsEndpoint.getCompression().getUpstreamName())
-                    .build()
+                createMetricExporter(exportEndpoints.metrics, exportEndpoints.protocol)
             }.build()
     }
+
+    private data class ExportEndpoints(
+        val spans: EndpointConnectivity,
+        val logs: EndpointConnectivity,
+        val metrics: EndpointConnectivity,
+        val protocol: ExportProtocol,
+    )
+
+    private fun resolveExportEndpoints(cfg: OpenTelemetryConfiguration): ExportEndpoints {
+        cfg.unifiedExportConfig?.let { unified ->
+            return ExportEndpoints(
+                spans = unified.spansEndpoint(),
+                logs = unified.logsEndpoint(),
+                metrics = unified.metricsEndpoint(),
+                protocol = unified.protocol,
+            )
+        }
+
+        cfg.grpcExportConfig?.let { grpc ->
+            return ExportEndpoints(
+                spans = grpc.spansEndpoint(),
+                logs = grpc.logsEndpoint(),
+                metrics = grpc.metricsEndpoint(),
+                protocol = ExportProtocol.GRPC,
+            )
+        }
+
+        return ExportEndpoints(
+            spans = cfg.exportConfig.spansEndpoint(),
+            logs = cfg.exportConfig.logsEndpoint(),
+            metrics = cfg.exportConfig.metricsEndpoint(),
+            protocol = ExportProtocol.HTTP,
+        )
+    }
+
+    private fun createSpanExporter(
+        endpoint: EndpointConnectivity,
+        protocol: ExportProtocol,
+    ): SpanExporter =
+        when (protocol) {
+            ExportProtocol.HTTP -> {
+                OtlpHttpSpanExporter
+                    .builder()
+                    .setEndpoint(endpoint.getUrl())
+                    .setHeaders(endpoint::getHeaders)
+                    .setCompression(endpoint.getCompression().getUpstreamName())
+                    .build()
+            }
+
+            ExportProtocol.GRPC -> {
+                OtlpGrpcSpanExporter
+                    .builder()
+                    .setEndpoint(endpoint.getUrl())
+                    .setHeaders(endpoint::getHeaders)
+                    .setCompression(endpoint.getCompression().getUpstreamName())
+                    .build()
+            }
+        }
+
+    private fun createLogRecordExporter(
+        endpoint: EndpointConnectivity,
+        protocol: ExportProtocol,
+    ): LogRecordExporter =
+        when (protocol) {
+            ExportProtocol.HTTP -> {
+                OtlpHttpLogRecordExporter
+                    .builder()
+                    .setEndpoint(endpoint.getUrl())
+                    .setHeaders(endpoint::getHeaders)
+                    .setCompression(endpoint.getCompression().getUpstreamName())
+                    .build()
+            }
+
+            ExportProtocol.GRPC -> {
+                OtlpGrpcLogRecordExporter
+                    .builder()
+                    .setEndpoint(endpoint.getUrl())
+                    .setHeaders(endpoint::getHeaders)
+                    .setCompression(endpoint.getCompression().getUpstreamName())
+                    .build()
+            }
+        }
+
+    private fun createMetricExporter(
+        endpoint: EndpointConnectivity,
+        protocol: ExportProtocol,
+    ): MetricExporter =
+        when (protocol) {
+            ExportProtocol.HTTP -> {
+                OtlpHttpMetricExporter
+                    .builder()
+                    .setEndpoint(endpoint.getUrl())
+                    .setHeaders(endpoint::getHeaders)
+                    .setCompression(endpoint.getCompression().getUpstreamName())
+                    .build()
+            }
+
+            ExportProtocol.GRPC -> {
+                OtlpGrpcMetricExporter
+                    .builder()
+                    .setEndpoint(endpoint.getUrl())
+                    .setHeaders(endpoint::getHeaders)
+                    .setCompression(endpoint.getCompression().getUpstreamName())
+                    .build()
+            }
+        }
 
     private fun Compression.getUpstreamName(): String =
         when (this) {
