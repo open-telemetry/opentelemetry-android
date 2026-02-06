@@ -49,13 +49,13 @@ class ActivityTracerTest {
     @Test
     fun restart_nonInitialActivity() {
         val trackableTracer =
-            ActivityTracer
-                .builder(mockk<Activity>())
-                .setInitialAppActivity("FirstActivity")
-                .setTracer(tracer)
-                .setAppStartupTimer(appStartupTimer)
-                .setActiveSpan(activeSpan)
-                .build()
+            ActivityTracer(
+                activity = mockk<Activity>(),
+                activeSpan = activeSpan,
+                tracer = tracer,
+                appStartupTimer = appStartupTimer,
+                initialAppActivity = "FirstActivity",
+            )
         trackableTracer.initiateRestartSpanIfNecessary(false)
         trackableTracer.endActiveSpan()
         val span = this.singleSpan
@@ -66,13 +66,13 @@ class ActivityTracerTest {
     @Test
     fun restart_initialActivity() {
         val trackableTracer =
-            ActivityTracer
-                .builder(mockk<Activity>())
-                .setInitialAppActivity("Activity")
-                .setTracer(tracer)
-                .setAppStartupTimer(appStartupTimer)
-                .setActiveSpan(activeSpan)
-                .build()
+            ActivityTracer(
+                activity = mockk<Activity>(),
+                activeSpan = activeSpan,
+                tracer = tracer,
+                appStartupTimer = appStartupTimer,
+                initialAppActivity = "Activity",
+            )
         trackableTracer.initiateRestartSpanIfNecessary(false)
         trackableTracer.endActiveSpan()
         val span = this.singleSpan
@@ -83,13 +83,13 @@ class ActivityTracerTest {
     @Test
     fun restart_initialActivity_multiActivityApp() {
         val trackableTracer =
-            ActivityTracer
-                .builder(mockk<Activity>())
-                .setInitialAppActivity("Activity")
-                .setTracer(tracer)
-                .setAppStartupTimer(appStartupTimer)
-                .setActiveSpan(activeSpan)
-                .build()
+            ActivityTracer(
+                activity = mockk<Activity>(),
+                activeSpan = activeSpan,
+                tracer = tracer,
+                appStartupTimer = appStartupTimer,
+                initialAppActivity = "Activity",
+            )
         trackableTracer.initiateRestartSpanIfNecessary(true)
         trackableTracer.endActiveSpan()
         val span = this.singleSpan
@@ -100,13 +100,13 @@ class ActivityTracerTest {
     @Test
     fun create_nonInitialActivity() {
         val trackableTracer =
-            ActivityTracer
-                .builder(mockk<Activity>())
-                .setInitialAppActivity("FirstActivity")
-                .setTracer(tracer)
-                .setAppStartupTimer(appStartupTimer)
-                .setActiveSpan(activeSpan)
-                .build()
+            ActivityTracer(
+                activity = mockk<Activity>(),
+                activeSpan = activeSpan,
+                tracer = tracer,
+                appStartupTimer = appStartupTimer,
+                initialAppActivity = "FirstActivity",
+            )
 
         trackableTracer.startActivityCreation()
         trackableTracer.endActiveSpan()
@@ -118,13 +118,13 @@ class ActivityTracerTest {
     @Test
     fun create_initialActivity() {
         val trackableTracer =
-            ActivityTracer
-                .builder(mockk<Activity>())
-                .setInitialAppActivity("Activity")
-                .setTracer(tracer)
-                .setAppStartupTimer(appStartupTimer)
-                .setActiveSpan(activeSpan)
-                .build()
+            ActivityTracer(
+                activity = mockk<Activity>(),
+                activeSpan = activeSpan,
+                tracer = tracer,
+                appStartupTimer = appStartupTimer,
+                initialAppActivity = "Activity",
+            )
         trackableTracer.startActivityCreation()
         trackableTracer.endActiveSpan()
         val span = this.singleSpan
@@ -136,12 +136,12 @@ class ActivityTracerTest {
     fun create_initialActivity_firstTime() {
         appStartupTimer.start(tracer, Clock.getDefault())
         val trackableTracer =
-            ActivityTracer
-                .builder(mockk<Activity>())
-                .setTracer(tracer)
-                .setAppStartupTimer(appStartupTimer)
-                .setActiveSpan(activeSpan)
-                .build()
+            ActivityTracer(
+                activity = mockk<Activity>(),
+                activeSpan = activeSpan,
+                tracer = tracer,
+                appStartupTimer = appStartupTimer,
+            )
         trackableTracer.startActivityCreation()
         trackableTracer.endActiveSpan()
         appStartupTimer.end()
@@ -160,12 +160,12 @@ class ActivityTracerTest {
     @Test
     fun addPreviousScreen_noPrevious() {
         val trackableTracer =
-            ActivityTracer
-                .builder(mockk<Activity>())
-                .setTracer(tracer)
-                .setAppStartupTimer(appStartupTimer)
-                .setActiveSpan(activeSpan)
-                .build()
+            ActivityTracer(
+                activity = mockk<Activity>(),
+                activeSpan = activeSpan,
+                tracer = tracer,
+                appStartupTimer = appStartupTimer,
+            )
 
         trackableTracer.startSpanIfNoneInProgress("starting")
         trackableTracer.addPreviousScreenAttribute()
@@ -181,12 +181,12 @@ class ActivityTracerTest {
         every { visibleScreenTracker.previouslyVisibleScreen } returns "Activity"
 
         val trackableTracer =
-            ActivityTracer
-                .builder(mockk<Activity>())
-                .setTracer(tracer)
-                .setAppStartupTimer(appStartupTimer)
-                .setActiveSpan(activeSpan)
-                .build()
+            ActivityTracer(
+                activity = mockk<Activity>(),
+                activeSpan = activeSpan,
+                tracer = tracer,
+                appStartupTimer = appStartupTimer,
+            )
 
         trackableTracer.startSpanIfNoneInProgress("starting")
         trackableTracer.addPreviousScreenAttribute()
@@ -201,12 +201,12 @@ class ActivityTracerTest {
         every { visibleScreenTracker.previouslyVisibleScreen } returns "previousScreen"
 
         val trackableTracer =
-            ActivityTracer
-                .builder(mockk<Activity>())
-                .setTracer(tracer)
-                .setAppStartupTimer(appStartupTimer)
-                .setActiveSpan(activeSpan)
-                .build()
+            ActivityTracer(
+                activity = mockk<Activity>(),
+                activeSpan = activeSpan,
+                tracer = tracer,
+                appStartupTimer = appStartupTimer,
+            )
 
         trackableTracer.startSpanIfNoneInProgress("starting")
         trackableTracer.addPreviousScreenAttribute()
@@ -222,13 +222,13 @@ class ActivityTracerTest {
     @Test
     fun testScreenName() {
         val activityTracer =
-            ActivityTracer
-                .builder(mockk<Activity>())
-                .setTracer(tracer)
-                .setScreenName("squarely")
-                .setAppStartupTimer(appStartupTimer)
-                .setActiveSpan(activeSpan)
-                .build()
+            ActivityTracer(
+                activity = mockk<Activity>(),
+                activeSpan = activeSpan,
+                tracer = tracer,
+                appStartupTimer = appStartupTimer,
+                screenName = "squarely",
+            )
         activityTracer.startActivityCreation()
         activityTracer.endActiveSpan()
         val span = this.singleSpan
