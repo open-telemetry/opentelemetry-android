@@ -18,9 +18,9 @@ import io.opentelemetry.sdk.common.Clock
  * avoids the problem of [SystemClock.elapsedRealtimeNanos] not providing wall-clock time.
  */
 class OtelAndroidClock : Clock {
-    private val baseline = System.currentTimeMillis() - nanoTime()
+    private val baselineNanos = System.currentTimeMillis() * 1_000_000 - nanoTime()
 
-    override fun now(): Long = baseline + nanoTime()
+    override fun now(): Long = baselineNanos + nanoTime()
 
     override fun nanoTime(): Long = SystemClock.elapsedRealtimeNanos()
 }
