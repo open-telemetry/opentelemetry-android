@@ -36,11 +36,6 @@ public abstract interface class io/opentelemetry/android/internal/services/appli
 	public abstract fun onApplicationForegrounded ()V
 }
 
-public class io/opentelemetry/android/internal/services/network/CarrierFinder {
-	public fun <init> (Landroid/content/Context;Landroid/telephony/TelephonyManager;)V
-	public fun get ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/Carrier;
-}
-
 public abstract interface class io/opentelemetry/android/internal/services/network/CurrentNetworkProvider : io/opentelemetry/android/internal/services/Service {
 	public static final field Companion Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider$Companion;
 	public static final field NO_NETWORK Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
@@ -51,14 +46,6 @@ public abstract interface class io/opentelemetry/android/internal/services/netwo
 }
 
 public final class io/opentelemetry/android/internal/services/network/CurrentNetworkProvider$Companion {
-}
-
-public final class io/opentelemetry/android/internal/services/network/CurrentNetworkProviderImpl : io/opentelemetry/android/internal/services/network/CurrentNetworkProvider {
-	public fun <init> (Lio/opentelemetry/android/internal/services/network/detector/NetworkDetector;Landroid/net/ConnectivityManager;)V
-	public fun addNetworkChangeListener (Lio/opentelemetry/android/internal/services/network/NetworkChangeListener;)V
-	public fun close ()V
-	public fun getCurrentNetwork ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
-	public fun refreshNetworkStatus ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
 }
 
 public abstract interface class io/opentelemetry/android/internal/services/network/NetworkChangeListener {
