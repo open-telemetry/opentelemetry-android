@@ -1,6 +1,6 @@
 [versions]
-opentelemetry = "1.58.0"
-opentelemetry-alpha = "1.58.0-alpha"
+opentelemetry = "1.59.0"
+opentelemetry-alpha = "1.59.0-alpha"
 junit = "6.0.2"
 spotless = "8.2.1"
 kotlin = "2.2.21"
