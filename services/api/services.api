@@ -122,9 +122,10 @@ public final class io/opentelemetry/android/internal/services/visiblescreen/acti
 	public fun onActivityPrePaused (Landroid/app/Activity;)V
 }
 
-public class io/opentelemetry/android/internal/services/visiblescreen/fragments/RumFragmentActivityRegisterer {
-	public static fun create (Landroidx/fragment/app/FragmentManager$FragmentLifecycleCallbacks;)Landroid/app/Application$ActivityLifecycleCallbacks;
-	public static fun createPre29 (Landroidx/fragment/app/FragmentManager$FragmentLifecycleCallbacks;)Landroid/app/Application$ActivityLifecycleCallbacks;
+public final class io/opentelemetry/android/internal/services/visiblescreen/fragments/RumFragmentActivityRegisterer {
+	public static final field INSTANCE Lio/opentelemetry/android/internal/services/visiblescreen/fragments/RumFragmentActivityRegisterer;
+	public final fun create (Landroidx/fragment/app/FragmentManager$FragmentLifecycleCallbacks;)Landroid/app/Application$ActivityLifecycleCallbacks;
+	public final fun createPre29 (Landroidx/fragment/app/FragmentManager$FragmentLifecycleCallbacks;)Landroid/app/Application$ActivityLifecycleCallbacks;
 }
 
 public final class io/opentelemetry/android/internal/services/visiblescreen/fragments/VisibleFragmentTracker : androidx/fragment/app/FragmentManager$FragmentLifecycleCallbacks {
