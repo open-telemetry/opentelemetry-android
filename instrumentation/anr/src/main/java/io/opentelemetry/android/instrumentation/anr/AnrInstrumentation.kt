@@ -54,5 +54,8 @@ class AnrInstrumentation : AndroidInstrumentation {
         anrDetector.start()
     }
 
+    override fun uninstall(ctx: InstallationContext) {
+    }
+
     override val name: String = "anr"
 }

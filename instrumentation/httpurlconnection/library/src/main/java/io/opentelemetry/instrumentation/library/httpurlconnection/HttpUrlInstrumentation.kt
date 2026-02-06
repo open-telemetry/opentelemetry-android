@@ -112,6 +112,9 @@ class HttpUrlInstrumentation : AndroidInstrumentation {
         HttpUrlConnectionSingletons.configure(this, ctx.openTelemetry)
     }
 
+    override fun uninstall(ctx: InstallationContext) {
+    }
+
     /**
      * Configures the connection inactivity timeout in milliseconds.
      *

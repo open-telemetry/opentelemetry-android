@@ -8,5 +8,6 @@ public final class io/opentelemetry/android/instrumentation/crash/CrashReporterI
 	public final fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/common/EventAttributesExtractor;)V
 	public fun getName ()Ljava/lang/String;
 	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
+	public fun uninstall (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
 }
 

@@ -30,5 +30,8 @@ class CrashReporterInstrumentation : AndroidInstrumentation {
         crashReporter.install(ctx.openTelemetry as OpenTelemetrySdk)
     }
 
+    override fun uninstall(ctx: InstallationContext) {
+    }
+
     override val name: String = "crash"
 }

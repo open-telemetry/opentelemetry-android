@@ -16,5 +16,8 @@ class AndroidLogInstrumentation : AndroidInstrumentation {
         configure(ctx)
     }
 
+    override fun uninstall(ctx: InstallationContext) {
+    }
+
     override val name: String = "android-log"
 }

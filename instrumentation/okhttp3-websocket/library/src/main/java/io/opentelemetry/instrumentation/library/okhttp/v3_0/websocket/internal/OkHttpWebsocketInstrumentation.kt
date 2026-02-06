@@ -17,5 +17,8 @@ class OkHttpWebsocketInstrumentation : AndroidInstrumentation {
         WebsocketListenerWrapper.configure(ctx)
     }
 
+    override fun uninstall(ctx: InstallationContext) {
+    }
+
     override val name: String = "okhttp-websocket"
 }

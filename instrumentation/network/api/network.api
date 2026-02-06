@@ -10,5 +10,6 @@ public final class io/opentelemetry/android/instrumentation/network/NetworkChang
 	public final fun addAttributesExtractor (Lio/opentelemetry/android/instrumentation/network/NetworkAttributesExtractor;)Lio/opentelemetry/android/instrumentation/network/NetworkChangeInstrumentation;
 	public fun getName ()Ljava/lang/String;
 	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
+	public fun uninstall (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
 }
 

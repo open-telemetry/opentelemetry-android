@@ -25,4 +25,7 @@ class ViewClickInstrumentation : AndroidInstrumentation {
             ),
         )
     }
+
+    override fun uninstall(ctx: InstallationContext) {
+    }
 }

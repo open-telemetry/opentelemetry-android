@@ -25,4 +25,7 @@ class ComposeClickInstrumentation : AndroidInstrumentation {
             ),
         )
     }
+
+    override fun uninstall(ctx: InstallationContext) {
+    }
 }

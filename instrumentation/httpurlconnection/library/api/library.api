@@ -18,6 +18,7 @@ public final class io/opentelemetry/instrumentation/library/httpurlconnection/Ht
 	public final fun setEmitExperimentalHttpClientMetrics (Z)V
 	public final fun setKnownMethods (Ljava/util/Set;)V
 	public final fun setPeerServiceMapping (Ljava/util/Map;)V
+	public fun uninstall (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
 }
 
 public class io/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlReplacements {

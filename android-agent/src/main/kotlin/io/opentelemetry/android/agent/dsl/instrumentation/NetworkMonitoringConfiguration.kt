@@ -19,7 +19,7 @@ class NetworkMonitoringConfiguration internal constructor(
     private val config: OtelRumConfig,
 ) : CanBeEnabledAndDisabled {
     private val networkInstrumentation: NetworkChangeInstrumentation by lazy {
-        AndroidInstrumentationLoader.getInstrumentation(
+        AndroidInstrumentationLoader.get().getByType(
             NetworkChangeInstrumentation::class.java,
         )
     }
