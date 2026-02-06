@@ -30,14 +30,34 @@ class OpenTelemetryConfiguration internal constructor(
     internal val instrumentations = InstrumentationConfiguration(rumConfig)
     internal var resourceAction: ResourceBuilder.() -> Unit = {}
 
+    /**
+     * Configures exporting of telemetry over HTTP using [HttpExportConfiguration].
+     *
+     * This is the default export configuration. If [export] or [grpcExport] is also called,
+     * the precedence order is: [export] > [grpcExport] > [httpExport].
+     */
     fun httpExport(action: HttpExportConfiguration.() -> Unit) {
         exportConfig.action()
     }
 
+    /**
+     * Configures exporting of telemetry over gRPC using [GrpcExportConfiguration].
+     *
+     * If [export] is also called, it takes precedence over this configuration.
+     * This configuration takes precedence over [httpExport].
+     */
     fun grpcExport(action: GrpcExportConfiguration.() -> Unit) {
         grpcExportConfig = GrpcExportConfiguration().apply(action)
     }
 
+    /**
+     * Configures export settings using a unified DSL that supports both HTTP and gRPC protocols.
+     *
+     * This is the preferred way to configure telemetry export. Use [ExportConfiguration.protocol]
+     * to select the transport (HTTP or gRPC).
+     *
+     * This configuration takes precedence over both [httpExport] and [grpcExport].
+     */
     fun export(action: ExportConfiguration.() -> Unit) {
         unifiedExportConfig = ExportConfiguration().apply(action)
     }

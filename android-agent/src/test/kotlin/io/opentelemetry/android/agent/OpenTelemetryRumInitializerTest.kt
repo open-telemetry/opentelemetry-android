@@ -135,6 +135,64 @@ class OpenTelemetryRumInitializerTest {
         }
     }
 
+    @Test
+    fun `Verify initialization with NONE compression for HTTP`() {
+        createAndSetServiceManager()
+
+        OpenTelemetryRumInitializer.initialize(
+            context = RuntimeEnvironment.getApplication(),
+            configuration = {
+                httpExport {
+                    baseUrl = "http://127.0.0.1:4318"
+                    compression = io.opentelemetry.android.agent.connectivity.Compression.NONE
+                }
+            },
+        )
+
+        verify {
+            appLifecycle.registerListener(any<SessionIdTimeoutHandler>())
+        }
+    }
+
+    @Test
+    fun `Verify initialization with NONE compression for gRPC`() {
+        createAndSetServiceManager()
+
+        OpenTelemetryRumInitializer.initialize(
+            context = RuntimeEnvironment.getApplication(),
+            configuration = {
+                grpcExport {
+                    endpoint = "http://127.0.0.1:4317"
+                    compression = io.opentelemetry.android.agent.connectivity.Compression.NONE
+                }
+            },
+        )
+
+        verify {
+            appLifecycle.registerListener(any<SessionIdTimeoutHandler>())
+        }
+    }
+
+    @Test
+    fun `Verify initialization with unified export and NONE compression`() {
+        createAndSetServiceManager()
+
+        OpenTelemetryRumInitializer.initialize(
+            context = RuntimeEnvironment.getApplication(),
+            configuration = {
+                export {
+                    protocol = ExportProtocol.GRPC
+                    endpoint = "http://127.0.0.1:4317"
+                    compression = io.opentelemetry.android.agent.connectivity.Compression.NONE
+                }
+            },
+        )
+
+        verify {
+            appLifecycle.registerListener(any<SessionIdTimeoutHandler>())
+        }
+    }
+
     @After
     fun tearDown() {
         Services.set(null)

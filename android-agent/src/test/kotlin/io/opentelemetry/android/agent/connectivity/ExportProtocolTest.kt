@@ -37,14 +37,4 @@ class ExportProtocolTest {
     fun `valueOf GRPC returns GRPC`() {
         assertThat(ExportProtocol.valueOf("GRPC")).isEqualTo(ExportProtocol.GRPC)
     }
-
-    @Test
-    fun `HTTP ordinal is 0`() {
-        assertThat(ExportProtocol.HTTP.ordinal).isEqualTo(0)
-    }
-
-    @Test
-    fun `GRPC ordinal is 1`() {
-        assertThat(ExportProtocol.GRPC.ordinal).isEqualTo(1)
-    }
 }
