@@ -11,7 +11,7 @@ class TestAndroidInstrumentation : AndroidInstrumentation {
     var installed = false
         private set
 
-    override fun install(ctx: InstallationContext) {
+    override fun install(ctx: InstrumentationParams) {
         installed = true
     }
 }
