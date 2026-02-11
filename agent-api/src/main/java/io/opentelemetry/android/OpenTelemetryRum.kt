@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android
 
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.Attributes
 
@@ -40,9 +41,5 @@ interface OpenTelemetryRum {
         attributes: Attributes = Attributes.empty(),
     )
 
-    /**
-     * Initiates orderly shutdown of this OpenTelemetryRum instance. After this method completes,
-     * the instance should be considered invalid and no longer used.
-     */
-    fun shutdown()
+    fun install(instrumentation: AndroidInstrumentation)
 }

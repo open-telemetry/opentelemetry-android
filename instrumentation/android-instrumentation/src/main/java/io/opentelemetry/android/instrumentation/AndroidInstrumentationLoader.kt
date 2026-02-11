@@ -5,8 +5,6 @@
 
 package io.opentelemetry.android.instrumentation
 
-import io.opentelemetry.android.instrumentation.internal.AndroidInstrumentationLoaderImpl
-
 /**
  * Loads and provides [AndroidInstrumentation] instances from the runtime classpath.
  */
@@ -25,26 +23,4 @@ interface AndroidInstrumentationLoader {
      * @return All registered instrumentations.
      */
     fun getAll(): Collection<AndroidInstrumentation>
-
-    companion object {
-        private var instance: AndroidInstrumentationLoader? = null
-
-        @JvmStatic
-        fun get(): AndroidInstrumentationLoader =
-            instance ?: AndroidInstrumentationLoaderImpl().apply {
-                instance = this
-            }
-
-        /**
-         * Convenience method for [AndroidInstrumentationLoader.getByType].
-         */
-        @JvmStatic
-        fun <T : AndroidInstrumentation> getInstrumentation(type: Class<out T>): T =
-            get().getByType(type) ?: error("Instrumentation not found for $type")
-
-        @JvmStatic
-        fun resetForTest() {
-            instance = null
-        }
-    }
 }
