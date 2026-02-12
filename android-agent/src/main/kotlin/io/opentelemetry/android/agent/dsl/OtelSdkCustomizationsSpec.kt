@@ -40,7 +40,7 @@ class OtelSdkCustomizationsSpec internal constructor() {
     }
 
     /**
-     * Modify the creation of the OpenTelemetry LoggerProvider by providing
+     * Modify the creation of the OpenTelemetry MeterProvider by providing
      * your own customizer here. The customizer is a function
      * that receives an instance of [SdkMeterProviderBuilder] and returns an
      * instance of [SdkMeterProviderBuilder], which should almost always be
