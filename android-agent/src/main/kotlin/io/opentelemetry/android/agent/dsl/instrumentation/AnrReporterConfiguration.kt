@@ -20,7 +20,7 @@ class AnrReporterConfiguration internal constructor(
 ) : WithEventAttributes<Array<StackTraceElement>>,
     CanBeEnabledAndDisabled {
     private val anrInstrumentation: AnrInstrumentation by lazy {
-        AndroidInstrumentationLoader.getInstrumentation(
+        AndroidInstrumentationLoader.get().getByType(
             AnrInstrumentation::class.java,
         )
     }
