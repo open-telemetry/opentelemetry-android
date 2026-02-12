@@ -39,6 +39,18 @@ public final class io/opentelemetry/android/agent/dsl/HttpExportConfiguration {
 	public final fun spans (Lkotlin/jvm/functions/Function1;)V
 }
 
+public abstract interface class io/opentelemetry/android/agent/dsl/TracerProviderCustomizer {
+	public abstract fun customize (Lio/opentelemetry/sdk/trace/SdkTracerProviderBuilder;)Lio/opentelemetry/sdk/trace/SdkTracerProviderBuilder;
+}
+
+public abstract interface class io/opentelemetry/android/agent/dsl/LoggerProviderCustomizer {
+	public abstract fun customize (Lio/opentelemetry/sdk/logs/SdkLoggerProviderBuilder;)Lio/opentelemetry/sdk/logs/SdkLoggerProviderBuilder;
+}
+
+public abstract interface class io/opentelemetry/android/agent/dsl/MeterProviderCustomizer {
+	public abstract fun customize (Lio/opentelemetry/sdk/metrics/SdkMeterProviderBuilder;)Lio/opentelemetry/sdk/metrics/SdkMeterProviderBuilder;
+}
+
 public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration {
 	public fun <init> ()V
 	public final fun diskBuffering (Lkotlin/jvm/functions/Function1;)V
@@ -46,9 +58,16 @@ public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration
 	public final fun globalAttributes (Lkotlin/jvm/functions/Function0;)V
 	public final fun httpExport (Lkotlin/jvm/functions/Function1;)V
 	public final fun instrumentations (Lkotlin/jvm/functions/Function1;)V
+	public final fun otelSdkCustomizations (Lkotlin/jvm/functions/Function1;)V
 	public final fun resource (Lkotlin/jvm/functions/Function1;)V
 	public final fun session (Lkotlin/jvm/functions/Function1;)V
 	public final fun setClock (Lio/opentelemetry/sdk/common/Clock;)V
+}
+
+public final class io/opentelemetry/android/agent/dsl/OtelSdkCustomizationsSpec {
+	public final fun customizeLoggerProvider (Lio/opentelemetry/android/agent/dsl/LoggerProviderCustomizer;)V
+	public final fun customizeMeterProvider (Lio/opentelemetry/android/agent/dsl/MeterProviderCustomizer;)V
+	public final fun customizeTracerProvider (Lio/opentelemetry/android/agent/dsl/TracerProviderCustomizer;)V
 }
 
 public final class io/opentelemetry/android/agent/dsl/SessionConfiguration {

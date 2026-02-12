@@ -59,33 +59,44 @@ object OpenTelemetryRumInitializer {
         cfg.resourceAction(resourceBuilder)
         val resource = resourceBuilder.build()
 
-        return RumBuilder
-            .builder(ctx, cfg.rumConfig)
-            .setSessionProvider(createSessionProvider(ctx, cfg))
-            .setResource(resource)
-            .setClock(cfg.clock)
-            .addSpanExporterCustomizer {
-                OtlpHttpSpanExporter
-                    .builder()
-                    .setEndpoint(spansEndpoint.getUrl())
-                    .setHeaders(spansEndpoint::getHeaders)
-                    .setCompression(spansEndpoint.getCompression().getUpstreamName())
-                    .build()
-            }.addLogRecordExporterCustomizer {
-                OtlpHttpLogRecordExporter
-                    .builder()
-                    .setEndpoint(logsEndpoints.getUrl())
-                    .setHeaders(logsEndpoints::getHeaders)
-                    .setCompression(logsEndpoints.getCompression().getUpstreamName())
-                    .build()
-            }.addMetricExporterCustomizer {
-                OtlpHttpMetricExporter
-                    .builder()
-                    .setEndpoint(metricsEndpoint.getUrl())
-                    .setHeaders(metricsEndpoint::getHeaders)
-                    .setCompression(metricsEndpoint.getCompression().getUpstreamName())
-                    .build()
-            }.build()
+        var builder =
+            RumBuilder
+                .builder(ctx, cfg.rumConfig)
+                .setSessionProvider(createSessionProvider(ctx, cfg))
+                .setResource(resource)
+                .setClock(cfg.clock)
+                .addSpanExporterCustomizer {
+                    OtlpHttpSpanExporter
+                        .builder()
+                        .setEndpoint(spansEndpoint.getUrl())
+                        .setHeaders(spansEndpoint::getHeaders)
+                        .setCompression(spansEndpoint.getCompression().getUpstreamName())
+                        .build()
+                }.addLogRecordExporterCustomizer {
+                    OtlpHttpLogRecordExporter
+                        .builder()
+                        .setEndpoint(logsEndpoints.getUrl())
+                        .setHeaders(logsEndpoints::getHeaders)
+                        .setCompression(logsEndpoints.getCompression().getUpstreamName())
+                        .build()
+                }.addMetricExporterCustomizer {
+                    OtlpHttpMetricExporter
+                        .builder()
+                        .setEndpoint(metricsEndpoint.getUrl())
+                        .setHeaders(metricsEndpoint::getHeaders)
+                        .setCompression(metricsEndpoint.getCompression().getUpstreamName())
+                        .build()
+                }
+        cfg.sdkCustomizations.tracerProviderCustomizers.forEach {
+            builder.addTracerProviderCustomizer { builder, _ -> it.customize(builder) }
+        }
+        cfg.sdkCustomizations.loggerProviderCustomizers.forEach {
+            builder.addLoggerProviderCustomizer { builder, _ -> it.customize(builder) }
+        }
+        cfg.sdkCustomizations.meterProviderCustomizers.forEach {
+            builder.addMeterProviderCustomizer { builder, _ -> it.customize(builder) }
+        }
+        return builder.build()
     }
 
     private fun Compression.getUpstreamName(): String =
