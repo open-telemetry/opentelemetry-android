@@ -39,14 +39,6 @@ public final class io/opentelemetry/android/agent/dsl/HttpExportConfiguration {
 	public final fun spans (Lkotlin/jvm/functions/Function1;)V
 }
 
-public abstract interface class io/opentelemetry/android/agent/dsl/LoggerProviderCustomizer {
-	public abstract fun customize (Lio/opentelemetry/sdk/logs/SdkLoggerProviderBuilder;)Lio/opentelemetry/sdk/logs/SdkLoggerProviderBuilder;
-}
-
-public abstract interface class io/opentelemetry/android/agent/dsl/MeterProviderCustomizer {
-	public abstract fun customize (Lio/opentelemetry/sdk/metrics/SdkMeterProviderBuilder;)Lio/opentelemetry/sdk/metrics/SdkMeterProviderBuilder;
-}
-
 public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration {
 	public fun <init> ()V
 	public final fun diskBuffering (Lkotlin/jvm/functions/Function1;)V
@@ -61,9 +53,9 @@ public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration
 }
 
 public final class io/opentelemetry/android/agent/dsl/OtelSdkCustomizationsSpec {
-	public final fun customizeLoggerProvider (Lio/opentelemetry/android/agent/dsl/LoggerProviderCustomizer;)V
-	public final fun customizeMeterProvider (Lio/opentelemetry/android/agent/dsl/MeterProviderCustomizer;)V
-	public final fun customizeTracerProvider (Lio/opentelemetry/android/agent/dsl/TracerProviderCustomizer;)V
+	public final fun customizeLoggerProvider (Lkotlin/jvm/functions/Function1;)V
+	public final fun customizeMeterProvider (Lkotlin/jvm/functions/Function1;)V
+	public final fun customizeTracerProvider (Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class io/opentelemetry/android/agent/dsl/SessionConfiguration {
@@ -71,10 +63,6 @@ public final class io/opentelemetry/android/agent/dsl/SessionConfiguration {
 	public final fun getMaxLifetime-UwyO8pc ()J
 	public final fun setBackgroundInactivityTimeout-LRDsOJo (J)V
 	public final fun setMaxLifetime-LRDsOJo (J)V
-}
-
-public abstract interface class io/opentelemetry/android/agent/dsl/TracerProviderCustomizer {
-	public abstract fun customize (Lio/opentelemetry/sdk/trace/SdkTracerProviderBuilder;)Lio/opentelemetry/sdk/trace/SdkTracerProviderBuilder;
 }
 
 public final class io/opentelemetry/android/agent/dsl/instrumentation/ActivityLifecycleConfiguration : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled, io/opentelemetry/android/agent/dsl/instrumentation/ScreenLifecycleConfigurable {

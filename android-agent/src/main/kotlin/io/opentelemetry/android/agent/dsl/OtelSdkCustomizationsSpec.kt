@@ -9,6 +9,10 @@ import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 
+typealias TracerProviderCustomizer = Function1<SdkTracerProviderBuilder, SdkTracerProviderBuilder>
+typealias LoggerProviderCustomizer = Function1<SdkLoggerProviderBuilder, SdkLoggerProviderBuilder>
+typealias MeterProviderCustomizer = Function1<SdkMeterProviderBuilder, SdkMeterProviderBuilder>
+
 @OpenTelemetryDslMarker
 class OtelSdkCustomizationsSpec internal constructor() {
     internal val tracerProviderCustomizers: MutableList<TracerProviderCustomizer> = mutableListOf()
@@ -50,16 +54,4 @@ class OtelSdkCustomizationsSpec internal constructor() {
     fun customizeMeterProvider(customizer: MeterProviderCustomizer) {
         meterProviderCustomizers.add(customizer)
     }
-}
-
-fun interface TracerProviderCustomizer {
-    fun customize(builder: SdkTracerProviderBuilder): SdkTracerProviderBuilder
-}
-
-fun interface LoggerProviderCustomizer {
-    fun customize(builder: SdkLoggerProviderBuilder): SdkLoggerProviderBuilder
-}
-
-fun interface MeterProviderCustomizer {
-    fun customize(builder: SdkMeterProviderBuilder): SdkMeterProviderBuilder
 }

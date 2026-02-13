@@ -59,7 +59,7 @@ object OpenTelemetryRumInitializer {
         cfg.resourceAction(resourceBuilder)
         val resource = resourceBuilder.build()
 
-        var builder =
+        val builder =
             RumBuilder
                 .builder(ctx, cfg.rumConfig)
                 .setSessionProvider(createSessionProvider(ctx, cfg))
@@ -88,13 +88,13 @@ object OpenTelemetryRumInitializer {
                         .build()
                 }
         cfg.sdkCustomizations.tracerProviderCustomizers.forEach {
-            builder.addTracerProviderCustomizer { builder, _ -> it.customize(builder) }
+            builder.addTracerProviderCustomizer { builder, _ -> it.invoke(builder) }
         }
         cfg.sdkCustomizations.loggerProviderCustomizers.forEach {
-            builder.addLoggerProviderCustomizer { builder, _ -> it.customize(builder) }
+            builder.addLoggerProviderCustomizer { builder, _ -> it.invoke(builder) }
         }
         cfg.sdkCustomizations.meterProviderCustomizers.forEach {
-            builder.addMeterProviderCustomizer { builder, _ -> it.customize(builder) }
+            builder.addMeterProviderCustomizer { builder, _ -> it.invoke(builder) }
         }
         return builder.build()
     }
