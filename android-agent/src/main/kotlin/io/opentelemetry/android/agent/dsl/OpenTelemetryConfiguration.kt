@@ -25,6 +25,7 @@ class OpenTelemetryConfiguration internal constructor(
      * Configures the [Clock] used for capturing telemetry.
      */
     var clock: Clock = OtelAndroidClock(),
+    internal val sdkCustomizations: OtelSdkCustomizationsSpec = OtelSdkCustomizationsSpec(),
 ) {
     internal val exportConfig = HttpExportConfiguration()
     internal val sessionConfig = SessionConfiguration()
@@ -57,6 +58,14 @@ class OpenTelemetryConfiguration internal constructor(
      */
     fun globalAttributes(action: () -> Attributes) {
         rumConfig.setGlobalAttributes(action())
+    }
+
+    /**
+     * You can use this to customize additional nonstandard aspects of the OpenTelemetry SDK.
+     * Most users should not need to provide any customizations here.
+     */
+    fun otelSdkCustomizations(action: OtelSdkCustomizationsSpec.() -> Unit) {
+        sdkCustomizations.action()
     }
 
     /**
