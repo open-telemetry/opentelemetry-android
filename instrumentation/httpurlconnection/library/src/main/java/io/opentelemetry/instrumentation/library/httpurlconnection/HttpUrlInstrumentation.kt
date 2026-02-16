@@ -101,7 +101,7 @@ class HttpUrlInstrumentation : AndroidInstrumentation {
     fun newPeerServiceResolver(): PeerServiceResolver = PeerServiceResolver.create(peerServiceMapping)
 
     @Suppress("deprecation") // delegating to deprecated method for now
-    fun newServicePeerResolver() = ServicePeerResolver.fromPeerServiceResolver(newPeerServiceResolver())
+    fun newServicePeerResolver(): ServicePeerResolver = ServicePeerResolver.fromPeerServiceResolver(newPeerServiceResolver())
 
     /**
      * When enabled keeps track of
