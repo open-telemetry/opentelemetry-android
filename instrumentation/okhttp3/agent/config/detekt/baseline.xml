@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>PackageNaming:OkHttpCallbackPlugin.kt$package io.opentelemetry.instrumentation.agent.okhttp.v3_0.callback</ID>
+    <ID>PackageNaming:OkHttpClientPlugin.kt$package io.opentelemetry.instrumentation.agent.okhttp.v3_0</ID>
+  </CurrentIssues>
+</SmellBaseline>

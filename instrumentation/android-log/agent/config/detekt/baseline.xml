@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>LongMethod:AndroidLogPlugin.kt$AndroidLogPlugin$override fun apply( builder: DynamicType.Builder&lt;*&gt;, typeDescription: TypeDescription, classFileLocator: ClassFileLocator, ): DynamicType.Builder&lt;*&gt;</ID>
+    <ID>TooGenericExceptionThrown:AndroidLogPlugin.kt$AndroidLogPlugin$throw RuntimeException(e)</ID>
+  </CurrentIssues>
+</SmellBaseline>
