@@ -7,7 +7,7 @@ package io.opentelemetry.instrumentation.library.httpurlconnection.internal;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpClientExperimentalMetrics;
-import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpClientPeerServiceAttributesExtractor;
+import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpClientServicePeerAttributesExtractor;
 import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpExperimentalAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
@@ -46,10 +46,9 @@ public final class HttpUrlConnectionSingletons {
                                         instrumentation.getCapturedResponseHeaders())
                                 .setKnownMethods(instrumentation.getKnownMethods());
 
-        HttpClientPeerServiceAttributesExtractor<URLConnection, Integer>
-                httpClientPeerServiceAttributesExtractor =
-                        HttpClientPeerServiceAttributesExtractor.create(
-                                httpAttributesGetter, instrumentation.newPeerServiceResolver());
+        AttributesExtractor<URLConnection, Integer> httpClientPeerServiceAttributesExtractor =
+                HttpClientServicePeerAttributesExtractor.create(
+                        httpAttributesGetter, instrumentation.newServicePeerResolver());
 
         openTelemetryInstance = openTelemetry;
 

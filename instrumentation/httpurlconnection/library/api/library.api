@@ -11,6 +11,7 @@ public final class io/opentelemetry/instrumentation/library/httpurlconnection/Ht
 	public final fun getReportIdleConnectionRunnable ()Ljava/lang/Runnable;
 	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
 	public final fun newPeerServiceResolver ()Lio/opentelemetry/instrumentation/api/incubator/semconv/net/PeerServiceResolver;
+	public final fun newServicePeerResolver ()Lio/opentelemetry/instrumentation/api/incubator/semconv/service/peer/internal/ServicePeerResolver;
 	public final fun setCapturedRequestHeaders (Ljava/util/List;)V
 	public final fun setCapturedResponseHeaders (Ljava/util/List;)V
 	public final fun setConnectionInactivityTimeoutMs (J)V
