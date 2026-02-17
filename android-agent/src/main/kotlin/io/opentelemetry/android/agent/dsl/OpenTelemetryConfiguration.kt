@@ -53,9 +53,18 @@ class OpenTelemetryConfiguration internal constructor(
     }
 
     /**
-     * Configures attributes that are used globally.
+     * Configures attributes that are used globally. Use this method
+     * if your attributes don't change over time.
      */
     fun globalAttributes(action: () -> Attributes) {
+        rumConfig.setGlobalAttributes(action())
+    }
+
+    /**
+     * Configures attributes that are used globally. Use this method
+     * to supply attributes that might change over time.
+     */
+    fun globalAttributesSupplier(action: () -> (() -> Attributes)) {
         rumConfig.setGlobalAttributes(action())
     }
 
