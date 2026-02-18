@@ -16,8 +16,6 @@
   [#1572](https://github.com/open-telemetry/opentelemetry-android/pull/1572))
 - Added metadata file for integration with the Google Play Console.
   ([#1578](https://github.com/open-telemetry/opentelemetry-android/pull/1578))
-- Welcome @fractalwrench as a project maintainer!
-  ([#1581](https://github.com/open-telemetry/opentelemetry-android/pull/1581))
 - Increase test coverage for sessions.
   ([#1583](https://github.com/open-telemetry/opentelemetry-android/pull/1583))
 
