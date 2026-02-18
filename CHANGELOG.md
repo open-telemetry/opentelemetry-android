@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.2.0 (2026-02-18)
+
 ### 📈 Enhancements
 
 - Multiple instrumentation modules have been converted from Java to Kotlin, including ANR, activity,
