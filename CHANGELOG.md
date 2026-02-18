@@ -2,6 +2,33 @@
 
 ## Unreleased
 
+### 📈 Enhancements
+
+- Multiple instrumentation modules have been converted from Java to Kotlin, including ANR, activity,
+  fragment, websocket, and network instrumentation.
+  ([#1551](https://github.com/open-telemetry/opentelemetry-android/pull/1551),
+  [#1552](https://github.com/open-telemetry/opentelemetry-android/pull/1552),
+  [#1553](https://github.com/open-telemetry/opentelemetry-android/pull/1553),
+  [#1554](https://github.com/open-telemetry/opentelemetry-android/pull/1554),
+  [#1557](https://github.com/open-telemetry/opentelemetry-android/pull/1557),
+  [#1570](https://github.com/open-telemetry/opentelemetry-android/pull/1570),
+  [#1571](https://github.com/open-telemetry/opentelemetry-android/pull/1571),
+  [#1572](https://github.com/open-telemetry/opentelemetry-android/pull/1572))
+- Added metadata file for integration with the Google Play Console.
+  ([#1578](https://github.com/open-telemetry/opentelemetry-android/pull/1578))
+- Increase test coverage for sessions.
+  ([#1583](https://github.com/open-telemetry/opentelemetry-android/pull/1583))
+
+### 🛠️ Bug fixes
+
+- Fix clock baseline computation to correctly use nanosecond offsets.
+  ([#1574](https://github.com/open-telemetry/opentelemetry-android/pull/1574))
+
+### 🧰 Tooling
+
+- Adding support for patch and rc version bump during a release.
+  ([#1538](https://github.com/open-telemetry/opentelemetry-android/pull/1538))
+
 ## Version 1.1.0 (2026-01-23)
 
 This is a regular monthly release that builds on the following OpenTelemetry dependencies:
