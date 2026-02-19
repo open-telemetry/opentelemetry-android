@@ -8,7 +8,7 @@ package io.opentelemetry.instrumentation.library.httpurlconnection.internal
 import io.opentelemetry.context.propagation.TextMapSetter
 import java.net.URLConnection
 
-internal object RequestPropertySetter : TextMapSetter<URLConnection?> {
+internal object RequestPropertySetter : TextMapSetter<URLConnection> {
     override fun set(
         carrier: URLConnection?,
         key: String,

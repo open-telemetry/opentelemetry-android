@@ -42,21 +42,17 @@ internal class HttpUrlHttpAttributesGetter : HttpClientAttributesGetter<URLConne
             else -> mutableListOf(value)
         }
 
+    // HttpURLConnection hardcodes the protocol name&version
     override fun getNetworkProtocolName(
         connection: URLConnection,
         integer: Int?,
-    ): String {
-        // HttpURLConnection hardcodes the protocol name&version
-        return "http"
-    }
+    ): String = "http"
 
+    // HttpURLConnection hardcodes the protocol name&version
     override fun getNetworkProtocolVersion(
         connection: URLConnection,
         integer: Int?,
-    ): String {
-        // HttpURLConnection hardcodes the protocol name&version
-        return "1.1"
-    }
+    ): String = "1.1"
 
     override fun getServerAddress(connection: URLConnection): String = connection.getURL().host
 

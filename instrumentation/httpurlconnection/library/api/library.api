@@ -52,9 +52,3 @@ public class io/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlR
 	public static fun replacementForResponseMessage (Ljava/net/URLConnection;)Ljava/lang/String;
 }
 
-public final class io/opentelemetry/instrumentation/library/httpurlconnection/internal/HttpUrlConnectionSingletons {
-	public static fun configure (Lio/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlInstrumentation;Lio/opentelemetry/api/OpenTelemetry;)V
-	public static fun instrumenter ()Lio/opentelemetry/instrumentation/api/instrumenter/Instrumenter;
-	public static fun openTelemetryInstance ()Lio/opentelemetry/api/OpenTelemetry;
-}
-
