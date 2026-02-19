@@ -10,12 +10,12 @@ import java.net.HttpURLConnection
 import java.net.URLConnection
 
 internal class HttpUrlHttpAttributesGetter : HttpClientAttributesGetter<URLConnection, Int> {
-    override fun getHttpRequestMethod(connection: URLConnection): String? {
+    override fun getHttpRequestMethod(connection: URLConnection): String {
         val httpURLConnection = connection as HttpURLConnection
         return httpURLConnection.requestMethod
     }
 
-    override fun getUrlFull(connection: URLConnection): String? = connection.getURL().toExternalForm()
+    override fun getUrlFull(connection: URLConnection): String = connection.getURL().toExternalForm()
 
     override fun getHttpRequestHeader(
         connection: URLConnection,
@@ -54,7 +54,7 @@ internal class HttpUrlHttpAttributesGetter : HttpClientAttributesGetter<URLConne
         integer: Int?,
     ): String = "1.1"
 
-    override fun getServerAddress(connection: URLConnection): String? = connection.getURL().host
+    override fun getServerAddress(connection: URLConnection): String = connection.getURL().host
 
     override fun getServerPort(connection: URLConnection): Int = connection.getURL().port
 }
