@@ -9,3 +9,7 @@ public final class io/opentelemetry/instrumentation/compose/click/ComposeLayoutN
 	public static final field VIEW_CLICK_EVENT_NAME Ljava/lang/String;
 }
 
+public final class io/opentelemetry/instrumentation/compose/click/OpentelemetryModifierKt {
+	public static final fun opentelemetry (Landroidx/compose/ui/Modifier;Ljava/lang/String;)Landroidx/compose/ui/Modifier;
+}
+
