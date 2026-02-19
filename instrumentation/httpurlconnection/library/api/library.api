@@ -58,33 +58,3 @@ public final class io/opentelemetry/instrumentation/library/httpurlconnection/in
 	public static fun openTelemetryInstance ()Lio/opentelemetry/api/OpenTelemetry;
 }
 
-public class io/opentelemetry/instrumentation/library/httpurlconnection/internal/HttpUrlHttpAttributesGetter : io/opentelemetry/instrumentation/api/semconv/http/HttpClientAttributesGetter {
-	public fun <init> ()V
-	public synthetic fun getHttpRequestHeader (Ljava/lang/Object;Ljava/lang/String;)Ljava/util/List;
-	public fun getHttpRequestHeader (Ljava/net/URLConnection;Ljava/lang/String;)Ljava/util/List;
-	public synthetic fun getHttpRequestMethod (Ljava/lang/Object;)Ljava/lang/String;
-	public fun getHttpRequestMethod (Ljava/net/URLConnection;)Ljava/lang/String;
-	public synthetic fun getHttpResponseHeader (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)Ljava/util/List;
-	public fun getHttpResponseHeader (Ljava/net/URLConnection;Ljava/lang/Integer;Ljava/lang/String;)Ljava/util/List;
-	public synthetic fun getHttpResponseStatusCode (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Throwable;)Ljava/lang/Integer;
-	public fun getHttpResponseStatusCode (Ljava/net/URLConnection;Ljava/lang/Integer;Ljava/lang/Throwable;)Ljava/lang/Integer;
-	public synthetic fun getNetworkProtocolName (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/String;
-	public fun getNetworkProtocolName (Ljava/net/URLConnection;Ljava/lang/Integer;)Ljava/lang/String;
-	public synthetic fun getNetworkProtocolVersion (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/String;
-	public fun getNetworkProtocolVersion (Ljava/net/URLConnection;Ljava/lang/Integer;)Ljava/lang/String;
-	public synthetic fun getServerAddress (Ljava/lang/Object;)Ljava/lang/String;
-	public fun getServerAddress (Ljava/net/URLConnection;)Ljava/lang/String;
-	public synthetic fun getServerPort (Ljava/lang/Object;)Ljava/lang/Integer;
-	public fun getServerPort (Ljava/net/URLConnection;)Ljava/lang/Integer;
-	public synthetic fun getUrlFull (Ljava/lang/Object;)Ljava/lang/String;
-	public fun getUrlFull (Ljava/net/URLConnection;)Ljava/lang/String;
-}
-
-public final class io/opentelemetry/instrumentation/library/httpurlconnection/internal/RequestPropertySetter : java/lang/Enum, io/opentelemetry/context/propagation/TextMapSetter {
-	public static final field INSTANCE Lio/opentelemetry/instrumentation/library/httpurlconnection/internal/RequestPropertySetter;
-	public synthetic fun set (Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V
-	public fun set (Ljava/net/URLConnection;Ljava/lang/String;Ljava/lang/String;)V
-	public static fun valueOf (Ljava/lang/String;)Lio/opentelemetry/instrumentation/library/httpurlconnection/internal/RequestPropertySetter;
-	public static fun values ()[Lio/opentelemetry/instrumentation/library/httpurlconnection/internal/RequestPropertySetter;
-}
-
