@@ -284,7 +284,7 @@ class OpenTelemetryRumBuilder internal constructor(
      */
     @Deprecated(
         message = "OtelSdkReadyListeners will be removed in a future release",
-        replaceWith = ReplaceWith("addOtelReadyListener"),
+        replaceWith = ReplaceWith("addOtelReadyListener(callback)"),
     )
     fun addOtelSdkReadyListener(callback: Consumer<OpenTelemetrySdk>): OpenTelemetryRumBuilder {
         otelSdkReadyListeners.add(callback)
