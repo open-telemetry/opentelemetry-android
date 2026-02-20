@@ -88,7 +88,7 @@ internal class SpanDataModifierTest {
                     Predicate { it == "rejected!" },
                 ).rejectSpansByAttributeValue(
                     LONG_ATTRIBUTE,
-                    Predicate { value: Long -> value > 100 },
+                    Predicate { value: Long? -> value != null && value > 100 },
                 ).build()
 
         val rejected = span("span", Attributes.of(ATTRIBUTE, "test"))
@@ -197,7 +197,7 @@ internal class SpanDataModifierTest {
                     Function { it + "1" },
                 ).replaceSpanAttribute(
                     LONG_ATTRIBUTE,
-                    Function { value: Long -> value + 1 },
+                    Function { value: Long? -> value?.plus(1) },
                 ) // make sure that attribute types are taken into account
                 .replaceSpanAttribute(
                     AttributeKey.stringKey("long_attribute"),
