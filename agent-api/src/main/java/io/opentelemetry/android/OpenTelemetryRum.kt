@@ -7,6 +7,7 @@ package io.opentelemetry.android
 
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.sdk.common.CompletableResultCode
 
 /**
  * Entrypoint for the OpenTelemetry Real User Monitoring library for Android.
@@ -17,6 +18,10 @@ interface OpenTelemetryRum {
      * instance is using for instrumentation.
      */
     val openTelemetry: OpenTelemetry
+
+    val clock: Clock
+
+    val sessionProvider: SessionProvider
 
     /**
      * Get the client session ID associated with this instance of the RUM instrumentation library.
@@ -39,6 +44,8 @@ interface OpenTelemetryRum {
         body: String = "",
         attributes: Attributes = Attributes.empty(),
     )
+
+    fun flushLogRecords(): CompletableResultCode
 
     /**
      * Initiates orderly shutdown of this OpenTelemetryRum instance. After this method completes,
