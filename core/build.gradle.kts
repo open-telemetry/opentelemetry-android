@@ -13,9 +13,6 @@ android {
     }
 
     buildTypes {
-        all {
-            resValue("string", "rum.version", "${project.version}")
-        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -50,7 +47,6 @@ android {
 
     buildFeatures {
         buildConfig = true
-        resValues = true
     }
 
     sourceSets {
