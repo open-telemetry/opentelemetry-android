@@ -58,9 +58,9 @@ class SdkPreconfiguredRumBuilder internal constructor(
         if (ctx.application == null) {
             Log.w(
                 RumConstants.OTEL_RUM_LOG_TAG,
-                "Cannot retrieve applicationContext. This indicates the OpenTelemetry SDK was" +
+                "Cannot retrieve applicationContext. This indicates the OpenTelemetry SDK was " +
                     "initialized outside of the Application subclass too early using an " +
-                    "inappropriate context. Functionality that relies on lifecycle callbacks will" +
+                    "inappropriate context. Functionality that relies on lifecycle callbacks will " +
                     "not work until you resolve this problem.",
             )
         }
