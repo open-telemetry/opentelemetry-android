@@ -5,7 +5,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
     id("otel.errorprone-conventions")
     id("com.google.devtools.ksp")
     id("otel.animalsniffer-conventions")
