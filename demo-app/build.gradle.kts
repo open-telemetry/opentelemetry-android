@@ -1,14 +1,9 @@
-import java.io.FileInputStream
-import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(rootLibs.plugins.androidApp)
     alias(libs.plugins.compose.compiler)
 }
-
-val localProperties = Properties()
-localProperties.load(FileInputStream(rootProject.file("local.properties")))
 
 android {
     namespace = "io.opentelemetry.android.demo"
@@ -29,8 +24,6 @@ android {
 
     buildTypes {
         all {
-            val accessToken = localProperties["rum.access.token"] as String?
-            resValue("string", "rum_access_token", accessToken ?: "fakebroken")
             manifestPlaceholders.put("appName", "OpenTelemetry Android Demo")
             manifestPlaceholders.put("appNameSuffix", "default")
         }
@@ -41,7 +34,6 @@ android {
     }
     buildFeatures {
         viewBinding = true
-        resValues = true
     }
     val javaVersion = JavaVersion.VERSION_11
     compileOptions {
