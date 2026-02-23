@@ -23,6 +23,9 @@ android {
 
     defaultConfig {
         minSdk = (property("android.minSdk") as String).toInt()
+        aarMetadata {
+            minCompileSdk = (property("android.minCompileSdk") as String).toInt()
+        }
     }
 
     lint {
