@@ -66,11 +66,5 @@ fun configureKotlin(
             rootProject.file("gradle/spotless.license.java")
         )
         target("src/**/*.kt")
-
-        // need to suppress legacy okhttp package naming
-        suppressLintsFor {
-            step = "ktlint"
-            shortCode = "standard:package-name"
-        }
     }
 }

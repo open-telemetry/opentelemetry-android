@@ -1,7 +1,0 @@
-<?xml version="1.0" ?>
-<SmellBaseline>
-  <ManuallySuppressedIssues/>
-  <CurrentIssues>
-    <ID>PackageNaming:OkHttpClientWebsocketPlugin.kt$package io.opentelemetry.instrumentation.agent.okhttp.v3_0.websocket</ID>
-  </CurrentIssues>
-</SmellBaseline>

@@ -1,0 +1,2 @@
+io.opentelemetry.instrumentation.agent.okhttp.OkHttpClientPlugin
+io.opentelemetry.instrumentation.agent.okhttp.callback.OkHttpCallbackPlugin

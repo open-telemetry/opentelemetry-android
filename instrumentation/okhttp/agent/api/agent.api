@@ -1,0 +1,10 @@
+public class io/opentelemetry/instrumentation/agent/okhttp/OkHttpClientAdvice {
+	public fun <init> ()V
+	public static fun enter (Lokhttp3/OkHttpClient$Builder;)V
+}
+
+public class io/opentelemetry/instrumentation/agent/okhttp/callback/OkHttpCallbackAdvice {
+	public fun <init> ()V
+	public static fun enter (Lokhttp3/Call;Lokhttp3/Callback;)V
+}
+

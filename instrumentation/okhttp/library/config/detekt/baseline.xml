@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MaxLineLength:OkHttpInstrumentation.kt$OkHttpInstrumentation$ and the </ID>
+    <ID>MaxLineLength:OkHttpInstrumentation.kt$OkHttpInstrumentation$*</ID>
+    <ID>MaxLineLength:OkHttpInstrumentation.kt$OkHttpInstrumentation$.</ID>
+  </CurrentIssues>
+</SmellBaseline>
