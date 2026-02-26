@@ -11,6 +11,7 @@ public final class io/opentelemetry/instrumentation/library/httpurlconnection/Ht
 	public final fun getReportIdleConnectionRunnable ()Ljava/lang/Runnable;
 	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
 	public final fun newPeerServiceResolver ()Lio/opentelemetry/instrumentation/api/incubator/semconv/net/PeerServiceResolver;
+	public final fun newServicePeerResolver ()Lio/opentelemetry/instrumentation/api/incubator/semconv/service/peer/internal/ServicePeerResolver;
 	public final fun setCapturedRequestHeaders (Ljava/util/List;)V
 	public final fun setCapturedResponseHeaders (Ljava/util/List;)V
 	public final fun setConnectionInactivityTimeoutMs (J)V
@@ -20,70 +21,34 @@ public final class io/opentelemetry/instrumentation/library/httpurlconnection/Ht
 	public final fun setPeerServiceMapping (Ljava/util/Map;)V
 }
 
-public class io/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlReplacements {
-	public static final field UNKNOWN_RESPONSE_CODE I
-	public fun <init> ()V
-	public static fun replacementForConnect (Ljava/net/URLConnection;)V
-	public static fun replacementForContent (Ljava/net/URLConnection;)Ljava/lang/Object;
-	public static fun replacementForContent (Ljava/net/URLConnection;[Ljava/lang/Class;)Ljava/lang/Object;
-	public static fun replacementForContentEncoding (Ljava/net/URLConnection;)Ljava/lang/String;
-	public static fun replacementForContentLength (Ljava/net/URLConnection;)I
-	public static fun replacementForContentLengthLong (Ljava/net/URLConnection;)J
-	public static fun replacementForContentType (Ljava/net/URLConnection;)Ljava/lang/String;
-	public static fun replacementForDate (Ljava/net/URLConnection;)J
-	public static fun replacementForDisconnect (Ljava/net/HttpURLConnection;)V
-	public static fun replacementForErrorStream (Ljava/net/HttpURLConnection;)Ljava/io/InputStream;
-	public static fun replacementForExpiration (Ljava/net/URLConnection;)J
-	public static fun replacementForHeaderField (Ljava/net/URLConnection;I)Ljava/lang/String;
-	public static fun replacementForHeaderField (Ljava/net/URLConnection;Ljava/lang/String;)Ljava/lang/String;
-	public static fun replacementForHeaderFieldDate (Ljava/net/URLConnection;Ljava/lang/String;J)J
-	public static fun replacementForHeaderFieldInt (Ljava/net/URLConnection;Ljava/lang/String;I)I
-	public static fun replacementForHeaderFieldKey (Ljava/net/URLConnection;I)Ljava/lang/String;
-	public static fun replacementForHeaderFieldLong (Ljava/net/URLConnection;Ljava/lang/String;J)J
-	public static fun replacementForHeaderFields (Ljava/net/URLConnection;)Ljava/util/Map;
-	public static fun replacementForHttpHeaderField (Ljava/net/HttpURLConnection;I)Ljava/lang/String;
-	public static fun replacementForHttpHeaderFieldDate (Ljava/net/HttpURLConnection;Ljava/lang/String;J)J
-	public static fun replacementForHttpHeaderFieldKey (Ljava/net/HttpURLConnection;I)Ljava/lang/String;
-	public static fun replacementForInputStream (Ljava/net/URLConnection;)Ljava/io/InputStream;
-	public static fun replacementForLastModified (Ljava/net/URLConnection;)J
-	public static fun replacementForOutputStream (Ljava/net/URLConnection;)Ljava/io/OutputStream;
-	public static fun replacementForResponseCode (Ljava/net/URLConnection;)I
-	public static fun replacementForResponseMessage (Ljava/net/URLConnection;)Ljava/lang/String;
-}
-
-public final class io/opentelemetry/instrumentation/library/httpurlconnection/internal/HttpUrlConnectionSingletons {
-	public static fun configure (Lio/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlInstrumentation;Lio/opentelemetry/api/OpenTelemetry;)V
-	public static fun instrumenter ()Lio/opentelemetry/instrumentation/api/instrumenter/Instrumenter;
-	public static fun openTelemetryInstance ()Lio/opentelemetry/api/OpenTelemetry;
-}
-
-public class io/opentelemetry/instrumentation/library/httpurlconnection/internal/HttpUrlHttpAttributesGetter : io/opentelemetry/instrumentation/api/semconv/http/HttpClientAttributesGetter {
-	public fun <init> ()V
-	public synthetic fun getHttpRequestHeader (Ljava/lang/Object;Ljava/lang/String;)Ljava/util/List;
-	public fun getHttpRequestHeader (Ljava/net/URLConnection;Ljava/lang/String;)Ljava/util/List;
-	public synthetic fun getHttpRequestMethod (Ljava/lang/Object;)Ljava/lang/String;
-	public fun getHttpRequestMethod (Ljava/net/URLConnection;)Ljava/lang/String;
-	public synthetic fun getHttpResponseHeader (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)Ljava/util/List;
-	public fun getHttpResponseHeader (Ljava/net/URLConnection;Ljava/lang/Integer;Ljava/lang/String;)Ljava/util/List;
-	public synthetic fun getHttpResponseStatusCode (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Throwable;)Ljava/lang/Integer;
-	public fun getHttpResponseStatusCode (Ljava/net/URLConnection;Ljava/lang/Integer;Ljava/lang/Throwable;)Ljava/lang/Integer;
-	public synthetic fun getNetworkProtocolName (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/String;
-	public fun getNetworkProtocolName (Ljava/net/URLConnection;Ljava/lang/Integer;)Ljava/lang/String;
-	public synthetic fun getNetworkProtocolVersion (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/String;
-	public fun getNetworkProtocolVersion (Ljava/net/URLConnection;Ljava/lang/Integer;)Ljava/lang/String;
-	public synthetic fun getServerAddress (Ljava/lang/Object;)Ljava/lang/String;
-	public fun getServerAddress (Ljava/net/URLConnection;)Ljava/lang/String;
-	public synthetic fun getServerPort (Ljava/lang/Object;)Ljava/lang/Integer;
-	public fun getServerPort (Ljava/net/URLConnection;)Ljava/lang/Integer;
-	public synthetic fun getUrlFull (Ljava/lang/Object;)Ljava/lang/String;
-	public fun getUrlFull (Ljava/net/URLConnection;)Ljava/lang/String;
-}
-
-public final class io/opentelemetry/instrumentation/library/httpurlconnection/internal/RequestPropertySetter : java/lang/Enum, io/opentelemetry/context/propagation/TextMapSetter {
-	public static final field INSTANCE Lio/opentelemetry/instrumentation/library/httpurlconnection/internal/RequestPropertySetter;
-	public synthetic fun set (Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V
-	public fun set (Ljava/net/URLConnection;Ljava/lang/String;Ljava/lang/String;)V
-	public static fun valueOf (Ljava/lang/String;)Lio/opentelemetry/instrumentation/library/httpurlconnection/internal/RequestPropertySetter;
-	public static fun values ()[Lio/opentelemetry/instrumentation/library/httpurlconnection/internal/RequestPropertySetter;
+public final class io/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlReplacements {
+	public static final field INSTANCE Lio/opentelemetry/instrumentation/library/httpurlconnection/HttpUrlReplacements;
+	public static final fun replacementForConnect (Ljava/net/URLConnection;)V
+	public static final fun replacementForContent (Ljava/net/URLConnection;)Ljava/lang/Object;
+	public final fun replacementForContent (Ljava/net/URLConnection;[Ljava/lang/Class;)Ljava/lang/Object;
+	public static final fun replacementForContentEncoding (Ljava/net/URLConnection;)Ljava/lang/String;
+	public static final fun replacementForContentLength (Ljava/net/URLConnection;)I
+	public static final fun replacementForContentLengthLong (Ljava/net/URLConnection;)J
+	public static final fun replacementForContentType (Ljava/net/URLConnection;)Ljava/lang/String;
+	public static final fun replacementForDate (Ljava/net/URLConnection;)J
+	public static final fun replacementForDisconnect (Ljava/net/HttpURLConnection;)V
+	public static final fun replacementForErrorStream (Ljava/net/HttpURLConnection;)Ljava/io/InputStream;
+	public static final fun replacementForExpiration (Ljava/net/URLConnection;)J
+	public static final fun replacementForHeaderField (Ljava/net/URLConnection;I)Ljava/lang/String;
+	public static final fun replacementForHeaderField (Ljava/net/URLConnection;Ljava/lang/String;)Ljava/lang/String;
+	public static final fun replacementForHeaderFieldDate (Ljava/net/URLConnection;Ljava/lang/String;J)J
+	public static final fun replacementForHeaderFieldInt (Ljava/net/URLConnection;Ljava/lang/String;I)I
+	public static final fun replacementForHeaderFieldKey (Ljava/net/URLConnection;I)Ljava/lang/String;
+	public static final fun replacementForHeaderFieldLong (Ljava/net/URLConnection;Ljava/lang/String;J)J
+	public static final fun replacementForHeaderFields (Ljava/net/URLConnection;)Ljava/util/Map;
+	public static final fun replacementForHttpHeaderField (Ljava/net/HttpURLConnection;I)Ljava/lang/String;
+	public static final fun replacementForHttpHeaderFieldDate (Ljava/net/HttpURLConnection;Ljava/lang/String;J)J
+	public static final fun replacementForHttpHeaderFieldKey (Ljava/net/HttpURLConnection;I)Ljava/lang/String;
+	public static final fun replacementForInputStream (Ljava/net/URLConnection;)Ljava/io/InputStream;
+	public static final fun replacementForLastModified (Ljava/net/URLConnection;)J
+	public static final fun replacementForOutputStream (Ljava/net/URLConnection;)Ljava/io/OutputStream;
+	public static final fun replacementForResponseCode (Ljava/net/URLConnection;)I
+	public static final fun replacementForResponseMessage (Ljava/net/URLConnection;)Ljava/lang/String;
+	public final fun reportIdleConnectionsOlderThan (J)V
 }
 

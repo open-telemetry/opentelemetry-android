@@ -55,7 +55,7 @@ before submitting a pull request.
    on size, but PRs that are thousands of lines long take a very long time and lots
    of effort to review. Find ways of decomposing the work into smaller units to keep the
    size of your PRs down. Incremental changes are favored over widespread/far-reaching
-   refactors. 
+   refactors.
 4. Keep your PRs single-purpose! This is subjective, but PRs should usually have a single
    purpose/idea/goal and make one clear change. Contributors should avoid making unrelated
    changes to separate code areas in the same PR. Keeping PRs single-purpose will also
@@ -65,6 +65,18 @@ before submitting a pull request.
    in the PR description, so that the issue can be automatically closed when the PR is
    merged. This also leaves a nice audit trail for future developers.
 
+### Guidelines for merging pull requests
+
+Maintainers have the permissions to merge pull requests. The process for merging pull requests after
+review approval differs depending on its complexity.
+
+For example, a simple Renovate/dependency bump PR probably only requires approval from one
+approver/maintainer.
+
+A complex change with a wide scope probably requires approval from more than one
+maintainer/approver. If a change alters the public API, it's also worth waiting a couple of days
+to give folks a chance to provide their opinions. Discussing API changes in the SIG is always
+welcome.
 
 ## Code Conventions
 
@@ -92,7 +104,7 @@ For both, Android and Robolectric tests, we use JUnit 4 as they currently don't 
 
 #### Assertions
 
-This project has standardized on 
+This project has standardized on
 [AssertJ](https://joel-costigliola.github.io/assertj/)
 for fluent test assertions, rather than the default JUnit assertions. Please
 use AssertJ when writing tests. For example, instead of `assertEquals(that, thiz)`
@@ -102,8 +114,8 @@ For clarity, assert methods should be brought in via static import.
 
 #### Mocks
 
-OpenTelemetry Android has standardized on 
-[MockK](https://mockk.io/) as the preferred Kotlin mocking framework for tests. 
+OpenTelemetry Android has standardized on
+[MockK](https://mockk.io/) as the preferred Kotlin mocking framework for tests.
 When writing test code, please use MockK instead of Mockito.
 
 #### Instrumentation tests

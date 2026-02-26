@@ -9,7 +9,7 @@ import android.app.Activity
 import android.os.Bundle
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
 
-class ActivityCallbacks(
+internal class ActivityCallbacks(
     private val tracers: ActivityTracerCache,
 ) : DefaultingActivityLifecycleCallbacks {
     override fun onActivityPreCreated(

@@ -9,6 +9,7 @@ import com.google.auto.service.AutoService
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceResolver
+import io.opentelemetry.instrumentation.api.incubator.semconv.service.peer.internal.ServicePeerResolver
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor
 import io.opentelemetry.instrumentation.api.internal.HttpConstants
 import io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons
@@ -96,7 +97,11 @@ class HttpUrlInstrumentation : AndroidInstrumentation {
         this.peerServiceMapping = peerServiceMapping.toMutableMap()
     }
 
+    @Deprecated("Use newServicePeerResolver() instead.")
     fun newPeerServiceResolver(): PeerServiceResolver = PeerServiceResolver.create(peerServiceMapping)
+
+    @Suppress("deprecation") // delegating to deprecated method for now
+    fun newServicePeerResolver(): ServicePeerResolver = ServicePeerResolver.fromPeerServiceResolver(newPeerServiceResolver())
 
     /**
      * When enabled keeps track of

@@ -33,6 +33,7 @@ import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.internal.services.storage.CacheStorage
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Severity
@@ -550,6 +551,18 @@ class OpenTelemetryRumBuilderTest {
         RumBuilder
             .builder(application, config)
             .addOtelSdkReadyListener { newValue: OpenTelemetrySdk -> seen.set(newValue) }
+            .build()
+        assertThat(seen.get()).isNotNull()
+    }
+
+    @Test
+    fun otelReadyListeners() {
+        val config = buildConfig()
+        val seen = AtomicReference<OpenTelemetry>()
+        createAndSetServiceManager()
+        RumBuilder
+            .builder(application, config)
+            .addOtelReadyListener { otel: OpenTelemetry -> seen.set(otel) }
             .build()
         assertThat(seen.get()).isNotNull()
     }

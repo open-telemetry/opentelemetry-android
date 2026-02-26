@@ -7,6 +7,7 @@ package io.opentelemetry.android.agent.dsl
 
 import io.opentelemetry.android.agent.connectivity.Compression
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
+import io.opentelemetry.android.agent.connectivity.SSLContextConnectivity
 
 /**
  * Type-safe config DSL that controls how HTTP export of telemetry should behave.
@@ -28,6 +29,11 @@ class HttpExportConfiguration internal constructor() {
      */
     var compression: Compression = Compression.GZIP
 
+    /**
+     * Default SSL context for all export requests.
+     */
+    var sslContext: SSLContextConnectivity? = null
+
     private val spansConfig: EndpointConfiguration = EndpointConfiguration("")
     private val logsConfig: EndpointConfiguration = EndpointConfiguration("")
     private val metricsConfig: EndpointConfiguration = EndpointConfiguration("")
@@ -37,6 +43,7 @@ class HttpExportConfiguration internal constructor() {
             chooseUrlSource(spansConfig),
             spansConfig.headers + baseHeaders,
             chooseCompression(spansConfig.compression),
+            sslContext,
         )
 
     internal fun logsEndpoint(): HttpEndpointConnectivity =
@@ -44,6 +51,7 @@ class HttpExportConfiguration internal constructor() {
             chooseUrlSource(logsConfig),
             logsConfig.headers + baseHeaders,
             chooseCompression(logsConfig.compression),
+            sslContext,
         )
 
     internal fun metricsEndpoint(): HttpEndpointConnectivity =
@@ -51,6 +59,7 @@ class HttpExportConfiguration internal constructor() {
             chooseUrlSource(metricsConfig),
             metricsConfig.headers + baseHeaders,
             chooseCompression(metricsConfig.compression),
+            sslContext,
         )
 
     private fun chooseUrlSource(cfg: EndpointConfiguration): String = cfg.url.ifBlank { baseUrl }
