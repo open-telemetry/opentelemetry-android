@@ -2,6 +2,8 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
+    <ID>ComplexCondition:HttpUrlReplacements.kt$HttpUrlReplacements$info != null &amp;&amp; info.harvestable &amp;&amp; !info.reported &amp;&amp; (info.lastSeenTime + timeInterval) &lt; timeNow</ID>
     <ID>MaxLineLength:HttpUrlInstrumentation.kt$HttpUrlInstrumentation$*</ID>
+    <ID>TooManyFunctions:HttpUrlReplacements.kt$HttpUrlReplacements</ID>
   </CurrentIssues>
 </SmellBaseline>
