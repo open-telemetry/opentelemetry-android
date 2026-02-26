@@ -8,9 +8,24 @@ This repository targets monthly minor releases from the `main` branch roughly a 
 the monthly minor release
 of [opentelemetry-java-instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation)).
 
+## Update Milestones
+
+First, let's deal with any milestones:
+
+- Open [the list of active milestones](https://github.com/open-telemetry/opentelemetry-android/milestones)
+  to see if there is a milestone open for the version you are about to release.
+- If there is no milestone for this version, begin prepping the release (below)
+- If there is a milestone for this release:
+    - If there are no remaining issue or PRs associated with the milestone, you may close the
+      milestone and proceed to prepping the release (below).
+    - If there is active work remaining, you should probably stop the release.
+      Alternately, you could move the work to a future milestone, but probably want to discuss this
+      with other contributors first.
+
+
 ## Prepare the release
 
-We first need to prepare the release. This creates a versioned release branch, These are the steps to follow:
+Next, we need to prepare the release. This creates a versioned release branch, These are the steps to follow:
 
 - Review the recent [list of open PRs](https://github.com/open-telemetry/opentelemetry-android/pulls)
   to determine if any need to be merged before cutting a release.

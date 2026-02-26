@@ -36,11 +36,6 @@ public abstract interface class io/opentelemetry/android/internal/services/appli
 	public abstract fun onApplicationForegrounded ()V
 }
 
-public class io/opentelemetry/android/internal/services/network/CarrierFinder {
-	public fun <init> (Landroid/content/Context;Landroid/telephony/TelephonyManager;)V
-	public fun get ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/Carrier;
-}
-
 public abstract interface class io/opentelemetry/android/internal/services/network/CurrentNetworkProvider : io/opentelemetry/android/internal/services/Service {
 	public static final field Companion Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider$Companion;
 	public static final field NO_NETWORK Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
@@ -51,14 +46,6 @@ public abstract interface class io/opentelemetry/android/internal/services/netwo
 }
 
 public final class io/opentelemetry/android/internal/services/network/CurrentNetworkProvider$Companion {
-}
-
-public final class io/opentelemetry/android/internal/services/network/CurrentNetworkProviderImpl : io/opentelemetry/android/internal/services/network/CurrentNetworkProvider {
-	public fun <init> (Lio/opentelemetry/android/internal/services/network/detector/NetworkDetector;Landroid/net/ConnectivityManager;)V
-	public fun addNetworkChangeListener (Lio/opentelemetry/android/internal/services/network/NetworkChangeListener;)V
-	public fun close ()V
-	public fun getCurrentNetwork ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
-	public fun refreshNetworkStatus ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
 }
 
 public abstract interface class io/opentelemetry/android/internal/services/network/NetworkChangeListener {
@@ -122,9 +109,10 @@ public final class io/opentelemetry/android/internal/services/visiblescreen/acti
 	public fun onActivityPrePaused (Landroid/app/Activity;)V
 }
 
-public class io/opentelemetry/android/internal/services/visiblescreen/fragments/RumFragmentActivityRegisterer {
-	public static fun create (Landroidx/fragment/app/FragmentManager$FragmentLifecycleCallbacks;)Landroid/app/Application$ActivityLifecycleCallbacks;
-	public static fun createPre29 (Landroidx/fragment/app/FragmentManager$FragmentLifecycleCallbacks;)Landroid/app/Application$ActivityLifecycleCallbacks;
+public final class io/opentelemetry/android/internal/services/visiblescreen/fragments/RumFragmentActivityRegisterer {
+	public static final field INSTANCE Lio/opentelemetry/android/internal/services/visiblescreen/fragments/RumFragmentActivityRegisterer;
+	public final fun create (Landroidx/fragment/app/FragmentManager$FragmentLifecycleCallbacks;)Landroid/app/Application$ActivityLifecycleCallbacks;
+	public final fun createPre29 (Landroidx/fragment/app/FragmentManager$FragmentLifecycleCallbacks;)Landroid/app/Application$ActivityLifecycleCallbacks;
 }
 
 public final class io/opentelemetry/android/internal/services/visiblescreen/fragments/VisibleFragmentTracker : androidx/fragment/app/FragmentManager$FragmentLifecycleCallbacks {

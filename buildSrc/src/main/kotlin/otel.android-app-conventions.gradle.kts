@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("otel.errorprone-conventions")
     id("otel.android-dependency-conventions")
     id("otel.spotless-conventions")

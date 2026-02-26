@@ -33,13 +33,13 @@ internal class DiskManager(
             return dir
         }
 
+    /**
+     * It divides the requested cache size by 3 in order to
+     * get each signal's folder max size.
+     *
+     * @return The calculated size is stored in the preferences and returned.
+     */
     val maxFolderSize: Int
-        /**
-         * It divides the requested cache size by 3 in order to
-         * get each signal's folder max size.
-         *
-         * @return The calculated size is stored in the preferences and returned.
-         */
         get() {
             val requestedSize = diskBufferingConfig.maxCacheSize
 

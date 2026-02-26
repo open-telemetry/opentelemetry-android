@@ -18,6 +18,7 @@ public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
 	public final fun addLoggerProviderCustomizer (Ljava/util/function/BiFunction;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun addMeterProviderCustomizer (Ljava/util/function/BiFunction;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun addMetricExporterCustomizer (Ljava/util/function/Function;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun addOtelReadyListener (Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun addOtelSdkReadyListener (Ljava/util/function/Consumer;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun addPropagatorCustomizer (Ljava/util/function/Function;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun addSpanExporterCustomizer (Ljava/util/function/Function;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
@@ -32,6 +33,12 @@ public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
 
 public final class io/opentelemetry/android/OpenTelemetryRumBuilder$Companion {
 	public final fun create (Landroid/content/Context;Lio/opentelemetry/android/config/OtelRumConfig;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+}
+
+public final class io/opentelemetry/android/OtelAndroidClock : io/opentelemetry/sdk/common/Clock {
+	public fun <init> ()V
+	public fun nanoTime ()J
+	public fun now ()J
 }
 
 public final class io/opentelemetry/android/RumBuilder {
@@ -175,10 +182,10 @@ public final class io/opentelemetry/android/features/diskbuffering/DiskBuffering
 public final class io/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter {
 	public static final field Companion Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter$Companion;
 	public fun <init> (Lio/opentelemetry/contrib/disk/buffering/storage/SignalStorage$Span;Lio/opentelemetry/sdk/trace/export/SpanExporter;Lio/opentelemetry/contrib/disk/buffering/storage/SignalStorage$LogRecord;Lio/opentelemetry/sdk/logs/export/LogRecordExporter;Lio/opentelemetry/contrib/disk/buffering/storage/SignalStorage$Metric;Lio/opentelemetry/sdk/metrics/export/MetricExporter;)V
-	public final fun exportBatchOfEach ()Z
-	public final fun exportBatchOfLogs ()Z
-	public final fun exportBatchOfMetrics ()Z
-	public final fun exportBatchOfSpans ()Z
+	public final fun exportAllSignalsFromDisk ()Z
+	public final fun exportLogsFromDisk ()Z
+	public final fun exportMetricsFromDisk ()Z
+	public final fun exportSpansFromDisk ()Z
 	public static final fun get ()Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;
 	public static final fun resetForTesting ()V
 	public static final fun set (Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;)V

@@ -30,6 +30,8 @@ class OpenTelemetryRumSmokeTest {
 
     @Test
     fun testLogExported() {
+        val logMessage = "Hello world"
+        val logScopeName = "logger"
         performOpenTelemetryRumAction(
             config = {
                 httpExport {
@@ -38,17 +40,37 @@ class OpenTelemetryRumSmokeTest {
                 diskBufferingConfig.enabled(false)
             },
             action = {
-                val logger = openTelemetry.logsBridge.get("logger")
-                logger.logRecordBuilder().setBody("Hello world").emit()
+                val logger = openTelemetry.logsBridge.get(logScopeName)
+                logger.logRecordBuilder().setBody(logMessage).emit()
             },
         )
 
-        val logRequest = server.awaitLogRequest()
+        val logRequest =
+            server.awaitLogRequest(findLogBodyWithinScope(logScopeName, logMessage))
+
         assertLogRequestReceived(logRequest)
     }
 
+    private fun findLogBodyWithinScope(
+        logScopeName: String,
+        logMessage: String,
+    ): (ExportLogsServiceRequest) -> Boolean =
+        {
+            it
+                .getResourceLogs(0)
+                .scopeLogsList
+                .find { scopeLogs ->
+                    scopeLogs.scope.name == logScopeName
+                }?.logRecordsList
+                .orEmpty()
+                .map { logRecord ->
+                    logRecord.body.stringValue
+                }.contains(logMessage)
+        }
+
     @Test
     fun testTraceExported() {
+        val spanName = "span"
         performOpenTelemetryRumAction(
             config = {
                 httpExport {
@@ -58,7 +80,7 @@ class OpenTelemetryRumSmokeTest {
             },
             action = {
                 val tracer = openTelemetry.tracerProvider.get("tracer")
-                tracer.spanBuilder("span").startSpan().end()
+                tracer.spanBuilder(spanName).startSpan().end()
             },
         )
 
@@ -68,7 +90,7 @@ class OpenTelemetryRumSmokeTest {
                     .getResourceSpans(0)
                     .getScopeSpans(0)
                     .getSpans(0)
-                    .name == "span"
+                    .name == spanName
             }
         assertTraceRequestReceived(traceRequest)
     }

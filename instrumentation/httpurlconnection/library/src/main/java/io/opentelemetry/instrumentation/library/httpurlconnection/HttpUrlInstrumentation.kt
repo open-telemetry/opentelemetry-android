@@ -9,6 +9,7 @@ import com.google.auto.service.AutoService
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceResolver
+import io.opentelemetry.instrumentation.api.incubator.semconv.service.peer.internal.ServicePeerResolver
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor
 import io.opentelemetry.instrumentation.api.internal.HttpConstants
 import io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons
@@ -96,7 +97,11 @@ class HttpUrlInstrumentation : AndroidInstrumentation {
         this.peerServiceMapping = peerServiceMapping.toMutableMap()
     }
 
+    @Deprecated("Use newServicePeerResolver() instead.")
     fun newPeerServiceResolver(): PeerServiceResolver = PeerServiceResolver.create(peerServiceMapping)
+
+    @Suppress("deprecation") // delegating to deprecated method for now
+    fun newServicePeerResolver(): ServicePeerResolver = ServicePeerResolver.fromPeerServiceResolver(newPeerServiceResolver())
 
     /**
      * When enabled keeps track of
@@ -143,14 +148,14 @@ class HttpUrlInstrumentation : AndroidInstrumentation {
         this.reportIdleConnectionInterval = timeoutMsForTesting
     }
 
+    /**
+     * Returns a runnable that can be scheduled to run periodically at a fixed interval to close
+     * open spans if connection is left idle for connectionInactivityTimeoutMs duration.
+     * connectionInactivityTimeoutMs can be obtained via getReportIdleConnectionInterval() API.
+     *
+     * @return The idle connection reporting runnable
+     */
     val reportIdleConnectionRunnable: Runnable
-        /**
-         * Returns a runnable that can be scheduled to run periodically at a fixed interval to close
-         * open spans if connection is left idle for connectionInactivityTimeoutMs duration.
-         * connectionInactivityTimeoutMs can be obtained via getReportIdleConnectionInterval() API.
-         *
-         * @return The idle connection reporting runnable
-         */
         get() =
             object : Runnable {
                 override fun run() {

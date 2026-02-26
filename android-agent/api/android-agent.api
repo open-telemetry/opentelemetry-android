@@ -15,6 +15,12 @@ public final class io/opentelemetry/android/agent/connectivity/Compression : jav
 	public static fun values ()[Lio/opentelemetry/android/agent/connectivity/Compression;
 }
 
+public final class io/opentelemetry/android/agent/connectivity/SSLContextConnectivity {
+	public fun <init> (Ljavax/net/ssl/SSLContext;Ljavax/net/ssl/X509TrustManager;)V
+	public final fun getSslContext ()Ljavax/net/ssl/SSLContext;
+	public final fun getSslX509TrustManager ()Ljavax/net/ssl/X509TrustManager;
+}
+
 public final class io/opentelemetry/android/agent/dsl/DiskBufferingConfigurationSpec : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled {
 	public fun enabled (Z)V
 }
@@ -32,11 +38,13 @@ public final class io/opentelemetry/android/agent/dsl/HttpExportConfiguration {
 	public final fun getBaseHeaders ()Ljava/util/Map;
 	public final fun getBaseUrl ()Ljava/lang/String;
 	public final fun getCompression ()Lio/opentelemetry/android/agent/connectivity/Compression;
+	public final fun getSslContext ()Lio/opentelemetry/android/agent/connectivity/SSLContextConnectivity;
 	public final fun logs (Lkotlin/jvm/functions/Function1;)V
 	public final fun metrics (Lkotlin/jvm/functions/Function1;)V
 	public final fun setBaseHeaders (Ljava/util/Map;)V
 	public final fun setBaseUrl (Ljava/lang/String;)V
 	public final fun setCompression (Lio/opentelemetry/android/agent/connectivity/Compression;)V
+	public final fun setSslContext (Lio/opentelemetry/android/agent/connectivity/SSLContextConnectivity;)V
 	public final fun spans (Lkotlin/jvm/functions/Function1;)V
 }
 
@@ -45,6 +53,7 @@ public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration
 	public final fun diskBuffering (Lkotlin/jvm/functions/Function1;)V
 	public final fun getClock ()Lio/opentelemetry/sdk/common/Clock;
 	public final fun globalAttributes (Lkotlin/jvm/functions/Function0;)V
+	public final fun globalAttributesSupplier (Lkotlin/jvm/functions/Function0;)V
 	public final fun httpExport (Lkotlin/jvm/functions/Function1;)V
 	public final fun instrumentations (Lkotlin/jvm/functions/Function1;)V
 	public final fun resource (Lkotlin/jvm/functions/Function1;)V

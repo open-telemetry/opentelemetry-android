@@ -6,14 +6,13 @@ minor=$(echo "$from_version_json" | jq -r '.minor')
 patch=$(echo "$from_version_json" | jq -r '.patch')
 rc=$(echo "$from_version_json" | jq -r '.rc')
 
-if [[ $rc -gt 1 ]]; then
+if [ "$rc" ] && [ "$rc" -gt 1 ]; then
   prior_version="$major.$minor.$patch-rc.$((rc - 1))"
 else
-  if [[ $patch == 0 ]]; then
-    if [[ $minor == 0 ]]; then
+  if [ "$patch" -eq 0 ]; then
+    if [ "$minor" -eq 0 ]; then
       prior_major=$((major - 1))
-      prior_minor=$(grep -Po "^## Version $prior_major.\K[0-9]+" CHANGELOG.md | head -1)
-      prior_version="$prior_major.$prior_minor"
+      prior_version=$(grep -m 1 -Eo "^## Version $prior_major\.[0-9]+\.[0-9]+ " CHANGELOG.md | grep -Eo "[0-9]+\.[0-9]+\.[0-9]+" )
     else
       prior_version="$major.$((minor - 1)).0"
     fi

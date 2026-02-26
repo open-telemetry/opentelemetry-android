@@ -6,6 +6,7 @@
 package io.opentelemetry.android.agent.dsl
 
 import io.opentelemetry.android.Incubating
+import io.opentelemetry.android.OtelAndroidClock
 import io.opentelemetry.android.agent.dsl.instrumentation.InstrumentationConfiguration
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.api.common.Attributes
@@ -20,16 +21,15 @@ import io.opentelemetry.sdk.resources.ResourceBuilder
 class OpenTelemetryConfiguration internal constructor(
     internal val rumConfig: OtelRumConfig = OtelRumConfig(),
     internal val diskBufferingConfig: DiskBufferingConfigurationSpec = DiskBufferingConfigurationSpec(rumConfig),
+    /**
+     * Configures the [Clock] used for capturing telemetry.
+     */
+    var clock: Clock = OtelAndroidClock(),
 ) {
     internal val exportConfig = HttpExportConfiguration()
     internal val sessionConfig = SessionConfiguration()
     internal val instrumentations = InstrumentationConfiguration(rumConfig)
     internal var resourceAction: ResourceBuilder.() -> Unit = {}
-
-    /**
-     * Configures the [Clock] used for capturing telemetry. Defaults to [Clock.getDefault].
-     */
-    var clock: Clock = Clock.getDefault()
 
     /**
      * Configures how OpenTelemetry should export telemetry over HTTP.
@@ -53,9 +53,18 @@ class OpenTelemetryConfiguration internal constructor(
     }
 
     /**
-     * Configures attributes that are used globally.
+     * Configures attributes that are used globally. Use this method
+     * if your attributes don't change over time.
      */
     fun globalAttributes(action: () -> Attributes) {
+        rumConfig.setGlobalAttributes(action())
+    }
+
+    /**
+     * Configures attributes that are used globally. Use this method
+     * to supply attributes that might change over time.
+     */
+    fun globalAttributesSupplier(action: () -> (() -> Attributes)) {
         rumConfig.setGlobalAttributes(action())
     }
 

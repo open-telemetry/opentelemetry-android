@@ -43,7 +43,7 @@ from all other opentelemetry dependencies:
 ```kotlin
 dependencies {
     //...
-    api(platform("io.opentelemetry.android:opentelemetry-android-bom:1.0.1-alpha"))
+    api(platform("io.opentelemetry.android:opentelemetry-android-bom:1.2.0-alpha"))
     implementation("io.opentelemetry.android:android-agent") // Version is resolved through the BOM
     //...
 }
@@ -154,6 +154,7 @@ In addition to the documentation for approver / maintainer roles and the [contri
 ## Maintainers
 
 - [Cesar Munoz](https://github.com/likethesalad), Elastic
+- [Jamie Lynch](https://github.com/fractalwrench), Embrace
 - [Jason Plumb](https://github.com/breedx-splk), Splunk
 
 For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
@@ -161,7 +162,6 @@ For more information about the maintainer role, see the [community repository](h
 ## Approvers
 
 - [Hanson Ho](https://github.com/bidetofevil), Embrace
-- [Jamie Lynch](https://github.com/fractalwrench), Embrace
 - [Manoel Aranda Neto](https://github.com/marandaneto), PostHog
 
 For more information about the Approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).

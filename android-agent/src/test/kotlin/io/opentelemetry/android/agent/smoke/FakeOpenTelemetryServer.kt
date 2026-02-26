@@ -47,7 +47,10 @@ internal class FakeOpenTelemetryServer {
                             },
                         )
                     }
-                    else -> error("Unsupported request path: ${request.target}")
+
+                    else -> {
+                        error("Unsupported request path: ${request.target}")
+                    }
                 }
                 return MockResponse(200)
             }
@@ -64,13 +67,13 @@ internal class FakeOpenTelemetryServer {
     /**
      * Waits for a trace request or throws after a timeout.
      */
-    fun awaitTraceRequest(predicate: (ExportTraceServiceRequest) -> Boolean = { true }): ExportTraceServiceRequest =
+    fun awaitTraceRequest(predicate: (ExportTraceServiceRequest) -> Boolean): ExportTraceServiceRequest =
         awaitRequestMatchingPredicate(traceRequests, predicate)
 
     /**
      * Waits for a log request or throws after a timeout.
      */
-    fun awaitLogRequest(predicate: (ExportLogsServiceRequest) -> Boolean = { true }): ExportLogsServiceRequest =
+    fun awaitLogRequest(predicate: (ExportLogsServiceRequest) -> Boolean): ExportLogsServiceRequest =
         awaitRequestMatchingPredicate(logRequests, predicate)
 
     private fun readRequestBodyAsStream(request: RecordedRequest): InputStream {
@@ -101,6 +104,9 @@ internal class FakeOpenTelemetryServer {
                 countDownLatch.await(checkIntervalMs.toLong(), TimeUnit.MILLISECONDS)
             }
         }
-        throw TimeoutException("Timed out waiting for HTTP request.")
+        throw TimeoutException(
+            "Timed out waiting for HTTP request. " +
+                "Received ${logRequests.size} log requests and ${traceRequests.size} trace requests.",
+        )
     }
 }

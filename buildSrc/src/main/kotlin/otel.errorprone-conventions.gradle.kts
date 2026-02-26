@@ -1,9 +1,9 @@
 import com.android.build.api.variant.AndroidComponentsExtension
+import java.util.Locale
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.ErrorPronePlugin
 import net.ltgt.gradle.errorprone.errorprone
 import net.ltgt.gradle.nullaway.nullaway
-import java.util.Locale
 
 plugins {
     id("net.ltgt.errorprone")
@@ -24,7 +24,6 @@ val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 dependencies {
     errorprone(libs.findLibrary("nullaway").get())
     errorprone(libs.findLibrary("errorprone-core").get())
-    errorproneJavac(libs.findLibrary("errorprone-javac").get())
 }
 
 nullaway {
@@ -37,12 +36,12 @@ tasks {
         options.errorprone {
             if (name.lowercase(Locale.getDefault()).contains("test")) {
                 // just disable all error prone checks for test
-                isEnabled.set(false)
-                isCompilingTestOnlyCode.set(true)
+                enabled.set(false)
+                compilingTestOnlyCode.set(true)
             } else {
                 if (isAndroidProject) {
-                    isEnabled.set(true)
-                    isCompilingTestOnlyCode.set(false)
+                    enabled.set(true)
+                    compilingTestOnlyCode.set(false)
                 }
             }
 
