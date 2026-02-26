@@ -17,11 +17,11 @@ jobs:
           distribution: temurin
           java-version: 21
       - name: Setup Gradle build action
-        uses: gradle/actions/setup-gradle@f29f5a9d7b09a7c6b29859002d29d24e1674c884 # v5.0.1
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
       - name: touch local props
         run: touch demo-app/local.properties
       - name: run gradle
-        run: ./gradlew check -x detekt detektDebug detektDebugUnitTest detektDebugAndroidTest koverXmlReport --stacktrace
+        run: ./gradlew check koverXmlReport --stacktrace
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
