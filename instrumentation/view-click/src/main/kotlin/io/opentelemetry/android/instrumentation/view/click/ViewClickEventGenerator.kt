@@ -11,13 +11,9 @@ import android.view.ViewGroup
 import android.view.Window
 import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_CLICK_EVENT_NAME
 import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_EVENT_NAME
-import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.logs.LogRecordBuilder
-import io.opentelemetry.api.logs.Logger
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_X
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_Y
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_ID
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_NAME
+import io.opentelemetry.kotlin.attributes.setAttributes
+import io.opentelemetry.kotlin.logging.Logger
+import io.opentelemetry.kotlin.semconv.AppAttributes
 import java.lang.ref.WeakReference
 import java.util.LinkedList
 
@@ -37,17 +33,32 @@ class ViewClickEventGenerator(
     fun generateClick(motionEvent: MotionEvent?) {
         windowRef?.get()?.let { window ->
             if (motionEvent != null && motionEvent.actionMasked == MotionEvent.ACTION_UP) {
-                createEvent(APP_SCREEN_CLICK_EVENT_NAME)
-                    .setAttribute(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong())
-                    .setAttribute(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong())
-                    .emit()
+                emitScreenClientEvent(motionEvent)
 
                 findTargetForTap(window.decorView, motionEvent.x, motionEvent.y)?.let { view ->
-                    createEvent(VIEW_CLICK_EVENT_NAME)
-                        .setAllAttributes(createViewAttributes(view))
-                        .emit()
+                    emitViewClickEvent(view)
                 }
             }
+        }
+    }
+
+    private fun emitScreenClientEvent(motionEvent: MotionEvent) {
+        eventLogger.emit(eventName = APP_SCREEN_CLICK_EVENT_NAME) {
+            setLongAttribute(AppAttributes.APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong())
+            setLongAttribute(AppAttributes.APP_SCREEN_COORDINATE_X, motionEvent.x.toLong())
+        }
+    }
+
+    private fun emitViewClickEvent(view: View) {
+        eventLogger.emit(eventName = VIEW_CLICK_EVENT_NAME) {
+            setAttributes(
+                mapOf(
+                    AppAttributes.APP_SCREEN_COORDINATE_Y to view.y.toLong(),
+                    AppAttributes.APP_SCREEN_COORDINATE_X to view.x.toLong(),
+                    AppAttributes.APP_WIDGET_NAME to viewToName(view),
+                    AppAttributes.APP_WIDGET_ID to view.id.toString()
+                )
+            )
         }
     }
 
@@ -58,21 +69,6 @@ class ViewClickEventGenerator(
             }
         }
         windowRef = null
-    }
-
-    private fun createEvent(name: String): LogRecordBuilder =
-        eventLogger
-            .logRecordBuilder()
-            .setEventName(name)
-
-    private fun createViewAttributes(view: View): Attributes {
-        val builder = Attributes.builder()
-        builder.put(APP_WIDGET_NAME, viewToName(view))
-        builder.put(APP_WIDGET_ID, view.id.toString())
-
-        builder.put(APP_SCREEN_COORDINATE_X, view.x.toLong())
-        builder.put(APP_SCREEN_COORDINATE_Y, view.y.toLong())
-        return builder.build()
     }
 
     private fun viewToName(view: View): String =
@@ -140,7 +136,8 @@ class ViewClickEventGenerator(
         return !(x < vx || x > vx + w || y < vy || y > vy + h)
     }
 
-    private fun isJetpackComposeView(view: View): Boolean = view::class.java.name.startsWith("androidx.compose.ui.platform.ComposeView")
+    private fun isJetpackComposeView(view: View): Boolean =
+        view::class.java.name.startsWith("androidx.compose.ui.platform.ComposeView")
 
     private val View.isVisible: Boolean
         get() = visibility == View.VISIBLE
