@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Mark the `android-api`, which contains the `OpenTelemetryRum` interface, as stable.
+  [#1612](https://github.com/open-telemetry/opentelemetry-android/pull/1612)
+
 ## Version 1.2.0 (2026-02-18)
 
 ### 📈 Enhancements
