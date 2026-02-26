@@ -93,9 +93,7 @@ class InstrumentationTest {
         assertThat(openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size).isEqualTo(0)
 
         val instrumentation =
-            AndroidInstrumentationLoader.get().getByType(
-                HttpUrlInstrumentation::class.java,
-            )
+            checkNotNull(AndroidInstrumentationLoader.get().getByType(HttpUrlInstrumentation::class.java))
         // setting a -1ms connection inactivity timeout for testing to ensure harvester sees it as 1ms elapsed
         // and we don't have to include any wait timers in the test. 0ms does not work as the time difference
         // between last connection activity and harvester time elapsed check is much lesser than 1ms due to

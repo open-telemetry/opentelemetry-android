@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.instrumentation
 
+import android.util.Log
+import io.opentelemetry.android.common.RumConstants.OTEL_RUM_LOG_TAG
 import java.util.ServiceLoader
 
 /**
@@ -20,8 +22,13 @@ internal class AndroidInstrumentationLoaderImpl : AndroidInstrumentationLoader {
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : AndroidInstrumentation> getByType(type: Class<out T>): T =
-        instrumentations[type] as? T ?: error("Instrumentation not found for $type")
+    override fun <T : AndroidInstrumentation> getByType(type: Class<out T>): T? {
+        val result = instrumentations[type] as? T
+        if (result == null) {
+            Log.w(OTEL_RUM_LOG_TAG, "Instrumentation not found for $type")
+        }
+        return result
+    }
 
     override fun getAll(): Collection<AndroidInstrumentation> = instrumentations.values.toList()
 

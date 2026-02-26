@@ -18,7 +18,7 @@ import io.opentelemetry.android.instrumentation.network.NetworkChangeInstrumenta
 class NetworkMonitoringConfiguration internal constructor(
     private val config: OtelRumConfig,
 ) : CanBeEnabledAndDisabled {
-    private val networkInstrumentation: NetworkChangeInstrumentation by lazy {
+    private val networkInstrumentation: NetworkChangeInstrumentation? by lazy {
         AndroidInstrumentationLoader.get().getByType(
             NetworkChangeInstrumentation::class.java,
         )
@@ -29,14 +29,14 @@ class NetworkMonitoringConfiguration internal constructor(
      * the network telemetry.
      */
     fun addAttributesExtractor(value: NetworkAttributesExtractor) {
-        networkInstrumentation.addAttributesExtractor(value)
+        networkInstrumentation?.addAttributesExtractor(value)
     }
 
     override fun enabled(enabled: Boolean) {
         if (enabled) {
-            config.allowInstrumentation(networkInstrumentation.name)
+            networkInstrumentation?.name?.let { config.allowInstrumentation(it) }
         } else {
-            config.suppressInstrumentation(networkInstrumentation.name)
+            networkInstrumentation?.name?.let { config.suppressInstrumentation(it) }
         }
     }
 }

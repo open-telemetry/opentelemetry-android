@@ -20,23 +20,23 @@ class FragmentLifecycleConfiguration internal constructor(
     private val config: OtelRumConfig,
 ) : ScreenLifecycleConfigurable,
     CanBeEnabledAndDisabled {
-    private val fragmentLifecycleInstrumentation: FragmentLifecycleInstrumentation by lazy {
+    private val fragmentLifecycleInstrumentation: FragmentLifecycleInstrumentation? by lazy {
         AndroidInstrumentationLoader.get().getByType(FragmentLifecycleInstrumentation::class.java)
     }
 
     override fun tracerCustomizer(value: (Tracer) -> Tracer) {
-        fragmentLifecycleInstrumentation.setTracerCustomizer(value)
+        fragmentLifecycleInstrumentation?.setTracerCustomizer(value)
     }
 
     override fun screenNameExtractor(value: ScreenNameExtractor) {
-        fragmentLifecycleInstrumentation.setScreenNameExtractor(value)
+        fragmentLifecycleInstrumentation?.setScreenNameExtractor(value)
     }
 
     override fun enabled(enabled: Boolean) {
         if (enabled) {
-            config.allowInstrumentation(fragmentLifecycleInstrumentation.name)
+            fragmentLifecycleInstrumentation?.name?.let { config.allowInstrumentation(it) }
         } else {
-            config.suppressInstrumentation(fragmentLifecycleInstrumentation.name)
+            fragmentLifecycleInstrumentation?.name?.let { config.suppressInstrumentation(it) }
         }
     }
 }

@@ -15,7 +15,7 @@ interface AndroidInstrumentationLoader {
      * @param type The type of the instrumentation to retrieve.
      * @return The instrumentation instance if available, null otherwise.
      */
-    fun <T : AndroidInstrumentation> getByType(type: Class<out T>): T
+    fun <T : AndroidInstrumentation> getByType(type: Class<out T>): T?
 
     /**
      * Provides all registered instrumentations.
