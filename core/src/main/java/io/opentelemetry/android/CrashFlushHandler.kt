@@ -24,7 +24,7 @@ import kotlin.time.Duration.Companion.seconds
  */
 internal class CrashFlushHandler(
     private val sdk: OpenTelemetrySdk,
-    private val flushTimeoutMs: Duration = DEFAULT_FLUSH_TIMEOUT,
+    private val flushTimeout: Duration = DEFAULT_FLUSH_TIMEOUT,
 ) {
     companion object {
         private val DEFAULT_FLUSH_TIMEOUT = 10.seconds
@@ -35,7 +35,7 @@ internal class CrashFlushHandler(
             FlushOnCrashExceptionHandler(
                 sdk,
                 Thread.getDefaultUncaughtExceptionHandler(),
-                flushTimeoutMs
+                flushTimeout
             ),
         )
     }
@@ -54,7 +54,7 @@ internal class CrashFlushHandler(
             previousHandler?.uncaughtException(thread, throwable)
 
             try {
-                awaitForCompletion(
+                awaitCompletion(
                     flushTimeout,
                     sdk.sdkLoggerProvider.forceFlush(),
                     sdk.sdkTracerProvider.forceFlush(),
@@ -65,7 +65,7 @@ internal class CrashFlushHandler(
             }
         }
 
-        private fun awaitForCompletion(
+        private fun awaitCompletion(
             atMost: Duration,
             vararg completableItems: CompletableResultCode
         ) {
