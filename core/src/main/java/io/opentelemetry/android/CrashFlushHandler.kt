@@ -67,13 +67,17 @@ internal class CrashFlushHandler(
 
         private fun awaitCompletion(
             atMost: Duration,
-            vararg completableItems: CompletableResultCode
+            vararg completableItems: CompletableResultCode,
         ) {
             val latch = CountDownLatch(completableItems.size)
             for (completableResult in completableItems) {
                 completableResult.whenComplete(latch::countDown)
             }
-            latch.await(atMost.inWholeMilliseconds, TimeUnit.MILLISECONDS)
+            try {
+                latch.await(atMost.inWholeMilliseconds, TimeUnit.MILLISECONDS)
+            } catch (ignored: InterruptedException) {
+                Thread.currentThread().interrupt()
+            }
         }
     }
 }
