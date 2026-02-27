@@ -8,7 +8,11 @@ package io.opentelemetry.android
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.sdk.OpenTelemetrySdk
+import io.opentelemetry.sdk.common.CompletableResultCode
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Installs a [Thread.UncaughtExceptionHandler] that force-flushes all signal
@@ -20,22 +24,26 @@ import java.util.concurrent.TimeUnit
  */
 internal class CrashFlushHandler(
     private val sdk: OpenTelemetrySdk,
-    private val flushTimeoutMs: Long = DEFAULT_FLUSH_TIMEOUT_MS,
+    private val flushTimeoutMs: Duration = DEFAULT_FLUSH_TIMEOUT,
 ) {
     companion object {
-        private const val DEFAULT_FLUSH_TIMEOUT_MS = 10_000L
+        private val DEFAULT_FLUSH_TIMEOUT = 10.seconds
     }
 
     fun install() {
         Thread.setDefaultUncaughtExceptionHandler(
-            FlushOnCrashExceptionHandler(sdk, Thread.getDefaultUncaughtExceptionHandler(), flushTimeoutMs),
+            FlushOnCrashExceptionHandler(
+                sdk,
+                Thread.getDefaultUncaughtExceptionHandler(),
+                flushTimeoutMs
+            ),
         )
     }
 
     internal class FlushOnCrashExceptionHandler(
         private val sdk: OpenTelemetrySdk,
         private val previousHandler: Thread.UncaughtExceptionHandler?,
-        private val flushTimeoutMs: Long,
+        private val flushTimeout: Duration,
     ) : Thread.UncaughtExceptionHandler {
         override fun uncaughtException(
             thread: Thread,
@@ -46,12 +54,26 @@ internal class CrashFlushHandler(
             previousHandler?.uncaughtException(thread, throwable)
 
             try {
-                sdk.sdkLoggerProvider.forceFlush().join(flushTimeoutMs, TimeUnit.MILLISECONDS)
-                sdk.sdkTracerProvider.forceFlush().join(flushTimeoutMs, TimeUnit.MILLISECONDS)
-                sdk.sdkMeterProvider.forceFlush().join(flushTimeoutMs, TimeUnit.MILLISECONDS)
+                awaitForCompletion(
+                    flushTimeout,
+                    sdk.sdkLoggerProvider.forceFlush(),
+                    sdk.sdkTracerProvider.forceFlush(),
+                    sdk.sdkMeterProvider.forceFlush()
+                )
             } catch (e: Exception) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to flush telemetry on crash", e)
             }
+        }
+
+        private fun awaitForCompletion(
+            atMost: Duration,
+            vararg completableItems: CompletableResultCode
+        ) {
+            val latch = CountDownLatch(completableItems.size)
+            for (completableResult in completableItems) {
+                completableResult.whenComplete(latch::countDown)
+            }
+            latch.await(atMost.inWholeMilliseconds, TimeUnit.MILLISECONDS)
         }
     }
 }
