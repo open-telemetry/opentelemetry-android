@@ -21,7 +21,7 @@ import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_NA
 import java.lang.ref.WeakReference
 import java.util.LinkedList
 
-class ViewClickEventGenerator(
+internal class ViewClickEventGenerator(
     private val eventLogger: Logger,
 ) {
     private var windowRef: WeakReference<Window>? = null
