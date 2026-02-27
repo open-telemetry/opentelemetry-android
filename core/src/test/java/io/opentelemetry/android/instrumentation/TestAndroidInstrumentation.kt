@@ -14,4 +14,8 @@ class TestAndroidInstrumentation : AndroidInstrumentation {
     override fun install(ctx: InstallationContext) {
         installed = true
     }
+
+    override fun uninstall(ctx: InstallationContext) {
+        installed = false
+    }
 }

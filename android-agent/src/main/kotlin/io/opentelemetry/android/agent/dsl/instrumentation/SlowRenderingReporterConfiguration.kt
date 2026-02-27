@@ -19,8 +19,8 @@ import kotlin.time.toJavaDuration
 class SlowRenderingReporterConfiguration internal constructor(
     private val config: OtelRumConfig,
 ) : CanBeEnabledAndDisabled {
-    private val slowRenderingInstrumentation: SlowRenderingInstrumentation by lazy {
-        AndroidInstrumentationLoader.getInstrumentation(
+    private val slowRenderingInstrumentation: SlowRenderingInstrumentation? by lazy {
+        AndroidInstrumentationLoader.get().getByType(
             SlowRenderingInstrumentation::class.java,
         )
     }
@@ -29,21 +29,21 @@ class SlowRenderingReporterConfiguration internal constructor(
      * Sets the poll interval for slow rendering detection.
      */
     fun detectionPollInterval(value: Duration) {
-        slowRenderingInstrumentation.setSlowRenderingDetectionPollInterval(value.toJavaDuration())
+        slowRenderingInstrumentation?.setSlowRenderingDetectionPollInterval(value.toJavaDuration())
     }
 
     /**
      * Enables verbose debug logging for slow rendering instrumentation.
      */
     fun enableVerboseDebugLogging() {
-        slowRenderingInstrumentation.enableVerboseDebugLogging()
+        slowRenderingInstrumentation?.enableVerboseDebugLogging()
     }
 
     override fun enabled(enabled: Boolean) {
         if (enabled) {
-            config.allowInstrumentation(slowRenderingInstrumentation.name)
+            slowRenderingInstrumentation?.name?.let { config.allowInstrumentation(it) }
         } else {
-            config.suppressInstrumentation(slowRenderingInstrumentation.name)
+            slowRenderingInstrumentation?.name?.let { config.suppressInstrumentation(it) }
         }
     }
 }

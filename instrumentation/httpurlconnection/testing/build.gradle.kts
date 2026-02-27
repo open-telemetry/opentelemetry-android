@@ -12,5 +12,6 @@ dependencies {
     implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":instrumentation:httpurlconnection:library"))
     implementation(project(":test-common"))
+    androidTestImplementation(project(":core"))
     androidTestImplementation(libs.assertj.core)
 }
