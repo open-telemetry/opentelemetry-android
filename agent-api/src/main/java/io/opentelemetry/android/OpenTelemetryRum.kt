@@ -18,6 +18,10 @@ interface OpenTelemetryRum {
      */
     val openTelemetry: OpenTelemetry
 
+    val clock: Clock
+
+    val sessionProvider: SessionProvider
+
     /**
      * Get the client session ID associated with this instance of the RUM instrumentation library.
      * Note: this value will change throughout the lifetime of an application instance, so it is
