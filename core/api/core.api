@@ -255,3 +255,10 @@ public final class io/opentelemetry/android/internal/processors/ScreenAttributes
 	public fun onEmit (Lio/opentelemetry/context/Context;Lio/opentelemetry/sdk/logs/ReadWriteLogRecord;)V
 }
 
+public final class io/opentelemetry/android/ktx/SessionExtensionsKt {
+	public static final fun setSessionIdentifiersWith (Lio/opentelemetry/api/common/AttributesBuilder;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/api/common/AttributesBuilder;
+	public static final fun setSessionIdentifiersWith (Lio/opentelemetry/api/logs/LogRecordBuilder;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/api/logs/LogRecordBuilder;
+	public static final fun setSessionIdentifiersWith (Lio/opentelemetry/api/trace/Span;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/api/trace/Span;
+	public static final fun setSessionIdentifiersWith (Lio/opentelemetry/sdk/logs/ReadWriteLogRecord;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/sdk/logs/ReadWriteLogRecord;
+}
+

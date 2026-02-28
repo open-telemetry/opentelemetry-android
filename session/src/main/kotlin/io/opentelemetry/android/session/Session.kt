@@ -11,7 +11,7 @@ interface Session {
     fun getStartTimestamp(): Long
 
     companion object {
-        val NONE = DefaultSession("", -1)
+        val NONE = DefaultSession(SessionProvider.NO_SESSION_ID, -1)
     }
 
     data class DefaultSession(

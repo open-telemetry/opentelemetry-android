@@ -18,7 +18,16 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 
+private const val DEFAULT_SESSION_ID = "0123456789abcdef0123456789abcdef"
+private const val CURRENT_SESSION_ID = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
+private const val PREVIOUS_SESSION_ID = "f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1"
+
+/**
+ * Validates [SessionIdSpanAppender] correctly injects session identifiers into spans,
+ * including both current and previous session IDs when available.
+ */
 internal class SessionIdSpanAppenderTest {
     @MockK
     lateinit var sessionProvider: SessionProvider
@@ -29,19 +38,57 @@ internal class SessionIdSpanAppenderTest {
     @BeforeEach
     fun setUp() {
         MockKAnnotations.init(this)
-        every { sessionProvider.getSessionId() }.returns("42")
+        every { sessionProvider.getSessionId() }.returns(DEFAULT_SESSION_ID)
+        every { sessionProvider.getPreviousSessionId() }.returns(SessionProvider.NO_SESSION_ID)
         every { span.setAttribute(any<AttributeKey<String>>(), any<String>()) } returns span
     }
 
     @Test
     fun `should set sessionId as span attribute`() {
+        // Given
         val underTest = SessionIdSpanAppender(sessionProvider)
 
+        // When/Then
         assertTrue(underTest.isStartRequired)
         underTest.onStart(Context.root(), span)
 
-        verify { span.setAttribute(SessionIncubatingAttributes.SESSION_ID, "42") }
+        // Then
+        verify { span.setAttribute(SessionIncubatingAttributes.SESSION_ID, DEFAULT_SESSION_ID) }
 
         assertFalse(underTest.isEndRequired)
+    }
+
+    @Test
+    fun `should set both session IDs when previous session exists`() {
+        // Given
+        every { sessionProvider.getSessionId() }.returns(CURRENT_SESSION_ID)
+        every { sessionProvider.getPreviousSessionId() }.returns(PREVIOUS_SESSION_ID)
+        val underTest = SessionIdSpanAppender(sessionProvider)
+
+        // When
+        underTest.onStart(Context.root(), span)
+
+        // Then
+        assertAll(
+            { verify { span.setAttribute(SessionIncubatingAttributes.SESSION_ID, CURRENT_SESSION_ID) } },
+            { verify { span.setAttribute(SessionIncubatingAttributes.SESSION_PREVIOUS_ID, PREVIOUS_SESSION_ID) } },
+        )
+    }
+
+    @Test
+    fun `should not set previous session ID when empty`() {
+        // Given
+        every { sessionProvider.getSessionId() }.returns(CURRENT_SESSION_ID)
+        every { sessionProvider.getPreviousSessionId() }.returns(SessionProvider.NO_SESSION_ID)
+        val underTest = SessionIdSpanAppender(sessionProvider)
+
+        // When
+        underTest.onStart(Context.root(), span)
+
+        // Then
+        assertAll(
+            { verify { span.setAttribute(SessionIncubatingAttributes.SESSION_ID, CURRENT_SESSION_ID) } },
+            { verify(exactly = 0) { span.setAttribute(SessionIncubatingAttributes.SESSION_PREVIOUS_ID, any()) } },
+        )
     }
 }
