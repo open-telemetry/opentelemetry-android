@@ -14,7 +14,7 @@ import android.view.SearchEvent
 import android.view.Window.Callback
 import androidx.annotation.RequiresApi
 
-class WindowCallbackWrapper(
+internal class WindowCallbackWrapper(
     private val callback: Callback,
     private val viewClickEventGenerator: ViewClickEventGenerator,
 ) : Callback by callback {
