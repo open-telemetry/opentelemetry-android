@@ -1,37 +1,19 @@
 public abstract interface class io/opentelemetry/android/instrumentation/AndroidInstrumentation {
 	public abstract fun getName ()Ljava/lang/String;
-	public abstract fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
-	public fun uninstall (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
+	public abstract fun install (Lio/opentelemetry/android/instrumentation/InstrumentationParams;)V
+	public abstract fun uninstall (Lio/opentelemetry/android/instrumentation/InstrumentationParams;)V
 }
 
 public abstract interface class io/opentelemetry/android/instrumentation/AndroidInstrumentationLoader {
-	public static final field Companion Lio/opentelemetry/android/instrumentation/AndroidInstrumentationLoader$Companion;
-	public static fun get ()Lio/opentelemetry/android/instrumentation/AndroidInstrumentationLoader;
 	public abstract fun getAll ()Ljava/util/Collection;
 	public abstract fun getByType (Ljava/lang/Class;)Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;
-	public static fun getInstrumentation (Ljava/lang/Class;)Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;
-	public static fun resetForTest ()V
 }
 
-public final class io/opentelemetry/android/instrumentation/AndroidInstrumentationLoader$Companion {
-	public final fun get ()Lio/opentelemetry/android/instrumentation/AndroidInstrumentationLoader;
-	public final fun getInstrumentation (Ljava/lang/Class;)Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;
-	public final fun resetForTest ()V
-}
-
-public final class io/opentelemetry/android/instrumentation/InstallationContext {
-	public fun <init> (Landroid/content/Context;Lio/opentelemetry/api/OpenTelemetry;Lio/opentelemetry/android/session/SessionProvider;Lio/opentelemetry/sdk/common/Clock;)V
-	public final fun getApplication ()Landroid/app/Application;
-	public final fun getClock ()Lio/opentelemetry/sdk/common/Clock;
-	public final fun getContext ()Landroid/content/Context;
-	public final fun getOpenTelemetry ()Lio/opentelemetry/api/OpenTelemetry;
-	public final fun getSessionProvider ()Lio/opentelemetry/android/session/SessionProvider;
-}
-
-public final class io/opentelemetry/android/instrumentation/internal/AndroidInstrumentationLoaderImpl : io/opentelemetry/android/instrumentation/AndroidInstrumentationLoader {
-	public fun <init> ()V
-	public fun getAll ()Ljava/util/Collection;
-	public fun getByType (Ljava/lang/Class;)Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;
-	public final fun registerForTest (Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;)V
+public abstract interface class io/opentelemetry/android/instrumentation/InstrumentationParams {
+	public abstract fun getApplication ()Landroid/app/Application;
+	public abstract fun getClock ()Lio/opentelemetry/sdk/common/Clock;
+	public abstract fun getContext ()Landroid/content/Context;
+	public abstract fun getOpenTelemetry ()Lio/opentelemetry/api/OpenTelemetry;
+	public abstract fun getSessionProvider ()Lio/opentelemetry/android/session/SessionProvider;
 }
 
