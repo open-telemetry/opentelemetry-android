@@ -128,7 +128,7 @@ internal class ComposeInstrumentationTest {
         every { window.decorView } returns composeView
         every { composeView.childCount } returns 0
 
-        val mockLayoutNode =
+        val mockLayoutNode: LayoutNode =
             createMockLayoutNode(
                 targetX = motionEvent.x,
                 targetY = motionEvent.y,
