@@ -1,6 +1,7 @@
 [versions]
 opentelemetry-instrumentation-alpha = "2.25.0-alpha"
 #opentelemetry-instrumentation = "2.9.0" // alpha bom includes non-alpha bom
+opentelemetry-kotlin = "0.1.0"
 opentelemetry-semconv = "1.40.0"
 opentelemetry-semconv-alpha = "1.40.0-alpha"
 opentelemetry-contrib = "1.54.0-alpha"
@@ -52,6 +53,10 @@ opentelemetry-exporter-logging = { module = "io.opentelemetry:opentelemetry-expo
 opentelemetry-diskBuffering = { module = "io.opentelemetry.contrib:opentelemetry-disk-buffering", version.ref = "opentelemetry-contrib" }
 opentelemetry-processors = { module = "io.opentelemetry.contrib:opentelemetry-processors", version.ref = "opentelemetry-contrib" }
 opentelemetry-exporter-otlp = { module = "io.opentelemetry:opentelemetry-exporter-otlp" }
+opentelemetry-kotlin-api = { module = "io.opentelemetry.kotlin:api", version.ref = "opentelemetry-kotlin" }
+opentelemetry-kotlin-api-ext = { module = "io.opentelemetry.kotlin:api-ext", version.ref = "opentelemetry-kotlin" }
+opentelemetry-kotlin-compat = { module = "io.opentelemetry.kotlin:compat", version.ref = "opentelemetry-kotlin" }
+opentelemetry-kotlin-semconv = { module = "io.opentelemetry.kotlin:semconv", version.ref = "opentelemetry-kotlin" }
 auto-service-annotations = { module = "com.google.auto.service:auto-service-annotations", version.ref = "autoService" }
 auto-service-processor = { module = "dev.zacsweers.autoservice:auto-service-ksp", version.ref = "autoServiceProcessor" }
 compose = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
