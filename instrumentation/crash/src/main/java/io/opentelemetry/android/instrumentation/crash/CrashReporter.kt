@@ -7,15 +7,14 @@ package io.opentelemetry.android.instrumentation.crash
 
 import io.opentelemetry.android.common.internal.utils.threadIdCompat
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
+import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.context.Context
-import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_MESSAGE
 import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE
 import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_TYPE
 import io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.THREAD_ID
 import io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.THREAD_NAME
-import java.util.concurrent.TimeUnit
 
 internal class CrashReporter(
     additionalExtractors: List<EventAttributesExtractor<CrashDetails>>,
@@ -24,24 +23,21 @@ internal class CrashReporter(
         additionalExtractors.toList()
 
     /** Installs the crash reporting instrumentation.  */
-    fun install(openTelemetry: OpenTelemetrySdk) {
+    fun install(openTelemetry: OpenTelemetry) {
         val handler =
             CrashReportingExceptionHandler(
                 crashProcessor = { crashDetails: CrashDetails ->
                     processCrash(openTelemetry, crashDetails)
-                },
-                postCrashAction = {
-                    waitForCrashFlush(openTelemetry)
                 },
             )
         Thread.setDefaultUncaughtExceptionHandler(handler)
     }
 
     private fun processCrash(
-        openTelemetry: OpenTelemetrySdk,
+        openTelemetry: OpenTelemetry,
         crashDetails: CrashDetails,
     ) {
-        val logger = openTelemetry.sdkLoggerProvider.loggerBuilder("io.opentelemetry.crash").build()
+        val logger = openTelemetry.logsBridge.loggerBuilder("io.opentelemetry.crash").build()
         val throwable = crashDetails.cause
         val thread = crashDetails.thread
         val attributesBuilder =
@@ -64,10 +60,5 @@ internal class CrashReporter(
             .setEventName("device.crash")
             .setAllAttributes(attributesBuilder.build())
             .emit()
-    }
-
-    private fun waitForCrashFlush(openTelemetry: OpenTelemetrySdk) {
-        val flushResult = openTelemetry.sdkLoggerProvider.forceFlush()
-        flushResult.join(10, TimeUnit.SECONDS)
     }
 }
