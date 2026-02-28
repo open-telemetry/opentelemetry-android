@@ -5,25 +5,27 @@
 
 package io.opentelemetry.android
 
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.instrumentation.InstrumentationParams
+import io.opentelemetry.android.instrumentation.InstrumentationParamsImpl
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.sdk.OpenTelemetrySdk
+import io.opentelemetry.sdk.common.Clock
 
 internal class OpenTelemetryRumImpl(
-    private val openTelemetrySdk: OpenTelemetrySdk,
-    private val sessionProvider: SessionProvider,
-    private val onShutdown: Runnable,
+    private val instrumentationParams: InstrumentationParams
 ) : OpenTelemetryRum {
     private val logger: Logger =
-        openTelemetrySdk.logsBridge
+        instrumentationParams.openTelemetry.logsBridge
             .loggerBuilder("io.opentelemetry.rum.events")
             .build()
 
-    override val openTelemetry: OpenTelemetry = openTelemetrySdk
+    override val openTelemetry: OpenTelemetry = instrumentationParams.openTelemetry
 
-    override fun getRumSessionId(): String = sessionProvider.getSessionId()
+    override fun getRumSessionId(): String = instrumentationParams.sessionProvider.getSessionId()
 
     override fun emitEvent(
         eventName: String,
@@ -38,7 +40,7 @@ internal class OpenTelemetryRumImpl(
             .emit()
     }
 
-    override fun shutdown() {
-        onShutdown.run()
+    override fun install(instrumentation: AndroidInstrumentation) {
+        instrumentation.install(instrumentationParams)
     }
 }

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android
 
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.TraceId
@@ -22,6 +23,9 @@ internal object NoopOpenTelemetryRum : OpenTelemetryRum {
         body: String,
         attributes: Attributes,
     ) {
+    }
+
+    override fun install(instrumentation: AndroidInstrumentation) {
     }
 
     override fun shutdown() {

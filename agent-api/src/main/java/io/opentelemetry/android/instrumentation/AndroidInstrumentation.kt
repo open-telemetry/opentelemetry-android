@@ -1,8 +1,3 @@
-/*
- * Copyright The OpenTelemetry Authors
- * SPDX-License-Identifier: Apache-2.0
- */
-
 package io.opentelemetry.android.instrumentation
 
 /**
@@ -26,19 +21,17 @@ interface AndroidInstrumentation {
      * only be called from [OpenTelemetryRum]'s builder once the [OpenTelemetryRum] instance is initialized and ready
      * to use for generating telemetry.
      *
-     * @param ctx The InstallationContext under which the instrumentation is being installed.
+     * @param ctx The InstrumentationParams under which the instrumentation is being installed.
      */
-    fun install(ctx: InstallationContext)
+    fun install(ctx: InstrumentationParams)
 
     /**
      * This method can be called to uninstall the instrumentation. Implementations should remove all
      * used resources and shut down cleanly.
      *
-     * @param ctx The InstallationContext under which the instrumentation had been removed.
+     * @param ctx The InstrumentationParams under which the instrumentation had been removed.
      */
-    fun uninstall(ctx: InstallationContext) {
-        // NOP default implementation
-    }
+    fun uninstall(ctx: InstrumentationParams)
 
     /**
      * The canonical short name for this instrumentation.

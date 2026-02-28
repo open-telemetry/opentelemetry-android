@@ -42,7 +42,7 @@ object RumBuilder {
      * @param context The [Context] that is being instrumented.
      * @param openTelemetrySdk The [io.opentelemetry.sdk.OpenTelemetrySdk] that the user has already created.
      * @param config The [io.opentelemetry.android.config.OtelRumConfig] instance.
-     * @param sessionProvider The [io.opentelemetry.android.session.SessionProvider] instance.
+     * @param sessionProvider The [SessionProvider] instance.
      */
     @JvmStatic
     fun builder(
