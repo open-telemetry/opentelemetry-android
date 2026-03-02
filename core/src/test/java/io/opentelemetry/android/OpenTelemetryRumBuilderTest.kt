@@ -25,7 +25,7 @@ import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter.Co
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
-import io.opentelemetry.android.instrumentation.internal.AndroidInstrumentationLoaderImpl
+import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoaderImpl
 import io.opentelemetry.android.internal.initialization.InitializationEvents
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.Services.Companion.set

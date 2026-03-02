@@ -14,17 +14,17 @@ import io.opentelemetry.android.instrumentation.screenorientation.ScreenOrientat
 class ScreenOrientationConfiguration internal constructor(
     private val config: OtelRumConfig,
 ) : CanBeEnabledAndDisabled {
-    private val instrumentation: ScreenOrientationInstrumentation by lazy {
-        AndroidInstrumentationLoader.getInstrumentation(
+    private val instrumentation: ScreenOrientationInstrumentation? by lazy {
+        AndroidInstrumentationLoader.get().getByType(
             ScreenOrientationInstrumentation::class.java,
         )
     }
 
     override fun enabled(enabled: Boolean) {
         if (enabled) {
-            config.allowInstrumentation(instrumentation.name)
+            instrumentation?.name?.let { config.allowInstrumentation(it) }
         } else {
-            config.suppressInstrumentation(instrumentation.name)
+            instrumentation?.name?.let { config.suppressInstrumentation(it) }
         }
     }
 }
