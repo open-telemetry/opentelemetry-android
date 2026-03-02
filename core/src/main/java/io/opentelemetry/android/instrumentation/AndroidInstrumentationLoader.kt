@@ -23,19 +23,4 @@ interface AndroidInstrumentationLoader {
      * @return All registered instrumentations.
      */
     fun getAll(): Collection<AndroidInstrumentation>
-
-    companion object {
-        private var instance: AndroidInstrumentationLoader? = null
-
-        @JvmStatic
-        fun get(): AndroidInstrumentationLoader =
-            instance ?: AndroidInstrumentationLoaderImpl().apply {
-                instance = this
-            }
-
-        @JvmStatic
-        fun resetForTest() {
-            instance = null
-        }
-    }
 }

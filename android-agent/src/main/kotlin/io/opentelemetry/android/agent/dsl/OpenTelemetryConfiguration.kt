@@ -9,6 +9,7 @@ import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OtelAndroidClock
 import io.opentelemetry.android.agent.dsl.instrumentation.InstrumentationConfiguration
 import io.opentelemetry.android.config.OtelRumConfig
+import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.resources.ResourceBuilder
@@ -25,10 +26,11 @@ class OpenTelemetryConfiguration internal constructor(
      * Configures the [Clock] used for capturing telemetry.
      */
     var clock: Clock = OtelAndroidClock(),
+    instrumentationLoader: AndroidInstrumentationLoader,
 ) {
     internal val exportConfig = HttpExportConfiguration()
     internal val sessionConfig = SessionConfiguration()
-    internal val instrumentations = InstrumentationConfiguration(rumConfig)
+    internal val instrumentations = InstrumentationConfiguration(rumConfig, instrumentationLoader)
     internal var resourceAction: ResourceBuilder.() -> Unit = {}
 
     /**

@@ -7,6 +7,7 @@ package io.opentelemetry.android.agent.dsl.instrumentation
 
 import io.opentelemetry.android.agent.dsl.OpenTelemetryDslMarker
 import io.opentelemetry.android.config.OtelRumConfig
+import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 
 /**
  * Type-safe config DSL that controls how instrumentation should behave.
@@ -14,34 +15,25 @@ import io.opentelemetry.android.config.OtelRumConfig
 @OpenTelemetryDslMarker
 class InstrumentationConfiguration internal constructor(
     config: OtelRumConfig,
+    private val instrumentationLoader: AndroidInstrumentationLoader,
 ) {
     private val activity: ActivityLifecycleConfiguration by lazy {
-        ActivityLifecycleConfiguration(
-            config,
-        )
+        ActivityLifecycleConfiguration(config, instrumentationLoader)
     }
     private val fragment: FragmentLifecycleConfiguration by lazy {
-        FragmentLifecycleConfiguration(
-            config,
-        )
+        FragmentLifecycleConfiguration(config, instrumentationLoader)
     }
-    private val anr: AnrReporterConfiguration by lazy { AnrReporterConfiguration(config) }
-    private val crash: CrashReporterConfiguration by lazy { CrashReporterConfiguration(config) }
+    private val anr: AnrReporterConfiguration by lazy { AnrReporterConfiguration(config, instrumentationLoader) }
+    private val crash: CrashReporterConfiguration by lazy { CrashReporterConfiguration(config, instrumentationLoader) }
     private val networkMonitoring: NetworkMonitoringConfiguration by lazy {
-        NetworkMonitoringConfiguration(
-            config,
-        )
+        NetworkMonitoringConfiguration(config, instrumentationLoader)
     }
     private val slowRendering: SlowRenderingReporterConfiguration by lazy {
-        SlowRenderingReporterConfiguration(
-            config,
-        )
+        SlowRenderingReporterConfiguration(config, instrumentationLoader)
     }
 
     private val screenOrientation: ScreenOrientationConfiguration by lazy {
-        ScreenOrientationConfiguration(
-            config,
-        )
+        ScreenOrientationConfiguration(config, instrumentationLoader)
     }
 
     /**

@@ -18,12 +18,11 @@ import io.opentelemetry.android.instrumentation.crash.CrashReporterInstrumentati
 @OpenTelemetryDslMarker
 class CrashReporterConfiguration internal constructor(
     private val config: OtelRumConfig,
-) : WithEventAttributes<CrashDetails>,
-    CanBeEnabledAndDisabled {
+    private val instrumentationLoader: AndroidInstrumentationLoader,
+) : WithEventAttributes<CrashDetails>, CanBeEnabledAndDisabled {
+
     private val crashReporterInstrumentation: CrashReporterInstrumentation? by lazy {
-        AndroidInstrumentationLoader.get().getByType(
-            CrashReporterInstrumentation::class.java,
-        )
+        instrumentationLoader.getByType(CrashReporterInstrumentation::class.java)
     }
 
     override fun addAttributesExtractor(value: EventAttributesExtractor<CrashDetails>) {
