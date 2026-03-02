@@ -80,6 +80,12 @@ class SdkPreconfiguredRumBuilder internal constructor(
             instrumentation.install(ctx)
         }
 
+        // Install crash flush handler after instrumentations so it wraps any
+        // UncaughtExceptionHandler set by instrumentations (e.g. crash reporter).
+        // This ensures all telemetry (including crash events) is flushed before
+        // the process terminates.
+        CrashFlushHandler(sdk).install()
+
         return openTelemetryRum
     }
 
