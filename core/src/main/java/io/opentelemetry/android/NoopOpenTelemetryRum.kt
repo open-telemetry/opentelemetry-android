@@ -25,7 +25,7 @@ internal object NoopOpenTelemetryRum : OpenTelemetryRum {
     ) {
     }
 
-    override fun installInstrumentation(instrumentation: AndroidInstrumentation) {
+    override fun install(instrumentation: AndroidInstrumentation) {
     }
 
     override fun shutdown() {

@@ -48,7 +48,7 @@ interface OpenTelemetryRum {
      *
      * @param instrumentation The instrumentation to install.
      */
-    fun installInstrumentation(instrumentation: AndroidInstrumentation)
+    fun install(instrumentation: AndroidInstrumentation)
 
     /**
      * Initiates orderly shutdown of this OpenTelemetryRum instance. After this method completes,

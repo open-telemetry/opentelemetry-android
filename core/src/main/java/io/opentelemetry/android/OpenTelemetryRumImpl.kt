@@ -46,7 +46,7 @@ internal class OpenTelemetryRumImpl(
             .emit()
     }
 
-    override fun installInstrumentation(instrumentation: AndroidInstrumentation) {
+    override fun install(instrumentation: AndroidInstrumentation) {
         val ctx = InstallationContext(context, openTelemetrySdk, sessionProvider, clock)
         instrumentation.install(ctx)
         manuallyInstalledInstrumentations.add(instrumentation)
