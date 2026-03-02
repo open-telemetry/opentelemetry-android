@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android
 
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.Attributes
 
@@ -39,6 +40,15 @@ interface OpenTelemetryRum {
         body: String = "",
         attributes: Attributes = Attributes.empty(),
     )
+
+    /**
+     * Installs an [AndroidInstrumentation] using the internal context of this [OpenTelemetryRum]
+     * instance. This creates the appropriate [io.opentelemetry.android.instrumentation.InstallationContext]
+     * with the correct context objects that were used to build this instance.
+     *
+     * @param instrumentation The instrumentation to install.
+     */
+    fun installInstrumentation(instrumentation: AndroidInstrumentation)
 
     /**
      * Initiates orderly shutdown of this OpenTelemetryRum instance. After this method completes,
