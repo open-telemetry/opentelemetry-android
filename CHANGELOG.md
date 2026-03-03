@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+**Breaking change**: the minimum supported Kotlin version has increased from 1.8 to 2.0.
+
 - Mark the `android-api`, which contains the `OpenTelemetryRum` interface, as stable.
   [#1612](https://github.com/open-telemetry/opentelemetry-android/pull/1612)
+- Bump the minimum supported Kotlin version to 2.0. 
+  [#1489](https://github.com/open-telemetry/opentelemetry-android/pull/1489) 
 
 ## Version 1.2.0 (2026-02-18)
 
