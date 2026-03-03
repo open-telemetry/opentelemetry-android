@@ -11,6 +11,12 @@ android {
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")
     }
+    kotlin {
+        compilerOptions {
+            optIn.add("io.opentelemetry.kotlin.ExperimentalApi")
+            optIn.add("io.opentelemetry.kotlin.semconv.IncubatingApi")
+        }
+    }
 }
 
 dependencies {
@@ -19,6 +25,8 @@ dependencies {
     implementation(project(":agent-api"))
     implementation(project(":instrumentation:android-instrumentation"))
 
+    implementation(libs.opentelemetry.kotlin.compat)
+    implementation(libs.opentelemetry.kotlin.semconv)
     implementation(libs.opentelemetry.instrumentation.apiSemconv)
     implementation(libs.opentelemetry.semconv.incubating)
 
