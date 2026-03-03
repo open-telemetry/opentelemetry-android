@@ -20,7 +20,10 @@ dependencies {
     implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":services"))
 
-    compileOnly(libs.compose)
+    compileOnly(libs.compose) {
+        exclude(group = "org.jetbrains.kotlinx")
+        exclude(group = "androidx.savedstate")
+    }
     implementation(libs.opentelemetry.instrumentation.apiSemconv)
     implementation(libs.opentelemetry.semconv.incubating)
 
