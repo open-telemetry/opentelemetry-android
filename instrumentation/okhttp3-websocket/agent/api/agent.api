@@ -1,5 +1,0 @@
-public class io/opentelemetry/instrumentation/agent/okhttp/v3_0/websocket/OkHttpClientWebsocketAdvice {
-	public fun <init> ()V
-	public static fun enter (Lokhttp3/WebSocketListener;)V
-}
-

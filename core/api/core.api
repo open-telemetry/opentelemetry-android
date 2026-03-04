@@ -3,14 +3,6 @@ public final class io/opentelemetry/android/AndroidResource {
 	public static final fun createDefault (Landroid/content/Context;)Lio/opentelemetry/sdk/resources/Resource;
 }
 
-public final class io/opentelemetry/android/BuildConfig {
-	public static final field BUILD_TYPE Ljava/lang/String;
-	public static final field DEBUG Z
-	public static final field LIBRARY_PACKAGE_NAME Ljava/lang/String;
-	public static final field OTEL_ANDROID_VERSION Ljava/lang/String;
-	public fun <init> ()V
-}
-
 public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
 	public static final field Companion Lio/opentelemetry/android/OpenTelemetryRumBuilder$Companion;
 	public final fun addInstrumentation (Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
@@ -102,16 +94,6 @@ public final class io/opentelemetry/android/export/FilteringSpanExporterBuilder 
 	public final fun rejectSpansWithAttributesMatching (Ljava/util/Map;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
 	public final fun rejectSpansWithNameContaining (Ljava/lang/String;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
 	public final fun rejecting (Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
-}
-
-public final class io/opentelemetry/android/export/SpanDataModifier {
-	public fun build ()Lio/opentelemetry/sdk/trace/export/SpanExporter;
-	public static fun builder (Lio/opentelemetry/sdk/trace/export/SpanExporter;)Lio/opentelemetry/android/export/SpanDataModifier;
-	public fun rejectSpansByAttributeValue (Lio/opentelemetry/api/common/AttributeKey;Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/SpanDataModifier;
-	public fun rejectSpansByName (Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/SpanDataModifier;
-	public fun removeSpanAttribute (Lio/opentelemetry/api/common/AttributeKey;)Lio/opentelemetry/android/export/SpanDataModifier;
-	public fun removeSpanAttribute (Lio/opentelemetry/api/common/AttributeKey;Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/SpanDataModifier;
-	public fun replaceSpanAttribute (Lio/opentelemetry/api/common/AttributeKey;Ljava/util/function/Function;)Lio/opentelemetry/android/export/SpanDataModifier;
 }
 
 public final class io/opentelemetry/android/features/diskbuffering/DiskBufferingConfig {
