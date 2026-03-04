@@ -17,11 +17,10 @@ import io.opentelemetry.android.instrumentation.network.NetworkChangeInstrumenta
 @OpenTelemetryDslMarker
 class NetworkMonitoringConfiguration internal constructor(
     private val config: OtelRumConfig,
+    private val instrumentationLoader: AndroidInstrumentationLoader,
 ) : CanBeEnabledAndDisabled {
-    private val networkInstrumentation: NetworkChangeInstrumentation by lazy {
-        AndroidInstrumentationLoader.getInstrumentation(
-            NetworkChangeInstrumentation::class.java,
-        )
+    private val networkInstrumentation: NetworkChangeInstrumentation? by lazy {
+        instrumentationLoader.getByType(NetworkChangeInstrumentation::class.java)
     }
 
     /**
@@ -29,14 +28,14 @@ class NetworkMonitoringConfiguration internal constructor(
      * the network telemetry.
      */
     fun addAttributesExtractor(value: NetworkAttributesExtractor) {
-        networkInstrumentation.addAttributesExtractor(value)
+        networkInstrumentation?.addAttributesExtractor(value)
     }
 
     override fun enabled(enabled: Boolean) {
         if (enabled) {
-            config.allowInstrumentation(networkInstrumentation.name)
+            networkInstrumentation?.name?.let { config.allowInstrumentation(it) }
         } else {
-            config.suppressInstrumentation(networkInstrumentation.name)
+            networkInstrumentation?.name?.let { config.suppressInstrumentation(it) }
         }
     }
 }

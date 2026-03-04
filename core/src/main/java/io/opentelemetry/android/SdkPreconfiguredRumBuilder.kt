@@ -22,6 +22,7 @@ class SdkPreconfiguredRumBuilder internal constructor(
     private val sessionProvider: SessionProvider,
     private val config: OtelRumConfig,
     private val clock: Clock,
+    private val instrumentationLoader: AndroidInstrumentationLoader,
 ) {
     private var onShutdown: Runnable = Runnable {} // nop
     private val instrumentations = mutableListOf<AndroidInstrumentation>()
@@ -80,6 +81,12 @@ class SdkPreconfiguredRumBuilder internal constructor(
             instrumentation.install(ctx)
         }
 
+        // Install crash flush handler after instrumentations so it wraps any
+        // UncaughtExceptionHandler set by instrumentations (e.g. crash reporter).
+        // This ensures all telemetry (including crash events) is flushed before
+        // the process terminates.
+        CrashFlushHandler(sdk).install()
+
         return openTelemetryRum
     }
 
@@ -103,7 +110,7 @@ class SdkPreconfiguredRumBuilder internal constructor(
 
     private fun getInstrumentations(): List<AndroidInstrumentation> {
         if (config.shouldDiscoverInstrumentations()) {
-            instrumentations.addAll(AndroidInstrumentationLoader.get().getAll())
+            instrumentations.addAll(instrumentationLoader.getAll())
         }
 
         return instrumentations

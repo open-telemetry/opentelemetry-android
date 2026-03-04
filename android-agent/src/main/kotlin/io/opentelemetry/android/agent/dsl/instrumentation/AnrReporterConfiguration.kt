@@ -17,23 +17,22 @@ import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 @OpenTelemetryDslMarker
 class AnrReporterConfiguration internal constructor(
     private val config: OtelRumConfig,
-) : WithEventAttributes<Array<StackTraceElement>>,
-    CanBeEnabledAndDisabled {
-    private val anrInstrumentation: AnrInstrumentation by lazy {
-        AndroidInstrumentationLoader.getInstrumentation(
-            AnrInstrumentation::class.java,
-        )
+    private val instrumentationLoader: AndroidInstrumentationLoader,
+) : WithEventAttributes<Array<StackTraceElement>>, CanBeEnabledAndDisabled {
+
+    private val anrInstrumentation: AnrInstrumentation? by lazy {
+        instrumentationLoader.getByType(AnrInstrumentation::class.java)
     }
 
     override fun addAttributesExtractor(value: EventAttributesExtractor<Array<StackTraceElement>>) {
-        anrInstrumentation.addAttributesExtractor(value)
+        anrInstrumentation?.addAttributesExtractor(value)
     }
 
     override fun enabled(enabled: Boolean) {
         if (enabled) {
-            config.allowInstrumentation(anrInstrumentation.name)
+            anrInstrumentation?.name?.let { config.allowInstrumentation(it) }
         } else {
-            config.suppressInstrumentation(anrInstrumentation.name)
+            anrInstrumentation?.name?.let { config.suppressInstrumentation(it) }
         }
     }
 }

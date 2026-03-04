@@ -18,10 +18,10 @@ public final class io/opentelemetry/instrumentation/library/okhttp/OkHttpInstrum
 
 public final class io/opentelemetry/instrumentation/library/okhttp/internal/OkHttpSingletons {
 	public static final field CALLBACK_CONTEXT_INTERCEPTOR Lokhttp3/Interceptor;
-	public static field CONNECTION_ERROR_INTERCEPTOR Lokhttp3/Interceptor;
 	public static final field INSTANCE Lio/opentelemetry/instrumentation/library/okhttp/internal/OkHttpSingletons;
 	public static final field RESEND_COUNT_CONTEXT_INTERCEPTOR Lokhttp3/Interceptor;
-	public static field TRACING_INTERCEPTOR Lokhttp3/Interceptor;
+	public static field connectionErrorInterceptor Lokhttp3/Interceptor;
+	public static field tracingInterceptor Lokhttp3/Interceptor;
 	public final fun configure (Lio/opentelemetry/instrumentation/library/okhttp/OkHttpInstrumentation;Lio/opentelemetry/api/OpenTelemetry;)V
 }
 

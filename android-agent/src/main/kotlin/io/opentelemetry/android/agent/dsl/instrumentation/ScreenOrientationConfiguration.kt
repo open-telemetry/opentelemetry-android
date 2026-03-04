@@ -13,18 +13,18 @@ import io.opentelemetry.android.instrumentation.screenorientation.ScreenOrientat
 @OpenTelemetryDslMarker
 class ScreenOrientationConfiguration internal constructor(
     private val config: OtelRumConfig,
+    private val instrumentationLoader: AndroidInstrumentationLoader,
 ) : CanBeEnabledAndDisabled {
-    private val instrumentation: ScreenOrientationInstrumentation by lazy {
-        AndroidInstrumentationLoader.getInstrumentation(
-            ScreenOrientationInstrumentation::class.java,
-        )
+
+    private val instrumentation: ScreenOrientationInstrumentation? by lazy {
+        instrumentationLoader.getByType(ScreenOrientationInstrumentation::class.java)
     }
 
     override fun enabled(enabled: Boolean) {
         if (enabled) {
-            config.allowInstrumentation(instrumentation.name)
+            instrumentation?.name?.let { config.allowInstrumentation(it) }
         } else {
-            config.suppressInstrumentation(instrumentation.name)
+            instrumentation?.name?.let { config.suppressInstrumentation(it) }
         }
     }
 }

@@ -5,7 +5,8 @@
 
 package io.opentelemetry.instrumentation.library.httpurlconnection
 
-import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader.Companion.getInstrumentation
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import java.util.ServiceLoader
 import io.opentelemetry.android.test.common.OpenTelemetryRumRule
 import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlConnectionTestUtil.executeGet
 import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlConnectionTestUtil.post
@@ -93,8 +94,10 @@ class InstrumentationTest {
         assertThat(openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size).isEqualTo(0)
 
         val instrumentation =
-            getInstrumentation(
-                HttpUrlInstrumentation::class.java,
+            checkNotNull(
+                ServiceLoader.load(AndroidInstrumentation::class.java)
+                    .filterIsInstance<HttpUrlInstrumentation>()
+                    .firstOrNull(),
             )
         // setting a -1ms connection inactivity timeout for testing to ensure harvester sees it as 1ms elapsed
         // and we don't have to include any wait timers in the test. 0ms does not work as the time difference

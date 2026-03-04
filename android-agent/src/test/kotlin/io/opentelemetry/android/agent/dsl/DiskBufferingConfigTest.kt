@@ -6,23 +6,34 @@
 package io.opentelemetry.android.agent.dsl
 
 import io.opentelemetry.android.agent.FakeClock
+import io.opentelemetry.android.agent.FakeInstrumentationLoader
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 
 class DiskBufferingConfigTest {
+
+    private lateinit var otelConfig: OpenTelemetryConfiguration
+
+    @Before
+    fun setUp() {
+        otelConfig = OpenTelemetryConfiguration(
+            instrumentationLoader = FakeInstrumentationLoader(),
+            clock = FakeClock()
+        )
+    }
+
     @Test
     fun testDefaults() {
-        val otelConfig = OpenTelemetryConfiguration(clock = FakeClock())
         assertTrue(otelConfig.diskBufferingConfig.enabled)
         assertTrue(otelConfig.rumConfig.getDiskBufferingConfig().enabled)
     }
 
     @Test
     fun testOverride() {
-        val otelConfig = OpenTelemetryConfiguration(clock = FakeClock())
         otelConfig.diskBuffering {
             enabled(false)
         }
@@ -36,11 +47,12 @@ class DiskBufferingConfigTest {
         val rumConfig = OtelRumConfig()
         val otelConfig =
             OpenTelemetryConfiguration(
-                rumConfig.setDiskBufferingConfig(
+                rumConfig = rumConfig.setDiskBufferingConfig(
                     diskBufferingConfig,
                 ),
-                DiskBufferingConfigurationSpec(rumConfig),
-                FakeClock(),
+                diskBufferingConfig = DiskBufferingConfigurationSpec(rumConfig),
+                instrumentationLoader = FakeInstrumentationLoader(),
+                clock = FakeClock(),
             )
         assertTrue(otelConfig.diskBufferingConfig.enabled)
         assertTrue(otelConfig.rumConfig.getDiskBufferingConfig().enabled)

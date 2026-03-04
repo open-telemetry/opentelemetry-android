@@ -10,8 +10,10 @@ import io.mockk.every
 import io.mockk.mockk
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoaderImpl
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.OpenTelemetrySdk
+import io.opentelemetry.sdk.common.Clock.getDefault
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -37,7 +39,14 @@ class SdkPreconfiguredRumBuilderTest {
                 }
             }
 
-        val builder = RumBuilder.builder(context, sdk, config, sessionProvider)
+        val builder = SdkPreconfiguredRumBuilder(
+            context,
+            sdk,
+            sessionProvider,
+            config,
+            getDefault(),
+            AndroidInstrumentationLoaderImpl()
+        )
         builder.addInstrumentation(fooInstrumentation)
         builder.addInstrumentation(sessionInstrumentation)
 

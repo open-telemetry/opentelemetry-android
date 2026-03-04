@@ -18,32 +18,32 @@ import kotlin.time.toJavaDuration
 @OpenTelemetryDslMarker
 class SlowRenderingReporterConfiguration internal constructor(
     private val config: OtelRumConfig,
+    private val instrumentationLoader: AndroidInstrumentationLoader,
 ) : CanBeEnabledAndDisabled {
-    private val slowRenderingInstrumentation: SlowRenderingInstrumentation by lazy {
-        AndroidInstrumentationLoader.getInstrumentation(
-            SlowRenderingInstrumentation::class.java,
-        )
+
+    private val slowRenderingInstrumentation: SlowRenderingInstrumentation? by lazy {
+        instrumentationLoader.getByType(SlowRenderingInstrumentation::class.java)
     }
 
     /**
      * Sets the poll interval for slow rendering detection.
      */
     fun detectionPollInterval(value: Duration) {
-        slowRenderingInstrumentation.setSlowRenderingDetectionPollInterval(value.toJavaDuration())
+        slowRenderingInstrumentation?.setSlowRenderingDetectionPollInterval(value.toJavaDuration())
     }
 
     /**
      * Enables verbose debug logging for slow rendering instrumentation.
      */
     fun enableVerboseDebugLogging() {
-        slowRenderingInstrumentation.enableVerboseDebugLogging()
+        slowRenderingInstrumentation?.enableVerboseDebugLogging()
     }
 
     override fun enabled(enabled: Boolean) {
         if (enabled) {
-            config.allowInstrumentation(slowRenderingInstrumentation.name)
+            slowRenderingInstrumentation?.name?.let { config.allowInstrumentation(it) }
         } else {
-            config.suppressInstrumentation(slowRenderingInstrumentation.name)
+            slowRenderingInstrumentation?.name?.let { config.suppressInstrumentation(it) }
         }
     }
 }

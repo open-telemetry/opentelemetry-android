@@ -24,8 +24,7 @@ import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter.Companion.resetForTesting
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
-import io.opentelemetry.android.instrumentation.internal.AndroidInstrumentationLoaderImpl
+import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoaderImpl
 import io.opentelemetry.android.internal.initialization.InitializationEvents
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.Services.Companion.set
@@ -120,7 +119,6 @@ class OpenTelemetryRumBuilderTest {
         clearAllMocks()
         resetForTesting()
         InitializationEvents.resetForTest()
-        AndroidInstrumentationLoader.resetForTest()
         set(null)
     }
 
@@ -302,14 +300,11 @@ class OpenTelemetryRumBuilderTest {
                 every { name } returns "classpath"
             }
 
-        val androidInstrumentationServices =
-            AndroidInstrumentationLoader.get() as AndroidInstrumentationLoaderImpl
-        androidInstrumentationServices.registerForTest(classpathInstrumentation)
-
-        OpenTelemetryRumBuilder(application, buildConfig())
+        val builder = OpenTelemetryRumBuilder(application, buildConfig())
             .addInstrumentation(localInstrumentation)
             .setSessionProvider(sessionProvider)
-            .build()
+        (builder.instrumentationLoader as AndroidInstrumentationLoaderImpl).registerForTest(classpathInstrumentation)
+        builder.build()
 
         verify(exactly = 1) { localInstrumentation.install(any()) }
         verify(exactly = 1) { classpathInstrumentation.install(any()) }
@@ -327,16 +322,14 @@ class OpenTelemetryRumBuilderTest {
             mockk<AndroidInstrumentation>(relaxed = true) {
                 every { name } returns "classpath"
             }
-        val androidInstrumentationServices =
-            AndroidInstrumentationLoader.get() as AndroidInstrumentationLoaderImpl
-        androidInstrumentationServices.registerForTest(classpathInstrumentation)
 
-        OpenTelemetryRumBuilder(
+        val builder = OpenTelemetryRumBuilder(
             application,
             buildConfig().disableInstrumentationDiscovery(),
         ).addInstrumentation(localInstrumentation)
             .setSessionProvider(sessionProvider)
-            .build()
+        (builder.instrumentationLoader as AndroidInstrumentationLoaderImpl).registerForTest(classpathInstrumentation)
+        builder.build()
 
         verify(exactly = 1) { localInstrumentation.install(any()) }
         verify(exactly = 0) { classpathInstrumentation.install(any()) }
