@@ -13,8 +13,8 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.node.LayoutNode
 
-const val APP_SCREEN_CLICK_EVENT_NAME = "app.screen.click"
-const val VIEW_CLICK_EVENT_NAME = "app.widget.click"
+internal const val APP_SCREEN_CLICK_EVENT_NAME = "app.screen.click"
+internal const val VIEW_CLICK_EVENT_NAME = "app.widget.click"
 
 internal class ComposeLayoutNodeUtil {
     internal fun getLayoutNodeBoundsInWindow(node: LayoutNode): Rect? =

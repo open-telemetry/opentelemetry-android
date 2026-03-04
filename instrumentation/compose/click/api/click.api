@@ -3,9 +3,3 @@ public final class io/opentelemetry/instrumentation/compose/click/ComposeClickIn
 	public fun getName ()Ljava/lang/String;
 	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
 }
-
-public final class io/opentelemetry/instrumentation/compose/click/ComposeLayoutNodeUtilKt {
-	public static final field APP_SCREEN_CLICK_EVENT_NAME Ljava/lang/String;
-	public static final field VIEW_CLICK_EVENT_NAME Ljava/lang/String;
-}
-
