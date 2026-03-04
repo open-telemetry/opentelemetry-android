@@ -18,11 +18,11 @@ import kotlin.time.toJavaDuration
 @OpenTelemetryDslMarker
 class SlowRenderingReporterConfiguration internal constructor(
     private val config: OtelRumConfig,
+    private val instrumentationLoader: AndroidInstrumentationLoader,
 ) : CanBeEnabledAndDisabled {
+
     private val slowRenderingInstrumentation: SlowRenderingInstrumentation? by lazy {
-        AndroidInstrumentationLoader.get().getByType(
-            SlowRenderingInstrumentation::class.java,
-        )
+        instrumentationLoader.getByType(SlowRenderingInstrumentation::class.java)
     }
 
     /**

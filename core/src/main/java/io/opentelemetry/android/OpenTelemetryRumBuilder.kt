@@ -22,6 +22,8 @@ import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportSc
 import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduler
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
+import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoaderImpl
 import io.opentelemetry.android.internal.features.networkattrs.NetworkAttributesLogRecordAppender
 import io.opentelemetry.android.internal.features.networkattrs.NetworkAttributesSpanAppender.Companion.create
 import io.opentelemetry.android.internal.features.persistence.DiskManager
@@ -102,6 +104,8 @@ class OpenTelemetryRumBuilder internal constructor(
         mutableListOf()
     private val instrumentations: MutableList<AndroidInstrumentation> =
         mutableListOf()
+
+    val instrumentationLoader: AndroidInstrumentationLoader = AndroidInstrumentationLoaderImpl()
 
     @Deprecated("SDK listeners are deprecated, use otelReadyListeners instead")
     private val otelSdkReadyListeners: MutableList<Consumer<OpenTelemetrySdk>> = mutableListOf()
@@ -362,7 +366,7 @@ class OpenTelemetryRumBuilder internal constructor(
         otelReadyListeners.forEach { it(sdk) }
 
         val delegate =
-            SdkPreconfiguredRumBuilder(context, sdk, sessionProvider, config, clock)
+            SdkPreconfiguredRumBuilder(context, sdk, sessionProvider, config, clock, instrumentationLoader)
                 .setShutdownHook {
                     exportScheduleHandler?.disable()
                     services.close()

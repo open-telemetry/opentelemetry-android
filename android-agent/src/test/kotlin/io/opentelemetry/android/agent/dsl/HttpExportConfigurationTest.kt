@@ -7,6 +7,7 @@ package io.opentelemetry.android.agent.dsl
 
 import io.mockk.mockk
 import io.opentelemetry.android.agent.FakeClock
+import io.opentelemetry.android.agent.FakeInstrumentationLoader
 import io.opentelemetry.android.agent.connectivity.Compression
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 import io.opentelemetry.android.agent.connectivity.SSLContextConnectivity
@@ -19,7 +20,10 @@ internal class HttpExportConfigurationTest {
 
     @Before
     fun setUp() {
-        otelConfig = OpenTelemetryConfiguration(clock = FakeClock())
+        otelConfig = OpenTelemetryConfiguration(
+            clock = FakeClock(),
+            instrumentationLoader = FakeInstrumentationLoader()
+        )
     }
 
     @Test
