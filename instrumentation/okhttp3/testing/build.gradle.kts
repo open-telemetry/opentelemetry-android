@@ -3,7 +3,7 @@ plugins {
     id("net.bytebuddy.byte-buddy-gradle-plugin")
 }
 
-android.namespace = "io.opentelemetry.android.okhttp"
+android.namespace = "io.opentelemetry.android.okhttp3"
 
 dependencies {
     byteBuddy(project(":instrumentation:okhttp3:agent"))
