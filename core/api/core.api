@@ -16,6 +16,7 @@ public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
 	public final fun addSpanExporterCustomizer (Ljava/util/function/Function;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun addTracerProviderCustomizer (Ljava/util/function/BiFunction;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun build ()Lio/opentelemetry/android/OpenTelemetryRum;
+	public final fun getInstrumentationLoader ()Lio/opentelemetry/android/instrumentation/AndroidInstrumentationLoader;
 	public final fun mergeResource (Lio/opentelemetry/sdk/resources/Resource;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun setClock (Lio/opentelemetry/sdk/common/Clock;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun setExportScheduleHandler (Lio/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
@@ -37,7 +38,6 @@ public final class io/opentelemetry/android/RumBuilder {
 	public static final field INSTANCE Lio/opentelemetry/android/RumBuilder;
 	public static final fun builder (Landroid/content/Context;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public static final fun builder (Landroid/content/Context;Lio/opentelemetry/android/config/OtelRumConfig;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
-	public static final fun builder (Landroid/content/Context;Lio/opentelemetry/sdk/OpenTelemetrySdk;Lio/opentelemetry/android/config/OtelRumConfig;Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/android/SdkPreconfiguredRumBuilder;
 	public static synthetic fun builder$default (Landroid/content/Context;Lio/opentelemetry/android/config/OtelRumConfig;ILjava/lang/Object;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public static final fun noop ()Lio/opentelemetry/android/OpenTelemetryRum;
 }
@@ -203,16 +203,8 @@ public abstract interface class io/opentelemetry/android/features/diskbuffering/
 }
 
 public abstract interface class io/opentelemetry/android/instrumentation/AndroidInstrumentationLoader {
-	public static final field Companion Lio/opentelemetry/android/instrumentation/AndroidInstrumentationLoader$Companion;
-	public static fun get ()Lio/opentelemetry/android/instrumentation/AndroidInstrumentationLoader;
 	public abstract fun getAll ()Ljava/util/Collection;
 	public abstract fun getByType (Ljava/lang/Class;)Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;
-	public static fun resetForTest ()V
-}
-
-public final class io/opentelemetry/android/instrumentation/AndroidInstrumentationLoader$Companion {
-	public final fun get ()Lio/opentelemetry/android/instrumentation/AndroidInstrumentationLoader;
-	public final fun resetForTest ()V
 }
 
 public final class io/opentelemetry/android/internal/features/networkattrs/NetworkAttributesLogRecordAppender : io/opentelemetry/sdk/logs/LogRecordProcessor {

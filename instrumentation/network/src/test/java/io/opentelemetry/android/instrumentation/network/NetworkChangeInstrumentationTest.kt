@@ -24,8 +24,6 @@ import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.network.NetworkChangeListener
-import io.opentelemetry.android.session.SessionProvider
-import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
@@ -180,11 +178,9 @@ class NetworkChangeInstrumentationTest {
         every { services.currentNetworkProvider } returns currentNetworkProvider
         every { services.appLifecycle } returns appLifecycle
         Services.set(services)
-        return InstallationContext(
-            app,
-            otelTesting.openTelemetry,
-            mockk<SessionProvider>(),
-            Clock.getDefault(),
-        )
+        return mockk<InstallationContext>().also {
+            every { it.context } returns app
+            every { it.openTelemetry } returns otelTesting.openTelemetry
+        }
     }
 }

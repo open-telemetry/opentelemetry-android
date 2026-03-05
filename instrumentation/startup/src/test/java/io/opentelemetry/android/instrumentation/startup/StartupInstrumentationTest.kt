@@ -5,7 +5,6 @@
 
 package io.opentelemetry.android.instrumentation.startup
 
-import android.app.Application
 import io.mockk.Called
 import io.mockk.Runs
 import io.mockk.every
@@ -14,7 +13,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.internal.initialization.InitializationEvents
-import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -64,10 +62,7 @@ class StartupInstrumentationTest {
     }
 
     private fun makeContext(): InstallationContext =
-        InstallationContext(
-            mockk<Application>(),
-            otelTesting.openTelemetry,
-            mockk(),
-            Clock.getDefault(),
-        )
+        mockk<InstallationContext>().also {
+            every { it.openTelemetry } returns otelTesting.openTelemetry
+        }
 }
