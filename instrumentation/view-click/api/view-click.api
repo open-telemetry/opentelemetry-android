@@ -3,3 +3,4 @@ public final class io/opentelemetry/android/instrumentation/view/click/ViewClick
 	public fun getName ()Ljava/lang/String;
 	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
 }
+
