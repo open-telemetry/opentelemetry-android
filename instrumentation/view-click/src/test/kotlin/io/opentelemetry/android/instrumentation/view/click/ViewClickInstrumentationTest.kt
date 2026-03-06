@@ -25,8 +25,6 @@ import io.mockk.verify
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_CLICK_EVENT_NAME
 import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_EVENT_NAME
-import io.opentelemetry.android.session.SessionProvider
-import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
@@ -62,15 +60,14 @@ class ViewClickInstrumentationTest {
         MockKAnnotations.init(this, relaxUnitFun = true)
     }
 
+    private fun makeInstallationContext() = mockk<InstallationContext>().also {
+        every { it.application } returns application
+        every { it.openTelemetry } returns openTelemetryRule.openTelemetry
+    }
+
     @Test
     fun capture_view_click() {
-        val installationContext =
-            InstallationContext(
-                application,
-                openTelemetryRule.openTelemetry,
-                mockk<SessionProvider>(),
-                Clock.getDefault(),
-            )
+        val installationContext = makeInstallationContext()
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -127,13 +124,7 @@ class ViewClickInstrumentationTest {
 
     @Test
     fun capture_view_click_in_viewGroup() {
-        val installationContext =
-            InstallationContext(
-                application,
-                openTelemetryRule.openTelemetry,
-                mockk<SessionProvider>(),
-                Clock.getDefault(),
-            )
+        val installationContext = makeInstallationContext()
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -195,13 +186,7 @@ class ViewClickInstrumentationTest {
 
     @Test
     fun not_captured_view_click_in_viewGroup() {
-        val installationContext =
-            InstallationContext(
-                application,
-                openTelemetryRule.openTelemetry,
-                mockk<SessionProvider>(),
-                Clock.getDefault(),
-            )
+        val installationContext = makeInstallationContext()
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -253,13 +238,7 @@ class ViewClickInstrumentationTest {
 
     @Test
     fun not_captured_view_click_for_down_event() {
-        val installationContext =
-            InstallationContext(
-                application,
-                openTelemetryRule.openTelemetry,
-                mockk<SessionProvider>(),
-                Clock.getDefault(),
-            )
+        val installationContext = makeInstallationContext()
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback

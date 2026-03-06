@@ -20,7 +20,6 @@ import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.api.logs.LoggerProvider
 import io.opentelemetry.sdk.OpenTelemetrySdk
-import io.opentelemetry.sdk.common.Clock
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -78,7 +77,10 @@ class SlowRenderingInstrumentationTest {
     @Config(sdk = [23])
     @Test
     fun `Not installing instrumentation on devices with API level lower than 24`() {
-        val ctx = InstallationContext(application, openTelemetry, mockk(), Clock.getDefault())
+        val ctx = mockk<InstallationContext>().also {
+            every { it.openTelemetry } returns openTelemetry
+            every { it.application } returns application
+        }
         slowRenderingInstrumentation.install(ctx)
 
         verify {
@@ -95,7 +97,10 @@ class SlowRenderingInstrumentationTest {
         val capturedListener = slot<SlowRenderListener>()
         every { openTelemetry.getTracer(any()) }.returns(mockk())
         every { application.registerActivityLifecycleCallbacks(any()) } just Runs
-        val ctx = InstallationContext(application, openTelemetry, mockk(), Clock.getDefault())
+        val ctx = mockk<InstallationContext>().also {
+            every { it.openTelemetry } returns openTelemetry
+            every { it.application } returns application
+        }
         slowRenderingInstrumentation.install(ctx)
 
         verify { application.registerActivityLifecycleCallbacks(capture(capturedListener)) }
@@ -107,7 +112,10 @@ class SlowRenderingInstrumentationTest {
         val capturedListener = slot<SlowRenderListener>()
         every { openTelemetry.getTracer(any()) }.returns(mockk())
         every { application.registerActivityLifecycleCallbacks(any()) } just Runs
-        val ctx = InstallationContext(application, openTelemetry, mockk(), Clock.getDefault())
+        val ctx = mockk<InstallationContext>().also {
+            every { it.openTelemetry } returns openTelemetry
+            every { it.application } returns application
+        }
         @Suppress("DEPRECATION")
         slowRenderingInstrumentation.enableDeprecatedZeroDurationSpan().install(ctx)
 

@@ -40,8 +40,6 @@ import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.instrumentation.InstallationContext
-import io.opentelemetry.android.session.SessionProvider
-import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
@@ -98,13 +96,10 @@ internal class ComposeInstrumentationTest {
 
     @Test
     fun capture_compose_click() {
-        val installationContext =
-            InstallationContext(
-                application,
-                openTelemetryRule.openTelemetry,
-                mockk<SessionProvider>(),
-                Clock.getDefault(),
-            )
+        val installationContext = mockk<InstallationContext>().also {
+            every { it.application } returns application
+            every { it.openTelemetry } returns openTelemetryRule.openTelemetry
+        }
 
         val callbackCapturingSlot = slot<ComposeClickActivityCallback>()
         every { window.callback } returns callback
