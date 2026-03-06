@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.instrumentation.library.okhttp.v3_0.internal
+package io.opentelemetry.instrumentation.library.okhttp.internal
 
 import io.opentelemetry.context.Context
 import java.io.IOException

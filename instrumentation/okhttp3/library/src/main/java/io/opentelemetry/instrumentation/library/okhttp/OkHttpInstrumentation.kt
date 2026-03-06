@@ -3,9 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-@file:Suppress("ktlint:standard:package-name")
-
-package io.opentelemetry.instrumentation.library.okhttp.v3_0
+package io.opentelemetry.instrumentation.library.okhttp
 
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
@@ -13,7 +11,7 @@ import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceResolver
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor
 import io.opentelemetry.instrumentation.api.internal.HttpConstants
-import io.opentelemetry.instrumentation.library.okhttp.v3_0.internal.OkHttp3Singletons
+import io.opentelemetry.instrumentation.library.okhttp.internal.OkHttpSingletons
 import okhttp3.Interceptor
 import okhttp3.Response
 
@@ -109,7 +107,7 @@ class OkHttpInstrumentation : AndroidInstrumentation {
     fun emitExperimentalHttpClientTelemetry(): Boolean = emitExperimentalHttpClientTelemetry
 
     override fun install(ctx: InstallationContext) {
-        OkHttp3Singletons.configure(this, ctx.openTelemetry)
+        OkHttpSingletons.configure(this, ctx.openTelemetry)
     }
 
     override val name: String = "okhttp"
