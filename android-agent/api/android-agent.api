@@ -10,6 +10,7 @@ public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer {
 public final class io/opentelemetry/android/agent/connectivity/Compression : java/lang/Enum {
 	public static final field GZIP Lio/opentelemetry/android/agent/connectivity/Compression;
 	public static final field NONE Lio/opentelemetry/android/agent/connectivity/Compression;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lio/opentelemetry/android/agent/connectivity/Compression;
 	public static fun values ()[Lio/opentelemetry/android/agent/connectivity/Compression;
 }

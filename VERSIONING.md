@@ -25,7 +25,7 @@ builds, but their use in production is strongly discouraged.
 
 The android-agent currently supports the following minimum versions:
 
-- Kotlin 1.8
+- Kotlin 2.0
 - API 21+ ([desugaring of the core library](https://developer.android.com/studio/write/java8-support#library-desugaring) required for API <26)
 - Android Gradle Plugin (AGP) 7.4 and Gradle 7.5
 - JDK 11 (build-time)
@@ -34,7 +34,9 @@ The android-agent currently supports the following minimum versions:
 These versions can be bumped in a major version release when:
 
 1. [Google Play Services](https://developers.google.com/android/guides/setup) drops support for any of the above versions
-2. A new version of Kotlin is released that does not support targeting the minimum Kotlin version
+2. A new version of Kotlin is released that drops support for the minimum Kotlin version that
+   opentelemetry-android targets. In practice, Kotlin usually supports the last 4 minor versions of
+   Kotlin.
 3. At the discretion of maintainers after discussing in the SIG
 
 These are **minimum** supported versions. We would strongly recommend using newer versions where
