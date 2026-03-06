@@ -3,6 +3,7 @@ public abstract interface class io/opentelemetry/android/OpenTelemetryRum {
 	public static synthetic fun emitEvent$default (Lio/opentelemetry/android/OpenTelemetryRum;Ljava/lang/String;Ljava/lang/String;Lio/opentelemetry/api/common/Attributes;ILjava/lang/Object;)V
 	public abstract fun getOpenTelemetry ()Lio/opentelemetry/api/OpenTelemetry;
 	public abstract fun getRumSessionId ()Ljava/lang/String;
+	public abstract fun install (Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;)V
 	public abstract fun shutdown ()V
 }
 

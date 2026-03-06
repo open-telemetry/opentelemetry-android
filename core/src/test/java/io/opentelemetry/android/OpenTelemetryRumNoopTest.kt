@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android
 
+import io.mockk.mockk
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.api.OpenTelemetry
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -18,6 +20,7 @@ internal class OpenTelemetryRumNoopTest {
 
         // assert no exceptions thrown
         noop.emitEvent("event")
+        noop.install(mockk<AndroidInstrumentation>())
         noop.shutdown()
     }
 }
