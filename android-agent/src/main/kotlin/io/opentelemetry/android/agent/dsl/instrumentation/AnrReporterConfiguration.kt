@@ -17,12 +17,11 @@ import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 @OpenTelemetryDslMarker
 class AnrReporterConfiguration internal constructor(
     private val config: OtelRumConfig,
-) : WithEventAttributes<Array<StackTraceElement>>,
-    CanBeEnabledAndDisabled {
+    private val instrumentationLoader: AndroidInstrumentationLoader,
+) : WithEventAttributes<Array<StackTraceElement>>, CanBeEnabledAndDisabled {
+
     private val anrInstrumentation: AnrInstrumentation? by lazy {
-        AndroidInstrumentationLoader.get().getByType(
-            AnrInstrumentation::class.java,
-        )
+        instrumentationLoader.getByType(AnrInstrumentation::class.java)
     }
 
     override fun addAttributesExtractor(value: EventAttributesExtractor<Array<StackTraceElement>>) {

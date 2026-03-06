@@ -9,10 +9,6 @@ import android.util.Log
 import io.opentelemetry.android.common.RumConstants.OTEL_RUM_LOG_TAG
 import java.util.ServiceLoader
 
-/**
- * This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
- */
 internal class AndroidInstrumentationLoaderImpl : AndroidInstrumentationLoader {
     private val instrumentations: MutableMap<Class<out AndroidInstrumentation>, AndroidInstrumentation> by lazy {
         ServiceLoader

@@ -18,10 +18,11 @@ import io.opentelemetry.api.trace.Tracer
 @OpenTelemetryDslMarker
 class ActivityLifecycleConfiguration internal constructor(
     private val config: OtelRumConfig,
-) : ScreenLifecycleConfigurable,
-    CanBeEnabledAndDisabled {
+    private val instrumentationLoader: AndroidInstrumentationLoader,
+) : ScreenLifecycleConfigurable, CanBeEnabledAndDisabled {
+
     private val activityLifecycleInstrumentation: ActivityLifecycleInstrumentation? by lazy {
-        AndroidInstrumentationLoader.get().getByType(ActivityLifecycleInstrumentation::class.java)
+        instrumentationLoader.getByType(ActivityLifecycleInstrumentation::class.java)
     }
 
     override fun tracerCustomizer(value: (Tracer) -> Tracer) {

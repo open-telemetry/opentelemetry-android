@@ -16,6 +16,7 @@ import io.opentelemetry.android.agent.dsl.OpenTelemetryConfiguration
 import io.opentelemetry.android.agent.session.SessionConfig
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.agent.session.SessionManager
+import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
@@ -39,9 +40,6 @@ object OpenTelemetryRumInitializer {
         context: Context,
         configuration: (OpenTelemetryConfiguration.() -> Unit) = {},
     ): OpenTelemetryRum {
-        val cfg = OpenTelemetryConfiguration()
-        configuration(cfg)
-
         // ensure we're using the Application Context to prevent potential leaks.
         // if context.applicationContext is null (e.g. called from within attachBaseContext),
         // fallback to the supplied context.
@@ -51,6 +49,11 @@ object OpenTelemetryRumInitializer {
                 else -> context.applicationContext ?: context
             }
 
+        val rumConfig = OtelRumConfig()
+        val builder = RumBuilder.builder(ctx, rumConfig)
+        val cfg = OpenTelemetryConfiguration(rumConfig, instrumentationLoader = builder.instrumentationLoader)
+        configuration(cfg)
+
         val spansEndpoint = cfg.exportConfig.spansEndpoint()
         val logsEndpoints = cfg.exportConfig.logsEndpoint()
         val metricsEndpoint = cfg.exportConfig.metricsEndpoint()
@@ -59,8 +62,7 @@ object OpenTelemetryRumInitializer {
         cfg.resourceAction(resourceBuilder)
         val resource = resourceBuilder.build()
 
-        return RumBuilder
-            .builder(ctx, cfg.rumConfig)
+        return builder
             .setSessionProvider(createSessionProvider(ctx, cfg))
             .setResource(resource)
             .setClock(cfg.clock)

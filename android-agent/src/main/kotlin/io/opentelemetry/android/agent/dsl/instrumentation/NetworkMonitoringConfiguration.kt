@@ -17,11 +17,10 @@ import io.opentelemetry.android.instrumentation.network.NetworkChangeInstrumenta
 @OpenTelemetryDslMarker
 class NetworkMonitoringConfiguration internal constructor(
     private val config: OtelRumConfig,
+    private val instrumentationLoader: AndroidInstrumentationLoader,
 ) : CanBeEnabledAndDisabled {
     private val networkInstrumentation: NetworkChangeInstrumentation? by lazy {
-        AndroidInstrumentationLoader.get().getByType(
-            NetworkChangeInstrumentation::class.java,
-        )
+        instrumentationLoader.getByType(NetworkChangeInstrumentation::class.java)
     }
 
     /**

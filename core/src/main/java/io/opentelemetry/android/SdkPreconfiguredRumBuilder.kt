@@ -22,6 +22,7 @@ class SdkPreconfiguredRumBuilder internal constructor(
     private val sessionProvider: SessionProvider,
     private val config: OtelRumConfig,
     private val clock: Clock,
+    private val instrumentationLoader: AndroidInstrumentationLoader,
 ) {
     private var onShutdown: Runnable = Runnable {} // nop
     private val instrumentations = mutableListOf<AndroidInstrumentation>()
@@ -109,7 +110,7 @@ class SdkPreconfiguredRumBuilder internal constructor(
 
     private fun getInstrumentations(): List<AndroidInstrumentation> {
         if (config.shouldDiscoverInstrumentations()) {
-            instrumentations.addAll(AndroidInstrumentationLoader.get().getAll())
+            instrumentations.addAll(instrumentationLoader.getAll())
         }
 
         return instrumentations
