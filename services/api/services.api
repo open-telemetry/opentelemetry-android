@@ -29,6 +29,7 @@ public abstract interface class io/opentelemetry/android/internal/services/Servi
 
 public abstract interface class io/opentelemetry/android/internal/services/applifecycle/AppLifecycle : io/opentelemetry/android/internal/services/Service {
 	public abstract fun registerListener (Lio/opentelemetry/android/internal/services/applifecycle/ApplicationStateListener;)V
+	public abstract fun unregisterListener (Lio/opentelemetry/android/internal/services/applifecycle/ApplicationStateListener;)V
 }
 
 public abstract interface class io/opentelemetry/android/internal/services/applifecycle/ApplicationStateListener {
@@ -43,6 +44,7 @@ public abstract interface class io/opentelemetry/android/internal/services/netwo
 	public abstract fun addNetworkChangeListener (Lio/opentelemetry/android/internal/services/network/NetworkChangeListener;)V
 	public abstract fun getCurrentNetwork ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
 	public abstract fun refreshNetworkStatus ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
+	public abstract fun removeNetworkChangeListener (Lio/opentelemetry/android/internal/services/network/NetworkChangeListener;)V
 }
 
 public final class io/opentelemetry/android/internal/services/network/CurrentNetworkProvider$Companion {

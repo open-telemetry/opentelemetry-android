@@ -12,4 +12,6 @@ import io.opentelemetry.android.internal.services.Service
  */
 interface AppLifecycle : Service {
     fun registerListener(listener: ApplicationStateListener)
+
+    fun unregisterListener(listener: ApplicationStateListener)
 }

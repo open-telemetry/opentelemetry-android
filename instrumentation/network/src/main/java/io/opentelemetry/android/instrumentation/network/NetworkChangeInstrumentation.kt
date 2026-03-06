@@ -21,6 +21,7 @@ fun interface NetworkAttributesExtractor : (AttributesBuilder, CurrentNetwork) -
 @AutoService(AndroidInstrumentation::class)
 class NetworkChangeInstrumentation : AndroidInstrumentation {
     private val additionalAttributeExtractors: MutableList<NetworkAttributesExtractor> = ArrayList()
+    private var networkApplicationListener: NetworkApplicationListener? = null
 
     override val name = "network"
 
@@ -33,9 +34,19 @@ class NetworkChangeInstrumentation : AndroidInstrumentation {
     override fun install(ctx: InstallationContext) {
         additionalAttributeExtractors.add(NetworkChangeAttributesExtractor())
         val services = get(ctx.context)
-        val networkApplicationListener = NetworkApplicationListener(services.currentNetworkProvider)
+        val listener = NetworkApplicationListener(services.currentNetworkProvider)
         val logger = ctx.openTelemetry.logsBridge["io.opentelemetry.network"]
-        networkApplicationListener.startMonitoring(logger, additionalAttributeExtractors)
-        services.appLifecycle.registerListener(networkApplicationListener)
+        listener.startMonitoring(logger, additionalAttributeExtractors)
+        services.appLifecycle.registerListener(listener)
+        networkApplicationListener = listener
+    }
+
+    override fun uninstall(ctx: InstallationContext) {
+        networkApplicationListener?.let { listener ->
+            listener.stopMonitoring()
+            val services = get(ctx.context)
+            services.appLifecycle.unregisterListener(listener)
+        }
+        networkApplicationListener = null
     }
 }

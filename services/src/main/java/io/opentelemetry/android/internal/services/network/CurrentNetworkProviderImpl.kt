@@ -93,6 +93,10 @@ internal class CurrentNetworkProviderImpl(
         listeners.add(listener)
     }
 
+    override fun removeNetworkChangeListener(listener: NetworkChangeListener) {
+        listeners.remove(listener)
+    }
+
     private fun notifyListeners(activeNetwork: CurrentNetwork) {
         for (listener in listeners) {
             listener.onNetworkChange(activeNetwork)

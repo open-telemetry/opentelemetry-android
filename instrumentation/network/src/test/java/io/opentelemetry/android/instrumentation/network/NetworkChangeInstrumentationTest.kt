@@ -174,6 +174,40 @@ class NetworkChangeInstrumentationTest {
             )
     }
 
+    @Test
+    fun uninstall() {
+        val networkChangeListenerSlot = slot<NetworkChangeListener>()
+        val appStateListenerSlot = slot<ApplicationStateListener>()
+        val ctx = createInstallationContext()
+        val instrumentation = NetworkChangeInstrumentation()
+        instrumentation.install(ctx)
+
+        verify {
+            currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
+            appLifecycle.registerListener(capture(appStateListenerSlot))
+        }
+
+        instrumentation.uninstall(ctx)
+
+        verify {
+            currentNetworkProvider.removeNetworkChangeListener(networkChangeListenerSlot.captured)
+            appLifecycle.unregisterListener(appStateListenerSlot.captured)
+        }
+    }
+
+    @Test
+    fun uninstallBeforeInstall() {
+        val ctx = createInstallationContext()
+        val instrumentation = NetworkChangeInstrumentation()
+
+        instrumentation.uninstall(ctx)
+
+        verify(exactly = 0) {
+            currentNetworkProvider.removeNetworkChangeListener(any())
+            appLifecycle.unregisterListener(any())
+        }
+    }
+
     private fun createInstallationContext(): InstallationContext {
         val app = mockk<Application>()
         val services = mockk<Services>()

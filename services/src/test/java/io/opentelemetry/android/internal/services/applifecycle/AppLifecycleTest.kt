@@ -29,6 +29,7 @@ class AppLifecycleTest {
     fun setUp() {
         MockKAnnotations.init(this)
         every { applicationStateWatcher.registerListener(any()) } just Runs
+        every { applicationStateWatcher.unregisterListener(any()) } just Runs
         every { lifecycle.addObserver(any()) } just Runs
         lifecycleService = AppLifecycleImpl(applicationStateWatcher, lifecycle)
     }
@@ -40,6 +41,15 @@ class AppLifecycleTest {
         lifecycleService.registerListener(listener)
 
         verify { applicationStateWatcher.registerListener(listener) }
+    }
+
+    @Test
+    fun `Unregistering listener`() {
+        val listener = mockk<ApplicationStateListener>()
+
+        lifecycleService.unregisterListener(listener)
+
+        verify { applicationStateWatcher.unregisterListener(listener) }
     }
 
     @Test
