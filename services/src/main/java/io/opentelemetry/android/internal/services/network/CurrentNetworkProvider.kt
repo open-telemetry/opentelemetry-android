@@ -27,6 +27,8 @@ interface CurrentNetworkProvider : Service {
 
     fun addNetworkChangeListener(listener: NetworkChangeListener)
 
+    fun removeNetworkChangeListener(listener: NetworkChangeListener)
+
     companion object {
         @JvmField
         val NO_NETWORK: CurrentNetwork = CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE)

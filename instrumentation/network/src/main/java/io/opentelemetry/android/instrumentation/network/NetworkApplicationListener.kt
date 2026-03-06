@@ -21,18 +21,26 @@ internal class NetworkApplicationListener(
     private val currentNetworkProvider: CurrentNetworkProvider,
 ) : ApplicationStateListener {
     private val shouldEmitChangeEvents = AtomicBoolean(true)
+    private var networkChangeListener: TracingNetworkChangeListener? = null
 
     fun startMonitoring(
         eventLogger: Logger,
         additionalExtractors: List<NetworkAttributesExtractor>,
     ) {
-        currentNetworkProvider.addNetworkChangeListener(
-            TracingNetworkChangeListener(
-                eventLogger,
-                shouldEmitChangeEvents,
-                additionalExtractors,
-            ),
+        val listener = TracingNetworkChangeListener(
+            eventLogger,
+            shouldEmitChangeEvents,
+            additionalExtractors,
         )
+        networkChangeListener = listener
+        currentNetworkProvider.addNetworkChangeListener(listener)
+    }
+
+    fun stopMonitoring() {
+        networkChangeListener?.let {
+            currentNetworkProvider.removeNetworkChangeListener(it)
+        }
+        networkChangeListener = null
     }
 
     override fun onApplicationForegrounded() {

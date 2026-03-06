@@ -93,6 +93,39 @@ internal class CurrentNetworkProviderTest {
     }
 
     @Test
+    fun `remove network change listener`() {
+        val networkRequest: NetworkRequest = mockk()
+        val networkDetector: NetworkDetector = mockk()
+        val connectivityManager: ConnectivityManager = mockk()
+        every { networkDetector.detectCurrentNetwork() } returns wifi andThen cellular
+        every { connectivityManager.registerDefaultNetworkCallback(any()) } just Runs
+        every { connectivityManager.unregisterNetworkCallback(any<NetworkCallback>()) } just Runs
+
+        val currentNetworkProvider =
+            CurrentNetworkProviderImpl(
+                networkDetector,
+                connectivityManager,
+            ) { networkRequest }
+
+        val monitorSlot = slot<NetworkCallback>()
+        verify {
+            connectivityManager.registerDefaultNetworkCallback(capture(monitorSlot))
+        }
+
+        val notified = AtomicInteger(0)
+        val listener = NetworkChangeListener { notified.incrementAndGet() }
+        currentNetworkProvider.addNetworkChangeListener(listener)
+
+        monitorSlot.captured.onAvailable(fakeNet)
+        assertThat(notified.get()).isEqualTo(1)
+
+        currentNetworkProvider.removeNetworkChangeListener(listener)
+
+        monitorSlot.captured.onAvailable(fakeNet)
+        assertThat(notified.get()).isEqualTo(1)
+    }
+
+    @Test
     fun `network detector exception`() {
         val currentNetworkProvider = CurrentNetworkProviderImpl(errorNetworkDetector, mockConnectivityManager)
         assertThat(currentNetworkProvider.refreshNetworkStatus()).isEqualTo(UNKNOWN_NETWORK)
