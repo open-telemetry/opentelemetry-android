@@ -115,7 +115,6 @@ Any change to the public API surface is detected by `apiCheck` and requires extr
 - Re-implementing functionality that already exists in the codebase.
 - Adding public API that should be `internal`.
 - Not understanding the module layering (e.g., putting agent-level code in core).
-- Proposing changes that don't work with the existing architecture (e.g., ignoring the
-  bytecode weaving requirement for certain instrumentations).
+- Proposing changes that don't work with the existing architecture.
 - Bundling unrelated changes into a single PR.
 - Skipping tests or formatting.
