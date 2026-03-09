@@ -69,9 +69,10 @@ refactor, or a new feature and code cleanup). Keep the PR focused on one thing.
 Before writing code, confirm that:
 
 - The feature or fix does not already exist in the codebase.
-- Your approach is compatible with the existing architecture.
-- You are modifying the correct module(s) for the change.
-- If you are adding public API, it is truly necessary and not an implementation detail that
+- The proposed approach is compatible with the existing architecture.
+- Modifications are in the correct module(s) for the change.
+- Public APIs are only added when truly necessary
+- Changes that are not user-facing are considered an implementation detail that
   should remain `internal`.
 
 ### Public API Surface
