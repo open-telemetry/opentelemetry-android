@@ -3,9 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-@file:Suppress("ktlint:standard:package-name")
-
-package io.opentelemetry.instrumentation.library.okhttp.v3_0
+package io.opentelemetry.instrumentation.library.okhttp
 
 import io.opentelemetry.android.test.common.OpenTelemetryRumRule
 import io.opentelemetry.api.OpenTelemetry

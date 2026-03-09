@@ -5,7 +5,6 @@
 
 package io.opentelemetry.instrumentation.library.okhttp
 
-import io.opentelemetry.instrumentation.library.okhttp.v3_0.OkHttpInstrumentation
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

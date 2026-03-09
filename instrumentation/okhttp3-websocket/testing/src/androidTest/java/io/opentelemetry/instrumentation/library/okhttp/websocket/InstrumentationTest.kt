@@ -6,7 +6,7 @@
 package io.opentelemetry.instrumentation.library.okhttp.websocket
 
 import io.opentelemetry.android.test.common.OpenTelemetryRumRule
-import io.opentelemetry.instrumentation.library.okhttp.v3_0.websocket.internal.WebsocketListenerWrapper
+import io.opentelemetry.instrumentation.library.okhttp.websocket.internal.WebsocketListenerWrapper
 import io.opentelemetry.semconv.HttpAttributes
 import io.opentelemetry.semconv.NetworkAttributes
 import io.opentelemetry.semconv.UrlAttributes

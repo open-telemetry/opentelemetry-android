@@ -3,9 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-@file:Suppress("ktlint:standard:package-name")
-
-package io.opentelemetry.instrumentation.library.okhttp.v3_0.websocket.internal
+package io.opentelemetry.instrumentation.library.okhttp.websocket.internal
 
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -13,8 +11,8 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.instrumentation.InstallationContext
-import io.opentelemetry.instrumentation.library.okhttp.v3_0.websocket.internal.WebsocketListenerWrapper.Companion.MESSAGE_SIZE
-import io.opentelemetry.instrumentation.library.okhttp.v3_0.websocket.internal.WebsocketListenerWrapper.Companion.MESSAGE_TYPE
+import io.opentelemetry.instrumentation.library.okhttp.websocket.internal.WebsocketListenerWrapper.Companion.MESSAGE_SIZE
+import io.opentelemetry.instrumentation.library.okhttp.websocket.internal.WebsocketListenerWrapper.Companion.MESSAGE_TYPE
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
