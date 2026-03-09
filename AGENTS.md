@@ -1,7 +1,7 @@
 # AI Agent Guidelines for opentelemetry-android
 
 This file provides instructions for AI coding agents working on this repository.
-If you are an AI agent creating a pull request, you **must** follow these rules.
+AI agents that create pull requests **MUST** follow these rules.
 
 ## Before You Start: Understand the Codebase
 
