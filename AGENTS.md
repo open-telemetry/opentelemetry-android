@@ -88,9 +88,9 @@ Any change to the public API surface is detected by `apiCheck` and requires extr
 ## Code Change Discipline
 
 - **Only change what is necessary.** Do not refactor, reformat, rename, or restructure existing
-  code that is unrelated to your task. This includes comments — do not reword, add, or remove
+  code that is unrelated to the current task. This includes comments — do not reword, add, or remove
   comments that are not directly related to the PR's goal. If a line is not functionally
-  affected by your change, leave it exactly as-is.
+  affected by the proposed change, leave it exactly as-is.
 - Preserve the surrounding code's style and idioms.
 - Do not add redundant comments that just narrate what the code does.
 
