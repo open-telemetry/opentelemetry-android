@@ -17,7 +17,7 @@ Before proposing any change, you must:
 3. **Read `CONTRIBUTING.md`** for PR process, code conventions, and testing requirements.
 
 Many AI-generated PRs have been rejected because they re-implemented functionality that already
-existed, or proposed an approach that didn't account for how the project is actually structured.
+existed or proposed an approach that didn't account for how the project is actually structured.
 
 ## Module Architecture
 
