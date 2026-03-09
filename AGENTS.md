@@ -64,7 +64,7 @@ reviewable PRs that each make one clear, incremental change.
 Each PR should have a single purpose. Do not combine unrelated changes (e.g., a bug fix and a
 refactor, or a new feature and code cleanup). Keep the PR focused on one thing.
 
-### Accuracy: Verify Your Change Is Actually Needed
+### Accuracy: Verify That The Change Is Actually Needed
 
 Before writing code, confirm that:
 
