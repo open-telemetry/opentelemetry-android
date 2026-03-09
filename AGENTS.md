@@ -11,9 +11,9 @@ greenfield codebase.
 
 Before proposing any change, agents must:
 
-1. **Read the module architecture below** and understand where your change fits.
-2. **Search the existing code** for functionality related to your change. Features you think
-   are missing may already exist in a different module or under a different name.
+1. **Read the module architecture below** and understand where the change fits best.
+2. **Search the existing code** for functionality related to the change. Features that
+   appear missing may already exist in a different module or under a different name.
 3. **Read `CONTRIBUTING.md`** for PR process, code conventions, and testing requirements.
 
 Many AI-generated PRs have been rejected because they re-implemented functionality that already
