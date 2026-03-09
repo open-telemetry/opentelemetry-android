@@ -98,7 +98,7 @@ Any change to the public API surface is detected by `apiCheck` and requires extr
 
 - **Language**: Kotlin preferred, Java acceptable for existing Java files.
 - **Formatting**: Run `./gradlew spotlessApply` before submitting.
-- **Binary compatibility**: Run `./gradlew apiCheck`. If you intentionally changed API,
+- **Binary compatibility**: Run `./gradlew apiCheck`. If an API is intentionally changed,
   run `./gradlew apiDump` and include the updated `.api` files in the PR.
 
 ## Testing
