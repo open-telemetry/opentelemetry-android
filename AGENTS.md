@@ -119,3 +119,4 @@ Any change to the public API surface is detected by `apiCheck` and requires extr
 - Proposing changes that don't work with the existing architecture.
 - Bundling unrelated changes into a single PR.
 - Skipping tests or formatting.
+- Leaving CoPilot or other automated review comments unresolved.
