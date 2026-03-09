@@ -3,7 +3,7 @@
 This file provides instructions for AI coding agents working on this repository.
 AI agents that create pull requests **MUST** follow these rules.
 
-## Before You Start: Understand the Codebase
+## Before Starting: Understand the Codebase
 
 This is an OpenTelemetry SDK for Android, built on the OpenTelemetry Java SDK. It is
 published to Maven Central and has an established architecture. Do not treat it as a
