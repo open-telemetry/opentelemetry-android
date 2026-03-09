@@ -9,7 +9,7 @@ This is an OpenTelemetry SDK for Android, built on the OpenTelemetry Java SDK. I
 published to Maven Central and has an established architecture. Do not treat it as a
 greenfield codebase.
 
-Before proposing any change, you must:
+Before proposing any change, agents must:
 
 1. **Read the module architecture below** and understand where your change fits.
 2. **Search the existing code** for functionality related to your change. Features you think
