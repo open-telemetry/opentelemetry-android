@@ -56,7 +56,7 @@ Key points:
 ### Size: Keep PRs Small
 
 **Pull requests must not exceed ~500 changed lines.** Large PRs are extremely difficult to review
-and will be sent back. If your change is bigger than that, break it into smaller, independently
+and will be sent back. If a change is bigger than that, break it into smaller, independently
 reviewable PRs that each make one clear, incremental change.
 
 ### Scope: One Purpose Per PR
