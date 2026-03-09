@@ -110,7 +110,7 @@ Any change to the public API surface is detected by `apiCheck` and requires extr
 - Use **AssertJ** for assertions (`assertThat(...).isEqualTo(...)`, not `assertEquals`).
 - Tests must pass: `./gradlew check`.
 
-## What Will Get Your PR Rejected
+## What Will Get A PR Rejected
 
 - PRs over ~500 changed lines.
 - Re-implementing functionality that already exists in the codebase.
