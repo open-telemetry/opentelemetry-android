@@ -1,5 +1,0 @@
-public final class io/opentelemetry/instrumentation/agent/okhttp/v3_0/OkHttpClientAdvice {
-	public static final field INSTANCE Lio/opentelemetry/instrumentation/agent/okhttp/v3_0/OkHttpClientAdvice;
-	public static final fun enter (Lokhttp3/OkHttpClient$Builder;)V
-}
-

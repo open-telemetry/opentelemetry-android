@@ -3,9 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-@file:Suppress("ktlint:standard:package-name")
-
-package io.opentelemetry.instrumentation.library.okhttp.v3_0.websocket.internal
+package io.opentelemetry.instrumentation.library.okhttp.websocket.internal
 
 import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.api.OpenTelemetry

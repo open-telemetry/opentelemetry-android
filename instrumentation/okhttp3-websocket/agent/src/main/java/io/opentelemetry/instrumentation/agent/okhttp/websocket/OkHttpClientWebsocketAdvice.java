@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.instrumentation.agent.okhttp.v3_0.websocket;
+package io.opentelemetry.instrumentation.agent.okhttp.websocket;
 
-import io.opentelemetry.instrumentation.library.okhttp.v3_0.websocket.internal.WebsocketListenerWrapper;
+import io.opentelemetry.instrumentation.library.okhttp.websocket.internal.WebsocketListenerWrapper;
 import net.bytebuddy.asm.Advice;
 import okhttp3.WebSocketListener;
 

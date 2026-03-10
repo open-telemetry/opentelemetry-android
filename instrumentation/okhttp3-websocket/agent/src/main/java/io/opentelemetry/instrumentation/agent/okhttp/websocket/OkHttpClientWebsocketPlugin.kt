@@ -3,19 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.instrumentation.agent.okhttp.v3_0
+package io.opentelemetry.instrumentation.agent.okhttp.websocket
 
 import java.io.IOException
 import net.bytebuddy.asm.Advice
 import net.bytebuddy.build.Plugin
-import net.bytebuddy.description.method.MethodDescription
+import net.bytebuddy.description.NamedElement
 import net.bytebuddy.description.type.TypeDescription
 import net.bytebuddy.dynamic.ClassFileLocator
 import net.bytebuddy.dynamic.DynamicType
 import net.bytebuddy.matcher.ElementMatchers
-import okhttp3.OkHttpClient
+import okhttp3.WebSocketListener
 
-internal class OkHttpClientPlugin : Plugin {
+internal class OkHttpClientWebsocketPlugin : Plugin {
 
     override fun apply(
         builder: DynamicType.Builder<*>,
@@ -23,14 +23,14 @@ internal class OkHttpClientPlugin : Plugin {
         classFileLocator: ClassFileLocator
     ): DynamicType.Builder<*> {
         return builder.visit(
-            Advice.to(OkHttpClientAdvice::class.java)
+            Advice.to(OkHttpClientWebsocketAdvice::class.java)
                 .on(
-                    ElementMatchers.isConstructor<MethodDescription>()
-                        .and(
-                            ElementMatchers.takesArguments(
-                                OkHttpClient.Builder::class.java
-                            )
+                    ElementMatchers.named<NamedElement>("newWebSocket").and(
+                        ElementMatchers.takesArgument(
+                            1,
+                            WebSocketListener::class.java
                         )
+                    )
                 )
         )
     }
