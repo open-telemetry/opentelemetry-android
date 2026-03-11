@@ -307,8 +307,8 @@ class OpenTelemetryRumBuilderTest {
         (builder.instrumentationLoader as AndroidInstrumentationLoaderImpl).registerForTest(classpathInstrumentation)
         builder.build()
 
-        verify(exactly = 1) { localInstrumentation.install(any()) }
-        verify(exactly = 1) { classpathInstrumentation.install(any()) }
+        verify(exactly = 1) { localInstrumentation.install(any(), any()) }
+        verify(exactly = 1) { classpathInstrumentation.install(any(), any()) }
     }
 
     @Test
@@ -332,8 +332,8 @@ class OpenTelemetryRumBuilderTest {
         (builder.instrumentationLoader as AndroidInstrumentationLoaderImpl).registerForTest(classpathInstrumentation)
         builder.build()
 
-        verify(exactly = 1) { localInstrumentation.install(any()) }
-        verify(exactly = 0) { classpathInstrumentation.install(any()) }
+        verify(exactly = 1) { localInstrumentation.install(any(), any()) }
+        verify(exactly = 0) { classpathInstrumentation.install(any(), any()) }
     }
 
     @Test

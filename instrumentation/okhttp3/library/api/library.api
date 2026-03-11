@@ -7,7 +7,8 @@ public final class io/opentelemetry/instrumentation/library/okhttp/OkHttpInstrum
 	public final fun getCapturedResponseHeaders ()Ljava/util/List;
 	public final fun getKnownMethods ()Ljava/util/Set;
 	public fun getName ()Ljava/lang/String;
-	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
+	public fun install (Landroid/content/Context;Lio/opentelemetry/android/OpenTelemetryRum;)V
+	public final fun newPeerServiceResolver ()Lio/opentelemetry/instrumentation/api/incubator/semconv/net/PeerServiceResolver;
 	public final fun setCapturedRequestHeaders (Ljava/util/List;)V
 	public final fun setCapturedResponseHeaders (Ljava/util/List;)V
 	public final fun setEmitExperimentalHttpClientTelemetry (Z)V

@@ -5,8 +5,10 @@
 
 package io.opentelemetry.android
 
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.sdk.common.Clock
 
 /**
  * Entrypoint for the OpenTelemetry Real User Monitoring library for Android.
@@ -17,6 +19,16 @@ interface OpenTelemetryRum {
      * instance is using for instrumentation.
      */
     val openTelemetry: OpenTelemetry
+
+    /**
+     * Get the [SessionProvider] associated with this instance.
+     */
+    val sessionProvider: SessionProvider
+
+    /**
+     * Get the [Clock] used by this instance for time-related operations.
+     */
+    val clock: Clock
 
     /**
      * Get the client session ID associated with this instance of the RUM instrumentation library.

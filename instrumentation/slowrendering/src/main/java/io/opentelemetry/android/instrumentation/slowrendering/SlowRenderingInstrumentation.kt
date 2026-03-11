@@ -5,12 +5,14 @@
 
 package io.opentelemetry.android.instrumentation.slowrendering
 
+import android.app.Application
+import android.content.Context
 import android.os.Build
 import android.util.Log
 import com.google.auto.service.AutoService
+import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import io.opentelemetry.android.instrumentation.InstallationContext
 import java.time.Duration
 
 /**
@@ -64,7 +66,7 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
         return this
     }
 
-    override fun install(ctx: InstallationContext) {
+    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             Log.w(
                 RumConstants.OTEL_RUM_LOG_TAG,
@@ -80,22 +82,22 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
             return
         }
 
-        val logger = ctx.openTelemetry.logsBridge.get("app.jank")
+        val logger = openTelemetryRum.openTelemetry.logsBridge.get("app.jank")
         var jankReporter: JankReporter = EventJankReporter(logger, SLOW_THRESHOLD_MS / 1000.0, debugVerbose)
         jankReporter = jankReporter.combine(EventJankReporter(logger, FROZEN_THRESHOLD_MS / 1000.0, debugVerbose))
 
         if (useDeprecatedSpan) {
-            val tracer = ctx.openTelemetry.getTracer("io.opentelemetry.slow-rendering")
+            val tracer = openTelemetryRum.openTelemetry.getTracer("io.opentelemetry.slow-rendering")
             jankReporter = jankReporter.combine(SpanBasedJankReporter(tracer))
         }
 
         detector = SlowRenderListener(jankReporter, slowRenderingDetectionPollInterval)
 
-        ctx.application?.registerActivityLifecycleCallbacks(detector)
+        (context as? Application)?.registerActivityLifecycleCallbacks(detector)
         detector?.start()
     }
 
-    override fun uninstall(ctx: InstallationContext) {
+    override fun uninstall(context: Context, openTelemetryRum: OpenTelemetryRum) {
         if (detector == null) {
             Log.w(
                 RumConstants.OTEL_RUM_LOG_TAG,
@@ -103,7 +105,7 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
             )
             return
         }
-        ctx.application?.unregisterActivityLifecycleCallbacks(detector)
+        (context as? Application)?.unregisterActivityLifecycleCallbacks(detector)
         detector?.shutdown()
         detector = null
     }

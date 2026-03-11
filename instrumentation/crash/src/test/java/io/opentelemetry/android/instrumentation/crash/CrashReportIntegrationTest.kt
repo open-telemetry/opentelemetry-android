@@ -5,8 +5,11 @@
 
 package io.opentelemetry.android.instrumentation.crash
 
+import android.app.Application
+import io.mockk.every
+import io.mockk.mockk
+import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.common.internal.utils.threadIdCompat
-import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
@@ -16,32 +19,36 @@ import io.opentelemetry.sdk.logs.data.LogRecordData
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import io.opentelemetry.semconv.ExceptionAttributes
 import io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes
+import java.io.PrintWriter
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import java.io.PrintWriter
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
 internal class CrashReportIntegrationTest {
     private lateinit var rule: OpenTelemetryRule
-    private lateinit var installationContext: InstallationContext
+    private lateinit var context: Application
+    private lateinit var openTelemetryRum: OpenTelemetryRum
     private lateinit var instrumentation: CrashReporterInstrumentation
 
     @Before
     fun setUp() {
         rule = OpenTelemetryRule.create()
-        installationContext = fakeInstallationContext(rule.openTelemetry)
+        context = mockk<Application>(relaxed = true)
+        openTelemetryRum = mockk<OpenTelemetryRum> {
+            every { openTelemetry } returns rule.openTelemetry
+        }
         instrumentation = CrashReporterInstrumentation()
     }
 
     @Test
     fun `test crash reporter instrumentation is installed`() {
         assertEquals("crash", instrumentation.name)
-        instrumentation.install(installationContext)
+        instrumentation.install(context, openTelemetryRum)
 
         val handler = Thread.getDefaultUncaughtExceptionHandler()
         assertTrue(handler is CrashReportingExceptionHandler)
@@ -172,7 +179,10 @@ internal class CrashReportIntegrationTest {
      * from [FakeLogRecordExporter]
      */
     private fun simulateUncaughtException(throwable: Throwable): LogRecordData {
-        instrumentation.install(fakeInstallationContext(rule.openTelemetry))
+        val rum = mockk<OpenTelemetryRum> {
+            every { openTelemetry } returns rule.openTelemetry
+        }
+        instrumentation.install(context, rum)
         val handler = checkNotNull(Thread.getDefaultUncaughtExceptionHandler())
         val thread = Thread.currentThread()
         handler.uncaughtException(thread, throwable)

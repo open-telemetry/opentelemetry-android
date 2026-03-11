@@ -6,10 +6,11 @@
 package io.opentelemetry.android.instrumentation.activity
 
 import android.app.Application
+import android.content.Context
 import android.os.Build
 import com.google.auto.service.AutoService
+import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.Constants.INSTRUMENTATION_SCOPE
 import io.opentelemetry.android.instrumentation.common.DefaultScreenNameExtractor
@@ -36,22 +37,22 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
         this.screenNameExtractor = screenNameExtractor
     }
 
-    override fun install(ctx: InstallationContext) {
-        startupTimer.start(ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE), ctx.clock)
-        ctx.application?.let {
+    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+        startupTimer.start(openTelemetryRum.openTelemetry.getTracer(INSTRUMENTATION_SCOPE), openTelemetryRum.clock)
+        (context as? Application)?.let {
             startupLifecycle =
                 startupTimer.createLifecycleCallback().apply {
                     it.registerActivityLifecycleCallbacks(this)
                 }
             activityLifecycle =
-                buildActivityLifecycleTracer(ctx).apply {
+                buildActivityLifecycleTracer(context, openTelemetryRum).apply {
                     it.registerActivityLifecycleCallbacks(this)
                 }
         }
     }
 
-    override fun uninstall(ctx: InstallationContext) {
-        ctx.application?.let {
+    override fun uninstall(context: Context, openTelemetryRum: OpenTelemetryRum) {
+        (context as? Application)?.let {
             if (startupLifecycle != null) {
                 it.unregisterActivityLifecycleCallbacks(startupLifecycle)
                 startupLifecycle = null
@@ -63,9 +64,9 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
         }
     }
 
-    private fun buildActivityLifecycleTracer(ctx: InstallationContext): DefaultingActivityLifecycleCallbacks {
-        val visibleScreenService = Services.get(ctx.context).visibleScreenTracker
-        val delegateTracer: Tracer = ctx.openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
+    private fun buildActivityLifecycleTracer(context: Context, openTelemetryRum: OpenTelemetryRum): DefaultingActivityLifecycleCallbacks {
+        val visibleScreenService = Services.get(context).visibleScreenTracker
+        val delegateTracer: Tracer = openTelemetryRum.openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
         val tracers =
             ActivityTracerCache(
                 tracerCustomizer.invoke(delegateTracer),

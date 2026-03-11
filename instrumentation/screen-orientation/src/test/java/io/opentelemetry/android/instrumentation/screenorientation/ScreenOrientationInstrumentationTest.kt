@@ -5,44 +5,48 @@
 
 package io.opentelemetry.android.instrumentation.screenorientation
 
+import android.app.Application
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import io.opentelemetry.android.instrumentation.InstallationContext
+import io.opentelemetry.android.OpenTelemetryRum
 import org.junit.Before
 import org.junit.Test
 
 class ScreenOrientationInstrumentationTest {
     private lateinit var sut: ScreenOrientationInstrumentation
 
-    private val installationContext = mockk<InstallationContext>(relaxed = true)
+    private val context = mockk<Application>(relaxed = true)
+    private val openTelemetryRum = mockk<OpenTelemetryRum>(relaxed = true)
 
     @Before
     fun setup() {
         sut = ScreenOrientationInstrumentation()
+        every { context.applicationContext } returns context
     }
 
     @Test
     fun `should register component callbacks on install`() {
         // when
-        sut.install(installationContext)
+        sut.install(context, openTelemetryRum)
 
         // then
         verify {
-            installationContext.context.applicationContext.registerComponentCallbacks(any<ScreenOrientationDetector>())
+            context.registerComponentCallbacks(any<ScreenOrientationDetector>())
         }
     }
 
     @Test
     fun `should unregister component callbacks on uninstall`() {
         // given
-        sut.install(installationContext)
+        sut.install(context, openTelemetryRum)
 
         // when
-        sut.uninstall(installationContext)
+        sut.uninstall(context, openTelemetryRum)
 
         // then
         verify {
-            installationContext.context.applicationContext.unregisterComponentCallbacks(any<ScreenOrientationDetector>())
+            context.unregisterComponentCallbacks(any<ScreenOrientationDetector>())
         }
     }
 }
