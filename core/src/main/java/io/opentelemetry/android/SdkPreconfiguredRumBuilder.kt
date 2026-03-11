@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android
 
+import android.app.Application
 import android.content.Context
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants
@@ -54,7 +55,7 @@ class SdkPreconfiguredRumBuilder internal constructor(
      * @return A new [io.opentelemetry.android.OpenTelemetryRum] instance.
      */
     fun build(): OpenTelemetryRum {
-        if ((context as? android.app.Application) == null) {
+        if ((context as? Application) == null) {
             Log.w(
                 RumConstants.OTEL_RUM_LOG_TAG,
                 "Cannot retrieve applicationContext. This indicates the OpenTelemetry SDK was " +
@@ -65,15 +66,14 @@ class SdkPreconfiguredRumBuilder internal constructor(
         }
 
         val enabledInstrumentations = getEnabledInstrumentations()
-        lateinit var openTelemetryRum: OpenTelemetryRumImpl
-        val onShutdown: () -> Unit = {
+        val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionProvider, clock)
+        openTelemetryRum.onShutdown = Runnable {
             for (instrumentation in enabledInstrumentations) {
                 instrumentation.uninstall(context, openTelemetryRum)
             }
             sdk.shutdown()
             onShutdown.run()
         }
-        openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionProvider, clock, onShutdown)
 
         // Install instrumentations
         for (instrumentation in enabledInstrumentations) {
