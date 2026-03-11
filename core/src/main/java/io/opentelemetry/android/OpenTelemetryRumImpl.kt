@@ -10,10 +10,12 @@ import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.sdk.OpenTelemetrySdk
+import io.opentelemetry.sdk.common.Clock
 
 internal class OpenTelemetryRumImpl(
     private val openTelemetrySdk: OpenTelemetrySdk,
-    private val sessionProvider: SessionProvider,
+    override val sessionProvider: SessionProvider,
+    override val clock: Clock,
     private val onShutdown: Runnable,
 ) : OpenTelemetryRum {
     private val logger: Logger =

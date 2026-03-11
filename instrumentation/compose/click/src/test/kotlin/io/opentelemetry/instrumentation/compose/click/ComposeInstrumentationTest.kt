@@ -39,7 +39,7 @@ import io.mockk.mockkClass
 import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.verify
-import io.opentelemetry.android.instrumentation.InstallationContext
+import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
@@ -98,13 +98,11 @@ internal class ComposeInstrumentationTest {
 
     @Test
     fun capture_compose_click() {
-        val installationContext =
-            InstallationContext(
-                application,
-                openTelemetryRule.openTelemetry,
-                mockk<SessionProvider>(),
-                Clock.getDefault(),
-            )
+        val openTelemetryRum = mockk<OpenTelemetryRum> {
+            every { openTelemetry } returns openTelemetryRule.openTelemetry
+            every { sessionProvider } returns mockk<SessionProvider>()
+            every { clock } returns Clock.getDefault()
+        }
 
         val callbackCapturingSlot = slot<ComposeClickActivityCallback>()
         every { window.callback } returns callback
@@ -113,7 +111,7 @@ internal class ComposeInstrumentationTest {
         every { activity.window } returns window
         every { application.registerActivityLifecycleCallbacks(any()) } returns Unit
 
-        ComposeClickInstrumentation().install(installationContext)
+        ComposeClickInstrumentation().install(application, openTelemetryRum)
 
         verify {
             application.registerActivityLifecycleCallbacks(capture(callbackCapturingSlot))

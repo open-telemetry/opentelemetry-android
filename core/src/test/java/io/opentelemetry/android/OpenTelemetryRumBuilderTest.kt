@@ -64,6 +64,12 @@ import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes
+import java.io.File
+import java.io.IOException
+import java.time.Duration
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Function
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility
 import org.junit.After
@@ -71,12 +77,6 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.File
-import java.io.IOException
-import java.time.Duration
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Function
 
 @RunWith(AndroidJUnit4::class)
 class OpenTelemetryRumBuilderTest {
@@ -306,8 +306,8 @@ class OpenTelemetryRumBuilderTest {
         (builder.instrumentationLoader as AndroidInstrumentationLoaderImpl).registerForTest(classpathInstrumentation)
         builder.build()
 
-        verify(exactly = 1) { localInstrumentation.install(any()) }
-        verify(exactly = 1) { classpathInstrumentation.install(any()) }
+        verify(exactly = 1) { localInstrumentation.install(any(), any()) }
+        verify(exactly = 1) { classpathInstrumentation.install(any(), any()) }
     }
 
     @Test
@@ -331,8 +331,8 @@ class OpenTelemetryRumBuilderTest {
         (builder.instrumentationLoader as AndroidInstrumentationLoaderImpl).registerForTest(classpathInstrumentation)
         builder.build()
 
-        verify(exactly = 1) { localInstrumentation.install(any()) }
-        verify(exactly = 0) { classpathInstrumentation.install(any()) }
+        verify(exactly = 1) { localInstrumentation.install(any(), any()) }
+        verify(exactly = 0) { classpathInstrumentation.install(any(), any()) }
     }
 
     @Test

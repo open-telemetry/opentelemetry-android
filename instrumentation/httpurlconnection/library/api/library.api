@@ -9,7 +9,7 @@ public final class io/opentelemetry/instrumentation/library/httpurlconnection/Ht
 	public fun getName ()Ljava/lang/String;
 	public final fun getReportIdleConnectionInterval ()J
 	public final fun getReportIdleConnectionRunnable ()Ljava/lang/Runnable;
-	public fun install (Lio/opentelemetry/android/instrumentation/InstallationContext;)V
+	public fun install (Landroid/content/Context;Lio/opentelemetry/android/OpenTelemetryRum;)V
 	public final fun newPeerServiceResolver ()Lio/opentelemetry/instrumentation/api/incubator/semconv/net/PeerServiceResolver;
 	public final fun newServicePeerResolver ()Lio/opentelemetry/instrumentation/api/incubator/semconv/service/peer/internal/ServicePeerResolver;
 	public final fun setCapturedRequestHeaders (Ljava/util/List;)V
