@@ -16,8 +16,8 @@ internal class OpenTelemetryRumImpl(
     private val openTelemetrySdk: OpenTelemetrySdk,
     override val sessionProvider: SessionProvider,
     override val clock: Clock,
-    private val onShutdown: Runnable,
 ) : OpenTelemetryRum {
+    var onShutdown: Runnable = Runnable {}
     private val logger: Logger =
         openTelemetrySdk.logsBridge
             .loggerBuilder("io.opentelemetry.rum.events")
