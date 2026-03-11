@@ -138,7 +138,7 @@ class OpenTelemetryRumBuilderTest {
             .await()
             .atMost(Duration.ofSeconds(5))
             .untilAsserted {
-                val sessionId = openTelemetryRum.getRumSessionId()
+                val sessionId = openTelemetryRum.sessionProvider.getSessionId()
                 openTelemetryRum
                     .openTelemetry
                     .getTracer("test")
@@ -193,7 +193,7 @@ class OpenTelemetryRumBuilderTest {
             .hasAttributesSatisfyingExactly(
                 OpenTelemetryAssertions.equalTo(
                     SessionIncubatingAttributes.SESSION_ID,
-                    openTelemetryRum.getRumSessionId(),
+                    openTelemetryRum.sessionProvider.getSessionId(),
                 ),
                 OpenTelemetryAssertions.equalTo(SCREEN_NAME_KEY, CUR_SCREEN_NAME),
                 OpenTelemetryAssertions.equalTo(AttributeKey.stringKey("mega"), "hit"),
@@ -466,7 +466,7 @@ class OpenTelemetryRumBuilderTest {
                 OpenTelemetryAssertions.equalTo(SCREEN_NAME_KEY, CUR_SCREEN_NAME),
                 OpenTelemetryAssertions.equalTo(
                     SessionIncubatingAttributes.SESSION_ID,
-                    rum.getRumSessionId(),
+                    rum.sessionProvider.getSessionId(),
                 ),
             ).hasSeverity(Severity.FATAL3)
     }
@@ -630,7 +630,7 @@ class OpenTelemetryRumBuilderTest {
             .hasAttributes(
                 Attributes
                     .builder()
-                    .put(SessionIncubatingAttributes.SESSION_ID, rum.getRumSessionId())
+                    .put(SessionIncubatingAttributes.SESSION_ID, rum.sessionProvider.getSessionId())
                     .put("someGlobalKey", "someGlobalValue")
                     .put("localAttrKey", "localAttrValue")
                     .put(SCREEN_NAME_KEY, CUR_SCREEN_NAME)

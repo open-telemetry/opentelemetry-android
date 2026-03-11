@@ -25,8 +25,6 @@ internal class OpenTelemetryRumImpl(
 
     override val openTelemetry: OpenTelemetry = openTelemetrySdk
 
-    override fun getRumSessionId(): String = sessionProvider.getSessionId()
-
     override fun emitEvent(
         eventName: String,
         body: String,

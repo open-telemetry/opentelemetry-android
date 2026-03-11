@@ -31,13 +31,6 @@ interface OpenTelemetryRum {
     val clock: Clock
 
     /**
-     * Get the client session ID associated with this instance of the RUM instrumentation library.
-     * Note: this value will change throughout the lifetime of an application instance, so it is
-     * recommended that you do not cache this value, but always retrieve it from here when needed.
-     */
-    fun getRumSessionId(): String
-
-    /**
      * Emits an event with the specified name, body, and attributes.
      *
      * Implementations of this method should define how the event is handled and recorded.
