@@ -35,15 +35,7 @@ internal class NetworkDetectorImpl(
         context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
     private val carrierFinder = CarrierFinder(context, telephonyManager)
 
-    override fun detectCurrentNetwork(): CurrentNetwork =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            detectNetworkPostApi23()
-        } else {
-            detectNetworkPreApi23()
-        }
-
-    @RequiresApi(Build.VERSION_CODES.M)
-    private fun detectNetworkPostApi23(): CurrentNetwork {
+    override fun detectCurrentNetwork(): CurrentNetwork {
         val network = connectivityManager.activeNetwork
         val capabilities =
             network?.let {
@@ -72,34 +64,6 @@ internal class NetworkDetectorImpl(
             }
 
             capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
-                buildNetwork(NetworkState.TRANSPORT_WIRED)
-            }
-
-            else -> {
-                CurrentNetworkProvider.UNKNOWN_NETWORK
-            }
-        }
-    }
-
-    @Suppress("deprecation")
-    private fun detectNetworkPreApi23(): CurrentNetwork {
-        val activeNetwork =
-            connectivityManager.activeNetworkInfo
-                ?: return CurrentNetworkProvider.NO_NETWORK
-        return when (activeNetwork.type) {
-            ConnectivityManager.TYPE_MOBILE -> {
-                buildCellularNetwork()
-            }
-
-            ConnectivityManager.TYPE_WIFI -> {
-                buildNetwork(NetworkState.TRANSPORT_WIFI)
-            }
-
-            ConnectivityManager.TYPE_VPN -> {
-                buildNetwork(NetworkState.TRANSPORT_VPN)
-            }
-
-            ConnectivityManager.TYPE_ETHERNET -> {
                 buildNetwork(NetworkState.TRANSPORT_WIRED)
             }
 
