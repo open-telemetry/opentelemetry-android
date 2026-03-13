@@ -37,10 +37,8 @@ internal class WindowCallbackWrapper(
         callback.onProvideKeyboardShortcuts(data, menu, deviceId)
     }
 
-    @RequiresApi(api = VERSION_CODES.M)
     override fun onSearchRequested(searchEvent: SearchEvent?): Boolean = callback.onSearchRequested(searchEvent)
 
-    @RequiresApi(api = VERSION_CODES.M)
     override fun onWindowStartingActionMode(
         callback: ActionMode.Callback?,
         type: Int,
