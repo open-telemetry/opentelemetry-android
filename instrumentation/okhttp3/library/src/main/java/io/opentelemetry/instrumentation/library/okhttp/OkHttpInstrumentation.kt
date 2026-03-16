@@ -8,7 +8,6 @@ package io.opentelemetry.instrumentation.library.okhttp
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.InstallationContext
-import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceResolver
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor
 import io.opentelemetry.instrumentation.api.internal.HttpConstants
 import io.opentelemetry.instrumentation.library.okhttp.internal.OkHttpSingletons
@@ -91,8 +90,6 @@ class OkHttpInstrumentation : AndroidInstrumentation {
     fun setPeerServiceMapping(peerServiceMapping: MutableMap<String, String>) {
         this.peerServiceMapping = peerServiceMapping.toMap()
     }
-
-    fun newPeerServiceResolver(): PeerServiceResolver = PeerServiceResolver.create(peerServiceMapping)
 
     /**
      * When enabled keeps track of [non-stable
