@@ -1,6 +1,3 @@
-public abstract interface annotation class io/opentelemetry/android/Incubating : java/lang/annotation/Annotation {
-}
-
 public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer {
 	public static final field INSTANCE Lio/opentelemetry/android/agent/OpenTelemetryRumInitializer;
 	public static final fun initialize (Landroid/content/Context;Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRum;
@@ -112,5 +109,31 @@ public final class io/opentelemetry/android/agent/dsl/instrumentation/SlowRender
 	public final fun detectionPollInterval-LRDsOJo (J)V
 	public final fun enableVerboseDebugLogging ()V
 	public fun enabled (Z)V
+}
+
+public final class io/opentelemetry/android/agent/session/SessionConfig {
+	public static final field Companion Lio/opentelemetry/android/agent/session/SessionConfig$Companion;
+	public synthetic fun <init> (JJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (JJLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBackgroundInactivityTimeout-UwyO8pc ()J
+	public final fun getMaxLifetime-UwyO8pc ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun withDefaults ()Lio/opentelemetry/android/agent/session/SessionConfig;
+}
+
+public final class io/opentelemetry/android/agent/session/SessionConfig$Companion {
+	public final fun withDefaults ()Lio/opentelemetry/android/agent/session/SessionConfig;
+}
+
+public class io/opentelemetry/android/agent/session/factory/SessionManagerFactory : io/opentelemetry/android/agent/session/factory/SessionProviderFactory {
+	public fun <init> (Landroid/app/Application;Lio/opentelemetry/sdk/common/Clock;)V
+	public synthetic fun <init> (Landroid/app/Application;Lio/opentelemetry/sdk/common/Clock;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun createSessionProvider (Lio/opentelemetry/android/agent/session/SessionConfig;)Lio/opentelemetry/android/session/SessionProvider;
+}
+
+public abstract interface class io/opentelemetry/android/agent/session/factory/SessionProviderFactory {
+	public abstract fun createSessionProvider (Lio/opentelemetry/android/agent/session/SessionConfig;)Lio/opentelemetry/android/session/SessionProvider;
 }
 

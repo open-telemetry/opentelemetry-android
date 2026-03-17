@@ -18,6 +18,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 
+private const val FUNCTION_CALLED_ERROR = "Should not have been called!"
+
 class SdkPreconfiguredRumBuilderTest {
     @Test
     fun `session instrumentation must come first`() {
@@ -34,9 +36,9 @@ class SdkPreconfiguredRumBuilderTest {
 
         val sessionProvider =
             object : SessionProvider {
-                override fun getSessionId(): String {
-                    fail("Should not have been called!")
-                }
+                override fun getSessionId(): String = fail(FUNCTION_CALLED_ERROR)
+
+                override fun getPreviousSessionId(): String = fail(FUNCTION_CALLED_ERROR)
             }
 
         val builder = SdkPreconfiguredRumBuilder(
