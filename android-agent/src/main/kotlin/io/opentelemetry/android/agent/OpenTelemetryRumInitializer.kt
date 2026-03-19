@@ -73,6 +73,9 @@ object OpenTelemetryRumInitializer {
                     .setHeaders(spansEndpoint::getHeaders)
                     .setCompression(spansEndpoint.getCompression().getUpstreamName())
                     .apply {
+                        spansEndpoint.getClientTls()?.let {
+                            setClientTls(it.privateKeyPem, it.certificatePem)
+                        }
                         spansEndpoint.getSslContext()?.let {
                             setSslContext(it.sslContext, it.sslX509TrustManager)
                         }
@@ -84,6 +87,9 @@ object OpenTelemetryRumInitializer {
                     .setHeaders(logsEndpoints::getHeaders)
                     .setCompression(logsEndpoints.getCompression().getUpstreamName())
                     .apply {
+                        logsEndpoints.getClientTls()?.let {
+                            setClientTls(it.privateKeyPem, it.certificatePem)
+                        }
                         logsEndpoints.getSslContext()?.let {
                             setSslContext(it.sslContext, it.sslX509TrustManager)
                         }
@@ -95,6 +101,9 @@ object OpenTelemetryRumInitializer {
                     .setHeaders(metricsEndpoint::getHeaders)
                     .setCompression(metricsEndpoint.getCompression().getUpstreamName())
                     .apply {
+                        metricsEndpoint.getClientTls()?.let {
+                            setClientTls(it.privateKeyPem, it.certificatePem)
+                        }
                         metricsEndpoint.getSslContext()?.let {
                             setSslContext(it.sslContext, it.sslX509TrustManager)
                         }
