@@ -8,9 +8,7 @@ package io.opentelemetry.instrumentation.library.okhttp.websocket.internal
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import io.mockk.verify
-import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.instrumentation.library.okhttp.websocket.internal.WebsocketListenerWrapper.Companion.MESSAGE_SIZE
 import io.opentelemetry.instrumentation.library.okhttp.websocket.internal.WebsocketListenerWrapper.Companion.MESSAGE_TYPE
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
@@ -56,9 +54,7 @@ internal class WebsocketListenerWrapperTest {
     @BeforeEach
     fun setup() {
         every { webSocket.request() } returns testRequest
-        val installationContext = mockk<InstallationContext>()
-        every { installationContext.openTelemetry } returns otelTesting.openTelemetry
-        WebsocketListenerWrapper.configure(installationContext)
+        WebsocketListenerWrapper.configure(otelTesting.openTelemetry)
         wrapper = WebsocketListenerWrapper(delegateListener)
     }
 

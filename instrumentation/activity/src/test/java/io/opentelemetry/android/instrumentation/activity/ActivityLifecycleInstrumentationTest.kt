@@ -10,8 +10,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.common.RumConstants
-import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.android.session.SessionProvider
@@ -57,8 +57,11 @@ class ActivityLifecycleInstrumentationTest {
         )
         every { startupSpanBuilder.startSpan() }.returns(startupSpan)
 
-        val ctx = InstallationContext(application, openTelemetry, sessionProvider, Clock.getDefault())
-        activityLifecycleInstrumentation.install(ctx)
+        val openTelemetryRum = mockk<OpenTelemetryRum>()
+        every { openTelemetryRum.openTelemetry } returns openTelemetry
+        every { openTelemetryRum.sessionProvider } returns sessionProvider
+        every { openTelemetryRum.clock } returns Clock.getDefault()
+        activityLifecycleInstrumentation.install(application, openTelemetryRum)
 
         verify {
             tracer.spanBuilder("AppStart")
