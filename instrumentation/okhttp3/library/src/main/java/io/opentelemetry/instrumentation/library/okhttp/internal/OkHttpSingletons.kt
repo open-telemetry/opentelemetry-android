@@ -7,7 +7,7 @@ package io.opentelemetry.instrumentation.library.okhttp.internal
 
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.context.Context
-import io.opentelemetry.instrumentation.api.incubator.semconv.net.PeerServiceAttributesExtractor
+import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpClientServicePeerAttributesExtractor
 import io.opentelemetry.instrumentation.api.semconv.http.HttpClientRequestResendCount
 import io.opentelemetry.instrumentation.api.semconv.http.HttpSpanNameExtractor
 import io.opentelemetry.instrumentation.library.okhttp.OkHttpInstrumentation
@@ -15,8 +15,8 @@ import io.opentelemetry.instrumentation.okhttp.v3_0.internal.ConnectionErrorSpan
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpAttributesGetter
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpClientInstrumenterBuilderFactory
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.TracingInterceptor
-import okhttp3.Interceptor
 import java.util.function.UnaryOperator
+import okhttp3.Interceptor
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
@@ -56,9 +56,9 @@ object OkHttpSingletons {
                             .build()
                     },
                 ).addAttributesExtractor(
-                    PeerServiceAttributesExtractor.create(
+                    HttpClientServicePeerAttributesExtractor.create(
                         OkHttpAttributesGetter.INSTANCE,
-                        instrumentation.newPeerServiceResolver(),
+                        openTelemetry,
                     ),
                 ).setEmitExperimentalHttpClientTelemetry(
                     instrumentation.emitExperimentalHttpClientTelemetry(),

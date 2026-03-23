@@ -64,6 +64,12 @@ import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes
+import java.io.File
+import java.io.IOException
+import java.time.Duration
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Function
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility
 import org.junit.After
@@ -71,12 +77,6 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.File
-import java.io.IOException
-import java.time.Duration
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Function
 
 @RunWith(AndroidJUnit4::class)
 class OpenTelemetryRumBuilderTest {
@@ -270,7 +270,8 @@ class OpenTelemetryRumBuilderTest {
         counter.add(2)
         counter.add(3)
         periodicReader.forceFlush()
-        val metrics = exporter.finishedMetricItems
+        val metrics =
+            exporter.finishedMetricItems.filter { it.name == "FOOCOUNTER" }
 
         assertThat(metrics).hasSize(2)
         OpenTelemetryAssertions

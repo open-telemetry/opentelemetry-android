@@ -7,7 +7,7 @@ package io.opentelemetry.instrumentation.library.httpurlconnection.internal
 
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpClientExperimentalMetrics
-import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpClientPeerServiceAttributesExtractor
+import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpClientServicePeerAttributesExtractor
 import io.opentelemetry.instrumentation.api.incubator.semconv.http.HttpExperimentalAttributesExtractor
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter
 import io.opentelemetry.instrumentation.api.semconv.http.HttpClientAttributesExtractor
@@ -44,9 +44,9 @@ internal object HttpUrlConnectionSingletons {
                 ).setKnownMethods(instrumentation.knownMethods)
 
         val httpClientPeerServiceAttributesExtractor =
-            HttpClientPeerServiceAttributesExtractor.create(
+            HttpClientServicePeerAttributesExtractor.create(
                 httpAttributesGetter,
-                instrumentation.newPeerServiceResolver(),
+                openTelemetry,
             )
 
         openTelemetryInstance = openTelemetry
