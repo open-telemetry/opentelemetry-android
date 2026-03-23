@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import io.opentelemetry.sdk.resources.Resource
@@ -48,6 +49,7 @@ object AndroidResource {
             .build()
     }
 
+    @SuppressLint("UseKtx")
     private fun readInstallId(context: Context): String {
         // install ID is persisted using the app.installation.id semconv as its key
         val prefs = context.getSharedPreferences(SHARED_PREF_FILE, 0)
