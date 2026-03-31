@@ -16,10 +16,10 @@ android {
 dependencies {
     implementation(project(":common"))
 
-    api(libs.androidx.core)
-    api(libs.androidx.navigation.runtime.ktx)
-    api(libs.androidx.lifecycle.process)
-    api(libs.androidx.preference.ktx)
+    implementation(libs.androidx.core)
+    implementation(libs.androidx.navigation.runtime.ktx)
+    implementation(libs.androidx.lifecycle.process)
+    implementation(libs.androidx.preference.ktx)
 
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.robolectric)
