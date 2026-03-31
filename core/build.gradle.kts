@@ -65,8 +65,6 @@ dependencies {
     implementation(project(":services"))
     implementation(project(":session"))
 
-    implementation(libs.androidx.core)
-
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.exporter.logging)
     implementation(libs.opentelemetry.instrumentation.api)
