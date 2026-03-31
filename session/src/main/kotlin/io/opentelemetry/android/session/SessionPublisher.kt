@@ -5,6 +5,13 @@
 
 package io.opentelemetry.android.session
 
-interface SessionPublisher {
+/**
+ * Allows registration of callbacks that are invoked when the session changes.
+ */
+fun interface SessionPublisher {
+
+    /**
+     * Adds an observer that is invoked when the session changes.
+     */
     fun addObserver(observer: SessionObserver)
 }

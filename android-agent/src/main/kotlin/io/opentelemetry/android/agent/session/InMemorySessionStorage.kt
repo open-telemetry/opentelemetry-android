@@ -8,7 +8,7 @@ package io.opentelemetry.android.agent.session
 import io.opentelemetry.android.session.Session
 
 internal class InMemorySessionStorage(
-    @Volatile var session: Session = Session.NONE,
+    @Volatile var session: Session = invalidSession,
 ) : SessionStorage {
     override fun get(): Session = session
 

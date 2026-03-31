@@ -28,8 +28,8 @@ internal class SessionIdEventSender(
             eventLogger
                 .logRecordBuilder()
                 .setEventName(EVENT_SESSION_START)
-                .setAttribute(SESSION_ID, newSession.getId())
-        val previousSessionId = previousSession.getId()
+                .setAttribute(SESSION_ID, newSession.id)
+        val previousSessionId = previousSession.id
         if (previousSessionId.isNotEmpty()) {
             eventBuilder.setAttribute(SESSION_PREVIOUS_ID, previousSessionId)
         }
@@ -37,13 +37,13 @@ internal class SessionIdEventSender(
     }
 
     override fun onSessionEnded(session: Session) {
-        if (session.getId().isEmpty()) {
+        if (session.id.isEmpty()) {
             return
         }
         eventLogger
             .logRecordBuilder()
             .setEventName(EVENT_SESSION_END)
-            .setAttribute(SESSION_ID, session.getId())
+            .setAttribute(SESSION_ID, session.id)
             .emit()
     }
 }
