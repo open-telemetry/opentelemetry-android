@@ -11,6 +11,7 @@ import android.content.Context
 import android.os.Build
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavHost
 import io.opentelemetry.android.internal.services.visiblescreen.activities.Pre29VisibleScreenLifecycleBinding
 import io.opentelemetry.android.internal.services.visiblescreen.activities.VisibleScreenLifecycleBinding
 import io.opentelemetry.android.internal.services.visiblescreen.fragments.RumFragmentActivityRegisterer
@@ -40,16 +41,6 @@ internal class VisibleScreenTrackerImpl internal constructor(
     private val fragmentLifecycleTrackerRegisterer by lazy { buildFragmentsTrackerRegisterer() }
 
     private val application = context as? Application
-
-    // Lazily resolved via reflection to avoid a compile-time dependency on androidx.navigation
-    // and to ensure dynamic feature modules are loaded before the first call. Null if not on the classpath.
-    private val navHostClass: Class<*>? by lazy {
-        try {
-            Class.forName("androidx.navigation.NavHost")
-        } catch (_: ClassNotFoundException) {
-            null
-        }
-    }
 
     init {
         application?.let {
@@ -105,11 +96,9 @@ internal class VisibleScreenTrackerImpl internal constructor(
         lastResumedActivity.compareAndSet(activity.javaClass.simpleName, null)
     }
 
-    private fun Fragment.isNavHost(): Boolean = navHostClass?.isAssignableFrom(javaClass) ?: false
-
     override fun fragmentResumed(fragment: Fragment) {
         // skip the Fragment if it's a NavHost since it's never really "visible" by itself.
-        if (fragment.isNavHost()) {
+        if (fragment is NavHost) {
             return
         }
 
@@ -121,7 +110,7 @@ internal class VisibleScreenTrackerImpl internal constructor(
 
     override fun fragmentPaused(fragment: Fragment) {
         // skip the Fragment if it's a NavHost since it's never really "visible" by itself.
-        if (fragment.isNavHost()) {
+        if (fragment is NavHost) {
             return
         }
         if (fragment is DialogFragment) {

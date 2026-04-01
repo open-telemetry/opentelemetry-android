@@ -17,6 +17,7 @@ dependencies {
     implementation(project(":common"))
 
     implementation(libs.androidx.core)
+    implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.fragment)
 
