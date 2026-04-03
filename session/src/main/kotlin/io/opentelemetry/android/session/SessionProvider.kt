@@ -5,17 +5,26 @@
 
 package io.opentelemetry.android.session
 
-interface SessionProvider {
+/**
+ * Provides information about the current session.
+ */
+fun interface SessionProvider {
+
+    /**
+     * Retrieves the current session ID.
+     */
     fun getSessionId(): String
 
     companion object {
+
+        /**
+         * A no-op implementation of [SessionProvider].
+         */
         @JvmStatic
         fun getNoop(): SessionProvider = NO_OP
 
         private val NO_OP: SessionProvider by lazy {
-            object : SessionProvider {
-                override fun getSessionId(): String = ""
-            }
+            SessionProvider { "" }
         }
     }
 }

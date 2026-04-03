@@ -120,8 +120,8 @@ internal class SessionManagerTest {
         // Then
         verify(exactly = 1) { timeoutHandler.bump() }
         verify(exactly = 0) { timeoutHandler.hasTimedOut() }
-        verify(exactly = 1) { observer.onSessionStarted(any<Session>(), eq(Session.NONE)) }
-        verify(exactly = 1) { observer.onSessionEnded(eq(Session.NONE)) }
+        verify(exactly = 1) { observer.onSessionStarted(any<Session>(), eq(invalidSession)) }
+        verify(exactly = 1) { observer.onSessionEnded(eq(invalidSession)) }
 
         // When
         clock.advance(3, TimeUnit.HOURS)
@@ -144,10 +144,10 @@ internal class SessionManagerTest {
         assertThat(thirdSessionId).isNotEqualTo(secondSessionId)
         verifyOrder {
             timeoutHandler.bump()
-            observer.onSessionEnded(match { it.getId() == secondSessionId })
+            observer.onSessionEnded(match { it.id == secondSessionId })
             observer.onSessionStarted(
-                match { it.getId() == thirdSessionId },
-                match { it.getId() == secondSessionId },
+                match { it.id == thirdSessionId },
+                match { it.id == secondSessionId },
             )
         }
         confirmVerified(observer)

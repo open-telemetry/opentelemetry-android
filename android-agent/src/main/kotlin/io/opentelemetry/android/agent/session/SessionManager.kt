@@ -24,7 +24,7 @@ internal class SessionManager(
     private val maxSessionLifetime: Duration,
 ) : SessionProvider,
     SessionPublisher {
-    private val session: AtomicReference<Session> = AtomicReference(Session.NONE)
+    private val session: AtomicReference<Session> = AtomicReference(invalidSession)
     private val observers = synchronizedList(ArrayList<SessionObserver>())
 
     init {
@@ -41,7 +41,7 @@ internal class SessionManager(
         // Check if we need to create a new session.
         return if (sessionHasExpired(currentSession) || timeoutHandler.hasTimedOut()) {
             val newId = idGenerator.generateSessionId()
-            val newSession = Session.DefaultSession(newId, clock.now())
+            val newSession = SessionImpl(newId, clock.now())
 
             // Atomically update the session only if it hasn't been changed by another thread.
             if (session.compareAndSet(currentSession, newSession)) {
@@ -50,17 +50,17 @@ internal class SessionManager(
                 // Observers need to be called after bumping the timer because it may create a new
                 // span.
                 notifyObserversOfSessionUpdate(currentSession, newSession)
-                newSession.getId()
+                newSession.id
             } else {
                 // Another thread accessed this function prior to creating a new session. Use the
                 // current session.
                 timeoutHandler.bump()
-                session.get().getId()
+                session.get().id
             }
         } else {
             // No new session needed, just bump the timeout and return current session ID
             timeoutHandler.bump()
-            currentSession.getId()
+            currentSession.id
         }
     }
 
@@ -75,7 +75,7 @@ internal class SessionManager(
     }
 
     private fun sessionHasExpired(session: Session): Boolean {
-        val elapsedTime = clock.now() - session.getStartTimestamp()
+        val elapsedTime = clock.now() - session.startTimestamp
         return elapsedTime >= maxSessionLifetime.inWholeNanoseconds
     }
 
@@ -93,4 +93,5 @@ internal class SessionManager(
                 clock = clock,
             )
     }
+
 }
