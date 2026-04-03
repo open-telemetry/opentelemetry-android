@@ -22,6 +22,10 @@ internal class AppLifecycleImpl internal constructor(
         applicationStateWatcher.registerListener(listener)
     }
 
+    override fun unregisterListener(listener: ApplicationStateListener) {
+        applicationStateWatcher.unregisterListener(listener)
+    }
+
     override fun close() {
         appLifecycle.removeObserver(applicationStateWatcher)
         applicationStateWatcher.close()

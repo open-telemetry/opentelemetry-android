@@ -59,6 +59,16 @@ internal class ApplicationStateWatcherTest {
     }
 
     @Test
+    fun unregisterListener() {
+        underTest.unregisterListener(listener2)
+
+        underTest.onStart(activity)
+
+        verify { listener1.onApplicationForegrounded() }
+        verify(exactly = 0) { listener2.onApplicationForegrounded() }
+    }
+
+    @Test
     fun closing() {
         underTest.close()
 

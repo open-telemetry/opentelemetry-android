@@ -35,6 +35,10 @@ internal class ApplicationStateWatcher :
         applicationStateListeners.add(listener)
     }
 
+    fun unregisterListener(listener: ApplicationStateListener) {
+        applicationStateListeners.remove(listener)
+    }
+
     override fun close() {
         applicationStateListeners.clear()
     }
