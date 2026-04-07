@@ -128,7 +128,6 @@ internal class HttpExportConfigurationTest {
                 "${spanUrl}v1/traces",
                 spanHeaders + baseHeaders,
                 expectedCompression,
-                null,
                 null
             )
         config
@@ -137,14 +136,12 @@ internal class HttpExportConfigurationTest {
                 "${logUrl}v1/logs",
                 logHeaders + baseHeaders,
                 expectedCompression,
-                null,
                 null
             )
         config.metricsEndpoint().assertEndpointConfig(
             "${metricsUrl}v1/metrics",
             metricsHeaders + baseHeaders,
             expectedCompression,
-            null,
             null
         )
         assertEquals(baseUrl, config.baseUrl)
@@ -194,7 +191,6 @@ internal class HttpExportConfigurationTest {
                 "${spanUrl}v1/traces",
                 spanHeaders + baseHeaders,
                 expectedCompression,
-                null,
                 null
             )
         config
@@ -203,14 +199,12 @@ internal class HttpExportConfigurationTest {
                 "${logUrl}v1/logs",
                 logHeaders + baseHeaders,
                 expectedCompression,
-                null,
                 null
             )
         config.metricsEndpoint().assertEndpointConfig(
             "${metricsUrl}v1/metrics",
             metricsHeaders + baseHeaders,
             expectedCompression,
-            null,
             null
         )
         assertEquals(baseUrl, config.baseUrl)
@@ -234,24 +228,21 @@ internal class HttpExportConfigurationTest {
                 "${url}v1/traces",
                 headers,
                 Compression.GZIP,
-                expectedSslContext,
-                null
+                expectedSslContext
             )
         config.logsEndpoint()
             .assertEndpointConfig(
                 "${url}v1/logs",
                 headers,
                 Compression.GZIP,
-                expectedSslContext,
-                null
+                expectedSslContext
             )
         config.metricsEndpoint()
             .assertEndpointConfig(
                 "${url}v1/metrics",
                 headers,
                 Compression.GZIP,
-                expectedSslContext,
-                null
+                expectedSslContext
             )
     }
 
