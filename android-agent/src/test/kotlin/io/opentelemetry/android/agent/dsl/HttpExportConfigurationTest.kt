@@ -236,7 +236,6 @@ internal class HttpExportConfigurationTest {
                 Compression.GZIP,
                 expectedSslContext,
                 null
-
             )
         config.logsEndpoint()
             .assertEndpointConfig(
@@ -299,7 +298,7 @@ internal class HttpExportConfigurationTest {
         expectedHeaders: Map<String, String>,
         expectedCompression: Compression,
         expectedSslContext: SSLContextConnectivity?,
-        expectedClientTls: ClientTlsConnectivity?
+        expectedClientTls: ClientTlsConnectivity? = null
     ) {
         assertEquals(expectedUrl, getUrl())
         assertEquals(expectedHeaders, getHeaders())

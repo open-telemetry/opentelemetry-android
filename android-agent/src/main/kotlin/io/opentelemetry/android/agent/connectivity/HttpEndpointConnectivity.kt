@@ -10,7 +10,7 @@ internal class HttpEndpointConnectivity private constructor(
     private val headers: Map<String, String>,
     private val compression: Compression,
     private val sslContext: SSLContextConnectivity?,
-    private val clientTls: ClientTlsConnectivity?
+    private val clientTls: ClientTlsConnectivity? = null
 ) : EndpointConnectivity {
     companion object {
         fun forTraces(

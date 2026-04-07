@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.agent.dsl
 
+import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.connectivity.ClientTlsConnectivity
 import io.opentelemetry.android.agent.connectivity.Compression
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
@@ -39,6 +40,7 @@ class HttpExportConfiguration internal constructor() {
      * Sets ths client key and the certificate chain to use for verifying client
      * for all requests when TLS is enabled.
      */
+    @Incubating
     var clientTls: ClientTlsConnectivity? = null
 
     private val spansConfig: EndpointConfiguration = EndpointConfiguration("")
