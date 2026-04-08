@@ -74,7 +74,7 @@ class SdkPreconfiguredRumBuilder internal constructor(
             sdk.shutdown()
             onShutdown.run()
         }
-        val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionProvider, onShutdown)
+        val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionProvider, context, clock, onShutdown)
 
         // Install instrumentations
         for (instrumentation in enabledInstrumentations) {

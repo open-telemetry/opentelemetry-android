@@ -124,7 +124,12 @@ There are also other
 [additional instrumentation modules](https://github.com/open-telemetry/opentelemetry-android/tree/main/instrumentation)
 that application developers can include through a gradle dependency. 
 Instrumentations are detected at runtime via the classpath, and
-are installed automatically.
+are installed automatically. Instrumentations can also be installed manually
+after initialization using the `OpenTelemetryRum.install()` method:
+
+```kotlin
+openTelemetryRum.install(MyInstrumentation())
+```
 
 ## Additional Documentation
 
