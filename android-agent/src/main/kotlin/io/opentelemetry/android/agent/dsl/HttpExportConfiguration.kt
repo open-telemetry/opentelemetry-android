@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.agent.dsl
 
+import io.opentelemetry.android.Incubating
+import io.opentelemetry.android.agent.connectivity.ClientTlsConnectivity
 import io.opentelemetry.android.agent.connectivity.Compression
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 import io.opentelemetry.android.agent.connectivity.SSLContextConnectivity
@@ -34,6 +36,13 @@ class HttpExportConfiguration internal constructor() {
      */
     var sslContext: SSLContextConnectivity? = null
 
+    /**
+     * Sets ths client key and the certificate chain to use for verifying client
+     * for all requests when TLS is enabled.
+     */
+    @Incubating
+    var clientTls: ClientTlsConnectivity? = null
+
     private val spansConfig: EndpointConfiguration = EndpointConfiguration("")
     private val logsConfig: EndpointConfiguration = EndpointConfiguration("")
     private val metricsConfig: EndpointConfiguration = EndpointConfiguration("")
@@ -44,6 +53,7 @@ class HttpExportConfiguration internal constructor() {
             spansConfig.headers + baseHeaders,
             chooseCompression(spansConfig.compression),
             sslContext,
+            clientTls
         )
 
     internal fun logsEndpoint(): HttpEndpointConnectivity =
@@ -52,6 +62,7 @@ class HttpExportConfiguration internal constructor() {
             logsConfig.headers + baseHeaders,
             chooseCompression(logsConfig.compression),
             sslContext,
+            clientTls
         )
 
     internal fun metricsEndpoint(): HttpEndpointConnectivity =
@@ -60,6 +71,7 @@ class HttpExportConfiguration internal constructor() {
             metricsConfig.headers + baseHeaders,
             chooseCompression(metricsConfig.compression),
             sslContext,
+            clientTls
         )
 
     private fun chooseUrlSource(cfg: EndpointConfiguration): String = cfg.url.ifBlank { baseUrl }

@@ -12,6 +12,7 @@ import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.RumBuilder
 import io.opentelemetry.android.agent.connectivity.Compression
+import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 import io.opentelemetry.android.agent.dsl.OpenTelemetryConfiguration
 import io.opentelemetry.android.agent.session.SessionConfig
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
@@ -66,41 +67,56 @@ object OpenTelemetryRumInitializer {
             .setSessionProvider(createSessionProvider(ctx, cfg))
             .setResource(resource)
             .setClock(cfg.clock)
-            .addSpanExporterCustomizer {
-                OtlpHttpSpanExporter
-                    .builder()
-                    .setEndpoint(spansEndpoint.getUrl())
-                    .setHeaders(spansEndpoint::getHeaders)
-                    .setCompression(spansEndpoint.getCompression().getUpstreamName())
-                    .apply {
-                        spansEndpoint.getSslContext()?.let {
-                            setSslContext(it.sslContext, it.sslX509TrustManager)
-                        }
-                    }.build()
-            }.addLogRecordExporterCustomizer {
-                OtlpHttpLogRecordExporter
-                    .builder()
-                    .setEndpoint(logsEndpoints.getUrl())
-                    .setHeaders(logsEndpoints::getHeaders)
-                    .setCompression(logsEndpoints.getCompression().getUpstreamName())
-                    .apply {
-                        logsEndpoints.getSslContext()?.let {
-                            setSslContext(it.sslContext, it.sslX509TrustManager)
-                        }
-                    }.build()
-            }.addMetricExporterCustomizer {
-                OtlpHttpMetricExporter
-                    .builder()
-                    .setEndpoint(metricsEndpoint.getUrl())
-                    .setHeaders(metricsEndpoint::getHeaders)
-                    .setCompression(metricsEndpoint.getCompression().getUpstreamName())
-                    .apply {
-                        metricsEndpoint.getSslContext()?.let {
-                            setSslContext(it.sslContext, it.sslX509TrustManager)
-                        }
-                    }.build()
-            }.build()
+            .addSpanExporterCustomizer { createSpanExporter(spansEndpoint) }
+            .addLogRecordExporterCustomizer { createLogExporter(logsEndpoints) }
+            .addMetricExporterCustomizer { createMetricExporter(metricsEndpoint) }
+            .build()
     }
+
+    private fun createSpanExporter(endpoint: HttpEndpointConnectivity): OtlpHttpSpanExporter =
+        OtlpHttpSpanExporter
+            .builder()
+            .setEndpoint(endpoint.getUrl())
+            .setHeaders(endpoint::getHeaders)
+            .setCompression(endpoint.getCompression().getUpstreamName())
+            .apply {
+                endpoint.getClientTls()?.let {
+                    setClientTls(it.privateKeyPem, it.certificatePem)
+                }
+                endpoint.getSslContext()?.let {
+                    setSslContext(it.sslContext, it.sslX509TrustManager)
+                }
+            }.build()
+
+    private fun createLogExporter(endpoint: HttpEndpointConnectivity): OtlpHttpLogRecordExporter =
+        OtlpHttpLogRecordExporter
+            .builder()
+            .setEndpoint(endpoint.getUrl())
+            .setHeaders(endpoint::getHeaders)
+            .setCompression(endpoint.getCompression().getUpstreamName())
+            .apply {
+                endpoint.getClientTls()?.let {
+                    setClientTls(it.privateKeyPem, it.certificatePem)
+                }
+                endpoint.getSslContext()?.let {
+                    setSslContext(it.sslContext, it.sslX509TrustManager)
+                }
+            }.build()
+
+    private fun createMetricExporter(endpoint: HttpEndpointConnectivity): OtlpHttpMetricExporter =
+        OtlpHttpMetricExporter
+            .builder()
+            .setEndpoint(endpoint.getUrl())
+            .setHeaders(endpoint::getHeaders)
+            .setCompression(endpoint.getCompression().getUpstreamName())
+            .apply {
+                endpoint.getClientTls()?.let {
+                    setClientTls(it.privateKeyPem, it.certificatePem)
+                }
+                endpoint.getSslContext()?.let {
+                    setSslContext(it.sslContext, it.sslX509TrustManager)
+                }
+            }.build()
 
     private fun Compression.getUpstreamName(): String =
         when (this) {
