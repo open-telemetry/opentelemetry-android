@@ -36,7 +36,6 @@ import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_CO
 import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_ID
 import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_NAME
 import org.assertj.core.api.Assertions
-import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -93,15 +92,8 @@ class DoubleTapInstrumentationTest {
         val wrapperCapturingSlot = slot<DoubleTapWindowCallbackWrapper>()
         every { window.callback = any() } returns Unit
 
-
-        val initialDownEvent =
-            MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis() + 100L, MotionEvent.ACTION_DOWN, 250f, 50f, 0)
-        val initialUpEvent =
-            MotionEvent.obtain(SystemClock.uptimeMillis() + 200L, SystemClock.uptimeMillis() + 300L, MotionEvent.ACTION_UP, 250f, 50f, 0)
-        val secondDownEvent =
-            MotionEvent.obtain(SystemClock.uptimeMillis() + 400L, SystemClock.uptimeMillis() + 500L, MotionEvent.ACTION_DOWN, 250f, 50f, 0)
-        val secondUpEvent =
-            MotionEvent.obtain(SystemClock.uptimeMillis() + 600L, SystemClock.uptimeMillis() + 700L, MotionEvent.ACTION_UP, 250f, 50f, 0)
+        val doubleTapSequence = getDoubleTapSequence()
+        val initialDownEvent = doubleTapSequence[0]
 
         val mockView = mockView<View>(10012, initialDownEvent)
         every { window.decorView } returns mockView
@@ -111,19 +103,9 @@ class DoubleTapInstrumentationTest {
             window.callback = capture(wrapperCapturingSlot)
         }
 
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            initialDownEvent,
-        )
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            initialUpEvent,
-        )
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            secondDownEvent,
-        )
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            secondUpEvent,
-        )
-
+        for(motionEvent in doubleTapSequence) {
+            wrapperCapturingSlot.captured.dispatchTouchEvent(motionEvent)
+        }
         val events = openTelemetryRule.logRecords
         Assertions.assertThat(events).hasSize(2)
 
@@ -131,8 +113,8 @@ class DoubleTapInstrumentationTest {
         OpenTelemetryAssertions.assertThat(event)
             .hasEventName(APP_SCREEN_DOUBLE_TAP_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, initialUpEvent.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, initialUpEvent.y.toLong()),
+                equalTo(APP_SCREEN_COORDINATE_X, initialDownEvent.x.toLong()),
+                equalTo(APP_SCREEN_COORDINATE_Y, initialDownEvent.y.toLong()),
             )
 
         event = events[1]
@@ -175,17 +157,8 @@ class DoubleTapInstrumentationTest {
         every { window.callback = any() } returns Unit
 
 
-        val durationOffset = 100L
-        val initialDownEvent =
-            MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis() + durationOffset * 1, MotionEvent.ACTION_DOWN, 250f, 50f, 0)
-        val initialUpEvent =
-            MotionEvent.obtain(SystemClock.uptimeMillis() + durationOffset * 2, SystemClock.uptimeMillis() + durationOffset * 3, MotionEvent.ACTION_UP, 250f, 50f, 0)
-        val doubleTapTimeout = ViewConfiguration.getDoubleTapTimeout()
-
-        val secondDownEvent =
-            MotionEvent.obtain(SystemClock.uptimeMillis() + doubleTapTimeout + (durationOffset * 4), SystemClock.uptimeMillis() + doubleTapTimeout + (durationOffset * 5), MotionEvent.ACTION_DOWN, 250f, 50f, 0)
-        val secondUpEvent =
-            MotionEvent.obtain(SystemClock.uptimeMillis() + doubleTapTimeout + (durationOffset * 6), SystemClock.uptimeMillis() + doubleTapTimeout + (durationOffset * 7), MotionEvent.ACTION_UP, 250f, 50f, 0)
+        val doubleTapSequence = getDoubleTapSequence(true)
+        val initialDownEvent = doubleTapSequence[0]
 
         val mockView = mockView<View>(10012, initialDownEvent)
         every { window.decorView } returns mockView
@@ -195,18 +168,9 @@ class DoubleTapInstrumentationTest {
             window.callback = capture(wrapperCapturingSlot)
         }
 
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            initialDownEvent,
-        )
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            initialUpEvent,
-        )
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            secondDownEvent,
-        )
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            secondUpEvent,
-        )
+        for(motionEvent in doubleTapSequence) {
+            wrapperCapturingSlot.captured.dispatchTouchEvent(motionEvent)
+        }
 
         val events = openTelemetryRule.logRecords
         Assertions.assertThat(events).hasSize(0)
@@ -238,14 +202,8 @@ class DoubleTapInstrumentationTest {
         val wrapperCapturingSlot = slot<DoubleTapWindowCallbackWrapper>()
         every { window.callback = any() } returns Unit
 
-        val initialDownEvent =
-            MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis() + 100L, MotionEvent.ACTION_DOWN, 250f, 50f, 0)
-        val initialUpEvent =
-            MotionEvent.obtain(SystemClock.uptimeMillis() + 200L, SystemClock.uptimeMillis() + 300L, MotionEvent.ACTION_UP, 250f, 50f, 0)
-        val secondDownEvent =
-            MotionEvent.obtain(SystemClock.uptimeMillis() + 400L, SystemClock.uptimeMillis() + 500L, MotionEvent.ACTION_DOWN, 250f, 50f, 0)
-        val secondUpEvent =
-            MotionEvent.obtain(SystemClock.uptimeMillis() + 600L, SystemClock.uptimeMillis() + 700L, MotionEvent.ACTION_UP, 250f, 50f, 0)
+        val doubleTapSequence = getDoubleTapSequence()
+        val initialDownEvent = doubleTapSequence[0]
 
         val mockView = mockView<View>(10012, initialDownEvent, hitOffset = intArrayOf(50, 30))
         val mockViewGroup =
@@ -261,18 +219,9 @@ class DoubleTapInstrumentationTest {
             window.callback = capture(wrapperCapturingSlot)
         }
 
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            initialDownEvent,
-        )
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            initialUpEvent,
-        )
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            secondDownEvent,
-        )
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            secondUpEvent,
-        )
+        for(motionEvent in doubleTapSequence) {
+            wrapperCapturingSlot.captured.dispatchTouchEvent(motionEvent)
+        }
 
         val events = openTelemetryRule.logRecords
         Assertions.assertThat(events).hasSize(1)
@@ -312,14 +261,8 @@ class DoubleTapInstrumentationTest {
         val wrapperCapturingSlot = slot<DoubleTapWindowCallbackWrapper>()
         every { window.callback = any() } returns Unit
 
-        val initialDownEvent =
-            MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis() + 100L, MotionEvent.ACTION_DOWN, 250f, 50f, 0)
-        val initialUpEvent =
-            MotionEvent.obtain(SystemClock.uptimeMillis() + 200L, SystemClock.uptimeMillis() + 300L, MotionEvent.ACTION_UP, 250f, 50f, 0)
-        val secondDownEvent =
-            MotionEvent.obtain(SystemClock.uptimeMillis() + 400L, SystemClock.uptimeMillis() + 500L, MotionEvent.ACTION_DOWN, 250f, 50f, 0)
-        val secondUpEvent =
-            MotionEvent.obtain(SystemClock.uptimeMillis() + 600L, SystemClock.uptimeMillis() + 700L, MotionEvent.ACTION_UP, 250f, 50f, 0)
+        val doubleTapSequence = getDoubleTapSequence()
+        val initialDownEvent = doubleTapSequence[0]
 
         val mockView = mockView<View>(10012, initialDownEvent)
         val mockViewGroup =
@@ -335,18 +278,9 @@ class DoubleTapInstrumentationTest {
             window.callback = capture(wrapperCapturingSlot)
         }
 
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            initialDownEvent,
-        )
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            initialUpEvent,
-        )
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            secondDownEvent,
-        )
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            secondUpEvent,
-        )
+        for (motionEvent in doubleTapSequence) {
+            wrapperCapturingSlot.captured.dispatchTouchEvent(motionEvent)
+        }
 
         val events = openTelemetryRule.logRecords
         Assertions.assertThat(events).hasSize(2)
@@ -402,5 +336,52 @@ class DoubleTapInstrumentationTest {
         applyOthers.invoke(mockView)
 
         return mockView
+    }
+
+    private fun getDoubleTapSequence(exceedTimeOut: Boolean = false): Array<MotionEvent> {
+        if(exceedTimeOut) {
+            val doubleTapTimeout = ViewConfiguration.getDoubleTapTimeout()
+
+            return arrayOf(
+                MotionEvent.obtain(
+                    SystemClock.uptimeMillis(), SystemClock.uptimeMillis() + 100L,
+                    MotionEvent.ACTION_DOWN, 250f, 50f, 0
+                ),
+                MotionEvent.obtain(SystemClock.uptimeMillis() + 200L, SystemClock.uptimeMillis() + 300L,
+                    MotionEvent.ACTION_UP, 250f, 50f, 0
+                ),
+
+                MotionEvent.obtain(
+                    SystemClock.uptimeMillis() + 400L + doubleTapTimeout,
+                    SystemClock.uptimeMillis() + 500L + doubleTapTimeout,
+                    MotionEvent.ACTION_DOWN, 250f, 50f, 0
+                ),
+                MotionEvent.obtain(
+                    SystemClock.uptimeMillis() + 600L + doubleTapTimeout,
+                    SystemClock.uptimeMillis() + 700L + doubleTapTimeout,
+                    MotionEvent.ACTION_UP, 250f, 50f, 0
+                )
+            )
+        } else {
+
+            return arrayOf(
+                MotionEvent.obtain(
+                    SystemClock.uptimeMillis(), SystemClock.uptimeMillis() + 100L,
+                    MotionEvent.ACTION_DOWN, 250f, 50f, 0
+                ),
+                MotionEvent.obtain(
+                    SystemClock.uptimeMillis() + 200L, SystemClock.uptimeMillis() + 300L,
+                    MotionEvent.ACTION_UP, 250f, 50f, 0
+                ),
+                MotionEvent.obtain(
+                    SystemClock.uptimeMillis() + 400L, SystemClock.uptimeMillis() + 500L,
+                    MotionEvent.ACTION_DOWN, 250f, 50f, 0
+                ),
+                MotionEvent.obtain(
+                    SystemClock.uptimeMillis() + 600L, SystemClock.uptimeMillis() + 700L,
+                    MotionEvent.ACTION_UP, 250f, 50f, 0
+                )
+            )
+        }
     }
 }
