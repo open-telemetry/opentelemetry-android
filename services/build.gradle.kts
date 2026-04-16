@@ -19,7 +19,7 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.lifecycle.process)
-    implementation(libs.androidx.preference.ktx)
+    implementation(libs.androidx.fragment)
 
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.robolectric)

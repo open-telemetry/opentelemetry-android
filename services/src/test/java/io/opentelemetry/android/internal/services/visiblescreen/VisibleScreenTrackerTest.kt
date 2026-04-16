@@ -10,6 +10,7 @@ import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavHost
 import androidx.navigation.fragment.NavHostFragment
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
@@ -116,6 +117,29 @@ internal class VisibleScreenTrackerTest {
     }
 
     @Test
+    fun fragmentLifecycle_customNavHostIgnored() {
+        val visibleScreenTracker = this.visibleScreenService
+        val fragment = mockk<Fragment>()
+        val customNavHost = mockk<CustomNavHostFragment>()
+
+        visibleScreenTracker.fragmentResumed(fragment)
+        visibleScreenTracker.fragmentResumed(customNavHost)
+        assertEquals(
+            fragment.javaClass.simpleName,
+            visibleScreenTracker.currentlyVisibleScreen,
+        )
+        assertNull(visibleScreenTracker.previouslyVisibleScreen)
+
+        visibleScreenTracker.fragmentPaused(customNavHost)
+        visibleScreenTracker.fragmentPaused(fragment)
+        assertEquals("unknown", visibleScreenTracker.currentlyVisibleScreen)
+        assertEquals(
+            fragment.javaClass.simpleName,
+            visibleScreenTracker.previouslyVisibleScreen,
+        )
+    }
+
+    @Test
     fun fragmentLifecycle_dialogFragment() {
         val visibleScreenTracker = this.visibleScreenService
         val fragment = mockk<Fragment>()
@@ -174,4 +198,6 @@ internal class VisibleScreenTrackerTest {
 
     private val visibleScreenService: VisibleScreenTracker
         get() = VisibleScreenTrackerImpl(application)
+
+    private abstract class CustomNavHostFragment : Fragment(), NavHost
 }

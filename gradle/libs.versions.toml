@@ -5,11 +5,11 @@ opentelemetry-semconv = "1.40.0"
 opentelemetry-semconv-alpha = "1.40.0-alpha"
 opentelemetry-contrib = "1.55.0-alpha"
 junit = "6.0.3"
-byteBuddy = "1.18.8-jdk5"
+byteBuddy = "1.18.8"
 okhttp = "5.3.2"
 spotless = "8.4.0"
-kotlin = "2.3.10"
-androidPlugin = "9.1.0"
+kotlin = "2.3.20"
+androidPlugin = "9.1.1"
 kspPlugin = "2.3.6"
 junitKtx = "1.3.0"
 autoServiceProcessor = "1.2.0"
@@ -30,9 +30,8 @@ opentelemetry-core-bom = { module = "io.opentelemetry:opentelemetry-bom" }
 androidx-navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "androidx-navigation" }
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "androidx-navigation" }
 androidx-core = "androidx.core:core:1.18.0"
-androidx-annotation = "androidx.annotation:annotation:1.9.1"
+androidx-annotation = "androidx.annotation:annotation:1.10.0"
 androidx-lifecycle-process = "androidx.lifecycle:lifecycle-process:2.9.4"
-androidx-preference-ktx = "androidx.preference:preference-ktx:1.2.1"
 androidx-fragment = { module = "androidx.fragment:fragment", version.ref="fragment" }
 
 findbugs-jsr305 = "com.google.code.findbugs:jsr305:3.0.2"
@@ -78,8 +77,8 @@ protobuf-kotlin = { module = "com.google.protobuf:protobuf-kotlin", version.ref 
 
 #Compilation tools
 desugarJdkLibs = "com.android.tools:desugar_jdk_libs:2.1.5"
-nullaway = "com.uber.nullaway:nullaway:0.13.1"
-errorprone-core = "com.google.errorprone:error_prone_core:2.48.0"
+nullaway = "com.uber.nullaway:nullaway:0.13.3"
+errorprone-core = "com.google.errorprone:error_prone_core:2.49.0"
 spotless-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
 errorprone-plugin = "net.ltgt.gradle:gradle-errorprone-plugin:5.1.0"
 nullaway-plugin = "net.ltgt.gradle:gradle-nullaway-plugin:3.0.0"

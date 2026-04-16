@@ -18,13 +18,14 @@ are provided by the OkHttp attributes getter.
 * Name: Determined by the HTTP span name extractor (typically `HTTP {method}` or derived from the URL)
 * Description: Client-side HTTP request
 * Common attributes (following OpenTelemetry HTTP semantic conventions):
-  * `http.method` — request method (GET, POST, etc.)
-  * `http.url` — full URL
-  * `http.status_code` — response status code
-  * `http.flavor` — protocol (e.g. `1.1`)
-  * `net.peer.name` — server host
-  * `net.peer.port` — server port
-  * Captured request/response headers per configuration
+  * `http.request.method` — request method (GET, POST, etc.)
+  * `url.full` — full request URL
+  * `http.response.status_code` — response status code
+  * `network.protocol.version` — protocol version (e.g. `1.1`, `2` for HTTP/2)
+  * `server.address` — logical server host
+  * `server.port` — logical server port
+  * `network.peer.address` / `network.peer.port` — connection endpoint, when available
+  * Captured request/response headers per configuration (`http.request.header.<name>` / `http.response.header.<name>`)
 
 If a request fails, the span is ended and the error is recorded.
 
@@ -62,7 +63,7 @@ automatically.
 
 You can configure the automatic instrumentation by using the setters
 from
-the [OkHttpInstrumentation](library/src/main/java/io/opentelemetry/instrumentation/library/okhttp/v3_0/OkHttpInstrumentation.kt)
+the [OkHttpInstrumentation](library/src/main/java/io/opentelemetry/instrumentation/library/okhttp/OkHttpInstrumentation.kt)
 instance provided via the AndroidInstrumentationLoader as shown below:
 
 ```java
