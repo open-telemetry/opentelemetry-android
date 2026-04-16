@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(rootLibs.plugins.androidApp)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.byteBuddy)
 }
 
 android {
@@ -69,6 +70,9 @@ dependencies {
     implementation("io.opentelemetry.android:android-agent")    //parent dir
     implementation("io.opentelemetry.android.instrumentation:compose-click")
     implementation("io.opentelemetry.android.instrumentation:sessions")
+    implementation("io.opentelemetry.android.instrumentation:okhttp3-library")
+    byteBuddy("io.opentelemetry.android.instrumentation:okhttp3-agent")
+    implementation(libs.okhttp)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

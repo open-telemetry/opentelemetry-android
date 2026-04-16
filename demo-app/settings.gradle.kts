@@ -28,5 +28,9 @@ includeBuild("..") {
             .using(project(":instrumentation:compose:click"))
         substitute(module("io.opentelemetry.android.instrumentation:sessions"))
             .using(project(":instrumentation:sessions"))
+        substitute(module("io.opentelemetry.android.instrumentation:okhttp3-library"))
+            .using(project(":instrumentation:okhttp3:library"))
+        substitute(module("io.opentelemetry.android.instrumentation:okhttp3-agent"))
+            .using(project(":instrumentation:okhttp3:agent"))
     }
 }
