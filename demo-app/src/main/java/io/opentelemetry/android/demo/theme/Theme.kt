@@ -15,9 +15,11 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme =
@@ -64,8 +66,13 @@ fun DemoAppTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            val insetsController = WindowCompat.getInsetsController(window, view)
+            val backgroundArgb = colorScheme.background.toArgb()
+            window.statusBarColor = Color.Transparent.toArgb()
+            window.navigationBarColor = Color.Transparent.toArgb()
+            val useDarkSystemIcons = ColorUtils.calculateLuminance(backgroundArgb) > 0.5
+            insetsController.isAppearanceLightStatusBars = useDarkSystemIcons
+            insetsController.isAppearanceLightNavigationBars = useDarkSystemIcons
         }
     }
 
