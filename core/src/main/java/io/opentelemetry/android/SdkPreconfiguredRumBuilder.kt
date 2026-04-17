@@ -5,13 +5,13 @@
 
 package io.opentelemetry.android
 
+import android.app.Application
 import android.content.Context
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
-import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.common.Clock
@@ -55,8 +55,7 @@ class SdkPreconfiguredRumBuilder internal constructor(
      * @return A new [io.opentelemetry.android.OpenTelemetryRum] instance.
      */
     fun build(): OpenTelemetryRum {
-        val ctx = InstallationContext(context, sdk, sessionProvider, clock)
-        if (ctx.application == null) {
+        if ((context as? Application) == null) {
             Log.w(
                 RumConstants.OTEL_RUM_LOG_TAG,
                 "Cannot retrieve applicationContext. This indicates the OpenTelemetry SDK was " +
@@ -67,18 +66,18 @@ class SdkPreconfiguredRumBuilder internal constructor(
         }
 
         val enabledInstrumentations = getEnabledInstrumentations()
-        val onShutdown: () -> Unit = {
+        val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionProvider, clock)
+        openTelemetryRum.onShutdown = Runnable {
             for (instrumentation in enabledInstrumentations) {
-                instrumentation.uninstall(ctx)
+                instrumentation.uninstall(context, openTelemetryRum)
             }
             sdk.shutdown()
             onShutdown.run()
         }
-        val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionProvider, onShutdown)
 
         // Install instrumentations
         for (instrumentation in enabledInstrumentations) {
-            instrumentation.install(ctx)
+            instrumentation.install(context, openTelemetryRum)
         }
 
         // Install crash flush handler after instrumentations so it wraps any

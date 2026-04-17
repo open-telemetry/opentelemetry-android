@@ -5,11 +5,12 @@
 
 package io.opentelemetry.android.instrumentation.anr
 
+import android.content.Context
 import android.os.Looper
 import androidx.annotation.VisibleForTesting
 import com.google.auto.service.AutoService
+import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.android.internal.services.Services.Companion.get
 import java.util.concurrent.Executors
@@ -42,14 +43,14 @@ class AnrInstrumentation : AndroidInstrumentation {
         return this
     }
 
-    override fun install(ctx: InstallationContext) {
+    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
         val anrDetector =
             AnrDetector(
                 additionalExtractors,
                 mainLooper,
                 scheduler,
-                get(ctx.context).appLifecycle,
-                ctx.openTelemetry,
+                get(context).appLifecycle,
+                openTelemetryRum.openTelemetry,
             )
         anrDetector.start()
     }

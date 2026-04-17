@@ -12,7 +12,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
-import io.opentelemetry.android.instrumentation.InstallationContext
+import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.internal.initialization.InitializationEvents
 import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
@@ -46,7 +46,7 @@ class StartupInstrumentationTest {
         every { sdkInitializationEvents.finish(any()) } just Runs
         InitializationEvents.set(sdkInitializationEvents)
 
-        instrumentation.install(makeContext())
+        instrumentation.install(makeContext(), makeOpenTelemetryRum())
 
         verify {
             sdkInitializationEvents.finish(otelTesting.openTelemetry)
@@ -58,16 +58,17 @@ class StartupInstrumentationTest {
         val initializationEvents = mockk<InitializationEvents>()
         InitializationEvents.set(initializationEvents)
 
-        instrumentation.install(makeContext())
+        instrumentation.install(makeContext(), makeOpenTelemetryRum())
 
         verify { initializationEvents wasNot Called }
     }
 
-    private fun makeContext(): InstallationContext =
-        InstallationContext(
-            mockk<Application>(),
-            otelTesting.openTelemetry,
-            mockk(),
-            Clock.getDefault(),
-        )
+    private fun makeContext(): Application = mockk<Application>()
+
+    private fun makeOpenTelemetryRum(): OpenTelemetryRum =
+        mockk<OpenTelemetryRum> {
+            every { openTelemetry } returns otelTesting.openTelemetry
+            every { sessionProvider } returns mockk()
+            every { clock } returns Clock.getDefault()
+        }
 }

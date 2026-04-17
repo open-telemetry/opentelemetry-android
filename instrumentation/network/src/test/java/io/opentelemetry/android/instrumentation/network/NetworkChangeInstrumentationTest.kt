@@ -15,10 +15,10 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
-import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener
@@ -57,7 +57,8 @@ class NetworkChangeInstrumentationTest {
     @Test
     fun networkAvailable_wifi() {
         val networkChangeListenerSlot = slot<NetworkChangeListener>()
-        NetworkChangeInstrumentation().install(createInstallationContext())
+        val (context, openTelemetryRum) = createTestDependencies()
+        NetworkChangeInstrumentation().install(context, openTelemetryRum)
 
         verify {
             currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
@@ -80,7 +81,8 @@ class NetworkChangeInstrumentationTest {
     @Test
     fun networkAvailable_cellular() {
         val networkChangeListenerSlot = slot<NetworkChangeListener>()
-        NetworkChangeInstrumentation().install(createInstallationContext())
+        val (context, openTelemetryRum) = createTestDependencies()
+        NetworkChangeInstrumentation().install(context, openTelemetryRum)
 
         verify {
             currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
@@ -115,7 +117,8 @@ class NetworkChangeInstrumentationTest {
     @Test
     fun networkLost() {
         val networkChangeListenerSlot = slot<NetworkChangeListener>()
-        NetworkChangeInstrumentation().install(createInstallationContext())
+        val (context, openTelemetryRum) = createTestDependencies()
+        NetworkChangeInstrumentation().install(context, openTelemetryRum)
 
         verify {
             currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
@@ -139,7 +142,8 @@ class NetworkChangeInstrumentationTest {
     fun noEventsPlease() {
         val networkChangeListenerSlot = slot<NetworkChangeListener>()
         val appStateListener = slot<ApplicationStateListener>()
-        NetworkChangeInstrumentation().install(createInstallationContext())
+        val (context, openTelemetryRum) = createTestDependencies()
+        NetworkChangeInstrumentation().install(context, openTelemetryRum)
 
         verify {
             currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
@@ -178,16 +182,16 @@ class NetworkChangeInstrumentationTest {
     fun uninstall() {
         val networkChangeListenerSlot = slot<NetworkChangeListener>()
         val appStateListenerSlot = slot<ApplicationStateListener>()
-        val ctx = createInstallationContext()
+        val (context, openTelemetryRum) = createTestDependencies()
         val instrumentation = NetworkChangeInstrumentation()
-        instrumentation.install(ctx)
+        instrumentation.install(context, openTelemetryRum)
 
         verify {
             currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
             appLifecycle.registerListener(capture(appStateListenerSlot))
         }
 
-        instrumentation.uninstall(ctx)
+        instrumentation.uninstall(context, openTelemetryRum)
 
         verify {
             currentNetworkProvider.removeNetworkChangeListener(networkChangeListenerSlot.captured)
@@ -197,10 +201,10 @@ class NetworkChangeInstrumentationTest {
 
     @Test
     fun uninstallBeforeInstall() {
-        val ctx = createInstallationContext()
+        val (context, openTelemetryRum) = createTestDependencies()
         val instrumentation = NetworkChangeInstrumentation()
 
-        instrumentation.uninstall(ctx)
+        instrumentation.uninstall(context, openTelemetryRum)
 
         verify(exactly = 0) {
             currentNetworkProvider.removeNetworkChangeListener(any())
@@ -208,17 +212,16 @@ class NetworkChangeInstrumentationTest {
         }
     }
 
-    private fun createInstallationContext(): InstallationContext {
+    private fun createTestDependencies(): Pair<Application, OpenTelemetryRum> {
         val app = mockk<Application>()
         val services = mockk<Services>()
         every { services.currentNetworkProvider } returns currentNetworkProvider
         every { services.appLifecycle } returns appLifecycle
         Services.set(services)
-        return InstallationContext(
-            app,
-            otelTesting.openTelemetry,
-            mockk<SessionProvider>(),
-            Clock.getDefault(),
-        )
+        val openTelemetryRum = mockk<OpenTelemetryRum>()
+        every { openTelemetryRum.openTelemetry } returns otelTesting.openTelemetry
+        every { openTelemetryRum.sessionProvider } returns mockk<SessionProvider>()
+        every { openTelemetryRum.clock } returns Clock.getDefault()
+        return Pair(app, openTelemetryRum)
     }
 }

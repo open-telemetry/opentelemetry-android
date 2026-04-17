@@ -5,9 +5,10 @@
 
 package io.opentelemetry.instrumentation.library.httpurlconnection
 
+import android.content.Context
 import com.google.auto.service.AutoService
+import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor
 import io.opentelemetry.instrumentation.api.internal.HttpConstants
 import io.opentelemetry.instrumentation.library.httpurlconnection.internal.HttpUrlConnectionSingletons
@@ -105,8 +106,8 @@ class HttpUrlInstrumentation : AndroidInstrumentation {
 
     fun emitExperimentalHttpClientMetrics(): Boolean = emitExperimentalHttpClientMetrics
 
-    override fun install(ctx: InstallationContext) {
-        HttpUrlConnectionSingletons.configure(this, ctx.openTelemetry)
+    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+        HttpUrlConnectionSingletons.configure(this, openTelemetryRum.openTelemetry)
     }
 
     /**

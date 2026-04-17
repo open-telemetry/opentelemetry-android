@@ -5,9 +5,10 @@
 
 package io.opentelemetry.instrumentation.library.okhttp
 
+import android.content.Context
 import com.google.auto.service.AutoService
+import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor
 import io.opentelemetry.instrumentation.api.internal.HttpConstants
 import io.opentelemetry.instrumentation.library.okhttp.internal.OkHttpSingletons
@@ -103,8 +104,8 @@ class OkHttpInstrumentation : AndroidInstrumentation {
 
     fun emitExperimentalHttpClientTelemetry(): Boolean = emitExperimentalHttpClientTelemetry
 
-    override fun install(ctx: InstallationContext) {
-        OkHttpSingletons.configure(this, ctx.openTelemetry)
+    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+        OkHttpSingletons.configure(this, openTelemetryRum.openTelemetry)
     }
 
     override val name: String = "okhttp"
