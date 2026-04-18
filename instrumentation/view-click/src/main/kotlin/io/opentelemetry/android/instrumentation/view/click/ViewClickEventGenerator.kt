@@ -49,11 +49,9 @@ internal class ViewClickEventGenerator(
                     .setAttribute(HARDWARE_POINTER_TYPE, toolType)
 
                 val buttonStateInt = motionEvent.buttonState
-                if(
-                    (toolTypeInt == MotionEvent.TOOL_TYPE_MOUSE || toolTypeInt == MotionEvent.TOOL_TYPE_STYLUS)
-                    &&
-                    !(buttonStateInt == MotionEvent.BUTTON_PRIMARY || buttonStateInt == MotionEvent.BUTTON_STYLUS_PRIMARY)
-                    ) {
+                val toolTypeHasButtons = toolTypeInt == MotionEvent.TOOL_TYPE_MOUSE || toolTypeInt == MotionEvent.TOOL_TYPE_STYLUS
+                val isButtonPrimary = buttonStateInt == MotionEvent.BUTTON_PRIMARY || buttonStateInt == MotionEvent.BUTTON_STYLUS_PRIMARY
+                if(toolTypeHasButtons && !isButtonPrimary) {
                     return false
                 }
                 val buttonState = buttonStateToString(buttonStateInt)

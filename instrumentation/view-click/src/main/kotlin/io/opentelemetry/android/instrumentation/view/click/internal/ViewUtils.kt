@@ -16,7 +16,7 @@ internal const val HARDWARE_POINTER_BUTTON = "hw.pointer.button"
 
 internal const val HARDWARE_POINTER_CLICKS = "hw.pointer.clicks"
 
-fun buttonStateToString(buttonStateInt: Int): String? {
+internal fun buttonStateToString(buttonStateInt: Int): String? {
     return when(buttonStateInt) {
         MotionEvent.BUTTON_PRIMARY, MotionEvent.BUTTON_STYLUS_PRIMARY -> "primary"
         MotionEvent.BUTTON_SECONDARY, MotionEvent.BUTTON_STYLUS_SECONDARY -> "secondary"
@@ -27,7 +27,7 @@ fun buttonStateToString(buttonStateInt: Int): String? {
     }
 }
 
-fun toolTypeToString(toolTypeInt: Int): String {
+internal fun toolTypeToString(toolTypeInt: Int): String {
     return when(toolTypeInt) {
         MotionEvent.TOOL_TYPE_MOUSE -> "mouse"
         MotionEvent.TOOL_TYPE_FINGER -> "finger"
