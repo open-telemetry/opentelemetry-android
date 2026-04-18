@@ -5,12 +5,18 @@
 
 package io.opentelemetry.android.instrumentation.view.click
 
+import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_CLICK_EVENT_NAME
+import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_BUTTON
+import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_CLICKS
+import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_TYPE
 import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_EVENT_NAME
+import io.opentelemetry.android.instrumentation.view.click.internal.buttonStateToString
+import io.opentelemetry.android.instrumentation.view.click.internal.toolTypeToString
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.Logger
@@ -26,6 +32,79 @@ internal class ViewClickEventGenerator(
 ) {
     private var windowRef: WeakReference<Window>? = null
 
+    private val gestureListener = object : GestureDetector.SimpleOnGestureListener() {
+
+
+        override fun onDoubleTap(motionEvent: MotionEvent): Boolean {
+            windowRef?.get()?.let { window ->
+
+
+                val toolTypeInt = motionEvent.getToolType(0)
+                val toolType = toolTypeToString(toolTypeInt)
+
+                val appEvent = createEvent(APP_SCREEN_CLICK_EVENT_NAME)
+                    .setAttribute(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong())
+                    .setAttribute(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong())
+                    .setAttribute(HARDWARE_POINTER_CLICKS, 2)
+                    .setAttribute(HARDWARE_POINTER_TYPE, toolType)
+
+                val buttonStateInt = motionEvent.buttonState
+                val toolTypeHasButtons = toolTypeInt == MotionEvent.TOOL_TYPE_MOUSE || toolTypeInt == MotionEvent.TOOL_TYPE_STYLUS
+                val isButtonPrimary = buttonStateInt == MotionEvent.BUTTON_PRIMARY || buttonStateInt == MotionEvent.BUTTON_STYLUS_PRIMARY
+                if(toolTypeHasButtons && !isButtonPrimary) {
+                    return false
+                }
+                val buttonState = buttonStateToString(buttonStateInt)
+
+                if(buttonState != null) {
+                    appEvent.setAttribute(HARDWARE_POINTER_BUTTON, buttonState)
+                }
+
+                appEvent.emit()
+
+                findTargetForTap(window.decorView, motionEvent.x, motionEvent.y)?.let { view ->
+                    createEvent(VIEW_CLICK_EVENT_NAME)
+                        .setAllAttributes(createViewAttributes(view))
+                        .emit()
+                }
+
+            }
+            return false
+        }
+
+        override fun onSingleTapConfirmed(motionEvent: MotionEvent): Boolean {
+            windowRef?.get()?.let { window ->
+
+                val toolTypeInt = motionEvent.getToolType(0)
+                val toolType = toolTypeToString(toolTypeInt)
+
+                val appEvent = createEvent(APP_SCREEN_CLICK_EVENT_NAME)
+                    .setAttribute(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong())
+                    .setAttribute(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong())
+                    .setAttribute(HARDWARE_POINTER_CLICKS, 1)
+                    .setAttribute(HARDWARE_POINTER_TYPE, toolType)
+
+
+                val buttonStateInt = motionEvent.buttonState
+                val buttonState = buttonStateToString(buttonStateInt)
+                if(buttonState != null) {
+                    appEvent.setAttribute(HARDWARE_POINTER_BUTTON, buttonState)
+                }
+
+                appEvent.emit()
+
+                findTargetForTap(window.decorView, motionEvent.x, motionEvent.y)?.let { view ->
+                    createEvent(VIEW_CLICK_EVENT_NAME)
+                        .setAllAttributes(createViewAttributes(view))
+                        .emit()
+                }
+            }
+            return false
+        }
+    }
+
+    val gestureDetector = GestureDetector(null, gestureListener)
+
     private val viewCoordinates = IntArray(2)
 
     fun startTracking(window: Window) {
@@ -35,19 +114,8 @@ internal class ViewClickEventGenerator(
     }
 
     fun generateClick(motionEvent: MotionEvent?) {
-        windowRef?.get()?.let { window ->
-            if (motionEvent != null && motionEvent.actionMasked == MotionEvent.ACTION_UP) {
-                createEvent(APP_SCREEN_CLICK_EVENT_NAME)
-                    .setAttribute(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong())
-                    .setAttribute(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong())
-                    .emit()
-
-                findTargetForTap(window.decorView, motionEvent.x, motionEvent.y)?.let { view ->
-                    createEvent(VIEW_CLICK_EVENT_NAME)
-                        .setAllAttributes(createViewAttributes(view))
-                        .emit()
-                }
-            }
+        if(motionEvent != null) {
+            gestureDetector.onTouchEvent(motionEvent)
         }
     }
 
