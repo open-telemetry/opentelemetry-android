@@ -16,15 +16,15 @@ import io.opentelemetry.sdk.logs.data.LogRecordData
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import io.opentelemetry.semconv.ExceptionAttributes
 import io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes
+import java.io.PrintWriter
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import java.io.PrintWriter
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
 internal class CrashReportIntegrationTest {
     private lateinit var rule: OpenTelemetryRule
@@ -188,7 +188,7 @@ internal class CrashReportIntegrationTest {
         expectedExcType: String,
         expectedExcMessage: String? = null,
     ) {
-        assertEquals("device.crash", eventName)
+        assertEquals("app.crash", eventName)
         assertEquals(Severity.UNDEFINED_SEVERITY_NUMBER, severity)
 
         val attrs = attributes.asMap().mapKeys { it.key.key }
