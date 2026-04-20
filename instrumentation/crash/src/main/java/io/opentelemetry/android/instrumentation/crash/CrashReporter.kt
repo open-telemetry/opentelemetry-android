@@ -59,7 +59,7 @@ internal class CrashReporter(
         val eventBuilder =
             logger.logRecordBuilder()
         eventBuilder
-            .setEventName("device.crash")
+            .setEventName("app.crash")
             .setAllAttributes(attributesBuilder.build())
             .emit()
     }
