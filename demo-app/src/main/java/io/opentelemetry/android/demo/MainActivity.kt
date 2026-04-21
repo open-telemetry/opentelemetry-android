@@ -12,12 +12,16 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Alignment
@@ -41,21 +45,28 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContent {
             DemoAppTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().safeDrawingPadding(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
                     Column(
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState())
+                                .padding(horizontal = 20.dp, vertical = 16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.SpaceEvenly,
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         Row(
-                            Modifier.padding(all = 20.dp),
+                            Modifier.padding(vertical = 4.dp),
                             horizontalArrangement = Arrangement.Center,
                         ) {
+                            val onBackground = MaterialTheme.colorScheme.onBackground
                             CenterText(
                                 fontSize = 40.sp,
                                 text =
@@ -66,7 +77,7 @@ class MainActivity : ComponentActivity() {
                                         withStyle(style = SpanStyle(color = Color(0xFF425CC7))) {
                                             append("Telemetry")
                                         }
-                                        withStyle(style = SpanStyle(color = Color.Black)) {
+                                        withStyle(style = SpanStyle(color = onBackground)) {
                                             append(" Android Demo")
                                         }
                                         toAnnotatedString()
@@ -78,6 +89,9 @@ class MainActivity : ComponentActivity() {
                             painterResource(id = R.drawable.otel_icon),
                         )
                         val context = LocalContext.current
+                        LauncherButton(text = "OkHttp instrumentation", onClick = {
+                            context.startActivity(Intent(this@MainActivity, OkHttpDemoActivity::class.java))
+                        })
                         LauncherButton(text = "Go shopping", onClick = {
                             context.startActivity(Intent(this@MainActivity, AstronomyShopActivity::class.java))
                         })

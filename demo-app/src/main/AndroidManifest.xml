@@ -30,6 +30,12 @@
             android:label="About OpenTelemetry Android"
             />
         <activity
+            android:name=".OkHttpDemoActivity"
+            android:exported="false"
+            android:label="OkHttp instrumentation"
+            android:theme="@style/Theme.DemoApp"
+            />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
