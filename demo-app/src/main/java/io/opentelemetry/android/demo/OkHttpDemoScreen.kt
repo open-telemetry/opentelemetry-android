@@ -85,7 +85,7 @@ fun OkHttpDemoScreen(onBack: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(modifier = Modifier.height(8.dp))
-            OutlinedButton(
+            OkHttpDemoActionButton(
                 onClick = {
                     scope.launch {
                         val msg =
@@ -102,17 +102,9 @@ fun OkHttpDemoScreen(onBack: () -> Unit) {
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                border = BorderStroke(1.dp, DemoAccentBlue),
-                colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = DemoAccentBlue,
-                    ),
-            ) {
-                Text("GET known 200")
-            }
-            OutlinedButton(
+                text = "GET known 200",
+            )
+            OkHttpDemoActionButton(
                 onClick = {
                     scope.launch {
                         val msg =
@@ -129,17 +121,9 @@ fun OkHttpDemoScreen(onBack: () -> Unit) {
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                border = BorderStroke(1.dp, DemoAccentBlue),
-                colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = DemoAccentBlue,
-                    ),
-            ) {
-                Text("GET known 404")
-            }
-            OutlinedButton(
+                text = "GET known 404",
+            )
+            OkHttpDemoActionButton(
                 onClick = {
                     scope.launch {
                         val msg =
@@ -156,17 +140,9 @@ fun OkHttpDemoScreen(onBack: () -> Unit) {
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                border = BorderStroke(1.dp, DemoAccentBlue),
-                colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = DemoAccentBlue,
-                    ),
-            ) {
-                Text("GET connection failure")
-            }
-            OutlinedButton(
+                text = "GET connection failure",
+            )
+            OkHttpDemoActionButton(
                 onClick = {
                     scope.launch {
                         val msg =
@@ -186,17 +162,9 @@ fun OkHttpDemoScreen(onBack: () -> Unit) {
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                border = BorderStroke(1.dp, DemoAccentBlue),
-                colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = DemoAccentBlue,
-                    ),
-            ) {
-                Text("POST JSON payload")
-            }
-            OutlinedButton(
+                text = "POST JSON payload",
+            )
+            OkHttpDemoActionButton(
                 onClick = {
                     scope.launch {
                         val msg =
@@ -213,16 +181,27 @@ fun OkHttpDemoScreen(onBack: () -> Unit) {
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                border = BorderStroke(1.dp, DemoAccentBlue),
-                colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = DemoAccentBlue,
-                    ),
-            ) {
-                Text("GET slow response (3s)")
-            }
+                text = "GET slow response (3s)",
+            )
         }
+    }
+}
+
+@Composable
+private fun OkHttpDemoActionButton(
+    text: String,
+    onClick: () -> Unit,
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().height(56.dp),
+        border = BorderStroke(1.dp, DemoAccentBlue),
+        colors =
+            ButtonDefaults.outlinedButtonColors(
+                containerColor = Color.Transparent,
+                contentColor = DemoAccentBlue,
+            ),
+    ) {
+        Text(text)
     }
 }
