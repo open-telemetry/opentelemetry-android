@@ -27,6 +27,7 @@ object OkHttpSingletons {
         Interceptor { chain: Interceptor.Chain ->
             chain.proceed(chain.request())
         }
+    private val ATTRIBUTES_GETTER = OkHttpAttributesGetter()
 
     @JvmField
     var connectionErrorInterceptor: Interceptor = NOOP_INTERCEPTOR
@@ -51,13 +52,13 @@ object OkHttpSingletons {
                     UnaryOperator {
                         HttpSpanNameExtractor
                             .builder(
-                                OkHttpAttributesGetter.INSTANCE,
+                                ATTRIBUTES_GETTER,
                             ).setKnownMethods(instrumentation.knownMethods)
                             .build()
                     },
                 ).addAttributesExtractor(
                     HttpClientServicePeerAttributesExtractor.create(
-                        OkHttpAttributesGetter.INSTANCE,
+                        ATTRIBUTES_GETTER,
                         openTelemetry,
                     ),
                 ).setEmitExperimentalHttpClientTelemetry(
