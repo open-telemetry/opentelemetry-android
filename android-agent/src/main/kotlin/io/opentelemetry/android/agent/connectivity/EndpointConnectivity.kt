@@ -13,4 +13,6 @@ internal interface EndpointConnectivity {
     fun getCompression(): Compression
 
     fun getSslContext(): SSLContextConnectivity?
+
+    fun getClientTls(): ClientTlsConnectivity?
 }

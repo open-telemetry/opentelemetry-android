@@ -10,6 +10,7 @@ internal class HttpEndpointConnectivity private constructor(
     private val headers: Map<String, String>,
     private val compression: Compression,
     private val sslContext: SSLContextConnectivity?,
+    private val clientTls: ClientTlsConnectivity? = null
 ) : EndpointConnectivity {
     companion object {
         fun forTraces(
@@ -17,21 +18,42 @@ internal class HttpEndpointConnectivity private constructor(
             headers: Map<String, String>,
             compression: Compression,
             sslContext: SSLContextConnectivity?,
-        ): HttpEndpointConnectivity = HttpEndpointConnectivity(baseUrl.trimEnd('/') + "/v1/traces", headers, compression, sslContext)
+            clientTls: ClientTlsConnectivity?
+        ): HttpEndpointConnectivity = HttpEndpointConnectivity(
+            baseUrl.trimEnd('/') + "/v1/traces",
+            headers,
+            compression,
+            sslContext,
+            clientTls
+        )
 
         fun forLogs(
             baseUrl: String,
             headers: Map<String, String>,
             compression: Compression,
             sslContext: SSLContextConnectivity?,
-        ): HttpEndpointConnectivity = HttpEndpointConnectivity(baseUrl.trimEnd('/') + "/v1/logs", headers, compression, sslContext)
+            clientTls: ClientTlsConnectivity?
+        ): HttpEndpointConnectivity = HttpEndpointConnectivity(
+            baseUrl.trimEnd('/') + "/v1/logs",
+            headers,
+            compression,
+            sslContext,
+            clientTls
+        )
 
         fun forMetrics(
             baseUrl: String,
             headers: Map<String, String>,
             compression: Compression,
             sslContext: SSLContextConnectivity?,
-        ): HttpEndpointConnectivity = HttpEndpointConnectivity(baseUrl.trimEnd('/') + "/v1/metrics", headers, compression, sslContext)
+            clientTls: ClientTlsConnectivity?
+        ): HttpEndpointConnectivity = HttpEndpointConnectivity(
+            baseUrl.trimEnd('/') + "/v1/metrics",
+            headers,
+            compression,
+            sslContext,
+            clientTls
+        )
     }
 
     override fun getUrl(): String = url
@@ -41,4 +63,6 @@ internal class HttpEndpointConnectivity private constructor(
     override fun getCompression(): Compression = compression
 
     override fun getSslContext(): SSLContextConnectivity? = sslContext
+
+    override fun getClientTls(): ClientTlsConnectivity? = clientTls
 }
