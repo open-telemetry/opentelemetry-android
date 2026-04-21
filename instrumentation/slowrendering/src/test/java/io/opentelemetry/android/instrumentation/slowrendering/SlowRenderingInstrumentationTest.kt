@@ -16,17 +16,17 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import io.opentelemetry.android.instrumentation.InstallationContext
+import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.api.logs.LoggerProvider
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.common.Clock
+import java.time.Duration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
-import java.time.Duration
 
 @RunWith(AndroidJUnit4::class)
 class SlowRenderingInstrumentationTest {
@@ -78,8 +78,11 @@ class SlowRenderingInstrumentationTest {
     @Config(sdk = [23])
     @Test
     fun `Not installing instrumentation on devices with API level lower than 24`() {
-        val ctx = InstallationContext(application, openTelemetry, mockk(), Clock.getDefault())
-        slowRenderingInstrumentation.install(ctx)
+        val openTelemetryRum = mockk<OpenTelemetryRum>()
+        every { openTelemetryRum.openTelemetry } returns openTelemetry
+        every { openTelemetryRum.sessionProvider } returns mockk()
+        every { openTelemetryRum.clock } returns Clock.getDefault()
+        slowRenderingInstrumentation.install(application, openTelemetryRum)
 
         verify {
             application wasNot Called
@@ -95,8 +98,11 @@ class SlowRenderingInstrumentationTest {
         val capturedListener = slot<SlowRenderListener>()
         every { openTelemetry.getTracer(any()) }.returns(mockk())
         every { application.registerActivityLifecycleCallbacks(any()) } just Runs
-        val ctx = InstallationContext(application, openTelemetry, mockk(), Clock.getDefault())
-        slowRenderingInstrumentation.install(ctx)
+        val openTelemetryRum = mockk<OpenTelemetryRum>()
+        every { openTelemetryRum.openTelemetry } returns openTelemetry
+        every { openTelemetryRum.sessionProvider } returns mockk()
+        every { openTelemetryRum.clock } returns Clock.getDefault()
+        slowRenderingInstrumentation.install(application, openTelemetryRum)
 
         verify { application.registerActivityLifecycleCallbacks(capture(capturedListener)) }
     }
@@ -107,9 +113,12 @@ class SlowRenderingInstrumentationTest {
         val capturedListener = slot<SlowRenderListener>()
         every { openTelemetry.getTracer(any()) }.returns(mockk())
         every { application.registerActivityLifecycleCallbacks(any()) } just Runs
-        val ctx = InstallationContext(application, openTelemetry, mockk(), Clock.getDefault())
+        val openTelemetryRum = mockk<OpenTelemetryRum>()
+        every { openTelemetryRum.openTelemetry } returns openTelemetry
+        every { openTelemetryRum.sessionProvider } returns mockk()
+        every { openTelemetryRum.clock } returns Clock.getDefault()
         @Suppress("DEPRECATION")
-        slowRenderingInstrumentation.enableDeprecatedZeroDurationSpan().install(ctx)
+        slowRenderingInstrumentation.enableDeprecatedZeroDurationSpan().install(application, openTelemetryRum)
 
         verify { openTelemetry.getTracer("io.opentelemetry.slow-rendering") }
         verify { application.registerActivityLifecycleCallbacks(capture(capturedListener)) }

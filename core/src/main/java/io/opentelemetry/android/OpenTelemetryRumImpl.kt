@@ -10,20 +10,20 @@ import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.sdk.OpenTelemetrySdk
+import io.opentelemetry.sdk.common.Clock
 
 internal class OpenTelemetryRumImpl(
     private val openTelemetrySdk: OpenTelemetrySdk,
-    private val sessionProvider: SessionProvider,
-    private val onShutdown: Runnable,
+    override val sessionProvider: SessionProvider,
+    override val clock: Clock,
 ) : OpenTelemetryRum {
+    var onShutdown: Runnable = Runnable {}
     private val logger: Logger =
         openTelemetrySdk.logsBridge
             .loggerBuilder("io.opentelemetry.rum.events")
             .build()
 
     override val openTelemetry: OpenTelemetry = openTelemetrySdk
-
-    override fun getRumSessionId(): String = sessionProvider.getSessionId()
 
     override fun emitEvent(
         eventName: String,

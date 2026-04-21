@@ -5,9 +5,10 @@
 
 package io.opentelemetry.android.instrumentation.screenorientation
 
+import android.content.Context
 import com.google.auto.service.AutoService
+import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import io.opentelemetry.android.instrumentation.InstallationContext
 
 /**
  * An Android instrumentation module that installs and manages [ScreenOrientationDetector].
@@ -16,20 +17,20 @@ import io.opentelemetry.android.instrumentation.InstallationContext
 class ScreenOrientationInstrumentation : AndroidInstrumentation {
     private var detector: ScreenOrientationDetector? = null
 
-    override fun install(ctx: InstallationContext) {
+    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
         val logger =
-            ctx.openTelemetry
+            openTelemetryRum.openTelemetry
                 .logsBridge
                 .loggerBuilder("io.opentelemetry.$name")
                 .build()
-        val applicationContext = ctx.context.applicationContext
+        val applicationContext = context.applicationContext
         detector = ScreenOrientationDetector(applicationContext, logger)
         applicationContext.registerComponentCallbacks(detector)
     }
 
-    override fun uninstall(ctx: InstallationContext) {
+    override fun uninstall(context: Context, openTelemetryRum: OpenTelemetryRum) {
         detector?.let {
-            ctx.context.applicationContext.unregisterComponentCallbacks(it)
+            context.applicationContext.unregisterComponentCallbacks(it)
         }
     }
 

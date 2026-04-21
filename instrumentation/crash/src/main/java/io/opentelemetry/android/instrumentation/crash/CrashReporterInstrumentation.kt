@@ -5,9 +5,10 @@
 
 package io.opentelemetry.android.instrumentation.crash
 
+import android.content.Context
 import com.google.auto.service.AutoService
+import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 
 /** Entrypoint for installing the crash reporting instrumentation.  */
@@ -21,10 +22,10 @@ class CrashReporterInstrumentation : AndroidInstrumentation {
         additionalExtractors.add(extractor)
     }
 
-    override fun install(ctx: InstallationContext) {
-        addAttributesExtractor(RuntimeDetailsExtractor.create(ctx.context))
+    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+        addAttributesExtractor(RuntimeDetailsExtractor.create(context))
         val crashReporter = CrashReporter(additionalExtractors)
-        crashReporter.install(ctx.openTelemetry)
+        crashReporter.install(openTelemetryRum.openTelemetry)
     }
 
     override val name: String = "crash"

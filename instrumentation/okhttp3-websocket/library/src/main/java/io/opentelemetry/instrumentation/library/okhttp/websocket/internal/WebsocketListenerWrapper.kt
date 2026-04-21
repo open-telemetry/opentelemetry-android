@@ -5,7 +5,6 @@
 
 package io.opentelemetry.instrumentation.library.okhttp.websocket.internal
 
-import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
@@ -118,9 +117,9 @@ class WebsocketListenerWrapper(
                 .build()
 
         @JvmStatic
-        fun configure(context: InstallationContext) {
+        fun configure(openTelemetry: OpenTelemetry) {
             logger =
-                context.openTelemetry.logsBridge
+                openTelemetry.logsBridge
                     .loggerBuilder(SCOPE)
                     .build()
         }

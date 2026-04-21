@@ -5,6 +5,9 @@
 
 package io.opentelemetry.android.instrumentation
 
+import android.content.Context
+import io.opentelemetry.android.OpenTelemetryRum
+
 /**
  * This interface defines a tool that automatically generates telemetry for a specific use-case,
  * without the need for end users to directly interact with the OpenTelemetry SDK to create telemetry manually.
@@ -26,17 +29,25 @@ interface AndroidInstrumentation {
      * only be called from [OpenTelemetryRum]'s builder once the [OpenTelemetryRum] instance is initialized and ready
      * to use for generating telemetry.
      *
-     * @param ctx The InstallationContext under which the instrumentation is being installed.
+     * @param context The Android application [Context] under which the instrumentation is being installed.
+     * @param openTelemetryRum The [OpenTelemetryRum] instance.
      */
-    fun install(ctx: InstallationContext)
+    fun install(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    )
 
     /**
      * This method can be called to uninstall the instrumentation. Implementations should remove all
      * used resources and shut down cleanly.
      *
-     * @param ctx The InstallationContext under which the instrumentation had been removed.
+     * @param context The Android application [Context] under which the instrumentation is being installed.
+     * @param openTelemetryRum The [OpenTelemetryRum] instance.
      */
-    fun uninstall(ctx: InstallationContext) {}
+    fun uninstall(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {}
 
     /**
      * The canonical short name for this instrumentation.
