@@ -50,12 +50,12 @@ internal class ViewClickEventGenerator(
 
                 val toolTypeHasButtons = toolTypeInt == MotionEvent.TOOL_TYPE_MOUSE || toolTypeInt == MotionEvent.TOOL_TYPE_STYLUS
                 var buttonState: String? = null
-                if(toolTypeHasButtons) {
+                if (toolTypeHasButtons) {
                     val buttonStateInt = motionEvent.buttonState
                     buttonState = buttonStateToString(buttonStateInt)
                 }
 
-                if(buttonState != null) {
+                if (buttonState != null) {
                     appEvent.setAttribute(HARDWARE_POINTER_BUTTON, buttonState)
                 }
 
@@ -86,12 +86,12 @@ internal class ViewClickEventGenerator(
 
                 val toolTypeHasButtons = toolTypeInt == MotionEvent.TOOL_TYPE_MOUSE || toolTypeInt == MotionEvent.TOOL_TYPE_STYLUS
                 var buttonState: String? = null
-                if(toolTypeHasButtons) {
+                if (toolTypeHasButtons) {
                     val buttonStateInt = motionEvent.buttonState
                     buttonState = buttonStateToString(buttonStateInt)
                 }
 
-                if(buttonState != null) {
+                if (buttonState != null) {
                     appEvent.setAttribute(HARDWARE_POINTER_BUTTON, buttonState)
                 }
 
@@ -118,7 +118,7 @@ internal class ViewClickEventGenerator(
     }
 
     fun generateClick(motionEvent: MotionEvent?) {
-        if(motionEvent != null) {
+        if (motionEvent != null) {
             gestureDetector.onTouchEvent(motionEvent)
         }
     }
