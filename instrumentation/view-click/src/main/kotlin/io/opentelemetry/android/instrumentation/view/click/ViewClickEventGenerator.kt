@@ -48,13 +48,12 @@ internal class ViewClickEventGenerator(
                     .setAttribute(HARDWARE_POINTER_CLICKS, 2)
                     .setAttribute(HARDWARE_POINTER_TYPE, toolType)
 
-                val buttonStateInt = motionEvent.buttonState
                 val toolTypeHasButtons = toolTypeInt == MotionEvent.TOOL_TYPE_MOUSE || toolTypeInt == MotionEvent.TOOL_TYPE_STYLUS
-                val isButtonPrimary = buttonStateInt == MotionEvent.BUTTON_PRIMARY || buttonStateInt == MotionEvent.BUTTON_STYLUS_PRIMARY
-                if(toolTypeHasButtons && !isButtonPrimary) {
-                    return false
+                var buttonState: String? = null
+                if(toolTypeHasButtons) {
+                    val buttonStateInt = motionEvent.buttonState
+                    buttonState = buttonStateToString(buttonStateInt)
                 }
-                val buttonState = buttonStateToString(buttonStateInt)
 
                 if(buttonState != null) {
                     appEvent.setAttribute(HARDWARE_POINTER_BUTTON, buttonState)
@@ -85,8 +84,13 @@ internal class ViewClickEventGenerator(
                     .setAttribute(HARDWARE_POINTER_TYPE, toolType)
 
 
-                val buttonStateInt = motionEvent.buttonState
-                val buttonState = buttonStateToString(buttonStateInt)
+                val toolTypeHasButtons = toolTypeInt == MotionEvent.TOOL_TYPE_MOUSE || toolTypeInt == MotionEvent.TOOL_TYPE_STYLUS
+                var buttonState: String? = null
+                if(toolTypeHasButtons) {
+                    val buttonStateInt = motionEvent.buttonState
+                    buttonState = buttonStateToString(buttonStateInt)
+                }
+
                 if(buttonState != null) {
                     appEvent.setAttribute(HARDWARE_POINTER_BUTTON, buttonState)
                 }

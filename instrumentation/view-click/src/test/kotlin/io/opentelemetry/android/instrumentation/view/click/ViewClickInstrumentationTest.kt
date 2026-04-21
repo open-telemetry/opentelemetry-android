@@ -458,52 +458,6 @@ class ViewClickInstrumentationTest {
     }
 
     @Test
-    fun capture_view_no_double_tap_when_button_not_primary() {
-        val installationContext =
-            InstallationContext(
-                application,
-                openTelemetryRule.openTelemetry,
-                mockk<SessionProvider>(),
-                Clock.getDefault(),
-            )
-
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
-        every { window.callback } returns callback
-        every { callback.dispatchTouchEvent(any()) } returns false
-
-        every { activity.window } returns window
-        every { window.context } returns application
-        every { application.registerActivityLifecycleCallbacks(any()) } returns Unit
-
-        ViewClickInstrumentation().install(installationContext)
-
-        verify {
-            application.registerActivityLifecycleCallbacks(capture(callbackCapturingSlot))
-        }
-
-        val viewClickActivityCallback = callbackCapturingSlot.captured
-        val wrapperCapturingSlot = slot<WindowCallbackWrapper>()
-        every { window.callback = any() } returns Unit
-
-        val doubleTapSequence = getDoubleTapSequence(250f, 50f, MotionEvent.TOOL_TYPE_MOUSE, MotionEvent.BUTTON_SECONDARY)
-        val initialDownEvent = doubleTapSequence[0]
-
-        val mockView = mockView<View>(10012, initialDownEvent)
-        every { window.decorView } returns mockView
-
-        viewClickActivityCallback.onActivityResumed(activity)
-        verify {
-            window.callback = capture(wrapperCapturingSlot)
-        }
-
-        for(motionEvent in doubleTapSequence) {
-            wrapperCapturingSlot.captured.dispatchTouchEvent(motionEvent)
-        }
-        val events = openTelemetryRule.logRecords
-        Assertions.assertThat(events).hasSize(0)
-    }
-
-    @Test
     fun capture_view_single_tap_button_state() {
         val installationContext =
             InstallationContext(
