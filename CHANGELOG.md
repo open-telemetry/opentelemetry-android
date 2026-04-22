@@ -2,12 +2,68 @@
 
 ## Unreleased
 
-**Breaking change**: the minimum supported Kotlin version has increased from 1.8 to 2.0.
+### ⚠️⚠️ Breaking changes
 
-- Mark the `android-api`, which contains the `OpenTelemetryRum` interface, as stable.
-  [#1612](https://github.com/open-telemetry/opentelemetry-android/pull/1612)
-- Bump the minimum supported Kotlin version to 2.0. 
-  [#1489](https://github.com/open-telemetry/opentelemetry-android/pull/1489) 
+- The minimum supported Android SDK version has been increased from 21 to 23
+  ([#1650](https://github.com/open-telemetry/opentelemetry-android/pull/1650))
+- The minimum supported Kotlin version has increased from 1.8 to 2.0.
+  ([#1489](https://github.com/open-telemetry/opentelemetry-android/pull/1489))
+
+### 🚫 Deprecations
+
+- Deprecate the sdk ready listener in favor of an api listener.
+  ([#1597](https://github.com/open-telemetry/opentelemetry-android/pull/1597))
+
+### Migration notes
+
+We continue migrating many components from Java to Kotlin. While we expect to 
+remain compatible with Java-based applications, Kotlin support is our 
+first priority. See 
+[KOTLIN_FIRST.md](https://github.com/open-telemetry/opentelemetry-android/blob/main/docs/KOTLIN_FIRST.md) 
+for more information. 
+
+We continue working to stabilize our API surface. In this release, the instrumentation API 
+is not yet stable, and has undergone some notable changes that will impact (break) any
+custom instrumentation that uses these APIs. This should stabilize in the near future.
+
+### 📈 Enhancements
+
+- Improved generalized flushing behavior of telemetry upon crash.
+  ([#1610](https://github.com/open-telemetry/opentelemetry-android/pull/1610))
+- Mark the `agent-api`, which contains the `OpenTelemetryRum` interface, as stable.
+  ([#1612](https://github.com/open-telemetry/opentelemetry-android/pull/1612))
+- Instrumentation API enhancements.
+  ([#1645](https://github.com/open-telemetry/opentelemetry-android/pull/1645))
+- Mark the `session` module as stable.
+  ([#1690](https://github.com/open-telemetry/opentelemetry-android/pull/1690))
+- Agent DSL now supports providing global attributes via `globalAttributesSupplier`.
+  ([#1593](https://github.com/open-telemetry/opentelemetry-android/pull/1593))
+- Agent DSL now supports customizing the exporter SSL context and trust manager.
+  ([#1537](https://github.com/open-telemetry/opentelemetry-android/pull/1537))
+- Provide guidance for AI-generated PRs and agentic contributions.
+  ([#1640](https://github.com/open-telemetry/opentelemetry-android/pull/1640))
+- The demo-app now includes an example of OkHttp build-time instrumentation.
+  ([#1688](https://github.com/open-telemetry/opentelemetry-android/pull/1688))
+- As part of the session API stabilization, several kotlin idiomatic changes were introduced.
+  ([#1673](https://github.com/open-telemetry/opentelemetry-android/pull/1673))
+- NetworkChange instrumentation now includes an uninstall() implementation.
+  ([#1639](https://github.com/open-telemetry/opentelemetry-android/pull/1639))
+- OkHttp instrumentation package has been modified.
+  ([#1609](https://github.com/open-telemetry/opentelemetry-android/pull/1609))
+- It is now possible to provide a client-side TLS certificate and leverage mTLS in exporters.
+  ([#1660](https://github.com/open-telemetry/opentelemetry-android/pull/1660))
+
+### 🛠️ Bug fixes
+
+- The `core` module no longer forces `androidx.core` as a transitive dependency.
+  ([#1665](https://github.com/open-telemetry/opentelemetry-android/pull/1665))
+- The `service` module no longer depends on `androix.navigation`.
+  ([#1668](https://github.com/open-telemetry/opentelemetry-android/pull/1668))
+
+### 🧰 Tooling
+ 
+- Release automation regex fix.
+  ([#1613](https://github.com/open-telemetry/opentelemetry-android/pull/1613))
 
 ## Version 1.2.0 (2026-02-18)
 
