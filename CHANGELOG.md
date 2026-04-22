@@ -1,6 +1,6 @@
 # OpenTelemetry Android Changelog
 
-## Unreleased
+## Version 1.3.0 (2026-04-22)
 
 ### ⚠️⚠️ Breaking changes
 
