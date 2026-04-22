@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.3.0 (2026-04-22)
+
 ### ⚠️⚠️ Breaking changes
 
 - The minimum supported Android SDK version has been increased from 21 to 23
