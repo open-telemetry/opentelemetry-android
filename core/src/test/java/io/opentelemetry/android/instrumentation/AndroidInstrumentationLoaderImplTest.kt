@@ -25,7 +25,7 @@ class AndroidInstrumentationLoaderImplTest {
         assertThat(instrumentation).isNotNull()
         assertThat(checkNotNull(instrumentation).installed).isFalse()
 
-        instrumentation.install(mockk())
+        instrumentation.install(mockk(), mockk(relaxed = true))
 
         assertThat(checkNotNull(loader.getByType(TestAndroidInstrumentation::class.java)).installed).isTrue()
     }

@@ -5,10 +5,11 @@
 
 package io.opentelemetry.android.instrumentation.network
 
+import android.content.Context
 import com.google.auto.service.AutoService
+import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.android.internal.services.Services.Companion.get
 import io.opentelemetry.api.common.AttributesBuilder
 
@@ -31,20 +32,20 @@ class NetworkChangeInstrumentation : AndroidInstrumentation {
         return this
     }
 
-    override fun install(ctx: InstallationContext) {
+    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
         additionalAttributeExtractors.add(NetworkChangeAttributesExtractor())
-        val services = get(ctx.context)
+        val services = get(context)
         val listener = NetworkApplicationListener(services.currentNetworkProvider)
-        val logger = ctx.openTelemetry.logsBridge["io.opentelemetry.network"]
+        val logger = openTelemetryRum.openTelemetry.logsBridge["io.opentelemetry.network"]
         listener.startMonitoring(logger, additionalAttributeExtractors)
         services.appLifecycle.registerListener(listener)
         networkApplicationListener = listener
     }
 
-    override fun uninstall(ctx: InstallationContext) {
+    override fun uninstall(context: Context, openTelemetryRum: OpenTelemetryRum) {
         networkApplicationListener?.let { listener ->
             listener.stopMonitoring()
-            val services = get(ctx.context)
+            val services = get(context)
             services.appLifecycle.unregisterListener(listener)
         }
         networkApplicationListener = null

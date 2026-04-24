@@ -8,6 +8,7 @@ package io.opentelemetry.android.agent.dsl
 import io.mockk.mockk
 import io.opentelemetry.android.agent.FakeClock
 import io.opentelemetry.android.agent.FakeInstrumentationLoader
+import io.opentelemetry.android.agent.connectivity.ClientTlsConnectivity
 import io.opentelemetry.android.agent.connectivity.Compression
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 import io.opentelemetry.android.agent.connectivity.SSLContextConnectivity
@@ -32,13 +33,32 @@ internal class HttpExportConfigurationTest {
         val expectedHeaders = emptyMap<String, String>()
         val expectedCompression = Compression.GZIP
         val expectedSslContext: SSLContextConnectivity? = null
+        val expectedClientTls: ClientTlsConnectivity? = null
         config
             .spansEndpoint()
-            .assertEndpointConfig("/v1/traces", expectedHeaders, expectedCompression, expectedSslContext)
-        config.logsEndpoint().assertEndpointConfig("/v1/logs", expectedHeaders, expectedCompression, expectedSslContext)
+            .assertEndpointConfig(
+                "/v1/traces",
+                expectedHeaders,
+                expectedCompression,
+                expectedSslContext,
+                expectedClientTls
+            )
+        config.logsEndpoint().assertEndpointConfig(
+            "/v1/logs",
+            expectedHeaders,
+            expectedCompression,
+            expectedSslContext,
+            expectedClientTls
+        )
         config
             .metricsEndpoint()
-            .assertEndpointConfig("/v1/metrics", expectedHeaders, expectedCompression, expectedSslContext)
+            .assertEndpointConfig(
+                "/v1/metrics",
+                expectedHeaders,
+                expectedCompression,
+                expectedSslContext,
+                expectedClientTls
+            )
         assertEquals("", config.baseUrl)
         assertEquals(expectedHeaders, config.baseHeaders)
         assertEquals(expectedCompression, config.compression)
@@ -55,9 +75,11 @@ internal class HttpExportConfigurationTest {
                 baseHeaders = headers
             }
 
-        config.spansEndpoint().assertEndpointConfig("${url}v1/traces", headers, Compression.GZIP, null)
-        config.logsEndpoint().assertEndpointConfig("${url}v1/logs", headers, Compression.GZIP, null)
-        config.metricsEndpoint().assertEndpointConfig("${url}v1/metrics", headers, Compression.GZIP, null)
+        config.spansEndpoint()
+            .assertEndpointConfig("${url}v1/traces", headers, Compression.GZIP, null, null)
+        config.logsEndpoint().assertEndpointConfig("${url}v1/logs", headers, Compression.GZIP, null, null)
+        config.metricsEndpoint()
+            .assertEndpointConfig("${url}v1/metrics", headers, Compression.GZIP, null, null)
         assertEquals(url, config.baseUrl)
         assertEquals(headers, config.baseHeaders)
     }
@@ -106,16 +128,21 @@ internal class HttpExportConfigurationTest {
                 "${spanUrl}v1/traces",
                 spanHeaders + baseHeaders,
                 expectedCompression,
-                null,
+                null
             )
         config
             .logsEndpoint()
-            .assertEndpointConfig("${logUrl}v1/logs", logHeaders + baseHeaders, expectedCompression, null)
+            .assertEndpointConfig(
+                "${logUrl}v1/logs",
+                logHeaders + baseHeaders,
+                expectedCompression,
+                null
+            )
         config.metricsEndpoint().assertEndpointConfig(
             "${metricsUrl}v1/metrics",
             metricsHeaders + baseHeaders,
             expectedCompression,
-            null,
+            null
         )
         assertEquals(baseUrl, config.baseUrl)
         assertEquals(baseHeaders, config.baseHeaders)
@@ -164,16 +191,21 @@ internal class HttpExportConfigurationTest {
                 "${spanUrl}v1/traces",
                 spanHeaders + baseHeaders,
                 expectedCompression,
-                null,
+                null
             )
         config
             .logsEndpoint()
-            .assertEndpointConfig("${logUrl}v1/logs", logHeaders + baseHeaders, expectedCompression, null)
+            .assertEndpointConfig(
+                "${logUrl}v1/logs",
+                logHeaders + baseHeaders,
+                expectedCompression,
+                null
+            )
         config.metricsEndpoint().assertEndpointConfig(
             "${metricsUrl}v1/metrics",
             metricsHeaders + baseHeaders,
             expectedCompression,
-            null,
+            null
         )
         assertEquals(baseUrl, config.baseUrl)
         assertEquals(baseHeaders, config.baseHeaders)
@@ -191,9 +223,65 @@ internal class HttpExportConfigurationTest {
                 sslContext = expectedSslContext
             }
 
-        config.spansEndpoint().assertEndpointConfig("${url}v1/traces", headers, Compression.GZIP, expectedSslContext)
-        config.logsEndpoint().assertEndpointConfig("${url}v1/logs", headers, Compression.GZIP, expectedSslContext)
-        config.metricsEndpoint().assertEndpointConfig("${url}v1/metrics", headers, Compression.GZIP, expectedSslContext)
+        config.spansEndpoint()
+            .assertEndpointConfig(
+                "${url}v1/traces",
+                headers,
+                Compression.GZIP,
+                expectedSslContext
+            )
+        config.logsEndpoint()
+            .assertEndpointConfig(
+                "${url}v1/logs",
+                headers,
+                Compression.GZIP,
+                expectedSslContext
+            )
+        config.metricsEndpoint()
+            .assertEndpointConfig(
+                "${url}v1/metrics",
+                headers,
+                Compression.GZIP,
+                expectedSslContext
+            )
+    }
+
+    @Test
+    fun testClientTls() {
+        val url = "http://localhost:4318/"
+        val headers = mapOf("my-header" to "my-value")
+        val expectedClientTls = getTestClientTls()
+        val config =
+            otelConfig.exportConfig.apply {
+                baseUrl = url
+                baseHeaders = headers
+                clientTls = expectedClientTls
+            }
+
+        config.spansEndpoint()
+            .assertEndpointConfig(
+                "${url}v1/traces",
+                headers,
+                Compression.GZIP,
+                null,
+                expectedClientTls
+            )
+        config.logsEndpoint()
+            .assertEndpointConfig(
+                "${url}v1/logs",
+                headers,
+                Compression.GZIP,
+                null,
+                expectedClientTls
+            )
+        config.metricsEndpoint()
+            .assertEndpointConfig(
+                "${url}v1/metrics",
+                headers,
+                Compression.GZIP,
+                null,
+                expectedClientTls
+            )
     }
 
     private fun HttpEndpointConnectivity.assertEndpointConfig(
@@ -201,10 +289,31 @@ internal class HttpExportConfigurationTest {
         expectedHeaders: Map<String, String>,
         expectedCompression: Compression,
         expectedSslContext: SSLContextConnectivity?,
+        expectedClientTls: ClientTlsConnectivity? = null
     ) {
         assertEquals(expectedUrl, getUrl())
         assertEquals(expectedHeaders, getHeaders())
         assertEquals(expectedCompression, getCompression())
         assertEquals(expectedSslContext, getSslContext())
+        assertEquals(expectedClientTls, getClientTls())
     }
+
+    private fun getTestClientTls(): ClientTlsConnectivity {
+        val privateKeyPem =
+            """
+            -----BEGIN PRIVATE KEY-----
+            TEST_KEY
+            -----END PRIVATE KEY-----
+            """.trimIndent().toByteArray()
+
+        val certificatePem =
+            """
+            -----BEGIN CERTIFICATE-----
+            TEST_CERT
+            -----END CERTIFICATE-----
+            """.trimIndent().toByteArray()
+
+        return ClientTlsConnectivity(privateKeyPem, certificatePem)
+    }
+
 }

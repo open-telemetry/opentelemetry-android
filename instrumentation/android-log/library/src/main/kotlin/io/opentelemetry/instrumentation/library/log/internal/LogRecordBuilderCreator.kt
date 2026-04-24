@@ -5,7 +5,6 @@
 
 package io.opentelemetry.instrumentation.library.log.internal
 
-import io.opentelemetry.android.instrumentation.InstallationContext
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.logs.LogRecordBuilder
 
@@ -18,9 +17,9 @@ object LogRecordBuilderCreator {
             .build()
 
     @JvmStatic
-    fun configure(context: InstallationContext) {
+    fun configure(openTelemetry: OpenTelemetry) {
         logger =
-            context.openTelemetry
+            openTelemetry
                 .logsBridge
                 .loggerBuilder("io.opentelemetry.android.log")
                 .build()

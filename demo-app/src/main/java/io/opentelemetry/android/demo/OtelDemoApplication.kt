@@ -42,7 +42,7 @@ class OtelDemoApplication : Application() {
                     }
                 }
             )
-            Log.d(TAG, "RUM session started: " + rum?.getRumSessionId())
+            Log.d(TAG, "RUM session started: " + rum?.sessionProvider?.getSessionId())
         } catch (e: Exception) {
             Log.e(TAG, "Oh no!", e)
         }

@@ -36,7 +36,7 @@ jobs:
                         sort | head -1)
           # otel-java core libs are transient deps thru instrumentation boms
           sdk_version=$(./gradlew --console=plain android-agent:dependencies | \
-                        grep 'io.opentelemetry:opentelemetry-api ' | \
+                        grep 'io.opentelemetry:opentelemetry-sdk ' | \
                         sed -e "s/.* -> //" | sed -e "s/ .*//" | \
                         sort | head -1)
           
