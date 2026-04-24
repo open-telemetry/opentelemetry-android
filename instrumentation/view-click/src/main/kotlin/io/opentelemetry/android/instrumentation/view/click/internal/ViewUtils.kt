@@ -36,3 +36,25 @@ internal fun toolTypeToString(toolTypeInt: Int): String {
         else -> "unknown"
     }
 }
+
+internal class TapEvent(
+    private val motionEvent: MotionEvent
+) {
+
+    val toolTypeDescription: String
+    val buttonStateDescription: String?
+
+    init {
+        val toolTypeInt = motionEvent.getToolType(0)
+        val toolTypeHasButtons =
+            toolTypeInt == MotionEvent.TOOL_TYPE_MOUSE || toolTypeInt == MotionEvent.TOOL_TYPE_STYLUS
+        val buttonStateInt = motionEvent.buttonState
+        if (toolTypeHasButtons) {
+            buttonStateDescription = buttonStateToString(buttonStateInt)
+        } else {
+            buttonStateDescription = null
+        }
+       toolTypeDescription = toolTypeToString(toolTypeInt)
+    }
+
+}

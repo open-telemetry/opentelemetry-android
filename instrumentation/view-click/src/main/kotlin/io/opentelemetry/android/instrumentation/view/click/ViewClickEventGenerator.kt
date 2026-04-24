@@ -14,9 +14,8 @@ import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_C
 import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_BUTTON
 import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_CLICKS
 import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_TYPE
+import io.opentelemetry.android.instrumentation.view.click.internal.TapEvent
 import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.buttonStateToString
-import io.opentelemetry.android.instrumentation.view.click.internal.toolTypeToString
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.Logger
@@ -39,30 +38,15 @@ internal class ViewClickEventGenerator(
             windowRef?.get()?.let { window ->
 
 
-                val toolTypeInt = motionEvent.getToolType(0)
-                val toolType = toolTypeToString(toolTypeInt)
+                val tapEvent = TapEvent(motionEvent)
 
-                val appEvent = createEvent(APP_SCREEN_CLICK_EVENT_NAME)
+                createEvent(APP_SCREEN_CLICK_EVENT_NAME, tapEvent, 2)
                     .setAttribute(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong())
                     .setAttribute(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong())
-                    .setAttribute(HARDWARE_POINTER_CLICKS, 2)
-                    .setAttribute(HARDWARE_POINTER_TYPE, toolType)
-
-                val toolTypeHasButtons = toolTypeInt == MotionEvent.TOOL_TYPE_MOUSE || toolTypeInt == MotionEvent.TOOL_TYPE_STYLUS
-                var buttonState: String? = null
-                if (toolTypeHasButtons) {
-                    val buttonStateInt = motionEvent.buttonState
-                    buttonState = buttonStateToString(buttonStateInt)
-                }
-
-                if (buttonState != null) {
-                    appEvent.setAttribute(HARDWARE_POINTER_BUTTON, buttonState)
-                }
-
-                appEvent.emit()
+                    .emit()
 
                 findTargetForTap(window.decorView, motionEvent.x, motionEvent.y)?.let { view ->
-                    createEvent(VIEW_CLICK_EVENT_NAME)
+                    createEvent(VIEW_CLICK_EVENT_NAME, tapEvent, 2)
                         .setAllAttributes(createViewAttributes(view))
                         .emit()
                 }
@@ -74,31 +58,16 @@ internal class ViewClickEventGenerator(
         override fun onSingleTapConfirmed(motionEvent: MotionEvent): Boolean {
             windowRef?.get()?.let { window ->
 
-                val toolTypeInt = motionEvent.getToolType(0)
-                val toolType = toolTypeToString(toolTypeInt)
 
-                val appEvent = createEvent(APP_SCREEN_CLICK_EVENT_NAME)
+                val tapEvent = TapEvent(motionEvent)
+
+                createEvent(APP_SCREEN_CLICK_EVENT_NAME, tapEvent, 1)
                     .setAttribute(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong())
                     .setAttribute(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong())
-                    .setAttribute(HARDWARE_POINTER_CLICKS, 1)
-                    .setAttribute(HARDWARE_POINTER_TYPE, toolType)
-
-
-                val toolTypeHasButtons = toolTypeInt == MotionEvent.TOOL_TYPE_MOUSE || toolTypeInt == MotionEvent.TOOL_TYPE_STYLUS
-                var buttonState: String? = null
-                if (toolTypeHasButtons) {
-                    val buttonStateInt = motionEvent.buttonState
-                    buttonState = buttonStateToString(buttonStateInt)
-                }
-
-                if (buttonState != null) {
-                    appEvent.setAttribute(HARDWARE_POINTER_BUTTON, buttonState)
-                }
-
-                appEvent.emit()
+                    .emit()
 
                 findTargetForTap(window.decorView, motionEvent.x, motionEvent.y)?.let { view ->
-                    createEvent(VIEW_CLICK_EVENT_NAME)
+                    createEvent(VIEW_CLICK_EVENT_NAME, tapEvent, 1)
                         .setAllAttributes(createViewAttributes(view))
                         .emit()
                 }
@@ -132,10 +101,13 @@ internal class ViewClickEventGenerator(
         windowRef = null
     }
 
-    private fun createEvent(name: String): LogRecordBuilder =
+    private fun createEvent(name: String, tapEvent: TapEvent, clicks: Int): LogRecordBuilder =
         eventLogger
             .logRecordBuilder()
             .setEventName(name)
+            .setAttribute(HARDWARE_POINTER_CLICKS, clicks)
+            .setAttribute(HARDWARE_POINTER_TYPE, tapEvent.toolTypeDescription)
+            .setAttribute(HARDWARE_POINTER_BUTTON, tapEvent.buttonStateDescription)
 
     private fun createViewAttributes(view: View): Attributes {
         val builder = Attributes.builder()

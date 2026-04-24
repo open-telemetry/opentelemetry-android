@@ -43,7 +43,6 @@ import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_CO
 import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_ID
 import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_NAME
 import mockView
-import org.assertj.core.api.Assertions
 import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -143,6 +142,8 @@ class ViewClickInstrumentationTest {
                 equalTo(APP_SCREEN_COORDINATE_Y, mockView.y.toLong()),
                 equalTo(APP_WIDGET_ID, mockView.id.toString()),
                 equalTo(APP_WIDGET_NAME, "10012"),
+                equalTo(clicksKey, 1.toLong()),
+                equalTo(toolTypeKey, "finger")
             )
     }
 
@@ -214,6 +215,8 @@ class ViewClickInstrumentationTest {
                 equalTo(APP_SCREEN_COORDINATE_Y, mockView.y.toLong()),
                 equalTo(APP_WIDGET_ID, mockView.id.toString()),
                 equalTo(APP_WIDGET_NAME, "10012"),
+                equalTo(clicksKey, 1.toLong()),
+                equalTo(toolTypeKey, "finger")
             )
     }
 
@@ -367,7 +370,7 @@ class ViewClickInstrumentationTest {
             wrapperCapturingSlot.captured.dispatchTouchEvent(motionEvent)
         }
         val events = openTelemetryRule.logRecords
-        Assertions.assertThat(events).hasSize(2)
+        assertThat(events).hasSize(2)
 
         var event = events[0]
         OpenTelemetryAssertions.assertThat(event)
@@ -387,6 +390,8 @@ class ViewClickInstrumentationTest {
                 equalTo(APP_SCREEN_COORDINATE_Y, mockView.y.toLong()),
                 equalTo(APP_WIDGET_ID, mockView.id.toString()),
                 equalTo(APP_WIDGET_NAME, "10012"),
+                equalTo(clicksKey, 2.toLong()),
+                equalTo(toolTypeKey, "finger")
             )
     }
 
@@ -433,7 +438,7 @@ class ViewClickInstrumentationTest {
             wrapperCapturingSlot.captured.dispatchTouchEvent(motionEvent)
         }
         val events = openTelemetryRule.logRecords
-        Assertions.assertThat(events).hasSize(2)
+        assertThat(events).hasSize(2)
 
         var event = events[0]
         OpenTelemetryAssertions.assertThat(event)
@@ -454,6 +459,9 @@ class ViewClickInstrumentationTest {
                 equalTo(APP_SCREEN_COORDINATE_Y, mockView.y.toLong()),
                 equalTo(APP_WIDGET_ID, mockView.id.toString()),
                 equalTo(APP_WIDGET_NAME, "10012"),
+                equalTo(clicksKey, 2.toLong()),
+                equalTo(toolTypeKey, "mouse"),
+                equalTo(buttonKey, "primary")
             )
     }
 
@@ -495,12 +503,8 @@ class ViewClickInstrumentationTest {
             window.callback = capture(wrapperCapturingSlot)
         }
 
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            singleTapSequence[0],
-        )
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            singleTapSequence[1],
-        )
+        wrapperCapturingSlot.captured.dispatchTouchEvent(singleTapSequence[0])
+        wrapperCapturingSlot.captured.dispatchTouchEvent(singleTapSequence[1])
         fastForwardDoubleTapTimeout()
 
         val events = openTelemetryRule.logRecords
@@ -525,6 +529,9 @@ class ViewClickInstrumentationTest {
                 equalTo(APP_SCREEN_COORDINATE_Y, mockView.y.toLong()),
                 equalTo(APP_WIDGET_ID, mockView.id.toString()),
                 equalTo(APP_WIDGET_NAME, "10012"),
+                equalTo(clicksKey, 1.toLong()),
+                equalTo(toolTypeKey, "stylus"),
+                equalTo(buttonKey, "secondary")
             )
     }
 
@@ -575,7 +582,7 @@ class ViewClickInstrumentationTest {
         wrapperCapturingSlot.captured.dispatchTouchEvent(doubleTapSequence[3])
 
         val events = openTelemetryRule.logRecords
-        Assertions.assertThat(events).hasSize(2)
+        assertThat(events).hasSize(2)
 
 
         var event = events[0]
@@ -596,6 +603,8 @@ class ViewClickInstrumentationTest {
                 equalTo(APP_SCREEN_COORDINATE_Y, mockView.y.toLong()),
                 equalTo(APP_WIDGET_ID, mockView.id.toString()),
                 equalTo(APP_WIDGET_NAME, "10012"),
+                equalTo(clicksKey, 1.toLong()),
+                equalTo(toolTypeKey, "finger")
             )
     }
 
@@ -647,7 +656,7 @@ class ViewClickInstrumentationTest {
         }
 
         val events = openTelemetryRule.logRecords
-        Assertions.assertThat(events).hasSize(1)
+        assertThat(events).hasSize(1)
 
         val event = events[0]
         OpenTelemetryAssertions.assertThat(event)
@@ -708,7 +717,7 @@ class ViewClickInstrumentationTest {
         }
 
         val events = openTelemetryRule.logRecords
-        Assertions.assertThat(events).hasSize(2)
+        assertThat(events).hasSize(2)
 
         var event = events[0]
         OpenTelemetryAssertions.assertThat(event)
@@ -728,6 +737,8 @@ class ViewClickInstrumentationTest {
                 equalTo(APP_SCREEN_COORDINATE_Y, mockView.y.toLong()),
                 equalTo(APP_WIDGET_ID, mockView.id.toString()),
                 equalTo(APP_WIDGET_NAME, "10012"),
+                equalTo(clicksKey, 2.toLong()),
+                equalTo(toolTypeKey, "finger")
             )
     }
 }
