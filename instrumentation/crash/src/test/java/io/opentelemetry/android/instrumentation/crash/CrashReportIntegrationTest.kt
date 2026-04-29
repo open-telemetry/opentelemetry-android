@@ -198,7 +198,7 @@ internal class CrashReportIntegrationTest {
         expectedExcType: String,
         expectedExcMessage: String? = null,
     ) {
-        assertEquals("device.crash", eventName)
+        assertEquals("app.crash", eventName)
         assertEquals(Severity.UNDEFINED_SEVERITY_NUMBER, severity)
 
         val attrs = attributes.asMap().mapKeys { it.key.key }
