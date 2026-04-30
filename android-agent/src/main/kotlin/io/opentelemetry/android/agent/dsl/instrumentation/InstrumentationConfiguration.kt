@@ -14,7 +14,7 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
  */
 @OpenTelemetryDslMarker
 class InstrumentationConfiguration internal constructor(
-    config: OtelRumConfig,
+    private val config: OtelRumConfig,
     private val instrumentationLoader: AndroidInstrumentationLoader,
 ) {
     private val activity: ActivityLifecycleConfiguration by lazy {
@@ -83,5 +83,11 @@ class InstrumentationConfiguration internal constructor(
      */
     fun screenOrientation(configure: ScreenOrientationConfiguration.() -> Unit) {
         screenOrientation.configure()
+    }
+
+    fun suppressing(vararg instrumentationsToExclude: String) {
+        instrumentationsToExclude.forEach {
+            config.suppressInstrumentation(it)
+        }
     }
 }

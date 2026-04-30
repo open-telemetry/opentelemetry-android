@@ -40,7 +40,16 @@ class OtelDemoApplication : Application() {
                     globalAttributes {
                         Attributes.of(stringKey("toolkit"), "jetpack compose")
                     }
-                }
+                    instrumentations {
+                        suppressing (
+                            "unwanted.instrumentation.name",
+                            "something.unwanted"
+                        )
+                        screenOrientation {
+                            enabled(false)
+                        }
+                    }
+                },
             )
             Log.d(TAG, "RUM session started: " + rum?.sessionProvider?.getSessionId())
         } catch (e: Exception) {
