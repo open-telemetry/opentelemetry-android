@@ -316,4 +316,103 @@ internal class HttpExportConfigurationTest {
         return ClientTlsConnectivity(privateKeyPem, certificatePem)
     }
 
+  @Test
+    fun testFullUrlOverrideForLogs() {
+        val baseUrl = "http://localhost:4318/"
+        val customLogsUrl = "http://localhost:4318/v2/logs"
+
+        val config =
+            otelConfig.exportConfig.apply {
+                this.baseUrl = baseUrl
+                logs {
+                    fullUrl = customLogsUrl
+                }
+            }
+
+        // logs should use the full custom URL without appending /v1/logs
+        config.logsEndpoint().assertEndpointConfig(
+            customLogsUrl,
+            emptyMap(),
+            Compression.GZIP,
+            null
+        )
+        // spans and metrics should still use baseUrl + default path
+        config.spansEndpoint().assertEndpointConfig(
+            "${baseUrl}v1/traces",
+            emptyMap(),
+            Compression.GZIP,
+            null
+        )
+        config.metricsEndpoint().assertEndpointConfig(
+            "${baseUrl}v1/metrics",
+            emptyMap(),
+            Compression.GZIP,
+            null
+        )
+    }
+
+    @Test
+    fun testFullUrlOverrideForAllSignals() {
+        val customSpansUrl = "http://traces.example.com/v2/traces"
+        val customLogsUrl = "http://logs.example.com/v2/logs"
+        val customMetricsUrl = "http://metrics.example.com/v2/metrics"
+
+        val config =
+            otelConfig.exportConfig.apply {
+                spans {
+                    fullUrl = customSpansUrl
+                }
+                logs {
+                    fullUrl = customLogsUrl
+                }
+                metrics {
+                    fullUrl = customMetricsUrl
+                }
+            }
+
+        config.spansEndpoint().assertEndpointConfig(
+            customSpansUrl,
+            emptyMap(),
+            Compression.GZIP,
+            null
+        )
+        config.logsEndpoint().assertEndpointConfig(
+            customLogsUrl,
+            emptyMap(),
+            Compression.GZIP,
+            null
+        )
+        config.metricsEndpoint().assertEndpointConfig(
+            customMetricsUrl,
+            emptyMap(),
+            Compression.GZIP,
+            null
+        )
+    }
+
+    @Test
+    fun testFullUrlTakesPrecedenceOverUrl() {
+        val baseUrl = "http://localhost:4318/"
+        val signalUrl = "http://localhost:4318/logs/"
+        val customFullUrl = "http://localhost:4318/v2/logs"
+
+        val config =
+            otelConfig.exportConfig.apply {
+                this.baseUrl = baseUrl
+                logs {
+                    url = signalUrl
+                    fullUrl = customFullUrl
+                }
+            }
+
+        // fullUrl should take precedence over url
+        config.logsEndpoint().assertEndpointConfig(
+            customFullUrl,
+            emptyMap(),
+            Compression.GZIP,
+            null
+        )
+    }
+
+
 }
