@@ -2,7 +2,6 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package io.opentelemetry.android.agent.connectivity
 
 internal class HttpEndpointConnectivity private constructor(
@@ -15,12 +14,13 @@ internal class HttpEndpointConnectivity private constructor(
     companion object {
         fun forTraces(
             baseUrl: String,
+            fullUrl: Boolean = false,
             headers: Map<String, String>,
             compression: Compression,
             sslContext: SSLContextConnectivity?,
             clientTls: ClientTlsConnectivity?
         ): HttpEndpointConnectivity = HttpEndpointConnectivity(
-            baseUrl.trimEnd('/') + "/v1/traces",
+            if (fullUrl) baseUrl else baseUrl.trimEnd('/') + "/v1/traces",
             headers,
             compression,
             sslContext,
@@ -29,12 +29,13 @@ internal class HttpEndpointConnectivity private constructor(
 
         fun forLogs(
             baseUrl: String,
+            fullUrl: Boolean = false,
             headers: Map<String, String>,
             compression: Compression,
             sslContext: SSLContextConnectivity?,
             clientTls: ClientTlsConnectivity?
         ): HttpEndpointConnectivity = HttpEndpointConnectivity(
-            baseUrl.trimEnd('/') + "/v1/logs",
+            if (fullUrl) baseUrl else baseUrl.trimEnd('/') + "/v1/logs",
             headers,
             compression,
             sslContext,
@@ -43,12 +44,13 @@ internal class HttpEndpointConnectivity private constructor(
 
         fun forMetrics(
             baseUrl: String,
+            fullUrl: Boolean = false,
             headers: Map<String, String>,
             compression: Compression,
             sslContext: SSLContextConnectivity?,
             clientTls: ClientTlsConnectivity?
         ): HttpEndpointConnectivity = HttpEndpointConnectivity(
-            baseUrl.trimEnd('/') + "/v1/metrics",
+            if (fullUrl) baseUrl else baseUrl.trimEnd('/') + "/v1/metrics",
             headers,
             compression,
             sslContext,
@@ -57,12 +59,8 @@ internal class HttpEndpointConnectivity private constructor(
     }
 
     override fun getUrl(): String = url
-
     override fun getHeaders(): Map<String, String> = headers
-
     override fun getCompression(): Compression = compression
-
     override fun getSslContext(): SSLContextConnectivity? = sslContext
-
     override fun getClientTls(): ClientTlsConnectivity? = clientTls
 }
