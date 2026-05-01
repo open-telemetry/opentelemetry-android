@@ -105,6 +105,7 @@ public final class io/opentelemetry/android/agent/dsl/instrumentation/Instrument
 	public final fun networkMonitoring (Lkotlin/jvm/functions/Function1;)V
 	public final fun screenOrientation (Lkotlin/jvm/functions/Function1;)V
 	public final fun slowRenderingReporter (Lkotlin/jvm/functions/Function1;)V
+	public final fun suppressing ([Ljava/lang/String;)V
 }
 
 public final class io/opentelemetry/android/agent/dsl/instrumentation/NetworkMonitoringConfiguration : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled {
