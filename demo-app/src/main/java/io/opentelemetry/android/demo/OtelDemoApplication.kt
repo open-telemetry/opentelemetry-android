@@ -40,6 +40,11 @@ class OtelDemoApplication : Application() {
                     globalAttributes {
                         Attributes.of(stringKey("toolkit"), "jetpack compose")
                     }
+                    instrumentations {
+                        viewClick {
+                            enabled(true)
+                        }
+                    }
                 }
             )
             Log.d(TAG, "RUM session started: " + rum?.sessionProvider?.getSessionId())

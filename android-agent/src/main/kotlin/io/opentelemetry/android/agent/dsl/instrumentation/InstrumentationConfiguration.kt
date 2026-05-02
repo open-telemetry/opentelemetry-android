@@ -36,6 +36,10 @@ class InstrumentationConfiguration internal constructor(
         ScreenOrientationConfiguration(config, instrumentationLoader)
     }
 
+    private val viewClick: ViewClickConfiguration by lazy {
+        ViewClickConfiguration(config, instrumentationLoader)
+    }
+
     /**
      * Configures activity lifecycle instrumentation.
      */
@@ -83,5 +87,9 @@ class InstrumentationConfiguration internal constructor(
      */
     fun screenOrientation(configure: ScreenOrientationConfiguration.() -> Unit) {
         screenOrientation.configure()
+    }
+
+    fun viewClick(configure: ViewClickConfiguration.() -> Unit) {
+        viewClick.configure()
     }
 }
