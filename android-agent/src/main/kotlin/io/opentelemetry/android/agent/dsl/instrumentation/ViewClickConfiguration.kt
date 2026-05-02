@@ -13,9 +13,7 @@ class ViewClickConfiguration internal constructor(
 ): CanBeEnabledAndDisabled {
 
     private val viewClickInstrumentation: ViewClickInstrumentation? by lazy {
-        val temp = instrumentationLoader.getByType(ViewClickInstrumentation::class.java)
-        Log.d("ViewClickConfig", temp?.toString()?:"null")
-        temp
+        instrumentationLoader.getByType(ViewClickInstrumentation::class.java)
     }
 
     override fun enabled(enabled: Boolean) {
