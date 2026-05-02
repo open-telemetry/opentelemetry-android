@@ -1,6 +1,5 @@
 package io.opentelemetry.android.agent.dsl.instrumentation
 
-import android.util.Log
 import io.opentelemetry.android.agent.dsl.OpenTelemetryDslMarker
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
