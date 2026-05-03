@@ -105,6 +105,7 @@ public final class io/opentelemetry/android/agent/dsl/instrumentation/Instrument
 	public final fun networkMonitoring (Lkotlin/jvm/functions/Function1;)V
 	public final fun screenOrientation (Lkotlin/jvm/functions/Function1;)V
 	public final fun slowRenderingReporter (Lkotlin/jvm/functions/Function1;)V
+	public final fun viewClick (Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class io/opentelemetry/android/agent/dsl/instrumentation/NetworkMonitoringConfiguration : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled {
@@ -119,6 +120,10 @@ public final class io/opentelemetry/android/agent/dsl/instrumentation/ScreenOrie
 public final class io/opentelemetry/android/agent/dsl/instrumentation/SlowRenderingReporterConfiguration : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled {
 	public final fun detectionPollInterval-LRDsOJo (J)V
 	public final fun enableVerboseDebugLogging ()V
+	public fun enabled (Z)V
+}
+
+public final class io/opentelemetry/android/agent/dsl/instrumentation/ViewClickConfiguration : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled {
 	public fun enabled (Z)V
 }
 
