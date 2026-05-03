@@ -29,6 +29,7 @@ dependencies {
     implementation(project(":instrumentation:startup"))
     implementation(project(":instrumentation:sessions"))
     implementation(project(":instrumentation:screen-orientation"))
+    implementation(project(":instrumentation:view-click"))
 
     testImplementation(libs.opentelemetry.semconv)
     testImplementation(libs.opentelemetry.semconv.incubating)

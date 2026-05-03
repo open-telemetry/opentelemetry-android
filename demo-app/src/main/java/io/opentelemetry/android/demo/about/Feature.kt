@@ -40,6 +40,14 @@ fun getFeatureList(): List<Feature> {
             """
             - Provides access to the OpenTelemetry APIs for manual instrumentation, allowing developers to create custom spans and events as needed.
             """.trimIndent()
+        ),
+        Feature(
+            "View Click Detection",
+            """
+            - Modelled as a log event.
+            - Support included for single and double clicks.
+            - Relevant attributes include number of clicks, pointer type, click coordinates, and the view id and name if available
+            """.trimIndent()
         )
     )
 }
