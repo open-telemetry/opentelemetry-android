@@ -51,16 +51,19 @@ before submitting a pull request.
    ask to be assigned. Assignments communicate to other contributors that the work
    has already been started and is in progress.
 2. Issues are NOT required for every PR. You may readily submit a PR without an issue.
-3. Keep your PRs small! This cannot be emphasized enough. There is no formal upper bound
+3. All commits in this repository must be signed. See GitHub's
+   [Signing commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits)
+   documentation for setup instructions and additional details.
+4. Keep your PRs small! This cannot be emphasized enough. There is no formal upper bound
    on size, but PRs that are thousands of lines long take a very long time and lots
    of effort to review. Find ways of decomposing the work into smaller units to keep the
    size of your PRs down. Incremental changes are favored over widespread/far-reaching
    refactors.
-4. Keep your PRs single-purpose! This is subjective, but PRs should usually have a single
+5. Keep your PRs single-purpose! This is subjective, but PRs should usually have a single
    purpose/idea/goal and make one clear change. Contributors should avoid making unrelated
    changes to separate code areas in the same PR. Keeping PRs single-purpose will also
    help to keep them small.
-5. If an issue exists, mention it in the PR description. If the PR is the final effort
+6. If an issue exists, mention it in the PR description. If the PR is the final effort
    for a given issue, please add `Resolves #nnn` (where nnn is the issue number) somewhere
    in the PR description, so that the issue can be automatically closed when the PR is
    merged. This also leaves a nice audit trail for future developers.
