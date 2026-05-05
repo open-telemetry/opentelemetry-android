@@ -44,7 +44,7 @@ fun getFeatureList(): List<Feature> {
         Feature(
             "View Click Detection",
             """
-            - Modelled as a log event.
+            - Modelled as an event.
             - Support included for single and double clicks.
             - Relevant attributes include number of clicks, pointer type, click coordinates, and the view id and name if available
             """.trimIndent()
