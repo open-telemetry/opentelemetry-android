@@ -72,6 +72,8 @@ dependencies {
     implementation("io.opentelemetry.android.instrumentation:sessions")
     implementation("io.opentelemetry.android.instrumentation:okhttp3-library")
     byteBuddy("io.opentelemetry.android.instrumentation:okhttp3-agent")
+    implementation("io.opentelemetry.android.instrumentation:view-click")
+    implementation("io.opentelemetry.android.instrumentation:android-instrumentation")
     implementation(libs.okhttp)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

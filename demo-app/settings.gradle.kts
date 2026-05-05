@@ -32,5 +32,9 @@ includeBuild("..") {
             .using(project(":instrumentation:okhttp3:library"))
         substitute(module("io.opentelemetry.android.instrumentation:okhttp3-agent"))
             .using(project(":instrumentation:okhttp3:agent"))
+        substitute(module("io.opentelemetry.android.instrumentation:android-instrumentation"))
+            .using((project(":instrumentation:android-instrumentation")))
+        substitute(module("io.opentelemetry.android.instrumentation:view-click"))
+            .using(project(":instrumentation:view-click"))
     }
 }

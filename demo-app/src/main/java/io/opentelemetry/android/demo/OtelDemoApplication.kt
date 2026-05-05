@@ -11,6 +11,7 @@ import android.util.Log
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.agent.OpenTelemetryRumInitializer
+import io.opentelemetry.android.instrumentation.view.click.ViewClickInstrumentation
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
@@ -40,13 +41,9 @@ class OtelDemoApplication : Application() {
                     globalAttributes {
                         Attributes.of(stringKey("toolkit"), "jetpack compose")
                     }
-                    instrumentations {
-                        viewClick {
-                            enabled(true)
-                        }
-                    }
                 }
             )
+            ViewClickInstrumentation().install(this, rum!!)
             Log.d(TAG, "RUM session started: " + rum?.sessionProvider?.getSessionId())
         } catch (e: Exception) {
             Log.e(TAG, "Oh no!", e)
