@@ -4,9 +4,9 @@ This documents describes the manual steps required to publish a release to maven
 
 ## Release cadence
 
-This repository targets monthly minor releases from the `main` branch roughly a week after
-the monthly minor release
-of [opentelemetry-java-instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation)).
+This repository roughly targets monthly minor releases from the `main` branch.
+These releases are generally cut on the Tuesday after the third Monday of the month, roughly a
+week after the monthly minor release of [opentelemetry-java-instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation).
 
 ## Update Milestones
 
