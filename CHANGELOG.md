@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### ⚠️⚠️ Breaking changes
+
+- Remove deprecated sdk ready listeners. Users should use the otel ready listeners instead.
+  ([#1731](https://github.com/open-telemetry/opentelemetry-android/pull/1731)) 
+
 ## Version 1.3.0 (2026-04-22)
 
 ### ⚠️⚠️ Breaking changes
