@@ -538,18 +538,6 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    fun sdkReadyListeners() {
-        val config = buildConfig()
-        val seen = AtomicReference<OpenTelemetrySdk>()
-        createAndSetServiceManager()
-        RumBuilder
-            .builder(application, config)
-            .addOtelSdkReadyListener { newValue: OpenTelemetrySdk -> seen.set(newValue) }
-            .build()
-        assertThat(seen.get()).isNotNull()
-    }
-
-    @Test
     fun otelReadyListeners() {
         val config = buildConfig()
         val seen = AtomicReference<OpenTelemetry>()

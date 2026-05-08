@@ -107,9 +107,6 @@ class OpenTelemetryRumBuilder internal constructor(
 
     val instrumentationLoader: AndroidInstrumentationLoader = AndroidInstrumentationLoaderImpl()
 
-    @Deprecated("SDK listeners are deprecated, use otelReadyListeners instead")
-    private val otelSdkReadyListeners: MutableList<Consumer<OpenTelemetrySdk>> = mutableListOf()
-
     private val otelReadyListeners: MutableList<(OpenTelemetry) -> Unit> = mutableListOf()
 
     private var spanExporterCustomizer: (SpanExporter) -> SpanExporter = { it }
@@ -280,22 +277,6 @@ class OpenTelemetryRumBuilder internal constructor(
     }
 
     /**
-     * Adds a callback to be invoked after the OpenTelemetry SDK has been initialized. This can be
-     * used to defer some early lifecycle functionality until the working SDK is ready.
-     *
-     * @param callback - A callback that receives the OpenTelemetry SDK instance.
-     * @return this
-     */
-    @Deprecated(
-        message = "OtelSdkReadyListeners will be removed in a future release",
-        replaceWith = ReplaceWith("addOtelReadyListener(callback)"),
-    )
-    fun addOtelSdkReadyListener(callback: Consumer<OpenTelemetrySdk>): OpenTelemetryRumBuilder {
-        otelSdkReadyListeners.add(callback)
-        return this
-    }
-
-    /**
      * Adds a callback to be invoked after the OpenTelemetry instance has been initialized. This can be
      * used to defer some early lifecycle functionality until the OpenTelemetry instance is ready.
      *
@@ -358,11 +339,6 @@ class OpenTelemetryRumBuilder internal constructor(
                 ).setPropagators(buildFinalPropagators())
                 .build()
 
-        otelSdkReadyListeners.forEach(
-            Consumer {
-                it.accept(sdk)
-            },
-        )
         otelReadyListeners.forEach { it(sdk) }
 
         val delegate =
