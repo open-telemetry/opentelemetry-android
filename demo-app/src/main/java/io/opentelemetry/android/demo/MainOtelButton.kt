@@ -21,7 +21,6 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import io.opentelemetry.api.metrics.LongCounter
-import io.opentelemetry.api.trace.SpanKind
 
 @Composable
 fun MainOtelButton(icon: Painter,
@@ -51,14 +50,5 @@ fun generateClickEvent(counter: LongCounter?) {
     val scope = "otel.demo.app"
     OtelDemoApplication.eventBuilder(scope, "logo.clicked")
         .emit()
-    // For now, we also emit a span, so that we can see something in a UI
-    val tracer = OtelDemoApplication.tracer(scope)
-    // And we also increment a counter, to test metrics
     counter?.add(1)
-    val span =
-        tracer
-            ?.spanBuilder("logo.clicked")
-            ?.setSpanKind(SpanKind.INTERNAL)
-            ?.startSpan()
-    span?.end()
 }
