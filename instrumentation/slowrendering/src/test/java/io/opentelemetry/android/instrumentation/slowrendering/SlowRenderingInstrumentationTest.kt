@@ -96,7 +96,6 @@ class SlowRenderingInstrumentationTest {
     @Test
     fun `Installing instrumentation on devices with API level equal or higher than 24`() {
         val capturedListener = slot<SlowRenderListener>()
-        every { openTelemetry.getTracer(any()) }.returns(mockk())
         every { application.registerActivityLifecycleCallbacks(any()) } just Runs
         val openTelemetryRum = mockk<OpenTelemetryRum>()
         every { openTelemetryRum.openTelemetry } returns openTelemetry
@@ -104,23 +103,6 @@ class SlowRenderingInstrumentationTest {
         every { openTelemetryRum.clock } returns Clock.getDefault()
         slowRenderingInstrumentation.install(application, openTelemetryRum)
 
-        verify { application.registerActivityLifecycleCallbacks(capture(capturedListener)) }
-    }
-
-    @Config(sdk = [24, 25])
-    @Test
-    fun `can use legacy span`() {
-        val capturedListener = slot<SlowRenderListener>()
-        every { openTelemetry.getTracer(any()) }.returns(mockk())
-        every { application.registerActivityLifecycleCallbacks(any()) } just Runs
-        val openTelemetryRum = mockk<OpenTelemetryRum>()
-        every { openTelemetryRum.openTelemetry } returns openTelemetry
-        every { openTelemetryRum.sessionProvider } returns mockk()
-        every { openTelemetryRum.clock } returns Clock.getDefault()
-        @Suppress("DEPRECATION")
-        slowRenderingInstrumentation.enableDeprecatedZeroDurationSpan().install(application, openTelemetryRum)
-
-        verify { openTelemetry.getTracer("io.opentelemetry.slow-rendering") }
         verify { application.registerActivityLifecycleCallbacks(capture(capturedListener)) }
     }
 }

@@ -15,12 +15,14 @@ import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import java.time.Duration
 
+internal const val SLOW_THRESHOLD_MS = 16
+internal const val FROZEN_THRESHOLD_MS = 700
+
 /**
  * Entrypoint for installing the slow rendering detection instrumentation.
  */
 @AutoService(AndroidInstrumentation::class)
 class SlowRenderingInstrumentation : AndroidInstrumentation {
-    internal var useDeprecatedSpan: Boolean = false
     internal var debugVerbose: Boolean = false
     internal var slowRenderingDetectionPollInterval: Duration = Duration.ofSeconds(1)
 
@@ -57,15 +59,6 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
         return this
     }
 
-    /**
-     * Reports jank by using a zero-duration span.
-     */
-    @Deprecated("Use the default event to report jank")
-    fun enableDeprecatedZeroDurationSpan(): SlowRenderingInstrumentation {
-        useDeprecatedSpan = true
-        return this
-    }
-
     override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             Log.w(
@@ -85,11 +78,6 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
         val logger = openTelemetryRum.openTelemetry.logsBridge.get("app.jank")
         var jankReporter: JankReporter = EventJankReporter(logger, SLOW_THRESHOLD_MS / 1000.0, debugVerbose)
         jankReporter = jankReporter.combine(EventJankReporter(logger, FROZEN_THRESHOLD_MS / 1000.0, debugVerbose))
-
-        if (useDeprecatedSpan) {
-            val tracer = openTelemetryRum.openTelemetry.getTracer("io.opentelemetry.slow-rendering")
-            jankReporter = jankReporter.combine(SpanBasedJankReporter(tracer))
-        }
 
         detector = SlowRenderListener(jankReporter, slowRenderingDetectionPollInterval)
 

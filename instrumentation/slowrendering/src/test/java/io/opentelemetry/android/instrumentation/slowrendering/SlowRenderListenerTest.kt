@@ -20,13 +20,10 @@ import io.mockk.junit4.MockKRule
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import io.opentelemetry.api.common.AttributeKey
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
+import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
-import io.opentelemetry.sdk.trace.data.SpanData
 import kotlinx.coroutines.Runnable
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.ThrowingConsumer
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -134,8 +131,7 @@ class SlowRenderListenerTest {
 
     @Test
     fun removeWithMetrics() {
-        val tracer = otelTesting.openTelemetry.getTracer("testTracer")
-        jankReporter = SpanBasedJankReporter(tracer)
+        jankReporter = createEventReporter()
         val testInstance =
             SlowRenderListener(
                 jankReporter,
@@ -160,8 +156,7 @@ class SlowRenderListenerTest {
 
         testInstance.onActivityPaused(activity)
 
-        val spans = otelTesting.spans
-        assertSpanContent(spans)
+        assertLogContent(periodSeconds = 0.0)
     }
 
     @Test
@@ -180,8 +175,7 @@ class SlowRenderListenerTest {
             null
         }
 
-        val tracer = otelTesting.openTelemetry.getTracer("testTracer")
-        jankReporter = SpanBasedJankReporter(tracer)
+        jankReporter = createEventReporter()
         val testInstance =
             SlowRenderListener(
                 jankReporter,
@@ -206,8 +200,7 @@ class SlowRenderListenerTest {
 
         testInstance.start()
 
-        val spans = otelTesting.spans
-        assertSpanContent(spans)
+        assertLogContent(periodSeconds = 1.0)
     }
 
     @Test
@@ -235,36 +228,25 @@ class SlowRenderListenerTest {
             )
         }
 
-    companion object {
-        private val COUNT_KEY: AttributeKey<Long> = AttributeKey.longKey("count")
+    private fun createEventReporter(): JankReporter {
+        val eventLogger: Logger = otelTesting.openTelemetry.logsBridge.get("JANK!")
+        return EventJankReporter(eventLogger, SLOW_THRESHOLD_MS / 1000.0)
+            .combine(EventJankReporter(eventLogger, FROZEN_THRESHOLD_MS / 1000.0))
+    }
 
-        private fun assertSpanContent(spans: MutableList<SpanData?>) {
-            assertThat<SpanData>(spans)
-                .hasSize(2)
-                .satisfiesExactly(
-                    ThrowingConsumer { span ->
-                        OpenTelemetryAssertions
-                            .assertThat(span)
-                            .hasName("slowRenders")
-                            .endsAt(span!!.startEpochNanos)
-                            .hasAttribute(COUNT_KEY, 3L)
-                            .hasAttribute(
-                                AttributeKey.stringKey("activity.name"),
-                                "io.otel/Komponent",
-                            )
-                    },
-                    ThrowingConsumer { span ->
-                        OpenTelemetryAssertions
-                            .assertThat(span)
-                            .hasName("frozenRenders")
-                            .endsAt(span!!.startEpochNanos)
-                            .hasAttribute(COUNT_KEY, 1L)
-                            .hasAttribute(
-                                AttributeKey.stringKey("activity.name"),
-                                "io.otel/Komponent",
-                            )
-                    },
-                )
-        }
+    private fun assertLogContent(periodSeconds: Double) {
+        assertThat(otelTesting.logRecords).hasSize(2)
+
+        val slowLog = otelTesting.logRecords[0]
+        assertThat(slowLog.eventName).isEqualTo("app.jank")
+        assertThat(slowLog.attributes.get(FRAME_COUNT)).isEqualTo(4)
+        assertThat(slowLog.attributes.get(PERIOD)).isEqualTo(periodSeconds)
+        assertThat(slowLog.attributes.get(THRESHOLD)).isEqualTo(0.016)
+
+        val frozenLog = otelTesting.logRecords[1]
+        assertThat(frozenLog.eventName).isEqualTo("app.jank")
+        assertThat(frozenLog.attributes.get(FRAME_COUNT)).isEqualTo(1)
+        assertThat(frozenLog.attributes.get(PERIOD)).isEqualTo(periodSeconds)
+        assertThat(frozenLog.attributes.get(THRESHOLD)).isEqualTo(0.7)
     }
 }
