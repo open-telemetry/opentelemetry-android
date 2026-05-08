@@ -21,6 +21,11 @@ jobs:
           days-before-stale: 21
           days-before-close: 14
           only-labels: "needs author feedback"
+          # PRs in this state are explicitly unstaled by
+          # remove-needs-author-feedback.yaml when the author replies. Keeping the
+          # stale label in place on other updates avoids the stale/unstale loop
+          # that prevents old PRs from ever reaching auto-close.
+          remove-pr-stale-when-updated: false
           stale-issue-label: stale
           stale-issue-message: >
             This has been automatically marked as stale because it has been marked
