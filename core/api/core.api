@@ -178,22 +178,10 @@ public final class io/opentelemetry/android/features/diskbuffering/SignalFromDis
 	public final fun set (Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;)V
 }
 
-public final class io/opentelemetry/android/features/diskbuffering/scheduler/DefaultExportScheduleHandler : io/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler {
-	public fun <init> (Lio/opentelemetry/android/features/diskbuffering/scheduler/DefaultExportScheduler;Lkotlin/jvm/functions/Function0;)V
+public final class io/opentelemetry/android/features/diskbuffering/scheduler/ExportEnablementState : io/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler {
+	public fun <init> (Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;Lio/opentelemetry/android/internal/services/periodic/TaskScheduler;)V
 	public fun disable ()V
 	public fun enable ()V
-}
-
-public final class io/opentelemetry/android/features/diskbuffering/scheduler/DefaultExportScheduler : io/opentelemetry/android/internal/services/periodicwork/PeriodicRunnable {
-	public static final field Companion Lio/opentelemetry/android/features/diskbuffering/scheduler/DefaultExportScheduler$Companion;
-	public fun <init> (Lkotlin/jvm/functions/Function0;)V
-	public fun minimumDelayUntilNextRunInMillis ()J
-	public fun onRun ()V
-	public fun shouldStopRunning ()Z
-	public final fun shutdown ()V
-}
-
-public final class io/opentelemetry/android/features/diskbuffering/scheduler/DefaultExportScheduler$Companion {
 }
 
 public abstract interface class io/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler {
@@ -201,7 +189,7 @@ public abstract interface class io/opentelemetry/android/features/diskbuffering/
 	public abstract fun enable ()V
 }
 
-public final class io/opentelemetry/android/features/diskbuffering/scheduler/PeriodicExporter : io/opentelemetry/android/internal/services/schedule/PeriodicRunnable {
+public final class io/opentelemetry/android/features/diskbuffering/scheduler/PeriodicExporter : io/opentelemetry/android/internal/services/periodic/PeriodicRunnable {
 	public synthetic fun <init> (Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;JLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun period-UwyO8pc ()J
