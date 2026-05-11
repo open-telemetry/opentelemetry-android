@@ -22,7 +22,7 @@ class ServicesTest {
         assertNotNull(services.appLifecycle)
         assertNotNull(services.cacheStorage)
         assertNotNull(services.currentNetworkProvider)
-        assertNotNull(services.taskScheduler)
+        assertNotNull(services.periodicTaskScheduler)
         assertNotNull(services.visibleScreenTracker)
 
         // assert no exceptions thrown

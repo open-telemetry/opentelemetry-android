@@ -434,7 +434,7 @@ class OpenTelemetryRumBuilder internal constructor(
     ) {
         val handler =
             exportScheduleHandler ?: signalExporter?.let {
-                ExportEnablementState(it, services.taskScheduler)
+                ExportEnablementState(it, services.periodicTaskScheduler)
             }
 
         exportScheduleHandler = handler
