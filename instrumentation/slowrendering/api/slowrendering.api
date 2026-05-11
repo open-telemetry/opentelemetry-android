@@ -1,6 +1,5 @@
 public final class io/opentelemetry/android/instrumentation/slowrendering/SlowRenderingInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
 	public fun <init> ()V
-	public final fun enableDeprecatedZeroDurationSpan ()Lio/opentelemetry/android/instrumentation/slowrendering/SlowRenderingInstrumentation;
 	public final fun enableVerboseDebugLogging ()Lio/opentelemetry/android/instrumentation/slowrendering/SlowRenderingInstrumentation;
 	public fun getName ()Ljava/lang/String;
 	public fun install (Landroid/content/Context;Lio/opentelemetry/android/OpenTelemetryRum;)V

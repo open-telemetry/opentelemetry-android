@@ -3,9 +3,11 @@
 ## Unreleased
 
 ### ⚠️⚠️ Breaking changes
-
+ 
+- Slow rendering instrumentation no longer generates zero-duration spans, only events.
+  ([#1729](https://github.com/open-telemetry/opentelemetry-android/pull/1729))
 - Remove deprecated sdk ready listeners. Users should use the otel ready listeners instead.
-  ([#1731](https://github.com/open-telemetry/opentelemetry-android/pull/1731)) 
+  ([#1731](https://github.com/open-telemetry/opentelemetry-android/pull/1731))
 
 ## Version 1.3.0 (2026-04-22)
 
