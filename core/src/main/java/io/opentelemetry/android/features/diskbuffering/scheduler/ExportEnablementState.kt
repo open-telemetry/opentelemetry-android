@@ -6,24 +6,29 @@
 package io.opentelemetry.android.features.diskbuffering.scheduler
 
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
-import io.opentelemetry.android.internal.services.schedule.WorkScheduler
+import io.opentelemetry.android.internal.services.periodic.TaskScheduler
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ExportEnablementState(
     private val signalFromDiskExporter: SignalFromDiskExporter,
-    private val workScheduler: WorkScheduler,
+    private val taskScheduler: TaskScheduler,
 ) : ExportScheduleHandler {
     private val enabled = AtomicBoolean(false)
-    private val periodicExporter = PeriodicExporter(signalFromDiskExporter)
+    @Volatile
+    private var periodicExporter: PeriodicExporter? = null
 
     override fun enable() {
         if (!enabled.getAndSet(true)) {
-            workScheduler.start(periodicExporter)
+            val exporter = PeriodicExporter(signalFromDiskExporter)
+            periodicExporter = exporter
+            taskScheduler.start(exporter)
         }
     }
 
     override fun disable() {
-        super.disable()
-        periodicExporter.stop()
+        if (enabled.getAndSet(false)) {
+            periodicExporter?.stop()
+            periodicExporter = null
+        }
     }
 }

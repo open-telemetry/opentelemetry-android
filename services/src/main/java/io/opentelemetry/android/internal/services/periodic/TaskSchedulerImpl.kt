@@ -1,4 +1,4 @@
-package io.opentelemetry.android.internal.services.schedule
+package io.opentelemetry.android.internal.services.periodic
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -6,7 +6,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class WorkSchedulerImpl : WorkScheduler {
+class TaskSchedulerImpl : TaskScheduler {
     private val job = SupervisorJob()
     private val scope = CoroutineScope(job + Dispatchers.Default)
 

@@ -22,8 +22,8 @@ class ServicesTest {
         assertNotNull(services.appLifecycle)
         assertNotNull(services.cacheStorage)
         assertNotNull(services.currentNetworkProvider)
+        assertNotNull(services.taskScheduler)
         assertNotNull(services.visibleScreenTracker)
-        assertNotNull(services.periodicWork)
 
         // assert no exceptions thrown
         services.close()

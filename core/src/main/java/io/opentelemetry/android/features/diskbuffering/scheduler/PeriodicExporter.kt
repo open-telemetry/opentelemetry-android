@@ -3,7 +3,7 @@ package io.opentelemetry.android.features.diskbuffering.scheduler
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants.OTEL_RUM_LOG_TAG
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
-import io.opentelemetry.android.internal.services.schedule.PeriodicRunnable
+import io.opentelemetry.android.internal.services.periodic.PeriodicRunnable
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
