@@ -48,10 +48,11 @@ class PeriodicTaskSchedulerImplTest {
 
         scheduler.start(
             object : PeriodicRunnable {
-                override fun period() = 100.milliseconds
+                override fun period() = 10.milliseconds
 
                 override fun run() {
                     runCount.incrementAndGet()
+                    scheduler.close()
                     firstRun.countDown()
                 }
 
@@ -62,8 +63,7 @@ class PeriodicTaskSchedulerImplTest {
         )
 
         assertThat(firstRun.await(1, TimeUnit.SECONDS)).isTrue()
-        scheduler.close()
-        Thread.sleep(250)
+        Thread.sleep(250) // if still running we might get more increments
 
         assertThat(runCount.get()).isEqualTo(1)
     }
