@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 
 class DemoViewModel : ViewModel() {
     val sessionIdState = MutableStateFlow("? unknown ?")
-    private val tracer = OtelDemoApplication.tracer("otel.demo")!!
 
     init {
         viewModelScope.launch {
@@ -26,13 +25,5 @@ class DemoViewModel : ViewModel() {
 
     private fun updateSession() {
         // TODO
-    }
-
-    private fun sendTrace(
-        type: String,
-        value: Float,
-    ) {
-        // A metric should be a better fit, but for now we're using spans.
-        tracer.spanBuilder(type).setAttribute("value", value.toDouble()).startSpan().end()
     }
 }
