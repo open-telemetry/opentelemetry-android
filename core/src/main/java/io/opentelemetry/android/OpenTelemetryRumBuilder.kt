@@ -18,7 +18,7 @@ import io.opentelemetry.android.export.BufferDelegatingMetricExporter
 import io.opentelemetry.android.export.BufferDelegatingSpanExporter
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter.Companion.set
-import io.opentelemetry.android.features.diskbuffering.scheduler.ExportEnablementState
+import io.opentelemetry.android.features.diskbuffering.scheduler.DiskBufferingEnablement
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
@@ -434,7 +434,7 @@ class OpenTelemetryRumBuilder internal constructor(
     ) {
         val handler =
             exportScheduleHandler ?: signalExporter?.let {
-                ExportEnablementState(it, services.periodicTaskScheduler)
+                DiskBufferingEnablement(it, services.periodicTaskScheduler)
             }
 
         exportScheduleHandler = handler

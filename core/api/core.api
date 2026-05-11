@@ -178,7 +178,7 @@ public final class io/opentelemetry/android/features/diskbuffering/SignalFromDis
 	public final fun set (Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;)V
 }
 
-public final class io/opentelemetry/android/features/diskbuffering/scheduler/ExportEnablementState : io/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler {
+public final class io/opentelemetry/android/features/diskbuffering/scheduler/DiskBufferingEnablement : io/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler {
 	public fun <init> (Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;Lio/opentelemetry/android/internal/services/periodic/PeriodicTaskScheduler;)V
 	public fun disable ()V
 	public fun enable ()V
