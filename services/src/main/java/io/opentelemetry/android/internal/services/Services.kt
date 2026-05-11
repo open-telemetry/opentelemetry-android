@@ -19,6 +19,8 @@ import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.network.detector.NetworkDetector
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWork
 import io.opentelemetry.android.internal.services.periodicwork.PeriodicWorkImpl
+import io.opentelemetry.android.internal.services.schedule.WorkScheduler
+import io.opentelemetry.android.internal.services.schedule.WorkSchedulerImpl
 import io.opentelemetry.android.internal.services.storage.CacheStorage
 import io.opentelemetry.android.internal.services.storage.CacheStorageImpl
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
@@ -34,8 +36,13 @@ class Services internal constructor(
         CacheStorageImpl(context)
     }
 
+    //TODO: Remove in favor of WorkScheduler
     override val periodicWork: PeriodicWork by lazy {
         PeriodicWorkImpl()
+    }
+
+    override val workScheduler: WorkScheduler by lazy {
+        WorkSchedulerImpl()
     }
 
     override val currentNetworkProvider: CurrentNetworkProvider by lazy {
@@ -58,7 +65,9 @@ class Services internal constructor(
 
     override fun close() {
         cacheStorage.close()
+        //TODO: Remove periodic work in favor of work scheduler
         periodicWork.close()
+        workScheduler.close()
         currentNetworkProvider.close()
         appLifecycle.close()
         visibleScreenTracker.close()

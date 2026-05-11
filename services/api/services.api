@@ -11,6 +11,7 @@ public final class io/opentelemetry/android/internal/services/Services : io/open
 	public fun getCurrentNetworkProvider ()Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;
 	public fun getPeriodicWork ()Lio/opentelemetry/android/internal/services/periodicwork/PeriodicWork;
 	public fun getVisibleScreenTracker ()Lio/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker;
+	public fun getWorkScheduler ()Lio/opentelemetry/android/internal/services/schedule/WorkScheduler;
 	public static final fun set (Lio/opentelemetry/android/internal/services/Services;)V
 }
 
@@ -25,6 +26,7 @@ public abstract interface class io/opentelemetry/android/internal/services/Servi
 	public abstract fun getCurrentNetworkProvider ()Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;
 	public abstract fun getPeriodicWork ()Lio/opentelemetry/android/internal/services/periodicwork/PeriodicWork;
 	public abstract fun getVisibleScreenTracker ()Lio/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker;
+	public abstract fun getWorkScheduler ()Lio/opentelemetry/android/internal/services/schedule/WorkScheduler;
 }
 
 public abstract interface class io/opentelemetry/android/internal/services/applifecycle/AppLifecycle : io/opentelemetry/android/internal/services/Service {
@@ -74,6 +76,25 @@ public abstract class io/opentelemetry/android/internal/services/periodicwork/Pe
 
 public abstract interface class io/opentelemetry/android/internal/services/periodicwork/PeriodicWork : io/opentelemetry/android/internal/services/Service {
 	public abstract fun enqueue (Ljava/lang/Runnable;)V
+}
+
+public abstract interface class io/opentelemetry/android/internal/services/schedule/PeriodicRunnable : io/opentelemetry/android/internal/services/schedule/Stoppable, java/lang/Runnable {
+	public abstract fun period-UwyO8pc ()J
+}
+
+public abstract interface class io/opentelemetry/android/internal/services/schedule/Stoppable {
+	public abstract fun shouldStop ()Z
+	public abstract fun stop ()V
+}
+
+public abstract interface class io/opentelemetry/android/internal/services/schedule/WorkScheduler : io/opentelemetry/android/internal/services/Service {
+	public abstract fun start (Lio/opentelemetry/android/internal/services/schedule/PeriodicRunnable;)V
+}
+
+public final class io/opentelemetry/android/internal/services/schedule/WorkSchedulerImpl : io/opentelemetry/android/internal/services/schedule/WorkScheduler {
+	public fun <init> ()V
+	public fun close ()V
+	public fun start (Lio/opentelemetry/android/internal/services/schedule/PeriodicRunnable;)V
 }
 
 public abstract interface class io/opentelemetry/android/internal/services/storage/CacheStorage : io/opentelemetry/android/internal/services/Service {

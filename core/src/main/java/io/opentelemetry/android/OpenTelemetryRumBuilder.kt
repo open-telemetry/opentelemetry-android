@@ -18,8 +18,7 @@ import io.opentelemetry.android.export.BufferDelegatingMetricExporter
 import io.opentelemetry.android.export.BufferDelegatingSpanExporter
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter.Companion.set
-import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduleHandler
-import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduler
+import io.opentelemetry.android.features.diskbuffering.scheduler.ExportEnablementState
 import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
@@ -433,24 +432,23 @@ class OpenTelemetryRumBuilder internal constructor(
         services: Services,
         signalExporter: SignalFromDiskExporter?,
     ) {
-        // TODO: Is it safe to get the work service yet here? If so, we can
-        // avoid all this lazy supplier stuff....
         val handler =
-            exportScheduleHandler ?: DefaultExportScheduleHandler(
-                DefaultExportScheduler(services::periodicWork),
-                services::periodicWork,
-            )
+            exportScheduleHandler ?: signalExporter?.let {
+                ExportEnablementState(it, services.workScheduler)
+            }
+
+        exportScheduleHandler = handler
 
         if (signalExporter == null) {
             // Disabling here allows to cancel previously scheduled exports using tools that
             // can run even after the app has been terminated (such as WorkManager).
             // But for in-memory only schedulers, nothing should need to be disabled.
-            handler.disable()
+            handler?.disable()
         } else {
             // Not null means that disk buffering is enabled and disk exporters are successfully
             // initialized.
             set(signalExporter)
-            handler.enable()
+            handler?.enable()
         }
     }
 
