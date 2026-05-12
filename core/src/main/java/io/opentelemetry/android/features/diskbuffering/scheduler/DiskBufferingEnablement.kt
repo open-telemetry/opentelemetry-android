@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class DiskBufferingEnablement(
     private val signalFromDiskExporter: SignalFromDiskExporter,
     private val taskScheduler: PeriodicTaskScheduler,
-) : ExportScheduleHandler {
+) : ScheduleEnablement {
     private val enabled = AtomicBoolean(false)
     @Volatile
     private var periodicExporter: PeriodicExporter? = null

@@ -18,7 +18,7 @@ public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
 	public final fun getInstrumentationLoader ()Lio/opentelemetry/android/instrumentation/AndroidInstrumentationLoader;
 	public final fun mergeResource (Lio/opentelemetry/sdk/resources/Resource;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun setClock (Lio/opentelemetry/sdk/common/Clock;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
-	public final fun setExportScheduleHandler (Lio/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun setExportScheduleHandler (Lio/opentelemetry/android/features/diskbuffering/scheduler/ScheduleEnablement;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun setResource (Lio/opentelemetry/sdk/resources/Resource;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun setSessionProvider (Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 }
@@ -178,15 +178,10 @@ public final class io/opentelemetry/android/features/diskbuffering/SignalFromDis
 	public final fun set (Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;)V
 }
 
-public final class io/opentelemetry/android/features/diskbuffering/scheduler/DiskBufferingEnablement : io/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler {
+public final class io/opentelemetry/android/features/diskbuffering/scheduler/DiskBufferingEnablement : io/opentelemetry/android/features/diskbuffering/scheduler/ScheduleEnablement {
 	public fun <init> (Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;Lio/opentelemetry/android/internal/services/periodic/PeriodicTaskScheduler;)V
 	public fun disable ()V
 	public fun enable ()V
-}
-
-public abstract interface class io/opentelemetry/android/features/diskbuffering/scheduler/ExportScheduleHandler {
-	public fun disable ()V
-	public abstract fun enable ()V
 }
 
 public final class io/opentelemetry/android/features/diskbuffering/scheduler/PeriodicExporter : io/opentelemetry/android/internal/services/periodic/PeriodicRunnable {
@@ -196,6 +191,11 @@ public final class io/opentelemetry/android/features/diskbuffering/scheduler/Per
 	public fun run ()V
 	public fun shouldStop ()Z
 	public fun stop ()V
+}
+
+public abstract interface class io/opentelemetry/android/features/diskbuffering/scheduler/ScheduleEnablement {
+	public fun disable ()V
+	public abstract fun enable ()V
 }
 
 public abstract interface class io/opentelemetry/android/instrumentation/AndroidInstrumentationLoader {
