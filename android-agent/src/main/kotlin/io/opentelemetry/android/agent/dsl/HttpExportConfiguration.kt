@@ -2,7 +2,6 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package io.opentelemetry.android.agent.dsl
 
 import io.opentelemetry.android.Incubating
@@ -50,33 +49,40 @@ class HttpExportConfiguration internal constructor() {
     internal fun spansEndpoint(): HttpEndpointConnectivity =
         HttpEndpointConnectivity.forTraces(
             chooseUrlSource(spansConfig),
+            isFullUrl(spansConfig),
             spansConfig.headers + baseHeaders,
             chooseCompression(spansConfig.compression),
             sslContext,
-            clientTls
+            clientTls,
         )
 
     internal fun logsEndpoint(): HttpEndpointConnectivity =
         HttpEndpointConnectivity.forLogs(
             chooseUrlSource(logsConfig),
+            isFullUrl(logsConfig),
             logsConfig.headers + baseHeaders,
             chooseCompression(logsConfig.compression),
             sslContext,
-            clientTls
+            clientTls,
         )
 
     internal fun metricsEndpoint(): HttpEndpointConnectivity =
         HttpEndpointConnectivity.forMetrics(
             chooseUrlSource(metricsConfig),
+            isFullUrl(metricsConfig),
             metricsConfig.headers + baseHeaders,
             chooseCompression(metricsConfig.compression),
             sslContext,
-            clientTls
+            clientTls,
         )
 
-    private fun chooseUrlSource(cfg: EndpointConfiguration): String = cfg.url.ifBlank { baseUrl }
+    private fun chooseUrlSource(cfg: EndpointConfiguration): String =
+        cfg.fullUrl ?: cfg.url.ifBlank { baseUrl }
 
-    private fun chooseCompression(signalConfigCompression: Compression?): Compression = signalConfigCompression ?: this.compression
+    private fun isFullUrl(cfg: EndpointConfiguration): Boolean = cfg.fullUrl != null
+
+    private fun chooseCompression(signalConfigCompression: Compression?): Compression =
+        signalConfigCompression ?: this.compression
 
     /**
      * Override the default configuration for the v1/traces endpoint only.
