@@ -7,28 +7,22 @@ package io.opentelemetry.android.features.diskbuffering.scheduler
 
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.internal.services.periodic.PeriodicTaskScheduler
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 class DiskBufferingEnablement(
     private val signalFromDiskExporter: SignalFromDiskExporter,
     private val taskScheduler: PeriodicTaskScheduler,
 ) : ScheduleEnablement {
-    private val enabled = AtomicBoolean(false)
-    @Volatile
-    private var periodicExporter: PeriodicExporter? = null
+    private val periodicExporter = AtomicReference<PeriodicExporter?>(null)
 
     override fun enable() {
-        if (!enabled.getAndSet(true)) {
-            val exporter = PeriodicExporter(signalFromDiskExporter)
-            periodicExporter = exporter
+        val exporter = PeriodicExporter(signalFromDiskExporter)
+        if (periodicExporter.compareAndSet(null, exporter)) {
             taskScheduler.start(exporter)
         }
     }
 
     override fun disable() {
-        if (enabled.getAndSet(false)) {
-            periodicExporter?.stop()
-            periodicExporter = null
-        }
+        periodicExporter.getAndSet(null)?.stop()
     }
 }
