@@ -1,6 +1,7 @@
 package io.opentelemetry.android.internal.services.periodic
 
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -16,7 +17,14 @@ class PeriodicTaskSchedulerImpl(
     override fun start(runnable: PeriodicRunnable) {
         scope.launch {
             while (!runnable.shouldStop()) {
-                runnable.run()
+                try {
+                    runnable.run()
+                } catch (e: CancellationException) {
+                    // this is normal behavior for canceled coroutines, don't swallow it
+                    throw e
+                } catch (_: Exception) {
+                    //swallowed
+                }
                 delay(runnable.period())
             }
         }
