@@ -85,6 +85,12 @@ class InstrumentationConfiguration internal constructor(
         screenOrientation.configure()
     }
 
+    /**
+     * Suppresses the named instrumentations so they will not be installed at startup.
+     *
+     * The values passed here must match the instrumentation names as exposed by
+     * AndroidInstrumentation.
+     */
     fun suppressing(vararg instrumentationsToExclude: String) {
         instrumentationsToExclude.forEach {
             config.suppressInstrumentation(it)
