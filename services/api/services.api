@@ -74,6 +74,8 @@ public abstract interface class io/opentelemetry/android/internal/services/perio
 
 public final class io/opentelemetry/android/internal/services/periodic/PeriodicTaskSchedulerImpl : io/opentelemetry/android/internal/services/periodic/PeriodicTaskScheduler {
 	public fun <init> ()V
+	public fun <init> (Lkotlinx/coroutines/CoroutineDispatcher;)V
+	public synthetic fun <init> (Lkotlinx/coroutines/CoroutineDispatcher;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun close ()V
 	public fun start (Lio/opentelemetry/android/internal/services/periodic/PeriodicRunnable;)V
 }
