@@ -26,4 +26,5 @@ dependencies {
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.navigation.fragment)
     testImplementation(libs.androidx.junit.ktx)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
