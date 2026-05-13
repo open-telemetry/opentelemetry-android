@@ -9,6 +9,8 @@ import android.view.MotionEvent
 
 internal const val APP_SCREEN_CLICK_EVENT_NAME = "app.screen.click"
 internal const val VIEW_CLICK_EVENT_NAME = "app.widget.click"
+internal const val APP_SCREEN_LONG_PRESS_EVENT_NAME = "app.screen.longpress"
+internal const val VIEW_LONG_PRESS_EVENT_NAME = "app.widget.longpress"
 
 internal const val HARDWARE_POINTER_TYPE = "hw.pointer.type"
 

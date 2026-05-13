@@ -11,11 +11,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_CLICK_EVENT_NAME
+import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_LONG_PRESS_EVENT_NAME
 import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_BUTTON
 import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_CLICKS
 import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_TYPE
 import io.opentelemetry.android.instrumentation.view.click.internal.TapEvent
 import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_EVENT_NAME
+import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_LONG_PRESS_EVENT_NAME
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.Logger
@@ -74,6 +76,24 @@ internal class ViewClickEventGenerator(
             }
             return false
         }
+
+        override fun onLongPress(e: MotionEvent) {
+            windowRef?.get()?.let { window ->
+
+                val tapEvent = TapEvent(e)
+
+                createEvent(APP_SCREEN_LONG_PRESS_EVENT_NAME, tapEvent)
+                    .setAttribute(APP_SCREEN_COORDINATE_Y, e.y.toLong())
+                    .setAttribute(APP_SCREEN_COORDINATE_X, e.x.toLong())
+                    .emit()
+
+                findTargetForTap(window.decorView, e.x, e.y)?.let { view ->
+                    createEvent(VIEW_LONG_PRESS_EVENT_NAME, tapEvent)
+                        .setAllAttributes(createViewAttributes(view))
+                        .emit()
+                }
+            }
+        }
     }
 
     val gestureDetector = GestureDetector(null, gestureListener)
@@ -101,13 +121,24 @@ internal class ViewClickEventGenerator(
         windowRef = null
     }
 
-    private fun createEvent(name: String, tapEvent: TapEvent, clicks: Int): LogRecordBuilder =
-        eventLogger
+    /**
+     * @param clicks 0 for other event, 1 for single tap, 2 for double tap
+     */
+    private fun createEvent(name: String, tapEvent: TapEvent, clicks: Int = 0): LogRecordBuilder {
+
+        val logger = eventLogger
             .logRecordBuilder()
             .setEventName(name)
-            .setAttribute(HARDWARE_POINTER_CLICKS, clicks)
             .setAttribute(HARDWARE_POINTER_TYPE, tapEvent.toolTypeDescription)
             .setAttribute(HARDWARE_POINTER_BUTTON, tapEvent.buttonStateDescription)
+
+        val isTapEvent = clicks > 0
+        if(isTapEvent) {
+            logger.setAttribute(HARDWARE_POINTER_CLICKS, clicks)
+        }
+        return logger
+    }
+
 
     private fun createViewAttributes(view: View): Attributes {
         val builder = Attributes.builder()
