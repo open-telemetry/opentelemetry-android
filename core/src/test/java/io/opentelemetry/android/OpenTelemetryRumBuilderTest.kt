@@ -22,7 +22,7 @@ import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter.Companion.resetForTesting
-import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler
+import io.opentelemetry.android.features.diskbuffering.scheduler.ScheduleEnablement
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoaderImpl
 import io.opentelemetry.android.internal.initialization.InitializationEvents
@@ -478,7 +478,7 @@ class OpenTelemetryRumBuilderTest {
         createAndSetServiceManager()
 
         val exporterSlot = slot<SpanExporter>()
-        val scheduleHandler = mockk<ExportScheduleHandler>(relaxed = true)
+        val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)
         val events = mockk<InitializationEvents>(relaxed = true)
         InitializationEvents.resetForTest()
         InitializationEvents.set(events)
@@ -488,7 +488,7 @@ class OpenTelemetryRumBuilderTest {
 
         RumBuilder
             .builder(application, config)
-            .setExportScheduleHandler(scheduleHandler)
+            .setExportScheduleEnablement(scheduleHandler)
             .build()
 
         Awaitility
@@ -510,7 +510,7 @@ class OpenTelemetryRumBuilderTest {
         every { cacheStorage.cacheDir } answers { throw IOException() }
 
         val exporterSlot = slot<SpanExporter>()
-        val scheduleHandler = mockk<ExportScheduleHandler>(relaxed = true)
+        val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)
         val events = mockk<InitializationEvents>(relaxed = true)
         InitializationEvents.resetForTest()
         InitializationEvents.set(events)
@@ -520,7 +520,7 @@ class OpenTelemetryRumBuilderTest {
 
         RumBuilder
             .builder(application, config)
-            .setExportScheduleHandler(scheduleHandler)
+            .setExportScheduleEnablement(scheduleHandler)
             .build()
 
         Awaitility
@@ -552,7 +552,7 @@ class OpenTelemetryRumBuilderTest {
     @Test
     fun diskBufferingDisabled() {
         val exporterSlot = slot<SpanExporter>()
-        val scheduleHandler = mockk<ExportScheduleHandler>(relaxed = true)
+        val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)
         val events = mockk<InitializationEvents>(relaxed = true)
         InitializationEvents.resetForTest()
         InitializationEvents.set(events)
@@ -562,7 +562,7 @@ class OpenTelemetryRumBuilderTest {
 
         RumBuilder
             .builder(application, config)
-            .setExportScheduleHandler(scheduleHandler)
+            .setExportScheduleEnablement(scheduleHandler)
             .build()
 
         Awaitility

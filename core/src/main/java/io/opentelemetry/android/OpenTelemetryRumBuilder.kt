@@ -18,9 +18,8 @@ import io.opentelemetry.android.export.BufferDelegatingMetricExporter
 import io.opentelemetry.android.export.BufferDelegatingSpanExporter
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter.Companion.set
-import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduleHandler
-import io.opentelemetry.android.features.diskbuffering.scheduler.DefaultExportScheduler
-import io.opentelemetry.android.features.diskbuffering.scheduler.ExportScheduleHandler
+import io.opentelemetry.android.features.diskbuffering.scheduler.DiskBufferingEnablement
+import io.opentelemetry.android.features.diskbuffering.scheduler.ScheduleEnablement
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoaderImpl
@@ -115,7 +114,7 @@ class OpenTelemetryRumBuilder internal constructor(
     private var propagatorCustomizer: (TextMapPropagator) -> TextMapPropagator = { it }
 
     private var resource: Resource = createDefault(context)
-    private var exportScheduleHandler: ExportScheduleHandler? = null
+    private var exportScheduleEnablement: ScheduleEnablement? = null
     private var sessionProvider: SessionProvider = SessionProvider.getNoop()
 
     /**
@@ -271,8 +270,8 @@ class OpenTelemetryRumBuilder internal constructor(
      * Sets a scheduler that will take care of periodically read data stored in disk and export it.
      * If not specified, the default schedule exporter will be used.
      */
-    fun setExportScheduleHandler(exportScheduleHandler: ExportScheduleHandler): OpenTelemetryRumBuilder {
-        this.exportScheduleHandler = exportScheduleHandler
+    fun setExportScheduleEnablement(exportScheduleEnablement: ScheduleEnablement): OpenTelemetryRumBuilder {
+        this.exportScheduleEnablement = exportScheduleEnablement
         return this
     }
 
@@ -344,7 +343,7 @@ class OpenTelemetryRumBuilder internal constructor(
         val delegate =
             SdkPreconfiguredRumBuilder(context, sdk, sessionProvider, config, clock, instrumentationLoader)
                 .setShutdownHook {
-                    exportScheduleHandler?.disable()
+                    exportScheduleEnablement?.disable()
                     services.close()
                 }
 
@@ -433,24 +432,23 @@ class OpenTelemetryRumBuilder internal constructor(
         services: Services,
         signalExporter: SignalFromDiskExporter?,
     ) {
-        // TODO: Is it safe to get the work service yet here? If so, we can
-        // avoid all this lazy supplier stuff....
         val handler =
-            exportScheduleHandler ?: DefaultExportScheduleHandler(
-                DefaultExportScheduler(services::periodicWork),
-                services::periodicWork,
-            )
+            exportScheduleEnablement ?: signalExporter?.let {
+                DiskBufferingEnablement(it, services.periodicTaskScheduler)
+            }
+
+        exportScheduleEnablement = handler
 
         if (signalExporter == null) {
             // Disabling here allows to cancel previously scheduled exports using tools that
             // can run even after the app has been terminated (such as WorkManager).
             // But for in-memory only schedulers, nothing should need to be disabled.
-            handler.disable()
+            handler?.disable()
         } else {
             // Not null means that disk buffering is enabled and disk exporters are successfully
             // initialized.
             set(signalExporter)
-            handler.enable()
+            handler?.enable()
         }
     }
 

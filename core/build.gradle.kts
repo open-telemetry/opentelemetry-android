@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.opentelemetry.semconv.incubating)
     implementation(libs.opentelemetry.diskBuffering)
     implementation(libs.opentelemetry.processors)
+    implementation(libs.kotlinx.coroutines)
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.awaitility)
     testImplementation(libs.robolectric)
