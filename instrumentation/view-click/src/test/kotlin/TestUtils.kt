@@ -168,7 +168,7 @@ fun getLongPressSequence(x: Float, y: Float, toolType: Int = MotionEvent.TOOL_TY
         "Invalid tool type"
     }
 
-    if(buttonState != 0) {
+    if (buttonState != 0) {
         require(toolType == MotionEvent.TOOL_TYPE_MOUSE || toolType == MotionEvent.TOOL_TYPE_STYLUS) {
             "Invalid tool type for button state"
         }
@@ -182,8 +182,7 @@ fun getLongPressSequence(x: Float, y: Float, toolType: Int = MotionEvent.TOOL_TY
     pointerProperties.toolType = toolType
 
     val pointerCoords = PointerCoordsBuilder.newBuilder().setCoords(x, y).build()
-    val delay = if(stayDownLongEnough) {
-//        val allowanceTime = 100L
+    val delay = if (stayDownLongEnough) {
         ViewConfiguration.getLongPressTimeout()// + allowanceTime
     } else {
         100

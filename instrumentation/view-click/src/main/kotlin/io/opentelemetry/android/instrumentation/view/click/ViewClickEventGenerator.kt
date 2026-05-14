@@ -133,7 +133,7 @@ internal class ViewClickEventGenerator(
             .setAttribute(HARDWARE_POINTER_BUTTON, tapEvent.buttonStateDescription)
 
         val isTapEvent = clicks > 0
-        if(isTapEvent) {
+        if (isTapEvent) {
             logger.setAttribute(HARDWARE_POINTER_CLICKS, clicks)
         }
         return logger
