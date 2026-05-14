@@ -74,8 +74,8 @@ awaitility = "org.awaitility:awaitility:4.3.0"
 okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver3", version.ref = "okhttp" }
 opentelemetry-proto = { module = "io.opentelemetry.proto:opentelemetry-proto", version.ref = "openTelemetryProto" }
 protobuf-kotlin = { module = "com.google.protobuf:protobuf-kotlin", version.ref = "protobufKotlin" }
-kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.10.2" }
-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = "1.10.2" }
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.11.0" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = "1.11.0" }
 
 #Compilation tools
 desugarJdkLibs = "com.android.tools:desugar_jdk_libs:2.1.5"
