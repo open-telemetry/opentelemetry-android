@@ -183,7 +183,7 @@ fun getLongPressSequence(x: Float, y: Float, toolType: Int = MotionEvent.TOOL_TY
 
     val pointerCoords = PointerCoordsBuilder.newBuilder().setCoords(x, y).build()
     val delay = if (stayDownLongEnough) {
-        ViewConfiguration.getLongPressTimeout()// + allowanceTime
+        ViewConfiguration.getLongPressTimeout()
     } else {
         100
     }

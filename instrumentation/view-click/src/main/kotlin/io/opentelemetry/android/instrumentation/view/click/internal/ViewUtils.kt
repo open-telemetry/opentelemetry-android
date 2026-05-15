@@ -6,6 +6,7 @@
 package io.opentelemetry.android.instrumentation.view.click.internal
 
 import android.view.MotionEvent
+import io.opentelemetry.api.common.Attributes
 
 internal const val APP_SCREEN_CLICK_EVENT_NAME = "app.screen.click"
 internal const val VIEW_CLICK_EVENT_NAME = "app.widget.click"
@@ -39,7 +40,7 @@ internal fun toolTypeToString(toolTypeInt: Int): String {
     }
 }
 
-internal class TapEvent(
+internal class TapEventMetadata(
     private val motionEvent: MotionEvent
 ) {
 
@@ -59,4 +60,22 @@ internal class TapEvent(
        toolTypeDescription = toolTypeToString(toolTypeInt)
     }
 
+}
+
+internal sealed class Gesture(val m: MotionEvent) {
+    private val t = TapEventMetadata(m)
+    val attributeBuilder = Attributes.builder()
+
+    init {
+        attributeBuilder.put(HARDWARE_POINTER_TYPE, t.toolTypeDescription)
+        if(t.buttonStateDescription != null) {
+            attributeBuilder.put(HARDWARE_POINTER_BUTTON, t.buttonStateDescription)
+        }
+    }
+    class LongPress(val motionEvent: MotionEvent): Gesture(motionEvent)
+    class Click(val motionEvent: MotionEvent, clicks: Int): Gesture(motionEvent) {
+        init {
+            attributeBuilder.put(HARDWARE_POINTER_CLICKS, clicks.toLong())
+        }
+    }
 }
