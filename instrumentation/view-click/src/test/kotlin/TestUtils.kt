@@ -161,6 +161,49 @@ fun getSingleTapSequence(x: Float, y: Float, toolType: Int = MotionEvent.TOOL_TY
     )
 }
 
+fun getLongPressSequence(x: Float, y: Float, toolType: Int = MotionEvent.TOOL_TYPE_FINGER, buttonState: Int = 0,
+                         stayDownLongEnough: Boolean = true)
+        : Array<MotionEvent> {
+    require(toolType in allowedToolTypes) {
+        "Invalid tool type"
+    }
+
+    if (buttonState != 0) {
+        require(toolType == MotionEvent.TOOL_TYPE_MOUSE || toolType == MotionEvent.TOOL_TYPE_STYLUS) {
+            "Invalid tool type for button state"
+        }
+        require(buttonState in allowedButtonStates) { "Invalid button state" }
+    }
+
+    val initialTime = SystemClock.uptimeMillis()
+
+    val pointerProperties = MotionEvent.PointerProperties()
+    pointerProperties.id = 0
+    pointerProperties.toolType = toolType
+
+    val pointerCoords = PointerCoordsBuilder.newBuilder().setCoords(x, y).build()
+    val delay = if (stayDownLongEnough) {
+        ViewConfiguration.getLongPressTimeout()
+    } else {
+        100
+    }
+    return arrayOf(
+        MotionEvent.obtain(initialTime, initialTime,
+            MotionEvent.ACTION_DOWN, 1, arrayOf(pointerProperties),
+            arrayOf(pointerCoords), 0, buttonState, 1f, 1f,
+            0, 0, 0, 0),
+        MotionEvent.obtain(initialTime, initialTime + delay,
+            MotionEvent.ACTION_UP, 1, arrayOf(pointerProperties),
+            arrayOf(pointerCoords), 0, buttonState, 1f, 1f,
+            0, 0, 0, 0)
+    )
+}
+
 fun fastForwardDoubleTapTimeout() {
     ShadowLooper.idleMainLooper(ViewConfiguration.getDoubleTapTimeout().toLong(), TimeUnit.MILLISECONDS)
+}
+
+fun fastForwardLongPressTimeout() {
+    val allowanceTime = 150L
+    ShadowLooper.idleMainLooper(ViewConfiguration.getLongPressTimeout().toLong() + allowanceTime, TimeUnit.MILLISECONDS)
 }
