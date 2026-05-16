@@ -33,9 +33,11 @@ public final class io/opentelemetry/android/agent/dsl/DiskBufferingConfiguration
 
 public final class io/opentelemetry/android/agent/dsl/EndpointConfiguration {
 	public final fun getCompression ()Lio/opentelemetry/android/agent/connectivity/Compression;
+	public final fun getFullUrl ()Ljava/lang/String;
 	public final fun getHeaders ()Ljava/util/Map;
 	public final fun getUrl ()Ljava/lang/String;
 	public final fun setCompression (Lio/opentelemetry/android/agent/connectivity/Compression;)V
+	public final fun setFullUrl (Ljava/lang/String;)V
 	public final fun setHeaders (Ljava/util/Map;)V
 	public final fun setUrl (Ljava/lang/String;)V
 }

@@ -23,7 +23,7 @@ internal class HttpExportConfigurationTest {
     fun setUp() {
         otelConfig = OpenTelemetryConfiguration(
             clock = FakeClock(),
-            instrumentationLoader = FakeInstrumentationLoader()
+            instrumentationLoader = FakeInstrumentationLoader(),
         )
     }
 
@@ -41,14 +41,14 @@ internal class HttpExportConfigurationTest {
                 expectedHeaders,
                 expectedCompression,
                 expectedSslContext,
-                expectedClientTls
+                expectedClientTls,
             )
         config.logsEndpoint().assertEndpointConfig(
             "/v1/logs",
             expectedHeaders,
             expectedCompression,
             expectedSslContext,
-            expectedClientTls
+            expectedClientTls,
         )
         config
             .metricsEndpoint()
@@ -57,7 +57,7 @@ internal class HttpExportConfigurationTest {
                 expectedHeaders,
                 expectedCompression,
                 expectedSslContext,
-                expectedClientTls
+                expectedClientTls,
             )
         assertEquals("", config.baseUrl)
         assertEquals(expectedHeaders, config.baseHeaders)
@@ -77,7 +77,8 @@ internal class HttpExportConfigurationTest {
 
         config.spansEndpoint()
             .assertEndpointConfig("${url}v1/traces", headers, Compression.GZIP, null, null)
-        config.logsEndpoint().assertEndpointConfig("${url}v1/logs", headers, Compression.GZIP, null, null)
+        config.logsEndpoint()
+            .assertEndpointConfig("${url}v1/logs", headers, Compression.GZIP, null, null)
         config.metricsEndpoint()
             .assertEndpointConfig("${url}v1/metrics", headers, Compression.GZIP, null, null)
         assertEquals(url, config.baseUrl)
@@ -88,23 +89,18 @@ internal class HttpExportConfigurationTest {
     fun testIndividualEndpointOverrides() {
         val baseUrl = "http://localhost:4318/"
         val baseHeaders = mapOf("my-header" to "my-value")
-
         val spanUrl = "http://localhost:4318/spans/"
         val spanHeaders = mapOf("span-header" to "span-value")
-
         val logUrl = "http://localhost:4318/logs/"
         val logHeaders = mapOf("log-header" to "log-value")
-
         val metricsUrl = "http://localhost:4318/metrics/"
         val metricsHeaders = mapOf("metrics-header" to "metrics-value")
-
         val expectedCompression = Compression.NONE
 
         val config =
             otelConfig.exportConfig.apply {
                 this.baseUrl = baseUrl
                 this.baseHeaders = baseHeaders
-
                 spans {
                     url = spanUrl
                     headers = spanHeaders
@@ -128,7 +124,7 @@ internal class HttpExportConfigurationTest {
                 "${spanUrl}v1/traces",
                 spanHeaders + baseHeaders,
                 expectedCompression,
-                null
+                null,
             )
         config
             .logsEndpoint()
@@ -136,13 +132,13 @@ internal class HttpExportConfigurationTest {
                 "${logUrl}v1/logs",
                 logHeaders + baseHeaders,
                 expectedCompression,
-                null
+                null,
             )
         config.metricsEndpoint().assertEndpointConfig(
             "${metricsUrl}v1/metrics",
             metricsHeaders + baseHeaders,
             expectedCompression,
-            null
+            null,
         )
         assertEquals(baseUrl, config.baseUrl)
         assertEquals(baseHeaders, config.baseHeaders)
@@ -152,16 +148,12 @@ internal class HttpExportConfigurationTest {
     fun testIndividualEndpointOverrides2() {
         val baseUrl = "http://localhost:4318/"
         val baseHeaders = mapOf("my-header" to "my-value")
-
         val spanUrl = "http://localhost:4318/spans/"
         val spanHeaders = mapOf("span-header" to "span-value")
-
         val logUrl = "http://localhost:4318/logs/"
         val logHeaders = mapOf("log-header" to "log-value")
-
         val metricsUrl = "http://localhost:4318/metrics/"
         val metricsHeaders = mapOf("metrics-header" to "metrics-value")
-
         val expectedCompression = Compression.GZIP
 
         val config =
@@ -178,9 +170,6 @@ internal class HttpExportConfigurationTest {
                     url = metricsUrl
                     headers = metricsHeaders
                 }
-
-                // altering base values after setting individual endpoints should give same result as
-                // when setting base values before.
                 this.baseUrl = baseUrl
                 this.baseHeaders = baseHeaders
             }
@@ -191,7 +180,7 @@ internal class HttpExportConfigurationTest {
                 "${spanUrl}v1/traces",
                 spanHeaders + baseHeaders,
                 expectedCompression,
-                null
+                null,
             )
         config
             .logsEndpoint()
@@ -199,13 +188,13 @@ internal class HttpExportConfigurationTest {
                 "${logUrl}v1/logs",
                 logHeaders + baseHeaders,
                 expectedCompression,
-                null
+                null,
             )
         config.metricsEndpoint().assertEndpointConfig(
             "${metricsUrl}v1/metrics",
             metricsHeaders + baseHeaders,
             expectedCompression,
-            null
+            null,
         )
         assertEquals(baseUrl, config.baseUrl)
         assertEquals(baseHeaders, config.baseHeaders)
@@ -224,26 +213,11 @@ internal class HttpExportConfigurationTest {
             }
 
         config.spansEndpoint()
-            .assertEndpointConfig(
-                "${url}v1/traces",
-                headers,
-                Compression.GZIP,
-                expectedSslContext
-            )
+            .assertEndpointConfig("${url}v1/traces", headers, Compression.GZIP, expectedSslContext)
         config.logsEndpoint()
-            .assertEndpointConfig(
-                "${url}v1/logs",
-                headers,
-                Compression.GZIP,
-                expectedSslContext
-            )
+            .assertEndpointConfig("${url}v1/logs", headers, Compression.GZIP, expectedSslContext)
         config.metricsEndpoint()
-            .assertEndpointConfig(
-                "${url}v1/metrics",
-                headers,
-                Compression.GZIP,
-                expectedSslContext
-            )
+            .assertEndpointConfig("${url}v1/metrics", headers, Compression.GZIP, expectedSslContext)
     }
 
     @Test
@@ -259,29 +233,11 @@ internal class HttpExportConfigurationTest {
             }
 
         config.spansEndpoint()
-            .assertEndpointConfig(
-                "${url}v1/traces",
-                headers,
-                Compression.GZIP,
-                null,
-                expectedClientTls
-            )
+            .assertEndpointConfig("${url}v1/traces", headers, Compression.GZIP, null, expectedClientTls)
         config.logsEndpoint()
-            .assertEndpointConfig(
-                "${url}v1/logs",
-                headers,
-                Compression.GZIP,
-                null,
-                expectedClientTls
-            )
+            .assertEndpointConfig("${url}v1/logs", headers, Compression.GZIP, null, expectedClientTls)
         config.metricsEndpoint()
-            .assertEndpointConfig(
-                "${url}v1/metrics",
-                headers,
-                Compression.GZIP,
-                null,
-                expectedClientTls
-            )
+            .assertEndpointConfig("${url}v1/metrics", headers, Compression.GZIP, null, expectedClientTls)
     }
 
     private fun HttpEndpointConnectivity.assertEndpointConfig(
@@ -289,7 +245,7 @@ internal class HttpExportConfigurationTest {
         expectedHeaders: Map<String, String>,
         expectedCompression: Compression,
         expectedSslContext: SSLContextConnectivity?,
-        expectedClientTls: ClientTlsConnectivity? = null
+        expectedClientTls: ClientTlsConnectivity? = null,
     ) {
         assertEquals(expectedUrl, getUrl())
         assertEquals(expectedHeaders, getHeaders())
@@ -316,4 +272,57 @@ internal class HttpExportConfigurationTest {
         return ClientTlsConnectivity(privateKeyPem, certificatePem)
     }
 
+    @Test
+    fun testFullUrlOverrideForLogs() {
+        val baseUrl = "http://localhost:4318/"
+        val customLogsUrl = "http://localhost:4318/v2/logs"
+
+        val config =
+            otelConfig.exportConfig.apply {
+                this.baseUrl = baseUrl
+                logs {
+                    fullUrl = customLogsUrl
+                }
+            }
+
+        config.logsEndpoint().assertEndpointConfig(customLogsUrl, emptyMap(), Compression.GZIP, null)
+        config.spansEndpoint().assertEndpointConfig("${baseUrl}v1/traces", emptyMap(), Compression.GZIP, null)
+        config.metricsEndpoint().assertEndpointConfig("${baseUrl}v1/metrics", emptyMap(), Compression.GZIP, null)
+    }
+
+    @Test
+    fun testFullUrlOverrideForAllSignals() {
+        val customSpansUrl = "http://traces.example.com/v2/traces"
+        val customLogsUrl = "http://logs.example.com/v2/logs"
+        val customMetricsUrl = "http://metrics.example.com/v2/metrics"
+
+        val config =
+            otelConfig.exportConfig.apply {
+                spans { fullUrl = customSpansUrl }
+                logs { fullUrl = customLogsUrl }
+                metrics { fullUrl = customMetricsUrl }
+            }
+
+        config.spansEndpoint().assertEndpointConfig(customSpansUrl, emptyMap(), Compression.GZIP, null)
+        config.logsEndpoint().assertEndpointConfig(customLogsUrl, emptyMap(), Compression.GZIP, null)
+        config.metricsEndpoint().assertEndpointConfig(customMetricsUrl, emptyMap(), Compression.GZIP, null)
+    }
+
+    @Test
+    fun testFullUrlTakesPrecedenceOverUrl() {
+        val baseUrl = "http://localhost:4318/"
+        val signalUrl = "http://localhost:4318/logs/"
+        val customFullUrl = "http://localhost:4318/v2/logs"
+
+        val config =
+            otelConfig.exportConfig.apply {
+                this.baseUrl = baseUrl
+                logs {
+                    url = signalUrl
+                    fullUrl = customFullUrl
+                }
+            }
+
+        config.logsEndpoint().assertEndpointConfig(customFullUrl, emptyMap(), Compression.GZIP, null)
+    }
 }

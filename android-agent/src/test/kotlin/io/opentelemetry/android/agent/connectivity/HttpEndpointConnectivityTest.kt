@@ -17,11 +17,11 @@ class HttpEndpointConnectivityTest {
         val sslContext = SSLContextConnectivity(mockk(), mockk())
         val clientTls: ClientTlsConnectivity = mockk()
         val tracesConnectivity =
-            HttpEndpointConnectivity.forTraces("http://some.endpoint", headers, compression, sslContext, clientTls)
+            HttpEndpointConnectivity.forTraces("http://some.endpoint", false, headers, compression, sslContext, clientTls)
         val logsConnectivity =
-            HttpEndpointConnectivity.forLogs("http://some.endpoint/", headers, compression, sslContext, clientTls)
+            HttpEndpointConnectivity.forLogs("http://some.endpoint/", false, headers, compression, sslContext, clientTls)
         val metricsConnectivity =
-            HttpEndpointConnectivity.forMetrics("http://some.endpoint", headers, compression, sslContext, clientTls)
+            HttpEndpointConnectivity.forMetrics("http://some.endpoint", false, headers, compression, sslContext, clientTls)
 
         assertThat(tracesConnectivity.getUrl()).isEqualTo("http://some.endpoint/v1/traces")
         assertThat(tracesConnectivity.getHeaders()).isEqualTo(headers)
