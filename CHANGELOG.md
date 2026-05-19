@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.4.0 (2026-05-19)
+
 ### ⚠️⚠️ Breaking changes
  
 - Slow rendering instrumentation no longer generates zero-duration spans, only events.
