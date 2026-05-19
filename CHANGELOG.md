@@ -6,8 +6,22 @@
  
 - Slow rendering instrumentation no longer generates zero-duration spans, only events.
   ([#1729](https://github.com/open-telemetry/opentelemetry-android/pull/1729))
-- Remove deprecated sdk ready listeners. Users should use the otel ready listeners instead.
+- Remove deprecated sdk ready listeners. Users should use `addOtelReadyListener` instead.
   ([#1731](https://github.com/open-telemetry/opentelemetry-android/pull/1731))
+- Disk buffering export scheduling APIs have been reworked for the RUM builder. Use `setExportScheduleEnablement`
+  with `ScheduleEnablement` instead of `setExportScheduleHandler`.
+  ([#1736](https://github.com/open-telemetry/opentelemetry-android/pull/1736))
+
+### 📈 Enhancements
+
+- The View click instrumentation now supports double-tap events. ([#1681](https://github.com/open-telemetry/opentelemetry-android/pull/1681))
+- Agent DSL now supports disabling instrumentations.
+  ([#1714](https://github.com/open-telemetry/opentelemetry-android/pull/1714))
+- Agent DSL now supports adding session observers.
+  ([#1718](https://github.com/open-telemetry/opentelemetry-android/pull/1718))
+- HTTP export endpoint configuration now supports `fullUrl` to bypass default signal path
+  appending.
+  ([#1723](https://github.com/open-telemetry/opentelemetry-android/pull/1723))
 
 ## Version 1.3.0 (2026-04-22)
 
