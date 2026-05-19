@@ -64,18 +64,18 @@ internal class TapEventMetadata(
 
 internal sealed class Gesture(val m: MotionEvent) {
     private val t = TapEventMetadata(m)
-    val attributeBuilder = Attributes.builder()
+    var attributes = Attributes.empty()
 
     init {
-        attributeBuilder.put(HARDWARE_POINTER_TYPE, t.toolTypeDescription)
+        attributes = attributes.toBuilder().put(HARDWARE_POINTER_TYPE, t.toolTypeDescription).build()
         if(t.buttonStateDescription != null) {
-            attributeBuilder.put(HARDWARE_POINTER_BUTTON, t.buttonStateDescription)
+            attributes = attributes.toBuilder().put(HARDWARE_POINTER_BUTTON, t.buttonStateDescription).build()
         }
     }
     class LongPress(val motionEvent: MotionEvent): Gesture(motionEvent)
     class Click(val motionEvent: MotionEvent, clicks: Int): Gesture(motionEvent) {
         init {
-            attributeBuilder.put(HARDWARE_POINTER_CLICKS, clicks.toLong())
+            attributes = attributes.toBuilder().put(HARDWARE_POINTER_CLICKS, clicks.toLong()).build()
         }
     }
 }

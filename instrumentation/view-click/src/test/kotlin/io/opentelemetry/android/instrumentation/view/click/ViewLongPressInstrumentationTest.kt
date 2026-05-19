@@ -246,7 +246,6 @@ class ViewLongPressInstrumentationTest {
             window.callback = capture(wrapperCapturingSlot)
         }
 
-
         wrapperCapturingSlot.captured.dispatchTouchEvent(longPressSequence[0])
         fastForwardLongPressTimeout()
         wrapperCapturingSlot.captured.dispatchTouchEvent(longPressSequence[1])

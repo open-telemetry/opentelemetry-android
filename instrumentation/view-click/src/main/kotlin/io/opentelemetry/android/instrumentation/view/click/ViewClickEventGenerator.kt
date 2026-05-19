@@ -122,7 +122,7 @@ internal class ViewClickEventGenerator(
         val logger = eventLogger
             .logRecordBuilder()
             .setEventName(name)
-            .setAllAttributes(gesture.attributeBuilder.build())
+            .setAllAttributes(gesture.attributes)
 
         return logger
     }
