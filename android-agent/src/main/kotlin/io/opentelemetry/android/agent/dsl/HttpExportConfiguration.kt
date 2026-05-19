@@ -77,9 +77,9 @@ class HttpExportConfiguration internal constructor() {
         )
 
     private fun chooseUrlSource(cfg: EndpointConfiguration): String =
-        cfg.fullUrl ?: cfg.url.ifBlank { baseUrl }
+        cfg.fullUrl?.takeUnless { it.isBlank() } ?: cfg.url.ifBlank { baseUrl }
 
-    private fun isFullUrl(cfg: EndpointConfiguration): Boolean = cfg.fullUrl != null
+    private fun isFullUrl(cfg: EndpointConfiguration): Boolean = !cfg.fullUrl.isNullOrBlank()
 
     private fun chooseCompression(signalConfigCompression: Compression?): Compression =
         signalConfigCompression ?: this.compression

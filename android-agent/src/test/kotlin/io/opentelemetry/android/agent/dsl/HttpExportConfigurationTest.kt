@@ -325,4 +325,21 @@ internal class HttpExportConfigurationTest {
 
         config.logsEndpoint().assertEndpointConfig(customFullUrl, emptyMap(), Compression.GZIP, null)
     }
+
+    @Test
+    fun testBlankFullUrlFallsBackToUrl() {
+        val baseUrl = "http://localhost:4318/"
+        val signalUrl = "http://localhost:4319/logs/"
+
+        val config =
+            otelConfig.exportConfig.apply {
+                this.baseUrl = baseUrl
+                logs {
+                    url = signalUrl
+                    fullUrl = ""
+                }
+            }
+
+        config.logsEndpoint().assertEndpointConfig("${signalUrl}v1/logs", emptyMap(), Compression.GZIP, null)
+    }
 }
