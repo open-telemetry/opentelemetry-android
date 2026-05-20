@@ -9,7 +9,13 @@ import io.mockk.called
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import io.opentelemetry.android.common.RumConstants
+import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents.Companion.INIT_EVENT_ANR_MONITOR
+import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents.Companion.INIT_EVENT_CRASH_REPORTER
+import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents.Companion.INIT_EVENT_JANK_MONITOR
+import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents.Companion.INIT_EVENT_NET_MONITOR
+import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents.Companion.INIT_EVENT_NET_PROVIDER
+import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents.Companion.INIT_EVENT_SPAN_EXPORTER
+import io.opentelemetry.android.instrumentation.startup.SdkInitializationEvents.Companion.INIT_EVENT_STARTED
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.common.Value
@@ -69,13 +75,13 @@ class SdkInitializationEventsTest {
         events.spanExporterInitialized(exporter)
 
         assertThat(seen).satisfiesExactly(
-            time(now).named(RumConstants.Events.INIT_EVENT_STARTED),
-            time(now + 50).named(RumConstants.Events.INIT_EVENT_ANR_MONITOR),
-            time(now + 100).named(RumConstants.Events.INIT_EVENT_CRASH_REPORTER),
-            time(now + 150).named(RumConstants.Events.INIT_EVENT_NET_PROVIDER),
-            time(now + 200).named(RumConstants.Events.INIT_EVENT_NET_MONITOR),
-            time(now + 250).named(RumConstants.Events.INIT_EVENT_JANK_MONITOR),
-            time(now + 300).named(RumConstants.Events.INIT_EVENT_SPAN_EXPORTER).withAttributes(
+            time(now).named(INIT_EVENT_STARTED),
+            time(now + 50).named(INIT_EVENT_ANR_MONITOR),
+            time(now + 100).named(INIT_EVENT_CRASH_REPORTER),
+            time(now + 150).named(INIT_EVENT_NET_PROVIDER),
+            time(now + 200).named(INIT_EVENT_NET_MONITOR),
+            time(now + 250).named(INIT_EVENT_JANK_MONITOR),
+            time(now + 300).named(INIT_EVENT_SPAN_EXPORTER).withAttributes(
                 "span.exporter",
                 "com.cool.Exporter",
             ),

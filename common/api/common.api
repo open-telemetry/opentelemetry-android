@@ -1,27 +1,8 @@
 public final class io/opentelemetry/android/common/RumConstants {
-	public static final field APP_START_SPAN_NAME Ljava/lang/String;
-	public static final field BATTERY_PERCENT_KEY Lio/opentelemetry/api/common/AttributeKey;
-	public static final field HEAP_FREE_KEY Lio/opentelemetry/api/common/AttributeKey;
 	public static final field INSTANCE Lio/opentelemetry/android/common/RumConstants;
 	public static final field LAST_SCREEN_NAME_KEY Lio/opentelemetry/api/common/AttributeKey;
 	public static final field OTEL_RUM_LOG_TAG Ljava/lang/String;
 	public static final field SCREEN_NAME_KEY Lio/opentelemetry/api/common/AttributeKey;
-	public static final field START_TYPE_KEY Lio/opentelemetry/api/common/AttributeKey;
-	public static final field STORAGE_SPACE_FREE_KEY Lio/opentelemetry/api/common/AttributeKey;
-}
-
-public final class io/opentelemetry/android/common/RumConstants$Events {
-	public static final field EVENT_SESSION_END Ljava/lang/String;
-	public static final field EVENT_SESSION_START Ljava/lang/String;
-	public static final field INIT_EVENT_ANR_MONITOR Ljava/lang/String;
-	public static final field INIT_EVENT_CONFIG Ljava/lang/String;
-	public static final field INIT_EVENT_CRASH_REPORTER Ljava/lang/String;
-	public static final field INIT_EVENT_JANK_MONITOR Ljava/lang/String;
-	public static final field INIT_EVENT_NET_MONITOR Ljava/lang/String;
-	public static final field INIT_EVENT_NET_PROVIDER Ljava/lang/String;
-	public static final field INIT_EVENT_SPAN_EXPORTER Ljava/lang/String;
-	public static final field INIT_EVENT_STARTED Ljava/lang/String;
-	public static final field INSTANCE Lio/opentelemetry/android/common/RumConstants$Events;
 }
 
 public final class io/opentelemetry/android/common/internal/features/networkattributes/CurrentNetworkAttributesExtractor {

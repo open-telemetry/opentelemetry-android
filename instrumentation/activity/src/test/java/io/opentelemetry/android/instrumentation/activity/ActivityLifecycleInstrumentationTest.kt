@@ -11,7 +11,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.common.RumConstants
+import io.opentelemetry.android.instrumentation.activity.ActivityTracer.Companion.START_TYPE_KEY
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.android.session.SessionProvider
@@ -52,7 +52,7 @@ class ActivityLifecycleInstrumentationTest {
         every { openTelemetry.getTracer("io.opentelemetry.lifecycle") }.returns(tracer)
         every { tracer.spanBuilder("AppStart") }.returns(startupSpanBuilder)
         every { startupSpanBuilder.setStartTimestamp(any(), any()) }.returns(startupSpanBuilder)
-        every { startupSpanBuilder.setAttribute(RumConstants.START_TYPE_KEY, "cold") }.returns(
+        every { startupSpanBuilder.setAttribute(START_TYPE_KEY, "cold") }.returns(
             startupSpanBuilder,
         )
         every { startupSpanBuilder.startSpan() }.returns(startupSpan)
@@ -67,7 +67,7 @@ class ActivityLifecycleInstrumentationTest {
             tracer.spanBuilder("AppStart")
         }
         verify {
-            startupSpanBuilder.setAttribute(RumConstants.START_TYPE_KEY, "cold")
+            startupSpanBuilder.setAttribute(START_TYPE_KEY, "cold")
         }
         verify {
             startupSpanBuilder.startSpan()

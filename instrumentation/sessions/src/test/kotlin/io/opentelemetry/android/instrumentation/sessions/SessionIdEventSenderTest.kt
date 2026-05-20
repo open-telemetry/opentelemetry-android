@@ -5,8 +5,8 @@
 
 package io.opentelemetry.android.instrumentation.sessions
 
-import io.opentelemetry.android.common.RumConstants.Events.EVENT_SESSION_END
-import io.opentelemetry.android.common.RumConstants.Events.EVENT_SESSION_START
+import io.opentelemetry.android.instrumentation.sessions.SessionIdEventSender.Companion.EVENT_SESSION_END
+import io.opentelemetry.android.instrumentation.sessions.SessionIdEventSender.Companion.EVENT_SESSION_START
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension

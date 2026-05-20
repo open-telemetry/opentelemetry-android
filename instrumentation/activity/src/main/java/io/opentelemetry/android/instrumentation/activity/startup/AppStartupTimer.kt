@@ -10,6 +10,7 @@ import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Bundle
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants
+import io.opentelemetry.android.instrumentation.activity.ActivityTracer.Companion.START_TYPE_KEY
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
@@ -46,7 +47,7 @@ internal class AppStartupTimer {
             tracer
                 .spanBuilder("AppStart")
                 .setStartTimestamp(firstPossibleTimestamp, TimeUnit.NANOSECONDS)
-                .setAttribute(RumConstants.START_TYPE_KEY, "cold")
+                .setAttribute(START_TYPE_KEY, "cold")
                 .startSpan()
         this.startupSpan = appStart
         return appStart
