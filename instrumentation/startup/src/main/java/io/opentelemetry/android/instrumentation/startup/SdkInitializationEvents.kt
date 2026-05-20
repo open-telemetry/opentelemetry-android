@@ -7,6 +7,13 @@ package io.opentelemetry.android.instrumentation.startup
 
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.config.OtelRumConfig
+import io.opentelemetry.android.instrumentation.startup.InitializationEventNames.INIT_EVENT_ANR_MONITOR
+import io.opentelemetry.android.instrumentation.startup.InitializationEventNames.INIT_EVENT_CRASH_REPORTER
+import io.opentelemetry.android.instrumentation.startup.InitializationEventNames.INIT_EVENT_JANK_MONITOR
+import io.opentelemetry.android.instrumentation.startup.InitializationEventNames.INIT_EVENT_NET_MONITOR
+import io.opentelemetry.android.instrumentation.startup.InitializationEventNames.INIT_EVENT_NET_PROVIDER
+import io.opentelemetry.android.instrumentation.startup.InitializationEventNames.INIT_EVENT_SPAN_EXPORTER
+import io.opentelemetry.android.instrumentation.startup.InitializationEventNames.INIT_EVENT_STARTED
 import io.opentelemetry.android.internal.initialization.InitializationEvents
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
@@ -102,14 +109,4 @@ class SdkInitializationEvents(
         val attributes: Attributes?,
         val body: Value<*>? = null,
     )
-
-    internal companion object {
-        const val INIT_EVENT_STARTED: String = "rum.sdk.init.started"
-        const val INIT_EVENT_NET_PROVIDER: String = "rum.sdk.init.net.provider"
-        const val INIT_EVENT_NET_MONITOR: String = "rum.sdk.init.net.monitor"
-        const val INIT_EVENT_ANR_MONITOR: String = "rum.sdk.init.anr_monitor"
-        const val INIT_EVENT_JANK_MONITOR: String = "rum.sdk.init.jank_monitor"
-        const val INIT_EVENT_CRASH_REPORTER: String = "rum.sdk.init.crash.reporter"
-        const val INIT_EVENT_SPAN_EXPORTER: String = "rum.sdk.init.span.exporter"
-    }
 }
