@@ -4,7 +4,7 @@ This document describes how to add automatic instrumentation to OpenTelemetry An
 It is intended for contributors creating new modules under `instrumentation/`.
 
 OpenTelemetry Android instrumentations are Android libraries that implement
-`AndroidInstrumentation`. Some instrumentations can attach themselves with normal Android or library APIs. Others
+[`AndroidInstrumentation`](../instrumentation/android-instrumentation/src/main/java/io/opentelemetry/android/instrumentation/AndroidInstrumentation.kt). Some instrumentations can attach themselves with normal Android or library APIs. Others
 need ByteBuddy build-time weaving because the target API does not expose a hook that can
 be registered at runtime. The module layout depends on which case you are building.
 
@@ -23,18 +23,17 @@ runtime APIs, for example:
   Android or library API.
 - Telemetry that can be started from the instrumentation's `install()` method.
 
-Use ByteBuddy when the target behavior cannot be reached automatically through runtime
+Use [ByteBuddy](https://bytebuddy.net/) when the target behavior cannot be reached automatically through runtime
 registration alone, for example:
 
 - Calls to static APIs such as `android.util.Log`.
-- Android classes where users do not construct an object you can wrap.
 - Third-party clients where automatic setup requires modifying application bytecode.
 - APIs where manual user setup would be required unless the build rewrites calls or
   constructors.
 
 ByteBuddy support in this repository is build-time Android bytecode instrumentation. It
-is not the JVM Java agent model. The application applies the ByteBuddy Gradle plugin and
-declares the instrumentation's `agent` artifact in the `byteBuddy(...)` configuration.
+is not the JVM Java agent model. The application applies the [ByteBuddy Gradle plugin](https://github.com/raphw/byte-buddy/blob/master/byte-buddy-gradle-plugin/android-plugin/README.md) and
+declares the instrumentation's `agent` artifact in the `byteBuddy(...)` configuration, which will be used during the Android app compilation to do bytecode weaving.
 
 ## Regular Instrumentation Layout
 
@@ -75,20 +74,12 @@ android {
 }
 
 dependencies {
-    implementation(project(":instrumentation:android-instrumentation")) // This is where the Android instrumentation API is located.
+    implementation(project(":instrumentation:android-instrumentation")) // This is where the AndroidInstrumentation API is located.
 }
 ```
 
-Add only the dependencies the instrumentation actually needs. Common choices are:
-
-- `project(":agent-api")` for `OpenTelemetryRum` API types.
-- `project(":session")` for session APIs.
-- `compileOnly(...)` for optional instrumented libraries that should not be pulled into
-  app dependencies by the instrumentation.
-
 Add `consumer-rules.pro` only when the instrumentation depends on reflection or class
-names being retained. For example, fragment and Compose click instrumentation keep
-target class names that are inspected at runtime.
+names being retained.
 
 ### Implement `AndroidInstrumentation`
 
@@ -152,10 +143,7 @@ Choose the signal based on what happened:
 - Log events for point-in-time events such as lifecycle or click events.
 - Metrics for measurements intended to be aggregated over time.
 
-Use data extractors from upstream
-OpenTelemetry instrumentation APIs when they fit. Add custom extractors when the feature
-needs app-specific attributes, as `network`, `anr`, `okhttp3`, and `httpurlconnection`
-do.
+Use data extractors from upstream OpenTelemetry instrumentation APIs when they fit.
 
 ## ByteBuddy Instrumentation Layout
 
@@ -208,7 +196,7 @@ dependencies {
 
 Similarly to the "Regular instrumentation", the `AndroidInstrumentation` implementation still lives here and still uses
 `@AutoService(AndroidInstrumentation::class)`. Its `install()` method usually configures
-shared singletons that the woven advice will call later.
+shared singletons that the woven code will call later.
 
 Keep the telemetry implementation in `library`, not `agent`, as the `agent` module won't be part of the host app's runtime dependencies (the agent is only used at compile time to do bytecode weaving).
 
