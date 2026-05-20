@@ -87,21 +87,6 @@ public final class io/opentelemetry/android/common/internal/features/networkattr
 	public static fun values ()[Lio/opentelemetry/android/common/internal/features/networkattributes/data/NetworkState;
 }
 
-public abstract interface class io/opentelemetry/android/common/internal/tools/time/SystemTime {
-	public static final field Companion Lio/opentelemetry/android/common/internal/tools/time/SystemTime$Companion;
-	public abstract fun getCurrentTimeMillis ()J
-}
-
-public final class io/opentelemetry/android/common/internal/tools/time/SystemTime$Companion {
-	public final fun get ()Lio/opentelemetry/android/common/internal/tools/time/SystemTime;
-	public final fun setForTest (Lio/opentelemetry/android/common/internal/tools/time/SystemTime;)V
-}
-
-public final class io/opentelemetry/android/common/internal/tools/time/SystemTime$DefaultSystemTime : io/opentelemetry/android/common/internal/tools/time/SystemTime {
-	public fun <init> ()V
-	public fun getCurrentTimeMillis ()J
-}
-
 public final class io/opentelemetry/android/common/internal/utils/AndroidUtilsKt {
 	public static final fun getThreadIdCompat (Ljava/lang/Thread;)J
 }
