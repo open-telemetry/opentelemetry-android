@@ -9,7 +9,7 @@ import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.internal.services.periodic.PeriodicTaskScheduler
 import java.util.concurrent.atomic.AtomicReference
 
-class DiskBufferingEnablement(
+internal class DiskBufferingEnablement(
     private val signalFromDiskExporter: SignalFromDiskExporter,
     private val taskScheduler: PeriodicTaskScheduler,
 ) : ScheduleEnablement {

@@ -20,9 +20,7 @@ class ServicesTest {
         val services = Services(ctx)
         assertNotNull(services)
         assertNotNull(services.appLifecycle)
-        assertNotNull(services.cacheStorage)
         assertNotNull(services.currentNetworkProvider)
-        assertNotNull(services.periodicTaskScheduler)
         assertNotNull(services.visibleScreenTracker)
 
         // assert no exceptions thrown

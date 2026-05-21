@@ -88,7 +88,6 @@ class OpenTelemetryRumInitializerTest {
         every { services.appLifecycle }.returns(appLifecycle)
         every { services.currentNetworkProvider }.returns(mockk(relaxed = true))
         every { services.visibleScreenTracker }.returns(mockk(relaxed = true))
-        every { services.cacheStorage }.returns(mockk(relaxed = true))
         every { services.close() } just Runs
         Services.set(services)
         return services
