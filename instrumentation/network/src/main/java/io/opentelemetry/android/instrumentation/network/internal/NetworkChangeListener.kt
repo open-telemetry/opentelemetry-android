@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.services.network
+package io.opentelemetry.android.instrumentation.network.internal
 
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 

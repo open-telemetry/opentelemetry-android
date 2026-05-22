@@ -86,7 +86,6 @@ class OpenTelemetryRumInitializerTest {
     private fun createAndSetServiceManager(): Services {
         val services = mockk<Services>()
         every { services.appLifecycle }.returns(appLifecycle)
-        every { services.currentNetworkProvider }.returns(mockk(relaxed = true))
         every { services.visibleScreenTracker }.returns(mockk(relaxed = true))
         every { services.close() } just Runs
         Services.set(services)

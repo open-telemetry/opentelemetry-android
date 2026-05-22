@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.services.network
+package io.opentelemetry.android.instrumentation.network.internal
 
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
-import io.opentelemetry.android.internal.services.Service
+import java.io.Closeable
 
 // note: based on ideas from stack overflow:
 // https://stackoverflow.com/questions/32547006/connectivitymanager-getnetworkinfoint-deprecated
@@ -19,7 +19,7 @@ import io.opentelemetry.android.internal.services.Service
  * This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
  */
-interface CurrentNetworkProvider : Service {
+interface CurrentNetworkProvider : Closeable {
     /** Returns up-to-date current network information.  */
     fun refreshNetworkStatus(): CurrentNetwork
 
@@ -28,6 +28,8 @@ interface CurrentNetworkProvider : Service {
     fun addNetworkChangeListener(listener: NetworkChangeListener)
 
     fun removeNetworkChangeListener(listener: NetworkChangeListener)
+
+    override fun close() {}
 
     companion object {
         @JvmField

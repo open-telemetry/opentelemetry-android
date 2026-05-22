@@ -23,20 +23,19 @@ import io.opentelemetry.android.features.diskbuffering.scheduler.ScheduleEnablem
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoaderImpl
-import io.opentelemetry.android.internal.features.networkattrs.NetworkAttributesLogRecordAppender
-import io.opentelemetry.android.internal.features.networkattrs.NetworkAttributesSpanAppender.Companion.create
+import io.opentelemetry.android.instrumentation.network.internal.NetworkAttributesLogRecordAppender
+import io.opentelemetry.android.instrumentation.network.internal.NetworkAttributesSpanAppender.Companion.create
+import io.opentelemetry.android.instrumentation.network.internal.NetworkProviderHolder
 import io.opentelemetry.android.internal.features.persistence.DiskManager
 import io.opentelemetry.android.internal.initialization.InitializationEvents
 import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordAppender
 import io.opentelemetry.android.internal.processors.ScreenAttributesLogRecordProcessor
 import io.opentelemetry.android.internal.processors.SessionIdLogRecordAppender
 import io.opentelemetry.android.internal.services.Services
-import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.periodic.PeriodicTaskScheduler
 import io.opentelemetry.android.internal.services.periodic.PeriodicTaskSchedulerImpl
 import io.opentelemetry.android.internal.services.storage.CacheStorage
 import io.opentelemetry.android.internal.services.storage.CacheStorageImpl
-import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator
@@ -335,11 +334,7 @@ class OpenTelemetryRumBuilder internal constructor(
         val periodicTaskScheduler: Lazy<PeriodicTaskScheduler> =
             lazy { periodicTaskSchedulerOverride ?: PeriodicTaskSchedulerImpl() }
         val initializationEvents = InitializationEvents.get()
-        applyConfiguration(
-            initializationEvents,
-            lazy { services.currentNetworkProvider },
-            lazy { services.visibleScreenTracker },
-        )
+        applyConfiguration(services, initializationEvents)
 
         val bufferDelegatingSpanExporter = BufferDelegatingSpanExporter()
         val bufferDelegatingLogExporter = BufferDelegatingLogExporter()
@@ -378,6 +373,7 @@ class OpenTelemetryRumBuilder internal constructor(
                 .setShutdownHook {
                     exportScheduleEnablement?.disable()
                     services.close()
+                    NetworkProviderHolder.close()
                     if (cacheStorage.isInitialized()) {
                         cacheStorage.value.close()
                     }
@@ -494,9 +490,8 @@ class OpenTelemetryRumBuilder internal constructor(
 
     /** Leverage the configuration to wire up various instrumentation components.  */
     private fun applyConfiguration(
+        services: Services,
         initializationEvents: InitializationEvents,
-        currentNetworkProvider: Lazy<CurrentNetworkProvider>,
-        visibleScreenTracker: Lazy<VisibleScreenTracker>,
     ) {
         if (config.shouldGenerateSdkInitializationEvents()) {
             initializationEvents.recordConfiguration(config)
@@ -514,7 +509,7 @@ class OpenTelemetryRumBuilder internal constructor(
 
         // Network specific attributes
         if (config.shouldIncludeNetworkAttributes()) {
-            val networkProvider = currentNetworkProvider.value
+            val networkProvider = NetworkProviderHolder.get(context)
             // Add span processor that appends network attributes.
             addTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
                 val networkAttributesSpanAppender = create(networkProvider)
@@ -535,7 +530,7 @@ class OpenTelemetryRumBuilder internal constructor(
                 BiFunction { builder: SdkTracerProviderBuilder, _: Context ->
                     builder.addSpanProcessor(
                         ScreenAttributesSpanProcessor(
-                            visibleScreenTracker.value,
+                            services.visibleScreenTracker
                         ),
                     )
                 },
@@ -545,7 +540,7 @@ class OpenTelemetryRumBuilder internal constructor(
                 BiFunction { builder: SdkLoggerProviderBuilder, _: Context ->
                     builder.addLogRecordProcessor(
                         ScreenAttributesLogRecordProcessor(
-                            visibleScreenTracker.value,
+                            services.visibleScreenTracker
                         ),
                     )
                 },

@@ -21,11 +21,12 @@ import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
+import io.opentelemetry.android.instrumentation.network.internal.CurrentNetworkProvider
+import io.opentelemetry.android.instrumentation.network.internal.NetworkChangeListener
+import io.opentelemetry.android.instrumentation.network.internal.NetworkProviderHolder
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener
-import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
-import io.opentelemetry.android.internal.services.network.NetworkChangeListener
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.kotlin.semconv.IncubatingApi
@@ -39,6 +40,7 @@ import io.opentelemetry.kotlin.semconv.NetworkAttributes.NETWORK_CARRIER_MNC
 import io.opentelemetry.kotlin.semconv.NetworkAttributes.NETWORK_CARRIER_NAME
 import io.opentelemetry.kotlin.semconv.NetworkAttributes.NETWORK_CONNECTION_SUBTYPE
 import io.opentelemetry.kotlin.semconv.NetworkAttributes.NETWORK_CONNECTION_TYPE
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -61,6 +63,12 @@ class NetworkChangeInstrumentationTest {
     fun setUp() {
         otelTesting = OpenTelemetryRule.create()
         MockKAnnotations.init(this, relaxUnitFun = true)
+    }
+
+    @After
+    fun tearDown() {
+        NetworkProviderHolder.set(null)
+        Services.set(null)
     }
 
     @Test
@@ -224,9 +232,9 @@ class NetworkChangeInstrumentationTest {
     private fun createTestDependencies(): Pair<Application, OpenTelemetryRum> {
         val app = mockk<Application>()
         val services = mockk<Services>()
-        every { services.currentNetworkProvider } returns currentNetworkProvider
         every { services.appLifecycle } returns appLifecycle
         Services.set(services)
+        NetworkProviderHolder.set(currentNetworkProvider)
         val openTelemetryRum = mockk<OpenTelemetryRum>()
         every { openTelemetryRum.openTelemetry } returns otelTesting.openTelemetry
         every { openTelemetryRum.sessionProvider } returns mockk<SessionProvider>()
