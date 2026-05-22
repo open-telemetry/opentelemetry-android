@@ -23,8 +23,9 @@ import io.opentelemetry.android.features.diskbuffering.scheduler.ScheduleEnablem
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoaderImpl
-import io.opentelemetry.android.internal.features.networkattrs.NetworkAttributesLogRecordAppender
-import io.opentelemetry.android.internal.features.networkattrs.NetworkAttributesSpanAppender.Companion.create
+import io.opentelemetry.android.instrumentation.network.internal.NetworkAttributesLogRecordAppender
+import io.opentelemetry.android.instrumentation.network.internal.NetworkAttributesSpanAppender.Companion.create
+import io.opentelemetry.android.instrumentation.network.internal.NetworkProviderHolder
 import io.opentelemetry.android.internal.features.persistence.DiskManager
 import io.opentelemetry.android.internal.initialization.InitializationEvents
 import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordAppender
@@ -345,6 +346,7 @@ class OpenTelemetryRumBuilder internal constructor(
                 .setShutdownHook {
                     exportScheduleEnablement?.disable()
                     services.close()
+                    NetworkProviderHolder.close()
                 }
 
         // AsyncTask is deprecated but the thread pool is still used all over the Android SDK
@@ -473,7 +475,7 @@ class OpenTelemetryRumBuilder internal constructor(
 
         // Network specific attributes
         if (config.shouldIncludeNetworkAttributes()) {
-            val networkProvider = services.currentNetworkProvider
+            val networkProvider = NetworkProviderHolder.get(context)
             // Add span processor that appends network attributes.
             addTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
                 val networkAttributesSpanAppender = create(networkProvider)

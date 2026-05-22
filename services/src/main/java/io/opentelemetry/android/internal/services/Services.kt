@@ -7,16 +7,11 @@ package io.opentelemetry.android.internal.services
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Context.CONNECTIVITY_SERVICE
-import android.net.ConnectivityManager
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ProcessLifecycleOwner
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycleImpl
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateWatcher
-import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
-import io.opentelemetry.android.internal.services.network.CurrentNetworkProviderImpl
-import io.opentelemetry.android.internal.services.network.detector.NetworkDetector
 import io.opentelemetry.android.internal.services.periodic.PeriodicTaskScheduler
 import io.opentelemetry.android.internal.services.periodic.PeriodicTaskSchedulerImpl
 import io.opentelemetry.android.internal.services.storage.CacheStorage
@@ -38,13 +33,6 @@ class Services internal constructor(
         PeriodicTaskSchedulerImpl()
     }
 
-    override val currentNetworkProvider: CurrentNetworkProvider by lazy {
-        CurrentNetworkProviderImpl(
-            NetworkDetector.Companion.create(context),
-            context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager,
-        )
-    }
-
     override val appLifecycle: AppLifecycle by lazy {
         AppLifecycleImpl(
             ApplicationStateWatcher(),
@@ -59,7 +47,6 @@ class Services internal constructor(
     override fun close() {
         cacheStorage.close()
         periodicTaskScheduler.close()
-        currentNetworkProvider.close()
         appLifecycle.close()
         visibleScreenTracker.close()
     }
