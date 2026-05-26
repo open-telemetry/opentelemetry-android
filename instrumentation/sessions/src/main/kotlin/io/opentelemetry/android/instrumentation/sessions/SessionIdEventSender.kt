@@ -8,8 +8,8 @@ package io.opentelemetry.android.instrumentation.sessions
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.api.logs.Logger
-import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_ID
-import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes.SESSION_PREVIOUS_ID
+import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_ID
+import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_PREVIOUS_ID
 
 /**
  * This class is responsible for generating the session related events as

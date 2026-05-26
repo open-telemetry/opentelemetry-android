@@ -25,7 +25,7 @@ dependencies {
         exclude(group = "androidx.savedstate")
     }
     implementation(libs.opentelemetry.instrumentation.apiSemconv)
-    implementation(libs.opentelemetry.semconv.incubating)
+    implementation(libs.opentelemetry.semconv.kotlin)
 
     testImplementation(project(":test-common"))
     testImplementation(project(":session"))

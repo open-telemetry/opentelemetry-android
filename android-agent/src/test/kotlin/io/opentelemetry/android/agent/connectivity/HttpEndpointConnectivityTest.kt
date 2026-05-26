@@ -6,9 +6,11 @@
 package io.opentelemetry.android.agent.connectivity
 
 import io.mockk.mockk
+import io.opentelemetry.android.Incubating
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
+@OptIn(Incubating::class)
 class HttpEndpointConnectivityTest {
     @Test
     fun `Validate exporter endpoint configuration`() {

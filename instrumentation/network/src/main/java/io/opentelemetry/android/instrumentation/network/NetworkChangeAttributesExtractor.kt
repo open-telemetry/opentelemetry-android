@@ -9,11 +9,13 @@ import io.opentelemetry.android.common.internal.features.networkattributes.Curre
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
 import io.opentelemetry.api.common.AttributesBuilder
-import io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes
+import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.semconv.NetworkAttributes
 
 internal class NetworkChangeAttributesExtractor : NetworkAttributesExtractor {
     private val networkAttributesExtractor = CurrentNetworkAttributesExtractor()
 
+    @OptIn(IncubatingApi::class)
     override fun invoke(
         attributesBuilder: AttributesBuilder,
         currentNetwork: CurrentNetwork,
@@ -27,7 +29,7 @@ internal class NetworkChangeAttributesExtractor : NetworkAttributesExtractor {
         attributesBuilder.put(NETWORK_STATUS_KEY, status)
         if (currentNetwork.state == NetworkState.NO_NETWORK_AVAILABLE) {
             attributesBuilder.put(
-                NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE,
+                NetworkAttributes.NETWORK_CONNECTION_TYPE,
                 currentNetwork.state.humanName,
             )
         } else {

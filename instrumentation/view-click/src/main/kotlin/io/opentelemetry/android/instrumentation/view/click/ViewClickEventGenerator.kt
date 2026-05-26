@@ -18,10 +18,11 @@ import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_LONG_PR
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.Logger
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_X
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_Y
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_ID
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_NAME
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_X
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_Y
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_ID
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_NAME
+import io.opentelemetry.kotlin.semconv.IncubatingApi
 import java.lang.ref.WeakReference
 import java.util.LinkedList
 
@@ -30,6 +31,7 @@ internal class ViewClickEventGenerator(
 ) {
     private var windowRef: WeakReference<Window>? = null
 
+    @OptIn(IncubatingApi::class)
     private val gestureListener = object : GestureDetector.SimpleOnGestureListener() {
 
 
@@ -128,6 +130,7 @@ internal class ViewClickEventGenerator(
     }
 
 
+    @OptIn(IncubatingApi::class)
     private fun createViewAttributes(view: View): Attributes {
         val builder = Attributes.builder()
         builder.put(APP_WIDGET_NAME, viewToName(view))

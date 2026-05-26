@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+@file:OptIn(IncubatingApi::class)
+
 package io.opentelemetry.android.instrumentation.view.click
 
 import android.app.Activity
@@ -38,10 +40,11 @@ import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_X
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_Y
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_ID
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_NAME
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_X
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_Y
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_ID
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_NAME
+import io.opentelemetry.kotlin.semconv.IncubatingApi
 import mockView
 import org.junit.Before
 import org.junit.Test
@@ -126,8 +129,8 @@ class ViewClickInstrumentationTest {
         assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_X), motionEvent.x.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_Y), motionEvent.y.toLong()),
                 equalTo(clicksKey, 1.toLong()),
                 equalTo(toolTypeKey, "finger")
             )
@@ -136,10 +139,10 @@ class ViewClickInstrumentationTest {
         assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, mockView.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, mockView.y.toLong()),
-                equalTo(APP_WIDGET_ID, mockView.id.toString()),
-                equalTo(APP_WIDGET_NAME, "10012"),
+                equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
+                equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
+                equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(clicksKey, 1.toLong()),
                 equalTo(toolTypeKey, "finger")
             )
@@ -197,8 +200,8 @@ class ViewClickInstrumentationTest {
         assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_X), motionEvent.x.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_Y), motionEvent.y.toLong()),
                 equalTo(clicksKey, 1.toLong()),
                 equalTo(toolTypeKey, "finger")
             )
@@ -207,10 +210,10 @@ class ViewClickInstrumentationTest {
         assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, mockView.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, mockView.y.toLong()),
-                equalTo(APP_WIDGET_ID, mockView.id.toString()),
-                equalTo(APP_WIDGET_NAME, "10012"),
+                equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
+                equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
+                equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(clicksKey, 1.toLong()),
                 equalTo(toolTypeKey, "finger")
             )
@@ -271,8 +274,8 @@ class ViewClickInstrumentationTest {
         assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_X), motionEvent.x.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_Y), motionEvent.y.toLong()),
                 equalTo(clicksKey, 1.toLong()),
                 equalTo(toolTypeKey, "finger")
             )
@@ -367,8 +370,8 @@ class ViewClickInstrumentationTest {
         OpenTelemetryAssertions.assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, initialDownEvent.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, initialDownEvent.y.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_X), initialDownEvent.x.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_Y), initialDownEvent.y.toLong()),
                 equalTo(clicksKey, 2.toLong()),
                 equalTo(toolTypeKey, "finger")
             )
@@ -377,10 +380,10 @@ class ViewClickInstrumentationTest {
         OpenTelemetryAssertions.assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, mockView.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, mockView.y.toLong()),
-                equalTo(APP_WIDGET_ID, mockView.id.toString()),
-                equalTo(APP_WIDGET_NAME, "10012"),
+                equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
+                equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
+                equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(clicksKey, 2.toLong()),
                 equalTo(toolTypeKey, "finger")
             )
@@ -434,8 +437,8 @@ class ViewClickInstrumentationTest {
         OpenTelemetryAssertions.assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, initialDownEvent.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, initialDownEvent.y.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_X), initialDownEvent.x.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_Y), initialDownEvent.y.toLong()),
                 equalTo(clicksKey, 2.toLong()),
                 equalTo(toolTypeKey, "mouse"),
                 equalTo(buttonKey, "primary")
@@ -445,10 +448,10 @@ class ViewClickInstrumentationTest {
         OpenTelemetryAssertions.assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, mockView.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, mockView.y.toLong()),
-                equalTo(APP_WIDGET_ID, mockView.id.toString()),
-                equalTo(APP_WIDGET_NAME, "10012"),
+                equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
+                equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
+                equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(clicksKey, 2.toLong()),
                 equalTo(toolTypeKey, "mouse"),
                 equalTo(buttonKey, "primary")
@@ -503,8 +506,8 @@ class ViewClickInstrumentationTest {
         assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_X), motionEvent.x.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_Y), motionEvent.y.toLong()),
                 equalTo(clicksKey, 1.toLong()),
                 equalTo(toolTypeKey, "stylus"),
                 equalTo(buttonKey, "secondary")
@@ -514,10 +517,10 @@ class ViewClickInstrumentationTest {
         assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, mockView.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, mockView.y.toLong()),
-                equalTo(APP_WIDGET_ID, mockView.id.toString()),
-                equalTo(APP_WIDGET_NAME, "10012"),
+                equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
+                equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
+                equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(clicksKey, 1.toLong()),
                 equalTo(toolTypeKey, "stylus"),
                 equalTo(buttonKey, "secondary")
@@ -577,8 +580,8 @@ class ViewClickInstrumentationTest {
         assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, initialDownEvent.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, initialDownEvent.y.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_X), initialDownEvent.x.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_Y), initialDownEvent.y.toLong()),
                 equalTo(clicksKey, 1.toLong()),
                 equalTo(toolTypeKey, "finger")
             )
@@ -587,10 +590,10 @@ class ViewClickInstrumentationTest {
         assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, mockView.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, mockView.y.toLong()),
-                equalTo(APP_WIDGET_ID, mockView.id.toString()),
-                equalTo(APP_WIDGET_NAME, "10012"),
+                equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
+                equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
+                equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(clicksKey, 1.toLong()),
                 equalTo(toolTypeKey, "finger")
             )
@@ -649,8 +652,8 @@ class ViewClickInstrumentationTest {
         OpenTelemetryAssertions.assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, initialDownEvent.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, initialDownEvent.y.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_X), initialDownEvent.x.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_Y), initialDownEvent.y.toLong()),
                 equalTo(clicksKey, 2.toLong()),
                 equalTo(toolTypeKey, "finger")
             )
@@ -709,8 +712,8 @@ class ViewClickInstrumentationTest {
         OpenTelemetryAssertions.assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, initialDownEvent.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, initialDownEvent.y.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_X), initialDownEvent.x.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_Y), initialDownEvent.y.toLong()),
                 equalTo(clicksKey, 2.toLong()),
                 equalTo(toolTypeKey, "finger")
             )
@@ -719,10 +722,10 @@ class ViewClickInstrumentationTest {
         OpenTelemetryAssertions.assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, mockView.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, mockView.y.toLong()),
-                equalTo(APP_WIDGET_ID, mockView.id.toString()),
-                equalTo(APP_WIDGET_NAME, "10012"),
+                equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
+                equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
+                equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(clicksKey, 2.toLong()),
                 equalTo(toolTypeKey, "finger")
             )

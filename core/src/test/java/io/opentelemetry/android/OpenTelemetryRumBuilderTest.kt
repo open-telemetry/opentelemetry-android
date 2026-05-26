@@ -34,11 +34,13 @@ import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTra
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Severity
 import io.opentelemetry.context.propagation.TextMapGetter
 import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.contrib.disk.buffering.exporters.SpanToDiskExporter
+import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.common.CompletableResultCode
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder
@@ -63,7 +65,7 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.export.SpanExporter
-import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes
+import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_ID
 import java.io.IOException
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
@@ -77,6 +79,7 @@ import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@OptIn(IncubatingApi::class)
 @RunWith(AndroidJUnit4::class)
 class OpenTelemetryRumBuilderTest {
     private val resource: Resource =
@@ -153,7 +156,7 @@ class OpenTelemetryRumBuilderTest {
                     .hasResource(resource)
                     .hasAttributesSatisfyingExactly(
                         OpenTelemetryAssertions.equalTo(
-                            SessionIncubatingAttributes.SESSION_ID,
+                            stringKey(SESSION_ID),
                             sessionId,
                         ),
                         OpenTelemetryAssertions.equalTo(
@@ -191,7 +194,7 @@ class OpenTelemetryRumBuilderTest {
             .assertThat(logs[0])
             .hasAttributesSatisfyingExactly(
                 OpenTelemetryAssertions.equalTo(
-                    SessionIncubatingAttributes.SESSION_ID,
+                    stringKey(SESSION_ID),
                     openTelemetryRum.sessionProvider.getSessionId(),
                 ),
                 OpenTelemetryAssertions.equalTo(SCREEN_NAME_KEY, CUR_SCREEN_NAME),
@@ -465,7 +468,7 @@ class OpenTelemetryRumBuilderTest {
                 OpenTelemetryAssertions.equalTo(AttributeKey.stringKey("bing"), "bang"),
                 OpenTelemetryAssertions.equalTo(SCREEN_NAME_KEY, CUR_SCREEN_NAME),
                 OpenTelemetryAssertions.equalTo(
-                    SessionIncubatingAttributes.SESSION_ID,
+                    stringKey(SESSION_ID),
                     rum.sessionProvider.getSessionId(),
                 ),
             ).hasSeverity(Severity.FATAL3)
@@ -586,7 +589,7 @@ class OpenTelemetryRumBuilderTest {
         val otelRumConfig = buildConfig()
         otelRumConfig.setGlobalAttributes {
             Attributes.of(
-                AttributeKey.stringKey("someGlobalKey"),
+                stringKey("someGlobalKey"),
                 "someGlobalValue",
             )
         }
@@ -619,7 +622,7 @@ class OpenTelemetryRumBuilderTest {
             .hasAttributes(
                 Attributes
                     .builder()
-                    .put(SessionIncubatingAttributes.SESSION_ID, rum.sessionProvider.getSessionId())
+                    .put(SESSION_ID, rum.sessionProvider.getSessionId())
                     .put("someGlobalKey", "someGlobalValue")
                     .put("localAttrKey", "localAttrValue")
                     .put(SCREEN_NAME_KEY, CUR_SCREEN_NAME)

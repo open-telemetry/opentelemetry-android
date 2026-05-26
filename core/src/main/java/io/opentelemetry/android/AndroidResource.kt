@@ -9,24 +9,26 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import io.opentelemetry.sdk.resources.Resource
-import io.opentelemetry.semconv.ServiceAttributes.SERVICE_NAME
-import io.opentelemetry.semconv.ServiceAttributes.SERVICE_VERSION
-import io.opentelemetry.semconv.TelemetryAttributes.TELEMETRY_SDK_VERSION
-import io.opentelemetry.semconv.incubating.AndroidIncubatingAttributes.ANDROID_OS_API_LEVEL
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_INSTALLATION_ID
-import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MANUFACTURER
-import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER
-import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes.DEVICE_MODEL_NAME
-import io.opentelemetry.semconv.incubating.OsIncubatingAttributes.OS_DESCRIPTION
-import io.opentelemetry.semconv.incubating.OsIncubatingAttributes.OS_NAME
-import io.opentelemetry.semconv.incubating.OsIncubatingAttributes.OS_TYPE
-import io.opentelemetry.semconv.incubating.OsIncubatingAttributes.OS_VERSION
+import io.opentelemetry.kotlin.semconv.ServiceAttributes.SERVICE_NAME
+import io.opentelemetry.kotlin.semconv.ServiceAttributes.SERVICE_VERSION
+import io.opentelemetry.kotlin.semconv.TelemetryAttributes.TELEMETRY_SDK_VERSION
+import io.opentelemetry.kotlin.semconv.AndroidAttributes.ANDROID_OS_API_LEVEL
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_INSTALLATION_ID
+import io.opentelemetry.kotlin.semconv.DeviceAttributes.DEVICE_MANUFACTURER
+import io.opentelemetry.kotlin.semconv.DeviceAttributes.DEVICE_MODEL_IDENTIFIER
+import io.opentelemetry.kotlin.semconv.DeviceAttributes.DEVICE_MODEL_NAME
+import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.semconv.OsAttributes.OS_DESCRIPTION
+import io.opentelemetry.kotlin.semconv.OsAttributes.OS_NAME
+import io.opentelemetry.kotlin.semconv.OsAttributes.OS_TYPE
+import io.opentelemetry.kotlin.semconv.OsAttributes.OS_VERSION
 import java.util.UUID
 
 private const val SHARED_PREF_FILE = "opentelemetry-android"
 private const val DEFAULT_APP_NAME = "unknown_service:android"
 
 object AndroidResource {
+    @OptIn(IncubatingApi::class)
     @JvmStatic
     fun createDefault(context: Context): Resource {
         val appName = readAppName(context)
@@ -49,15 +51,16 @@ object AndroidResource {
             .build()
     }
 
+    @OptIn(IncubatingApi::class)
     @SuppressLint("UseKtx")
     private fun readInstallId(context: Context): String {
         // install ID is persisted using the app.installation.id semconv as its key
         val prefs = context.getSharedPreferences(SHARED_PREF_FILE, 0)
-        val installId = prefs.getString(APP_INSTALLATION_ID.key, null)
+        val installId = prefs.getString(APP_INSTALLATION_ID, null)
 
         if (installId == null) {
             val id = UUID.randomUUID().toString()
-            prefs.edit().putString(APP_INSTALLATION_ID.key, id).apply()
+            prefs.edit().putString(APP_INSTALLATION_ID, id).apply()
             return id
         }
         return installId

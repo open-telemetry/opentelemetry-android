@@ -13,14 +13,18 @@ import io.mockk.verify
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
+import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.context.Context
+import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.semconv.NetworkAttributes.NETWORK_CONNECTION_SUBTYPE
+import io.opentelemetry.kotlin.semconv.NetworkAttributes.NETWORK_CONNECTION_TYPE
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.trace.ReadWriteSpan
-import io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
+@OptIn(IncubatingApi::class)
 internal class NetworkAttributesSpanAppenderTest {
     @MockK
     lateinit var currentNetworkProvider: CurrentNetworkProvider
@@ -48,9 +52,9 @@ internal class NetworkAttributesSpanAppenderTest {
         verify {
             span.setAllAttributes(
                 Attributes.of(
-                    NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE,
+                    stringKey(NETWORK_CONNECTION_TYPE),
                     "cell",
-                    NetworkIncubatingAttributes.NETWORK_CONNECTION_SUBTYPE,
+                    stringKey(NETWORK_CONNECTION_SUBTYPE),
                     "LTE",
                 ),
             )
