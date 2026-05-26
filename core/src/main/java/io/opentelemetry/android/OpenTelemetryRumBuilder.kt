@@ -122,8 +122,8 @@ class OpenTelemetryRumBuilder internal constructor(
     private var resource: Resource = createDefault(context)
     private var exportScheduleEnablement: ScheduleEnablement? = null
     private var sessionProvider: SessionProvider = SessionProvider.getNoop()
-    private var cacheStorageOverride: CacheStorage? = null
-    private var periodicTaskSchedulerOverride: PeriodicTaskScheduler? = null
+    private lateinit var cacheStorage : CacheStorage
+    private lateinit var periodicTaskScheduler: PeriodicTaskScheduler
 
     /**
      * Assign a [Resource] to be attached to all telemetry emitted by the [OpenTelemetryRum]
@@ -288,7 +288,7 @@ class OpenTelemetryRumBuilder internal constructor(
      * [CacheStorageImpl] backed by the application's cache dir is used.
      */
     internal fun setCacheStorage(cacheStorage: CacheStorage): OpenTelemetryRumBuilder {
-        this.cacheStorageOverride = cacheStorage
+        this.cacheStorage = cacheStorage
         return this
     }
 
@@ -297,7 +297,7 @@ class OpenTelemetryRumBuilder internal constructor(
      * If not set, a default [PeriodicTaskSchedulerImpl] is used.
      */
     internal fun setPeriodicTaskScheduler(periodicTaskScheduler: PeriodicTaskScheduler): OpenTelemetryRumBuilder {
-        this.periodicTaskSchedulerOverride = periodicTaskScheduler
+        this.periodicTaskScheduler = periodicTaskScheduler
         return this
     }
 
@@ -331,9 +331,8 @@ class OpenTelemetryRumBuilder internal constructor(
      */
     fun build(): OpenTelemetryRum {
         val services = Services.get(context)
-        val cacheStorage: Lazy<CacheStorage> = lazy { cacheStorageOverride ?: CacheStorageImpl(context) }
-        val periodicTaskScheduler: Lazy<PeriodicTaskScheduler> =
-            lazy { periodicTaskSchedulerOverride ?: PeriodicTaskSchedulerImpl() }
+        cacheStorage = if (::cacheStorage.isInitialized) cacheStorage else CacheStorageImpl(context)
+        periodicTaskScheduler = if (::periodicTaskScheduler.isInitialized) periodicTaskScheduler else PeriodicTaskSchedulerImpl()
         val initializationEvents = InitializationEvents.get()
         applyConfiguration(
             initializationEvents,
@@ -378,20 +377,14 @@ class OpenTelemetryRumBuilder internal constructor(
                 .setShutdownHook {
                     exportScheduleEnablement?.disable()
                     services.close()
-                    if (cacheStorage.isInitialized()) {
-                        cacheStorage.value.close()
-                    }
-                    if (periodicTaskScheduler.isInitialized()) {
-                        periodicTaskScheduler.value.close()
-                    }
+                    cacheStorage.close()
+                    periodicTaskScheduler.close()
                 }
 
         // AsyncTask is deprecated but the thread pool is still used all over the Android SDK
         // and it provides a way to get a background thread without having to create a new one.
         AsyncTask.THREAD_POOL_EXECUTOR.execute {
             initializeExporters(
-                cacheStorage,
-                periodicTaskScheduler,
                 initializationEvents,
                 bufferDelegatingSpanExporter,
                 bufferDelegatingLogExporter,
@@ -403,8 +396,6 @@ class OpenTelemetryRumBuilder internal constructor(
     }
 
     private fun initializeExporters(
-        cacheStorage: Lazy<CacheStorage>,
-        periodicTaskScheduler: Lazy<PeriodicTaskScheduler>,
         initializationEvents: InitializationEvents,
         bufferDelegatingSpanExporter: BufferDelegatingSpanExporter,
         bufferedDelegatingLogExporter: BufferDelegatingLogExporter,
@@ -418,7 +409,7 @@ class OpenTelemetryRumBuilder internal constructor(
 
         if (diskBufferingConfig.enabled) {
             try {
-                val diskManager = DiskManager(cacheStorage.value, diskBufferingConfig)
+                val diskManager = DiskManager(cacheStorage, diskBufferingConfig)
 
                 val signalsRoot = diskManager.signalsBufferDir
                 val spansDir = File(signalsRoot, "spans")
@@ -452,7 +443,7 @@ class OpenTelemetryRumBuilder internal constructor(
         bufferedDelegatingLogExporter.setDelegate(logsExporter)
         bufferDelegatingSpanExporter.setDelegate(spanExporter)
         bufferDelegatingMetricExporter.setDelegate(metricExporter)
-        scheduleDiskTelemetryReader(periodicTaskScheduler, signalFromDiskExporter)
+        scheduleDiskTelemetryReader(signalFromDiskExporter)
     }
 
     @Throws(IOException::class)
@@ -469,12 +460,11 @@ class OpenTelemetryRumBuilder internal constructor(
     }
 
     private fun scheduleDiskTelemetryReader(
-        periodicTaskScheduler: Lazy<PeriodicTaskScheduler>,
         signalExporter: SignalFromDiskExporter?,
     ) {
         val handler =
             exportScheduleEnablement ?: signalExporter?.let {
-                DiskBufferingEnablement(it, periodicTaskScheduler.value)
+                DiskBufferingEnablement(it, periodicTaskScheduler)
             }
 
         exportScheduleEnablement = handler
