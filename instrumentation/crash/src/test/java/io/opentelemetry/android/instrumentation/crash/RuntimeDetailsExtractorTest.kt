@@ -10,7 +10,6 @@ import android.content.Intent
 import android.os.BatteryManager
 import io.mockk.every
 import io.mockk.mockk
-import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
 import org.junit.jupiter.api.Test
@@ -48,8 +47,8 @@ internal class RuntimeDetailsExtractorTest {
         OpenTelemetryAssertions
             .assertThat(attributes.build())
             .hasSize(3)
-            .containsEntry(RumConstants.STORAGE_SPACE_FREE_KEY, 4200L)
-            .containsKey(RumConstants.HEAP_FREE_KEY)
-            .containsEntry(RumConstants.BATTERY_PERCENT_KEY, 69.0)
+            .containsEntry(RuntimeDetailsExtractor.STORAGE_SPACE_FREE_KEY, 4200L)
+            .containsKey(RuntimeDetailsExtractor.HEAP_FREE_KEY)
+            .containsEntry(RuntimeDetailsExtractor.BATTERY_PERCENT_KEY, 69.0)
     }
 }

@@ -11,6 +11,7 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.opentelemetry.android.common.RumConstants
+import io.opentelemetry.android.instrumentation.activity.ActivityTracer.Companion.START_TYPE_KEY
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
@@ -60,7 +61,7 @@ class ActivityTracerTest {
         trackableTracer.endActiveSpan()
         val span = this.singleSpan
         assertEquals("Restarted", span.name)
-        assertNull(span.attributes.get(RumConstants.START_TYPE_KEY))
+        assertNull(span.attributes.get(START_TYPE_KEY))
     }
 
     @Test
@@ -77,7 +78,7 @@ class ActivityTracerTest {
         trackableTracer.endActiveSpan()
         val span = this.singleSpan
         assertEquals("AppStart", span.name)
-        assertEquals("hot", span.attributes.get(RumConstants.START_TYPE_KEY))
+        assertEquals("hot", span.attributes.get(START_TYPE_KEY))
     }
 
     @Test
@@ -94,7 +95,7 @@ class ActivityTracerTest {
         trackableTracer.endActiveSpan()
         val span = this.singleSpan
         assertEquals("Restarted", span.name)
-        assertNull(span.attributes.get(RumConstants.START_TYPE_KEY))
+        assertNull(span.attributes.get(START_TYPE_KEY))
     }
 
     @Test
@@ -112,7 +113,7 @@ class ActivityTracerTest {
         trackableTracer.endActiveSpan()
         val span = this.singleSpan
         assertEquals("Created", span.name)
-        assertNull(span.attributes.get(RumConstants.START_TYPE_KEY))
+        assertNull(span.attributes.get(START_TYPE_KEY))
     }
 
     @Test
@@ -129,7 +130,7 @@ class ActivityTracerTest {
         trackableTracer.endActiveSpan()
         val span = this.singleSpan
         assertEquals("AppStart", span.name)
-        assertEquals("warm", span.attributes.get(RumConstants.START_TYPE_KEY))
+        assertEquals("warm", span.attributes.get(START_TYPE_KEY))
     }
 
     @Test
@@ -151,7 +152,7 @@ class ActivityTracerTest {
 
         val appStartSpan = spans[0]
         assertEquals("AppStart", appStartSpan.name)
-        assertEquals("cold", appStartSpan.attributes.get(RumConstants.START_TYPE_KEY))
+        assertEquals("cold", appStartSpan.attributes.get(START_TYPE_KEY))
 
         val innerSpan = spans[1]
         assertEquals("Created", innerSpan.name)

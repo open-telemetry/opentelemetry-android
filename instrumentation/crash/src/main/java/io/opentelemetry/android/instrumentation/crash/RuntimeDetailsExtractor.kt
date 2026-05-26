@@ -10,8 +10,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
-import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
+import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import java.io.File
 
@@ -38,13 +38,13 @@ internal class RuntimeDetailsExtractor(
     ): Attributes {
         val attributes = Attributes.builder()
         attributes.put(
-            RumConstants.STORAGE_SPACE_FREE_KEY,
+            STORAGE_SPACE_FREE_KEY,
             this.getCurrentStorageFreeSpaceInBytes(),
         )
-        attributes.put(RumConstants.HEAP_FREE_KEY, this.getCurrentFreeHeapInBytes())
+        attributes.put(HEAP_FREE_KEY, this.getCurrentFreeHeapInBytes())
 
         this.currentBatteryPercent?.let {
-            attributes.put(RumConstants.BATTERY_PERCENT_KEY, it)
+            attributes.put(BATTERY_PERCENT_KEY, it)
         }
         return attributes.build()
     }
@@ -64,5 +64,9 @@ internal class RuntimeDetailsExtractor(
             context.registerReceiver(runtimeDetails, batteryChangedFilter)
             return runtimeDetails
         }
+
+        val BATTERY_PERCENT_KEY: AttributeKey<Double> = AttributeKey.doubleKey("battery.percent")
+        val STORAGE_SPACE_FREE_KEY: AttributeKey<Long> = AttributeKey.longKey("storage.free")
+        val HEAP_FREE_KEY: AttributeKey<Long> = AttributeKey.longKey("heap.free")
     }
 }

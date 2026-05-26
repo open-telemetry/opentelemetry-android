@@ -9,6 +9,7 @@ import android.app.Activity
 import io.mockk.every
 import io.mockk.mockk
 import io.opentelemetry.android.common.RumConstants
+import io.opentelemetry.android.instrumentation.activity.ActivityTracer.Companion.START_TYPE_KEY
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
@@ -97,7 +98,7 @@ internal class ActivityCallbacksTest {
         val span = spans[0]
 
         assertEquals("AppStart", span.name)
-        assertEquals("warm", span.attributes.get(RumConstants.START_TYPE_KEY))
+        assertEquals("warm", span.attributes.get(START_TYPE_KEY))
         assertEquals(
             activity.javaClass.simpleName,
             span.attributes.get(ActivityTracer.ACTIVITY_NAME_KEY),
@@ -146,7 +147,7 @@ internal class ActivityCallbacksTest {
         val span = spans[0]
 
         assertEquals("AppStart", span.name)
-        assertEquals("hot", span.attributes.get(RumConstants.START_TYPE_KEY))
+        assertEquals("hot", span.attributes.get(START_TYPE_KEY))
         assertEquals(
             activity.javaClass.simpleName,
             span.attributes.get(ActivityTracer.ACTIVITY_NAME_KEY),

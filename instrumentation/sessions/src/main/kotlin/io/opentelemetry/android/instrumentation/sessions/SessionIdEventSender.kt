@@ -5,8 +5,6 @@
 
 package io.opentelemetry.android.instrumentation.sessions
 
-import io.opentelemetry.android.common.RumConstants.Events.EVENT_SESSION_END
-import io.opentelemetry.android.common.RumConstants.Events.EVENT_SESSION_START
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.api.logs.Logger
@@ -45,5 +43,10 @@ internal class SessionIdEventSender(
             .setEventName(EVENT_SESSION_END)
             .setAttribute(SESSION_ID, session.id)
             .emit()
+    }
+
+    companion object {
+        const val EVENT_SESSION_START: String = "session.start"
+        const val EVENT_SESSION_END: String = "session.end"
     }
 }
