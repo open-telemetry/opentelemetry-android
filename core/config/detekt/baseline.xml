@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>LongMethod:OpenTelemetryRumBuilder.kt$OpenTelemetryRumBuilder$fun build(): OpenTelemetryRum</ID>
+  </CurrentIssues>
+</SmellBaseline>

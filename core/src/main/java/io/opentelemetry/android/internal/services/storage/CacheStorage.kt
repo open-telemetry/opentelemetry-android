@@ -8,6 +8,6 @@ package io.opentelemetry.android.internal.services.storage
 import io.opentelemetry.android.internal.services.Service
 import java.io.File
 
-interface CacheStorage : Service {
+internal interface CacheStorage : Service {
     val cacheDir: File
 }

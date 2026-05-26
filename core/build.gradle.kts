@@ -76,6 +76,7 @@ dependencies {
     testImplementation(libs.awaitility)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.junit.ktx)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
 
 extra["pomName"] = "OpenTelemetry Android Instrumentation"

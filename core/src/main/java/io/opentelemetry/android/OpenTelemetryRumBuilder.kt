@@ -31,6 +31,12 @@ import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordApp
 import io.opentelemetry.android.internal.processors.ScreenAttributesLogRecordProcessor
 import io.opentelemetry.android.internal.processors.SessionIdLogRecordAppender
 import io.opentelemetry.android.internal.services.Services
+import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
+import io.opentelemetry.android.internal.services.periodic.PeriodicTaskScheduler
+import io.opentelemetry.android.internal.services.periodic.PeriodicTaskSchedulerImpl
+import io.opentelemetry.android.internal.services.storage.CacheStorage
+import io.opentelemetry.android.internal.services.storage.CacheStorageImpl
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator
@@ -116,6 +122,8 @@ class OpenTelemetryRumBuilder internal constructor(
     private var resource: Resource = createDefault(context)
     private var exportScheduleEnablement: ScheduleEnablement? = null
     private var sessionProvider: SessionProvider = SessionProvider.getNoop()
+    private var cacheStorageOverride: CacheStorage? = null
+    private var periodicTaskSchedulerOverride: PeriodicTaskScheduler? = null
 
     /**
      * Assign a [Resource] to be attached to all telemetry emitted by the [OpenTelemetryRum]
@@ -276,6 +284,24 @@ class OpenTelemetryRumBuilder internal constructor(
     }
 
     /**
+     * Overrides the default [CacheStorage] used for disk buffering. If not set, a default
+     * [CacheStorageImpl] backed by the application's cache dir is used.
+     */
+    internal fun setCacheStorage(cacheStorage: CacheStorage): OpenTelemetryRumBuilder {
+        this.cacheStorageOverride = cacheStorage
+        return this
+    }
+
+    /**
+     * Overrides the default [PeriodicTaskScheduler] used for scheduling background work.
+     * If not set, a default [PeriodicTaskSchedulerImpl] is used.
+     */
+    internal fun setPeriodicTaskScheduler(periodicTaskScheduler: PeriodicTaskScheduler): OpenTelemetryRumBuilder {
+        this.periodicTaskSchedulerOverride = periodicTaskScheduler
+        return this
+    }
+
+    /**
      * Adds a callback to be invoked after the OpenTelemetry instance has been initialized. This can be
      * used to defer some early lifecycle functionality until the OpenTelemetry instance is ready.
      *
@@ -305,8 +331,15 @@ class OpenTelemetryRumBuilder internal constructor(
      */
     fun build(): OpenTelemetryRum {
         val services = Services.get(context)
+        val cacheStorage: Lazy<CacheStorage> = lazy { cacheStorageOverride ?: CacheStorageImpl(context) }
+        val periodicTaskScheduler: Lazy<PeriodicTaskScheduler> =
+            lazy { periodicTaskSchedulerOverride ?: PeriodicTaskSchedulerImpl() }
         val initializationEvents = InitializationEvents.get()
-        applyConfiguration(services, initializationEvents)
+        applyConfiguration(
+            initializationEvents,
+            lazy { services.currentNetworkProvider },
+            lazy { services.visibleScreenTracker },
+        )
 
         val bufferDelegatingSpanExporter = BufferDelegatingSpanExporter()
         val bufferDelegatingLogExporter = BufferDelegatingLogExporter()
@@ -345,13 +378,20 @@ class OpenTelemetryRumBuilder internal constructor(
                 .setShutdownHook {
                     exportScheduleEnablement?.disable()
                     services.close()
+                    if (cacheStorage.isInitialized()) {
+                        cacheStorage.value.close()
+                    }
+                    if (periodicTaskScheduler.isInitialized()) {
+                        periodicTaskScheduler.value.close()
+                    }
                 }
 
         // AsyncTask is deprecated but the thread pool is still used all over the Android SDK
         // and it provides a way to get a background thread without having to create a new one.
         AsyncTask.THREAD_POOL_EXECUTOR.execute {
             initializeExporters(
-                services,
+                cacheStorage,
+                periodicTaskScheduler,
                 initializationEvents,
                 bufferDelegatingSpanExporter,
                 bufferDelegatingLogExporter,
@@ -363,7 +403,8 @@ class OpenTelemetryRumBuilder internal constructor(
     }
 
     private fun initializeExporters(
-        services: Services,
+        cacheStorage: Lazy<CacheStorage>,
+        periodicTaskScheduler: Lazy<PeriodicTaskScheduler>,
         initializationEvents: InitializationEvents,
         bufferDelegatingSpanExporter: BufferDelegatingSpanExporter,
         bufferedDelegatingLogExporter: BufferDelegatingLogExporter,
@@ -377,8 +418,7 @@ class OpenTelemetryRumBuilder internal constructor(
 
         if (diskBufferingConfig.enabled) {
             try {
-                val storage = services.cacheStorage
-                val diskManager = DiskManager(storage, diskBufferingConfig)
+                val diskManager = DiskManager(cacheStorage.value, diskBufferingConfig)
 
                 val signalsRoot = diskManager.signalsBufferDir
                 val spansDir = File(signalsRoot, "spans")
@@ -412,7 +452,7 @@ class OpenTelemetryRumBuilder internal constructor(
         bufferedDelegatingLogExporter.setDelegate(logsExporter)
         bufferDelegatingSpanExporter.setDelegate(spanExporter)
         bufferDelegatingMetricExporter.setDelegate(metricExporter)
-        scheduleDiskTelemetryReader(services, signalFromDiskExporter)
+        scheduleDiskTelemetryReader(periodicTaskScheduler, signalFromDiskExporter)
     }
 
     @Throws(IOException::class)
@@ -429,12 +469,12 @@ class OpenTelemetryRumBuilder internal constructor(
     }
 
     private fun scheduleDiskTelemetryReader(
-        services: Services,
+        periodicTaskScheduler: Lazy<PeriodicTaskScheduler>,
         signalExporter: SignalFromDiskExporter?,
     ) {
         val handler =
             exportScheduleEnablement ?: signalExporter?.let {
-                DiskBufferingEnablement(it, services.periodicTaskScheduler)
+                DiskBufferingEnablement(it, periodicTaskScheduler.value)
             }
 
         exportScheduleEnablement = handler
@@ -454,8 +494,9 @@ class OpenTelemetryRumBuilder internal constructor(
 
     /** Leverage the configuration to wire up various instrumentation components.  */
     private fun applyConfiguration(
-        services: Services,
         initializationEvents: InitializationEvents,
+        currentNetworkProvider: Lazy<CurrentNetworkProvider>,
+        visibleScreenTracker: Lazy<VisibleScreenTracker>,
     ) {
         if (config.shouldGenerateSdkInitializationEvents()) {
             initializationEvents.recordConfiguration(config)
@@ -473,7 +514,7 @@ class OpenTelemetryRumBuilder internal constructor(
 
         // Network specific attributes
         if (config.shouldIncludeNetworkAttributes()) {
-            val networkProvider = services.currentNetworkProvider
+            val networkProvider = currentNetworkProvider.value
             // Add span processor that appends network attributes.
             addTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
                 val networkAttributesSpanAppender = create(networkProvider)
@@ -494,7 +535,7 @@ class OpenTelemetryRumBuilder internal constructor(
                 BiFunction { builder: SdkTracerProviderBuilder, _: Context ->
                     builder.addSpanProcessor(
                         ScreenAttributesSpanProcessor(
-                            services.visibleScreenTracker,
+                            visibleScreenTracker.value,
                         ),
                     )
                 },
@@ -504,7 +545,7 @@ class OpenTelemetryRumBuilder internal constructor(
                 BiFunction { builder: SdkLoggerProviderBuilder, _: Context ->
                     builder.addLogRecordProcessor(
                         ScreenAttributesLogRecordProcessor(
-                            services.visibleScreenTracker,
+                            visibleScreenTracker.value,
                         ),
                     )
                 },

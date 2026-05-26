@@ -178,21 +178,6 @@ public final class io/opentelemetry/android/features/diskbuffering/SignalFromDis
 	public final fun set (Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;)V
 }
 
-public final class io/opentelemetry/android/features/diskbuffering/scheduler/DiskBufferingEnablement : io/opentelemetry/android/features/diskbuffering/scheduler/ScheduleEnablement {
-	public fun <init> (Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;Lio/opentelemetry/android/internal/services/periodic/PeriodicTaskScheduler;)V
-	public fun disable ()V
-	public fun enable ()V
-}
-
-public final class io/opentelemetry/android/features/diskbuffering/scheduler/PeriodicExporter : io/opentelemetry/android/internal/services/periodic/PeriodicRunnable {
-	public synthetic fun <init> (Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public synthetic fun <init> (Lio/opentelemetry/android/features/diskbuffering/SignalFromDiskExporter;JLkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun period-UwyO8pc ()J
-	public fun run ()V
-	public fun shouldStop ()Z
-	public fun stop ()V
-}
-
 public abstract interface class io/opentelemetry/android/features/diskbuffering/scheduler/ScheduleEnablement {
 	public fun disable ()V
 	public abstract fun enable ()V

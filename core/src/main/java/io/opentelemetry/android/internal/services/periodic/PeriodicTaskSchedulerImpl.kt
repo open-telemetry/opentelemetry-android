@@ -8,7 +8,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class PeriodicTaskSchedulerImpl(
+internal class PeriodicTaskSchedulerImpl(
     dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : PeriodicTaskScheduler {
     private val job = SupervisorJob()

@@ -17,10 +17,6 @@ import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateW
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProviderImpl
 import io.opentelemetry.android.internal.services.network.detector.NetworkDetector
-import io.opentelemetry.android.internal.services.periodic.PeriodicTaskScheduler
-import io.opentelemetry.android.internal.services.periodic.PeriodicTaskSchedulerImpl
-import io.opentelemetry.android.internal.services.storage.CacheStorage
-import io.opentelemetry.android.internal.services.storage.CacheStorageImpl
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTrackerImpl
 
@@ -30,14 +26,6 @@ import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTra
 class Services internal constructor(
     private val context: Context,
 ) : ServicesFactory {
-    override val cacheStorage: CacheStorage by lazy {
-        CacheStorageImpl(context)
-    }
-
-    override val periodicTaskScheduler: PeriodicTaskScheduler by lazy {
-        PeriodicTaskSchedulerImpl()
-    }
-
     override val currentNetworkProvider: CurrentNetworkProvider by lazy {
         CurrentNetworkProviderImpl(
             NetworkDetector.Companion.create(context),
@@ -57,8 +45,6 @@ class Services internal constructor(
     }
 
     override fun close() {
-        cacheStorage.close()
-        periodicTaskScheduler.close()
         currentNetworkProvider.close()
         appLifecycle.close()
         visibleScreenTracker.close()

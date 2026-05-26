@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-class PeriodicExporter(
+internal class PeriodicExporter(
     private val delegate: SignalFromDiskExporter,
     private val exportPeriod: Duration = 10.seconds,
 ) : PeriodicRunnable {

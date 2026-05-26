@@ -64,7 +64,6 @@ import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes
-import java.io.File
 import java.io.IOException
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
@@ -505,8 +504,8 @@ class OpenTelemetryRumBuilderTest {
 
     @Test
     fun diskBufferingEnabled_when_exception_thrown() {
-        val services: Services = createAndSetServiceManager()
-        val cacheStorage = services.cacheStorage
+        createAndSetServiceManager()
+        val cacheStorage = mockk<CacheStorage>()
         every { cacheStorage.cacheDir } answers { throw IOException() }
 
         val exporterSlot = slot<SpanExporter>()
@@ -521,6 +520,7 @@ class OpenTelemetryRumBuilderTest {
         RumBuilder
             .builder(application, config)
             .setExportScheduleEnablement(scheduleHandler)
+            .setCacheStorage(cacheStorage)
             .build()
 
         Awaitility
@@ -637,10 +637,6 @@ class OpenTelemetryRumBuilderTest {
         private fun createAndSetServiceManager(): Services {
             val services = mockk<Services>()
             every { services.appLifecycle } returns mockk<AppLifecycle>()
-            every { services.cacheStorage } returns
-                mockk<CacheStorage>().apply {
-                    every { this@apply.cacheDir } returns File("")
-                }
             val screenService = mockk<VisibleScreenTracker>()
             every { screenService.currentlyVisibleScreen } returns CUR_SCREEN_NAME
             every { services.visibleScreenTracker } returns screenService
