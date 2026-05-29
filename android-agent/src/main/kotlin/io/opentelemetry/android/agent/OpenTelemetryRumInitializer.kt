@@ -24,6 +24,9 @@ import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
+import io.opentelemetry.sdk.logs.export.LogRecordExporter
+import io.opentelemetry.sdk.metrics.export.MetricExporter
+import io.opentelemetry.sdk.trace.export.SpanExporter
 
 @OptIn(Incubating::class)
 object OpenTelemetryRumInitializer {
@@ -74,7 +77,7 @@ object OpenTelemetryRumInitializer {
             .build()
     }
 
-    private fun createSpanExporter(endpoint: HttpEndpointConnectivity): OtlpHttpSpanExporter =
+    private fun createSpanExporter(endpoint: HttpEndpointConnectivity): SpanExporter =
         OtlpHttpSpanExporter
             .builder()
             .setEndpoint(endpoint.getUrl())
@@ -89,7 +92,7 @@ object OpenTelemetryRumInitializer {
                 }
             }.build()
 
-    private fun createLogExporter(endpoint: HttpEndpointConnectivity): OtlpHttpLogRecordExporter =
+    private fun createLogExporter(endpoint: HttpEndpointConnectivity): LogRecordExporter =
         OtlpHttpLogRecordExporter
             .builder()
             .setEndpoint(endpoint.getUrl())
@@ -104,7 +107,7 @@ object OpenTelemetryRumInitializer {
                 }
             }.build()
 
-    private fun createMetricExporter(endpoint: HttpEndpointConnectivity): OtlpHttpMetricExporter =
+    private fun createMetricExporter(endpoint: HttpEndpointConnectivity): MetricExporter =
         OtlpHttpMetricExporter
             .builder()
             .setEndpoint(endpoint.getUrl())
