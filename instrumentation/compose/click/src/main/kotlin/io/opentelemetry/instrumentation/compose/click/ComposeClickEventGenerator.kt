@@ -13,10 +13,11 @@ import androidx.compose.ui.node.LayoutNode
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.Logger
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_X
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_Y
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_ID
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_NAME
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_X
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_Y
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_ID
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_NAME
+import io.opentelemetry.kotlin.semconv.IncubatingApi
 import java.lang.ref.WeakReference
 import kotlin.let
 
@@ -33,6 +34,7 @@ internal class ComposeClickEventGenerator(
         window.callback = WindowCallbackWrapper(currentCallback, this)
     }
 
+    @OptIn(IncubatingApi::class)
     fun generateClick(motionEvent: MotionEvent?) {
         windowRef?.get()?.let { window ->
             if (motionEvent != null && motionEvent.actionMasked == MotionEvent.ACTION_UP) {
@@ -65,6 +67,7 @@ internal class ComposeClickEventGenerator(
             .logRecordBuilder()
             .setEventName(name)
 
+    @OptIn(IncubatingApi::class)
     private fun createNodeAttributes(node: LayoutNode): Attributes {
         val builder = Attributes.builder()
         builder.put(APP_WIDGET_NAME, composeTapTargetDetector.nodeToName(node))

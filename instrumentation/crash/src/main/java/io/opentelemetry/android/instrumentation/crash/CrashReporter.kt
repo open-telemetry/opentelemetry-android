@@ -10,11 +10,12 @@ import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.context.Context
-import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_MESSAGE
-import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE
-import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_TYPE
-import io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.THREAD_ID
-import io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.THREAD_NAME
+import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_MESSAGE
+import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE
+import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_TYPE
+import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.semconv.ThreadAttributes.THREAD_ID
+import io.opentelemetry.kotlin.semconv.ThreadAttributes.THREAD_NAME
 
 internal class CrashReporter(
     additionalExtractors: List<EventAttributesExtractor<CrashDetails>>,
@@ -33,6 +34,7 @@ internal class CrashReporter(
         Thread.setDefaultUncaughtExceptionHandler(handler)
     }
 
+    @OptIn(IncubatingApi::class)
     private fun processCrash(
         openTelemetry: OpenTelemetry,
         crashDetails: CrashDetails,

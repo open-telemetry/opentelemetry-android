@@ -15,14 +15,16 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.mockk
 import io.mockk.slot
 import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.sdk.resources.Resource
 import io.opentelemetry.sdk.resources.ResourceBuilder
-import io.opentelemetry.semconv.ServiceAttributes
-import io.opentelemetry.semconv.TelemetryAttributes
-import io.opentelemetry.semconv.incubating.AndroidIncubatingAttributes
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes
-import io.opentelemetry.semconv.incubating.DeviceIncubatingAttributes
-import io.opentelemetry.semconv.incubating.OsIncubatingAttributes
+import io.opentelemetry.kotlin.semconv.TelemetryAttributes
+import io.opentelemetry.kotlin.semconv.AndroidAttributes
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_INSTALLATION_ID
+import io.opentelemetry.kotlin.semconv.DeviceAttributes
+import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.semconv.OsAttributes
+import io.opentelemetry.kotlin.semconv.ServiceAttributes.SERVICE_NAME
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -48,6 +50,7 @@ internal class AndroidResourceTest {
     private lateinit var expectedResourceBuilder: ResourceBuilder
     private lateinit var appInfo: ApplicationInfo
 
+    @OptIn(IncubatingApi::class)
     @BeforeEach
     fun setUp() {
         MockKAnnotations.init(this)
@@ -55,7 +58,7 @@ internal class AndroidResourceTest {
             mockk {
                 every {
                     getString(
-                        AppIncubatingAttributes.APP_INSTALLATION_ID.key,
+                        APP_INSTALLATION_ID,
                         null,
                     )
                 } returns installId
@@ -72,19 +75,19 @@ internal class AndroidResourceTest {
         expectedResourceBuilder =
             Resource
                 .builder()
-                .put(ServiceAttributes.SERVICE_NAME, appName)
+                .put(SERVICE_NAME, appName)
                 .put(TelemetryAttributes.TELEMETRY_SDK_VERSION, rumSdkVersion)
-                .put(DeviceIncubatingAttributes.DEVICE_MODEL_NAME, Build.MODEL)
-                .put(DeviceIncubatingAttributes.DEVICE_MODEL_IDENTIFIER, Build.MODEL)
-                .put(DeviceIncubatingAttributes.DEVICE_MANUFACTURER, Build.MANUFACTURER)
-                .put(OsIncubatingAttributes.OS_NAME, "Android")
-                .put(OsIncubatingAttributes.OS_TYPE, "linux")
-                .put(OsIncubatingAttributes.OS_VERSION, Build.VERSION.RELEASE)
+                .put(DeviceAttributes.DEVICE_MODEL_NAME, Build.MODEL)
+                .put(DeviceAttributes.DEVICE_MODEL_IDENTIFIER, Build.MODEL)
+                .put(DeviceAttributes.DEVICE_MANUFACTURER, Build.MANUFACTURER)
+                .put(OsAttributes.OS_NAME, "Android")
+                .put(OsAttributes.OS_TYPE, "linux")
+                .put(OsAttributes.OS_VERSION, Build.VERSION.RELEASE)
                 .put(
-                    AndroidIncubatingAttributes.ANDROID_OS_API_LEVEL,
+                    AndroidAttributes.ANDROID_OS_API_LEVEL,
                     Build.VERSION.SDK_INT.toString(),
-                ).put(OsIncubatingAttributes.OS_DESCRIPTION, osDescription)
-                .put(AppIncubatingAttributes.APP_INSTALLATION_ID, installId)
+                ).put(OsAttributes.OS_DESCRIPTION, osDescription)
+                .put(APP_INSTALLATION_ID, installId)
     }
 
     @Test
@@ -102,7 +105,7 @@ internal class AndroidResourceTest {
         every { ctx.applicationContext.applicationInfo } returns appInfo
 
         assertResourceMatches(
-            extraAttributes = mapOf(ServiceAttributes.SERVICE_NAME to "shim sham"),
+            extraAttributes = mapOf(stringKey(SERVICE_NAME) to "shim sham"),
         )
     }
 
@@ -112,10 +115,11 @@ internal class AndroidResourceTest {
         every { ctx.applicationContext.resources } throws SecurityException("boom")
 
         assertResourceMatches(
-            extraAttributes = mapOf(ServiceAttributes.SERVICE_NAME to "unknown_service:android"),
+            extraAttributes = mapOf(stringKey(SERVICE_NAME) to "unknown_service:android"),
         )
     }
 
+    @OptIn(IncubatingApi::class)
     @Test
     fun `test install id generated if none available`() {
         val slot = slot<String>()
@@ -125,7 +129,7 @@ internal class AndroidResourceTest {
             mockk {
                 every {
                     getString(
-                        AppIncubatingAttributes.APP_INSTALLATION_ID.key,
+                        APP_INSTALLATION_ID,
                         null,
                     )
                 } returns null
@@ -134,14 +138,14 @@ internal class AndroidResourceTest {
 
         every {
             editor.putString(
-                AppIncubatingAttributes.APP_INSTALLATION_ID.key,
+                APP_INSTALLATION_ID,
                 capture(slot),
             )
         } returns editor
 
         assertResourceMatches(
             resource = AndroidResource.createDefault(ctx),
-            extraAttributes = mapOf(AppIncubatingAttributes.APP_INSTALLATION_ID to slot.captured),
+            extraAttributes = mapOf(stringKey(APP_INSTALLATION_ID) to slot.captured),
         )
         assertNotNull(UUID.fromString(slot.captured))
     }

@@ -11,9 +11,10 @@ import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.context.Context
-import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE
-import io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.THREAD_ID
-import io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes.THREAD_NAME
+import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE
+import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.semconv.ThreadAttributes.THREAD_ID
+import io.opentelemetry.kotlin.semconv.ThreadAttributes.THREAD_NAME
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.SECONDS
@@ -73,6 +74,7 @@ internal class AnrWatcher(
         }
     }
 
+    @OptIn(IncubatingApi::class)
     private fun emitAnrEvent(stackTrace: Array<StackTraceElement>) {
         @Suppress("DEPRECATION")
         val id = mainThread.threadIdCompat

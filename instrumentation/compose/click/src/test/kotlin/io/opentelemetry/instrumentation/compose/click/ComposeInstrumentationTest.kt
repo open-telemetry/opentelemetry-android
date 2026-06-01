@@ -41,18 +41,22 @@ import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.api.common.AttributeKey.longKey
+import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_X
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_SCREEN_COORDINATE_Y
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_ID
-import io.opentelemetry.semconv.incubating.AppIncubatingAttributes.APP_WIDGET_NAME
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_X
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_Y
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_ID
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_NAME
+import io.opentelemetry.kotlin.semconv.IncubatingApi
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@OptIn(IncubatingApi::class)
 @RunWith(AndroidJUnit4::class)
 internal class ComposeInstrumentationTest {
     private lateinit var openTelemetryRule: OpenTelemetryRule
@@ -152,16 +156,16 @@ internal class ComposeInstrumentationTest {
         assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong()),
-                equalTo(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_X), motionEvent.x.toLong()),
+                equalTo(longKey(APP_SCREEN_COORDINATE_Y), motionEvent.y.toLong()),
             )
 
         event = events[1]
         assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfying(
-                equalTo(APP_WIDGET_ID, mockLayoutNode.semanticsId.toString()),
-                equalTo(APP_WIDGET_NAME, "clickMe"),
+                equalTo(stringKey(APP_WIDGET_ID), mockLayoutNode.semanticsId.toString()),
+                equalTo(stringKey(APP_WIDGET_NAME), "clickMe"),
             )
     }
 

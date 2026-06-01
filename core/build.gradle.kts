@@ -68,7 +68,7 @@ dependencies {
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.exporter.logging)
     implementation(libs.opentelemetry.instrumentation.api)
-    implementation(libs.opentelemetry.semconv.incubating)
+    implementation(libs.opentelemetry.semconv.kotlin)
     implementation(libs.opentelemetry.diskBuffering)
     implementation(libs.opentelemetry.processors)
     implementation(libs.kotlinx.coroutines)

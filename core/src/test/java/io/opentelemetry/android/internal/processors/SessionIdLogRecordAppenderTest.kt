@@ -11,14 +11,17 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.verify
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.context.Context
+import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_ID
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord
-import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 private const val SESSION_ID_VALUE = "0666"
 
+@OptIn(IncubatingApi::class)
 class SessionIdLogRecordAppenderTest {
     @MockK
     lateinit var sessionProvider: SessionProvider
@@ -39,6 +42,6 @@ class SessionIdLogRecordAppenderTest {
 
         underTest.onEmit(Context.root(), log)
 
-        verify { log.setAttribute(SessionIncubatingAttributes.SESSION_ID, SESSION_ID_VALUE) }
+        verify { log.setAttribute(stringKey(SESSION_ID), SESSION_ID_VALUE) }
     }
 }

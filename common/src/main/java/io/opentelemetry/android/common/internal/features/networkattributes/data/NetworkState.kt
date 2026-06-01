@@ -5,7 +5,12 @@
 
 package io.opentelemetry.android.common.internal.features.networkattributes.data
 
-import io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NetworkConnectionTypeIncubatingValues
+import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.semconv.NetworkAttributes.NetworkConnectionTypeValues.UNAVAILABLE
+import io.opentelemetry.kotlin.semconv.NetworkAttributes.NetworkConnectionTypeValues.CELL
+import io.opentelemetry.kotlin.semconv.NetworkAttributes.NetworkConnectionTypeValues.WIFI
+import io.opentelemetry.kotlin.semconv.NetworkAttributes.NetworkConnectionTypeValues.WIRED
+import io.opentelemetry.kotlin.semconv.NetworkAttributes.NetworkConnectionTypeValues.UNKNOWN
 
 /**
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
@@ -13,11 +18,16 @@ import io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes.NetworkCo
 enum class NetworkState(
     val humanName: String,
 ) {
-    NO_NETWORK_AVAILABLE(NetworkConnectionTypeIncubatingValues.UNAVAILABLE),
-    TRANSPORT_CELLULAR(NetworkConnectionTypeIncubatingValues.CELL),
-    TRANSPORT_WIFI(NetworkConnectionTypeIncubatingValues.WIFI),
-    TRANSPORT_WIRED(NetworkConnectionTypeIncubatingValues.WIRED),
-    TRANSPORT_UNKNOWN(NetworkConnectionTypeIncubatingValues.UNKNOWN),
+    @OptIn(IncubatingApi::class)
+    NO_NETWORK_AVAILABLE(UNAVAILABLE.value),
+    @OptIn(IncubatingApi::class)
+    TRANSPORT_CELLULAR(CELL.value),
+    @OptIn(IncubatingApi::class)
+    TRANSPORT_WIFI(WIFI.value),
+    @OptIn(IncubatingApi::class)
+    TRANSPORT_WIRED(WIRED.value),
+    @OptIn(IncubatingApi::class)
+    TRANSPORT_UNKNOWN(UNKNOWN.value),
 
     // this one doesn't seem to have an otel value at this point.
     TRANSPORT_VPN("vpn"),

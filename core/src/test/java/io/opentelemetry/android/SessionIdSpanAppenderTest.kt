@@ -11,14 +11,17 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.verify
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.context.Context
+import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.sdk.trace.ReadWriteSpan
-import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes
+import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_ID
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
+@OptIn(IncubatingApi::class)
 internal class SessionIdSpanAppenderTest {
     @MockK
     lateinit var sessionProvider: SessionProvider
@@ -40,7 +43,7 @@ internal class SessionIdSpanAppenderTest {
         assertTrue(underTest.isStartRequired)
         underTest.onStart(Context.root(), span)
 
-        verify { span.setAttribute(SessionIncubatingAttributes.SESSION_ID, "42") }
+        verify { span.setAttribute(stringKey(SESSION_ID), "42") }
 
         assertFalse(underTest.isEndRequired)
     }

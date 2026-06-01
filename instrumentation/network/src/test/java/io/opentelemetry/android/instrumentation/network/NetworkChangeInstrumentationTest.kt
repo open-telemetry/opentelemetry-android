@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+@file:OptIn(IncubatingApi::class)
+
 package io.opentelemetry.android.instrumentation.network
 
 import android.app.Application
@@ -25,11 +27,18 @@ import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateL
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.network.NetworkChangeListener
 import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.api.common.AttributeKey.stringKey
+import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
-import io.opentelemetry.semconv.incubating.NetworkIncubatingAttributes
+import io.opentelemetry.kotlin.semconv.NetworkAttributes.NETWORK_CARRIER_ICC
+import io.opentelemetry.kotlin.semconv.NetworkAttributes.NETWORK_CARRIER_MCC
+import io.opentelemetry.kotlin.semconv.NetworkAttributes.NETWORK_CARRIER_MNC
+import io.opentelemetry.kotlin.semconv.NetworkAttributes.NETWORK_CARRIER_NAME
+import io.opentelemetry.kotlin.semconv.NetworkAttributes.NETWORK_CONNECTION_SUBTYPE
+import io.opentelemetry.kotlin.semconv.NetworkAttributes.NETWORK_CONNECTION_TYPE
 import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -74,7 +83,7 @@ class NetworkChangeInstrumentationTest {
             .hasEventName("network.change")
             .hasAttributesSatisfyingExactly(
                 equalTo(NETWORK_STATUS_KEY, "available"),
-                equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE, "wifi"),
+                equalTo(stringKey(NETWORK_CONNECTION_TYPE), "wifi"),
             )
     }
 
@@ -105,12 +114,12 @@ class NetworkChangeInstrumentationTest {
             .hasEventName("network.change")
             .hasAttributesSatisfyingExactly(
                 equalTo(NETWORK_STATUS_KEY, "available"),
-                equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE, "cell"),
-                equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_SUBTYPE, "LTE"),
-                equalTo(NetworkIncubatingAttributes.NETWORK_CARRIER_NAME, "ShadyTel"),
-                equalTo(NetworkIncubatingAttributes.NETWORK_CARRIER_ICC, "US"),
-                equalTo(NetworkIncubatingAttributes.NETWORK_CARRIER_MCC, "usa"),
-                equalTo(NetworkIncubatingAttributes.NETWORK_CARRIER_MNC, "omg"),
+                equalTo(stringKey(NETWORK_CONNECTION_TYPE), "cell"),
+                equalTo(stringKey(NETWORK_CONNECTION_SUBTYPE), "LTE"),
+                equalTo(stringKey(NETWORK_CARRIER_NAME), "ShadyTel"),
+                equalTo(stringKey(NETWORK_CARRIER_ICC), "US"),
+                equalTo(stringKey(NETWORK_CARRIER_MCC), "usa"),
+                equalTo(stringKey(NETWORK_CARRIER_MNC), "omg"),
             )
     }
 
@@ -134,7 +143,7 @@ class NetworkChangeInstrumentationTest {
             .hasEventName("network.change")
             .hasAttributesSatisfyingExactly(
                 equalTo(NETWORK_STATUS_KEY, "lost"),
-                equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE, "unavailable"),
+                equalTo(stringKey(NETWORK_CONNECTION_TYPE), "unavailable"),
             )
     }
 
@@ -174,7 +183,7 @@ class NetworkChangeInstrumentationTest {
             .hasEventName("network.change")
             .hasAttributesSatisfyingExactly(
                 equalTo(NETWORK_STATUS_KEY, "lost"),
-                equalTo(NetworkIncubatingAttributes.NETWORK_CONNECTION_TYPE, "unavailable"),
+                equalTo(stringKey(NETWORK_CONNECTION_TYPE), "unavailable"),
             )
     }
 

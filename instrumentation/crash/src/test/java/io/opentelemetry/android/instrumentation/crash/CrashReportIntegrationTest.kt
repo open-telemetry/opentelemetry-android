@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+@file:OptIn(IncubatingApi::class)
+
 package io.opentelemetry.android.instrumentation.crash
 
 import android.app.Application
@@ -17,8 +19,9 @@ import io.opentelemetry.api.logs.Severity
 import io.opentelemetry.context.Context
 import io.opentelemetry.sdk.logs.data.LogRecordData
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
-import io.opentelemetry.semconv.ExceptionAttributes
-import io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes
+import io.opentelemetry.kotlin.semconv.ExceptionAttributes
+import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.semconv.ThreadAttributes
 import java.io.PrintWriter
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
@@ -202,11 +205,11 @@ internal class CrashReportIntegrationTest {
         assertEquals(Severity.UNDEFINED_SEVERITY_NUMBER, severity)
 
         val attrs = attributes.asMap().mapKeys { it.key.key }
-        assertEquals(expectedStacktrace, attrs[ExceptionAttributes.EXCEPTION_STACKTRACE.key])
-        assertEquals(expectedExcType, attrs[ExceptionAttributes.EXCEPTION_TYPE.key])
-        assertEquals(expectedExcMessage, attrs[ExceptionAttributes.EXCEPTION_MESSAGE.key])
-        assertEquals(thread.threadIdCompat, attrs[ThreadIncubatingAttributes.THREAD_ID.key])
-        assertEquals(thread.name, attrs[ThreadIncubatingAttributes.THREAD_NAME.key])
+        assertEquals(expectedStacktrace, attrs[ExceptionAttributes.EXCEPTION_STACKTRACE])
+        assertEquals(expectedExcType, attrs[ExceptionAttributes.EXCEPTION_TYPE])
+        assertEquals(expectedExcMessage, attrs[ExceptionAttributes.EXCEPTION_MESSAGE])
+        assertEquals(thread.threadIdCompat, attrs[ThreadAttributes.THREAD_ID])
+        assertEquals(thread.name, attrs[ThreadAttributes.THREAD_NAME])
         assertNotNull(attrs["heap.free"])
         assertNotNull(attrs["storage.free"])
     }
