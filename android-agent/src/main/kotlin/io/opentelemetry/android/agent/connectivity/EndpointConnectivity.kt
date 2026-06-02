@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.agent.connectivity
 
+import io.opentelemetry.android.Incubating
+
 internal interface EndpointConnectivity {
     fun getUrl(): String
 
@@ -14,5 +16,6 @@ internal interface EndpointConnectivity {
 
     fun getSslContext(): SSLContextConnectivity?
 
+    @OptIn(Incubating::class)
     fun getClientTls(): ClientTlsConnectivity?
 }
