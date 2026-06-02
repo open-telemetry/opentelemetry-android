@@ -6,13 +6,14 @@
 package io.opentelemetry.instrumentation.library.httpurlconnection
 
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import java.util.ServiceLoader
 import io.opentelemetry.android.test.common.OpenTelemetryRumRule
+import io.opentelemetry.api.common.AttributeKey.booleanKey
 import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlConnectionTestUtil.executeGet
 import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlConnectionTestUtil.post
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Rule
 import org.junit.Test
+import java.util.ServiceLoader
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -99,7 +100,7 @@ class InstrumentationTest {
                     .filterIsInstance<HttpUrlInstrumentation>()
                     .firstOrNull(),
             )
-        // setting a -1ms connection inactivity timeout for testing to ensure harvester sees it as 1ms elapsed
+        // setting a -1ms connection inactivity timeout for testing to ensure harvester sees it as 1ms elapsed,
         // and we don't have to include any wait timers in the test. 0ms does not work as the time difference
         // between last connection activity and harvester time elapsed check is much lesser than 1ms due to
         // our high speed modern CPUs.
@@ -110,5 +111,13 @@ class InstrumentationTest {
 
         // span created with harvester thread
         assertThat(openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems.size).isEqualTo(1)
+    }
+
+    @Test
+    fun extraAttributesCanBeExtracted() {
+        executeGet("http://httpbin.org/get")
+        val spans = openTelemetryRumRule.inMemorySpanExporter.finishedSpanItems
+        assertThat(spans[0].attributes.get(booleanKey("extractor.on.start"))).isEqualTo(true)
+        assertThat(spans[0].attributes.get(booleanKey("extractor.on.end"))).isEqualTo(true)
     }
 }
