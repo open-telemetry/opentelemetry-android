@@ -30,9 +30,9 @@ class InstrumentationConfiguratorsTest {
         val inst3 = TestInstrumentation1()
         inst3.name = "not going to find this but that's ok"
 
-        val instrumentations: Iterable<InstrumentationConfigurator<AndroidInstrumentation>> = listOf<InstrumentationConfigurator<out AndroidInstrumentation>>(config1, config2)
+        val instrumentations = listOf<InstrumentationConfigurator<*>>(config1, config2)
 
-        val loader: (Class<InstrumentationConfigurator<AndroidInstrumentation>>) -> Iterable<InstrumentationConfigurator<AndroidInstrumentation>> =
+        val loader: (Class<InstrumentationConfigurator<*>>) -> Iterable<InstrumentationConfigurator<*>> =
             { _ -> instrumentations }
 
         val configurators = InstrumentationConfigurators.create(loader)
