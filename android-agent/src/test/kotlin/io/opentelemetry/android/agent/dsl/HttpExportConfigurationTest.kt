@@ -6,6 +6,7 @@
 package io.opentelemetry.android.agent.dsl
 
 import io.mockk.mockk
+import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.FakeClock
 import io.opentelemetry.android.agent.FakeInstrumentationLoader
 import io.opentelemetry.android.agent.connectivity.ClientTlsConnectivity
@@ -16,6 +17,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 
+@OptIn(Incubating::class)
 internal class HttpExportConfigurationTest {
     private lateinit var otelConfig: OpenTelemetryConfiguration
 
