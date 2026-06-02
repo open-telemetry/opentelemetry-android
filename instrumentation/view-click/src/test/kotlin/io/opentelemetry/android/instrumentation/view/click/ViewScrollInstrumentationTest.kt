@@ -105,7 +105,7 @@ class ViewScrollInstrumentationTest {
         every { window.callback = any() } returns Unit
 
         val distance = 20
-        val scrollSequence = getScrollSequence(250f, 50f, 90.0, distance)
+        val scrollSequence = getScrollSequence(250f, 50f, 30.0, distance)
         val motionEvent = scrollSequence[0]
         val newPositionEvent = scrollSequence[1]
 
@@ -124,8 +124,8 @@ class ViewScrollInstrumentationTest {
 
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
-
-        val negativeDistance = -1.0 * distance
+        val horizontalDistance = -17.0 // 17.32 rounded down
+        val verticalDistance = -10.0
 
         var event = events[0]
         assertThat(event)
@@ -133,8 +133,8 @@ class ViewScrollInstrumentationTest {
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), newPositionEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), newPositionEvent.y.toLong()),
-                equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_X), 0.0),
-                equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_Y), negativeDistance),
+                equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_X), horizontalDistance),
+                equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_Y), verticalDistance),
                 equalTo(toolTypeKey, "finger")
             )
 
@@ -147,8 +147,8 @@ class ViewScrollInstrumentationTest {
                 equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
                 equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(toolTypeKey, "finger"),
-                equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_X), 0.0),
-                equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_Y), negativeDistance)
+                equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_X), horizontalDistance),
+                equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_Y), verticalDistance)
             )
     }
 
@@ -332,8 +332,6 @@ class ViewScrollInstrumentationTest {
 
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(1)
-
-//        val negativeDistance = -1.0 * distance
 
         var event = events[0]
         assertThat(event)
