@@ -17,7 +17,7 @@ import java.net.URLConnection
 /** Instrumentation for HttpURLConnection requests.  */
 @AutoService(AndroidInstrumentation::class)
 class HttpUrlInstrumentation : AndroidInstrumentation {
-    private val additionalExtractorList: MutableList<AttributesExtractor<in URLConnection, Int?>> = mutableListOf()
+    private val additionalExtractorList: MutableList<AttributesExtractor<in URLConnection, in Int?>> = mutableListOf()
 
     /**
      * Configures the HTTP request headers that will be captured as span attributes as described in
@@ -86,7 +86,7 @@ class HttpUrlInstrumentation : AndroidInstrumentation {
         additionalExtractorList.add(extractor)
     }
 
-    fun getAdditionalExtractors(): MutableList<AttributesExtractor<in URLConnection, Int?>> = additionalExtractorList
+    fun getAdditionalExtractors(): MutableList<AttributesExtractor<in URLConnection, in Int?>> = additionalExtractorList
 
     /**
      * Configures the extractor of the `peer.service` span attribute, described in
