@@ -17,7 +17,7 @@ import java.net.URLConnection
 /** Instrumentation for HttpURLConnection requests.  */
 @AutoService(AndroidInstrumentation::class)
 class HttpUrlInstrumentation : AndroidInstrumentation {
-    private val additionalExtractorList: MutableList<AttributesExtractor<URLConnection, Int>> = mutableListOf()
+    private val additionalExtractorList: MutableList<AttributesExtractor<in URLConnection, in Int?>> = mutableListOf()
 
     /**
      * Configures the HTTP request headers that will be captured as span attributes as described in
@@ -73,7 +73,7 @@ class HttpUrlInstrumentation : AndroidInstrumentation {
     private var emitExperimentalHttpClientMetrics = false
 
     /**
-     * The interval duration in milli seconds that the runnable from
+     * The interval duration in milliseconds that the runnable from
      * getReportIdleConnectionRunnable() API should be scheduled to periodically run at.
      *
      * @return The interval duration in ms
@@ -82,11 +82,11 @@ class HttpUrlInstrumentation : AndroidInstrumentation {
         private set
 
     /** Adds an [AttributesExtractor] that will extract additional attributes.  */
-    fun addAttributesExtractor(extractor: AttributesExtractor<URLConnection, Int>) {
+    fun addAttributesExtractor(extractor: AttributesExtractor<URLConnection, Int?>) {
         additionalExtractorList.add(extractor)
     }
 
-    fun getAdditionalExtractors(): MutableList<AttributesExtractor<URLConnection, Int>> = additionalExtractorList
+    fun getAdditionalExtractors(): MutableList<AttributesExtractor<in URLConnection, in Int?>> = additionalExtractorList
 
     /**
      * Configures the extractor of the `peer.service` span attribute, described in
