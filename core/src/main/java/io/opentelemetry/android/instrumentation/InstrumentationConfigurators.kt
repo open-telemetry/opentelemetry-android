@@ -2,7 +2,7 @@ package io.opentelemetry.android.instrumentation
 
 import java.util.ServiceLoader
 
-private typealias Konfigurator = InstrumentationConfigurator<AndroidInstrumentation>
+private typealias Konfigurator = InstrumentationConfigurator<*>
 
 internal class InstrumentationConfigurators
     private constructor(private val configurators: Map<String, List<Konfigurator>>) {
@@ -13,22 +13,23 @@ internal class InstrumentationConfigurators
         }
 
         // Exists for testing
-        @Suppress("UNCHECKED_CAST")
-        fun create(loader: Loader<Konfigurator>): InstrumentationConfigurators {
+        fun create(loader: Loader): InstrumentationConfigurators {
             val configurators = loader.load(Konfigurator::class.java)
                 .groupBy { it.instrumentationName }
             return InstrumentationConfigurators(configurators)
         }
     }
 
-    fun configure(instrumentation: AndroidInstrumentation){
-        configurators[instrumentation.name]?.forEach { it.configure(instrumentation) }
+    @Suppress("UNCHECKED_CAST")
+    fun configure(instrumentation: AndroidInstrumentation) {
+        configurators[instrumentation.name]
+            ?.forEach { (it as InstrumentationConfigurator<AndroidInstrumentation>).configure(instrumentation) }
     }
 }
 
 /**
  * Exists for testing
  */
-internal fun interface Loader<S: Konfigurator> {
-    fun load(service: Class<S>): Iterable<S>
+internal fun interface Loader {
+    fun load(service: Class<Konfigurator>): Iterable<Konfigurator>
 }
