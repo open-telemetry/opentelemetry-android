@@ -47,6 +47,7 @@ class HttpExportConfiguration internal constructor() {
     private val metricsConfig: EndpointConfiguration = EndpointConfiguration("")
 
     internal fun spansEndpoint(): HttpEndpointConnectivity =
+        @OptIn(Incubating::class)
         HttpEndpointConnectivity.forTraces(
             chooseUrlSource(spansConfig),
             isFullUrl(spansConfig),
@@ -57,6 +58,7 @@ class HttpExportConfiguration internal constructor() {
         )
 
     internal fun logsEndpoint(): HttpEndpointConnectivity =
+        @OptIn(Incubating::class)
         HttpEndpointConnectivity.forLogs(
             chooseUrlSource(logsConfig),
             isFullUrl(logsConfig),
@@ -67,6 +69,7 @@ class HttpExportConfiguration internal constructor() {
         )
 
     internal fun metricsEndpoint(): HttpEndpointConnectivity =
+        @OptIn(Incubating::class)
         HttpEndpointConnectivity.forMetrics(
             chooseUrlSource(metricsConfig),
             isFullUrl(metricsConfig),
