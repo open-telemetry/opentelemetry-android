@@ -4,6 +4,9 @@
  */
 package io.opentelemetry.android.agent.connectivity
 
+import io.opentelemetry.android.Incubating
+
+@OptIn(Incubating::class)
 internal class HttpEndpointConnectivity private constructor(
     private val url: String,
     private val headers: Map<String, String>,
