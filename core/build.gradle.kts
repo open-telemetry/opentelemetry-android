@@ -51,7 +51,7 @@ android {
 
     sourceSets {
         getByName("test") {
-            kotlin.srcDirs("src/integrationTest/kotlin")
+            kotlin.directories.add("src/integrationTest/kotlin")
         }
     }
 }
