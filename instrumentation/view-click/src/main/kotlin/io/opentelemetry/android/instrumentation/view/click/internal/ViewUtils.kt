@@ -19,6 +19,24 @@ internal const val HARDWARE_POINTER_BUTTON = "hw.pointer.button"
 
 internal const val HARDWARE_POINTER_CLICKS = "hw.pointer.clicks"
 
+internal const val APP_SCREEN_SCROLL_EVENT_NAME = "app.screen.scroll"
+
+internal const val VIEW_SCROLL_EVENT_NAME = "app.widget.scroll"
+
+internal const val APP_SCREEN_FLING_EVENT_NAME = "app.screen.fling"
+
+internal const val VIEW_FLING_EVENT_NAME = "app.widget.fling"
+
+internal const val HARDWARE_POINTER_VELOCITY_X = "hw.pointer.velocity.x"
+
+internal const val HARDWARE_POINTER_VELOCITY_Y = "hw.pointer.velocity.y"
+
+
+internal const val HARDWARE_POINTER_DISTANCE_X = "hw.pointer.distance.x"
+
+
+internal const val HARDWARE_POINTER_DISTANCE_Y = "hw.pointer.distance.y"
+
 internal fun buttonStateToString(buttonStateInt: Int): String? {
     return when(buttonStateInt) {
         MotionEvent.BUTTON_PRIMARY, MotionEvent.BUTTON_STYLUS_PRIMARY -> "primary"
@@ -76,6 +94,22 @@ internal sealed class Gesture(val m: MotionEvent) {
     class Click(val motionEvent: MotionEvent, clicks: Int): Gesture(motionEvent) {
         init {
             attributes = attributes.toBuilder().put(HARDWARE_POINTER_CLICKS, clicks.toLong()).build()
+        }
+    }
+    class Fling(val motionEvent: MotionEvent, val velocityX: Double, val velocityY: Double): Gesture(motionEvent) {
+        init {
+            attributes = attributes.toBuilder()
+                .put(HARDWARE_POINTER_VELOCITY_X, velocityX)
+                .put(HARDWARE_POINTER_VELOCITY_Y, velocityY)
+                .build()
+        }
+    }
+    class Scroll(val motionEvent: MotionEvent, val distanceX: Double, val distanceY: Double): Gesture(motionEvent) {
+        init {
+            attributes = attributes.toBuilder()
+                .put(HARDWARE_POINTER_DISTANCE_X, distanceX)
+                .put(HARDWARE_POINTER_DISTANCE_Y, distanceY)
+                .build()
         }
     }
 }
