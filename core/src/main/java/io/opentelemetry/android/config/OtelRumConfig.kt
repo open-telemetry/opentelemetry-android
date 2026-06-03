@@ -25,6 +25,27 @@ class OtelRumConfig {
     private var diskBufferingConfigImpl: DiskBufferingConfig = create()
 
     /**
+     * Whether the tracing API is enabled. Toggle with using [setTracingEnabled]
+     */
+    @Volatile
+    var tracingEnabled = true
+        private set
+
+    /**
+     * Whether the logging API is enabled. Toggle with using [setLoggingEnabled]
+     */
+    @Volatile
+    var loggingEnabled = true
+        private set
+
+    /**
+     * Whether the metrics API is enabled. Toggle with using [setMetricsEnabled]
+     */
+    @Volatile
+    var metricsEnabled = true
+        private set
+
+    /**
      * Configures the set of global attributes to emit with every span and event. Any existing
      * configured attributes will be dropped. Default = none.
      */
@@ -121,6 +142,33 @@ class OtelRumConfig {
 
     /** Returns false when the given instrumentation has been suppressed. True otherwise.  */
     fun isSuppressed(instrumentationName: String): Boolean = suppressedInstrumentations.contains(instrumentationName)
+
+    /**
+     * Enables or disables the tracing API for the SDK. When disabled, the SDK will provide no-op implementations to instrumentation
+     * that use this API.
+     */
+    fun setTracingEnabled(enabled: Boolean): OtelRumConfig {
+        tracingEnabled = enabled
+        return this
+    }
+
+    /**
+     * Enables or disables the logging API for the SDK. When disabled, the SDK will provide no-op implementations to instrumentation
+     * that use this API.
+     */
+    fun setLoggingEnabled(enabled: Boolean): OtelRumConfig {
+        loggingEnabled = enabled
+        return this
+    }
+
+    /**
+     * Enables or disables the metrics API for the SDK. When disabled, the SDK will provide no-op implementations to instrumentation
+     * that use this API.
+     */
+    fun setMetricsEnabled(enabled: Boolean): OtelRumConfig {
+        metricsEnabled = enabled
+        return this
+    }
 
     fun getDiskBufferingConfig(): DiskBufferingConfig = diskBufferingConfigImpl
 

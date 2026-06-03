@@ -70,4 +70,23 @@ class OtelRumConfigTest {
             config.getGlobalAttributesSupplier().get().get(stringKey("foo")),
         ).isEqualTo("bar")
     }
+
+    @Test
+    fun `signals are enabled by default`() {
+        val config = OtelRumConfig()
+        assertThat(config.tracingEnabled).isTrue()
+        assertThat(config.loggingEnabled).isTrue()
+        assertThat(config.metricsEnabled).isTrue()
+    }
+
+    @Test
+    fun `signal enablement can be toggled`() {
+        val config = OtelRumConfig()
+        assertThat(config.setTracingEnabled(false).tracingEnabled).isFalse()
+        assertThat(config.setTracingEnabled(true).tracingEnabled).isTrue()
+        assertThat(config.setLoggingEnabled(false).loggingEnabled).isFalse()
+        assertThat(config.setLoggingEnabled(true).loggingEnabled).isTrue()
+        assertThat(config.setMetricsEnabled(false).metricsEnabled).isFalse()
+        assertThat(config.setMetricsEnabled(true).metricsEnabled).isTrue()
+    }
 }

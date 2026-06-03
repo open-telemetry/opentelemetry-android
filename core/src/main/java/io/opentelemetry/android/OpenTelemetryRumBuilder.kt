@@ -345,31 +345,41 @@ class OpenTelemetryRumBuilder internal constructor(
         val bufferDelegatingLogExporter = BufferDelegatingLogExporter()
         val bufferDelegatingMetricExporter = BufferDelegatingMetricExporter()
 
-        val sdk =
-            OpenTelemetrySdk
-                .builder()
-                .setTracerProvider(
+        val sdk = OpenTelemetrySdk.builder().apply {
+            if (config.tracingEnabled) {
+                setTracerProvider(
                     buildTracerProvider(
                         sessionProvider,
                         context,
                         bufferDelegatingSpanExporter,
                         clock,
-                    ),
-                ).setLoggerProvider(
+                    )
+                )
+            }
+
+            if (config.loggingEnabled) {
+                setLoggerProvider(
                     buildLoggerProvider(
                         sessionProvider,
                         context,
                         bufferDelegatingLogExporter,
                         clock,
-                    ),
-                ).setMeterProvider(
+                    )
+                )
+            }
+
+            if (config.metricsEnabled) {
+                setMeterProvider(
                     buildMeterProvider(
                         context,
                         bufferDelegatingMetricExporter,
                         clock,
-                    ),
-                ).setPropagators(buildFinalPropagators())
-                .build()
+                    )
+                )
+            }
+
+            setPropagators(buildFinalPropagators())
+        }.build()
 
         otelReadyListeners.forEach { it(sdk) }
 
@@ -411,15 +421,17 @@ class OpenTelemetryRumBuilder internal constructor(
         bufferDelegatingMetricExporter: BufferDelegatingMetricExporter,
     ) {
         val diskBufferingConfig = config.getDiskBufferingConfig()
-        var spanExporter = buildSpanExporter()
-        var logsExporter = buildLogsExporter()
-        var metricExporter = buildMetricExporter()
+        var spanExporter: SpanExporter? = null
+        var logsExporter: LogRecordExporter? = null
+        var metricExporter: MetricExporter? = null
         var signalFromDiskExporter: SignalFromDiskExporter? = null
 
         if (diskBufferingConfig.enabled) {
+            spanExporter = buildSpanExporter()
+            logsExporter = buildLogsExporter()
+            metricExporter = buildMetricExporter()
             try {
                 val diskManager = DiskManager(cacheStorage.value, diskBufferingConfig)
-
                 val signalsRoot = diskManager.signalsBufferDir
                 val spansDir = File(signalsRoot, "spans")
                 val metricsDir = File(signalsRoot, "metrics")
@@ -428,30 +440,47 @@ class OpenTelemetryRumBuilder internal constructor(
                 val spanStorage = FileSpanStorage.create(spansDir, fileConfig)
                 val logStorage = FileLogRecordStorage.create(logsDir, fileConfig)
                 val metricStorage = FileMetricStorage.create(metricsDir, fileConfig)
-
-                val originalSpanExporter = spanExporter
-                spanExporter = SpanToDiskExporter.builder(spanStorage).build()
-                val originalLogsExporter = logsExporter
-                logsExporter = LogRecordToDiskExporter.builder(logStorage).build()
-                val originalMetricExporter = metricExporter
-                metricExporter = MetricToDiskExporter.builder(metricStorage).build()
                 signalFromDiskExporter =
                     SignalFromDiskExporter(
-                        spanStorage,
-                        originalSpanExporter,
-                        logStorage,
-                        originalLogsExporter,
-                        metricStorage,
-                        originalMetricExporter,
+                        spanStorage = spanStorage,
+                        spanExporter = spanExporter,
+                        logStorage = logStorage,
+                        logExporter = logsExporter,
+                        metricStorage = metricStorage,
+                        metricExporter = metricExporter,
                     )
+
+                logsExporter = LogRecordToDiskExporter.builder(logStorage).build()
+                spanExporter = SpanToDiskExporter.builder(spanStorage).build()
+                metricExporter = MetricToDiskExporter.builder(metricStorage).build()
             } catch (e: IOException) {
                 Log.e(RumConstants.OTEL_RUM_LOG_TAG, "Could not initialize disk exporters.", e)
             }
+        } else {
+            if (config.tracingEnabled) {
+                spanExporter = buildSpanExporter()
+            }
+            if (config.loggingEnabled) {
+                logsExporter = buildLogsExporter()
+            }
+            if (config.metricsEnabled) {
+                metricExporter = buildMetricExporter()
+            }
         }
-        initializationEvents.spanExporterInitialized(spanExporter)
-        bufferedDelegatingLogExporter.setDelegate(logsExporter)
-        bufferDelegatingSpanExporter.setDelegate(spanExporter)
-        bufferDelegatingMetricExporter.setDelegate(metricExporter)
+
+        if (spanExporter != null) {
+            initializationEvents.spanExporterInitialized(spanExporter)
+            bufferDelegatingSpanExporter.setDelegate(spanExporter)
+        }
+
+        if (logsExporter != null) {
+            bufferedDelegatingLogExporter.setDelegate(logsExporter)
+        }
+
+        if (metricExporter != null) {
+            bufferDelegatingMetricExporter.setDelegate(metricExporter)
+        }
+
         scheduleDiskTelemetryReader(periodicTaskScheduler, signalFromDiskExporter)
     }
 

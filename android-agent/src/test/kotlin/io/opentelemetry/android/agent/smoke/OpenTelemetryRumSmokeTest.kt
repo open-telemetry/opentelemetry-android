@@ -15,12 +15,18 @@ import io.opentelemetry.android.agent.dsl.OpenTelemetryConfiguration
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class OpenTelemetryRumSmokeTest {
+    private val tracerScopeName = "tracer"
+    private val spanName = "span-span"
+    private val logScopeName = "logger"
+    private val logMessage = "Hello world"
+
     private lateinit var server: FakeOpenTelemetryServer
 
     @Before
@@ -30,8 +36,6 @@ class OpenTelemetryRumSmokeTest {
 
     @Test
     fun testLogExported() {
-        val logMessage = "Hello world"
-        val logScopeName = "logger"
         performOpenTelemetryRumAction(
             config = {
                 httpExport {
@@ -40,37 +44,15 @@ class OpenTelemetryRumSmokeTest {
                 diskBufferingConfig.enabled(false)
             },
             action = {
-                val logger = openTelemetry.logsBridge.get(logScopeName)
-                logger.logRecordBuilder().setBody(logMessage).emit()
+                recordLog()
             },
         )
 
-        val logRequest =
-            server.awaitLogRequest(findLogBodyWithinScope(logScopeName, logMessage))
-
-        assertLogRequestReceived(logRequest)
+        assertLogRequestReceived(server.awaitLogRequest { findLog(it) })
     }
-
-    private fun findLogBodyWithinScope(
-        logScopeName: String,
-        logMessage: String,
-    ): (ExportLogsServiceRequest) -> Boolean =
-        {
-            it
-                .getResourceLogs(0)
-                .scopeLogsList
-                .find { scopeLogs ->
-                    scopeLogs.scope.name == logScopeName
-                }?.logRecordsList
-                .orEmpty()
-                .map { logRecord ->
-                    logRecord.body.stringValue
-                }.contains(logMessage)
-        }
 
     @Test
     fun testTraceExported() {
-        val spanName = "span"
         performOpenTelemetryRumAction(
             config = {
                 httpExport {
@@ -79,21 +61,81 @@ class OpenTelemetryRumSmokeTest {
                 diskBufferingConfig.enabled(false)
             },
             action = {
-                val tracer = openTelemetry.tracerProvider.get("tracer")
-                tracer.spanBuilder(spanName).startSpan().end()
+                recordSpan()
             },
         )
 
-        val traceRequest =
-            server.awaitTraceRequest {
-                it
-                    .getResourceSpans(0)
-                    .getScopeSpans(0)
-                    .getSpans(0)
-                    .name == spanName
-            }
-        assertTraceRequestReceived(traceRequest)
+        assertTraceRequestReceived(server.awaitTraceRequest { findSpan(it) })
     }
+
+    @Test
+    fun testSpansNotExportedWhenDisabled() {
+        performOpenTelemetryRumAction(
+            config = {
+                httpExport {
+                    baseUrl = server.url
+                }
+                diskBufferingConfig.enabled(false)
+                disableTracing(true)
+                disableLogging(false)
+            },
+            action = {
+                recordSpan()
+                recordLog()
+            },
+        )
+
+        server.awaitLogRequest { findLog(it) }
+        assertEquals(0, server.traceRequestCount())
+    }
+
+    @Test
+    fun testLogsNotExportedWhenDisabled() {
+        performOpenTelemetryRumAction(
+            config = {
+                httpExport {
+                    baseUrl = server.url
+                }
+                diskBufferingConfig.enabled(false)
+                disableTracing(false)
+                disableLogging(true)
+            },
+            action = {
+                recordLog()
+                recordSpan()
+            },
+        )
+
+        server.awaitTraceRequest { findSpan(it) }
+        assertEquals(0, server.logRequestCount())
+    }
+
+    private fun OpenTelemetryRum.recordLog() {
+        openTelemetry.logsBridge.get(logScopeName).logRecordBuilder().setBody(logMessage).emit()
+    }
+
+    private fun OpenTelemetryRum.recordSpan() {
+        openTelemetry.tracerProvider.get(tracerScopeName).spanBuilder(spanName).startSpan().end()
+    }
+
+    private fun findLog(request: ExportLogsServiceRequest) =
+        request
+            .getResourceLogs(0)
+            .scopeLogsList
+            .find { scopeLogs ->
+                scopeLogs.scope.name == logScopeName
+            }?.logRecordsList
+            .orEmpty()
+            .map { logRecord ->
+                logRecord.body.stringValue
+            }.contains(logMessage)
+
+    private fun findSpan(request: ExportTraceServiceRequest): Boolean =
+        request
+            .getResourceSpans(0)
+            .getScopeSpans(0)
+            .getSpans(0)
+            .name == spanName
 
     private fun assertLogRequestReceived(request: ExportLogsServiceRequest) {
         assertThat(
@@ -101,10 +143,10 @@ class OpenTelemetryRumSmokeTest {
                 .getResourceLogs(0)
                 .scopeLogsList
                 .first { x ->
-                    x.scope.name.equals("logger")
+                    x.scope.name.equals(logScopeName)
                 }.getLogRecords(0)
                 .body.stringValue,
-        ).isEqualTo("Hello world")
+        ).isEqualTo(logMessage)
     }
 
     private fun assertTraceRequestReceived(request: ExportTraceServiceRequest) {
@@ -113,10 +155,10 @@ class OpenTelemetryRumSmokeTest {
                 .getResourceSpans(0)
                 .scopeSpansList
                 .first { x ->
-                    x.scope.name.equals("tracer")
+                    x.scope.name.equals(tracerScopeName)
                 }.getSpans(0)
                 .name,
-        ).isEqualTo("span")
+        ).isEqualTo(spanName)
     }
 
     private fun performOpenTelemetryRumAction(

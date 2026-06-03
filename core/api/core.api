@@ -62,11 +62,17 @@ public final class io/opentelemetry/android/config/OtelRumConfig {
 	public final fun disableSdkInitializationEvents ()Lio/opentelemetry/android/config/OtelRumConfig;
 	public final fun getDiskBufferingConfig ()Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
 	public final fun getGlobalAttributesSupplier ()Ljava/util/function/Supplier;
+	public final fun getLoggingEnabled ()Z
+	public final fun getMetricsEnabled ()Z
+	public final fun getTracingEnabled ()Z
 	public final fun hasGlobalAttributes ()Z
 	public final fun isSuppressed (Ljava/lang/String;)Z
 	public final fun setDiskBufferingConfig (Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;)Lio/opentelemetry/android/config/OtelRumConfig;
 	public final fun setGlobalAttributes (Lio/opentelemetry/api/common/Attributes;)Lio/opentelemetry/android/config/OtelRumConfig;
 	public final fun setGlobalAttributes (Ljava/util/function/Supplier;)Lio/opentelemetry/android/config/OtelRumConfig;
+	public final fun setLoggingEnabled (Z)Lio/opentelemetry/android/config/OtelRumConfig;
+	public final fun setMetricsEnabled (Z)Lio/opentelemetry/android/config/OtelRumConfig;
+	public final fun setTracingEnabled (Z)Lio/opentelemetry/android/config/OtelRumConfig;
 	public final fun shouldDiscoverInstrumentations ()Z
 	public final fun shouldGenerateSdkInitializationEvents ()Z
 	public final fun shouldIncludeNetworkAttributes ()Z
