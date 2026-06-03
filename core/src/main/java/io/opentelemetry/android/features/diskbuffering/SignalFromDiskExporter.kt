@@ -62,7 +62,7 @@ class SignalFromDiskExporter
          */
         private fun <T> export(
             storage: SignalStorage<T>,
-            exporter: (Collection<T>) -> CompletableResultCode,
+            exporter: (MutableCollection<T>) -> CompletableResultCode,
         ): Boolean {
             for (batch in storage) {
                 val result = exporter(batch).join(exportTimeoutInMillis, TimeUnit.MILLISECONDS)

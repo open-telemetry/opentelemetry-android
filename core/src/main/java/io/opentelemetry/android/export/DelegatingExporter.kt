@@ -63,7 +63,7 @@ internal class DelegatingExporter<D, T>(
             check(this.delegate == null) { "A delegate has already been set." }
             this.delegate = delegate
         }
-        // Exporting outside of the synchronized block could lead to an out of order export
+        // Exporting outside the synchronized block could lead to an out-of-order export
         // but export order shouldn't matter so this is fine. It's better to avoid calling external
         // code from within the synchronized block.
         pendingExport?.setTo(delegate.doExport(buffer))

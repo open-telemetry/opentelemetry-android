@@ -1,6 +1,7 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import kotlinx.validation.KotlinApiBuildTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -54,7 +55,7 @@ android {
             jvmTarget.set(targetJvm)
             apiVersion.set(minKotlinVersion)
             languageVersion.set(minKotlinVersion)
-            freeCompilerArgs.set(listOf("-Xjvm-default=all"))
+            jvmDefault.set(JvmDefaultMode.NO_COMPATIBILITY)
         }
     }
     testOptions {

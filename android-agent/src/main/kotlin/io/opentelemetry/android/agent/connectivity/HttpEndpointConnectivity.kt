@@ -4,11 +4,14 @@
  */
 package io.opentelemetry.android.agent.connectivity
 
+import io.opentelemetry.android.Incubating
+
 internal class HttpEndpointConnectivity private constructor(
     private val url: String,
     private val headers: Map<String, String>,
     private val compression: Compression,
     private val sslContext: SSLContextConnectivity?,
+    @OptIn(Incubating::class)
     private val clientTls: ClientTlsConnectivity? = null,
 ) : EndpointConnectivity {
     companion object {
@@ -18,8 +21,10 @@ internal class HttpEndpointConnectivity private constructor(
             headers: Map<String, String>,
             compression: Compression,
             sslContext: SSLContextConnectivity?,
+            @OptIn(Incubating::class)
             clientTls: ClientTlsConnectivity?,
         ): HttpEndpointConnectivity =
+            @OptIn(Incubating::class)
             HttpEndpointConnectivity(
                 if (fullUrl) baseUrl else baseUrl.trimEnd('/') + "/v1/traces",
                 headers,
@@ -34,8 +39,10 @@ internal class HttpEndpointConnectivity private constructor(
             headers: Map<String, String>,
             compression: Compression,
             sslContext: SSLContextConnectivity?,
+            @OptIn(Incubating::class)
             clientTls: ClientTlsConnectivity?,
         ): HttpEndpointConnectivity =
+            @OptIn(Incubating::class)
             HttpEndpointConnectivity(
                 if (fullUrl) baseUrl else baseUrl.trimEnd('/') + "/v1/logs",
                 headers,
@@ -50,8 +57,10 @@ internal class HttpEndpointConnectivity private constructor(
             headers: Map<String, String>,
             compression: Compression,
             sslContext: SSLContextConnectivity?,
+            @OptIn(Incubating::class)
             clientTls: ClientTlsConnectivity?,
         ): HttpEndpointConnectivity =
+            @OptIn(Incubating::class)
             HttpEndpointConnectivity(
                 if (fullUrl) baseUrl else baseUrl.trimEnd('/') + "/v1/metrics",
                 headers,
@@ -65,5 +74,6 @@ internal class HttpEndpointConnectivity private constructor(
     override fun getHeaders(): Map<String, String> = headers
     override fun getCompression(): Compression = compression
     override fun getSslContext(): SSLContextConnectivity? = sslContext
+    @OptIn(Incubating::class)
     override fun getClientTls(): ClientTlsConnectivity? = clientTls
 }

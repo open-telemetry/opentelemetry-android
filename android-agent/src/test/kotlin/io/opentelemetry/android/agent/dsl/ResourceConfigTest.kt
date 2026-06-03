@@ -20,6 +20,7 @@ import io.opentelemetry.kotlin.semconv.AndroidAttributes.ANDROID_OS_API_LEVEL
 import io.opentelemetry.kotlin.semconv.DeviceAttributes.DEVICE_MANUFACTURER
 import io.opentelemetry.kotlin.semconv.DeviceAttributes.DEVICE_MODEL_IDENTIFIER
 import io.opentelemetry.kotlin.semconv.DeviceAttributes.DEVICE_MODEL_NAME
+import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_DESCRIPTION
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_NAME
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_TYPE
@@ -29,6 +30,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@OptIn(IncubatingApi::class)
 @RunWith(AndroidJUnit4::class)
 class ResourceConfigTest {
     @Test
@@ -67,7 +69,7 @@ class ResourceConfigTest {
         val attrs = resource.attributes.asMap()
         assertCommonResources(attrs)
         assertEquals(customServiceName, attrs[stringKey(SERVICE_NAME)])
-        assertEquals("bar", attrs[AttributeKey.stringKey(customKey)])
+        assertEquals("bar", attrs[stringKey(customKey)])
     }
 
     private fun assertCommonResources(attrs: Map<AttributeKey<*>, Any>) {
