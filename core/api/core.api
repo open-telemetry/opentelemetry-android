@@ -188,13 +188,6 @@ public abstract interface class io/opentelemetry/android/instrumentation/Android
 	public abstract fun getByType (Ljava/lang/Class;)Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;
 }
 
-public final class io/opentelemetry/android/internal/features/networkattrs/NetworkAttributesLogRecordAppender : io/opentelemetry/sdk/logs/LogRecordProcessor {
-	public fun <init> (Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;)V
-	public fun <init> (Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;Lio/opentelemetry/android/common/internal/features/networkattributes/CurrentNetworkAttributesExtractor;)V
-	public synthetic fun <init> (Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;Lio/opentelemetry/android/common/internal/features/networkattributes/CurrentNetworkAttributesExtractor;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun onEmit (Lio/opentelemetry/context/Context;Lio/opentelemetry/sdk/logs/ReadWriteLogRecord;)V
-}
-
 public abstract interface class io/opentelemetry/android/internal/initialization/InitializationEvents {
 	public static final field Companion Lio/opentelemetry/android/internal/initialization/InitializationEvents$Companion;
 	public abstract fun anrMonitorInitialized ()V

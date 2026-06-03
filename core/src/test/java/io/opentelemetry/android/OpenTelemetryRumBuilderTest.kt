@@ -25,6 +25,8 @@ import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter.Co
 import io.opentelemetry.android.features.diskbuffering.scheduler.ScheduleEnablement
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoaderImpl
+import io.opentelemetry.android.instrumentation.network.internal.CurrentNetworkProvider
+import io.opentelemetry.android.instrumentation.network.internal.NetworkProviderHolder
 import io.opentelemetry.android.internal.initialization.InitializationEvents
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.Services.Companion.set
@@ -113,6 +115,7 @@ class OpenTelemetryRumBuilderTest {
         every { application.mainLooper } returns looper
         every { application.getSystemService(Context.CONNECTIVITY_SERVICE) } returns connectivityManager
         InitializationEvents.set(initializationEvents)
+        NetworkProviderHolder.set(mockk<CurrentNetworkProvider>(relaxed = true))
     }
 
     @After
@@ -122,6 +125,7 @@ class OpenTelemetryRumBuilderTest {
         resetForTesting()
         InitializationEvents.resetForTest()
         set(null)
+        NetworkProviderHolder.set(null)
     }
 
     @Test
@@ -632,7 +636,11 @@ class OpenTelemetryRumBuilderTest {
 
     private fun makeBuilder(): OpenTelemetryRumBuilder = RumBuilder.builder(application, buildConfig())
 
-    private fun buildConfig(): OtelRumConfig = OtelRumConfig().disableNetworkAttributes().disableSdkInitializationEvents()
+    private fun buildConfig(): OtelRumConfig =
+        OtelRumConfig()
+            .disableNetworkAttributes()
+            .disableSdkInitializationEvents()
+            .suppressInstrumentation("network")
 
     companion object {
         const val CUR_SCREEN_NAME: String = "Celebratory Token"

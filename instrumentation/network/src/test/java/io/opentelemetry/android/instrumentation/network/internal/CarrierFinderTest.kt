@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.services.network
+package io.opentelemetry.android.instrumentation.network.internal
 
 import android.Manifest.permission.READ_BASIC_PHONE_STATE
 import android.Manifest.permission.READ_PHONE_STATE
@@ -206,6 +206,7 @@ class CarrierFinderTest {
     }
 
     @Test
+    @Config(sdk = [Build.VERSION_CODES.M])
     fun testShortSimOperator() {
         setupTelephonyCapability(true)
 
@@ -221,6 +222,7 @@ class CarrierFinderTest {
     }
 
     @Test
+    @Config(sdk = [Build.VERSION_CODES.M])
     fun testInvalidSimOperator() {
         setupTelephonyCapability(true)
 
@@ -236,6 +238,7 @@ class CarrierFinderTest {
     }
 
     @Test
+    @Config(sdk = [Build.VERSION_CODES.M])
     fun testInvalidIsoCountryCode() {
         setupTelephonyCapability(true)
 

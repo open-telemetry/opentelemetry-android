@@ -34,7 +34,6 @@ class AndroidInstrumentationLoaderImplTest {
     fun `Find implementations available in the classpath when querying all instrumentations`() {
         val instrumentations = loader.getAll()
 
-        assertThat(instrumentations).hasSize(1)
-        assertThat(instrumentations.first()).isInstanceOf(TestAndroidInstrumentation::class.java)
+        assertThat(instrumentations).anyMatch { it is TestAndroidInstrumentation }
     }
 }
