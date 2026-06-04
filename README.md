@@ -161,6 +161,7 @@ For more information about the maintainer role, see the [community repository](h
 
 ## Approvers
 
+- [DavidGrath](https://github.com/DavidGrath)
 - [Hanson Ho](https://github.com/bidetofevil), Embrace
 - [Manoel Aranda Neto](https://github.com/marandaneto), PostHog
 
