@@ -13,7 +13,7 @@ import java.util.function.Supplier
 /**
  * Configuration object for OpenTelemetry Android. The configuration items in this class will be
  * used in the OpenTelemetryRumBuilder to wire up and enable/disable various mobile instrumentation
- * components.
+ * components. Property reads are not threadsafe.
  */
 class OtelRumConfig {
     private var globalAttributesSupplierImpl: Supplier<Attributes>? = null
@@ -27,21 +27,18 @@ class OtelRumConfig {
     /**
      * Whether the tracing API is enabled. Toggle with using [setTracingEnabled]
      */
-    @Volatile
     var tracingEnabled = true
         private set
 
     /**
      * Whether the logging API is enabled. Toggle with using [setLoggingEnabled]
      */
-    @Volatile
     var loggingEnabled = true
         private set
 
     /**
      * Whether the metrics API is enabled. Toggle with using [setMetricsEnabled]
      */
-    @Volatile
     var metricsEnabled = true
         private set
 
