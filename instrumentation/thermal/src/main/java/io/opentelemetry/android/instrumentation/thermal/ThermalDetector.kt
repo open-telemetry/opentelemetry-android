@@ -25,7 +25,7 @@ internal class ThermalDetector(
     private val logger: Logger,
 ) : PowerManager.OnThermalStatusChangedListener {
     internal companion object {
-        const val EVENT_NAME = "device.thermal_state"
+        const val EVENT_NAME = "device.thermal_status.change"
         const val THERMAL_STATE = "android.thermal.state"
     }
 
