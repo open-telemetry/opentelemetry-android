@@ -16,7 +16,7 @@ import org.junit.Rule
 import org.junit.Test
 
 class ThermalDetectorTest {
-    private lateinit var sut: ThermalDetector
+    private lateinit var detector: ThermalDetector
 
     @get:Rule
     val openTelemetryRule: OpenTelemetryRule = OpenTelemetryRule.create()
@@ -29,13 +29,13 @@ class ThermalDetectorTest {
 
     @Before
     fun setup() {
-        sut = ThermalDetector(logger)
+        detector = ThermalDetector(logger)
     }
 
     @Test
     fun `should emit thermal state change event on status change`() {
         // when
-        sut.onThermalStatusChanged(PowerManager.THERMAL_STATUS_SEVERE)
+        detector.onThermalStatusChanged(PowerManager.THERMAL_STATUS_SEVERE)
 
         // then
         assertThat(openTelemetryRule.logRecords).hasSize(1)
@@ -60,7 +60,7 @@ class ThermalDetectorTest {
             )
 
         // when
-        expectedNames.keys.forEach { sut.onThermalStatusChanged(it) }
+        expectedNames.keys.forEach { detector.onThermalStatusChanged(it) }
 
         // then
         val emitted =
@@ -73,7 +73,7 @@ class ThermalDetectorTest {
     @Test
     fun `should fall back to unknown for an unrecognized status code`() {
         // when
-        sut.onThermalStatusChanged(Int.MAX_VALUE)
+        detector.onThermalStatusChanged(Int.MAX_VALUE)
 
         // then
         assertThat(openTelemetryRule.logRecords).hasSize(1)

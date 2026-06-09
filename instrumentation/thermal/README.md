@@ -21,7 +21,7 @@ scope of `io.opentelemetry.thermal`.
 ### Thermal State
 
 * Type: Event
-* Name: `device.thermal_state`
+* Name: `device.thermal_status.change`
 * Description: An event representing a change in the device's thermal throttling status.
 * Attributes:
     * `android.thermal.state` - A string value that contains the new thermal state.

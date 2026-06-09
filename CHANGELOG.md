@@ -5,7 +5,7 @@
 ### 📈 Enhancements
 
 - Add opt-in thermal status instrumentation that listens for device thermal-status changes
-  (API 29+) and emits a `device.thermal_state` event per change.
+  (API 29+) and emits a `device.thermal_status.change` event per change.
   ([#1801](https://github.com/open-telemetry/opentelemetry-android/pull/1801))
 
 ## Version 1.4.0 (2026-05-19)

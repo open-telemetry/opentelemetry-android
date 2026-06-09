@@ -29,11 +29,11 @@ internal class ThermalDetector(
         const val THERMAL_STATE = "android.thermal.state"
     }
 
-    private fun emitLog(state: String) {
+    override fun onThermalStatusChanged(status: Int) {
         logger
             .logRecordBuilder()
             .setEventName(EVENT_NAME)
-            .setAttribute(THERMAL_STATE, state)
+            .setAttribute(THERMAL_STATE, status.name)
             .emit()
     }
 
@@ -50,8 +50,4 @@ internal class ThermalDetector(
                 else -> "unknown"
             }
         }
-
-    override fun onThermalStatusChanged(status: Int) {
-        emitLog(status.name)
-    }
 }
