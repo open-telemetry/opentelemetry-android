@@ -19,7 +19,7 @@ This instrumentation produces the following telemetry:
 ### ANR
 
 * Type: Event
-* Name: `ANR`
+* Name: `device.anr`
 * Description: This log event is created when this instrumentation detects an ANR.
 * Status: `ERROR` (always)
 * Attributes:
