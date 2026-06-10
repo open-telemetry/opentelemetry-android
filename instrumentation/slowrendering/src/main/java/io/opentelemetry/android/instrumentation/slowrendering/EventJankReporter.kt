@@ -7,7 +7,6 @@ package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants
-import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_JANK_FRAME_COUNT
