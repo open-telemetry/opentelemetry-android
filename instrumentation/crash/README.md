@@ -13,7 +13,7 @@ This instrumentation produces the following telemetry:
 ### Crash
 
 * Type: Event
-* Event Name: `device.crash`
+* Event Name: `app.crash`
 * Description: An event that is generated for exceptions not handled by user code.
 * Attributes:
     * `exception.message` ([see semconv here](https://github.com/open-telemetry/semantic-conventions/blob/727700406f9e6cc3f4e4680a81c4c28f2eb71569/docs/attributes-registry/exception.md#exception-message))
