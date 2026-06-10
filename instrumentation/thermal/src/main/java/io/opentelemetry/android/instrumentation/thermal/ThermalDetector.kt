@@ -26,14 +26,14 @@ internal class ThermalDetector(
 ) : PowerManager.OnThermalStatusChangedListener {
     internal companion object {
         const val EVENT_NAME = "device.thermal_status.change"
-        const val THERMAL_STATE = "android.thermal.state"
+        const val THERMAL_THROTTLING_STATUS = "android.thermal.throttling_status"
     }
 
     override fun onThermalStatusChanged(status: Int) {
         logger
             .logRecordBuilder()
             .setEventName(EVENT_NAME)
-            .setAttribute(THERMAL_STATE, status.name)
+            .setAttribute(THERMAL_THROTTLING_STATUS, status.name)
             .emit()
     }
 

@@ -24,9 +24,9 @@ scope of `io.opentelemetry.thermal`.
 * Name: `device.thermal_status.change`
 * Description: An event representing a change in the device's thermal throttling status.
 * Attributes:
-    * `android.thermal.state` - A string value that contains the new thermal state.
-    Values are `none`, `light`, `moderate`, `severe`, `critical`, `emergency`,
-    `shutdown`, or `unknown`.
+    * `android.thermal.throttling_status` - A string value that contains the new thermal
+    throttling status. Values are `none`, `light`, `moderate`, `severe`, `critical`,
+    `emergency`, `shutdown`, or `unknown`.
 
 ## Installation
 

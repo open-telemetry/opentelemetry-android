@@ -7,7 +7,7 @@ package io.opentelemetry.android.instrumentation.thermal
 
 import android.os.PowerManager
 import io.opentelemetry.android.instrumentation.thermal.ThermalDetector.Companion.EVENT_NAME
-import io.opentelemetry.android.instrumentation.thermal.ThermalDetector.Companion.THERMAL_STATE
+import io.opentelemetry.android.instrumentation.thermal.ThermalDetector.Companion.THERMAL_THROTTLING_STATUS
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import org.assertj.core.api.Assertions.assertThat
@@ -41,7 +41,7 @@ class ThermalDetectorTest {
         assertThat(openTelemetryRule.logRecords).hasSize(1)
         val record = openTelemetryRule.logRecords.single()
         assertThat(record.eventName).isEqualTo(EVENT_NAME)
-        assertThat(record.attributes.get(AttributeKey.stringKey(THERMAL_STATE)))
+        assertThat(record.attributes.get(AttributeKey.stringKey(THERMAL_THROTTLING_STATUS)))
             .isEqualTo("severe")
     }
 
@@ -65,7 +65,7 @@ class ThermalDetectorTest {
         // then
         val emitted =
             openTelemetryRule.logRecords.map {
-                it.attributes.get(AttributeKey.stringKey(THERMAL_STATE))
+                it.attributes.get(AttributeKey.stringKey(THERMAL_THROTTLING_STATUS))
             }
         assertThat(emitted).containsExactlyElementsOf(expectedNames.values)
     }
@@ -81,7 +81,7 @@ class ThermalDetectorTest {
             openTelemetryRule.logRecords
                 .single()
                 .attributes
-                .get(AttributeKey.stringKey(THERMAL_STATE)),
+                .get(AttributeKey.stringKey(THERMAL_THROTTLING_STATUS)),
         ).isEqualTo("unknown")
     }
 }
