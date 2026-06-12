@@ -7,6 +7,9 @@
 - Add opt-in thermal status instrumentation that listens for device thermal-status changes
   (API 29+) and emits a `device.thermal_status.change` event per change.
   ([#1801](https://github.com/open-telemetry/opentelemetry-android/pull/1801))
+- Add opt-in power save mode instrumentation that listens for device power-save (battery saver)
+  mode changes and emits a `device.power_save_mode.change` event per change.
+  ([#1811](https://github.com/open-telemetry/opentelemetry-android/pull/1811))
 
 ## Version 1.4.0 (2026-05-19)
 
