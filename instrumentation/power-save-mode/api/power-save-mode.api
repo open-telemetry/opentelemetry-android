@@ -1,0 +1,7 @@
+public final class io/opentelemetry/android/instrumentation/powersavemode/PowerSaveModeInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
+	public fun <init> ()V
+	public fun getName ()Ljava/lang/String;
+	public fun install (Landroid/content/Context;Lio/opentelemetry/android/OpenTelemetryRum;)V
+	public fun uninstall (Landroid/content/Context;Lio/opentelemetry/android/OpenTelemetryRum;)V
+}
+
