@@ -20,6 +20,7 @@ include(":animal-sniffer-signature")
 include(":common")
 include(":services")
 include(":session")
+include(":semconv")
 include(":opentelemetry-android-bom")
 includeFromDir("instrumentation")
 
@@ -39,4 +40,3 @@ fun includeFromDir(
         }
     }
 }
- 

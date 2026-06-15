@@ -1,0 +1,110 @@
+groups:
+  - id: registry.android.semconv
+    type: attribute_group
+    brief: >
+      Android SDK attributes that are not currently defined by upstream OpenTelemetry semantic
+      conventions.
+    stability: development
+    attributes:
+      - id: activity.name
+        type: string
+        stability: development
+        brief: >
+          The Android activity class name for which telemetry is relevant.
+        examples: ["MainActivity", "LoginScreen"]
+      - id: android.log.tag
+        type: string
+        stability: development
+        brief: >
+          The Android log tag supplied to android.util.Log.
+        examples: ["MainActivity", "OkHttp"]
+      - id: battery.percent
+        type: double
+        stability: development
+        brief: >
+          The current battery charge as a percentage of total capacity.
+        examples: [42.0, 99.5]
+      - id: fragment.name
+        type: string
+        stability: development
+        brief: >
+          The Android fragment class name for which telemetry is relevant.
+        examples: ["ProductDetailFragment"]
+      - id: heap.free
+        type: int
+        stability: development
+        brief: >
+          The amount of free heap memory, in bytes.
+        examples: [1048576]
+      - id: hw.pointer.button
+        type: string
+        stability: development
+        brief: >
+          The hardware pointer button associated with a pointer gesture.
+        examples: ["primary", "secondary", "tertiary", "back", "forward"]
+      - id: hw.pointer.clicks
+        type: int
+        stability: development
+        brief: >
+          The click count associated with a pointer gesture.
+        examples: [1, 2]
+      - id: hw.pointer.type
+        type: string
+        stability: development
+        brief: >
+          The hardware pointer type associated with a pointer gesture.
+        examples: ["finger", "mouse", "stylus", "eraser", "unknown"]
+      - id: last.screen.name
+        type: string
+        stability: development
+        brief: >
+          The previously visible screen name.
+        examples: ["MainActivity"]
+      - id: network.status
+        type: string
+        stability: development
+        brief: >
+          The Android network status after a network change.
+        examples: ["TRANSPORT_WIFI", "TRANSPORT_CELLULAR", "NO_NETWORK_AVAILABLE"]
+      - id: screen.name
+        type: string
+        stability: development
+        brief: >
+          The current application screen name used by the Android SDK.
+        examples: ["user.login", "Cart"]
+      - id: screen.orientation
+        type: string
+        stability: development
+        brief: >
+          The Android screen orientation.
+        examples: ["portrait", "landscape", "undefined"]
+      - id: span.exporter
+        type: string
+        stability: development
+        brief: >
+          A string representation of the span exporter configured during SDK initialization.
+        examples: ["OtlpHttpSpanExporter"]
+      - id: start.type
+        type: string
+        stability: development
+        brief: >
+          The application start type.
+        examples: ["cold", "warm", "hot"]
+      - id: storage.free
+        type: int
+        stability: development
+        brief: >
+          The amount of free application file storage, in bytes.
+        examples: [1048576]
+      - id: websocket.message.size
+        type: int
+        stability: development
+        brief: >
+          The size of a WebSocket message payload.
+        examples: [128]
+      - id: websocket.message.type
+        type: string
+        stability: development
+        brief: >
+          The WebSocket message payload type.
+        examples: ["text", "bytes"]

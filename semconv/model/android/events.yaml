@@ -1,0 +1,142 @@
+groups:
+  - id: event.app.screen.longpress
+    type: event
+    name: app.screen.longpress
+    stability: development
+    brief: >
+      This event represents a long press on the screen of an application.
+    attributes:
+      - ref: app.screen.coordinate.x
+        requirement_level: required
+      - ref: app.screen.coordinate.y
+        requirement_level: required
+      - ref: app.screen.id
+        requirement_level: recommended
+      - ref: app.screen.name
+        requirement_level: opt_in
+      - ref: hw.pointer.button
+        requirement_level: opt_in
+      - ref: hw.pointer.type
+        requirement_level: recommended
+  - id: event.app.widget.longpress
+    type: event
+    name: app.widget.longpress
+    stability: development
+    brief: >
+      This event represents a long press on an application widget.
+    attributes:
+      - ref: app.widget.id
+        requirement_level: required
+      - ref: app.widget.name
+        requirement_level: opt_in
+      - ref: app.screen.coordinate.x
+        requirement_level: opt_in
+      - ref: app.screen.coordinate.y
+        requirement_level: opt_in
+      - ref: app.screen.id
+        requirement_level: recommended
+      - ref: app.screen.name
+        requirement_level: opt_in
+      - ref: hw.pointer.button
+        requirement_level: opt_in
+      - ref: hw.pointer.type
+        requirement_level: recommended
+  - id: event.device.anr
+    type: event
+    name: device.anr
+    stability: development
+    brief: >
+      This event indicates that an Android application did not respond on the main thread.
+  - id: event.device.screen_orientation
+    type: event
+    name: device.screen_orientation
+    stability: development
+    brief: >
+      This event indicates that the Android screen orientation changed.
+    attributes:
+      - ref: screen.orientation
+        requirement_level: required
+  - id: event.network.change
+    type: event
+    name: network.change
+    stability: development
+    brief: >
+      This event indicates that Android network connectivity changed.
+    attributes:
+      - ref: network.status
+        requirement_level: recommended
+  - id: event.rum.sdk.init.started
+    type: event
+    name: rum.sdk.init.started
+    stability: development
+    brief: >
+      This event indicates that Android RUM SDK initialization started.
+  - id: event.rum.sdk.init.net.provider
+    type: event
+    name: rum.sdk.init.net.provider
+    stability: development
+    brief: >
+      This event indicates that the current network provider initialized during Android RUM SDK
+      startup.
+  - id: event.rum.sdk.init.net.monitor
+    type: event
+    name: rum.sdk.init.net.monitor
+    stability: development
+    brief: >
+      This event indicates that the network monitor initialized during Android RUM SDK startup.
+  - id: event.rum.sdk.init.anr_monitor
+    type: event
+    name: rum.sdk.init.anr_monitor
+    stability: development
+    brief: >
+      This event indicates that the ANR monitor initialized during Android RUM SDK startup.
+  - id: event.rum.sdk.init.jank_monitor
+    type: event
+    name: rum.sdk.init.jank_monitor
+    stability: development
+    brief: >
+      This event indicates that the jank monitor initialized during Android RUM SDK startup.
+  - id: event.rum.sdk.init.crash.reporter
+    type: event
+    name: rum.sdk.init.crash.reporter
+    stability: development
+    brief: >
+      This event indicates that crash reporting initialized during Android RUM SDK startup.
+  - id: event.rum.sdk.init.span.exporter
+    type: event
+    name: rum.sdk.init.span.exporter
+    stability: development
+    brief: >
+      This event indicates that the span exporter initialized during Android RUM SDK startup.
+    attributes:
+      - ref: span.exporter
+        requirement_level: required
+  - id: event.websocket.close
+    type: event
+    name: websocket.close
+    stability: development
+    brief: >
+      This event indicates that a WebSocket closed.
+  - id: event.websocket.error
+    type: event
+    name: websocket.error
+    stability: development
+    brief: >
+      This event indicates that a WebSocket failed.
+  - id: event.websocket.message
+    type: event
+    name: websocket.message
+    stability: development
+    brief: >
+      This event indicates that a WebSocket message was received.
+    attributes:
+      - ref: websocket.message.size
+        requirement_level: recommended
+      - ref: websocket.message.type
+        requirement_level: recommended
+  - id: event.websocket.open
+    type: event
+    name: websocket.open
+    stability: development
+    brief: >
+      This event indicates that a WebSocket opened.
