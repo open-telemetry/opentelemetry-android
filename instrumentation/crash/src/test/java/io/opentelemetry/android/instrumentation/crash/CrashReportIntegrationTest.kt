@@ -115,13 +115,20 @@ internal class CrashReportIntegrationTest {
 
     @Test
     fun `test stackoverflow behavior`() {
-        val exc = generateLargeStacktraceException()
-        val log = simulateUncaughtException(exc)
-        val stacktrace = exc.stackTraceToString()
 
-        // TODO: future: truncate stackframes at some reasonable limit
+        val maxDepth = 1_000
+        val extraDepth = 200
+        val depth = maxDepth + extraDepth
+
+        val exc = generateLargeStacktraceException(depth)
+        val log = simulateUncaughtException(exc)
+
+        val originalStackTrace = exc.stackTraceToString()
+        val truncatedStackTrace = originalStackTrace.lines()
+            .take(1000).joinToString(System.lineSeparator(), postfix = System.lineSeparator())
+
         log.assertCrashCaptured(
-            expectedStacktrace = stacktrace,
+            expectedStacktrace = truncatedStackTrace,
             thread = Thread.currentThread(),
             expectedExcType = exc.javaClass.name,
         )
