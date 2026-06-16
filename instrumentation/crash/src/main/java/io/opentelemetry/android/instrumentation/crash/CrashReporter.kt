@@ -16,12 +16,35 @@ import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_TYPE
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.kotlin.semconv.ThreadAttributes.THREAD_ID
 import io.opentelemetry.kotlin.semconv.ThreadAttributes.THREAD_NAME
+import java.io.PrintWriter
+import java.io.StringWriter
 
 internal class CrashReporter(
     additionalExtractors: List<EventAttributesExtractor<CrashDetails>>,
 ) {
     private val extractors: List<EventAttributesExtractor<CrashDetails>> =
         additionalExtractors.toList()
+
+    /**
+     * Silently ignores printing after a `threshold`
+     */
+    private class MaxLinesPrintWriter(sw: StringWriter, private val threshold: Int = 1_000): PrintWriter(sw) {
+        var stringCount = 0
+        var lineCount = 0
+        override fun print(s: String?) {
+            if(stringCount < threshold) {
+                super.print(s)
+                stringCount++
+            }
+        }
+        override fun println() {
+            if(lineCount < threshold) {
+                super.println()
+                lineCount++
+            }
+        }
+
+    }
 
     /** Installs the crash reporting instrumentation.  */
     fun install(openTelemetry: OpenTelemetry) {
@@ -32,6 +55,14 @@ internal class CrashReporter(
                 },
             )
         Thread.setDefaultUncaughtExceptionHandler(handler)
+    }
+
+    private fun stackTraceToTruncatedString(throwable: Throwable, truncateThreshold: Int = 1000): String {
+        val sw = StringWriter()
+        val cw = MaxLinesPrintWriter(sw, truncateThreshold)
+        throwable.printStackTrace(cw)
+        cw.flush()
+        return sw.toString()
     }
 
     @OptIn(IncubatingApi::class)
@@ -50,7 +81,7 @@ internal class CrashReporter(
                 .put(EXCEPTION_MESSAGE, throwable.message)
                 .put(
                     EXCEPTION_STACKTRACE,
-                    throwable.stackTraceToString(),
+                    stackTraceToTruncatedString(throwable)
                 ).put(EXCEPTION_TYPE, throwable.javaClass.name)
         for (extractor in extractors) {
             val extractedAttributes = extractor.extract(Context.current(), crashDetails)
