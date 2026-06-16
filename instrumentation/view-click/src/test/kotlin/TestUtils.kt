@@ -199,6 +199,55 @@ fun getLongPressSequence(x: Float, y: Float, toolType: Int = MotionEvent.TOOL_TY
     )
 }
 
+fun getScrollSequence(x: Float, y: Float, angleDegrees: Double, distance: Int,
+                      toolType: Int = MotionEvent.TOOL_TYPE_FINGER, buttonState: Int = 0,
+                      timeMillis: Long = 100L, letGo: Boolean = false)
+    : Array<MotionEvent> {
+    require(toolType in allowedToolTypes) {
+        "Invalid tool type"
+    }
+
+    if(buttonState != 0) {
+        require(toolType == MotionEvent.TOOL_TYPE_MOUSE || toolType == MotionEvent.TOOL_TYPE_STYLUS) {
+            "Invalid tool type for button state"
+        }
+        require(buttonState in allowedButtonStates) { "Invalid button state" }
+    }
+
+    val initialTime = SystemClock.uptimeMillis()
+
+    val pointerProperties = MotionEvent.PointerProperties()
+    pointerProperties.id = 0
+    pointerProperties.toolType = toolType
+
+    val startPointerCoords = PointerCoordsBuilder.newBuilder().setCoords(x, y).build()
+    val (endX, endY) = getDestinationPoint(arrayOf(x, y), distance, angleDegrees)
+    val endPointerCoords = PointerCoordsBuilder.newBuilder().setCoords(endX, endY).build()
+
+    var array = arrayOf(
+        MotionEvent.obtain(initialTime, initialTime,
+            MotionEvent.ACTION_DOWN, 1, arrayOf(pointerProperties),
+            arrayOf(startPointerCoords), 0, buttonState, 1f, 1f,
+            0, 0, 0, 0),
+
+        MotionEvent.obtain(initialTime, initialTime + timeMillis,
+            MotionEvent.ACTION_MOVE, 1, arrayOf(pointerProperties),
+            arrayOf(endPointerCoords), 0, buttonState, 1f, 1f,
+            0, 0, 0, 0)
+    )
+    val timeToLetGoAfterMoving = 50L
+    if(letGo) {
+       array +=
+           MotionEvent.obtain(
+               initialTime, initialTime + timeMillis + timeToLetGoAfterMoving,
+               MotionEvent.ACTION_UP, 1, arrayOf(pointerProperties),
+               arrayOf(endPointerCoords), 0, buttonState, 1f, 1f,
+               0, 0, 0, 0
+           )
+    }
+    return array
+}
+
 fun fastForwardDoubleTapTimeout() {
     ShadowLooper.idleMainLooper(ViewConfiguration.getDoubleTapTimeout().toLong(), TimeUnit.MILLISECONDS)
 }
@@ -206,4 +255,13 @@ fun fastForwardDoubleTapTimeout() {
 fun fastForwardLongPressTimeout() {
     val allowanceTime = 150L
     ShadowLooper.idleMainLooper(ViewConfiguration.getLongPressTimeout().toLong() + allowanceTime, TimeUnit.MILLISECONDS)
+}
+
+
+fun getDestinationPoint(pointA: Array<Float>, distance: Int, angleDegrees: Double): Array<Float> {
+    val angleRadians = angleDegrees * Math.PI / 180
+    val (xA, yA) = pointA
+    val xDist = Math.round(distance * Math.cos(angleRadians)).toInt()
+    val yDist = Math.round(distance * Math.sin(angleRadians)).toInt()
+    return arrayOf(xA + xDist, yA + yDist)
 }
