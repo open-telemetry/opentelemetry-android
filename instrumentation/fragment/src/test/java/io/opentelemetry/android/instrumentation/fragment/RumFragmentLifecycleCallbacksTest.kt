@@ -13,7 +13,10 @@ import io.mockk.mockk
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
+import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME
+import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import io.opentelemetry.sdk.trace.data.EventData
 import org.junit.jupiter.api.Assertions
@@ -25,6 +28,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.extension.RegisterExtension
 
+@OptIn(IncubatingApi::class)
 @ExtendWith(MockKExtension::class)
 internal class RumFragmentLifecycleCallbacksTest {
     private companion object {
@@ -63,7 +67,7 @@ internal class RumFragmentLifecycleCallbacksTest {
         )
         assertEquals(
             fragment.javaClass.simpleName,
-            spanData.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            spanData.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertNull(spanData.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 
@@ -98,7 +102,7 @@ internal class RumFragmentLifecycleCallbacksTest {
         )
         assertEquals(
             fragment.javaClass.simpleName,
-            spanData.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            spanData.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertEquals(
             "previousScreen",
@@ -157,7 +161,7 @@ internal class RumFragmentLifecycleCallbacksTest {
         )
         assertEquals(
             fragment.javaClass.simpleName,
-            spanData.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            spanData.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertNull(spanData.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 
@@ -174,7 +178,7 @@ internal class RumFragmentLifecycleCallbacksTest {
         )
         assertEquals(
             fragment.javaClass.simpleName,
-            stopSpan.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            stopSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertNull(stopSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 
@@ -204,7 +208,7 @@ internal class RumFragmentLifecycleCallbacksTest {
         )
         assertEquals(
             fragment.javaClass.simpleName,
-            pauseSpan.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            pauseSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertNull(pauseSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 
@@ -219,7 +223,7 @@ internal class RumFragmentLifecycleCallbacksTest {
         )
         assertEquals(
             fragment.javaClass.simpleName,
-            stopSpan.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            stopSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertNull(stopSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 
@@ -236,7 +240,7 @@ internal class RumFragmentLifecycleCallbacksTest {
         )
         assertEquals(
             fragment.javaClass.simpleName,
-            destroyViewSpan.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            destroyViewSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertNull(destroyViewSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 
@@ -273,7 +277,7 @@ internal class RumFragmentLifecycleCallbacksTest {
         assertEquals("ViewDestroyed", span.name)
         assertEquals(
             fragment.javaClass.simpleName,
-            span.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            span.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertEquals(
             fragment.javaClass.simpleName,
@@ -301,7 +305,7 @@ internal class RumFragmentLifecycleCallbacksTest {
         assertEquals("ViewDestroyed", destroyViewSpan.name)
         assertEquals(
             fragment.javaClass.simpleName,
-            destroyViewSpan.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            destroyViewSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertEquals(
             fragment.javaClass.simpleName,
@@ -343,7 +347,7 @@ internal class RumFragmentLifecycleCallbacksTest {
         assertEquals("Detached", detachSpan.name)
         assertEquals(
             fragment.javaClass.simpleName,
-            detachSpan.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            detachSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertEquals(
             fragment.javaClass.simpleName,

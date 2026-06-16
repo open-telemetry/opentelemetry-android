@@ -8,16 +8,19 @@ package io.opentelemetry.android
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.context.Context
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME
+import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.sdk.trace.ReadWriteSpan
 import io.opentelemetry.sdk.trace.ReadableSpan
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.Test
 
+@OptIn(IncubatingApi::class)
 internal class ScreenAttributesSpanProcessorTest {
     @Test
     fun append() {
@@ -39,7 +42,7 @@ internal class ScreenAttributesSpanProcessorTest {
 
         testClass.onStart(contenxt, span)
         verify {
-            span.setAttribute(RumConstants.SCREEN_NAME_KEY, screenName)
+            span.setAttribute(stringKey(APP_SCREEN_NAME), screenName)
         }
     }
 }

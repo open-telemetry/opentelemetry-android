@@ -12,7 +12,4 @@ object RumConstants {
 
     @JvmField
     val LAST_SCREEN_NAME_KEY: AttributeKey<String> = AttributeKey.stringKey("last.screen.name")
-
-    @JvmField
-    val SCREEN_NAME_KEY: AttributeKey<String> = AttributeKey.stringKey("screen.name")
 }
