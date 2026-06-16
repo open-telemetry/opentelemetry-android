@@ -50,7 +50,7 @@ class SdkPreconfiguredRumBuilder internal constructor(
      * Creates a new instance of [io.opentelemetry.android.OpenTelemetryRum] with the settings of this [ ].
      *
      * This method uses a preconfigured OpenTelemetry SDK and install built-in system
-     * instrumentations in the passed Android [Context].
+     * instrumentations in the passed-in Android [Context].
      *
      * @return A new [io.opentelemetry.android.OpenTelemetryRum] instance.
      */
@@ -59,14 +59,23 @@ class SdkPreconfiguredRumBuilder internal constructor(
             Log.w(
                 RumConstants.OTEL_RUM_LOG_TAG,
                 "Cannot retrieve applicationContext. This indicates the OpenTelemetry SDK was " +
-                    "initialized outside of the Application subclass too early using an " +
-                    "inappropriate context. Functionality that relies on lifecycle callbacks will " +
-                    "not work until you resolve this problem.",
+                        "initialized outside of the Application subclass too early using an " +
+                        "inappropriate context. Functionality that relies on lifecycle callbacks will " +
+                        "not work until you resolve this problem.",
             )
         }
 
         val enabledInstrumentations = getEnabledInstrumentations()
-        val openTelemetryRum = OpenTelemetryRumImpl(sdk, sessionProvider, clock)
+        val openTelemetryRum = OpenTelemetryRumImpl(
+            openTelemetry = DisableableOpenTelemetry(
+                delegate = sdk,
+                tracingEnabled = config.tracingEnabled,
+                loggingEnabled = config.loggingEnabled,
+                metricsEnabled = config.metricsEnabled,
+            ),
+            sessionProvider = sessionProvider,
+            clock = clock
+        )
         openTelemetryRum.onShutdown = Runnable {
             for (instrumentation in enabledInstrumentations) {
                 instrumentation.uninstall(context, openTelemetryRum)

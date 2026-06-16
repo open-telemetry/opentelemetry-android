@@ -76,6 +76,10 @@ internal class FakeOpenTelemetryServer {
     fun awaitLogRequest(predicate: (ExportLogsServiceRequest) -> Boolean): ExportLogsServiceRequest =
         awaitRequestMatchingPredicate(logRequests, predicate)
 
+    fun traceRequestCount(): Int = traceRequests.size
+
+    fun logRequestCount(): Int = logRequests.size
+
     private fun readRequestBodyAsStream(request: RecordedRequest): InputStream {
         val bytes =
             checkNotNull(request.body?.toByteArray()) {

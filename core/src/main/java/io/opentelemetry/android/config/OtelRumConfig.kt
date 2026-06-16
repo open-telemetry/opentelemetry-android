@@ -13,7 +13,7 @@ import java.util.function.Supplier
 /**
  * Configuration object for OpenTelemetry Android. The configuration items in this class will be
  * used in the OpenTelemetryRumBuilder to wire up and enable/disable various mobile instrumentation
- * components.
+ * components. Property reads are not threadsafe.
  */
 class OtelRumConfig {
     private var globalAttributesSupplierImpl: Supplier<Attributes>? = null
@@ -23,6 +23,24 @@ class OtelRumConfig {
     private var discoverInstrumentations = true
     private val suppressedInstrumentations: MutableList<String> = mutableListOf()
     private var diskBufferingConfigImpl: DiskBufferingConfig = create()
+
+    /**
+     * Whether the tracing API is enabled. Toggle with using [setTracingDisabled]
+     */
+    var tracingEnabled = true
+        private set
+
+    /**
+     * Whether the logging API is enabled. Toggle with using [setLoggingDisabled]
+     */
+    var loggingEnabled = true
+        private set
+
+    /**
+     * Whether the metrics API is enabled. Toggle with using [setMetricsDisabled]
+     */
+    var metricsEnabled = true
+        private set
 
     /**
      * Configures the set of global attributes to emit with every span and event. Any existing
@@ -121,6 +139,33 @@ class OtelRumConfig {
 
     /** Returns false when the given instrumentation has been suppressed. True otherwise.  */
     fun isSuppressed(instrumentationName: String): Boolean = suppressedInstrumentations.contains(instrumentationName)
+
+    /**
+     * Enables or disables the tracing API for the SDK. When disabled, the SDK will provide no-op implementations to instrumentation
+     * that use this API.
+     */
+    fun setTracingDisabled(): OtelRumConfig {
+        tracingEnabled = false
+        return this
+    }
+
+    /**
+     * Enables or disables the logging API for the SDK. When disabled, the SDK will provide no-op implementations to instrumentation
+     * that use this API.
+     */
+    fun setLoggingDisabled(): OtelRumConfig {
+        loggingEnabled = false
+        return this
+    }
+
+    /**
+     * Enables or disables the metrics API for the SDK. When disabled, the SDK will provide no-op implementations to instrumentation
+     * that use this API.
+     */
+    fun setMetricsDisabled(): OtelRumConfig {
+        metricsEnabled = false
+        return this
+    }
 
     fun getDiskBufferingConfig(): DiskBufferingConfig = diskBufferingConfigImpl
 

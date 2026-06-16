@@ -87,6 +87,7 @@ private fun initOTel(context: Context): OpenTelemetryRum? =
                 globalAttributes {
                     Attributes.of(stringKey("demo-version"), "test")
                 }
+                disableMetrics()
             }
         )
     }.onFailure {

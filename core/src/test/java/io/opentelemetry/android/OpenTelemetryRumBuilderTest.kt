@@ -43,7 +43,6 @@ import io.opentelemetry.context.propagation.TextMapGetter
 import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.contrib.disk.buffering.exporters.SpanToDiskExporter
 import io.opentelemetry.kotlin.semconv.IncubatingApi
-import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.common.CompletableResultCode
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder
 import io.opentelemetry.sdk.logs.data.LogRecordData
@@ -227,8 +226,7 @@ class OpenTelemetryRumBuilderTest {
                         .registerMetricReader(metricReader)
                 }.build()
 
-        val sdk = openTelemetryRum.openTelemetry as OpenTelemetrySdk
-        val meter = sdk.sdkMeterProvider.meterBuilder("myMeter").build()
+        val meter = openTelemetryRum.openTelemetry.meterProvider.meterBuilder("myMeter").build()
         val counterAttrs = Attributes.of(AttributeKey.longKey("adams"), 42L)
         val counter = meter.counterBuilder("myCounter").build()
         counter.add(40, counterAttrs)
@@ -268,8 +266,7 @@ class OpenTelemetryRumBuilderTest {
                 }.addMetricExporterCustomizer(Function { _: MetricExporter -> exporter })
                 .build()
 
-        val sdk = openTelemetryRum.openTelemetry as OpenTelemetrySdk
-        val meter = sdk.sdkMeterProvider.meterBuilder("FOOMETER").build()
+        val meter = openTelemetryRum.openTelemetry.meterProvider.meterBuilder("FOOMETER").build()
         val counter = meter.counterBuilder("FOOCOUNTER").build()
         counter.add(22)
         periodicReader.forceFlush()

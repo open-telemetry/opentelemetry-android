@@ -34,6 +34,27 @@ class OpenTelemetryConfiguration internal constructor(
     internal var resourceAction: ResourceBuilder.() -> Unit = {}
 
     /**
+     * Disable tracing in the SDK by providing no-op implementations that don't incur overhead even if instrumentation creates spans
+     */
+    fun disableTracing() {
+        rumConfig.setTracingDisabled()
+    }
+
+    /**
+     * Disable logging and events in the SDK by providing no-op implementations that don't incur overhead even if instrumentation emits logs
+     */
+    fun disableLogging() {
+        rumConfig.setLoggingDisabled()
+    }
+
+    /**
+     * Disable metrics in the SDK by providing no-op implementations that don't incur overhead even if instrumentation records metrics
+     */
+    fun disableMetrics() {
+        rumConfig.setMetricsDisabled()
+    }
+
+    /**
      * Configures how OpenTelemetry should export telemetry over HTTP.
      */
     fun httpExport(action: HttpExportConfiguration.() -> Unit) {
