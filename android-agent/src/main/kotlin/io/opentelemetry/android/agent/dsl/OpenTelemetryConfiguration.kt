@@ -71,6 +71,13 @@ class OpenTelemetryConfiguration internal constructor(
     }
 
     /**
+     * Configures semantic conventions.
+     */
+    fun semanticConventions(action: SemanticConventionsConfiguration.() -> Unit) {
+        semanticConventions.action()
+    }
+
+    /**
      * Configures session behavior.
      */
     fun session(action: SessionConfiguration.() -> Unit) {
