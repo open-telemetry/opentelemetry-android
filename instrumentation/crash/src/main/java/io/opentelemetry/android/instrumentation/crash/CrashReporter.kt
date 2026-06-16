@@ -59,7 +59,7 @@ internal class CrashReporter(
 
     private fun stackTraceToTruncatedString(throwable: Throwable, truncateThreshold: Int = 1000): String {
         val stringWriter = StringWriter()
-        val printWriter = MaxLinesPrintWriter(sw, truncateThreshold)
+        val printWriter = MaxLinesPrintWriter(stringWriter, truncateThreshold)
         throwable.printStackTrace(printWriter)
         printWriter.flush()
         return stringWriter.toString()
