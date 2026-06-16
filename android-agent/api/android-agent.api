@@ -59,9 +59,9 @@ public final class io/opentelemetry/android/agent/dsl/HttpExportConfiguration {
 }
 
 public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration {
-	public final fun disableLogging (Z)V
-	public final fun disableMetrics (Z)V
-	public final fun disableTracing (Z)V
+	public final fun disableLogging ()V
+	public final fun disableMetrics ()V
+	public final fun disableTracing ()V
 	public final fun diskBuffering (Lkotlin/jvm/functions/Function1;)V
 	public final fun getClock ()Lio/opentelemetry/sdk/common/Clock;
 	public final fun globalAttributes (Lkotlin/jvm/functions/Function0;)V

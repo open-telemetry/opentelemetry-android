@@ -37,7 +37,7 @@ class OtelRumConfig {
         private set
 
     /**
-     * Whether the metrics API is enabled. Toggle with using [setMetricsEnabled]
+     * Whether the metrics API is enabled. Toggle with using [setMetricsDisabled]
      */
     var metricsEnabled = true
         private set
@@ -162,7 +162,7 @@ class OtelRumConfig {
      * Enables or disables the metrics API for the SDK. When disabled, the SDK will provide no-op implementations to instrumentation
      * that use this API.
      */
-    fun setMetricsEnabled(disabled: Boolean): OtelRumConfig {
+    fun setMetricsDisabled(disabled: Boolean): OtelRumConfig {
         metricsEnabled = !disabled
         return this
     }

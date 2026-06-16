@@ -86,7 +86,7 @@ class OtelRumConfigTest {
         assertThat(config.setTracingDisabled(true).tracingEnabled).isTrue()
         assertThat(config.setLoggingDisabled(false).loggingEnabled).isFalse()
         assertThat(config.setLoggingDisabled(true).loggingEnabled).isTrue()
-        assertThat(config.setMetricsEnabled(false).metricsEnabled).isFalse()
-        assertThat(config.setMetricsEnabled(true).metricsEnabled).isTrue()
+        assertThat(config.setMetricsDisabled(false).metricsEnabled).isFalse()
+        assertThat(config.setMetricsDisabled(true).metricsEnabled).isTrue()
     }
 }
