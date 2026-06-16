@@ -31,6 +31,8 @@ class OpenTelemetryConfiguration internal constructor(
     internal val exportConfig = HttpExportConfiguration()
     internal val sessionConfig = SessionConfiguration()
     internal val instrumentations = InstrumentationConfiguration(rumConfig, instrumentationLoader)
+
+    internal val semanticConventions = SemanticConventionsConfiguration()
     internal var resourceAction: ResourceBuilder.() -> Unit = {}
 
     /**
