@@ -50,7 +50,9 @@ class SemanticConventionsConfigurationTest {
             instrumentationLoader = FakeInstrumentationLoader(),
             clock = FakeClock()
         )
-        otelConfig.semanticConventions.useLatestExperimental = false
+        otelConfig.semanticConventions {
+            useLatestExperimental = false
+        }
         assertThat(SemconvCompat.useLatestExperimental).isFalse
     }
 
