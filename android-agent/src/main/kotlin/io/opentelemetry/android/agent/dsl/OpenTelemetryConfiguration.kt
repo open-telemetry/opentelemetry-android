@@ -36,22 +36,22 @@ class OpenTelemetryConfiguration internal constructor(
     /**
      * Disable tracing in the SDK by providing no-op implementations that don't incur overhead even if instrumentation creates spans
      */
-    fun disableTracing(disable: Boolean) {
-        rumConfig.setTracingEnabled(!disable)
+    fun disableTracing() {
+        rumConfig.setTracingDisabled(false)
     }
 
     /**
-     * Disable logging in the SDK by providing no-op implementations that don't incur overhead even if instrumentation emits logs
+     * Disable logging and events in the SDK by providing no-op implementations that don't incur overhead even if instrumentation emits logs
      */
-    fun disableLogging(disable: Boolean) {
-        rumConfig.setLoggingEnabled(!disable)
+    fun disableLogging() {
+        rumConfig.setLoggingDisabled(false)
     }
 
     /**
      * Disable metrics in the SDK by providing no-op implementations that don't incur overhead even if instrumentation records metrics
      */
-    fun disableMetrics(disable: Boolean) {
-        rumConfig.setMetricsEnabled(!disable)
+    fun disableMetrics() {
+        rumConfig.setMetricsEnabled(false)
     }
 
     /**

@@ -32,29 +32,24 @@ class SignalEnablementTest {
     }
 
     @Test
-    fun testToggleTracingEnablement() {
-        otelConfig.disableTracing(true)
+    fun testDisableTracing() {
+        assertTrue(otelConfig.rumConfig.tracingEnabled)
+        otelConfig.disableTracing()
         assertFalse(otelConfig.rumConfig.tracingEnabled)
 
-        otelConfig.disableTracing(false)
-        assertTrue(otelConfig.rumConfig.tracingEnabled)
     }
 
     @Test
-    fun testToggleLoggingEnablement() {
-        otelConfig.disableLogging(true)
-        assertFalse(otelConfig.rumConfig.loggingEnabled)
-
-        otelConfig.disableLogging(false)
+    fun testDisableLogging() {
         assertTrue(otelConfig.rumConfig.loggingEnabled)
+        otelConfig.disableLogging()
+        assertFalse(otelConfig.rumConfig.loggingEnabled)
     }
 
     @Test
-    fun testToggleMetricsEnablement() {
-        otelConfig.disableMetrics(true)
-        assertFalse(otelConfig.rumConfig.metricsEnabled)
-
-        otelConfig.disableMetrics(false)
+    fun testDisableMetrics() {
         assertTrue(otelConfig.rumConfig.metricsEnabled)
+        otelConfig.disableMetrics()
+        assertFalse(otelConfig.rumConfig.metricsEnabled)
     }
 }

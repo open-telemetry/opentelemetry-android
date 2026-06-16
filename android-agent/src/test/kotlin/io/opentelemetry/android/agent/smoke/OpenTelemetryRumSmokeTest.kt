@@ -15,7 +15,6 @@ import io.opentelemetry.android.agent.dsl.OpenTelemetryConfiguration
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
-import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -76,8 +75,7 @@ class OpenTelemetryRumSmokeTest {
                     baseUrl = server.url
                 }
                 diskBufferingConfig.enabled(false)
-                disableTracing(true)
-                disableLogging(false)
+                disableTracing()
             },
             action = {
                 recordSpan()
@@ -86,7 +84,7 @@ class OpenTelemetryRumSmokeTest {
         )
 
         server.awaitLogRequest { findLog(it) }
-        assertEquals(0, server.traceRequestCount())
+        assertThat(server.traceRequestCount()).isZero
     }
 
     @Test
@@ -97,8 +95,7 @@ class OpenTelemetryRumSmokeTest {
                     baseUrl = server.url
                 }
                 diskBufferingConfig.enabled(false)
-                disableTracing(false)
-                disableLogging(true)
+                disableLogging()
             },
             action = {
                 recordLog()
@@ -107,7 +104,7 @@ class OpenTelemetryRumSmokeTest {
         )
 
         server.awaitTraceRequest { findSpan(it) }
-        assertEquals(0, server.logRequestCount())
+        assertThat(server.logRequestCount()).isZero
     }
 
     private fun OpenTelemetryRum.recordLog() {

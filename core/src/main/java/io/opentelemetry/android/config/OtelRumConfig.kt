@@ -25,13 +25,13 @@ class OtelRumConfig {
     private var diskBufferingConfigImpl: DiskBufferingConfig = create()
 
     /**
-     * Whether the tracing API is enabled. Toggle with using [setTracingEnabled]
+     * Whether the tracing API is enabled. Toggle with using [setTracingDisabled]
      */
     var tracingEnabled = true
         private set
 
     /**
-     * Whether the logging API is enabled. Toggle with using [setLoggingEnabled]
+     * Whether the logging API is enabled. Toggle with using [setLoggingDisabled]
      */
     var loggingEnabled = true
         private set
@@ -144,8 +144,8 @@ class OtelRumConfig {
      * Enables or disables the tracing API for the SDK. When disabled, the SDK will provide no-op implementations to instrumentation
      * that use this API.
      */
-    fun setTracingEnabled(enabled: Boolean): OtelRumConfig {
-        tracingEnabled = enabled
+    fun setTracingDisabled(disabled: Boolean): OtelRumConfig {
+        tracingEnabled = !disabled
         return this
     }
 
@@ -153,8 +153,8 @@ class OtelRumConfig {
      * Enables or disables the logging API for the SDK. When disabled, the SDK will provide no-op implementations to instrumentation
      * that use this API.
      */
-    fun setLoggingEnabled(enabled: Boolean): OtelRumConfig {
-        loggingEnabled = enabled
+    fun setLoggingDisabled(disabled: Boolean): OtelRumConfig {
+        loggingEnabled = !disabled
         return this
     }
 
@@ -162,8 +162,8 @@ class OtelRumConfig {
      * Enables or disables the metrics API for the SDK. When disabled, the SDK will provide no-op implementations to instrumentation
      * that use this API.
      */
-    fun setMetricsEnabled(enabled: Boolean): OtelRumConfig {
-        metricsEnabled = enabled
+    fun setMetricsEnabled(disabled: Boolean): OtelRumConfig {
+        metricsEnabled = !disabled
         return this
     }
 
