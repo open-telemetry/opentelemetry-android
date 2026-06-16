@@ -144,8 +144,8 @@ class OtelRumConfig {
      * Enables or disables the tracing API for the SDK. When disabled, the SDK will provide no-op implementations to instrumentation
      * that use this API.
      */
-    fun setTracingDisabled(disabled: Boolean): OtelRumConfig {
-        tracingEnabled = !disabled
+    fun setTracingDisabled(): OtelRumConfig {
+        tracingEnabled = false
         return this
     }
 
@@ -153,8 +153,8 @@ class OtelRumConfig {
      * Enables or disables the logging API for the SDK. When disabled, the SDK will provide no-op implementations to instrumentation
      * that use this API.
      */
-    fun setLoggingDisabled(disabled: Boolean): OtelRumConfig {
-        loggingEnabled = !disabled
+    fun setLoggingDisabled(): OtelRumConfig {
+        loggingEnabled = false
         return this
     }
 
@@ -162,8 +162,8 @@ class OtelRumConfig {
      * Enables or disables the metrics API for the SDK. When disabled, the SDK will provide no-op implementations to instrumentation
      * that use this API.
      */
-    fun setMetricsDisabled(disabled: Boolean): OtelRumConfig {
-        metricsEnabled = !disabled
+    fun setMetricsDisabled(): OtelRumConfig {
+        metricsEnabled = false
         return this
     }
 

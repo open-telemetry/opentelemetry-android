@@ -80,13 +80,10 @@ class OtelRumConfigTest {
     }
 
     @Test
-    fun `signal enablement can be toggled`() {
+    fun `signals can be disabled`() {
         val config = OtelRumConfig()
-        assertThat(config.setTracingDisabled(false).tracingEnabled).isFalse()
-        assertThat(config.setTracingDisabled(true).tracingEnabled).isTrue()
-        assertThat(config.setLoggingDisabled(false).loggingEnabled).isFalse()
-        assertThat(config.setLoggingDisabled(true).loggingEnabled).isTrue()
-        assertThat(config.setMetricsDisabled(false).metricsEnabled).isFalse()
-        assertThat(config.setMetricsDisabled(true).metricsEnabled).isTrue()
+        assertThat(config.setTracingDisabled().tracingEnabled).isFalse()
+        assertThat(config.setLoggingDisabled().loggingEnabled).isFalse()
+        assertThat(config.setMetricsDisabled().metricsEnabled).isFalse()
     }
 }
