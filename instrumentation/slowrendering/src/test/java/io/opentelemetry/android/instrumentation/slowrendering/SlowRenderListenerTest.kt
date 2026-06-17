@@ -20,7 +20,13 @@ import io.mockk.junit4.MockKRule
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import io.opentelemetry.api.common.AttributeKey.doubleKey
+import io.opentelemetry.api.common.AttributeKey.longKey
 import io.opentelemetry.api.logs.Logger
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_JANK_FRAME_COUNT
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_JANK_PERIOD
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_JANK_THRESHOLD
+import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import kotlinx.coroutines.Runnable
 import org.assertj.core.api.Assertions.assertThat
@@ -234,19 +240,20 @@ class SlowRenderListenerTest {
             .combine(EventJankReporter(eventLogger, FROZEN_THRESHOLD_MS / 1000.0))
     }
 
+    @OptIn(IncubatingApi::class)
     private fun assertLogContent(periodSeconds: Double) {
         assertThat(otelTesting.logRecords).hasSize(2)
 
         val slowLog = otelTesting.logRecords[0]
         assertThat(slowLog.eventName).isEqualTo("app.jank")
-        assertThat(slowLog.attributes.get(FRAME_COUNT)).isEqualTo(4)
-        assertThat(slowLog.attributes.get(PERIOD)).isEqualTo(periodSeconds)
-        assertThat(slowLog.attributes.get(THRESHOLD)).isEqualTo(0.016)
+        assertThat(slowLog.attributes.get(longKey(APP_JANK_FRAME_COUNT))).isEqualTo(4)
+        assertThat(slowLog.attributes.get(doubleKey(APP_JANK_PERIOD))).isEqualTo(periodSeconds)
+        assertThat(slowLog.attributes.get(doubleKey(APP_JANK_THRESHOLD))).isEqualTo(0.016)
 
         val frozenLog = otelTesting.logRecords[1]
         assertThat(frozenLog.eventName).isEqualTo("app.jank")
-        assertThat(frozenLog.attributes.get(FRAME_COUNT)).isEqualTo(1)
-        assertThat(frozenLog.attributes.get(PERIOD)).isEqualTo(periodSeconds)
-        assertThat(frozenLog.attributes.get(THRESHOLD)).isEqualTo(0.7)
+        assertThat(frozenLog.attributes.get(longKey(APP_JANK_FRAME_COUNT))).isEqualTo(1)
+        assertThat(frozenLog.attributes.get(doubleKey(APP_JANK_PERIOD))).isEqualTo(periodSeconds)
+        assertThat(frozenLog.attributes.get(doubleKey(APP_JANK_THRESHOLD))).isEqualTo(0.7)
     }
 }

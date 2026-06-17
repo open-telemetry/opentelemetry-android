@@ -7,20 +7,19 @@ package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants
-import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
-
-// TODO: Replace with semconv constants
-internal val FRAME_COUNT: AttributeKey<Long> = AttributeKey.longKey("app.jank.frame_count")
-internal val PERIOD: AttributeKey<Double> = AttributeKey.doubleKey("app.jank.period")
-internal val THRESHOLD: AttributeKey<Double> = AttributeKey.doubleKey("app.jank.threshold")
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_JANK_FRAME_COUNT
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_JANK_PERIOD
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_JANK_THRESHOLD
+import io.opentelemetry.kotlin.semconv.IncubatingApi
 
 internal class EventJankReporter(
     private val eventLogger: Logger,
     private val threshold: Double,
     private val debugVerbose: Boolean = false,
 ) : JankReporter {
+    @OptIn(IncubatingApi::class)
     override fun reportSlow(
         durationToCountHistogram: Map<Int, Int>,
         periodSeconds: Double,
@@ -46,9 +45,9 @@ internal class EventJankReporter(
             val attributes =
                 Attributes
                     .builder()
-                    .put(FRAME_COUNT, frameCount)
-                    .put(PERIOD, periodSeconds)
-                    .put(THRESHOLD, threshold)
+                    .put(APP_JANK_FRAME_COUNT, frameCount)
+                    .put(APP_JANK_PERIOD, periodSeconds)
+                    .put(APP_JANK_THRESHOLD, threshold)
                     .build()
             eventBuilder
                 .setEventName("app.jank")
