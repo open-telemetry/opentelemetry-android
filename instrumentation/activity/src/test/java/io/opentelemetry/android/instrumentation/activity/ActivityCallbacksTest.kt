@@ -13,6 +13,9 @@ import io.opentelemetry.android.instrumentation.activity.ActivityTracer.Companio
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
+import io.opentelemetry.api.common.AttributeKey.stringKey
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME
+import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import io.opentelemetry.sdk.trace.data.EventData
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -22,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 
+@OptIn(IncubatingApi::class)
 internal class ActivityCallbacksTest {
     private companion object {
         @RegisterExtension
@@ -64,7 +68,7 @@ internal class ActivityCallbacksTest {
         )
         assertEquals(
             activity.javaClass.simpleName,
-            creationSpan.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            creationSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertNull(creationSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 
@@ -105,7 +109,7 @@ internal class ActivityCallbacksTest {
         )
         assertEquals(
             activity.javaClass.simpleName,
-            span.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            span.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertNull(span.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 
@@ -154,7 +158,7 @@ internal class ActivityCallbacksTest {
         )
         assertEquals(
             activity.javaClass.simpleName,
-            span.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            span.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertNull(span.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 
@@ -193,7 +197,7 @@ internal class ActivityCallbacksTest {
         )
         assertEquals(
             activity.javaClass.simpleName,
-            span.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            span.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertEquals(
             "previousScreen",
@@ -230,7 +234,7 @@ internal class ActivityCallbacksTest {
         )
         assertEquals(
             activity.javaClass.simpleName,
-            span.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            span.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertNull(span.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 
@@ -264,7 +268,7 @@ internal class ActivityCallbacksTest {
         )
         assertEquals(
             activity.javaClass.simpleName,
-            stoppedSpan.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            stoppedSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertNull(stoppedSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 
@@ -284,7 +288,7 @@ internal class ActivityCallbacksTest {
         )
         assertEquals(
             activity.javaClass.simpleName,
-            destroyedSpan.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            destroyedSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertNull(destroyedSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 
@@ -318,7 +322,7 @@ internal class ActivityCallbacksTest {
         )
         assertEquals(
             activity.javaClass.simpleName,
-            stoppedSpan.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            stoppedSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertNull(stoppedSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 
@@ -338,7 +342,7 @@ internal class ActivityCallbacksTest {
         )
         assertEquals(
             activity.javaClass.simpleName,
-            destroyedSpan.attributes.get(RumConstants.SCREEN_NAME_KEY),
+            destroyedSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
         assertNull(destroyedSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
 

@@ -6,13 +6,15 @@
 package io.opentelemetry.android.instrumentation.activity
 
 import android.app.Activity
-import io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY
+import io.opentelemetry.android.common.internal.SemconvCompat.Companion.map
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.context.Context
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME
+import io.opentelemetry.kotlin.semconv.IncubatingApi
 
 internal class ActivityTracer(
     activity: Activity,
@@ -79,6 +81,7 @@ internal class ActivityTracer(
 
     private fun createSpan(spanName: String): Span = createSpanWithParent(spanName, null)
 
+    @OptIn(IncubatingApi::class)
     private fun createSpanWithParent(
         spanName: String,
         parentSpan: Span?,
@@ -90,7 +93,7 @@ internal class ActivityTracer(
         val span = spanBuilder.startSpan()
         // do this after the span is started, so we can override the default screen.name set by the
         // RumAttributeAppender.
-        span.setAttribute(SCREEN_NAME_KEY, screenName)
+        span.setAttribute(map(APP_SCREEN_NAME), screenName)
         return span
     }
 

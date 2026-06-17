@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.instrumentation.crash
 
+import io.opentelemetry.android.common.internal.SemconvCompat.Companion.map
 import io.opentelemetry.android.common.internal.utils.threadIdCompat
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.api.OpenTelemetry
@@ -90,7 +91,7 @@ internal class CrashReporter(
         val eventBuilder =
             logger.logRecordBuilder()
         eventBuilder
-            .setEventName("app.crash")
+            .setEventName(map("app.crash"))
             .setAllAttributes(attributesBuilder.build())
             .emit()
     }

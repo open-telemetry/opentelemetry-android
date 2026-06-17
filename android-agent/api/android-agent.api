@@ -69,8 +69,15 @@ public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration
 	public final fun httpExport (Lkotlin/jvm/functions/Function1;)V
 	public final fun instrumentations (Lkotlin/jvm/functions/Function1;)V
 	public final fun resource (Lkotlin/jvm/functions/Function1;)V
+	public final fun semanticConventions (Lkotlin/jvm/functions/Function1;)V
 	public final fun session (Lkotlin/jvm/functions/Function1;)V
 	public final fun setClock (Lio/opentelemetry/sdk/common/Clock;)V
+}
+
+public final class io/opentelemetry/android/agent/dsl/SemanticConventionsConfiguration {
+	public fun <init> ()V
+	public final fun getUseLatestExperimental ()Z
+	public final fun setUseLatestExperimental (Z)V
 }
 
 public final class io/opentelemetry/android/agent/dsl/SessionConfiguration {

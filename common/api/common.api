@@ -2,7 +2,16 @@ public final class io/opentelemetry/android/common/RumConstants {
 	public static final field INSTANCE Lio/opentelemetry/android/common/RumConstants;
 	public static final field LAST_SCREEN_NAME_KEY Lio/opentelemetry/api/common/AttributeKey;
 	public static final field OTEL_RUM_LOG_TAG Ljava/lang/String;
-	public static final field SCREEN_NAME_KEY Lio/opentelemetry/api/common/AttributeKey;
+}
+
+public final class io/opentelemetry/android/common/internal/SemconvCompat {
+	public static final field Companion Lio/opentelemetry/android/common/internal/SemconvCompat$Companion;
+}
+
+public final class io/opentelemetry/android/common/internal/SemconvCompat$Companion {
+	public final fun getUseLatestExperimental ()Z
+	public final fun map (Ljava/lang/String;)Ljava/lang/String;
+	public final fun setUseLatestExperimental (Z)V
 }
 
 public final class io/opentelemetry/android/common/internal/features/networkattributes/CurrentNetworkAttributesExtractor {

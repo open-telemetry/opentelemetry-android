@@ -15,7 +15,10 @@ import io.opentelemetry.android.instrumentation.activity.ActivityTracer.Companio
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
+import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME
+import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import io.opentelemetry.sdk.trace.data.SpanData
@@ -26,6 +29,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.extension.RegisterExtension
 
+@OptIn(IncubatingApi::class)
 @ExtendWith(MockKExtension::class)
 class ActivityTracerTest {
     private companion object {
@@ -233,7 +237,7 @@ class ActivityTracerTest {
         activityTracer.startActivityCreation()
         activityTracer.endActiveSpan()
         val span = this.singleSpan
-        assertEquals("squarely", span.attributes.get(RumConstants.SCREEN_NAME_KEY))
+        assertEquals("squarely", span.attributes.get(stringKey(APP_SCREEN_NAME)))
     }
 
     private val singleSpan: SpanData

@@ -17,7 +17,6 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import io.opentelemetry.android.common.RumConstants.SCREEN_NAME_KEY
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
@@ -42,6 +41,7 @@ import io.opentelemetry.api.logs.Severity
 import io.opentelemetry.context.propagation.TextMapGetter
 import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.contrib.disk.buffering.exporters.SpanToDiskExporter
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.sdk.common.CompletableResultCode
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder
@@ -163,7 +163,7 @@ class OpenTelemetryRumBuilderTest {
                             sessionId,
                         ),
                         OpenTelemetryAssertions.equalTo(
-                            SCREEN_NAME_KEY,
+                            stringKey(APP_SCREEN_NAME),
                             CUR_SCREEN_NAME,
                         ),
                     )
@@ -200,7 +200,7 @@ class OpenTelemetryRumBuilderTest {
                     stringKey(SESSION_ID),
                     openTelemetryRum.sessionProvider.getSessionId(),
                 ),
-                OpenTelemetryAssertions.equalTo(SCREEN_NAME_KEY, CUR_SCREEN_NAME),
+                OpenTelemetryAssertions.equalTo(stringKey(APP_SCREEN_NAME), CUR_SCREEN_NAME),
                 OpenTelemetryAssertions.equalTo(AttributeKey.stringKey("mega"), "hit"),
                 OpenTelemetryAssertions.equalTo(
                     AttributeKey.stringKey("body.field"),
@@ -467,7 +467,7 @@ class OpenTelemetryRumBuilderTest {
             .hasBody("foo")
             .hasAttributesSatisfyingExactly(
                 OpenTelemetryAssertions.equalTo(AttributeKey.stringKey("bing"), "bang"),
-                OpenTelemetryAssertions.equalTo(SCREEN_NAME_KEY, CUR_SCREEN_NAME),
+                OpenTelemetryAssertions.equalTo(stringKey(APP_SCREEN_NAME), CUR_SCREEN_NAME),
                 OpenTelemetryAssertions.equalTo(
                     stringKey(SESSION_ID),
                     rum.sessionProvider.getSessionId(),
@@ -626,7 +626,7 @@ class OpenTelemetryRumBuilderTest {
                     .put(SESSION_ID, rum.sessionProvider.getSessionId())
                     .put("someGlobalKey", "someGlobalValue")
                     .put("localAttrKey", "localAttrValue")
-                    .put(SCREEN_NAME_KEY, CUR_SCREEN_NAME)
+                    .put(stringKey(APP_SCREEN_NAME), CUR_SCREEN_NAME)
                     .build(),
             )
     }
