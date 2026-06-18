@@ -14,49 +14,42 @@ object HwAttributes {
     /**
     * <p>The hardware pointer button associated with a pointer gesture.</p>
     */
-
     const val HW_POINTER_BUTTON: String = "hw.pointer.button"
 
 
     /**
     * <p>The click count associated with a pointer gesture.</p>
     */
-
     const val HW_POINTER_CLICKS: String = "hw.pointer.clicks"
 
 
     /**
     * <p>The horizontal distance associated with a pointer gesture.</p>
     */
-
     const val HW_POINTER_DISTANCE_X: String = "hw.pointer.distance.x"
 
 
     /**
     * <p>The vertical distance associated with a pointer gesture.</p>
     */
-
     const val HW_POINTER_DISTANCE_Y: String = "hw.pointer.distance.y"
 
 
     /**
     * <p>The hardware pointer type associated with a pointer gesture.</p>
     */
-
     const val HW_POINTER_TYPE: String = "hw.pointer.type"
 
 
     /**
     * <p>The horizontal velocity associated with a pointer gesture.</p>
     */
-
     const val HW_POINTER_VELOCITY_X: String = "hw.pointer.velocity.x"
 
 
     /**
     * <p>The vertical velocity associated with a pointer gesture.</p>
     */
-
     const val HW_POINTER_VELOCITY_Y: String = "hw.pointer.velocity.y"
 
 }

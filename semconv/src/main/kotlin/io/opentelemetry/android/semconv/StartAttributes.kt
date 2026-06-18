@@ -14,7 +14,6 @@ object StartAttributes {
     /**
     * <p>The application start type.</p>
     */
-
     const val START_TYPE: String = "start.type"
 
 }

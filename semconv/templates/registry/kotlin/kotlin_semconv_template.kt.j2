@@ -11,7 +11,7 @@ package io.opentelemetry.android.semconv
 object {{ my_class_name }} {
 {% for attribute in ctx.attributes | rejectattr("name", "in", ctx.excluded_attributes) %}
 
-    {{ [attribute.brief, concat_if("\n\nNotes:\n\n", attribute.note)] | comment | indent(4) }}
+    {{ [attribute.brief, concat_if("\n\nNotes:\n\n", attribute.note)] | comment | indent(4) -}}
 {% if attribute is deprecated %}
     @Deprecated("{{ attribute.deprecated.note | replace('\n', ' ') | trim  }}")
 {% endif %}

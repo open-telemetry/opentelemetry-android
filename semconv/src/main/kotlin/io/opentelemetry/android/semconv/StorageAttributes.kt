@@ -14,7 +14,6 @@ object StorageAttributes {
     /**
     * <p>The amount of free application file storage, in bytes.</p>
     */
-
     const val STORAGE_FREE: String = "storage.free"
 
 }

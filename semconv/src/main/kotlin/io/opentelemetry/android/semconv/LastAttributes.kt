@@ -14,7 +14,6 @@ object LastAttributes {
     /**
     * <p>The previously visible screen name.</p>
     */
-
     const val LAST_SCREEN_NAME: String = "last.screen.name"
 
 }

@@ -14,7 +14,6 @@ object ActivityAttributes {
     /**
     * <p>The Android activity class name for which telemetry is relevant.</p>
     */
-
     const val ACTIVITY_NAME: String = "activity.name"
 
 }
