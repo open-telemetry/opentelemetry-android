@@ -12,11 +12,8 @@ package io.opentelemetry.android.semconv
  */
 @Suppress("unused")
 object StartAttributes {
-
-
     /**
      * <p>The application start type.</p>
      */
     const val START_TYPE: String = "start.type"
-
 }

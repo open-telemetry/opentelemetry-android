@@ -12,11 +12,8 @@ package io.opentelemetry.android.semconv
  */
 @Suppress("unused")
 object FragmentAttributes {
-
-
     /**
      * <p>The Android fragment class name for which telemetry is relevant.</p>
      */
     const val FRAGMENT_NAME: String = "fragment.name"
-
 }

@@ -12,11 +12,8 @@ package io.opentelemetry.android.semconv
  */
 @Suppress("unused")
 object LastAttributes {
-
-
     /**
      * <p>The previously visible screen name.</p>
      */
     const val LAST_SCREEN_NAME: String = "last.screen.name"
-
 }

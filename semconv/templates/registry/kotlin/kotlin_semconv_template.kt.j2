@@ -18,5 +18,5 @@ object {{ my_class_name }} {%- for attribute in ctx.attributes | rejectattr("nam
     @Deprecated("{{ attribute.deprecated.note | replace('\n', ' ') | trim }}")
 {%- endif %}
     const val {{ attribute.name | screaming_snake_case }}: String = "{{ attribute.name }}"
-{%- endfor %}
+{%- endfor -%}
 }

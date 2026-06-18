@@ -12,23 +12,18 @@ package io.opentelemetry.android.semconv
  */
 @Suppress("unused")
 object AndroidAttributes {
-
-
     /**
      * <p>The Android log tag supplied to android.util.Log.</p>
      */
     const val ANDROID_LOG_TAG: String = "android.log.tag"
-
 
     /**
      * <p>Whether Android power save mode is enabled.</p>
      */
     const val ANDROID_POWER_SAVE_MODE_ENABLED: String = "android.power_save_mode.enabled"
 
-
     /**
      * <p>The Android thermal throttling status.</p>
      */
     const val ANDROID_THERMAL_THROTTLING_STATUS: String = "android.thermal.throttling_status"
-
 }

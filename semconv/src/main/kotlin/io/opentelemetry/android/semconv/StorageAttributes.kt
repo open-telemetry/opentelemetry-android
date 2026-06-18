@@ -12,11 +12,8 @@ package io.opentelemetry.android.semconv
  */
 @Suppress("unused")
 object StorageAttributes {
-
-
     /**
      * <p>The amount of free application file storage, in bytes.</p>
      */
     const val STORAGE_FREE: String = "storage.free"
-
 }

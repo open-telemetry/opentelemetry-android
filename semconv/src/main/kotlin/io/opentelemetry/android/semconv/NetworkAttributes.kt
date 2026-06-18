@@ -12,11 +12,8 @@ package io.opentelemetry.android.semconv
  */
 @Suppress("unused")
 object NetworkAttributes {
-
-
     /**
      * <p>The Android network status after a network change.</p>
      */
     const val NETWORK_STATUS: String = "network.status"
-
 }

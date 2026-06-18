@@ -12,17 +12,13 @@ package io.opentelemetry.android.semconv
  */
 @Suppress("unused")
 object WebsocketAttributes {
-
-
     /**
      * <p>The size of a WebSocket message payload.</p>
      */
     const val WEBSOCKET_MESSAGE_SIZE: String = "websocket.message.size"
 
-
     /**
      * <p>The WebSocket message payload type.</p>
      */
     const val WEBSOCKET_MESSAGE_TYPE: String = "websocket.message.type"
-
 }

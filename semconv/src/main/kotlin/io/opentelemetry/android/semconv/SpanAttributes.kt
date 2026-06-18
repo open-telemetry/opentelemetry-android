@@ -12,11 +12,8 @@ package io.opentelemetry.android.semconv
  */
 @Suppress("unused")
 object SpanAttributes {
-
-
     /**
      * <p>A string representation of the span exporter configured during SDK initialization.</p>
      */
     const val SPAN_EXPORTER: String = "span.exporter"
-
 }

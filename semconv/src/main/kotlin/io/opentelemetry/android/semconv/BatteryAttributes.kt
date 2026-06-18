@@ -12,11 +12,8 @@ package io.opentelemetry.android.semconv
  */
 @Suppress("unused")
 object BatteryAttributes {
-
-
     /**
      * <p>The current battery charge as a percentage of total capacity.</p>
      */
     const val BATTERY_PERCENT: String = "battery.percent"
-
 }

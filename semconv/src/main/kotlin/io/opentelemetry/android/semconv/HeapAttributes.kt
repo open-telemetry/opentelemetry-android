@@ -12,11 +12,8 @@ package io.opentelemetry.android.semconv
  */
 @Suppress("unused")
 object HeapAttributes {
-
-
     /**
      * <p>The amount of free heap memory, in bytes.</p>
      */
     const val HEAP_FREE: String = "heap.free"
-
 }
