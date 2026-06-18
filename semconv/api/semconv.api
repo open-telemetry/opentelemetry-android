@@ -1,0 +1,75 @@
+public final class io/opentelemetry/android/semconv/ActivityAttributes {
+	public static final field ACTIVITY_NAME Ljava/lang/String;
+	public static final field INSTANCE Lio/opentelemetry/android/semconv/ActivityAttributes;
+}
+
+public final class io/opentelemetry/android/semconv/AndroidAttributes {
+	public static final field ANDROID_LOG_TAG Ljava/lang/String;
+	public static final field ANDROID_POWER_SAVE_MODE_ENABLED Ljava/lang/String;
+	public static final field ANDROID_THERMAL_THROTTLING_STATUS Ljava/lang/String;
+	public static final field INSTANCE Lio/opentelemetry/android/semconv/AndroidAttributes;
+}
+
+public final class io/opentelemetry/android/semconv/BatteryAttributes {
+	public static final field BATTERY_PERCENT Ljava/lang/String;
+	public static final field INSTANCE Lio/opentelemetry/android/semconv/BatteryAttributes;
+}
+
+public final class io/opentelemetry/android/semconv/FragmentAttributes {
+	public static final field FRAGMENT_NAME Ljava/lang/String;
+	public static final field INSTANCE Lio/opentelemetry/android/semconv/FragmentAttributes;
+}
+
+public final class io/opentelemetry/android/semconv/HeapAttributes {
+	public static final field HEAP_FREE Ljava/lang/String;
+	public static final field INSTANCE Lio/opentelemetry/android/semconv/HeapAttributes;
+}
+
+public final class io/opentelemetry/android/semconv/HwAttributes {
+	public static final field HW_POINTER_BUTTON Ljava/lang/String;
+	public static final field HW_POINTER_CLICKS Ljava/lang/String;
+	public static final field HW_POINTER_DISTANCE_X Ljava/lang/String;
+	public static final field HW_POINTER_DISTANCE_Y Ljava/lang/String;
+	public static final field HW_POINTER_TYPE Ljava/lang/String;
+	public static final field HW_POINTER_VELOCITY_X Ljava/lang/String;
+	public static final field HW_POINTER_VELOCITY_Y Ljava/lang/String;
+	public static final field INSTANCE Lio/opentelemetry/android/semconv/HwAttributes;
+}
+
+public final class io/opentelemetry/android/semconv/LastAttributes {
+	public static final field INSTANCE Lio/opentelemetry/android/semconv/LastAttributes;
+	public static final field LAST_SCREEN_NAME Ljava/lang/String;
+}
+
+public final class io/opentelemetry/android/semconv/NetworkAttributes {
+	public static final field INSTANCE Lio/opentelemetry/android/semconv/NetworkAttributes;
+	public static final field NETWORK_STATUS Ljava/lang/String;
+}
+
+public final class io/opentelemetry/android/semconv/ScreenAttributes {
+	public static final field INSTANCE Lio/opentelemetry/android/semconv/ScreenAttributes;
+	public static final field SCREEN_NAME Ljava/lang/String;
+	public static final field SCREEN_ORIENTATION Ljava/lang/String;
+}
+
+public final class io/opentelemetry/android/semconv/SpanAttributes {
+	public static final field INSTANCE Lio/opentelemetry/android/semconv/SpanAttributes;
+	public static final field SPAN_EXPORTER Ljava/lang/String;
+}
+
+public final class io/opentelemetry/android/semconv/StartAttributes {
+	public static final field INSTANCE Lio/opentelemetry/android/semconv/StartAttributes;
+	public static final field START_TYPE Ljava/lang/String;
+}
+
+public final class io/opentelemetry/android/semconv/StorageAttributes {
+	public static final field INSTANCE Lio/opentelemetry/android/semconv/StorageAttributes;
+	public static final field STORAGE_FREE Ljava/lang/String;
+}
+
+public final class io/opentelemetry/android/semconv/WebsocketAttributes {
+	public static final field INSTANCE Lio/opentelemetry/android/semconv/WebsocketAttributes;
+	public static final field WEBSOCKET_MESSAGE_SIZE Ljava/lang/String;
+	public static final field WEBSOCKET_MESSAGE_TYPE Ljava/lang/String;
+}
+
