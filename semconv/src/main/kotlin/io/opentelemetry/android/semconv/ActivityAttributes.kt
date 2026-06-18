@@ -1,4 +1,7 @@
-
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 package io.opentelemetry.android.semconv
 
@@ -12,8 +15,8 @@ object ActivityAttributes {
 
 
     /**
-    * <p>The Android activity class name for which telemetry is relevant.</p>
-    */
+     * <p>The Android activity class name for which telemetry is relevant.</p>
+     */
     const val ACTIVITY_NAME: String = "activity.name"
 
 }

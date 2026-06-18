@@ -1,4 +1,7 @@
-
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 package io.opentelemetry.android.semconv
 
@@ -12,14 +15,14 @@ object WebsocketAttributes {
 
 
     /**
-    * <p>The size of a WebSocket message payload.</p>
-    */
+     * <p>The size of a WebSocket message payload.</p>
+     */
     const val WEBSOCKET_MESSAGE_SIZE: String = "websocket.message.size"
 
 
     /**
-    * <p>The WebSocket message payload type.</p>
-    */
+     * <p>The WebSocket message payload type.</p>
+     */
     const val WEBSOCKET_MESSAGE_TYPE: String = "websocket.message.type"
 
 }

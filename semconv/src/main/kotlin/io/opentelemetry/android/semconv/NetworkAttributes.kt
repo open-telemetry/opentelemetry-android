@@ -1,4 +1,7 @@
-
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 package io.opentelemetry.android.semconv
 
@@ -12,8 +15,8 @@ object NetworkAttributes {
 
 
     /**
-    * <p>The Android network status after a network change.</p>
-    */
+     * <p>The Android network status after a network change.</p>
+     */
     const val NETWORK_STATUS: String = "network.status"
 
 }

@@ -1,4 +1,7 @@
-
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 package io.opentelemetry.android.semconv
 
@@ -12,8 +15,8 @@ object StorageAttributes {
 
 
     /**
-    * <p>The amount of free application file storage, in bytes.</p>
-    */
+     * <p>The amount of free application file storage, in bytes.</p>
+     */
     const val STORAGE_FREE: String = "storage.free"
 
 }

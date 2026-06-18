@@ -2,8 +2,8 @@ comment_formats:
   kdoc:
     format: html
     header: "/**"
-    prefix: "* "
-    footer: "*/"
+    prefix: " * "
+    footer: " */"
 default_comment_format: kdoc
 templates:
   - pattern: kotlin_semconv_template.kt.j2

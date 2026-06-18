@@ -1,4 +1,7 @@
-
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 package io.opentelemetry.android.semconv
 
@@ -12,8 +15,8 @@ object BatteryAttributes {
 
 
     /**
-    * <p>The current battery charge as a percentage of total capacity.</p>
-    */
+     * <p>The current battery charge as a percentage of total capacity.</p>
+     */
     const val BATTERY_PERCENT: String = "battery.percent"
 
 }

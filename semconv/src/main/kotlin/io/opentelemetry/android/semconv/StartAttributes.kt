@@ -1,4 +1,7 @@
-
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 package io.opentelemetry.android.semconv
 
@@ -12,8 +15,8 @@ object StartAttributes {
 
 
     /**
-    * <p>The application start type.</p>
-    */
+     * <p>The application start type.</p>
+     */
     const val START_TYPE: String = "start.type"
 
 }

@@ -1,4 +1,7 @@
-
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 package io.opentelemetry.android.semconv
 
@@ -12,8 +15,8 @@ object LastAttributes {
 
 
     /**
-    * <p>The previously visible screen name.</p>
-    */
+     * <p>The previously visible screen name.</p>
+     */
     const val LAST_SCREEN_NAME: String = "last.screen.name"
 
 }

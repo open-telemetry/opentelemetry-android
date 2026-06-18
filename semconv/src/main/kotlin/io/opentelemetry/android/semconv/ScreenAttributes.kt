@@ -1,4 +1,7 @@
-
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 package io.opentelemetry.android.semconv
 
@@ -12,14 +15,14 @@ object ScreenAttributes {
 
 
     /**
-    * <p>The current application screen name used by the Android SDK.</p>
-    */
+     * <p>The current application screen name used by the Android SDK.</p>
+     */
     const val SCREEN_NAME: String = "screen.name"
 
 
     /**
-    * <p>The Android screen orientation.</p>
-    */
+     * <p>The Android screen orientation.</p>
+     */
     const val SCREEN_ORIENTATION: String = "screen.orientation"
 
 }

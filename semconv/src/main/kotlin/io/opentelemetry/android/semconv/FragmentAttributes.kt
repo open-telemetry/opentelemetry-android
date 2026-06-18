@@ -1,4 +1,7 @@
-
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 package io.opentelemetry.android.semconv
 
@@ -12,8 +15,8 @@ object FragmentAttributes {
 
 
     /**
-    * <p>The Android fragment class name for which telemetry is relevant.</p>
-    */
+     * <p>The Android fragment class name for which telemetry is relevant.</p>
+     */
     const val FRAGMENT_NAME: String = "fragment.name"
 
 }

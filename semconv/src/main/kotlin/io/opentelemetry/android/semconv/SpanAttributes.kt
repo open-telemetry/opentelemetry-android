@@ -1,4 +1,7 @@
-
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 package io.opentelemetry.android.semconv
 
@@ -12,8 +15,8 @@ object SpanAttributes {
 
 
     /**
-    * <p>A string representation of the span exporter configured during SDK initialization.</p>
-    */
+     * <p>A string representation of the span exporter configured during SDK initialization.</p>
+     */
     const val SPAN_EXPORTER: String = "span.exporter"
 
 }
