@@ -10,6 +10,9 @@
 - Add opt-in power save mode instrumentation that listens for device power-save (battery saver)
   mode changes and emits a `device.power_save_mode.change` event per change.
   ([#1811](https://github.com/open-telemetry/opentelemetry-android/pull/1811))
+- Disk buffering now lets you configure how often buffered signals are read from disk and
+  exported, via `DiskBufferingConfig.exportPeriodMillis` (defaults to 10 seconds).
+  ([#1823](https://github.com/open-telemetry/opentelemetry-android/issues/1823))
 
 ## Version 1.4.0 (2026-05-19)
 
