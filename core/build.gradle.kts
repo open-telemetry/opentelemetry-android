@@ -73,6 +73,7 @@ dependencies {
     implementation(libs.opentelemetry.diskBuffering)
     implementation(libs.opentelemetry.processors)
     implementation(libs.kotlinx.coroutines)
+    testImplementation(project(":test-common"))
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.awaitility)
     testImplementation(libs.robolectric)
