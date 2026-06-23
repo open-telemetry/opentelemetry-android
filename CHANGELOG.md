@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.5.0 (2026-06-23)
+
 ### 📣 Migration notes
 
 By default, Android telemetry now uses the latest experimental Android semantic conventions. This

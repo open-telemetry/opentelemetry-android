@@ -51,5 +51,5 @@ manually install this instrumentation by following the steps below.
 ### Adding dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:slowrendering:1.4.0-alpha")
+implementation("io.opentelemetry.android.instrumentation:slowrendering:1.5.0-alpha")
 ```
