@@ -10,3 +10,4 @@
 -dontwarn io.grpc.stub.AbstractFutureStub
 -dontwarn io.grpc.stub.AbstractStub$StubFactory
 -dontwarn io.grpc.stub.AbstractStub
+-dontwarn io.opentelemetry.sdk.autoconfigure.**
