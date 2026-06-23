@@ -15,6 +15,7 @@ const val MAX_CACHE_FILE_SIZE: Int = 1024 * 1024
 const val DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS = 30L
 const val DEFAULT_MIN_FILE_AGE_FOR_READ_MS = 33L
 const val DEFAULT_MAX_FILE_AGE_FOR_READ_MS = 18L
+const val DEFAULT_EXPORT_PERIOD_MS = 10L
 
 data class DiskBufferingConfig
     @JvmOverloads
@@ -31,6 +32,10 @@ data class DiskBufferingConfig
          * `null`, a default directory inside the application's cache directory will be used.
          */
         val signalsBufferDir: File? = null,
+        /**
+         * How often the exporter wakes up to read buffered signals from disk and send them.
+         */
+        val exportPeriodMillis: Long = TimeUnit.SECONDS.toMillis(DEFAULT_EXPORT_PERIOD_MS),
     ) {
         companion object {
             /**
@@ -49,12 +54,19 @@ data class DiskBufferingConfig
                 maxCacheFileSize: Int = MAX_CACHE_FILE_SIZE,
                 debugEnabled: Boolean = false,
                 signalsBufferDir: File? = null,
+                exportPeriodMillis: Long = TimeUnit.SECONDS.toMillis(10),
             ): DiskBufferingConfig {
                 var minRead = minFileAgeForReadMillis
                 if (minFileAgeForReadMillis <= maxFileAgeForWriteMillis) {
                     minRead = maxFileAgeForWriteMillis + 5
                     Log.w(OTEL_RUM_LOG_TAG, "minFileAgeForReadMillis must be greater than maxFileAgeForWriteMillis")
                     Log.w(OTEL_RUM_LOG_TAG, "overriding minFileAgeForReadMillis from $minFileAgeForReadMillis to $minRead")
+                }
+                var exportPeriod = exportPeriodMillis
+                if (exportPeriod <= 0) {
+                    exportPeriod = TimeUnit.SECONDS.toMillis(10)
+                    Log.w(OTEL_RUM_LOG_TAG, "exportPeriodMillis must be greater than 0")
+                    Log.w(OTEL_RUM_LOG_TAG, "overriding exportPeriodMillis from $exportPeriodMillis to $exportPeriod")
                 }
                 return DiskBufferingConfig(
                     enabled = enabled,
@@ -65,6 +77,7 @@ data class DiskBufferingConfig
                     maxCacheFileSize = maxCacheFileSize,
                     debugEnabled = debugEnabled,
                     signalsBufferDir = signalsBufferDir,
+                    exportPeriodMillis = exportPeriod,
                 )
             }
         }

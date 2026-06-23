@@ -75,6 +75,7 @@ import java.io.IOException
 import java.util.function.BiFunction
 import java.util.function.Consumer
 import java.util.function.Function
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * A builder of [OpenTelemetryRum]. It enabled configuring the OpenTelemetry SDK and disabling
@@ -499,7 +500,11 @@ class OpenTelemetryRumBuilder internal constructor(
     ) {
         val handler =
             exportScheduleEnablement ?: signalExporter?.let {
-                DiskBufferingEnablement(it, periodicTaskScheduler.value)
+                DiskBufferingEnablement(
+                    it,
+                    periodicTaskScheduler.value,
+                    config.getDiskBufferingConfig().exportPeriodMillis.milliseconds,
+                )
             }
 
         exportScheduleEnablement = handler

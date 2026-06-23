@@ -14,6 +14,7 @@ import io.mockk.verify
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.internal.services.periodic.PeriodicRunnable
 import io.opentelemetry.android.internal.services.periodic.PeriodicTaskScheduler
+import kotlin.time.Duration.Companion.minutes
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -67,5 +68,16 @@ class DiskBufferingEnablementTest {
         assertThat(captured[0].shouldStop()).isTrue()
         assertThat(captured[1].shouldStop()).isFalse()
         assertThat(captured[1]).isNotSameAs(captured[0])
+    }
+
+    @Test
+    fun `Pass the configured export period to the exporter`() {
+        val captor = slot<PeriodicRunnable>()
+        val enablement = DiskBufferingEnablement(mockk<SignalFromDiskExporter>(), taskScheduler, 1.minutes)
+
+        enablement.enable()
+
+        verify { taskScheduler.start(capture(captor)) }
+        assertThat((captor.captured as PeriodicExporter).period()).isEqualTo(1.minutes)
     }
 }
