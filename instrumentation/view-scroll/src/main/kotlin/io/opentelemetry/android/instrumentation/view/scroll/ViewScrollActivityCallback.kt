@@ -3,23 +3,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.view.click
+package io.opentelemetry.android.instrumentation.view.scroll
 
 import android.app.Activity
 import io.opentelemetry.android.instrumentation.internal.InternalViewApi
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
 
 @InternalViewApi
-internal class ViewClickActivityCallback(
-    private val viewClickEventGenerator: ViewClickEventGenerator,
+internal class ViewScrollActivityCallback(
+    private val viewScrollEventGenerator: ViewScrollEventGenerator,
 ) : DefaultingActivityLifecycleCallbacks {
     override fun onActivityResumed(activity: Activity) {
         super.onActivityResumed(activity)
-        viewClickEventGenerator.startTracking(activity.window)
+        viewScrollEventGenerator.startTracking(activity.window)
     }
 
     override fun onActivityPaused(activity: Activity) {
         super.onActivityPaused(activity)
-        viewClickEventGenerator.stopTracking()
+        viewScrollEventGenerator.stopTracking()
     }
 }

@@ -3,39 +3,66 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.view.click.internal
+package io.opentelemetry.android.instrumentation.internal
 
 import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
 import io.opentelemetry.api.common.Attributes
+import java.util.LinkedList
 
-internal const val APP_SCREEN_CLICK_EVENT_NAME = "app.screen.click"
-internal const val VIEW_CLICK_EVENT_NAME = "app.widget.click"
-internal const val APP_SCREEN_LONG_PRESS_EVENT_NAME = "app.screen.longpress"
-internal const val VIEW_LONG_PRESS_EVENT_NAME = "app.widget.longpress"
+@InternalViewApi
+const val APP_SCREEN_CLICK_EVENT_NAME = "app.screen.click"
 
-internal const val HARDWARE_POINTER_TYPE = "hw.pointer.type"
+@InternalViewApi
+const val VIEW_CLICK_EVENT_NAME = "app.widget.click"
 
-internal const val HARDWARE_POINTER_BUTTON = "hw.pointer.button"
+@InternalViewApi
+const val APP_SCREEN_LONG_PRESS_EVENT_NAME = "app.screen.longpress"
 
-internal const val HARDWARE_POINTER_CLICKS = "hw.pointer.clicks"
+@InternalViewApi
+const val VIEW_LONG_PRESS_EVENT_NAME = "app.widget.longpress"
 
-internal const val APP_SCREEN_SCROLL_EVENT_NAME = "app.screen.scroll"
+@InternalViewApi
+const val HARDWARE_POINTER_TYPE = "hw.pointer.type"
 
-internal const val VIEW_SCROLL_EVENT_NAME = "app.widget.scroll"
+@InternalViewApi
+const val HARDWARE_POINTER_BUTTON = "hw.pointer.button"
 
-internal const val APP_SCREEN_FLING_EVENT_NAME = "app.screen.fling"
+@InternalViewApi
+const val HARDWARE_POINTER_CLICKS = "hw.pointer.clicks"
 
-internal const val VIEW_FLING_EVENT_NAME = "app.widget.fling"
+@InternalViewApi
+const val APP_SCREEN_SCROLL_EVENT_NAME = "app.screen.scroll"
 
-internal const val HARDWARE_POINTER_VELOCITY_X = "hw.pointer.velocity.x"
+@InternalViewApi
+const val VIEW_SCROLL_EVENT_NAME = "app.widget.scroll"
 
-internal const val HARDWARE_POINTER_VELOCITY_Y = "hw.pointer.velocity.y"
+@InternalViewApi
+const val APP_SCREEN_FLING_EVENT_NAME = "app.screen.fling"
+
+@InternalViewApi
+const val VIEW_FLING_EVENT_NAME = "app.widget.fling"
+
+@InternalViewApi
+const val HARDWARE_POINTER_VELOCITY_X = "hw.pointer.velocity.x"
+
+@InternalViewApi
+const val HARDWARE_POINTER_VELOCITY_Y = "hw.pointer.velocity.y"
 
 
-internal const val HARDWARE_POINTER_DISTANCE_X = "hw.pointer.distance.x"
+@InternalViewApi
+const val HARDWARE_POINTER_DISTANCE_X = "hw.pointer.distance.x"
 
 
-internal const val HARDWARE_POINTER_DISTANCE_Y = "hw.pointer.distance.y"
+@InternalViewApi
+const val HARDWARE_POINTER_DISTANCE_Y = "hw.pointer.distance.y"
+
+@InternalViewApi
+const val APP_SCREEN_SCALE_EVENT_NAME = "app.screen.scale"
+
+@InternalViewApi
+const val VIEW_SCALE_EVENT_NAME = "app.widget.scale"
 
 internal fun buttonStateToString(buttonStateInt: Int): String? {
     return when(buttonStateInt) {
@@ -80,7 +107,8 @@ internal class TapEventMetadata(
 
 }
 
-internal sealed class Gesture(val m: MotionEvent) {
+@InternalViewApi
+sealed class Gesture(val m: MotionEvent) {
     private val t = TapEventMetadata(m)
     var attributes = Attributes.empty()
 

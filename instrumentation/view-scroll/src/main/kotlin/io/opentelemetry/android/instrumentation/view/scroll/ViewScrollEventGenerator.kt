@@ -1,24 +1,15 @@
-/*
- * Copyright The OpenTelemetry Authors
- * SPDX-License-Identifier: Apache-2.0
- */
-
-package io.opentelemetry.android.instrumentation.view.click
+package io.opentelemetry.android.instrumentation.view.scroll
 
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
-import io.opentelemetry.android.instrumentation.internal.APP_SCREEN_CLICK_EVENT_NAME
 import io.opentelemetry.android.instrumentation.internal.APP_SCREEN_FLING_EVENT_NAME
-import io.opentelemetry.android.instrumentation.internal.APP_SCREEN_LONG_PRESS_EVENT_NAME
 import io.opentelemetry.android.instrumentation.internal.APP_SCREEN_SCROLL_EVENT_NAME
 import io.opentelemetry.android.instrumentation.internal.Gesture
 import io.opentelemetry.android.instrumentation.internal.InternalViewApi
-import io.opentelemetry.android.instrumentation.internal.VIEW_CLICK_EVENT_NAME
 import io.opentelemetry.android.instrumentation.internal.VIEW_FLING_EVENT_NAME
-import io.opentelemetry.android.instrumentation.internal.VIEW_LONG_PRESS_EVENT_NAME
 import io.opentelemetry.android.instrumentation.internal.VIEW_SCROLL_EVENT_NAME
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
@@ -32,77 +23,13 @@ import java.lang.ref.WeakReference
 import java.util.LinkedList
 
 @InternalViewApi
-internal class ViewClickEventGenerator(
+internal class ViewScrollEventGenerator(
     private val eventLogger: Logger,
 ) {
     private var windowRef: WeakReference<Window>? = null
 
     @OptIn(IncubatingApi::class)
     private val gestureListener = object : GestureDetector.SimpleOnGestureListener() {
-
-
-        override fun onDoubleTap(motionEvent: MotionEvent): Boolean {
-            windowRef?.get()?.let { window ->
-
-                val safeEvent = MotionEvent.obtain(motionEvent)
-                val gesture = Gesture.Click(motionEvent, 2)
-
-                createEvent(APP_SCREEN_CLICK_EVENT_NAME, gesture)
-                    .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
-                    .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
-                    .emit()
-
-                findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
-                    createEvent(VIEW_CLICK_EVENT_NAME, gesture)
-                        .setAllAttributes(createViewAttributes(view))
-                        .emit()
-                }
-
-                safeEvent.recycle()
-
-            }
-            return false
-        }
-
-        override fun onSingleTapConfirmed(motionEvent: MotionEvent): Boolean {
-            windowRef?.get()?.let { window ->
-
-                val safeEvent = MotionEvent.obtain(motionEvent)
-                val gesture = Gesture.Click(safeEvent, 1)
-
-                createEvent(APP_SCREEN_CLICK_EVENT_NAME, gesture)
-                    .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
-                    .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
-                    .emit()
-
-                findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
-                    createEvent(VIEW_CLICK_EVENT_NAME, gesture)
-                        .setAllAttributes(createViewAttributes(view))
-                        .emit()
-                }
-                safeEvent.recycle()
-            }
-            return false
-        }
-
-        override fun onLongPress(e: MotionEvent) {
-            windowRef?.get()?.let { window ->
-
-                val safeEvent = MotionEvent.obtain(e)
-                val gesture = Gesture.LongPress(safeEvent)
-                createEvent(APP_SCREEN_LONG_PRESS_EVENT_NAME, gesture)
-                    .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
-                    .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
-                    .emit()
-
-                findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
-                    createEvent(VIEW_LONG_PRESS_EVENT_NAME, gesture)
-                        .setAllAttributes(createViewAttributes(view))
-                        .emit()
-                }
-                safeEvent.recycle()
-            }
-        }
 
         override fun onScroll(
             e1: MotionEvent?, e2: MotionEvent,
@@ -161,7 +88,7 @@ internal class ViewClickEventGenerator(
         window.callback = WindowCallbackWrapper(currentCallback, this)
     }
 
-    fun generateClick(motionEvent: MotionEvent?) {
+    fun generateTouchEvent(motionEvent: MotionEvent?) {
         if (motionEvent != null) {
             gestureDetector.onTouchEvent(motionEvent)
         }

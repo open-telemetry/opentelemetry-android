@@ -3,10 +3,10 @@ plugins {
     id("otel.publish-conventions")
 }
 
-description = "OpenTelemetry Android View click library instrumentation"
+description = "OpenTelemetry Android View scale library instrumentation"
 
 android {
-    namespace = "io.opentelemetry.android.instrumentation.view.click"
+    namespace = "io.opentelemetry.android.instrumentation.view.scale"
 
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")

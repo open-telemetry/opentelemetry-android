@@ -1,9 +1,5 @@
-/*
- * Copyright The OpenTelemetry Authors
- * SPDX-License-Identifier: Apache-2.0
- */
+package io.opentelemetry.android.instrumentation.view.scale
 
-package io.opentelemetry.android.instrumentation.view.click
 
 import android.app.Application
 import android.content.Context
@@ -13,18 +9,19 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.internal.InternalViewApi
 
 @AutoService(AndroidInstrumentation::class)
-class ViewClickInstrumentation : AndroidInstrumentation {
-    override val name: String = "view.click"
+class ViewScaleInstrumentation : AndroidInstrumentation {
+    override val name: String = "view.scale"
 
     @InternalViewApi
     override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
         (context as? Application)?.registerActivityLifecycleCallbacks(
-            ViewClickActivityCallback(
-                ViewClickEventGenerator(
+            ViewScaleActivityCallback(
+                ViewScaleEventGenerator(
                     openTelemetryRum.openTelemetry
                         .logsBridge
                         .loggerBuilder("io.opentelemetry.android.instrumentation.view.click")
                         .build(),
+                    context
                 ),
             ),
         )

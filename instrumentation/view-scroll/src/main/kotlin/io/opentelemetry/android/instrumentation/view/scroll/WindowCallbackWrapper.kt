@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.view.click
+package io.opentelemetry.android.instrumentation.view.scroll
 
 import android.os.Build.VERSION_CODES
 import android.view.ActionMode
@@ -18,10 +18,10 @@ import io.opentelemetry.android.instrumentation.internal.InternalViewApi
 @InternalViewApi
 internal class WindowCallbackWrapper(
     private val callback: Callback,
-    private val viewClickEventGenerator: ViewClickEventGenerator,
+    private val viewScrollEventGenerator: ViewScrollEventGenerator,
 ) : Callback by callback {
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
-        viewClickEventGenerator.generateClick(event)
+        viewScrollEventGenerator.generateTouchEvent(event)
         return callback.dispatchTouchEvent(event)
     }
 
