@@ -2,7 +2,16 @@
 
 ## Unreleased
 
-### 📈 Enhancements
+### 📣 Migration notes
+
+By default, Android telemetry now uses the latest experimental Android semantic conventions. This
+renames the current screen attribute from `screen.name` to `app.screen.name` and the crash event
+from `device.crash` to `app.crash`. To keep the previous names while migrating, configure
+`semanticConventions { useLatestExperimental = false }`.
+([#1691](https://github.com/open-telemetry/opentelemetry-android/pull/1691),
+[#1819](https://github.com/open-telemetry/opentelemetry-android/pull/1819))
+
+### 🌟 New instrumentation
 
 - Add opt-in thermal status instrumentation that listens for device thermal-status changes
   (API 29+) and emits a `device.thermal_status.change` event per change.
@@ -10,6 +19,25 @@
 - Add opt-in power save mode instrumentation that listens for device power-save (battery saver)
   mode changes and emits a `device.power_save_mode.change` event per change.
   ([#1811](https://github.com/open-telemetry/opentelemetry-android/pull/1811))
+
+### 📈 Enhancements
+
+- The instrumentation API module is now marked as stable.
+  ([#1809](https://github.com/open-telemetry/opentelemetry-android/pull/1809))
+- The View click instrumentation now supports long-press, scroll, and fling events.
+  ([#1741](https://github.com/open-telemetry/opentelemetry-android/pull/1741),
+  [#1780](https://github.com/open-telemetry/opentelemetry-android/pull/1780))
+- Agent and core configuration now support disabling each signal API independently, avoiding
+  instrumentation overhead for signals that will not be recorded.
+  ([#1785](https://github.com/open-telemetry/opentelemetry-android/pull/1785))
+- Crash reports now truncate stack traces to 1,000 lines by default.
+  ([#1816](https://github.com/open-telemetry/opentelemetry-android/pull/1816))
+
+### 🛠️ Bug fixes
+
+- Network instrumentation now includes carrier information when a SIM is available while the
+  device is connected to Wi-Fi.
+  ([#1465](https://github.com/open-telemetry/opentelemetry-android/pull/1465))
 
 ## Version 1.4.0 (2026-05-19)
 
