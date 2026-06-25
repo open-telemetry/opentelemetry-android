@@ -1,8 +1,10 @@
+package io.opentelemetry.android.test.common
+
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.Test
 
-class TestUtilsTest {
+class ViewTestUtilsTest {
 
     @Test
     fun testGetDestinationHorizontal() {

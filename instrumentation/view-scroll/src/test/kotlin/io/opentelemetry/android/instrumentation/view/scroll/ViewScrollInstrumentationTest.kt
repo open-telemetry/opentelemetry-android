@@ -5,7 +5,7 @@
 
 @file:OptIn(IncubatingApi::class)
 
-package io.opentelemetry.android.instrumentation.view.click
+package io.opentelemetry.android.instrumentation.view.scroll
 
 import android.app.Activity
 import android.app.Application
@@ -15,7 +15,7 @@ import android.view.ViewGroup
 import android.view.Window
 import android.view.Window.Callback
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import getScrollSequence
+import io.opentelemetry.android.test.common.getScrollSequence
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -24,15 +24,16 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_FLING_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_SCROLL_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_DISTANCE_X
-import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_DISTANCE_Y
-import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_TYPE
-import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_VELOCITY_X
-import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_VELOCITY_Y
-import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_FLING_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_SCROLL_EVENT_NAME
+import io.opentelemetry.android.instrumentation.internal.APP_SCREEN_FLING_EVENT_NAME
+import io.opentelemetry.android.instrumentation.internal.APP_SCREEN_SCROLL_EVENT_NAME
+import io.opentelemetry.android.instrumentation.internal.HARDWARE_POINTER_DISTANCE_X
+import io.opentelemetry.android.instrumentation.internal.HARDWARE_POINTER_DISTANCE_Y
+import io.opentelemetry.android.instrumentation.internal.HARDWARE_POINTER_TYPE
+import io.opentelemetry.android.instrumentation.internal.HARDWARE_POINTER_VELOCITY_X
+import io.opentelemetry.android.instrumentation.internal.HARDWARE_POINTER_VELOCITY_Y
+import io.opentelemetry.android.instrumentation.internal.InternalViewApi
+import io.opentelemetry.android.instrumentation.internal.VIEW_FLING_EVENT_NAME
+import io.opentelemetry.android.instrumentation.internal.VIEW_SCROLL_EVENT_NAME
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.doubleKey
 import io.opentelemetry.api.common.AttributeKey.longKey
@@ -46,12 +47,14 @@ import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
-import mockView
+import io.opentelemetry.android.test.common.mockView
 import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 
+
+@OptIn(InternalViewApi::class)
 @RunWith(AndroidJUnit4::class)
 @ExtendWith(MockKExtension::class)
 class ViewScrollInstrumentationTest {
@@ -87,14 +90,14 @@ class ViewScrollInstrumentationTest {
             every { clock } returns Clock.getDefault()
         }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<ViewScrollActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
         every { activity.window } returns window
         every { application.registerActivityLifecycleCallbacks(any()) } returns Unit
 
-        ViewClickInstrumentation().install(application, openTelemetryRum)
+        ViewScrollInstrumentation().install(application, openTelemetryRum)
 
         verify {
             application.registerActivityLifecycleCallbacks(capture(callbackCapturingSlot))
@@ -160,14 +163,14 @@ class ViewScrollInstrumentationTest {
             every { clock } returns Clock.getDefault()
         }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<ViewScrollActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
         every { activity.window } returns window
         every { application.registerActivityLifecycleCallbacks(any()) } returns Unit
 
-        ViewClickInstrumentation().install(application, openTelemetryRum)
+        ViewScrollInstrumentation().install(application, openTelemetryRum)
 
         verify {
             application.registerActivityLifecycleCallbacks(capture(callbackCapturingSlot))
@@ -212,14 +215,14 @@ class ViewScrollInstrumentationTest {
             every { clock } returns Clock.getDefault()
         }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<ViewScrollActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
         every { activity.window } returns window
         every { application.registerActivityLifecycleCallbacks(any()) } returns Unit
 
-        ViewClickInstrumentation().install(application, openTelemetryRum)
+        ViewScrollInstrumentation().install(application, openTelemetryRum)
 
         verify {
             application.registerActivityLifecycleCallbacks(capture(callbackCapturingSlot))
@@ -290,14 +293,14 @@ class ViewScrollInstrumentationTest {
             every { clock } returns Clock.getDefault()
         }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<ViewScrollActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
         every { activity.window } returns window
         every { application.registerActivityLifecycleCallbacks(any()) } returns Unit
 
-        ViewClickInstrumentation().install(application, openTelemetryRum)
+        ViewScrollInstrumentation().install(application, openTelemetryRum)
 
         verify {
             application.registerActivityLifecycleCallbacks(capture(callbackCapturingSlot))
@@ -314,7 +317,11 @@ class ViewScrollInstrumentationTest {
 
         val mockView = mockView<View>(10012, motionEvent)
         val mockViewGroup =
-            mockView<ViewGroup>(10013, motionEvent, clickable = false) {
+            mockView<ViewGroup>(
+                10013,
+                motionEvent,
+                clickable = false
+            ) {
                 every { it.childCount } returns 1
                 every { it.getChildAt(any()) } returns mockView
             }

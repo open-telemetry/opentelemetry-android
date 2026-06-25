@@ -1,3 +1,5 @@
+package io.opentelemetry.android.test.common
+
 import android.os.SystemClock
 import android.view.MotionEvent
 import android.view.View
@@ -6,9 +8,8 @@ import androidx.test.core.view.PointerCoordsBuilder
 import io.mockk.every
 import io.mockk.mockkClass
 import io.mockk.slot
-import org.robolectric.shadows.ShadowLooper
 import java.util.concurrent.TimeUnit
-
+import org.robolectric.shadows.ShadowLooper
 
 inline fun <reified T : View> mockView(
     id: Int,
@@ -56,7 +57,7 @@ private val allowedButtonStates = arrayOf(
 )
 
 fun getDoubleTapSequence(x: Float, y: Float, toolType: Int = MotionEvent.TOOL_TYPE_FINGER, buttonState: Int = 0,
-                                 exceedTimeOut: Boolean = false): Array<MotionEvent> {
+                         exceedTimeOut: Boolean = false): Array<MotionEvent> {
 
     require(toolType in allowedToolTypes) { "Invalid tool type" }
 
@@ -202,7 +203,7 @@ fun getLongPressSequence(x: Float, y: Float, toolType: Int = MotionEvent.TOOL_TY
 fun getScrollSequence(x: Float, y: Float, angleDegrees: Double, distance: Int,
                       toolType: Int = MotionEvent.TOOL_TYPE_FINGER, buttonState: Int = 0,
                       timeMillis: Long = 100L, letGo: Boolean = false)
-    : Array<MotionEvent> {
+        : Array<MotionEvent> {
     require(toolType in allowedToolTypes) {
         "Invalid tool type"
     }
@@ -237,13 +238,13 @@ fun getScrollSequence(x: Float, y: Float, angleDegrees: Double, distance: Int,
     )
     val timeToLetGoAfterMoving = 50L
     if(letGo) {
-       array +=
-           MotionEvent.obtain(
-               initialTime, initialTime + timeMillis + timeToLetGoAfterMoving,
-               MotionEvent.ACTION_UP, 1, arrayOf(pointerProperties),
-               arrayOf(endPointerCoords), 0, buttonState, 1f, 1f,
-               0, 0, 0, 0
-           )
+        array +=
+            MotionEvent.obtain(
+                initialTime, initialTime + timeMillis + timeToLetGoAfterMoving,
+                MotionEvent.ACTION_UP, 1, arrayOf(pointerProperties),
+                arrayOf(endPointerCoords), 0, buttonState, 1f, 1f,
+                0, 0, 0, 0
+            )
     }
     return array
 }
@@ -265,3 +266,4 @@ fun getDestinationPoint(pointA: Array<Float>, distance: Int, angleDegrees: Doubl
     val yDist = Math.round(distance * Math.sin(angleRadians)).toInt()
     return arrayOf(xA + xDist, yA + yDist)
 }
+

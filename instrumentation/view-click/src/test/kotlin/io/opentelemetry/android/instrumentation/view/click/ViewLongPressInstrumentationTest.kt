@@ -12,8 +12,8 @@ import android.view.ViewGroup
 import android.view.Window
 import android.view.Window.Callback
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import fastForwardLongPressTimeout
-import getLongPressSequence
+import io.opentelemetry.android.test.common.fastForwardLongPressTimeout
+import io.opentelemetry.android.test.common.getLongPressSequence
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -22,9 +22,10 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_LONG_PRESS_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_TYPE
-import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_LONG_PRESS_EVENT_NAME
+import io.opentelemetry.android.instrumentation.internal.APP_SCREEN_LONG_PRESS_EVENT_NAME
+import io.opentelemetry.android.instrumentation.internal.HARDWARE_POINTER_TYPE
+import io.opentelemetry.android.instrumentation.internal.InternalViewApi
+import io.opentelemetry.android.instrumentation.internal.VIEW_LONG_PRESS_EVENT_NAME
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.longKey
 import io.opentelemetry.api.common.AttributeKey.stringKey
@@ -38,13 +39,13 @@ import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_Y
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_ID
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_NAME
 import io.opentelemetry.kotlin.semconv.IncubatingApi
-import mockView
+import io.opentelemetry.android.test.common.mockView
 import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 
-@OptIn(IncubatingApi::class)
+@OptIn(IncubatingApi::class, InternalViewApi::class)
 @RunWith(AndroidJUnit4::class)
 @ExtendWith(MockKExtension::class)
 class ViewLongPressInstrumentationTest {
