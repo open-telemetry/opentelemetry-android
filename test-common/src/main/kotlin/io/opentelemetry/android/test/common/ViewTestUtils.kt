@@ -267,9 +267,3 @@ fun getDestinationPoint(pointA: Array<Float>, distance: Int, angleDegrees: Doubl
     return arrayOf(xA + xDist, yA + yDist)
 }
 
-fun getScaleOutSequence(centerX: Float, centerY: Float, angleDegrees: Double, distancesFromCentre: IntArray = IntArray(1) {_ -> 20} ,
-                        toolType: Int = MotionEvent.TOOL_TYPE_FINGER, buttonState: Int = 0,
-                        timeMillis: Long = 100L, letGo: Boolean = false): Array<MotionEvent> {
-    return arrayOf()
-}
-

@@ -10,5 +10,4 @@ package io.opentelemetry.android.instrumentation.internal
     AnnotationTarget.FUNCTION,
     AnnotationTarget.PROPERTY
 )
-annotation class InternalViewApi {
-}
+annotation class InternalViewApi

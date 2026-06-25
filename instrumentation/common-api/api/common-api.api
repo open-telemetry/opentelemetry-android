@@ -29,3 +29,48 @@ public abstract interface class io/opentelemetry/android/instrumentation/common/
 	public abstract fun extract (Ljava/lang/Object;)Ljava/lang/String;
 }
 
+public abstract class io/opentelemetry/android/instrumentation/internal/Gesture {
+	public synthetic fun <init> (Landroid/view/MotionEvent;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getAttributes ()Lio/opentelemetry/api/common/Attributes;
+	protected final fun setAttributes (Lio/opentelemetry/api/common/Attributes;)V
+}
+
+public final class io/opentelemetry/android/instrumentation/internal/Gesture$Click : io/opentelemetry/android/instrumentation/internal/Gesture {
+	public fun <init> (Landroid/view/MotionEvent;I)V
+}
+
+public final class io/opentelemetry/android/instrumentation/internal/Gesture$Fling : io/opentelemetry/android/instrumentation/internal/Gesture {
+	public fun <init> (Landroid/view/MotionEvent;DD)V
+}
+
+public final class io/opentelemetry/android/instrumentation/internal/Gesture$LongPress : io/opentelemetry/android/instrumentation/internal/Gesture {
+	public fun <init> (Landroid/view/MotionEvent;)V
+}
+
+public final class io/opentelemetry/android/instrumentation/internal/Gesture$Scroll : io/opentelemetry/android/instrumentation/internal/Gesture {
+	public fun <init> (Landroid/view/MotionEvent;DD)V
+}
+
+public abstract interface annotation class io/opentelemetry/android/instrumentation/internal/InternalViewApi : java/lang/annotation/Annotation {
+}
+
+public final class io/opentelemetry/android/instrumentation/internal/ViewUtilsKt {
+	public static final field APP_SCREEN_CLICK_EVENT_NAME Ljava/lang/String;
+	public static final field APP_SCREEN_FLING_EVENT_NAME Ljava/lang/String;
+	public static final field APP_SCREEN_LONG_PRESS_EVENT_NAME Ljava/lang/String;
+	public static final field APP_SCREEN_SCROLL_EVENT_NAME Ljava/lang/String;
+	public static final field HARDWARE_POINTER_BUTTON Ljava/lang/String;
+	public static final field HARDWARE_POINTER_CLICKS Ljava/lang/String;
+	public static final field HARDWARE_POINTER_DISTANCE_X Ljava/lang/String;
+	public static final field HARDWARE_POINTER_DISTANCE_Y Ljava/lang/String;
+	public static final field HARDWARE_POINTER_TYPE Ljava/lang/String;
+	public static final field HARDWARE_POINTER_VELOCITY_X Ljava/lang/String;
+	public static final field HARDWARE_POINTER_VELOCITY_Y Ljava/lang/String;
+	public static final field VIEW_CLICK_EVENT_NAME Ljava/lang/String;
+	public static final field VIEW_FLING_EVENT_NAME Ljava/lang/String;
+	public static final field VIEW_LONG_PRESS_EVENT_NAME Ljava/lang/String;
+	public static final field VIEW_SCROLL_EVENT_NAME Ljava/lang/String;
+	public static final fun findTargetForTap (Landroid/view/View;FF[I)Landroid/view/View;
+	public static final fun viewToName (Landroid/view/View;)Ljava/lang/String;
+}
+

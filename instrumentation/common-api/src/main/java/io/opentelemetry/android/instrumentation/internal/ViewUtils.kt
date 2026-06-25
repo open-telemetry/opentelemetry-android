@@ -58,22 +58,6 @@ const val HARDWARE_POINTER_DISTANCE_X = "hw.pointer.distance.x"
 @InternalViewApi
 const val HARDWARE_POINTER_DISTANCE_Y = "hw.pointer.distance.y"
 
-@InternalViewApi
-const val APP_SCREEN_SCALE_EVENT_NAME = "app.screen.scale"
-
-@InternalViewApi
-const val VIEW_SCALE_EVENT_NAME = "app.widget.scale"
-
-internal fun buttonStateToString(buttonStateInt: Int): String? {
-    return when(buttonStateInt) {
-        MotionEvent.BUTTON_PRIMARY, MotionEvent.BUTTON_STYLUS_PRIMARY -> "primary"
-        MotionEvent.BUTTON_SECONDARY, MotionEvent.BUTTON_STYLUS_SECONDARY -> "secondary"
-        MotionEvent.BUTTON_TERTIARY -> "tertiary"
-        MotionEvent.BUTTON_BACK -> "back"
-        MotionEvent.BUTTON_FORWARD -> "forward"
-        else -> null
-    }
-}
 
 internal fun toolTypeToString(toolTypeInt: Int): String {
     return when(toolTypeInt) {
@@ -85,8 +69,44 @@ internal fun toolTypeToString(toolTypeInt: Int): String {
     }
 }
 
-internal class TapEventMetadata(
-    private val motionEvent: MotionEvent
+@InternalViewApi
+sealed class Gesture(m: MotionEvent) {
+    private val t = TapEventMetadata(m)
+    var attributes = Attributes.empty()
+        protected set
+
+    init {
+        attributes = attributes.toBuilder().put(HARDWARE_POINTER_TYPE, t.toolTypeDescription).build()
+        if(t.buttonStateDescription != null) {
+            attributes = attributes.toBuilder().put(HARDWARE_POINTER_BUTTON, t.buttonStateDescription).build()
+        }
+    }
+    class LongPress(motionEvent: MotionEvent): Gesture(motionEvent)
+    class Click(motionEvent: MotionEvent, clicks: Int): Gesture(motionEvent) {
+        init {
+            attributes = attributes.toBuilder().put(HARDWARE_POINTER_CLICKS, clicks.toLong()).build()
+        }
+    }
+    class Fling(motionEvent: MotionEvent, velocityX: Double, velocityY: Double): Gesture(motionEvent) {
+        init {
+            attributes = attributes.toBuilder()
+                .put(HARDWARE_POINTER_VELOCITY_X, velocityX)
+                .put(HARDWARE_POINTER_VELOCITY_Y, velocityY)
+                .build()
+        }
+    }
+    class Scroll(motionEvent: MotionEvent, distanceX: Double, distanceY: Double): Gesture(motionEvent) {
+        init {
+            attributes = attributes.toBuilder()
+                .put(HARDWARE_POINTER_DISTANCE_X, distanceX)
+                .put(HARDWARE_POINTER_DISTANCE_Y, distanceY)
+                .build()
+        }
+    }
+}
+
+private class TapEventMetadata(
+    motionEvent: MotionEvent
 ) {
 
     val toolTypeDescription: String
@@ -102,42 +122,94 @@ internal class TapEventMetadata(
         } else {
             buttonStateDescription = null
         }
-       toolTypeDescription = toolTypeToString(toolTypeInt)
+        toolTypeDescription = toolTypeToString(toolTypeInt)
     }
 
 }
 
 @InternalViewApi
-sealed class Gesture(val m: MotionEvent) {
-    private val t = TapEventMetadata(m)
-    var attributes = Attributes.empty()
+fun findTargetForTap(
+    decorView: View,
+    x: Float,
+    y: Float,
+    viewCoordinates: IntArray
+): View? {
+    val queue = LinkedList<View>()
+    queue.addFirst(decorView)
+    var target: View? = null
 
-    init {
-        attributes = attributes.toBuilder().put(HARDWARE_POINTER_TYPE, t.toolTypeDescription).build()
-        if(t.buttonStateDescription != null) {
-            attributes = attributes.toBuilder().put(HARDWARE_POINTER_BUTTON, t.buttonStateDescription).build()
+    while (queue.isNotEmpty()) {
+        val view = queue.removeFirst()
+        if (isJetpackComposeView(view)) {
+            return null
+        }
+
+        if (isValidClickTarget(view)) {
+            target = view
+        }
+
+        if (view is ViewGroup) {
+            handleViewGroup(view, x, y, queue, viewCoordinates)
         }
     }
-    class LongPress(val motionEvent: MotionEvent): Gesture(motionEvent)
-    class Click(val motionEvent: MotionEvent, clicks: Int): Gesture(motionEvent) {
-        init {
-            attributes = attributes.toBuilder().put(HARDWARE_POINTER_CLICKS, clicks.toLong()).build()
-        }
+    return target
+}
+
+@InternalViewApi
+fun viewToName(view: View): String =
+    try {
+        view.resources?.getResourceEntryName(view.id) ?: view.id.toString()
+    } catch (throwable: Throwable) {
+        view.id.toString()
     }
-    class Fling(val motionEvent: MotionEvent, val velocityX: Double, val velocityY: Double): Gesture(motionEvent) {
-        init {
-            attributes = attributes.toBuilder()
-                .put(HARDWARE_POINTER_VELOCITY_X, velocityX)
-                .put(HARDWARE_POINTER_VELOCITY_Y, velocityY)
-                .build()
-        }
+
+private fun buttonStateToString(buttonStateInt: Int): String? {
+    return when(buttonStateInt) {
+        MotionEvent.BUTTON_PRIMARY, MotionEvent.BUTTON_STYLUS_PRIMARY -> "primary"
+        MotionEvent.BUTTON_SECONDARY, MotionEvent.BUTTON_STYLUS_SECONDARY -> "secondary"
+        MotionEvent.BUTTON_TERTIARY -> "tertiary"
+        MotionEvent.BUTTON_BACK -> "back"
+        MotionEvent.BUTTON_FORWARD -> "forward"
+        else -> null
     }
-    class Scroll(val motionEvent: MotionEvent, val distanceX: Double, val distanceY: Double): Gesture(motionEvent) {
-        init {
-            attributes = attributes.toBuilder()
-                .put(HARDWARE_POINTER_DISTANCE_X, distanceX)
-                .put(HARDWARE_POINTER_DISTANCE_Y, distanceY)
-                .build()
+}
+
+private fun isJetpackComposeView(view: View): Boolean = view::class.java.name.startsWith("androidx.compose.ui.platform.ComposeView")
+
+private fun handleViewGroup(
+    view: ViewGroup,
+    x: Float,
+    y: Float,
+    stack: LinkedList<View>,
+    viewCoordinates: IntArray
+) {
+    if (!view.isVisible) return
+
+    for (i in 0 until view.childCount) {
+        val child = view.getChildAt(i)
+        if (hitTest(child, x, y, viewCoordinates) && !isJetpackComposeView(child)) {
+            stack.add(child)
         }
     }
 }
+
+private fun hitTest(
+    view: View,
+    x: Float,
+    y: Float,
+    viewCoordinates: IntArray
+): Boolean {
+    view.getLocationInWindow(viewCoordinates)
+    val vx = viewCoordinates[0]
+    val vy = viewCoordinates[1]
+
+    val w = view.width
+    val h = view.height
+    return !(x < vx || x > vx + w || y < vy || y > vy + h)
+}
+
+private fun isValidClickTarget(view: View): Boolean = view.isClickable && view.isVisible
+
+private val View.isVisible: Boolean
+    get() = visibility == View.VISIBLE
+
