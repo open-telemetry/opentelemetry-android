@@ -21,5 +21,5 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.androidx.junit)
     implementation(libs.bundles.mocking) // TODO I couldn't find this explicitly in the other modules. How did they get it?
-    implementation(libs.robolectric)
+    compileOnly(libs.robolectric)
 }
