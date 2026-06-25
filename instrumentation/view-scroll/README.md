@@ -47,7 +47,7 @@ This instrumentation produces the following telemetry:
 
 * Type: Event
 * Name: `app.screen.fling`
-* Description: This event is emitted when the user moves their finger across the screen and 
+* Description: This event is emitted when the user moves their finger across the screen and
 terminates the gesture by letting go of the pointer.
 * Common attributes:
     * `app.screen.coordinate.x`
