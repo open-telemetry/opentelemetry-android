@@ -45,8 +45,7 @@ import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 
-@InternalViewApi
-@OptIn(IncubatingApi::class)
+@OptIn(IncubatingApi::class, InternalViewApi::class)
 @RunWith(AndroidJUnit4::class)
 @ExtendWith(MockKExtension::class)
 class ViewLongPressInstrumentationTest {

@@ -10,13 +10,11 @@ import android.content.Context
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import io.opentelemetry.android.instrumentation.internal.InternalViewApi
 
 @AutoService(AndroidInstrumentation::class)
 class ViewClickInstrumentation : AndroidInstrumentation {
     override val name: String = "view.click"
 
-    @InternalViewApi
     override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
         (context as? Application)?.registerActivityLifecycleCallbacks(
             ViewClickActivityCallback(

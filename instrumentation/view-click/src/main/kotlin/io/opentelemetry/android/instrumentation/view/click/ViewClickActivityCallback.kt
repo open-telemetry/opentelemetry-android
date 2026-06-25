@@ -6,10 +6,8 @@
 package io.opentelemetry.android.instrumentation.view.click
 
 import android.app.Activity
-import io.opentelemetry.android.instrumentation.internal.InternalViewApi
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
 
-@InternalViewApi
 internal class ViewClickActivityCallback(
     private val viewClickEventGenerator: ViewClickEventGenerator,
 ) : DefaultingActivityLifecycleCallbacks {

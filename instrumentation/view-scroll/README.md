@@ -32,7 +32,7 @@ This instrumentation produces the following telemetry:
 
 * Type: Event
 * Name: `app.widget.scroll`
-* Description: This event is emitted when the user performs a confirmed single tap or double tap on a clickable Android `View`. Jetpack Compose views are not currently supported.
+* Description: This event is emitted when the user moves their pointer across the screen without letting go.
 * Common attributes:
     * `app.widget.id`
     * `app.widget.name`

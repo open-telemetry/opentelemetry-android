@@ -53,7 +53,8 @@ import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 
-@InternalViewApi
+
+@OptIn(InternalViewApi::class)
 @RunWith(AndroidJUnit4::class)
 @ExtendWith(MockKExtension::class)
 class ViewScrollInstrumentationTest {

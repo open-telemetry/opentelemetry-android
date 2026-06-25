@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.instrumentation.view.scroll
 
 import android.view.GestureDetector
@@ -22,7 +27,7 @@ import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_NAME
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 import java.lang.ref.WeakReference
 
-@InternalViewApi
+@OptIn(InternalViewApi::class)
 internal class ViewScrollEventGenerator(
     private val eventLogger: Logger,
 ) {

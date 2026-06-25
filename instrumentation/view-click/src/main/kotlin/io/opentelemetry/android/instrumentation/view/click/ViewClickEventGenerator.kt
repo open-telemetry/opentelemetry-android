@@ -27,7 +27,7 @@ import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_NAME
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 import java.lang.ref.WeakReference
 
-@InternalViewApi
+@OptIn(InternalViewApi::class)
 internal class ViewClickEventGenerator(
     private val eventLogger: Logger,
 ) {

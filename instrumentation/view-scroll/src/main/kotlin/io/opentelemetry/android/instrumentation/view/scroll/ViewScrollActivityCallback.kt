@@ -6,10 +6,8 @@
 package io.opentelemetry.android.instrumentation.view.scroll
 
 import android.app.Activity
-import io.opentelemetry.android.instrumentation.internal.InternalViewApi
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
 
-@InternalViewApi
 internal class ViewScrollActivityCallback(
     private val viewScrollEventGenerator: ViewScrollEventGenerator,
 ) : DefaultingActivityLifecycleCallbacks {

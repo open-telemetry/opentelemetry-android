@@ -13,9 +13,7 @@ import android.view.MotionEvent
 import android.view.SearchEvent
 import android.view.Window.Callback
 import androidx.annotation.RequiresApi
-import io.opentelemetry.android.instrumentation.internal.InternalViewApi
 
-@InternalViewApi
 internal class WindowCallbackWrapper(
     private val callback: Callback,
     private val viewScrollEventGenerator: ViewScrollEventGenerator,

@@ -52,7 +52,7 @@ import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 
-@InternalViewApi
+@OptIn(InternalViewApi::class)
 @RunWith(AndroidJUnit4::class)
 @ExtendWith(MockKExtension::class) //TODO This is a Jupiter annotation. Not needed?
 class ViewClickInstrumentationTest {
