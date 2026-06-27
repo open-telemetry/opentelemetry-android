@@ -18,6 +18,18 @@ groups:
         brief: >
           The Android log tag supplied to android.util.Log.
         examples: ["MainActivity", "OkHttp"]
+      - id: android.power_save_mode.enabled
+        type: boolean
+        stability: development
+        brief: >
+          Whether Android power save mode is enabled.
+        examples: [true, false]
+      - id: android.thermal.throttling_status
+        type: string
+        stability: development
+        brief: >
+          The Android thermal throttling status.
+        examples: ["none", "light", "moderate", "severe", "critical", "emergency", "shutdown", "unknown"]
       - id: battery.percent
         type: double
         stability: development
@@ -48,12 +60,36 @@ groups:
         brief: >
           The click count associated with a pointer gesture.
         examples: [1, 2]
+      - id: hw.pointer.distance.x
+        type: double
+        stability: development
+        brief: >
+          The horizontal distance associated with a pointer gesture.
+        examples: [0.0, 10.0, -17.0]
+      - id: hw.pointer.distance.y
+        type: double
+        stability: development
+        brief: >
+          The vertical distance associated with a pointer gesture.
+        examples: [0.0, 10.0, -17.0]
       - id: hw.pointer.type
         type: string
         stability: development
         brief: >
           The hardware pointer type associated with a pointer gesture.
         examples: ["finger", "mouse", "stylus", "eraser", "unknown"]
+      - id: hw.pointer.velocity.x
+        type: double
+        stability: development
+        brief: >
+          The horizontal velocity associated with a pointer gesture.
+        examples: [0.0, 200.0]
+      - id: hw.pointer.velocity.y
+        type: double
+        stability: development
+        brief: >
+          The vertical velocity associated with a pointer gesture.
+        examples: [0.0, 200.0]
       - id: last.screen.name
         type: string
         stability: development

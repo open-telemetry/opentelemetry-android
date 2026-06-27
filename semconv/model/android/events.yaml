@@ -41,12 +41,121 @@ groups:
         requirement_level: opt_in
       - ref: hw.pointer.type
         requirement_level: recommended
+  - id: event.app.screen.scroll
+    type: event
+    name: app.screen.scroll
+    stability: development
+    brief: >
+      This event represents a scroll on the screen of an application.
+    attributes:
+      - ref: app.screen.coordinate.x
+        requirement_level: required
+      - ref: app.screen.coordinate.y
+        requirement_level: required
+      - ref: app.screen.id
+        requirement_level: recommended
+      - ref: app.screen.name
+        requirement_level: opt_in
+      - ref: hw.pointer.button
+        requirement_level: opt_in
+      - ref: hw.pointer.distance.x
+        requirement_level: required
+      - ref: hw.pointer.distance.y
+        requirement_level: required
+      - ref: hw.pointer.type
+        requirement_level: recommended
+  - id: event.app.widget.scroll
+    type: event
+    name: app.widget.scroll
+    stability: development
+    brief: >
+      This event represents a scroll on an application widget.
+    attributes:
+      - ref: app.widget.id
+        requirement_level: required
+      - ref: app.widget.name
+        requirement_level: opt_in
+      - ref: app.screen.coordinate.x
+        requirement_level: opt_in
+      - ref: app.screen.coordinate.y
+        requirement_level: opt_in
+      - ref: app.screen.id
+        requirement_level: recommended
+      - ref: app.screen.name
+        requirement_level: opt_in
+      - ref: hw.pointer.button
+        requirement_level: opt_in
+      - ref: hw.pointer.distance.x
+        requirement_level: required
+      - ref: hw.pointer.distance.y
+        requirement_level: required
+      - ref: hw.pointer.type
+        requirement_level: recommended
+  - id: event.app.screen.fling
+    type: event
+    name: app.screen.fling
+    stability: development
+    brief: >
+      This event represents a fling on the screen of an application.
+    attributes:
+      - ref: app.screen.coordinate.x
+        requirement_level: required
+      - ref: app.screen.coordinate.y
+        requirement_level: required
+      - ref: app.screen.id
+        requirement_level: recommended
+      - ref: app.screen.name
+        requirement_level: opt_in
+      - ref: hw.pointer.button
+        requirement_level: opt_in
+      - ref: hw.pointer.type
+        requirement_level: recommended
+      - ref: hw.pointer.velocity.x
+        requirement_level: required
+      - ref: hw.pointer.velocity.y
+        requirement_level: required
+  - id: event.app.widget.fling
+    type: event
+    name: app.widget.fling
+    stability: development
+    brief: >
+      This event represents a fling on an application widget.
+    attributes:
+      - ref: app.widget.id
+        requirement_level: required
+      - ref: app.widget.name
+        requirement_level: opt_in
+      - ref: app.screen.coordinate.x
+        requirement_level: opt_in
+      - ref: app.screen.coordinate.y
+        requirement_level: opt_in
+      - ref: app.screen.id
+        requirement_level: recommended
+      - ref: app.screen.name
+        requirement_level: opt_in
+      - ref: hw.pointer.button
+        requirement_level: opt_in
+      - ref: hw.pointer.type
+        requirement_level: recommended
+      - ref: hw.pointer.velocity.x
+        requirement_level: required
+      - ref: hw.pointer.velocity.y
+        requirement_level: required
   - id: event.device.anr
     type: event
     name: device.anr
     stability: development
     brief: >
       This event indicates that an Android application did not respond on the main thread.
+  - id: event.device.power_save_mode.change
+    type: event
+    name: device.power_save_mode.change
+    stability: development
+    brief: >
+      This event indicates that Android power save mode changed.
+    attributes:
+      - ref: android.power_save_mode.enabled
+        requirement_level: required
   - id: event.device.screen_orientation
     type: event
     name: device.screen_orientation
@@ -55,6 +164,15 @@ groups:
       This event indicates that the Android screen orientation changed.
     attributes:
       - ref: screen.orientation
+        requirement_level: required
+  - id: event.device.thermal_status.change
+    type: event
+    name: device.thermal_status.change
+    stability: development
+    brief: >
+      This event indicates that the Android thermal throttling status changed.
+    attributes:
+      - ref: android.thermal.throttling_status
         requirement_level: required
   - id: event.network.change
     type: event
