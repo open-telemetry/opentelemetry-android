@@ -4,3 +4,8 @@ public abstract interface class io/opentelemetry/android/instrumentation/Android
 	public fun uninstall (Landroid/content/Context;Lio/opentelemetry/android/OpenTelemetryRum;)V
 }
 
+public abstract interface class io/opentelemetry/android/instrumentation/InstrumentationConfigurator {
+	public abstract fun configure (Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;)V
+	public abstract fun getInstrumentationName ()Ljava/lang/String;
+}
+

@@ -12,6 +12,7 @@ import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
+import io.opentelemetry.android.instrumentation.InstrumentationConfigurators
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.common.Clock
@@ -84,8 +85,10 @@ class SdkPreconfiguredRumBuilder internal constructor(
             onShutdown.run()
         }
 
+        val configurator = InstrumentationConfigurators.create()
         // Install instrumentations
         for (instrumentation in enabledInstrumentations) {
+            configurator.configure(instrumentation)
             instrumentation.install(context, openTelemetryRum)
         }
 
