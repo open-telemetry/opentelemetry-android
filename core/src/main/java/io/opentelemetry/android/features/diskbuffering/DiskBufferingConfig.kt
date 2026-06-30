@@ -54,7 +54,7 @@ data class DiskBufferingConfig
                 maxCacheFileSize: Int = MAX_CACHE_FILE_SIZE,
                 debugEnabled: Boolean = false,
                 signalsBufferDir: File? = null,
-                exportPeriodMillis: Long = TimeUnit.SECONDS.toMillis(10),
+                exportPeriodMillis: Long = TimeUnit.SECONDS.toMillis(DEFAULT_EXPORT_PERIOD_MS),
             ): DiskBufferingConfig {
                 var minRead = minFileAgeForReadMillis
                 if (minFileAgeForReadMillis <= maxFileAgeForWriteMillis) {
@@ -64,7 +64,7 @@ data class DiskBufferingConfig
                 }
                 var exportPeriod = exportPeriodMillis
                 if (exportPeriod <= 0) {
-                    exportPeriod = TimeUnit.SECONDS.toMillis(10)
+                    exportPeriod = TimeUnit.SECONDS.toMillis(DEFAULT_EXPORT_PERIOD_MS)
                     Log.w(OTEL_RUM_LOG_TAG, "exportPeriodMillis must be greater than 0")
                     Log.w(OTEL_RUM_LOG_TAG, "overriding exportPeriodMillis from $exportPeriodMillis to $exportPeriod")
                 }
