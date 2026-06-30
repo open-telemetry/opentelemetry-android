@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network.internal.detector
+package io.opentelemetry.android.internal.services.network
 
 import android.content.Context
 import android.net.ConnectivityManager
@@ -16,11 +16,6 @@ import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState.TRANSPORT_CELLULAR
-import io.opentelemetry.android.instrumentation.network.internal.CarrierFinder
-import io.opentelemetry.android.instrumentation.network.internal.CurrentNetworkProvider
-import io.opentelemetry.android.instrumentation.network.internal.getNetworkTypeName
-import io.opentelemetry.android.instrumentation.network.internal.hasPhoneStatePermission
-import io.opentelemetry.android.instrumentation.network.internal.hasTelephonyFeature
 
 /**
  * Implementation of NetworkDetector interface.

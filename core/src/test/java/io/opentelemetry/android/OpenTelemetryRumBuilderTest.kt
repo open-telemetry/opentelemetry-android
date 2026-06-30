@@ -24,12 +24,12 @@ import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter.Co
 import io.opentelemetry.android.features.diskbuffering.scheduler.ScheduleEnablement
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoaderImpl
-import io.opentelemetry.android.instrumentation.network.internal.CurrentNetworkProvider
-import io.opentelemetry.android.instrumentation.network.internal.NetworkProviderHolder
 import io.opentelemetry.android.internal.initialization.InitializationEvents
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.Services.Companion.set
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
+import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
+import io.opentelemetry.android.internal.services.network.NetworkProviderHolder
 import io.opentelemetry.android.internal.services.storage.CacheStorage
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.android.session.SessionProvider

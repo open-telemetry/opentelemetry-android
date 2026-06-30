@@ -31,6 +31,41 @@ public abstract interface class io/opentelemetry/android/internal/services/appli
 	public abstract fun onApplicationForegrounded ()V
 }
 
+public abstract interface class io/opentelemetry/android/internal/services/network/CurrentNetworkProvider : java/io/Closeable {
+	public static final field Companion Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider$Companion;
+	public static final field NO_NETWORK Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
+	public static final field UNKNOWN_NETWORK Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
+	public abstract fun addNetworkChangeListener (Lio/opentelemetry/android/internal/services/network/NetworkChangeListener;)V
+	public fun close ()V
+	public abstract fun getCurrentNetwork ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
+	public abstract fun refreshNetworkStatus ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
+	public abstract fun removeNetworkChangeListener (Lio/opentelemetry/android/internal/services/network/NetworkChangeListener;)V
+}
+
+public final class io/opentelemetry/android/internal/services/network/CurrentNetworkProvider$Companion {
+}
+
+public abstract interface class io/opentelemetry/android/internal/services/network/NetworkChangeListener {
+	public abstract fun onNetworkChange (Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;)V
+}
+
+public abstract interface class io/opentelemetry/android/internal/services/network/NetworkDetector {
+	public static final field Companion Lio/opentelemetry/android/internal/services/network/NetworkDetector$Companion;
+	public static fun create (Landroid/content/Context;)Lio/opentelemetry/android/internal/services/network/NetworkDetector;
+	public abstract fun detectCurrentNetwork ()Lio/opentelemetry/android/common/internal/features/networkattributes/data/CurrentNetwork;
+}
+
+public final class io/opentelemetry/android/internal/services/network/NetworkDetector$Companion {
+	public final fun create (Landroid/content/Context;)Lio/opentelemetry/android/internal/services/network/NetworkDetector;
+}
+
+public final class io/opentelemetry/android/internal/services/network/NetworkProviderHolder {
+	public static final field INSTANCE Lio/opentelemetry/android/internal/services/network/NetworkProviderHolder;
+	public static final fun close ()V
+	public static final fun get (Landroid/content/Context;)Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;
+	public static final fun set (Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;)V
+}
+
 public abstract interface class io/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker : io/opentelemetry/android/internal/services/Service {
 	public abstract fun activityPaused (Landroid/app/Activity;)V
 	public abstract fun activityResumed (Landroid/app/Activity;)V

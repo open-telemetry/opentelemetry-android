@@ -1,9 +1,4 @@
-/*
- * Copyright The OpenTelemetry Authors
- * SPDX-License-Identifier: Apache-2.0
- */
-
-package io.opentelemetry.android.instrumentation.network.internal
+package io.opentelemetry.android.internal.services.network
 
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 
