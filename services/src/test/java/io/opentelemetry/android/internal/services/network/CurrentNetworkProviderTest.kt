@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network.internal
+package io.opentelemetry.android.internal.services.network
 
 import android.net.ConnectivityManager
 import android.net.ConnectivityManager.NetworkCallback
@@ -19,8 +19,7 @@ import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
-import io.opentelemetry.android.instrumentation.network.internal.CurrentNetworkProvider.Companion.UNKNOWN_NETWORK
-import io.opentelemetry.android.instrumentation.network.internal.detector.NetworkDetector
+import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider.Companion.UNKNOWN_NETWORK
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -127,7 +126,8 @@ internal class CurrentNetworkProviderTest {
 
     @Test
     fun `network detector exception`() {
-        val currentNetworkProvider = CurrentNetworkProviderImpl(errorNetworkDetector, mockConnectivityManager)
+        val currentNetworkProvider =
+            CurrentNetworkProviderImpl(errorNetworkDetector, mockConnectivityManager)
         assertThat(currentNetworkProvider.refreshNetworkStatus()).isEqualTo(UNKNOWN_NETWORK)
     }
 
