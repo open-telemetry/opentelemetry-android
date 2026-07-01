@@ -13,10 +13,10 @@ such as `app.crash`, `app.jank`, `app.screen.click`, and `app.widget.click`.
 
 ## Regenerating Attribute Constants
 
-The generated Kotlin constants are committed under:
+Kotlin constants are generated under:
 
 ```text
-semconv/src/main/kotlin/io/opentelemetry/android/semconv/
+semconv/build/generated/source/semanticConventions/main/kotlin/
 ```
 
 Install `weaver` and make sure it is available on `PATH`, then run:
@@ -26,5 +26,7 @@ Install `weaver` and make sure it is available on `PATH`, then run:
 ```
 
 This task reads the local registry under `semconv/model` and the Kotlin templates under
-`semconv/templates`, then regenerates the committed constants. Event class generation and
-production code usage will be added in later phases.
+`semconv/templates`, then regenerates the constants consumed by the `:semconv` module's main
+source set. The task also runs automatically before Kotlin compilation. 
+
+Event class generation and production code usage will be added in later phases.

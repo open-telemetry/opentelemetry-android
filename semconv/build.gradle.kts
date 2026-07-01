@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("otel.android-library-conventions")
     id("otel.publish-conventions")
@@ -17,7 +19,7 @@ dependencies {
     api(platform(libs.opentelemetry.platform.alpha))
 }
 
-// Matches opentelemetry-kotlin's semconv module: generated code is committed and not Detekt-reviewed.
+// Generated code is not committed and not Detekt-reviewed.
 tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
     enabled = false
 }
@@ -61,8 +63,33 @@ abstract class GenerateSemanticConventionsTask
         }
     }
 
-tasks.register<GenerateSemanticConventionsTask>("generateSemanticConventions") {
-    modelDir.set(layout.projectDirectory.dir("model"))
-    templatesDir.set(layout.projectDirectory.dir("templates"))
-    outputDir.set(layout.projectDirectory.dir("src/main/kotlin"))
+val generatedSemanticConventionSources =
+    layout.buildDirectory.dir("generated/source/semanticConventions/main/kotlin")
+
+val generateSemanticConventions =
+    tasks.register<GenerateSemanticConventionsTask>("generateSemanticConventions") {
+        modelDir.set(layout.projectDirectory.dir("model"))
+        templatesDir.set(layout.projectDirectory.dir("templates"))
+        outputDir.set(generatedSemanticConventionSources)
+    }
+
+android {
+    sourceSets {
+        getByName("main") {
+            kotlin.directories.add(generatedSemanticConventionSources.get().asFile.path)
+        }
+    }
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    dependsOn(generateSemanticConventions)
+}
+
+tasks.configureEach {
+    if (name.startsWith("ksp")) {
+        dependsOn(generateSemanticConventions)
+    }
+    if (name.endsWith("SourcesJar")) {
+        dependsOn(generateSemanticConventions)
+    }
 }
