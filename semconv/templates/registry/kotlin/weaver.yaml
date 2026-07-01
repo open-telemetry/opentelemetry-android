@@ -1,0 +1,22 @@
+comment_formats:
+  kdoc:
+    format: html
+    header: "/**"
+    prefix: " * "
+    footer: " */"
+default_comment_format: kdoc
+templates:
+  - pattern: kotlin_semconv_template.kt.j2
+    filter: >
+      semconv_grouped_attributes({
+        "exclude_stability": []
+      })
+      | map({ root_namespace: .root_namespace,
+              attributes: (.attributes | unique_by(.name)),
+              excluded_attributes: [] })
+    application_mode: each
+    file_name: "io/opentelemetry/android/semconv/{{ctx.root_namespace | pascal_case}}Attributes.kt"
+text_maps:
+  kotlin_enum_type:
+    int: Long
+    string: String
