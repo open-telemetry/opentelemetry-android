@@ -1,5 +1,5 @@
 [versions]
-byteBuddy = "1.18.10"
+byteBuddy = "1.18.11"
 okhttp = "5.4.0"
 opentelemetry = "1.63.0"
 opentelemetry-alpha = "1.63.0-alpha"
@@ -27,7 +27,7 @@ desugarJdkLibs = "com.android.tools:desugar_jdk_libs:2.1.5"
 # demo-app
 androidx-core-ktx = "androidx.core:core-ktx:1.18.0"
 androidx-lifecycle-runtime-ktx = "androidx.lifecycle:lifecycle-runtime-ktx:2.10.0"
-androidx-compose-bom = "androidx.compose:compose-bom:2026.06.00"
+androidx-compose-bom = "androidx.compose:compose-bom:2026.06.01"
 androidx-activity-compose = "androidx.activity:activity-compose:1.13.0"
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
