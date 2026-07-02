@@ -4,6 +4,8 @@ plugins {
     id("com.diffplug.spotless")
 }
 
+var kotlinConfigured = false
+
 spotless {
     java {
         googleJavaFormat().aosp()
@@ -11,10 +13,13 @@ spotless {
         target("src/**/*.java")
     }
     plugins.withId("org.jetbrains.kotlin.jvm") {
-        configureKotlin(this@spotless)
+        configureKotlinOnce(this@spotless)
     }
     plugins.withId("org.jetbrains.kotlin.android") {
-        configureKotlin(this@spotless)
+        configureKotlinOnce(this@spotless)
+    }
+    plugins.withId("kotlin-android") {
+        configureKotlinOnce(this@spotless)
     }
     kotlinGradle {
         ktlint()
@@ -54,6 +59,15 @@ if (project == rootProject) {
         kotlinGradle {
             ktlint()
         }
+    }
+}
+
+fun configureKotlinOnce(
+    spotlessExtension: SpotlessExtension,
+) {
+    if (!kotlinConfigured) {
+        kotlinConfigured = true
+        configureKotlin(spotlessExtension)
     }
 }
 
