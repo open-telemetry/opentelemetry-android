@@ -9,7 +9,6 @@ package io.opentelemetry.android.session
  * Callback that is invoked at different points in the session lifecycle.
  */
 interface SessionObserver {
-
     /**
      * Called after a session has started.
      */

@@ -9,7 +9,6 @@ package io.opentelemetry.android.session
  * Provides information about the current session.
  */
 interface Session {
-
     /**
      * The session ID.
      */
