@@ -27,11 +27,12 @@ internal class NetworkApplicationListener(
         eventLogger: Logger,
         additionalExtractors: List<NetworkAttributesExtractor>,
     ) {
-        val listener = TracingNetworkChangeListener(
-            eventLogger,
-            shouldEmitChangeEvents,
-            additionalExtractors,
-        )
+        val listener =
+            TracingNetworkChangeListener(
+                eventLogger,
+                shouldEmitChangeEvents,
+                additionalExtractors,
+            )
         networkChangeListener = listener
         currentNetworkProvider.addNetworkChangeListener(listener)
     }

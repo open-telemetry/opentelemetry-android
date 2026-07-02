@@ -106,7 +106,10 @@ class HttpUrlInstrumentation : AndroidInstrumentation {
 
     fun emitExperimentalHttpClientMetrics(): Boolean = emitExperimentalHttpClientMetrics
 
-    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun install(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         HttpUrlConnectionSingletons.configure(this, openTelemetryRum.openTelemetry)
     }
 

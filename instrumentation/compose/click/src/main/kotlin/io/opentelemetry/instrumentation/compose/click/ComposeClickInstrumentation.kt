@@ -15,7 +15,10 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 class ComposeClickInstrumentation : AndroidInstrumentation {
     override val name: String = "compose.click"
 
-    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun install(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         (context as? Application)?.registerActivityLifecycleCallbacks(
             ComposeClickActivityCallback(
                 ComposeClickEventGenerator(

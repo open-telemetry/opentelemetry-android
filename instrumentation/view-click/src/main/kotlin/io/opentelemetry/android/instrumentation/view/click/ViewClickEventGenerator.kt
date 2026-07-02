@@ -36,118 +36,120 @@ internal class ViewClickEventGenerator(
     private var windowRef: WeakReference<Window>? = null
 
     @OptIn(IncubatingApi::class)
-    private val gestureListener = object : GestureDetector.SimpleOnGestureListener() {
+    private val gestureListener =
+        object : GestureDetector.SimpleOnGestureListener() {
+            override fun onDoubleTap(motionEvent: MotionEvent): Boolean {
+                windowRef?.get()?.let { window ->
 
+                    val safeEvent = MotionEvent.obtain(motionEvent)
+                    val gesture = Gesture.Click(motionEvent, 2)
 
-        override fun onDoubleTap(motionEvent: MotionEvent): Boolean {
-            windowRef?.get()?.let { window ->
-
-                val safeEvent = MotionEvent.obtain(motionEvent)
-                val gesture = Gesture.Click(motionEvent, 2)
-
-                createEvent(APP_SCREEN_CLICK_EVENT_NAME, gesture)
-                    .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
-                    .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
-                    .emit()
-
-                findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
-                    createEvent(VIEW_CLICK_EVENT_NAME, gesture)
-                        .setAllAttributes(createViewAttributes(view))
+                    createEvent(APP_SCREEN_CLICK_EVENT_NAME, gesture)
+                        .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
+                        .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
                         .emit()
+
+                    findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
+                        createEvent(VIEW_CLICK_EVENT_NAME, gesture)
+                            .setAllAttributes(createViewAttributes(view))
+                            .emit()
+                    }
+
+                    safeEvent.recycle()
                 }
-
-                safeEvent.recycle()
-
+                return false
             }
-            return false
-        }
 
-        override fun onSingleTapConfirmed(motionEvent: MotionEvent): Boolean {
-            windowRef?.get()?.let { window ->
+            override fun onSingleTapConfirmed(motionEvent: MotionEvent): Boolean {
+                windowRef?.get()?.let { window ->
 
-                val safeEvent = MotionEvent.obtain(motionEvent)
-                val gesture = Gesture.Click(safeEvent, 1)
+                    val safeEvent = MotionEvent.obtain(motionEvent)
+                    val gesture = Gesture.Click(safeEvent, 1)
 
-                createEvent(APP_SCREEN_CLICK_EVENT_NAME, gesture)
-                    .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
-                    .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
-                    .emit()
-
-                findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
-                    createEvent(VIEW_CLICK_EVENT_NAME, gesture)
-                        .setAllAttributes(createViewAttributes(view))
+                    createEvent(APP_SCREEN_CLICK_EVENT_NAME, gesture)
+                        .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
+                        .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
                         .emit()
+
+                    findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
+                        createEvent(VIEW_CLICK_EVENT_NAME, gesture)
+                            .setAllAttributes(createViewAttributes(view))
+                            .emit()
+                    }
+                    safeEvent.recycle()
                 }
-                safeEvent.recycle()
+                return false
             }
-            return false
-        }
 
-        override fun onLongPress(e: MotionEvent) {
-            windowRef?.get()?.let { window ->
+            override fun onLongPress(e: MotionEvent) {
+                windowRef?.get()?.let { window ->
 
-                val safeEvent = MotionEvent.obtain(e)
-                val gesture = Gesture.LongPress(safeEvent)
-                createEvent(APP_SCREEN_LONG_PRESS_EVENT_NAME, gesture)
-                    .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
-                    .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
-                    .emit()
-
-                findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
-                    createEvent(VIEW_LONG_PRESS_EVENT_NAME, gesture)
-                        .setAllAttributes(createViewAttributes(view))
+                    val safeEvent = MotionEvent.obtain(e)
+                    val gesture = Gesture.LongPress(safeEvent)
+                    createEvent(APP_SCREEN_LONG_PRESS_EVENT_NAME, gesture)
+                        .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
+                        .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
                         .emit()
+
+                    findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
+                        createEvent(VIEW_LONG_PRESS_EVENT_NAME, gesture)
+                            .setAllAttributes(createViewAttributes(view))
+                            .emit()
+                    }
+                    safeEvent.recycle()
                 }
-                safeEvent.recycle()
             }
-        }
 
-        override fun onScroll(
-            e1: MotionEvent?, e2: MotionEvent,
-            distanceX: Float, distanceY: Float
-        ): Boolean {
-            windowRef?.get()?.let { window ->
+            override fun onScroll(
+                e1: MotionEvent?,
+                e2: MotionEvent,
+                distanceX: Float,
+                distanceY: Float,
+            ): Boolean {
+                windowRef?.get()?.let { window ->
 
-                val safeEvent = MotionEvent.obtain(e2)
-                val gesture = Gesture.Scroll(safeEvent, distanceX.toDouble(), distanceY.toDouble())
-                createEvent(APP_SCREEN_SCROLL_EVENT_NAME, gesture)
-                    .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
-                    .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
-                    .emit()
-
-                findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
-                    createEvent(VIEW_SCROLL_EVENT_NAME, gesture)
-                        .setAllAttributes(createViewAttributes(view))
+                    val safeEvent = MotionEvent.obtain(e2)
+                    val gesture = Gesture.Scroll(safeEvent, distanceX.toDouble(), distanceY.toDouble())
+                    createEvent(APP_SCREEN_SCROLL_EVENT_NAME, gesture)
+                        .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
+                        .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
                         .emit()
+
+                    findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
+                        createEvent(VIEW_SCROLL_EVENT_NAME, gesture)
+                            .setAllAttributes(createViewAttributes(view))
+                            .emit()
+                    }
+                    safeEvent.recycle()
                 }
-                safeEvent.recycle()
+                return false
             }
-            return false
-        }
 
-        override fun onFling(
-            e1: MotionEvent?, e2: MotionEvent,
-            velocityX: Float, velocityY: Float
-        ): Boolean {
-            windowRef?.get()?.let { window ->
+            override fun onFling(
+                e1: MotionEvent?,
+                e2: MotionEvent,
+                velocityX: Float,
+                velocityY: Float,
+            ): Boolean {
+                windowRef?.get()?.let { window ->
 
-                val safeEvent = MotionEvent.obtain(e2)
-                val gesture = Gesture.Fling(safeEvent, velocityX.toDouble(), velocityY.toDouble())
-                createEvent(APP_SCREEN_FLING_EVENT_NAME, gesture)
-                    .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
-                    .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
-                    .emit()
-
-                findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
-                    createEvent(VIEW_FLING_EVENT_NAME, gesture)
-                        .setAllAttributes(createViewAttributes(view))
+                    val safeEvent = MotionEvent.obtain(e2)
+                    val gesture = Gesture.Fling(safeEvent, velocityX.toDouble(), velocityY.toDouble())
+                    createEvent(APP_SCREEN_FLING_EVENT_NAME, gesture)
+                        .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
+                        .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
                         .emit()
+
+                    findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
+                        createEvent(VIEW_FLING_EVENT_NAME, gesture)
+                            .setAllAttributes(createViewAttributes(view))
+                            .emit()
+                    }
+                    safeEvent.recycle()
                 }
-                safeEvent.recycle()
+                return false
             }
-            return false
         }
-    }
 
     val gestureDetector = GestureDetector(null, gestureListener)
 
@@ -174,16 +176,18 @@ internal class ViewClickEventGenerator(
         windowRef = null
     }
 
-    private fun createEvent(name: String, gesture: Gesture): LogRecordBuilder {
-
-        val logger = eventLogger
-            .logRecordBuilder()
-            .setEventName(name)
-            .setAllAttributes(gesture.attributes)
+    private fun createEvent(
+        name: String,
+        gesture: Gesture,
+    ): LogRecordBuilder {
+        val logger =
+            eventLogger
+                .logRecordBuilder()
+                .setEventName(name)
+                .setAllAttributes(gesture.attributes)
 
         return logger
     }
-
 
     @OptIn(IncubatingApi::class)
     private fun createViewAttributes(view: View): Attributes {

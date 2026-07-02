@@ -59,7 +59,10 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
         return this
     }
 
-    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun install(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             Log.w(
                 RumConstants.OTEL_RUM_LOG_TAG,
@@ -85,7 +88,10 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
         detector?.start()
     }
 
-    override fun uninstall(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun uninstall(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         if (detector == null) {
             Log.w(
                 RumConstants.OTEL_RUM_LOG_TAG,

@@ -1,9 +1,13 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.Test
 
 class TestUtilsTest {
-
     @Test
     fun testGetDestinationHorizontal() {
         val pointA = arrayOf(20f, 20f)

@@ -16,13 +16,13 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 @RunWith(AndroidJUnit4::class)
 class ThermalInstrumentationTest {

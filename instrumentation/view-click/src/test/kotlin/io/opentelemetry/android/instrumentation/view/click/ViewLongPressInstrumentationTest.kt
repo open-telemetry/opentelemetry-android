@@ -28,16 +28,16 @@ import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_LONG_PR
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.longKey
 import io.opentelemetry.api.common.AttributeKey.stringKey
-import io.opentelemetry.sdk.common.Clock
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
-import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_X
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_Y
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_ID
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_NAME
 import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.sdk.common.Clock
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
+import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import mockView
 import org.junit.Before
 import org.junit.Test
@@ -70,14 +70,14 @@ class ViewLongPressInstrumentationTest {
 
     private val toolTypeKey = stringKey(HARDWARE_POINTER_TYPE)
 
-
     @Test
     fun capture_view_long_press() {
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -124,7 +124,7 @@ class ViewLongPressInstrumentationTest {
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), motionEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), motionEvent.y.toLong()),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
 
         event = events[1]
@@ -135,18 +135,18 @@ class ViewLongPressInstrumentationTest {
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
                 equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
                 equalTo(stringKey(APP_WIDGET_NAME), "10012"),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
     }
 
     @Test
     fun capture_view_single_tap_when_too_short_for_long_press() {
-
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -166,7 +166,6 @@ class ViewLongPressInstrumentationTest {
         val wrapperCapturingSlot = slot<WindowCallbackWrapper>()
         every { window.callback = any() } returns Unit
 
-
         val longPressSequence = getLongPressSequence(250f, 50f, stayDownLongEnough = false)
         val initialDownEvent = longPressSequence[0]
 
@@ -185,14 +184,13 @@ class ViewLongPressInstrumentationTest {
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
 
-
         var event = events[0]
         assertThat(event)
             .hasEventName(APP_SCREEN_LONG_PRESS_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), initialDownEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), initialDownEvent.y.toLong()),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
 
         event = events[1]
@@ -203,18 +201,18 @@ class ViewLongPressInstrumentationTest {
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
                 equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
                 equalTo(stringKey(APP_WIDGET_NAME), "10012"),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
     }
 
     @Test
     fun capture_view_long_press_in_viewGroup() {
-
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -257,23 +255,25 @@ class ViewLongPressInstrumentationTest {
         assertThat(events).hasSize(2)
 
         var event = events[0]
-        OpenTelemetryAssertions.assertThat(event)
+        OpenTelemetryAssertions
+            .assertThat(event)
             .hasEventName(APP_SCREEN_LONG_PRESS_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), initialDownEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), initialDownEvent.y.toLong()),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
 
         event = events[1]
-        OpenTelemetryAssertions.assertThat(event)
+        OpenTelemetryAssertions
+            .assertThat(event)
             .hasEventName(VIEW_LONG_PRESS_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
                 equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
                 equalTo(stringKey(APP_WIDGET_NAME), "10012"),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
     }
 }

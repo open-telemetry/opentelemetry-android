@@ -17,7 +17,6 @@ import io.opentelemetry.android.instrumentation.network.internal.detector.Networ
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
  */
 object NetworkProviderHolder {
-
     @SuppressLint("StaticFieldLeak") // only application context
     @Volatile
     private var instance: CurrentNetworkProvider? = null

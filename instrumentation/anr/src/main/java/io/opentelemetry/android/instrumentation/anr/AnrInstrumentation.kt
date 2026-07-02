@@ -43,7 +43,10 @@ class AnrInstrumentation : AndroidInstrumentation {
         return this
     }
 
-    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun install(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         val anrDetector =
             AnrDetector(
                 additionalExtractors,

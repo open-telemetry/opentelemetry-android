@@ -35,16 +35,16 @@ import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_E
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.longKey
 import io.opentelemetry.api.common.AttributeKey.stringKey
-import io.opentelemetry.sdk.common.Clock
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
-import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_X
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_Y
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_ID
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_NAME
 import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.sdk.common.Clock
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
+import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import mockView
 import org.junit.Before
 import org.junit.Test
@@ -80,11 +80,12 @@ class ViewClickInstrumentationTest {
 
     @Test
     fun capture_view_click() {
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -132,7 +133,7 @@ class ViewClickInstrumentationTest {
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), motionEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), motionEvent.y.toLong()),
                 equalTo(clicksKey, 1.toLong()),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
 
         event = events[1]
@@ -144,17 +145,18 @@ class ViewClickInstrumentationTest {
                 equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
                 equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(clicksKey, 1.toLong()),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
     }
 
     @Test
     fun capture_view_click_in_viewGroup() {
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -203,7 +205,7 @@ class ViewClickInstrumentationTest {
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), motionEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), motionEvent.y.toLong()),
                 equalTo(clicksKey, 1.toLong()),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
 
         event = events[1]
@@ -215,17 +217,18 @@ class ViewClickInstrumentationTest {
                 equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
                 equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(clicksKey, 1.toLong()),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
     }
 
     @Test
     fun not_captured_view_click_in_viewGroup() {
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -277,17 +280,18 @@ class ViewClickInstrumentationTest {
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), motionEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), motionEvent.y.toLong()),
                 equalTo(clicksKey, 1.toLong()),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
     }
 
     @Test
     fun not_captured_view_click_for_down_event() {
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -321,15 +325,14 @@ class ViewClickInstrumentationTest {
         assertThat(events).hasSize(0)
     }
 
-
     @Test
     fun capture_view_double_tap() {
-
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -360,24 +363,26 @@ class ViewClickInstrumentationTest {
             window.callback = capture(wrapperCapturingSlot)
         }
 
-        for(motionEvent in doubleTapSequence) {
+        for (motionEvent in doubleTapSequence) {
             wrapperCapturingSlot.captured.dispatchTouchEvent(motionEvent)
         }
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
 
         var event = events[0]
-        OpenTelemetryAssertions.assertThat(event)
+        OpenTelemetryAssertions
+            .assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), initialDownEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), initialDownEvent.y.toLong()),
                 equalTo(clicksKey, 2.toLong()),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
 
         event = events[1]
-        OpenTelemetryAssertions.assertThat(event)
+        OpenTelemetryAssertions
+            .assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
@@ -385,18 +390,18 @@ class ViewClickInstrumentationTest {
                 equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
                 equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(clicksKey, 2.toLong()),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
     }
 
     @Test
     fun capture_view_double_tap_button_state() {
-
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -427,25 +432,27 @@ class ViewClickInstrumentationTest {
             window.callback = capture(wrapperCapturingSlot)
         }
 
-        for(motionEvent in doubleTapSequence) {
+        for (motionEvent in doubleTapSequence) {
             wrapperCapturingSlot.captured.dispatchTouchEvent(motionEvent)
         }
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
 
         var event = events[0]
-        OpenTelemetryAssertions.assertThat(event)
+        OpenTelemetryAssertions
+            .assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), initialDownEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), initialDownEvent.y.toLong()),
                 equalTo(clicksKey, 2.toLong()),
                 equalTo(toolTypeKey, "mouse"),
-                equalTo(buttonKey, "primary")
+                equalTo(buttonKey, "primary"),
             )
 
         event = events[1]
-        OpenTelemetryAssertions.assertThat(event)
+        OpenTelemetryAssertions
+            .assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
@@ -454,18 +461,18 @@ class ViewClickInstrumentationTest {
                 equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(clicksKey, 2.toLong()),
                 equalTo(toolTypeKey, "mouse"),
-                equalTo(buttonKey, "primary")
+                equalTo(buttonKey, "primary"),
             )
     }
 
     @Test
     fun capture_view_single_tap_button_state() {
-
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -510,7 +517,7 @@ class ViewClickInstrumentationTest {
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), motionEvent.y.toLong()),
                 equalTo(clicksKey, 1.toLong()),
                 equalTo(toolTypeKey, "stylus"),
-                equalTo(buttonKey, "secondary")
+                equalTo(buttonKey, "secondary"),
             )
 
         event = events[1]
@@ -523,18 +530,18 @@ class ViewClickInstrumentationTest {
                 equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(clicksKey, 1.toLong()),
                 equalTo(toolTypeKey, "stylus"),
-                equalTo(buttonKey, "secondary")
+                equalTo(buttonKey, "secondary"),
             )
     }
 
     @Test
     fun capture_view_single_tap_when_double_tap_timeout_exceeded() {
-
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -553,7 +560,6 @@ class ViewClickInstrumentationTest {
         val viewClickActivityCallback = callbackCapturingSlot.captured
         val wrapperCapturingSlot = slot<WindowCallbackWrapper>()
         every { window.callback = any() } returns Unit
-
 
         val doubleTapSequence = getDoubleTapSequence(250f, 50f, exceedTimeOut = true)
         val initialDownEvent = doubleTapSequence[0]
@@ -575,7 +581,6 @@ class ViewClickInstrumentationTest {
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
 
-
         var event = events[0]
         assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
@@ -583,7 +588,7 @@ class ViewClickInstrumentationTest {
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), initialDownEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), initialDownEvent.y.toLong()),
                 equalTo(clicksKey, 1.toLong()),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
 
         event = events[1]
@@ -595,18 +600,18 @@ class ViewClickInstrumentationTest {
                 equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
                 equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(clicksKey, 1.toLong()),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
     }
 
     @Test
     fun not_captured_view_double_tap_in_viewGroup() {
-
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -641,7 +646,7 @@ class ViewClickInstrumentationTest {
             window.callback = capture(wrapperCapturingSlot)
         }
 
-        for(motionEvent in doubleTapSequence) {
+        for (motionEvent in doubleTapSequence) {
             wrapperCapturingSlot.captured.dispatchTouchEvent(motionEvent)
         }
 
@@ -649,24 +654,25 @@ class ViewClickInstrumentationTest {
         assertThat(events).hasSize(1)
 
         val event = events[0]
-        OpenTelemetryAssertions.assertThat(event)
+        OpenTelemetryAssertions
+            .assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), initialDownEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), initialDownEvent.y.toLong()),
                 equalTo(clicksKey, 2.toLong()),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
     }
 
     @Test
     fun capture_view_double_tap_in_viewGroup() {
-
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -709,17 +715,19 @@ class ViewClickInstrumentationTest {
         assertThat(events).hasSize(2)
 
         var event = events[0]
-        OpenTelemetryAssertions.assertThat(event)
+        OpenTelemetryAssertions
+            .assertThat(event)
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), initialDownEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), initialDownEvent.y.toLong()),
                 equalTo(clicksKey, 2.toLong()),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
 
         event = events[1]
-        OpenTelemetryAssertions.assertThat(event)
+        OpenTelemetryAssertions
+            .assertThat(event)
             .hasEventName(VIEW_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
@@ -727,7 +735,7 @@ class ViewClickInstrumentationTest {
                 equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
                 equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(clicksKey, 2.toLong()),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
     }
 }

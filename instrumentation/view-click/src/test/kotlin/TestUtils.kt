@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import android.os.SystemClock
 import android.view.MotionEvent
 import android.view.View
@@ -8,7 +13,6 @@ import io.mockk.mockkClass
 import io.mockk.slot
 import org.robolectric.shadows.ShadowLooper
 import java.util.concurrent.TimeUnit
-
 
 inline fun <reified T : View> mockView(
     id: Int,
@@ -44,23 +48,36 @@ inline fun <reified T : View> mockView(
     return mockView
 }
 
-private val allowedToolTypes = arrayOf(MotionEvent.TOOL_TYPE_FINGER, MotionEvent.TOOL_TYPE_MOUSE,
-    MotionEvent.TOOL_TYPE_STYLUS, MotionEvent.TOOL_TYPE_ERASER, MotionEvent.TOOL_TYPE_UNKNOWN)
+private val allowedToolTypes =
+    arrayOf(
+        MotionEvent.TOOL_TYPE_FINGER,
+        MotionEvent.TOOL_TYPE_MOUSE,
+        MotionEvent.TOOL_TYPE_STYLUS,
+        MotionEvent.TOOL_TYPE_ERASER,
+        MotionEvent.TOOL_TYPE_UNKNOWN,
+    )
 
-private val allowedButtonStates = arrayOf(
-    MotionEvent.BUTTON_PRIMARY, MotionEvent.BUTTON_STYLUS_PRIMARY,
-    MotionEvent.BUTTON_SECONDARY, MotionEvent.BUTTON_STYLUS_SECONDARY,
-    MotionEvent.BUTTON_TERTIARY,
-    MotionEvent.BUTTON_BACK,
-    MotionEvent.BUTTON_FORWARD
-)
+private val allowedButtonStates =
+    arrayOf(
+        MotionEvent.BUTTON_PRIMARY,
+        MotionEvent.BUTTON_STYLUS_PRIMARY,
+        MotionEvent.BUTTON_SECONDARY,
+        MotionEvent.BUTTON_STYLUS_SECONDARY,
+        MotionEvent.BUTTON_TERTIARY,
+        MotionEvent.BUTTON_BACK,
+        MotionEvent.BUTTON_FORWARD,
+    )
 
-fun getDoubleTapSequence(x: Float, y: Float, toolType: Int = MotionEvent.TOOL_TYPE_FINGER, buttonState: Int = 0,
-                                 exceedTimeOut: Boolean = false): Array<MotionEvent> {
-
+fun getDoubleTapSequence(
+    x: Float,
+    y: Float,
+    toolType: Int = MotionEvent.TOOL_TYPE_FINGER,
+    buttonState: Int = 0,
+    exceedTimeOut: Boolean = false,
+): Array<MotionEvent> {
     require(toolType in allowedToolTypes) { "Invalid tool type" }
 
-    if(buttonState != 0) {
+    if (buttonState != 0) {
         require(toolType == MotionEvent.TOOL_TYPE_MOUSE || toolType == MotionEvent.TOOL_TYPE_STYLUS) {
             "Invalid tool type for button state"
         }
@@ -75,95 +92,151 @@ fun getDoubleTapSequence(x: Float, y: Float, toolType: Int = MotionEvent.TOOL_TY
 
     val pointerCoords = PointerCoordsBuilder.newBuilder().setCoords(x, y).build()
 
-    if(exceedTimeOut) {
+    if (exceedTimeOut) {
         val doubleTapTimeout = ViewConfiguration.getDoubleTapTimeout()
 
         return arrayOf(
-            MotionEvent.obtain(initialTime, initialTime,
-                MotionEvent.ACTION_DOWN, 1, arrayOf(pointerProperties),
-                arrayOf(pointerCoords), 0, buttonState, 1f, 1f,
-                0, 0, 0, 0),
-            MotionEvent.obtain(initialTime, initialTime + 300L,
-                MotionEvent.ACTION_UP, 1, arrayOf(pointerProperties),
-                arrayOf(pointerCoords), 0, buttonState, 1f, 1f,
-                0, 0, 0, 0),
-
             MotionEvent.obtain(
-                initialTime + 400L + doubleTapTimeout, initialTime + 500L + doubleTapTimeout,
-                MotionEvent.ACTION_DOWN, 1, arrayOf(pointerProperties),
-                arrayOf(pointerCoords), 0, buttonState, 1f, 1f,
-                0, 0, 0, 0),
-
+                initialTime,
+                initialTime,
+                MotionEvent.ACTION_DOWN,
+                1,
+                arrayOf(pointerProperties),
+                arrayOf(pointerCoords),
+                0,
+                buttonState,
+                1f,
+                1f,
+                0,
+                0,
+                0,
+                0,
+            ),
             MotionEvent.obtain(
-                initialTime + 600L + doubleTapTimeout, initialTime + 700L + doubleTapTimeout,
-                MotionEvent.ACTION_UP, 1, arrayOf(pointerProperties),
-                arrayOf(pointerCoords), 0, buttonState, 1f, 1f,
-                0, 0, 0, 0)
+                initialTime,
+                initialTime + 300L,
+                MotionEvent.ACTION_UP,
+                1,
+                arrayOf(pointerProperties),
+                arrayOf(pointerCoords),
+                0,
+                buttonState,
+                1f,
+                1f,
+                0,
+                0,
+                0,
+                0,
+            ),
+            MotionEvent.obtain(
+                initialTime + 400L + doubleTapTimeout,
+                initialTime + 500L + doubleTapTimeout,
+                MotionEvent.ACTION_DOWN,
+                1,
+                arrayOf(pointerProperties),
+                arrayOf(pointerCoords),
+                0,
+                buttonState,
+                1f,
+                1f,
+                0,
+                0,
+                0,
+                0,
+            ),
+            MotionEvent.obtain(
+                initialTime + 600L + doubleTapTimeout,
+                initialTime + 700L + doubleTapTimeout,
+                MotionEvent.ACTION_UP,
+                1,
+                arrayOf(pointerProperties),
+                arrayOf(pointerCoords),
+                0,
+                buttonState,
+                1f,
+                1f,
+                0,
+                0,
+                0,
+                0,
+            ),
         )
     } else {
-
         return arrayOf(
-            MotionEvent.obtain(initialTime, initialTime,
-                MotionEvent.ACTION_DOWN, 1, arrayOf(pointerProperties),
-                arrayOf(pointerCoords), 0, buttonState, 1f, 1f,
-                0, 0, 0, 0),
-            MotionEvent.obtain(initialTime, initialTime + 300L,
-                MotionEvent.ACTION_UP, 1, arrayOf(pointerProperties),
-                arrayOf(pointerCoords), 0, buttonState, 1f, 1f,
-                0, 0, 0, 0),
-
             MotionEvent.obtain(
-                initialTime + 400L, initialTime + 500L,
-                MotionEvent.ACTION_DOWN, 1, arrayOf(pointerProperties),
-                arrayOf(pointerCoords), 0, buttonState, 1f, 1f,
-                0, 0, 0, 0),
-
+                initialTime,
+                initialTime,
+                MotionEvent.ACTION_DOWN,
+                1,
+                arrayOf(pointerProperties),
+                arrayOf(pointerCoords),
+                0,
+                buttonState,
+                1f,
+                1f,
+                0,
+                0,
+                0,
+                0,
+            ),
             MotionEvent.obtain(
-                initialTime + 600L, initialTime + 700L,
-                MotionEvent.ACTION_UP, 1, arrayOf(pointerProperties),
-                arrayOf(pointerCoords), 0, buttonState, 1f, 1f,
-                0, 0, 0, 0)
+                initialTime,
+                initialTime + 300L,
+                MotionEvent.ACTION_UP,
+                1,
+                arrayOf(pointerProperties),
+                arrayOf(pointerCoords),
+                0,
+                buttonState,
+                1f,
+                1f,
+                0,
+                0,
+                0,
+                0,
+            ),
+            MotionEvent.obtain(
+                initialTime + 400L,
+                initialTime + 500L,
+                MotionEvent.ACTION_DOWN,
+                1,
+                arrayOf(pointerProperties),
+                arrayOf(pointerCoords),
+                0,
+                buttonState,
+                1f,
+                1f,
+                0,
+                0,
+                0,
+                0,
+            ),
+            MotionEvent.obtain(
+                initialTime + 600L,
+                initialTime + 700L,
+                MotionEvent.ACTION_UP,
+                1,
+                arrayOf(pointerProperties),
+                arrayOf(pointerCoords),
+                0,
+                buttonState,
+                1f,
+                1f,
+                0,
+                0,
+                0,
+                0,
+            ),
         )
     }
 }
 
-
-fun getSingleTapSequence(x: Float, y: Float, toolType: Int = MotionEvent.TOOL_TYPE_FINGER, buttonState: Int = 0)
-        : Array<MotionEvent> {
-    require(toolType in allowedToolTypes) {
-        "Invalid tool type"
-    }
-
-    if(buttonState != 0) {
-        require(toolType == MotionEvent.TOOL_TYPE_MOUSE || toolType == MotionEvent.TOOL_TYPE_STYLUS) {
-            "Invalid tool type for button state"
-        }
-        require(buttonState in allowedButtonStates) { "Invalid button state" }
-    }
-
-    val initialTime = SystemClock.uptimeMillis()
-
-    val pointerProperties = MotionEvent.PointerProperties()
-    pointerProperties.id = 0
-    pointerProperties.toolType = toolType
-
-    val pointerCoords = PointerCoordsBuilder.newBuilder().setCoords(x, y).build()
-    return arrayOf(
-        MotionEvent.obtain(initialTime, initialTime,
-            MotionEvent.ACTION_DOWN, 1, arrayOf(pointerProperties),
-            arrayOf(pointerCoords), 0, buttonState, 1f, 1f,
-            0, 0, 0, 0),
-
-        MotionEvent.obtain(initialTime, initialTime + 100L,
-            MotionEvent.ACTION_UP, 1, arrayOf(pointerProperties),
-            arrayOf(pointerCoords), 0, buttonState, 1f, 1f,
-            0, 0, 0, 0)
-    )
-}
-
-fun getLongPressSequence(x: Float, y: Float, toolType: Int = MotionEvent.TOOL_TYPE_FINGER, buttonState: Int = 0,
-                         stayDownLongEnough: Boolean = true)
-        : Array<MotionEvent> {
+fun getSingleTapSequence(
+    x: Float,
+    y: Float,
+    toolType: Int = MotionEvent.TOOL_TYPE_FINGER,
+    buttonState: Int = 0,
+): Array<MotionEvent> {
     require(toolType in allowedToolTypes) {
         "Invalid tool type"
     }
@@ -182,32 +255,124 @@ fun getLongPressSequence(x: Float, y: Float, toolType: Int = MotionEvent.TOOL_TY
     pointerProperties.toolType = toolType
 
     val pointerCoords = PointerCoordsBuilder.newBuilder().setCoords(x, y).build()
-    val delay = if (stayDownLongEnough) {
-        ViewConfiguration.getLongPressTimeout()
-    } else {
-        100
-    }
     return arrayOf(
-        MotionEvent.obtain(initialTime, initialTime,
-            MotionEvent.ACTION_DOWN, 1, arrayOf(pointerProperties),
-            arrayOf(pointerCoords), 0, buttonState, 1f, 1f,
-            0, 0, 0, 0),
-        MotionEvent.obtain(initialTime, initialTime + delay,
-            MotionEvent.ACTION_UP, 1, arrayOf(pointerProperties),
-            arrayOf(pointerCoords), 0, buttonState, 1f, 1f,
-            0, 0, 0, 0)
+        MotionEvent.obtain(
+            initialTime,
+            initialTime,
+            MotionEvent.ACTION_DOWN,
+            1,
+            arrayOf(pointerProperties),
+            arrayOf(pointerCoords),
+            0,
+            buttonState,
+            1f,
+            1f,
+            0,
+            0,
+            0,
+            0,
+        ),
+        MotionEvent.obtain(
+            initialTime,
+            initialTime + 100L,
+            MotionEvent.ACTION_UP,
+            1,
+            arrayOf(pointerProperties),
+            arrayOf(pointerCoords),
+            0,
+            buttonState,
+            1f,
+            1f,
+            0,
+            0,
+            0,
+            0,
+        ),
     )
 }
 
-fun getScrollSequence(x: Float, y: Float, angleDegrees: Double, distance: Int,
-                      toolType: Int = MotionEvent.TOOL_TYPE_FINGER, buttonState: Int = 0,
-                      timeMillis: Long = 100L, letGo: Boolean = false)
-    : Array<MotionEvent> {
+fun getLongPressSequence(
+    x: Float,
+    y: Float,
+    toolType: Int = MotionEvent.TOOL_TYPE_FINGER,
+    buttonState: Int = 0,
+    stayDownLongEnough: Boolean = true,
+): Array<MotionEvent> {
     require(toolType in allowedToolTypes) {
         "Invalid tool type"
     }
 
-    if(buttonState != 0) {
+    if (buttonState != 0) {
+        require(toolType == MotionEvent.TOOL_TYPE_MOUSE || toolType == MotionEvent.TOOL_TYPE_STYLUS) {
+            "Invalid tool type for button state"
+        }
+        require(buttonState in allowedButtonStates) { "Invalid button state" }
+    }
+
+    val initialTime = SystemClock.uptimeMillis()
+
+    val pointerProperties = MotionEvent.PointerProperties()
+    pointerProperties.id = 0
+    pointerProperties.toolType = toolType
+
+    val pointerCoords = PointerCoordsBuilder.newBuilder().setCoords(x, y).build()
+    val delay =
+        if (stayDownLongEnough) {
+            ViewConfiguration.getLongPressTimeout()
+        } else {
+            100
+        }
+    return arrayOf(
+        MotionEvent.obtain(
+            initialTime,
+            initialTime,
+            MotionEvent.ACTION_DOWN,
+            1,
+            arrayOf(pointerProperties),
+            arrayOf(pointerCoords),
+            0,
+            buttonState,
+            1f,
+            1f,
+            0,
+            0,
+            0,
+            0,
+        ),
+        MotionEvent.obtain(
+            initialTime,
+            initialTime + delay,
+            MotionEvent.ACTION_UP,
+            1,
+            arrayOf(pointerProperties),
+            arrayOf(pointerCoords),
+            0,
+            buttonState,
+            1f,
+            1f,
+            0,
+            0,
+            0,
+            0,
+        ),
+    )
+}
+
+fun getScrollSequence(
+    x: Float,
+    y: Float,
+    angleDegrees: Double,
+    distance: Int,
+    toolType: Int = MotionEvent.TOOL_TYPE_FINGER,
+    buttonState: Int = 0,
+    timeMillis: Long = 100L,
+    letGo: Boolean = false,
+): Array<MotionEvent> {
+    require(toolType in allowedToolTypes) {
+        "Invalid tool type"
+    }
+
+    if (buttonState != 0) {
         require(toolType == MotionEvent.TOOL_TYPE_MOUSE || toolType == MotionEvent.TOOL_TYPE_STYLUS) {
             "Invalid tool type for button state"
         }
@@ -224,26 +389,60 @@ fun getScrollSequence(x: Float, y: Float, angleDegrees: Double, distance: Int,
     val (endX, endY) = getDestinationPoint(arrayOf(x, y), distance, angleDegrees)
     val endPointerCoords = PointerCoordsBuilder.newBuilder().setCoords(endX, endY).build()
 
-    var array = arrayOf(
-        MotionEvent.obtain(initialTime, initialTime,
-            MotionEvent.ACTION_DOWN, 1, arrayOf(pointerProperties),
-            arrayOf(startPointerCoords), 0, buttonState, 1f, 1f,
-            0, 0, 0, 0),
-
-        MotionEvent.obtain(initialTime, initialTime + timeMillis,
-            MotionEvent.ACTION_MOVE, 1, arrayOf(pointerProperties),
-            arrayOf(endPointerCoords), 0, buttonState, 1f, 1f,
-            0, 0, 0, 0)
-    )
+    var array =
+        arrayOf(
+            MotionEvent.obtain(
+                initialTime,
+                initialTime,
+                MotionEvent.ACTION_DOWN,
+                1,
+                arrayOf(pointerProperties),
+                arrayOf(startPointerCoords),
+                0,
+                buttonState,
+                1f,
+                1f,
+                0,
+                0,
+                0,
+                0,
+            ),
+            MotionEvent.obtain(
+                initialTime,
+                initialTime + timeMillis,
+                MotionEvent.ACTION_MOVE,
+                1,
+                arrayOf(pointerProperties),
+                arrayOf(endPointerCoords),
+                0,
+                buttonState,
+                1f,
+                1f,
+                0,
+                0,
+                0,
+                0,
+            ),
+        )
     val timeToLetGoAfterMoving = 50L
-    if(letGo) {
-       array +=
-           MotionEvent.obtain(
-               initialTime, initialTime + timeMillis + timeToLetGoAfterMoving,
-               MotionEvent.ACTION_UP, 1, arrayOf(pointerProperties),
-               arrayOf(endPointerCoords), 0, buttonState, 1f, 1f,
-               0, 0, 0, 0
-           )
+    if (letGo) {
+        array +=
+            MotionEvent.obtain(
+                initialTime,
+                initialTime + timeMillis + timeToLetGoAfterMoving,
+                MotionEvent.ACTION_UP,
+                1,
+                arrayOf(pointerProperties),
+                arrayOf(endPointerCoords),
+                0,
+                buttonState,
+                1f,
+                1f,
+                0,
+                0,
+                0,
+                0,
+            )
     }
     return array
 }
@@ -257,8 +456,11 @@ fun fastForwardLongPressTimeout() {
     ShadowLooper.idleMainLooper(ViewConfiguration.getLongPressTimeout().toLong() + allowanceTime, TimeUnit.MILLISECONDS)
 }
 
-
-fun getDestinationPoint(pointA: Array<Float>, distance: Int, angleDegrees: Double): Array<Float> {
+fun getDestinationPoint(
+    pointA: Array<Float>,
+    distance: Int,
+    angleDegrees: Double,
+): Array<Float> {
     val angleRadians = angleDegrees * Math.PI / 180
     val (xA, yA) = pointA
     val xDist = Math.round(distance * Math.cos(angleRadians)).toInt()

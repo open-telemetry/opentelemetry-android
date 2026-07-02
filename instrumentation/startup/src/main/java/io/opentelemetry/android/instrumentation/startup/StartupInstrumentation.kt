@@ -15,7 +15,10 @@ import io.opentelemetry.android.internal.initialization.InitializationEvents
 class StartupInstrumentation : AndroidInstrumentation {
     override val name: String = "startup"
 
-    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun install(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         val events = InitializationEvents.get()
         if (events is SdkInitializationEvents) {
             events.finish(openTelemetryRum.openTelemetry)

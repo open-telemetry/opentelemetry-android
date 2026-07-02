@@ -15,8 +15,8 @@ import io.opentelemetry.instrumentation.okhttp.v3_0.internal.ConnectionErrorSpan
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpAttributesGetter
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.OkHttpClientInstrumenterBuilderFactory
 import io.opentelemetry.instrumentation.okhttp.v3_0.internal.TracingInterceptor
-import java.util.function.UnaryOperator
 import okhttp3.Interceptor
+import java.util.function.UnaryOperator
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at

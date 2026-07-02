@@ -31,14 +31,12 @@ internal const val HARDWARE_POINTER_VELOCITY_X = "hw.pointer.velocity.x"
 
 internal const val HARDWARE_POINTER_VELOCITY_Y = "hw.pointer.velocity.y"
 
-
 internal const val HARDWARE_POINTER_DISTANCE_X = "hw.pointer.distance.x"
-
 
 internal const val HARDWARE_POINTER_DISTANCE_Y = "hw.pointer.distance.y"
 
-internal fun buttonStateToString(buttonStateInt: Int): String? {
-    return when(buttonStateInt) {
+internal fun buttonStateToString(buttonStateInt: Int): String? =
+    when (buttonStateInt) {
         MotionEvent.BUTTON_PRIMARY, MotionEvent.BUTTON_STYLUS_PRIMARY -> "primary"
         MotionEvent.BUTTON_SECONDARY, MotionEvent.BUTTON_STYLUS_SECONDARY -> "secondary"
         MotionEvent.BUTTON_TERTIARY -> "tertiary"
@@ -46,22 +44,19 @@ internal fun buttonStateToString(buttonStateInt: Int): String? {
         MotionEvent.BUTTON_FORWARD -> "forward"
         else -> null
     }
-}
 
-internal fun toolTypeToString(toolTypeInt: Int): String {
-    return when(toolTypeInt) {
+internal fun toolTypeToString(toolTypeInt: Int): String =
+    when (toolTypeInt) {
         MotionEvent.TOOL_TYPE_MOUSE -> "mouse"
         MotionEvent.TOOL_TYPE_FINGER -> "finger"
         MotionEvent.TOOL_TYPE_STYLUS -> "stylus"
         MotionEvent.TOOL_TYPE_ERASER -> "eraser"
         else -> "unknown"
     }
-}
 
 internal class TapEventMetadata(
-    private val motionEvent: MotionEvent
+    private val motionEvent: MotionEvent,
 ) {
-
     val toolTypeDescription: String
     val buttonStateDescription: String?
 
@@ -75,41 +70,63 @@ internal class TapEventMetadata(
         } else {
             buttonStateDescription = null
         }
-       toolTypeDescription = toolTypeToString(toolTypeInt)
+        toolTypeDescription = toolTypeToString(toolTypeInt)
     }
-
 }
 
-internal sealed class Gesture(val m: MotionEvent) {
+internal sealed class Gesture(
+    val m: MotionEvent,
+) {
     private val t = TapEventMetadata(m)
     var attributes = Attributes.empty()
 
     init {
         attributes = attributes.toBuilder().put(HARDWARE_POINTER_TYPE, t.toolTypeDescription).build()
-        if(t.buttonStateDescription != null) {
+        if (t.buttonStateDescription != null) {
             attributes = attributes.toBuilder().put(HARDWARE_POINTER_BUTTON, t.buttonStateDescription).build()
         }
     }
-    class LongPress(val motionEvent: MotionEvent): Gesture(motionEvent)
-    class Click(val motionEvent: MotionEvent, clicks: Int): Gesture(motionEvent) {
+
+    class LongPress(
+        val motionEvent: MotionEvent,
+    ) : Gesture(motionEvent)
+
+    class Click(
+        val motionEvent: MotionEvent,
+        clicks: Int,
+    ) : Gesture(motionEvent) {
         init {
             attributes = attributes.toBuilder().put(HARDWARE_POINTER_CLICKS, clicks.toLong()).build()
         }
     }
-    class Fling(val motionEvent: MotionEvent, val velocityX: Double, val velocityY: Double): Gesture(motionEvent) {
+
+    class Fling(
+        val motionEvent: MotionEvent,
+        val velocityX: Double,
+        val velocityY: Double,
+    ) : Gesture(motionEvent) {
         init {
-            attributes = attributes.toBuilder()
-                .put(HARDWARE_POINTER_VELOCITY_X, velocityX)
-                .put(HARDWARE_POINTER_VELOCITY_Y, velocityY)
-                .build()
+            attributes =
+                attributes
+                    .toBuilder()
+                    .put(HARDWARE_POINTER_VELOCITY_X, velocityX)
+                    .put(HARDWARE_POINTER_VELOCITY_Y, velocityY)
+                    .build()
         }
     }
-    class Scroll(val motionEvent: MotionEvent, val distanceX: Double, val distanceY: Double): Gesture(motionEvent) {
+
+    class Scroll(
+        val motionEvent: MotionEvent,
+        val distanceX: Double,
+        val distanceY: Double,
+    ) : Gesture(motionEvent) {
         init {
-            attributes = attributes.toBuilder()
-                .put(HARDWARE_POINTER_DISTANCE_X, distanceX)
-                .put(HARDWARE_POINTER_DISTANCE_Y, distanceY)
-                .build()
+            attributes =
+                attributes
+                    .toBuilder()
+                    .put(HARDWARE_POINTER_DISTANCE_X, distanceX)
+                    .put(HARDWARE_POINTER_DISTANCE_Y, distanceY)
+                    .build()
         }
     }
 }

@@ -12,7 +12,10 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 
 @AutoService(AndroidInstrumentation::class)
 class OkHttpWebsocketInstrumentation : AndroidInstrumentation {
-    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun install(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         WebsocketListenerWrapper.configure(openTelemetryRum.openTelemetry)
     }
 

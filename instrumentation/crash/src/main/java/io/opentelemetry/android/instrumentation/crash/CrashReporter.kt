@@ -29,22 +29,26 @@ internal class CrashReporter(
     /**
      * Silently ignores printing after a `threshold`
      */
-    private class MaxLinesPrintWriter(sw: StringWriter, private val threshold: Int = 1_000): PrintWriter(sw) {
+    private class MaxLinesPrintWriter(
+        sw: StringWriter,
+        private val threshold: Int = 1_000,
+    ) : PrintWriter(sw) {
         var stringCount = 0
         var lineCount = 0
+
         override fun print(s: String?) {
-            if(stringCount < threshold) {
+            if (stringCount < threshold) {
                 super.print(s)
                 stringCount++
             }
         }
+
         override fun println() {
-            if(lineCount < threshold) {
+            if (lineCount < threshold) {
                 super.println()
                 lineCount++
             }
         }
-
     }
 
     /** Installs the crash reporting instrumentation.  */
@@ -58,7 +62,10 @@ internal class CrashReporter(
         Thread.setDefaultUncaughtExceptionHandler(handler)
     }
 
-    private fun stackTraceToTruncatedString(throwable: Throwable, truncateThreshold: Int = 1000): String {
+    private fun stackTraceToTruncatedString(
+        throwable: Throwable,
+        truncateThreshold: Int = 1000,
+    ): String {
         val stringWriter = StringWriter()
         val printWriter = MaxLinesPrintWriter(stringWriter, truncateThreshold)
         throwable.printStackTrace(printWriter)
@@ -82,7 +89,7 @@ internal class CrashReporter(
                 .put(EXCEPTION_MESSAGE, throwable.message)
                 .put(
                     EXCEPTION_STACKTRACE,
-                    stackTraceToTruncatedString(throwable)
+                    stackTraceToTruncatedString(throwable),
                 ).put(EXCEPTION_TYPE, throwable.javaClass.name)
         for (extractor in extractors) {
             val extractedAttributes = extractor.extract(Context.current(), crashDetails)
