@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.internal.processors
 
 import io.opentelemetry.android.common.internal.features.networkattributes.CurrentNetworkAttributesExtractor
