@@ -6,6 +6,68 @@ permissions:
   contents: read
 
 jobs:
+  semconv-generation:
+    name: "semconv-generation"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+      - name: Check for semantic convention input changes
+        id: semconv-inputs
+        run: |
+          changed_files=$(
+            git diff --name-only \
+              "${{ github.event.pull_request.base.sha }}" \
+              "${{ github.event.pull_request.head.sha }}" \
+              -- semconv/model semconv/templates
+          )
+
+          if [[ -n "$changed_files" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "$changed_files"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Set up JDK for running Gradle
+        if: steps.semconv-inputs.outputs.changed == 'true'
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Setup Gradle build action
+        if: steps.semconv-inputs.outputs.changed == 'true'
+        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - name: Set up Weaver
+        if: steps.semconv-inputs.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+
+          version="v0.24.2"
+          asset="weaver-x86_64-unknown-linux-gnu.tar.xz"
+          expected_sha256="e5508316149b01cac325bd3b2c72c83ffea4cfcb554cac2906ff80df6edafc0e"
+          base_url="https://github.com/open-telemetry/weaver/releases/download/${version}"
+          download_dir="${RUNNER_TEMP}/weaver-download"
+          install_dir="${RUNNER_TOOL_CACHE}/weaver/${version}/x64"
+
+          mkdir -p "$download_dir" "$install_dir"
+          curl -sSfL "${base_url}/${asset}" -o "${download_dir}/${asset}"
+
+          echo "${expected_sha256}  ${download_dir}/${asset}" | sha256sum -c -
+          tar -xJf "${download_dir}/${asset}" -C "$install_dir" --strip-components=1
+
+          echo "$install_dir" >> "$GITHUB_PATH"
+      - name: Check generated semantic convention sources
+        if: steps.semconv-inputs.outputs.changed == 'true'
+        run: |
+          ./gradlew :semconv:generateSemanticConventions --stacktrace
+
+          if ! git diff --quiet -- semconv/src/main/kotlin; then
+            echo "::error::Semantic convention generated sources are out of date. Run ./gradlew :semconv:generateSemanticConventions and commit the changes."
+            git diff -- semconv/src/main/kotlin
+            exit 1
+          fi
+
   pr-checks:
     name: "pr-checks"
     runs-on: ubuntu-latest
@@ -35,9 +97,11 @@ jobs:
   required-status-check:
     needs:
       - pr-checks
+      - semconv-generation
     runs-on: ubuntu-latest
     if: always()
     steps:
       - if: |
-          needs.pr-checks.result != 'success'
+          needs.pr-checks.result != 'success' ||
+          needs.semconv-generation.result != 'success'
         run: exit 1
