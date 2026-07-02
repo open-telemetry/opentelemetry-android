@@ -38,7 +38,7 @@ jobs:
         working-directory: ./demo-app
         run: ./gradlew check assemble --stacktrace
       - name: publish snapshot
-        run: ./gradlew publishToSonatype
+        run: ./gradlew publishToSonatype --stacktrace --info
         env:
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
