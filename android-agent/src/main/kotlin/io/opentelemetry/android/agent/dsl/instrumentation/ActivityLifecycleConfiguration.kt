@@ -19,8 +19,8 @@ import io.opentelemetry.api.trace.Tracer
 class ActivityLifecycleConfiguration internal constructor(
     private val config: OtelRumConfig,
     private val instrumentationLoader: AndroidInstrumentationLoader,
-) : ScreenLifecycleConfigurable, CanBeEnabledAndDisabled {
-
+) : ScreenLifecycleConfigurable,
+    CanBeEnabledAndDisabled {
     private val activityLifecycleInstrumentation: ActivityLifecycleInstrumentation? by lazy {
         instrumentationLoader.getByType(ActivityLifecycleInstrumentation::class.java)
     }

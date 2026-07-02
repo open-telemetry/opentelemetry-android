@@ -15,7 +15,6 @@ class ScreenOrientationConfiguration internal constructor(
     private val config: OtelRumConfig,
     private val instrumentationLoader: AndroidInstrumentationLoader,
 ) : CanBeEnabledAndDisabled {
-
     private val instrumentation: ScreenOrientationInstrumentation? by lazy {
         instrumentationLoader.getByType(ScreenOrientationInstrumentation::class.java)
     }

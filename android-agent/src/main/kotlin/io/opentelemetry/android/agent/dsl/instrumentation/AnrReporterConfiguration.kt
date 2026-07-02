@@ -18,8 +18,8 @@ import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 class AnrReporterConfiguration internal constructor(
     private val config: OtelRumConfig,
     private val instrumentationLoader: AndroidInstrumentationLoader,
-) : WithEventAttributes<Array<StackTraceElement>>, CanBeEnabledAndDisabled {
-
+) : WithEventAttributes<Array<StackTraceElement>>,
+    CanBeEnabledAndDisabled {
     private val anrInstrumentation: AnrInstrumentation? by lazy {
         instrumentationLoader.getByType(AnrInstrumentation::class.java)
     }

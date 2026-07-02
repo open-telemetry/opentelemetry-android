@@ -93,5 +93,4 @@ internal class SessionManager(
                 clock = clock,
             )
     }
-
 }

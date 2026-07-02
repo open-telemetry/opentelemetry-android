@@ -2,6 +2,7 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package io.opentelemetry.android.agent.connectivity
 
 import io.opentelemetry.android.Incubating
@@ -71,9 +72,13 @@ internal class HttpEndpointConnectivity private constructor(
     }
 
     override fun getUrl(): String = url
+
     override fun getHeaders(): Map<String, String> = headers
+
     override fun getCompression(): Compression = compression
+
     override fun getSslContext(): SSLContextConnectivity? = sslContext
+
     @OptIn(Incubating::class)
     override fun getClientTls(): ClientTlsConnectivity? = clientTls
 }

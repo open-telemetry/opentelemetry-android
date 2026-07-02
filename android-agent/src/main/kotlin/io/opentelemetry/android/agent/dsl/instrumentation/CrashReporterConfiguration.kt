@@ -19,8 +19,8 @@ import io.opentelemetry.android.instrumentation.crash.CrashReporterInstrumentati
 class CrashReporterConfiguration internal constructor(
     private val config: OtelRumConfig,
     private val instrumentationLoader: AndroidInstrumentationLoader,
-) : WithEventAttributes<CrashDetails>, CanBeEnabledAndDisabled {
-
+) : WithEventAttributes<CrashDetails>,
+    CanBeEnabledAndDisabled {
     private val crashReporterInstrumentation: CrashReporterInstrumentation? by lazy {
         instrumentationLoader.getByType(CrashReporterInstrumentation::class.java)
     }
