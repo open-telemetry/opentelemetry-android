@@ -43,6 +43,7 @@ import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.contrib.disk.buffering.exporters.SpanToDiskExporter
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME
 import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_ID
 import io.opentelemetry.sdk.common.CompletableResultCode
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder
 import io.opentelemetry.sdk.logs.data.LogRecordData
@@ -66,12 +67,6 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.export.SpanExporter
-import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_ID
-import java.io.IOException
-import java.time.Duration
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Function
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility
 import org.junit.After
@@ -79,6 +74,11 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.IOException
+import java.time.Duration
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Function
 
 @OptIn(IncubatingApi::class)
 @RunWith(AndroidJUnit4::class)
@@ -226,7 +226,10 @@ class OpenTelemetryRumBuilderTest {
                         .registerMetricReader(metricReader)
                 }.build()
 
-        val meter = openTelemetryRum.openTelemetry.meterProvider.meterBuilder("myMeter").build()
+        val meter =
+            openTelemetryRum.openTelemetry.meterProvider
+                .meterBuilder("myMeter")
+                .build()
         val counterAttrs = Attributes.of(AttributeKey.longKey("adams"), 42L)
         val counter = meter.counterBuilder("myCounter").build()
         counter.add(40, counterAttrs)
@@ -266,7 +269,10 @@ class OpenTelemetryRumBuilderTest {
                 }.addMetricExporterCustomizer(Function { _: MetricExporter -> exporter })
                 .build()
 
-        val meter = openTelemetryRum.openTelemetry.meterProvider.meterBuilder("FOOMETER").build()
+        val meter =
+            openTelemetryRum.openTelemetry.meterProvider
+                .meterBuilder("FOOMETER")
+                .build()
         val counter = meter.counterBuilder("FOOCOUNTER").build()
         counter.add(22)
         periodicReader.forceFlush()
@@ -304,9 +310,10 @@ class OpenTelemetryRumBuilderTest {
                 every { name } returns "classpath"
             }
 
-        val builder = OpenTelemetryRumBuilder(application, buildConfig())
-            .addInstrumentation(localInstrumentation)
-            .setSessionProvider(sessionProvider)
+        val builder =
+            OpenTelemetryRumBuilder(application, buildConfig())
+                .addInstrumentation(localInstrumentation)
+                .setSessionProvider(sessionProvider)
         (builder.instrumentationLoader as AndroidInstrumentationLoaderImpl).registerForTest(classpathInstrumentation)
         builder.build()
 
@@ -327,11 +334,12 @@ class OpenTelemetryRumBuilderTest {
                 every { name } returns "classpath"
             }
 
-        val builder = OpenTelemetryRumBuilder(
-            application,
-            buildConfig().disableInstrumentationDiscovery(),
-        ).addInstrumentation(localInstrumentation)
-            .setSessionProvider(sessionProvider)
+        val builder =
+            OpenTelemetryRumBuilder(
+                application,
+                buildConfig().disableInstrumentationDiscovery(),
+            ).addInstrumentation(localInstrumentation)
+                .setSessionProvider(sessionProvider)
         (builder.instrumentationLoader as AndroidInstrumentationLoaderImpl).registerForTest(classpathInstrumentation)
         builder.build()
 

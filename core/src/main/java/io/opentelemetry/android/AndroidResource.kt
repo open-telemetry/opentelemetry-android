@@ -8,10 +8,6 @@ package io.opentelemetry.android
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
-import io.opentelemetry.sdk.resources.Resource
-import io.opentelemetry.kotlin.semconv.ServiceAttributes.SERVICE_NAME
-import io.opentelemetry.kotlin.semconv.ServiceAttributes.SERVICE_VERSION
-import io.opentelemetry.kotlin.semconv.TelemetryAttributes.TELEMETRY_SDK_VERSION
 import io.opentelemetry.kotlin.semconv.AndroidAttributes.ANDROID_OS_API_LEVEL
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_INSTALLATION_ID
 import io.opentelemetry.kotlin.semconv.DeviceAttributes.DEVICE_MANUFACTURER
@@ -22,6 +18,10 @@ import io.opentelemetry.kotlin.semconv.OsAttributes.OS_DESCRIPTION
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_NAME
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_TYPE
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_VERSION
+import io.opentelemetry.kotlin.semconv.ServiceAttributes.SERVICE_NAME
+import io.opentelemetry.kotlin.semconv.ServiceAttributes.SERVICE_VERSION
+import io.opentelemetry.kotlin.semconv.TelemetryAttributes.TELEMETRY_SDK_VERSION
+import io.opentelemetry.sdk.resources.Resource
 import java.util.UUID
 
 private const val SHARED_PREF_FILE = "opentelemetry-android"

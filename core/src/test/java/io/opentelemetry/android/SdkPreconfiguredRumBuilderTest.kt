@@ -39,14 +39,15 @@ class SdkPreconfiguredRumBuilderTest {
                 }
             }
 
-        val builder = SdkPreconfiguredRumBuilder(
-            context,
-            sdk,
-            sessionProvider,
-            config,
-            getDefault(),
-            AndroidInstrumentationLoaderImpl()
-        )
+        val builder =
+            SdkPreconfiguredRumBuilder(
+                context,
+                sdk,
+                sessionProvider,
+                config,
+                getDefault(),
+                AndroidInstrumentationLoaderImpl(),
+            )
         builder.addInstrumentation(fooInstrumentation)
         builder.addInstrumentation(sessionInstrumentation)
 

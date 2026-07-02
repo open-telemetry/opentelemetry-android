@@ -35,7 +35,7 @@ internal class CrashFlushHandler(
             FlushOnCrashExceptionHandler(
                 sdk,
                 Thread.getDefaultUncaughtExceptionHandler(),
-                flushTimeout
+                flushTimeout,
             ),
         )
     }
@@ -58,7 +58,7 @@ internal class CrashFlushHandler(
                     flushTimeout,
                     sdk.sdkLoggerProvider.forceFlush(),
                     sdk.sdkTracerProvider.forceFlush(),
-                    sdk.sdkMeterProvider.forceFlush()
+                    sdk.sdkMeterProvider.forceFlush(),
                 )
             } catch (e: Exception) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to flush telemetry on crash", e)

@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.internal.services.periodic
 
 import io.opentelemetry.android.internal.services.Service
@@ -7,7 +12,6 @@ import io.opentelemetry.android.internal.services.Service
  * Implementations are responsible for starting and stopping their own execution resources.
  */
 internal interface PeriodicTaskScheduler : Service {
-
     /**
      * Starts executing the supplied periodic task.
      * Implementations should repeatedly execute this runnable on its period until it is stopped.

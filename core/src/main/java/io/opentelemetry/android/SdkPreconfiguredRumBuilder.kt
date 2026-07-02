@@ -59,30 +59,33 @@ class SdkPreconfiguredRumBuilder internal constructor(
             Log.w(
                 RumConstants.OTEL_RUM_LOG_TAG,
                 "Cannot retrieve applicationContext. This indicates the OpenTelemetry SDK was " +
-                        "initialized outside of the Application subclass too early using an " +
-                        "inappropriate context. Functionality that relies on lifecycle callbacks will " +
-                        "not work until you resolve this problem.",
+                    "initialized outside of the Application subclass too early using an " +
+                    "inappropriate context. Functionality that relies on lifecycle callbacks will " +
+                    "not work until you resolve this problem.",
             )
         }
 
         val enabledInstrumentations = getEnabledInstrumentations()
-        val openTelemetryRum = OpenTelemetryRumImpl(
-            openTelemetry = DisableableOpenTelemetry(
-                delegate = sdk,
-                tracingEnabled = config.tracingEnabled,
-                loggingEnabled = config.loggingEnabled,
-                metricsEnabled = config.metricsEnabled,
-            ),
-            sessionProvider = sessionProvider,
-            clock = clock
-        )
-        openTelemetryRum.onShutdown = Runnable {
-            for (instrumentation in enabledInstrumentations) {
-                instrumentation.uninstall(context, openTelemetryRum)
+        val openTelemetryRum =
+            OpenTelemetryRumImpl(
+                openTelemetry =
+                    DisableableOpenTelemetry(
+                        delegate = sdk,
+                        tracingEnabled = config.tracingEnabled,
+                        loggingEnabled = config.loggingEnabled,
+                        metricsEnabled = config.metricsEnabled,
+                    ),
+                sessionProvider = sessionProvider,
+                clock = clock,
+            )
+        openTelemetryRum.onShutdown =
+            Runnable {
+                for (instrumentation in enabledInstrumentations) {
+                    instrumentation.uninstall(context, openTelemetryRum)
+                }
+                sdk.shutdown()
+                onShutdown.run()
             }
-            sdk.shutdown()
-            onShutdown.run()
-        }
 
         // Install instrumentations
         for (instrumentation in enabledInstrumentations) {
