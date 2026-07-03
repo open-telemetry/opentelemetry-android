@@ -8,6 +8,7 @@ package io.opentelemetry.android.instrumentation.activity
 import android.app.Activity
 import io.opentelemetry.android.common.internal.SemconvCompat.Companion.map
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
+import io.opentelemetry.android.instrumentation.activity.startup.TtidTimer
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.Span
@@ -21,6 +22,7 @@ internal class ActivityTracer(
     private val activeSpan: ActiveSpan,
     private val tracer: Tracer,
     private val appStartupTimer: AppStartupTimer,
+    private val ttidTimer: TtidTimer,
     screenName: String? = null,
     private var initialAppActivity: String? = null,
 ) {
@@ -100,6 +102,9 @@ internal class ActivityTracer(
     fun endSpanForActivityResumed() {
         if (initialAppActivity == null) {
             initialAppActivity = activityName
+            appStartupTimer.startupSpan?.let { startupSpan ->
+                ttidTimer.start(startupSpan, appStartupTimer.startTimestampNanos, appStartupTimer.anchoredClock)
+            }
         }
         endActiveSpan()
     }

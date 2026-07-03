@@ -25,6 +25,14 @@ internal class AppStartupTimer {
     var startupSpan: Span? = null
         private set
 
+    /** The [AnchoredClock] used to time the startup span, valid once [start] has been called. */
+    internal val anchoredClock: AnchoredClock
+        get() = startupClock
+
+    /** The epoch-nanos timestamp the startup span (and any span sharing its anchor) started at. */
+    internal val startTimestampNanos: Long
+        get() = firstPossibleTimestamp
+
     // whether activity has been created
     // accessed only from UI thread
     private var uiInitStarted = false

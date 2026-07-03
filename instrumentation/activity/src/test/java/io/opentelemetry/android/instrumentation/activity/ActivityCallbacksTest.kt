@@ -11,6 +11,7 @@ import io.mockk.mockk
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.instrumentation.activity.ActivityTracer.Companion.START_TYPE_KEY
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
+import io.opentelemetry.android.instrumentation.activity.startup.TtidTimer
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.api.common.AttributeKey.stringKey
@@ -39,11 +40,12 @@ internal class ActivityCallbacksTest {
     fun setup() {
         val tracer = otelTesting.openTelemetry.getTracer("testTracer")
         val startupTimer = AppStartupTimer()
+        val ttidTimer = TtidTimer(tracer)
         visibleScreenTracker = mockk<VisibleScreenTracker>(relaxed = true)
         every { visibleScreenTracker.previouslyVisibleScreen } returns null
         val extractor = mockk<ScreenNameExtractor>(relaxed = true)
         every { extractor.extract(any<Activity>()) } returns "Activity"
-        tracers = ActivityTracerCache(tracer, visibleScreenTracker, startupTimer, extractor)
+        tracers = ActivityTracerCache(tracer, visibleScreenTracker, startupTimer, ttidTimer, extractor)
     }
 
     @Test
