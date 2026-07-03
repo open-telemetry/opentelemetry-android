@@ -12,6 +12,7 @@ import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
+import io.opentelemetry.android.instrumentation.activity.startup.TtidTimer
 import io.opentelemetry.android.instrumentation.common.Constants.INSTRUMENTATION_SCOPE
 import io.opentelemetry.android.instrumentation.common.DefaultScreenNameExtractor
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
@@ -27,6 +28,7 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
     private var tracerCustomizer: (Tracer) -> Tracer = { it }
     private var startupLifecycle: Application.ActivityLifecycleCallbacks? = null
     private var activityLifecycle: Application.ActivityLifecycleCallbacks? = null
+    private var ttidTimer: TtidTimer? = null
 
     override val name: String = "activity"
 
@@ -62,17 +64,21 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
                 it.unregisterActivityLifecycleCallbacks(activityLifecycle)
                 activityLifecycle = null
             }
+            ttidTimer?.cancel()
+            ttidTimer = null
         }
     }
 
     private fun buildActivityLifecycleTracer(context: Context, openTelemetry: OpenTelemetry): DefaultingActivityLifecycleCallbacks {
         val visibleScreenService = Services.get(context).visibleScreenTracker
         val delegateTracer: Tracer = openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
+        val ttid = TtidTimer(delegateTracer).also { ttidTimer = it }
         val tracers =
             ActivityTracerCache(
                 tracerCustomizer.invoke(delegateTracer),
                 visibleScreenService,
                 startupTimer,
+                ttid,
                 screenNameExtractor,
             )
         return if (Build.VERSION.SDK_INT < 29) {
