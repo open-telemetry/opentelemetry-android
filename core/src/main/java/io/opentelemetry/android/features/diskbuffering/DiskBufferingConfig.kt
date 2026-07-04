@@ -15,7 +15,7 @@ const val MAX_CACHE_FILE_SIZE: Int = 1024 * 1024
 const val DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS = 30L
 const val DEFAULT_MIN_FILE_AGE_FOR_READ_MS = 33L
 const val DEFAULT_MAX_FILE_AGE_FOR_READ_MS = 18L
-const val DEFAULT_EXPORT_PERIOD_MS = 10L
+const val DEFAULT_EXPORT_PERIOD_S = 10L
 
 data class DiskBufferingConfig
     @JvmOverloads
@@ -35,7 +35,7 @@ data class DiskBufferingConfig
         /**
          * How often the exporter wakes up to read buffered signals from disk and send them.
          */
-        val exportPeriodMillis: Long = TimeUnit.SECONDS.toMillis(DEFAULT_EXPORT_PERIOD_MS),
+        val exportPeriodMillis: Long = TimeUnit.SECONDS.toMillis(DEFAULT_EXPORT_PERIOD_S),
     ) {
         companion object {
             /**
@@ -54,7 +54,7 @@ data class DiskBufferingConfig
                 maxCacheFileSize: Int = MAX_CACHE_FILE_SIZE,
                 debugEnabled: Boolean = false,
                 signalsBufferDir: File? = null,
-                exportPeriodMillis: Long = TimeUnit.SECONDS.toMillis(DEFAULT_EXPORT_PERIOD_MS),
+                exportPeriodMillis: Long = TimeUnit.SECONDS.toMillis(DEFAULT_EXPORT_PERIOD_S),
             ): DiskBufferingConfig {
                 var minRead = minFileAgeForReadMillis
                 if (minFileAgeForReadMillis <= maxFileAgeForWriteMillis) {
@@ -64,7 +64,7 @@ data class DiskBufferingConfig
                 }
                 var exportPeriod = exportPeriodMillis
                 if (exportPeriod <= 0) {
-                    exportPeriod = TimeUnit.SECONDS.toMillis(DEFAULT_EXPORT_PERIOD_MS)
+                    exportPeriod = TimeUnit.SECONDS.toMillis(DEFAULT_EXPORT_PERIOD_S)
                     Log.w(OTEL_RUM_LOG_TAG, "exportPeriodMillis must be greater than 0")
                     Log.w(OTEL_RUM_LOG_TAG, "overriding exportPeriodMillis from $exportPeriodMillis to $exportPeriod")
                 }
