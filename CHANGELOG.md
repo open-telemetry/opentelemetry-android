@@ -6,7 +6,7 @@
 
 - Disk buffering now lets you configure how often buffered signals are read from disk and
   exported, via `DiskBufferingConfig.exportPeriodMillis` (defaults to 10 seconds).
-  ([#1823](https://github.com/open-telemetry/opentelemetry-android/issues/1823))
+  ([#1834](https://github.com/open-telemetry/opentelemetry-android/pull/1834))
 
 ## Version 1.5.0 (2026-06-23)
 
