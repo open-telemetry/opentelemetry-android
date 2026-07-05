@@ -29,7 +29,7 @@ BufferDelegating*Exporter  -->  *ToDiskExporter  -->  (Original default exporter
     (in-memory buffer)           (writes batch          (e.g. LoggingSpanExporter,
                                  files to storage)       SystemOutLogRecordExporter,
                                                          LoggingMetricExporter)
-```text
+```
 
 Later, a periodic scheduler reads batches from disk and replays them on the original exporter via:
 
@@ -55,9 +55,9 @@ Internal in‑memory temporary exporters created immediately. They hold up to 5,
 
 Source examples:
 
-* `core/src/main/java/io/opentelemetry/android/export/BufferDelegatingSpanExporter.kt`
-* `core/src/main/java/io/opentelemetry/android/export/BufferDelegatingLogExporter.kt`
-* `core/src/main/java/io/opentelemetry/android/export/BufferDelegatingMetricExporter.kt`
+* [BufferDelegatingSpanExporter.kt](../core/src/main/java/io/opentelemetry/android/export/BufferDelegatingSpanExporter.kt)
+* [BufferDelegatingLogExporter.kt](../core/src/main/java/io/opentelemetry/android/export/BufferDelegatingLogExporter.kt)
+* [BufferDelegatingMetricExporter.kt](../core/src/main/java/io/opentelemetry/android/export/BufferDelegatingMetricExporter.kt)
 
 ### *ToDiskExporter (Optional Layer)
 
@@ -145,7 +145,7 @@ If `flush()` or `shutdown()` is invoked before delegates are attached, the `Dele
 
 ## Configuration References
 
-`DiskBufferingConfig` (see `core/src/main/java/io/opentelemetry/android/features/diskbuffering/DiskBufferingConfig.kt`) controls:
+`DiskBufferingConfig` (see [DiskBufferingConfig.kt](../core/src/main/java/io/opentelemetry/android/features/diskbuffering/DiskBufferingConfig.kt)) controls:
 
 * Enable/disable disk buffering
 * Max cache folder size

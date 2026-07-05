@@ -66,9 +66,6 @@ The OpenTelemetry Android Demo App currently supports the following features:
 ### Known Gaps
 As of now, there are a few areas where the instrumentation might not be comprehensive:
 
-* HTTP Client Instrumentation  
-OpenTelemetry Android supports automatic instrumentation for HTTP client libraries. This feature captures spans for HTTP requests with details. However, the demo app does not currently demonstrate this feature as it doesn't make any network requests.
-
 * Disk Buffering  
 Disk buffering is enabled in the app, allowing telemetry data to be temporarily stored on disk when the network is unavailable. Although this feature is configured, it isn't actively demonstrated due to the absence of network activity.
 

@@ -14,7 +14,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 
 /**
- * Checks if the app has READ_PHONE_STATE permission.
+ * Checks if the app has [READ_PHONE_STATE][Manifest.permission.READ_PHONE_STATE] permission.
  */
 private fun hasReadPhoneStatePermission(context: Context): Boolean =
     ContextCompat.checkSelfPermission(
@@ -23,7 +23,7 @@ private fun hasReadPhoneStatePermission(context: Context): Boolean =
     ) == PackageManager.PERMISSION_GRANTED
 
 /**
- * For API 33+, checks if the app has READ_BASIC_PHONE_STATE permission.
+ * For API 33+, checks if the app has [READ_BASIC_PHONE_STATE][Manifest.permission.READ_BASIC_PHONE_STATE] permission.
  */
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 private fun hasBasicPhoneStatePermission(context: Context): Boolean =
@@ -34,8 +34,8 @@ private fun hasBasicPhoneStatePermission(context: Context): Boolean =
 
 /**
  * Checks if the app has the required phone state permission for the given API level.
- * - API 33+: checks READ_BASIC_PHONE_STATE or READ_PHONE_STATE
- * - Older: checks READ_PHONE_STATE
+ * - API 33+: checks [READ_BASIC_PHONE_STATE][Manifest.permission.READ_BASIC_PHONE_STATE] or [READ_PHONE_STATE][Manifest.permission.READ_PHONE_STATE]
+ * - Older: checks [READ_PHONE_STATE][Manifest.permission.READ_PHONE_STATE]
  */
 internal fun hasPhoneStatePermission(context: Context): Boolean =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -49,7 +49,7 @@ internal fun hasPhoneStatePermission(context: Context): Boolean =
 internal fun hasTelephonyFeature(context: Context): Boolean = context.packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)
 
 /**
- * Maps TelephonyManager network type constants to human-readable strings.
+ * Maps [TelephonyManager] network type constants to human-readable strings.
  */
 internal fun getNetworkTypeName(networkType: Int): String =
     getGsmNetworkTypeName(networkType)
@@ -58,7 +58,7 @@ internal fun getNetworkTypeName(networkType: Int): String =
         ?: "UNKNOWN"
 
 /**
- * Checks if a CharSequence is valid (not null or empty).
+ * Checks if a [CharSequence] is valid (not null or empty).
  */
 internal fun isValidString(str: CharSequence?): Boolean = !str.isNullOrEmpty()
 

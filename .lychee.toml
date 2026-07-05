@@ -4,7 +4,7 @@ max_retries = 6
 max_concurrency = 4
 
 # Check link anchors
-include_fragments = true
+include_fragments = "full"
 
 # excluding links to pull requests and issues is done for performance
 exclude = [

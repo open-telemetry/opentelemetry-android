@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.trace.ReadableSpan
 import io.opentelemetry.sdk.trace.SpanProcessor
 
 /**
- * A [SpanProcessor] implementation that appends a set of [attributes][Attributes]
+ * A [SpanProcessor] implementation that appends a set of [attributes][io.opentelemetry.api.common.Attributes]
  * describing the [current network][CurrentNetwork] to every span that is exported.
  */
 class NetworkAttributesSpanAppender(

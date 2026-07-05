@@ -28,7 +28,7 @@ import java.util.concurrent.CountDownLatch
 /**
  * Instrumented test, which will execute on an Android device.
  *
- * @see [Testing documentation](http://d.android.com/tools/testing)
+ * See also [Testing documentation](http://d.android.com/tools/testing)
  */
 class InstrumentationTest {
     @get:Rule
