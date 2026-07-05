@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### 🌟 New instrumentation
+
+- The activity instrumentation now measures Time To Initial Display (TTID) for the app's cold
+  start, emitted as an `AppStartDisplay` span parented to `AppStart`.
+
 ## Version 1.5.0 (2026-06-23)
 
 ### 📣 Migration notes

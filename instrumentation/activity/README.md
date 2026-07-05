@@ -20,6 +20,16 @@ This instrumentation produces the following telemetry:
 * Attributes:
   * `start.type`: { `cold` | `hot` | `warm` }
 
+### App Start Display (TTID)
+
+* Type: Span
+* Name: `AppStartDisplay`
+* Description: Measures Time To Initial Display (TTID) for the initial (cold start) activity only.
+  This span is a child of the `AppStart` span, sharing the same start timestamp. It ends when the
+  first frame is drawn after the initial activity resumes, detected via a double
+  `Choreographer.postFrameCallback`. If the activity is destroyed before the first frame is
+  observed, the span is never emitted.
+
 ### Activity state change
 
 * Type: Span

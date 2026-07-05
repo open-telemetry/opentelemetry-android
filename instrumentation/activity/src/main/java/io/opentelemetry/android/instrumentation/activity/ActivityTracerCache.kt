@@ -8,6 +8,7 @@ package io.opentelemetry.android.instrumentation.activity
 import android.app.Activity
 import androidx.annotation.VisibleForTesting
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
+import io.opentelemetry.android.instrumentation.activity.startup.TtidTimer
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
@@ -28,6 +29,7 @@ internal class ActivityTracerCache
             tracer: Tracer,
             visibleScreenTracker: VisibleScreenTracker,
             startupTimer: AppStartupTimer,
+            ttidTimer: TtidTimer,
             screenNameExtractor: ScreenNameExtractor,
         ) : this({ activity: Activity ->
             ActivityTracer(
@@ -35,6 +37,7 @@ internal class ActivityTracerCache
                 activeSpan = ActiveSpan(visibleScreenTracker::previouslyVisibleScreen),
                 tracer = tracer,
                 appStartupTimer = startupTimer,
+                ttidTimer = ttidTimer,
                 screenName = screenNameExtractor.extract(activity),
             )
         })

@@ -13,6 +13,7 @@ import io.mockk.mockk
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.instrumentation.activity.ActivityTracer.Companion.START_TYPE_KEY
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
+import io.opentelemetry.android.instrumentation.activity.startup.TtidTimer
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.api.common.AttributeKey.stringKey
@@ -42,11 +43,13 @@ class ActivityTracerTest {
     @RelaxedMockK
     private lateinit var visibleScreenTracker: VisibleScreenTracker
     private val appStartupTimer = AppStartupTimer()
+    private lateinit var ttidTimer: TtidTimer
     private lateinit var activeSpan: ActiveSpan
 
     @BeforeEach
     fun setup() {
         tracer = otelTesting.openTelemetry.getTracer("testTracer")
+        ttidTimer = TtidTimer(tracer)
         activeSpan = ActiveSpan(visibleScreenTracker::previouslyVisibleScreen)
         every { visibleScreenTracker.previouslyVisibleScreen } returns null
     }
@@ -59,6 +62,7 @@ class ActivityTracerTest {
                 activeSpan = activeSpan,
                 tracer = tracer,
                 appStartupTimer = appStartupTimer,
+                ttidTimer = ttidTimer,
                 initialAppActivity = "FirstActivity",
             )
         trackableTracer.initiateRestartSpanIfNecessary(false)
@@ -76,6 +80,7 @@ class ActivityTracerTest {
                 activeSpan = activeSpan,
                 tracer = tracer,
                 appStartupTimer = appStartupTimer,
+                ttidTimer = ttidTimer,
                 initialAppActivity = "Activity",
             )
         trackableTracer.initiateRestartSpanIfNecessary(false)
@@ -93,6 +98,7 @@ class ActivityTracerTest {
                 activeSpan = activeSpan,
                 tracer = tracer,
                 appStartupTimer = appStartupTimer,
+                ttidTimer = ttidTimer,
                 initialAppActivity = "Activity",
             )
         trackableTracer.initiateRestartSpanIfNecessary(true)
@@ -110,6 +116,7 @@ class ActivityTracerTest {
                 activeSpan = activeSpan,
                 tracer = tracer,
                 appStartupTimer = appStartupTimer,
+                ttidTimer = ttidTimer,
                 initialAppActivity = "FirstActivity",
             )
 
@@ -128,6 +135,7 @@ class ActivityTracerTest {
                 activeSpan = activeSpan,
                 tracer = tracer,
                 appStartupTimer = appStartupTimer,
+                ttidTimer = ttidTimer,
                 initialAppActivity = "Activity",
             )
         trackableTracer.startActivityCreation()
@@ -146,6 +154,7 @@ class ActivityTracerTest {
                 activeSpan = activeSpan,
                 tracer = tracer,
                 appStartupTimer = appStartupTimer,
+                ttidTimer = ttidTimer,
             )
         trackableTracer.startActivityCreation()
         trackableTracer.endActiveSpan()
@@ -170,6 +179,7 @@ class ActivityTracerTest {
                 activeSpan = activeSpan,
                 tracer = tracer,
                 appStartupTimer = appStartupTimer,
+                ttidTimer = ttidTimer,
             )
 
         trackableTracer.startSpanIfNoneInProgress("starting")
@@ -191,6 +201,7 @@ class ActivityTracerTest {
                 activeSpan = activeSpan,
                 tracer = tracer,
                 appStartupTimer = appStartupTimer,
+                ttidTimer = ttidTimer,
             )
 
         trackableTracer.startSpanIfNoneInProgress("starting")
@@ -211,6 +222,7 @@ class ActivityTracerTest {
                 activeSpan = activeSpan,
                 tracer = tracer,
                 appStartupTimer = appStartupTimer,
+                ttidTimer = ttidTimer,
             )
 
         trackableTracer.startSpanIfNoneInProgress("starting")
@@ -232,6 +244,7 @@ class ActivityTracerTest {
                 activeSpan = activeSpan,
                 tracer = tracer,
                 appStartupTimer = appStartupTimer,
+                ttidTimer = ttidTimer,
                 screenName = "squarely",
             )
         activityTracer.startActivityCreation()
