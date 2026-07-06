@@ -1,7 +1,12 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.internal.services.periodic
 
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -23,7 +28,7 @@ internal class PeriodicTaskSchedulerImpl(
                     // this is normal behavior for canceled coroutines, don't swallow it
                     throw e
                 } catch (_: Exception) {
-                    //swallowed
+                    // swallowed
                 }
                 delay(runnable.period())
             }

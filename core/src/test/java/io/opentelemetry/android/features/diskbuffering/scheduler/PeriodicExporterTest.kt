@@ -9,10 +9,10 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class PeriodicExporterTest {
     @Test

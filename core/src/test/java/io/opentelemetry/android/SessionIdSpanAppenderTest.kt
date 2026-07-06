@@ -14,8 +14,8 @@ import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.context.Context
 import io.opentelemetry.kotlin.semconv.IncubatingApi
-import io.opentelemetry.sdk.trace.ReadWriteSpan
 import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_ID
+import io.opentelemetry.sdk.trace.ReadWriteSpan
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach

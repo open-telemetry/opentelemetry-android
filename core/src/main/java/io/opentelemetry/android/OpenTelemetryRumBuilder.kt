@@ -340,41 +340,44 @@ class OpenTelemetryRumBuilder internal constructor(
         val bufferDelegatingLogExporter = BufferDelegatingLogExporter()
         val bufferDelegatingMetricExporter = BufferDelegatingMetricExporter()
 
-        val sdk = OpenTelemetrySdk.builder().apply {
-            if (config.tracingEnabled) {
-                setTracerProvider(
-                    buildTracerProvider(
-                        sessionProvider,
-                        context,
-                        bufferDelegatingSpanExporter,
-                        clock,
-                    )
-                )
-            }
+        val sdk =
+            OpenTelemetrySdk
+                .builder()
+                .apply {
+                    if (config.tracingEnabled) {
+                        setTracerProvider(
+                            buildTracerProvider(
+                                sessionProvider,
+                                context,
+                                bufferDelegatingSpanExporter,
+                                clock,
+                            ),
+                        )
+                    }
 
-            if (config.loggingEnabled) {
-                setLoggerProvider(
-                    buildLoggerProvider(
-                        sessionProvider,
-                        context,
-                        bufferDelegatingLogExporter,
-                        clock,
-                    )
-                )
-            }
+                    if (config.loggingEnabled) {
+                        setLoggerProvider(
+                            buildLoggerProvider(
+                                sessionProvider,
+                                context,
+                                bufferDelegatingLogExporter,
+                                clock,
+                            ),
+                        )
+                    }
 
-            if (config.metricsEnabled) {
-                setMeterProvider(
-                    buildMeterProvider(
-                        context,
-                        bufferDelegatingMetricExporter,
-                        clock,
-                    )
-                )
-            }
+                    if (config.metricsEnabled) {
+                        setMeterProvider(
+                            buildMeterProvider(
+                                context,
+                                bufferDelegatingMetricExporter,
+                                clock,
+                            ),
+                        )
+                    }
 
-            setPropagators(buildFinalPropagators())
-        }.build()
+                    setPropagators(buildFinalPropagators())
+                }.build()
 
         otelReadyListeners.forEach { it(sdk) }
 
@@ -559,7 +562,7 @@ class OpenTelemetryRumBuilder internal constructor(
                 BiFunction { builder: SdkTracerProviderBuilder, _: Context ->
                     builder.addSpanProcessor(
                         ScreenAttributesSpanProcessor(
-                            services.visibleScreenTracker
+                            services.visibleScreenTracker,
                         ),
                     )
                 },
@@ -569,7 +572,7 @@ class OpenTelemetryRumBuilder internal constructor(
                 BiFunction { builder: SdkLoggerProviderBuilder, _: Context ->
                     builder.addLogRecordProcessor(
                         ScreenAttributesLogRecordProcessor(
-                            services.visibleScreenTracker
+                            services.visibleScreenTracker,
                         ),
                     )
                 },
