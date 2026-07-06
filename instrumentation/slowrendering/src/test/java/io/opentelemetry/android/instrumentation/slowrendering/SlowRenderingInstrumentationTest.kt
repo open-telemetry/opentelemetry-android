@@ -21,12 +21,12 @@ import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.api.logs.LoggerProvider
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.common.Clock
-import java.time.Duration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import java.time.Duration
 
 @RunWith(AndroidJUnit4::class)
 class SlowRenderingInstrumentationTest {

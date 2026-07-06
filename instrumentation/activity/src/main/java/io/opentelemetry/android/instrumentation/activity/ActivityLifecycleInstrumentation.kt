@@ -38,7 +38,10 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
         this.screenNameExtractor = screenNameExtractor
     }
 
-    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun install(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         startupTimer.start(openTelemetryRum.openTelemetry.getTracer(INSTRUMENTATION_SCOPE), openTelemetryRum.clock)
         (context as? Application)?.let {
             startupLifecycle =
@@ -52,7 +55,10 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
         }
     }
 
-    override fun uninstall(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun uninstall(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         (context as? Application)?.let {
             if (startupLifecycle != null) {
                 it.unregisterActivityLifecycleCallbacks(startupLifecycle)
@@ -65,7 +71,10 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
         }
     }
 
-    private fun buildActivityLifecycleTracer(context: Context, openTelemetry: OpenTelemetry): DefaultingActivityLifecycleCallbacks {
+    private fun buildActivityLifecycleTracer(
+        context: Context,
+        openTelemetry: OpenTelemetry,
+    ): DefaultingActivityLifecycleCallbacks {
         val visibleScreenService = Services.get(context).visibleScreenTracker
         val delegateTracer: Tracer = openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
         val tracers =

@@ -11,9 +11,9 @@ import io.opentelemetry.android.session.Session
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.kotlin.semconv.IncubatingApi
-import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_ID
 import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_PREVIOUS_ID
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach

@@ -55,7 +55,6 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @ExtendWith(MockKExtension::class)
 class ViewScrollInstrumentationTest {
-
     private lateinit var openTelemetryRule: OpenTelemetryRule
 
     @MockK
@@ -70,7 +69,6 @@ class ViewScrollInstrumentationTest {
     @MockK
     lateinit var application: Application
 
-
     private val toolTypeKey = stringKey(HARDWARE_POINTER_TYPE)
 
     @Before
@@ -81,11 +79,12 @@ class ViewScrollInstrumentationTest {
 
     @Test
     fun capture_view_scroll() {
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -121,7 +120,6 @@ class ViewScrollInstrumentationTest {
         wrapperCapturingSlot.captured.dispatchTouchEvent(scrollSequence[0])
         wrapperCapturingSlot.captured.dispatchTouchEvent(scrollSequence[1])
 
-
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
         val horizontalDistance = -17.0 // 17.32 rounded down
@@ -135,7 +133,7 @@ class ViewScrollInstrumentationTest {
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), newPositionEvent.y.toLong()),
                 equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_X), horizontalDistance),
                 equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_Y), verticalDistance),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
 
         event = events[1]
@@ -148,17 +146,18 @@ class ViewScrollInstrumentationTest {
                 equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(toolTypeKey, "finger"),
                 equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_X), horizontalDistance),
-                equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_Y), verticalDistance)
+                equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_Y), verticalDistance),
             )
     }
 
     @Test
     fun capture_view_no_scroll_when_less_than_slop() {
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -199,18 +198,18 @@ class ViewScrollInstrumentationTest {
             scrollSequence[1],
         )
 
-
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(0)
     }
 
     @Test
     fun capture_view_fling() {
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -228,7 +227,6 @@ class ViewScrollInstrumentationTest {
         val viewClickActivityCallback = callbackCapturingSlot.captured
         val wrapperCapturingSlot = slot<WindowCallbackWrapper>()
         every { window.callback = any() } returns Unit
-
 
         val distance = 20
         val time = 100L
@@ -249,12 +247,10 @@ class ViewScrollInstrumentationTest {
         wrapperCapturingSlot.captured.dispatchTouchEvent(scrollSequence[1])
         wrapperCapturingSlot.captured.dispatchTouchEvent(scrollSequence[2])
 
-
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(4)
 
         val verticalVelocity = distance / (time.toDouble() / 1000)
-
 
         var event = events[2]
 
@@ -265,7 +261,7 @@ class ViewScrollInstrumentationTest {
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), newPositionEvent.y.toLong()),
                 equalTo(doubleKey(HARDWARE_POINTER_VELOCITY_X), 0.0),
                 equalTo(doubleKey(HARDWARE_POINTER_VELOCITY_Y), verticalVelocity),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
 
         event = events[3]
@@ -278,17 +274,18 @@ class ViewScrollInstrumentationTest {
                 equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(doubleKey(HARDWARE_POINTER_VELOCITY_X), 0.0),
                 equalTo(doubleKey(HARDWARE_POINTER_VELOCITY_Y), verticalVelocity),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
     }
 
     @Test
     fun capture_view_scroll_in_view_group() {
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ViewClickActivityCallback>()
         every { window.callback } returns callback
@@ -329,7 +326,6 @@ class ViewScrollInstrumentationTest {
         wrapperCapturingSlot.captured.dispatchTouchEvent(scrollSequence[0])
         wrapperCapturingSlot.captured.dispatchTouchEvent(scrollSequence[1])
 
-
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(1)
 
@@ -341,9 +337,7 @@ class ViewScrollInstrumentationTest {
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), newPositionEvent.y.toLong()),
                 equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_X), 0.0),
                 equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_Y), distance.toDouble()),
-                equalTo(toolTypeKey, "finger")
+                equalTo(toolTypeKey, "finger"),
             )
-
     }
-
 }

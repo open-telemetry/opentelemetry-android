@@ -17,20 +17,20 @@ import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Severity
 import io.opentelemetry.context.Context
-import io.opentelemetry.sdk.logs.data.LogRecordData
-import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import io.opentelemetry.kotlin.semconv.ExceptionAttributes
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.kotlin.semconv.ThreadAttributes
-import java.io.PrintWriter
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
+import io.opentelemetry.sdk.logs.data.LogRecordData
+import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.io.PrintWriter
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 internal class CrashReportIntegrationTest {
     private lateinit var rule: OpenTelemetryRule
@@ -42,9 +42,10 @@ internal class CrashReportIntegrationTest {
     fun setUp() {
         rule = OpenTelemetryRule.create()
         context = mockk<Application>(relaxed = true)
-        openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns rule.openTelemetry
-        }
+        openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns rule.openTelemetry
+            }
         instrumentation = CrashReporterInstrumentation()
     }
 
@@ -115,7 +116,6 @@ internal class CrashReportIntegrationTest {
 
     @Test
     fun `test stackoverflow behavior`() {
-
         val maxDepth = 1_000
         val extraDepth = 200
         val depth = maxDepth + extraDepth
@@ -124,8 +124,11 @@ internal class CrashReportIntegrationTest {
         val log = simulateUncaughtException(exc)
 
         val originalStackTrace = exc.stackTraceToString()
-        val truncatedStackTrace = originalStackTrace.lines()
-            .take(1000).joinToString(System.lineSeparator(), postfix = System.lineSeparator())
+        val truncatedStackTrace =
+            originalStackTrace
+                .lines()
+                .take(1000)
+                .joinToString(System.lineSeparator(), postfix = System.lineSeparator())
 
         log.assertCrashCaptured(
             expectedStacktrace = truncatedStackTrace,
@@ -189,9 +192,10 @@ internal class CrashReportIntegrationTest {
      * from [FakeLogRecordExporter]
      */
     private fun simulateUncaughtException(throwable: Throwable): LogRecordData {
-        val rum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns rule.openTelemetry
-        }
+        val rum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns rule.openTelemetry
+            }
         instrumentation.install(context, rum)
         val handler = checkNotNull(Thread.getDefaultUncaughtExceptionHandler())
         val thread = Thread.currentThread()

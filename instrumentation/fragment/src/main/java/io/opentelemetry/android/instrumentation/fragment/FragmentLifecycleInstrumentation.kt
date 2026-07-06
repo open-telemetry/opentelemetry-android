@@ -36,19 +36,28 @@ class FragmentLifecycleInstrumentation : AndroidInstrumentation {
 
     override val name: String = "fragment"
 
-    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun install(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         activityLifecycleCallbacks =
             buildFragmentRegisterer(context, openTelemetryRum.openTelemetry).apply {
                 (context as? Application)?.registerActivityLifecycleCallbacks(this)
             }
     }
 
-    override fun uninstall(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun uninstall(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         (context as? Application)?.unregisterActivityLifecycleCallbacks(activityLifecycleCallbacks)
         activityLifecycleCallbacks = null
     }
 
-    private fun buildFragmentRegisterer(context: Context, openTelemetry: OpenTelemetry): ActivityLifecycleCallbacks {
+    private fun buildFragmentRegisterer(
+        context: Context,
+        openTelemetry: OpenTelemetry,
+    ): ActivityLifecycleCallbacks {
         val visibleScreenService = Services.get(context).visibleScreenTracker
         val delegateTracer: Tracer = openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
         val fragmentLifecycle =

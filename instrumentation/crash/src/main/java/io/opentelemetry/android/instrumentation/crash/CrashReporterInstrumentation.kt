@@ -22,7 +22,10 @@ class CrashReporterInstrumentation : AndroidInstrumentation {
         additionalExtractors.add(extractor)
     }
 
-    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun install(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         addAttributesExtractor(RuntimeDetailsExtractor.create(context))
         val crashReporter = CrashReporter(additionalExtractors)
         crashReporter.install(openTelemetryRum.openTelemetry)

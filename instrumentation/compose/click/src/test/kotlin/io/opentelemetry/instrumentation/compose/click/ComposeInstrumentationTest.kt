@@ -43,15 +43,15 @@ import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.longKey
 import io.opentelemetry.api.common.AttributeKey.stringKey
-import io.opentelemetry.sdk.common.Clock
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
-import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_X
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_Y
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_ID
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_NAME
 import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.sdk.common.Clock
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
+import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -102,11 +102,12 @@ internal class ComposeInstrumentationTest {
 
     @Test
     fun capture_compose_click() {
-        val openTelemetryRum = mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
-            every { sessionProvider } returns mockk<SessionProvider>()
-            every { clock } returns Clock.getDefault()
-        }
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
 
         val callbackCapturingSlot = slot<ComposeClickActivityCallback>()
         every { window.callback } returns callback

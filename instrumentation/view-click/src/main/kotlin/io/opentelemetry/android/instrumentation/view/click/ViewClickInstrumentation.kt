@@ -15,7 +15,10 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 class ViewClickInstrumentation : AndroidInstrumentation {
     override val name: String = "view.click"
 
-    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun install(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         (context as? Application)?.registerActivityLifecycleCallbacks(
             ViewClickActivityCallback(
                 ViewClickEventGenerator(

@@ -12,8 +12,8 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.verify
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
-import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.common.AttributeKey.stringKey
+import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.context.Context
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.kotlin.semconv.NetworkAttributes.NETWORK_CONNECTION_SUBTYPE

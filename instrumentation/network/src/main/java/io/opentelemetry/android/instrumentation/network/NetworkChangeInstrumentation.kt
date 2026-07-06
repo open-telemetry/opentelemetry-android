@@ -33,7 +33,10 @@ class NetworkChangeInstrumentation : AndroidInstrumentation {
         return this
     }
 
-    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun install(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         additionalAttributeExtractors.add(NetworkChangeAttributesExtractor())
         val listener = NetworkApplicationListener(NetworkProviderHolder.get(context))
         val logger = openTelemetryRum.openTelemetry.logsBridge["io.opentelemetry.network"]
@@ -42,7 +45,10 @@ class NetworkChangeInstrumentation : AndroidInstrumentation {
         networkApplicationListener = listener
     }
 
-    override fun uninstall(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun uninstall(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         networkApplicationListener?.let { listener ->
             listener.stopMonitoring()
             get(context).appLifecycle.unregisterListener(listener)

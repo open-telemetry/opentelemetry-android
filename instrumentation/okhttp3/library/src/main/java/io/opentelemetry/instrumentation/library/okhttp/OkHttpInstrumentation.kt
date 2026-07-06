@@ -104,7 +104,10 @@ class OkHttpInstrumentation : AndroidInstrumentation {
 
     fun emitExperimentalHttpClientTelemetry(): Boolean = emitExperimentalHttpClientTelemetry
 
-    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun install(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         OkHttpSingletons.configure(this, openTelemetryRum.openTelemetry)
     }
 

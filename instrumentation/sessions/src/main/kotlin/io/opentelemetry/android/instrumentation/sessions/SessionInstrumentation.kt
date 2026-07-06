@@ -15,7 +15,10 @@ import io.opentelemetry.android.session.SessionPublisher
 class SessionInstrumentation : AndroidInstrumentation {
     override val name: String = "session"
 
-    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun install(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         val eventLogger =
             openTelemetryRum.openTelemetry.logsBridge
                 .loggerBuilder("otel.session")

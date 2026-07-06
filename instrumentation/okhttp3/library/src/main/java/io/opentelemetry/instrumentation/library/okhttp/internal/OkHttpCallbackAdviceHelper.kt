@@ -15,15 +15,15 @@ import okhttp3.Request
  * any time.
  */
 internal object OkHttpCallbackAdviceHelper {
-
     @JvmStatic
     fun propagateContext(call: Call): Boolean {
         val context = Context.current()
         if (shouldPropagateContext(context)) {
-            val virtualField = VirtualField.find(
-                Request::class.java,
-                Context::class.java
-            )
+            val virtualField =
+                VirtualField.find(
+                    Request::class.java,
+                    Context::class.java,
+                )
             virtualField.set(call.request(), context)
             return true
         }
@@ -32,10 +32,11 @@ internal object OkHttpCallbackAdviceHelper {
 
     @JvmStatic
     fun tryRecoverPropagatedContextFromCallback(request: Request): Context? {
-        val virtualField = VirtualField.find(
-            Request::class.java,
-            Context::class.java
-        )
+        val virtualField =
+            VirtualField.find(
+                Request::class.java,
+                Context::class.java,
+            )
         return virtualField.get(request)
     }
 

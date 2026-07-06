@@ -13,7 +13,10 @@ import io.opentelemetry.instrumentation.library.log.internal.LogRecordBuilderCre
 
 @AutoService(AndroidInstrumentation::class)
 class AndroidLogInstrumentation : AndroidInstrumentation {
-    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun install(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         configure(openTelemetryRum.openTelemetry)
     }
 

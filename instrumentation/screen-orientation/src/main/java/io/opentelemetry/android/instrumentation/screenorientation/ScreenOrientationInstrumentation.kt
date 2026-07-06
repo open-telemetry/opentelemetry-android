@@ -17,7 +17,10 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 class ScreenOrientationInstrumentation : AndroidInstrumentation {
     private var detector: ScreenOrientationDetector? = null
 
-    override fun install(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun install(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         val logger =
             openTelemetryRum.openTelemetry
                 .logsBridge
@@ -28,7 +31,10 @@ class ScreenOrientationInstrumentation : AndroidInstrumentation {
         applicationContext.registerComponentCallbacks(detector)
     }
 
-    override fun uninstall(context: Context, openTelemetryRum: OpenTelemetryRum) {
+    override fun uninstall(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
         detector?.let {
             context.applicationContext.unregisterComponentCallbacks(it)
         }
