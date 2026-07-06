@@ -665,6 +665,7 @@ class ViewClickInstrumentationTest {
             )
     }
 
+    @Suppress("LongMethod")
     @Test
     fun capture_view_double_tap_in_viewGroup() {
         val openTelemetryRum =
