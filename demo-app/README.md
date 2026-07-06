@@ -67,7 +67,7 @@ The OpenTelemetry Android Demo App currently supports the following features:
 As of now, there are a few areas where the instrumentation might not be comprehensive:
 
 * Disk Buffering  
-Disk buffering is enabled in the app, allowing telemetry data to be temporarily stored on disk when the network is unavailable. Although this feature is configured, it isn't actively demonstrated due to the absence of network activity.
+  Disk buffering is enabled in the app, allowing telemetry data to be temporarily stored on disk when the network is unavailable. Although this feature is configured, it isn't actively demonstrated due to the absence of network activity.
 
 ## How to use
 
