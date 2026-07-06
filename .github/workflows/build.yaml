@@ -37,8 +37,14 @@ jobs:
       - name: build demo app
         working-directory: ./demo-app
         run: ./gradlew check assemble --stacktrace
+      - name: stop gradle daemons before publishing
+        # The previous Gradle invocations leave daemons with loaded Android/Dokka classloaders;
+        # publishToSonatype generates release docs and has been running out of metaspace.
+        run: ./gradlew --stop
       - name: publish snapshot
-        run: ./gradlew publishToSonatype --stacktrace --info
+        run: >
+          ./gradlew publishToSonatype --stacktrace --info
+          -Dorg.gradle.jvmargs="-Xmx4096M -XX:+UseParallelGC -XX:MaxMetaspaceSize=3g -Dfile.encoding=UTF-8 -Dkotlin.daemon.jvm.options=\"-Xmx4096M\""
         env:
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
