@@ -9,14 +9,12 @@ package io.opentelemetry.android.session
  * Provides information about the current session.
  */
 fun interface SessionProvider {
-
     /**
      * Retrieves the current session ID.
      */
     fun getSessionId(): String
 
     companion object {
-
         /**
          * A no-op implementation of [SessionProvider].
          */
