@@ -143,5 +143,5 @@ If you find a StrictMode violation that appears frequently or adds noticeable st
 - OTel Android issue (policy): <https://github.com/open-telemetry/opentelemetry-android/issues/1188>
 - OTel Java issue (LazyStorage SPI scan): <https://github.com/open-telemetry/opentelemetry-java/issues/7600>
 - OTel Java `LazyStorage` source: <https://github.com/open-telemetry/opentelemetry-java/blob/main/context/src/main/java/io/opentelemetry/context/LazyStorage.java>
-- Disk buffering configuration (`DiskBufferingConfig`): `core/src/main/java/io/opentelemetry/android/features/diskbuffering/DiskBufferingConfig.kt`
-- Exporter delegate chain overview: `docs/EXPORTER_CHAIN.md`
+- Disk buffering configuration [`DiskBufferingConfig`](../core/src/main/java/io/opentelemetry/android/features/diskbuffering/DiskBufferingConfig.kt)
+- Exporter delegate chain overview: [EXPORTER_CHAIN.md](./EXPORTER_CHAIN.md)

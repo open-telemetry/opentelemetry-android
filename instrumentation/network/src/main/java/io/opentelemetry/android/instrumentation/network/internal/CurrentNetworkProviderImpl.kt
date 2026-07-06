@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicReference
 // https://stackoverflow.com/questions/32547006/connectivitymanager-getnetworkinfoint-deprecated
 
 /**
- * A provider of [CurrentNetwork] information. Registers itself in the Android [ ] and listens for network changes.
+ * A provider of [CurrentNetwork] information. Registers itself in the Android [ConnectivityManager] and listens for network changes.
  *
  * This class is internal and not for public use. Its APIs are unstable and can change at any
  * time.
