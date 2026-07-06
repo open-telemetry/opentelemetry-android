@@ -199,5 +199,7 @@ internal class VisibleScreenTrackerTest {
     private val visibleScreenService: VisibleScreenTracker
         get() = VisibleScreenTrackerImpl(application)
 
-    private abstract class CustomNavHostFragment : Fragment(), NavHost
+    private abstract class CustomNavHostFragment :
+        Fragment(),
+        NavHost
 }

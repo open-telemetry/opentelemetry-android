@@ -21,7 +21,6 @@ import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTra
 class Services internal constructor(
     private val context: Context,
 ) : ServicesFactory {
-
     override val appLifecycle: AppLifecycle by lazy {
         AppLifecycleImpl(
             ApplicationStateWatcher(),
