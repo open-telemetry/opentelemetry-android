@@ -93,143 +93,85 @@ fun getDoubleTapSequence(
     val pointerCoords = PointerCoordsBuilder.newBuilder().setCoords(x, y).build()
 
     if (exceedTimeOut) {
-        val doubleTapTimeout = ViewConfiguration.getDoubleTapTimeout()
-
-        return arrayOf(
-            MotionEvent.obtain(
-                initialTime,
-                initialTime,
-                MotionEvent.ACTION_DOWN,
-                1,
-                arrayOf(pointerProperties),
-                arrayOf(pointerCoords),
-                0,
-                buttonState,
-                1f,
-                1f,
-                0,
-                0,
-                0,
-                0,
-            ),
-            MotionEvent.obtain(
-                initialTime,
-                initialTime + 300L,
-                MotionEvent.ACTION_UP,
-                1,
-                arrayOf(pointerProperties),
-                arrayOf(pointerCoords),
-                0,
-                buttonState,
-                1f,
-                1f,
-                0,
-                0,
-                0,
-                0,
-            ),
-            MotionEvent.obtain(
-                initialTime + 400L + doubleTapTimeout,
-                initialTime + 500L + doubleTapTimeout,
-                MotionEvent.ACTION_DOWN,
-                1,
-                arrayOf(pointerProperties),
-                arrayOf(pointerCoords),
-                0,
-                buttonState,
-                1f,
-                1f,
-                0,
-                0,
-                0,
-                0,
-            ),
-            MotionEvent.obtain(
-                initialTime + 600L + doubleTapTimeout,
-                initialTime + 700L + doubleTapTimeout,
-                MotionEvent.ACTION_UP,
-                1,
-                arrayOf(pointerProperties),
-                arrayOf(pointerCoords),
-                0,
-                buttonState,
-                1f,
-                1f,
-                0,
-                0,
-                0,
-                0,
-            ),
-        )
-    } else {
-        return arrayOf(
-            MotionEvent.obtain(
-                initialTime,
-                initialTime,
-                MotionEvent.ACTION_DOWN,
-                1,
-                arrayOf(pointerProperties),
-                arrayOf(pointerCoords),
-                0,
-                buttonState,
-                1f,
-                1f,
-                0,
-                0,
-                0,
-                0,
-            ),
-            MotionEvent.obtain(
-                initialTime,
-                initialTime + 300L,
-                MotionEvent.ACTION_UP,
-                1,
-                arrayOf(pointerProperties),
-                arrayOf(pointerCoords),
-                0,
-                buttonState,
-                1f,
-                1f,
-                0,
-                0,
-                0,
-                0,
-            ),
-            MotionEvent.obtain(
-                initialTime + 400L,
-                initialTime + 500L,
-                MotionEvent.ACTION_DOWN,
-                1,
-                arrayOf(pointerProperties),
-                arrayOf(pointerCoords),
-                0,
-                buttonState,
-                1f,
-                1f,
-                0,
-                0,
-                0,
-                0,
-            ),
-            MotionEvent.obtain(
-                initialTime + 600L,
-                initialTime + 700L,
-                MotionEvent.ACTION_UP,
-                1,
-                arrayOf(pointerProperties),
-                arrayOf(pointerCoords),
-                0,
-                buttonState,
-                1f,
-                1f,
-                0,
-                0,
-                0,
-                0,
-            ),
-        )
+        return generateSequenceTimeout(initialTime, pointerProperties, pointerCoords, buttonState)
     }
+    return generateSequenceNoTimeout(initialTime, pointerProperties, pointerCoords, buttonState)
 }
+
+private fun generateSequenceTimeout(
+    initialTime: Long,
+    pointerProperties: MotionEvent.PointerProperties,
+    pointerCoords: MotionEvent.PointerCoords?,
+    buttonState: Int,
+): Array<MotionEvent> {
+    val doubleTapTimeout = ViewConfiguration.getDoubleTapTimeout()
+    val obtainMotionEvent = curryMotionEvent(pointerProperties, pointerCoords, buttonState)
+
+    return arrayOf(
+        obtainMotionEvent(initialTime, initialTime, MotionEvent.ACTION_DOWN),
+        obtainMotionEvent(initialTime, initialTime + 300L, MotionEvent.ACTION_UP),
+        obtainMotionEvent(
+            initialTime + 400L + doubleTapTimeout,
+            initialTime + 500L + doubleTapTimeout,
+            MotionEvent.ACTION_DOWN,
+        ),
+        obtainMotionEvent(
+            initialTime + 600L + doubleTapTimeout,
+            initialTime + 700L + doubleTapTimeout,
+            MotionEvent.ACTION_UP,
+        ),
+    )
+}
+
+private fun generateSequenceNoTimeout(
+    initialTime: Long,
+    pointerProperties: MotionEvent.PointerProperties,
+    pointerCoords: MotionEvent.PointerCoords?,
+    buttonState: Int,
+): Array<MotionEvent> {
+    val obtainMotionEvent = curryMotionEvent(pointerProperties, pointerCoords, buttonState)
+
+    return arrayOf(
+        obtainMotionEvent(initialTime, initialTime, MotionEvent.ACTION_DOWN),
+        obtainMotionEvent(initialTime, initialTime + 300L, MotionEvent.ACTION_UP),
+        obtainMotionEvent(initialTime + 400L, initialTime + 500L, MotionEvent.ACTION_DOWN),
+        obtainMotionEvent(initialTime + 600L, initialTime + 700L, MotionEvent.ACTION_UP),
+    )
+}
+
+private fun curryMotionEvent(
+    pointerProperties: MotionEvent.PointerProperties,
+    pointerCoords: MotionEvent.PointerCoords?,
+    buttonState: Int,
+): (Long, Long, Int) -> MotionEvent =
+    { downTime, eventTime, action ->
+        obtainMotionEvent(downTime, eventTime, action, pointerProperties, pointerCoords, buttonState)
+    }
+
+private fun obtainMotionEvent(
+    downTime: Long,
+    eventTime: Long,
+    action: Int,
+    pointerProperties: MotionEvent.PointerProperties,
+    pointerCoords: MotionEvent.PointerCoords?,
+    buttonState: Int,
+): MotionEvent =
+    MotionEvent.obtain(
+        downTime,
+        eventTime,
+        action,
+        1,
+        arrayOf(pointerProperties),
+        arrayOf(pointerCoords),
+        0,
+        buttonState,
+        1f,
+        1f,
+        0,
+        0,
+        0,
+        0,
+    )
 
 fun getSingleTapSequence(
     x: Float,
@@ -255,38 +197,17 @@ fun getSingleTapSequence(
     pointerProperties.toolType = toolType
 
     val pointerCoords = PointerCoordsBuilder.newBuilder().setCoords(x, y).build()
+    val obtainMotionEvent = curryMotionEvent(pointerProperties, pointerCoords, buttonState)
     return arrayOf(
-        MotionEvent.obtain(
+        obtainMotionEvent(
             initialTime,
             initialTime,
             MotionEvent.ACTION_DOWN,
-            1,
-            arrayOf(pointerProperties),
-            arrayOf(pointerCoords),
-            0,
-            buttonState,
-            1f,
-            1f,
-            0,
-            0,
-            0,
-            0,
         ),
-        MotionEvent.obtain(
+        obtainMotionEvent(
             initialTime,
             initialTime + 100L,
             MotionEvent.ACTION_UP,
-            1,
-            arrayOf(pointerProperties),
-            arrayOf(pointerCoords),
-            0,
-            buttonState,
-            1f,
-            1f,
-            0,
-            0,
-            0,
-            0,
         ),
     )
 }
@@ -316,6 +237,7 @@ fun getLongPressSequence(
     pointerProperties.toolType = toolType
 
     val pointerCoords = PointerCoordsBuilder.newBuilder().setCoords(x, y).build()
+    val obtainMotionEvent = curryMotionEvent(pointerProperties, pointerCoords, buttonState)
     val delay =
         if (stayDownLongEnough) {
             ViewConfiguration.getLongPressTimeout()
@@ -323,37 +245,15 @@ fun getLongPressSequence(
             100
         }
     return arrayOf(
-        MotionEvent.obtain(
+        obtainMotionEvent(
             initialTime,
             initialTime,
             MotionEvent.ACTION_DOWN,
-            1,
-            arrayOf(pointerProperties),
-            arrayOf(pointerCoords),
-            0,
-            buttonState,
-            1f,
-            1f,
-            0,
-            0,
-            0,
-            0,
         ),
-        MotionEvent.obtain(
+        obtainMotionEvent(
             initialTime,
             initialTime + delay,
             MotionEvent.ACTION_UP,
-            1,
-            arrayOf(pointerProperties),
-            arrayOf(pointerCoords),
-            0,
-            buttonState,
-            1f,
-            1f,
-            0,
-            0,
-            0,
-            0,
         ),
     )
 }
@@ -388,60 +288,29 @@ fun getScrollSequence(
     val startPointerCoords = PointerCoordsBuilder.newBuilder().setCoords(x, y).build()
     val (endX, endY) = getDestinationPoint(arrayOf(x, y), distance, angleDegrees)
     val endPointerCoords = PointerCoordsBuilder.newBuilder().setCoords(endX, endY).build()
+    val obtainStartMotionEvent = curryMotionEvent(pointerProperties, startPointerCoords, buttonState)
+    val obtainEndMotionEvent = curryMotionEvent(pointerProperties, endPointerCoords, buttonState)
 
     var array =
         arrayOf(
-            MotionEvent.obtain(
+            obtainStartMotionEvent(
                 initialTime,
                 initialTime,
                 MotionEvent.ACTION_DOWN,
-                1,
-                arrayOf(pointerProperties),
-                arrayOf(startPointerCoords),
-                0,
-                buttonState,
-                1f,
-                1f,
-                0,
-                0,
-                0,
-                0,
             ),
-            MotionEvent.obtain(
+            obtainEndMotionEvent(
                 initialTime,
                 initialTime + timeMillis,
                 MotionEvent.ACTION_MOVE,
-                1,
-                arrayOf(pointerProperties),
-                arrayOf(endPointerCoords),
-                0,
-                buttonState,
-                1f,
-                1f,
-                0,
-                0,
-                0,
-                0,
             ),
         )
     val timeToLetGoAfterMoving = 50L
     if (letGo) {
         array +=
-            MotionEvent.obtain(
+            obtainEndMotionEvent(
                 initialTime,
                 initialTime + timeMillis + timeToLetGoAfterMoving,
                 MotionEvent.ACTION_UP,
-                1,
-                arrayOf(pointerProperties),
-                arrayOf(endPointerCoords),
-                0,
-                buttonState,
-                1f,
-                1f,
-                0,
-                0,
-                0,
-                0,
             )
     }
     return array
