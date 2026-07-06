@@ -3,13 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network.internal
+package io.opentelemetry.android.internal.services.network
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.ConnectivityManager
 import androidx.annotation.VisibleForTesting
-import io.opentelemetry.android.instrumentation.network.internal.detector.NetworkDetector
 
 /**
  * Process-wide lazy holder for the [CurrentNetworkProvider].
