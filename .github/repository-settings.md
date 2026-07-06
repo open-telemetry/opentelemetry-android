@@ -37,7 +37,13 @@ Same settings as above for `main`, except:
 
   (So that bot PR branches can be deleted)
  
-## Secrets and variables > Actions
+## Environments
+
+### `protected` environment
+
+Deployment branches: `main`, `release/*`
+
+Secrets:
 
 * `GPG_PASSWORD` - stored in OpenTelemetry-Java 1Password
 * `GPG_PRIVATE_KEY` - stored in OpenTelemetry-Java 1Password
