@@ -94,6 +94,7 @@ fun currentWeaverTarget(): WeaverTarget {
  * the current OS/arch, verifies its checksum, and extracts it. Cached per-version under `build/`,
  * so contributors and CI never need to install weaver themselves.
  */
+@org.gradle.api.tasks.CacheableTask
 abstract class DownloadWeaverTask
     @Inject
     constructor(
