@@ -29,7 +29,7 @@ of API and idioms. More details about this policy can be found [here](./docs/KOT
 > Further, you must use AGP 8.3.0+ and set the `android.useFullClasspathForDexingTransform`
 > property in `gradle.properties` to `true` to ensure desugaring runs properly. For the full
 > context for this workaround, please see
-> [this issue](https://issuetracker.google.com/issues/230454566#comment18).
+> [this issue](https://issuetracker.google.com/issues/230454566) (comment 18).
 
 ## Gradle Setup
 
