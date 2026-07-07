@@ -37,6 +37,20 @@ jobs:
       - name: build demo app
         working-directory: ./demo-app
         run: ./gradlew check assemble --stacktrace
+
+  publish-snapshot:
+    name: "publish snapshot"
+    needs:
+      - build
+    environment: protected
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Set up JDK for running Gradle
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        with:
+          distribution: temurin
+          java-version: 21
       - name: stop gradle daemons before publishing
         # The previous Gradle invocations leave daemons with loaded Android/Dokka classloaders;
         # publishToSonatype generates release docs and has been running out of metaspace.
@@ -62,10 +76,11 @@ jobs:
       issues: write
     needs:
       - build
+      - publish-snapshot
     if: failure() && github.run_attempt == 1
     uses: ./.github/workflows/reusable-workflow-notification.yml
     with:
-      success: ${{ needs.build.result == 'success' }}
+      success: ${{ needs.build.result == 'success' && needs.publish-snapshot.result == 'success' }}
 
   required-status-check:
     permissions:
@@ -73,9 +88,10 @@ jobs:
       issues: write
     needs:
       - build
+      - publish-snapshot
     runs-on: ubuntu-latest
     if: always()
     steps:
       - if: |
-          needs.build.result != 'success'
+          needs.build.result != 'success' || needs.publish-snapshot.result != 'success'
         run: exit 1
