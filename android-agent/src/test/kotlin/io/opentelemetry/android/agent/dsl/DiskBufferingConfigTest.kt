@@ -15,15 +15,15 @@ import org.junit.Before
 import org.junit.Test
 
 class DiskBufferingConfigTest {
-
     private lateinit var otelConfig: OpenTelemetryConfiguration
 
     @Before
     fun setUp() {
-        otelConfig = OpenTelemetryConfiguration(
-            instrumentationLoader = FakeInstrumentationLoader(),
-            clock = FakeClock()
-        )
+        otelConfig =
+            OpenTelemetryConfiguration(
+                instrumentationLoader = FakeInstrumentationLoader(),
+                clock = FakeClock(),
+            )
     }
 
     @Test
@@ -47,9 +47,10 @@ class DiskBufferingConfigTest {
         val rumConfig = OtelRumConfig()
         val otelConfig =
             OpenTelemetryConfiguration(
-                rumConfig = rumConfig.setDiskBufferingConfig(
-                    diskBufferingConfig,
-                ),
+                rumConfig =
+                    rumConfig.setDiskBufferingConfig(
+                        diskBufferingConfig,
+                    ),
                 diskBufferingConfig = DiskBufferingConfigurationSpec(rumConfig),
                 instrumentationLoader = FakeInstrumentationLoader(),
                 clock = FakeClock(),

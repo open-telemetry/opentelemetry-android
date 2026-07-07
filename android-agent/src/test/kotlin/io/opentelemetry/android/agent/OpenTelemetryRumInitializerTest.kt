@@ -40,14 +40,15 @@ class OpenTelemetryRumInitializerTest {
 
     @Test
     fun `Verify timeoutHandler initialization 2`() {
-        val rum = OpenTelemetryRumInitializer.initialize(
-            context = RuntimeEnvironment.getApplication(),
-            configuration = {
-                httpExport {
-                    baseUrl = "http://127.0.0.1:4318"
-                }
-            },
-        )
+        val rum =
+            OpenTelemetryRumInitializer.initialize(
+                context = RuntimeEnvironment.getApplication(),
+                configuration = {
+                    httpExport {
+                        baseUrl = "http://127.0.0.1:4318"
+                    }
+                },
+            )
         rum.shutdown()
 
         verify {
@@ -64,17 +65,18 @@ class OpenTelemetryRumInitializerTest {
         every { o2.onSessionStarted(any(), any()) } just Runs
         every { o2.onSessionEnded(any()) } just Runs
 
-        val rum = OpenTelemetryRumInitializer.initialize(
-            context = RuntimeEnvironment.getApplication(),
-            configuration = {
-                httpExport {
-                    baseUrl = "http://127.0.0.1:4318"
-                }
-                session {
-                    observers(o1, o2)
-                }
-            },
-        )
+        val rum =
+            OpenTelemetryRumInitializer.initialize(
+                context = RuntimeEnvironment.getApplication(),
+                configuration = {
+                    httpExport {
+                        baseUrl = "http://127.0.0.1:4318"
+                    }
+                    session {
+                        observers(o1, o2)
+                    }
+                },
+            )
         rum.shutdown()
 
         verify {

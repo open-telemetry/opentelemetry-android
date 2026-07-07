@@ -16,7 +16,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class ClockConfigTest {
-
     private lateinit var otelConfig: OpenTelemetryConfiguration
 
     @Before
@@ -32,9 +31,10 @@ class ClockConfigTest {
     @Test
     fun testOverride() {
         val fakeClock = FakeClock()
-        val otelConfig = otelConfig.apply {
-            clock = fakeClock
-        }
+        val otelConfig =
+            otelConfig.apply {
+                clock = fakeClock
+            }
         assertThat(otelConfig.clock).isSameAs(fakeClock)
     }
 }

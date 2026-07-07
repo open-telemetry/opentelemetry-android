@@ -28,11 +28,9 @@ class SessionConfiguration internal constructor() {
 
     private var observersList: MutableList<SessionObserver> = mutableListOf()
 
-    internal fun getObservers(): List<SessionObserver> {
-        return observersList.toList()
-    }
+    internal fun getObservers(): List<SessionObserver> = observersList.toList()
 
-    fun observers(vararg observers: SessionObserver ) {
+    fun observers(vararg observers: SessionObserver) {
         observersList.addAll(observers)
     }
 }

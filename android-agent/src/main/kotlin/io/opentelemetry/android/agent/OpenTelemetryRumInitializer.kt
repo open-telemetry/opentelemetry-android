@@ -55,36 +55,42 @@ object OpenTelemetryRumInitializer {
             }
 
         val rumConfig = OtelRumConfig()
-        return RumBuilder.builder(ctx, rumConfig).apply {
-            val cfg = OpenTelemetryConfiguration(
-                rumConfig = rumConfig,
-                instrumentationLoader = instrumentationLoader
-            ).also(configuration)
+        return RumBuilder
+            .builder(ctx, rumConfig)
+            .apply {
+                val cfg =
+                    OpenTelemetryConfiguration(
+                        rumConfig = rumConfig,
+                        instrumentationLoader = instrumentationLoader,
+                    ).also(configuration)
 
-            setSessionProvider(createSessionProvider(Services.get(ctx).appLifecycle, cfg))
-            setResource(
-                AndroidResource.createDefault(ctx).toBuilder().apply {
-                    cfg.resourceAction(this)
-                }.build()
-            )
-            setClock(cfg.clock)
+                setSessionProvider(createSessionProvider(Services.get(ctx).appLifecycle, cfg))
+                setResource(
+                    AndroidResource
+                        .createDefault(ctx)
+                        .toBuilder()
+                        .apply {
+                            cfg.resourceAction(this)
+                        }.build(),
+                )
+                setClock(cfg.clock)
 
-            if (rumConfig.tracingEnabled) {
-                addSpanExporterCustomizer {
-                    createSpanExporter(cfg.exportConfig.spansEndpoint())
+                if (rumConfig.tracingEnabled) {
+                    addSpanExporterCustomizer {
+                        createSpanExporter(cfg.exportConfig.spansEndpoint())
+                    }
                 }
-            }
-            if (rumConfig.loggingEnabled) {
-                addLogRecordExporterCustomizer {
-                    createLogExporter(cfg.exportConfig.logsEndpoint())
+                if (rumConfig.loggingEnabled) {
+                    addLogRecordExporterCustomizer {
+                        createLogExporter(cfg.exportConfig.logsEndpoint())
+                    }
                 }
-            }
-            if (rumConfig.metricsEnabled) {
-                addMetricExporterCustomizer {
-                    createMetricExporter(cfg.exportConfig.metricsEndpoint())
+                if (rumConfig.metricsEnabled) {
+                    addMetricExporterCustomizer {
+                        createMetricExporter(cfg.exportConfig.metricsEndpoint())
+                    }
                 }
-            }
-        }.build()
+            }.build()
     }
 
     private fun createSpanExporter(endpoint: HttpEndpointConnectivity): SpanExporter =

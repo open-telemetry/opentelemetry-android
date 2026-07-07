@@ -23,10 +23,11 @@ internal class HttpExportConfigurationTest {
 
     @Before
     fun setUp() {
-        otelConfig = OpenTelemetryConfiguration(
-            clock = FakeClock(),
-            instrumentationLoader = FakeInstrumentationLoader(),
-        )
+        otelConfig =
+            OpenTelemetryConfiguration(
+                clock = FakeClock(),
+                instrumentationLoader = FakeInstrumentationLoader(),
+            )
     }
 
     @Test
@@ -77,11 +78,14 @@ internal class HttpExportConfigurationTest {
                 baseHeaders = headers
             }
 
-        config.spansEndpoint()
+        config
+            .spansEndpoint()
             .assertEndpointConfig("${url}v1/traces", headers, Compression.GZIP, null, null)
-        config.logsEndpoint()
+        config
+            .logsEndpoint()
             .assertEndpointConfig("${url}v1/logs", headers, Compression.GZIP, null, null)
-        config.metricsEndpoint()
+        config
+            .metricsEndpoint()
             .assertEndpointConfig("${url}v1/metrics", headers, Compression.GZIP, null, null)
         assertEquals(url, config.baseUrl)
         assertEquals(headers, config.baseHeaders)
@@ -214,11 +218,14 @@ internal class HttpExportConfigurationTest {
                 sslContext = expectedSslContext
             }
 
-        config.spansEndpoint()
+        config
+            .spansEndpoint()
             .assertEndpointConfig("${url}v1/traces", headers, Compression.GZIP, expectedSslContext)
-        config.logsEndpoint()
+        config
+            .logsEndpoint()
             .assertEndpointConfig("${url}v1/logs", headers, Compression.GZIP, expectedSslContext)
-        config.metricsEndpoint()
+        config
+            .metricsEndpoint()
             .assertEndpointConfig("${url}v1/metrics", headers, Compression.GZIP, expectedSslContext)
     }
 
@@ -234,11 +241,14 @@ internal class HttpExportConfigurationTest {
                 clientTls = expectedClientTls
             }
 
-        config.spansEndpoint()
+        config
+            .spansEndpoint()
             .assertEndpointConfig("${url}v1/traces", headers, Compression.GZIP, null, expectedClientTls)
-        config.logsEndpoint()
+        config
+            .logsEndpoint()
             .assertEndpointConfig("${url}v1/logs", headers, Compression.GZIP, null, expectedClientTls)
-        config.metricsEndpoint()
+        config
+            .metricsEndpoint()
             .assertEndpointConfig("${url}v1/metrics", headers, Compression.GZIP, null, expectedClientTls)
     }
 

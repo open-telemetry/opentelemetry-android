@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.agent.dsl
 
 import io.mockk.every
@@ -19,11 +24,12 @@ class InstrumentationConfigurationTest {
         rumConfig = mockk()
         every { rumConfig.setDiskBufferingConfig(any<DiskBufferingConfig>()) } returns rumConfig
         every { rumConfig.suppressInstrumentation(any<String>()) } returns rumConfig
-        otelConfig = OpenTelemetryConfiguration(
-            rumConfig = rumConfig,
-            instrumentationLoader = FakeInstrumentationLoader(),
-            clock = FakeClock()
-        )
+        otelConfig =
+            OpenTelemetryConfiguration(
+                rumConfig = rumConfig,
+                instrumentationLoader = FakeInstrumentationLoader(),
+                clock = FakeClock(),
+            )
     }
 
     @Test

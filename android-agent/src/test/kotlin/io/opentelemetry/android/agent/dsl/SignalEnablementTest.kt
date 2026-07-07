@@ -36,7 +36,6 @@ class SignalEnablementTest {
         assertTrue(otelConfig.rumConfig.tracingEnabled)
         otelConfig.disableTracing()
         assertFalse(otelConfig.rumConfig.tracingEnabled)
-
     }
 
     @Test

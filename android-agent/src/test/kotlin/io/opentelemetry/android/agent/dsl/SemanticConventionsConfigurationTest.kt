@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.agent.dsl
 
 import io.mockk.every
@@ -13,47 +18,47 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class SemanticConventionsConfigurationTest {
-
     var compatState: Boolean = true
 
     @BeforeEach
-    fun setup(){
+    fun setup() {
         compatState = SemconvCompat.useLatestExperimental
     }
 
     @AfterEach
-    fun restore(){
+    fun restore() {
         SemconvCompat.useLatestExperimental = compatState
     }
 
     @Test
-    fun `defaults to true`(){
+    fun `defaults to true`() {
         val rumConfig = mockk<OtelRumConfig>()
         every { rumConfig.setDiskBufferingConfig(any<DiskBufferingConfig>()) } returns rumConfig
         every { rumConfig.suppressInstrumentation(any<String>()) } returns rumConfig
-        val otelConfig = OpenTelemetryConfiguration(
-            rumConfig = rumConfig,
-            instrumentationLoader = FakeInstrumentationLoader(),
-            clock = FakeClock()
-        )
+        val otelConfig =
+            OpenTelemetryConfiguration(
+                rumConfig = rumConfig,
+                instrumentationLoader = FakeInstrumentationLoader(),
+                clock = FakeClock(),
+            )
         assertThat(otelConfig.semanticConventions.useLatestExperimental).isTrue
         assertThat(SemconvCompat.useLatestExperimental).isTrue
     }
 
     @Test
-    fun `can disable latest experimental semconv`(){
+    fun `can disable latest experimental semconv`() {
         val rumConfig = mockk<OtelRumConfig>()
         every { rumConfig.setDiskBufferingConfig(any<DiskBufferingConfig>()) } returns rumConfig
         every { rumConfig.suppressInstrumentation(any<String>()) } returns rumConfig
-        val otelConfig = OpenTelemetryConfiguration(
-            rumConfig = rumConfig,
-            instrumentationLoader = FakeInstrumentationLoader(),
-            clock = FakeClock()
-        )
+        val otelConfig =
+            OpenTelemetryConfiguration(
+                rumConfig = rumConfig,
+                instrumentationLoader = FakeInstrumentationLoader(),
+                clock = FakeClock(),
+            )
         otelConfig.semanticConventions {
             useLatestExperimental = false
         }
         assertThat(SemconvCompat.useLatestExperimental).isFalse
     }
-
 }

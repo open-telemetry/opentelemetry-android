@@ -15,15 +15,15 @@ import org.junit.Before
 import org.junit.Test
 
 class GlobalAttributesConfigTest {
-
     private lateinit var otelConfig: OpenTelemetryConfiguration
 
     @Before
     fun setUp() {
-        otelConfig = OpenTelemetryConfiguration(
-            clock = FakeClock(),
-            instrumentationLoader = FakeInstrumentationLoader()
-        )
+        otelConfig =
+            OpenTelemetryConfiguration(
+                clock = FakeClock(),
+                instrumentationLoader = FakeInstrumentationLoader(),
+            )
     }
 
     @Test
@@ -35,24 +35,26 @@ class GlobalAttributesConfigTest {
     @Test
     fun testOverride() {
         val expectedAttrs = Attributes.builder().put("key", "value").build()
-        val otelConfig = otelConfig.apply {
-            globalAttributes {
-                expectedAttrs
+        val otelConfig =
+            otelConfig.apply {
+                globalAttributes {
+                    expectedAttrs
+                }
             }
-        }
         val attrs = otelConfig.rumConfig.getGlobalAttributesSupplier().get()
         assertEquals(expectedAttrs, attrs)
     }
 
     @Test
     fun testOverrideSupplier() {
-        val otelConfig = otelConfig.apply {
-            globalAttributesSupplier {
-                {
-                    Attributes.builder().put("key", System.nanoTime()).build()
+        val otelConfig =
+            otelConfig.apply {
+                globalAttributesSupplier {
+                    {
+                        Attributes.builder().put("key", System.nanoTime()).build()
+                    }
                 }
             }
-        }
         val supplier = otelConfig.rumConfig.getGlobalAttributesSupplier()
         val attrValue1 = supplier.get().get(longKey("key"))
         val attrValue2 = supplier.get().get(longKey("key"))

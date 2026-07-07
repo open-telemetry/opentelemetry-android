@@ -11,11 +11,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.opentelemetry.android.agent.OpenTelemetryRumInitializer
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.AttributeKey.stringKey
-import io.opentelemetry.sdk.resources.ResourceBuilder
-import io.opentelemetry.kotlin.semconv.ServiceAttributes.SERVICE_NAME
-import io.opentelemetry.kotlin.semconv.TelemetryAttributes.TELEMETRY_SDK_LANGUAGE
-import io.opentelemetry.kotlin.semconv.TelemetryAttributes.TELEMETRY_SDK_NAME
-import io.opentelemetry.kotlin.semconv.TelemetryAttributes.TELEMETRY_SDK_VERSION
 import io.opentelemetry.kotlin.semconv.AndroidAttributes.ANDROID_OS_API_LEVEL
 import io.opentelemetry.kotlin.semconv.DeviceAttributes.DEVICE_MANUFACTURER
 import io.opentelemetry.kotlin.semconv.DeviceAttributes.DEVICE_MODEL_IDENTIFIER
@@ -25,6 +20,11 @@ import io.opentelemetry.kotlin.semconv.OsAttributes.OS_DESCRIPTION
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_NAME
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_TYPE
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_VERSION
+import io.opentelemetry.kotlin.semconv.ServiceAttributes.SERVICE_NAME
+import io.opentelemetry.kotlin.semconv.TelemetryAttributes.TELEMETRY_SDK_LANGUAGE
+import io.opentelemetry.kotlin.semconv.TelemetryAttributes.TELEMETRY_SDK_NAME
+import io.opentelemetry.kotlin.semconv.TelemetryAttributes.TELEMETRY_SDK_VERSION
+import io.opentelemetry.sdk.resources.ResourceBuilder
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test

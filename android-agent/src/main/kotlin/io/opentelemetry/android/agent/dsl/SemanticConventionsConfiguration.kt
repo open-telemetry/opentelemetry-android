@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.agent.dsl
 
 import io.opentelemetry.android.common.internal.SemconvCompat
@@ -7,7 +12,6 @@ import io.opentelemetry.android.common.internal.SemconvCompat
  */
 @OpenTelemetryDslMarker
 class SemanticConventionsConfiguration {
-
     /**
      * Determines if the latest available experimental semantic conventions should
      * be used. If set to false, the old, deprecated, or nonstandard semantic convention
@@ -18,9 +22,8 @@ class SemanticConventionsConfiguration {
      * imply that only _stable_ semantic conventions are emitted.
      */
     var useLatestExperimental: Boolean = true
-        set(value){
+        set(value) {
             field = value
             SemconvCompat.useLatestExperimental = value
         }
-
 }

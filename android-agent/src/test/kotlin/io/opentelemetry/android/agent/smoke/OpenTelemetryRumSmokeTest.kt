@@ -108,11 +108,19 @@ class OpenTelemetryRumSmokeTest {
     }
 
     private fun OpenTelemetryRum.recordLog() {
-        openTelemetry.logsBridge.get(logScopeName).logRecordBuilder().setBody(logMessage).emit()
+        openTelemetry.logsBridge
+            .get(logScopeName)
+            .logRecordBuilder()
+            .setBody(logMessage)
+            .emit()
     }
 
     private fun OpenTelemetryRum.recordSpan() {
-        openTelemetry.tracerProvider.get(tracerScopeName).spanBuilder(spanName).startSpan().end()
+        openTelemetry.tracerProvider
+            .get(tracerScopeName)
+            .spanBuilder(spanName)
+            .startSpan()
+            .end()
     }
 
     private fun findLog(request: ExportLogsServiceRequest) =

@@ -20,7 +20,6 @@ class SlowRenderingReporterConfiguration internal constructor(
     private val config: OtelRumConfig,
     private val instrumentationLoader: AndroidInstrumentationLoader,
 ) : CanBeEnabledAndDisabled {
-
     private val slowRenderingInstrumentation: SlowRenderingInstrumentation? by lazy {
         instrumentationLoader.getByType(SlowRenderingInstrumentation::class.java)
     }

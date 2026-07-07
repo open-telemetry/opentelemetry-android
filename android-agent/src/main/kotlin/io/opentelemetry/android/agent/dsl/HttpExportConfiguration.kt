@@ -2,6 +2,7 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package io.opentelemetry.android.agent.dsl
 
 import io.opentelemetry.android.Incubating
@@ -84,8 +85,7 @@ class HttpExportConfiguration internal constructor() {
 
     private fun isFullUrl(cfg: EndpointConfiguration): Boolean = !cfg.fullUrl.isNullOrBlank()
 
-    private fun chooseCompression(signalConfigCompression: Compression?): Compression =
-        signalConfigCompression ?: this.compression
+    private fun chooseCompression(signalConfigCompression: Compression?): Compression = signalConfigCompression ?: this.compression
 
     /**
      * Override the default configuration for the v1/traces endpoint only.
