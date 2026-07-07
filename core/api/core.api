@@ -222,6 +222,27 @@ public final class io/opentelemetry/android/internal/initialization/Initializati
 	public final fun set (Lio/opentelemetry/android/internal/initialization/InitializationEvents;)V
 }
 
+public final class io/opentelemetry/android/internal/processors/NetworkAttributesLogRecordAppender : io/opentelemetry/sdk/logs/LogRecordProcessor {
+	public fun <init> (Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;)V
+	public fun <init> (Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;Lio/opentelemetry/android/common/internal/features/networkattributes/CurrentNetworkAttributesExtractor;)V
+	public synthetic fun <init> (Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;Lio/opentelemetry/android/common/internal/features/networkattributes/CurrentNetworkAttributesExtractor;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun onEmit (Lio/opentelemetry/context/Context;Lio/opentelemetry/sdk/logs/ReadWriteLogRecord;)V
+}
+
+public final class io/opentelemetry/android/internal/processors/NetworkAttributesSpanAppender : io/opentelemetry/sdk/trace/SpanProcessor {
+	public static final field Companion Lio/opentelemetry/android/internal/processors/NetworkAttributesSpanAppender$Companion;
+	public fun <init> (Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;)V
+	public static final fun create (Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;)Lio/opentelemetry/sdk/trace/SpanProcessor;
+	public fun isEndRequired ()Z
+	public fun isStartRequired ()Z
+	public fun onEnd (Lio/opentelemetry/sdk/trace/ReadableSpan;)V
+	public fun onStart (Lio/opentelemetry/context/Context;Lio/opentelemetry/sdk/trace/ReadWriteSpan;)V
+}
+
+public final class io/opentelemetry/android/internal/processors/NetworkAttributesSpanAppender$Companion {
+	public final fun create (Lio/opentelemetry/android/internal/services/network/CurrentNetworkProvider;)Lio/opentelemetry/sdk/trace/SpanProcessor;
+}
+
 public final class io/opentelemetry/android/internal/processors/ScreenAttributesLogRecordProcessor : io/opentelemetry/sdk/logs/LogRecordProcessor {
 	public fun <init> (Lio/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker;)V
 	public final fun getVisibleScreenTracker ()Lio/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker;
