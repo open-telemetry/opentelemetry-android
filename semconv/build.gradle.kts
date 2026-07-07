@@ -57,11 +57,12 @@ data class WeaverTarget(
 fun currentWeaverTarget(): WeaverTarget {
     val osName = System.getProperty("os.name").lowercase()
     val archName = System.getProperty("os.arch").lowercase()
+    // Only match architectures weaver actually publishes.
     val arch =
-        if (archName.contains("aarch64") || archName.contains("arm")) {
-            WeaverArch.AARCH64
-        } else {
-            WeaverArch.X86_64
+        when (archName) {
+            "aarch64", "arm64" -> WeaverArch.AARCH64
+            "x86_64", "amd64" -> WeaverArch.X86_64
+            else -> throw GradleException("Unsupported architecture for downloading weaver: $archName")
         }
     return when {
         osName.contains("mac") || osName.contains("darwin") -> {
@@ -69,11 +70,17 @@ fun currentWeaverTarget(): WeaverTarget {
         }
 
         osName.contains("win") -> {
+            // weaver publishes no aarch64-windows build, so x86_64 is used unconditionally;
+            // it still runs on ARM64 Windows via its built-in x64 emulation.
             WeaverTarget(WeaverOs.WINDOWS, "x86_64-pc-windows-msvc", "zip")
         }
 
         osName.contains("nux") || osName.contains("nix") -> {
-            WeaverTarget(WeaverOs.LINUX, "${arch.rustName}-unknown-linux-gnu", "tar.xz")
+            // musl-based distros (e.g. Alpine, common in slim CI containers) need the "-musl"
+            // build instead of the default glibc one. Detect via musl's own dynamic linker,
+            // which every musl distro ships at this exact path, rather than a specific distro.
+            val libc = if (File("/lib/ld-musl-${arch.rustName}.so.1").exists()) "musl" else "gnu"
+            WeaverTarget(WeaverOs.LINUX, "${arch.rustName}-unknown-linux-$libc", "tar.xz")
         }
 
         else -> {
