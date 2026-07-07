@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.common.internal
 
 import io.opentelemetry.kotlin.semconv.AppAttributes
@@ -10,22 +15,21 @@ import io.opentelemetry.kotlin.semconv.IncubatingApi
  */
 @OptIn(IncubatingApi::class)
 class SemconvCompat internal constructor() {
-
     companion object {
-
         var useLatestExperimental = true
 
-        fun map(key: String) : String {
-            if(useLatestExperimental){
+        fun map(key: String): String {
+            if (useLatestExperimental) {
                 return key
             }
-            return when(key) {
+            return when (key) {
                 // new -> old
                 "app.crash" -> "device.crash"
-                AppAttributes.APP_SCREEN_NAME  -> "screen.name"
+
+                AppAttributes.APP_SCREEN_NAME -> "screen.name"
+
                 else -> key
             }
         }
-
     }
 }

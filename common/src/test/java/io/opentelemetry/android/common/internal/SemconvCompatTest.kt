@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.common.internal
 
 import org.assertj.core.api.Assertions.assertThat
@@ -5,7 +10,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 
 class SemconvCompatTest {
-
     var compatState: Boolean = true
 
     @AfterEach
@@ -33,5 +37,4 @@ class SemconvCompatTest {
         assertThat(SemconvCompat.map("app.crash")).isEqualTo("app.crash")
         assertThat(SemconvCompat.map("rando.semconv.thinger")).isEqualTo("rando.semconv.thinger")
     }
-
 }
