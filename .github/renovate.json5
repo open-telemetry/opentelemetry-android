@@ -99,5 +99,25 @@
       "matchUpdateTypes": ["patch"],
       "schedule": ["before 8am every weekday"]
     }
-  ]
+  ],
+  customManagers: [
+    {
+      // weaver's version in the catalog isn't tied to a Maven coordinate (it's a CLI binary
+      // downloaded from GitHub Releases by semconv/build.gradle.kts), so the default gradle
+      // manager can't see it. Tell Renovate to treat it as a github-releases dependency instead.
+      // Release tags are "v"-prefixed (e.g. v0.24.2) but the catalog value isn't, matching how
+      // the download URL is built (`"v$version"`), so strip the prefix when comparing/writing.
+      customType: 'regex',
+      datasourceTemplate: 'github-releases',
+      managerFilePatterns: [
+        'gradle/libs.versions.toml',
+      ],
+      matchStrings: [
+        'weaver = "(?<currentValue>[^"]+)"',
+      ],
+      depNameTemplate: 'open-telemetry/weaver',
+      extractVersionTemplate: '^v(?<version>.*)$',
+      versioningTemplate: 'semver',
+    },
+  ],
 }
