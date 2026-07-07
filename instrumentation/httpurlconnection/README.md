@@ -87,7 +87,7 @@ Spans won't be automatically ended and reported otherwise. If any of your URLCon
 >
 > For the full context for these workaround, please see
 > [this issue](https://issuetracker.google.com/issues/334281968) for AGP <= 8.3.0
-> or [this issue](https://issuetracker.google.com/issues/230454566#comment18) for AGP > 8.3.0.
+> or [this issue](https://issuetracker.google.com/issues/230454566) (comment 18) for AGP > 8.3.0.
 
 ### Add these dependencies to your project
 
