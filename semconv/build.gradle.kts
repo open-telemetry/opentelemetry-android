@@ -217,14 +217,20 @@ abstract class GenerateSemanticConventionsTask
     @Inject
     constructor(
         private val execOps: ExecOperations,
+        private val fileOps: FileSystemOperations,
     ) : DefaultTask() {
         @get:InputDirectory
+        @get:IgnoreEmptyDirectories
+        @get:PathSensitive(PathSensitivity.RELATIVE)
         abstract val modelDir: DirectoryProperty
 
         @get:InputDirectory
+        @get:IgnoreEmptyDirectories
+        @get:PathSensitive(PathSensitivity.RELATIVE)
         abstract val templatesDir: DirectoryProperty
 
         @get:InputFile
+        @get:PathSensitive(PathSensitivity.NONE)
         abstract val weaverBinary: RegularFileProperty
 
         @get:OutputDirectory
@@ -233,6 +239,10 @@ abstract class GenerateSemanticConventionsTask
         @TaskAction
         fun run() {
             try {
+                // Ensure deleted or renamed conventions do not leave stale generated sources behind.
+                fileOps.delete {
+                    delete(outputDir.get().asFile)
+                }
                 execOps.exec {
                     commandLine(
                         weaverBinary.get().asFile.absolutePath,
