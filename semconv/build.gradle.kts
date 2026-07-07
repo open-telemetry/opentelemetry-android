@@ -78,7 +78,7 @@ fun currentWeaverTarget(): WeaverTarget {
         osName.contains("nux") || osName.contains("nix") -> {
             // musl-based distros (e.g. Alpine, common in slim CI containers) need the "-musl"
             // build instead of the default glibc one. Detect via musl's own dynamic linker,
-            // which every musl distro ships at this exact path, rather than a specific distro.
+            // which every musl distro ships at this exact path.
             val libc = if (File("/lib/ld-musl-${arch.rustName}.so.1").exists()) "musl" else "gnu"
             WeaverTarget(WeaverOs.LINUX, "${arch.rustName}-unknown-linux-$libc", "tar.xz")
         }
