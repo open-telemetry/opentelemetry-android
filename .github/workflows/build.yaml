@@ -51,6 +51,10 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+      - name: stop gradle daemons before publishing
+        # The previous Gradle invocations leave daemons with loaded Android/Dokka classloaders;
+        # publishToSonatype generates release docs and has been running out of metaspace.
+        run: ./gradlew --stop
       - name: publish snapshot
         run: >
           ./gradlew publishToSonatype --stacktrace --info
