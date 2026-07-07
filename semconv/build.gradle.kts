@@ -3,6 +3,7 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.security.MessageDigest
+import java.time.Duration
 
 buildscript {
     repositories {
@@ -54,9 +55,11 @@ data class WeaverTarget(
     val archiveExtension: String,
 )
 
-fun currentWeaverTarget(): WeaverTarget {
-    val osName = System.getProperty("os.name").lowercase()
-    val archName = System.getProperty("os.arch").lowercase()
+fun currentWeaverTarget(providers: ProviderFactory): WeaverTarget {
+    // Read via providers (not System.getProperty directly) so the configuration cache tracks
+    // these as declared inputs and correctly invalidates if they ever change.
+    val osName = providers.systemProperty("os.name").get().lowercase()
+    val archName = providers.systemProperty("os.arch").get().lowercase()
     // Only match architectures weaver actually publishes.
     val arch =
         when (archName) {
@@ -168,11 +171,17 @@ abstract class DownloadWeaverTask
             url: String,
             destination: File,
         ) {
-            val client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build()
+            val client =
+                HttpClient
+                    .newBuilder()
+                    .followRedirects(HttpClient.Redirect.NORMAL)
+                    .connectTimeout(Duration.ofSeconds(30))
+                    .build()
             val request =
                 HttpRequest
                     .newBuilder(URI.create(url))
                     .header("User-Agent", "opentelemetry-android-build")
+                    .timeout(Duration.ofSeconds(60))
                     .build()
             val response = client.send(request, HttpResponse.BodyHandlers.ofFile(destination.toPath()))
             check(response.statusCode() == 200) {
@@ -214,6 +223,7 @@ abstract class DownloadWeaverTask
         }
     }
 
+@org.gradle.api.tasks.CacheableTask
 abstract class GenerateSemanticConventionsTask
     @Inject
     constructor(
@@ -266,7 +276,7 @@ abstract class GenerateSemanticConventionsTask
         }
     }
 
-val weaverTarget = currentWeaverTarget()
+val weaverTarget = currentWeaverTarget(providers)
 val weaverExecutableName = if (weaverTarget.os == WeaverOs.WINDOWS) "weaver.exe" else "weaver"
 
 val downloadWeaver =
