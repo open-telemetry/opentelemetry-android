@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## Version 1.5.0 (2026-07-06)
+## Version 1.5.1 (2026-07-06)
 
 This version v1.5.1 is a patch release. 
 
