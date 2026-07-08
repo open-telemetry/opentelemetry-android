@@ -127,37 +127,38 @@ abstract class DownloadWeaverTask
             download("$releaseUrl.sha256", checksumFile)
             verifyChecksum(archiveFile, checksumFile)
 
-            val entryName = outputFile.name
-            // Non-Windows archives are .tar.xz; Gradle's own tarTree() has no XZ support, so extract via the OS's tar.
-            // This avoids a third-party decompression library.
             val tarExtractDir = File(workDir, "weaver-tar")
-            val tree =
-                if (isZip) {
-                    archiveOps.zipTree(archiveFile)
-                } else {
-                    extractTar(archiveFile, tarExtractDir)
-                    objects.fileTree().from(tarExtractDir)
+            try {
+                val entryName = outputFile.name
+                val tree =
+                    if (isZip) {
+                        archiveOps.zipTree(archiveFile)
+                    } else {
+                        // Gradle cannot read .tar.xz directly, so use the platform tar.
+                        extractTar(archiveFile, tarExtractDir)
+                        objects.fileTree().from(tarExtractDir)
+                    }
+
+                // Release archives nest the binary under a top-level "weaver-<triple>/" directory;
+                // flatten it since we only want the single executable, at a known path.
+                fileOps.copy {
+                    from(tree.matching { include("**/$entryName") })
+                    into(workDir)
+                    eachFile { relativePath = RelativePath(true, entryName) }
+                    includeEmptyDirs = false
+                }
+                check(outputFile.isFile) {
+                    "Could not find '$entryName' inside $assetName"
                 }
 
-            // Release archives nest the binary under a top-level "weaver-<triple>/" directory;
-            // flatten it since we only want the single executable, at a known path.
-            fileOps.copy {
-                from(tree.matching { include("**/$entryName") })
-                into(workDir)
-                eachFile { relativePath = RelativePath(true, entryName) }
-                includeEmptyDirs = false
+                if (!isZip) {
+                    outputFile.setExecutable(true)
+                }
+            } finally {
+                archiveFile.delete()
+                checksumFile.delete()
+                tarExtractDir.deleteRecursively()
             }
-            check(outputFile.isFile) {
-                "Could not find '$entryName' inside $assetName"
-            }
-
-            if (!isZip) {
-                outputFile.setExecutable(true)
-            }
-
-            archiveFile.delete()
-            checksumFile.delete()
-            tarExtractDir.deleteRecursively()
         }
 
         private fun download(
@@ -210,9 +211,19 @@ abstract class DownloadWeaverTask
             archiveFile: File,
             destinationDir: File,
         ) {
+            fileOps.delete {
+                delete(destinationDir)
+            }
             destinationDir.mkdirs()
-            execOps.exec {
-                commandLine("tar", "-xf", archiveFile.absolutePath, "-C", destinationDir.absolutePath)
+            try {
+                execOps.exec {
+                    commandLine("tar", "-xf", archiveFile.absolutePath, "-C", destinationDir.absolutePath)
+                }
+            } catch (exc: Exception) {
+                throw GradleException(
+                    "Failed to extract ${archiveFile.name}. Install a tar implementation with .tar.xz support.",
+                    exc,
+                )
             }
         }
     }
