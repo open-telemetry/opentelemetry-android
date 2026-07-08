@@ -5,17 +5,6 @@ import java.net.http.HttpResponse
 import java.security.MessageDigest
 import java.time.Duration
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        // Only used to strip the outer XZ layer off weaver's release archives before handing
-        // the resulting plain tar to Gradle's own tarTree()/FileSystemOperations for extraction.
-        classpath(libs.tukaani.xz)
-    }
-}
-
 plugins {
     id("otel.android-library-conventions")
     id("otel.publish-conventions")
@@ -102,7 +91,9 @@ abstract class DownloadWeaverTask
     @Inject
     constructor(
         private val archiveOps: ArchiveOperations,
+        private val execOps: ExecOperations,
         private val fileOps: FileSystemOperations,
+        private val objects: ObjectFactory,
     ) : DefaultTask() {
         @get:Input
         abstract val weaverVersion: Property<String>
@@ -137,13 +128,15 @@ abstract class DownloadWeaverTask
             verifyChecksum(archiveFile, checksumFile)
 
             val entryName = outputFile.name
-            val tarFile = File(workDir, "weaver.tar")
+            // Non-Windows archives are .tar.xz; Gradle's own tarTree() has no XZ support, so extract via the OS's tar.
+            // This avoids a third-party decompression library.
+            val tarExtractDir = File(workDir, "weaver-tar")
             val tree =
                 if (isZip) {
                     archiveOps.zipTree(archiveFile)
                 } else {
-                    decompressXz(archiveFile, tarFile)
-                    archiveOps.tarTree(tarFile)
+                    extractTar(archiveFile, tarExtractDir)
+                    objects.fileTree().from(tarExtractDir)
                 }
 
             // Release archives nest the binary under a top-level "weaver-<triple>/" directory;
@@ -164,7 +157,7 @@ abstract class DownloadWeaverTask
 
             archiveFile.delete()
             checksumFile.delete()
-            tarFile.delete()
+            tarExtractDir.deleteRecursively()
         }
 
         private fun download(
@@ -213,12 +206,13 @@ abstract class DownloadWeaverTask
             }
         }
 
-        private fun decompressXz(
-            source: File,
-            destination: File,
+        private fun extractTar(
+            archiveFile: File,
+            destinationDir: File,
         ) {
-            org.tukaani.xz.XZInputStream(source.inputStream().buffered()).use { input ->
-                destination.outputStream().use { output -> input.copyTo(output) }
+            destinationDir.mkdirs()
+            execOps.exec {
+                commandLine("tar", "-xf", archiveFile.absolutePath, "-C", destinationDir.absolutePath)
             }
         }
     }
