@@ -9,13 +9,11 @@ internal class InstrumentationConfigurators
 
     companion object {
         fun create(): InstrumentationConfigurators {
-            return create { s -> ServiceLoader.load(s) }
+            return create { ServiceLoader.load(Konfigurator::class.java) }
         }
-
         // Exists for testing
-        fun create(loader: Loader): InstrumentationConfigurators {
-            val configurators = loader.load(Konfigurator::class.java)
-                .groupBy { it.instrumentationName }
+        inline fun create(loader: () -> Iterable<Konfigurator>): InstrumentationConfigurators {
+            val configurators = loader().groupBy { it.instrumentationName }
             return InstrumentationConfigurators(configurators)
         }
     }
@@ -25,11 +23,4 @@ internal class InstrumentationConfigurators
         configurators[instrumentation.name]
             ?.forEach { (it as InstrumentationConfigurator<AndroidInstrumentation>).configure(instrumentation) }
     }
-}
-
-/**
- * Exists for testing
- */
-internal fun interface Loader {
-    fun load(service: Class<Konfigurator>): Iterable<Konfigurator>
 }

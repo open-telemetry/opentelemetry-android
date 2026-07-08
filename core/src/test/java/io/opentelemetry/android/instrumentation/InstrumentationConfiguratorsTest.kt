@@ -32,8 +32,7 @@ class InstrumentationConfiguratorsTest {
 
         val instrumentations = listOf<InstrumentationConfigurator<*>>(config1, config2)
 
-        val loader: (Class<InstrumentationConfigurator<*>>) -> Iterable<InstrumentationConfigurator<*>> =
-            { _ -> instrumentations }
+        val loader: () -> Iterable<InstrumentationConfigurator<*>> = { instrumentations }
 
         val configurators = InstrumentationConfigurators.create(loader)
         configurators.configure(inst1)
