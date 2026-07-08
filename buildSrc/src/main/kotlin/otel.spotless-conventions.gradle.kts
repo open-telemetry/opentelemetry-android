@@ -4,23 +4,13 @@ plugins {
     id("com.diffplug.spotless")
 }
 
-var kotlinConfigured = false
-
 spotless {
     java {
         googleJavaFormat().aosp()
         licenseHeaderFile(rootProject.file("gradle/spotless.license.java"), "(package|import|public)")
         target("src/**/*.java")
     }
-    plugins.withId("org.jetbrains.kotlin.jvm") {
-        configureKotlinOnce(this@spotless)
-    }
-    plugins.withId("org.jetbrains.kotlin.android") {
-        configureKotlinOnce(this@spotless)
-    }
-    plugins.withId("kotlin-android") {
-        configureKotlinOnce(this@spotless)
-    }
+    configureKotlin(this@spotless)
     kotlinGradle {
         ktlint()
     }
@@ -59,15 +49,6 @@ if (project == rootProject) {
         kotlinGradle {
             ktlint()
         }
-    }
-}
-
-fun configureKotlinOnce(
-    spotlessExtension: SpotlessExtension,
-) {
-    if (!kotlinConfigured) {
-        kotlinConfigured = true
-        configureKotlin(spotlessExtension)
     }
 }
 
