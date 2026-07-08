@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## Version 1.5.1 (2026-07-06)
+
+This version v1.5.1 is a patch release. 
+
+It contains a single fix to a v1.5.0 which to address an accidental dependency. 
+This dependency could, in some cases, cause network instrumentation to be installed 
+without the developer intending to do so. ([#1847](https://github.com/open-telemetry/opentelemetry-android/pull/1847))   
+
 ### 📈 Enhancements
 
 - Disk buffering now lets you configure how often buffered signals are read from disk and
