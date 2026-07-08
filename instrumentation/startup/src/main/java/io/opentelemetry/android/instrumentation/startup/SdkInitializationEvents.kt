@@ -15,8 +15,8 @@ import io.opentelemetry.android.instrumentation.startup.InitializationEventNames
 import io.opentelemetry.android.instrumentation.startup.InitializationEventNames.INIT_EVENT_SPAN_EXPORTER
 import io.opentelemetry.android.instrumentation.startup.InitializationEventNames.INIT_EVENT_STARTED
 import io.opentelemetry.android.internal.initialization.InitializationEvents
+import io.opentelemetry.android.semconv.SpanAttributes.SPAN_EXPORTER_KEY
 import io.opentelemetry.api.OpenTelemetry
-import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.common.Value
 import io.opentelemetry.api.logs.Logger
@@ -63,7 +63,7 @@ class SdkInitializationEvents(
 
     override fun spanExporterInitialized(spanExporter: SpanExporter) {
         val attributes =
-            Attributes.of(AttributeKey.stringKey("span.exporter"), spanExporter.toString())
+            Attributes.of(SPAN_EXPORTER_KEY, spanExporter.toString())
         addEvent(INIT_EVENT_SPAN_EXPORTER, attr = attributes)
     }
 

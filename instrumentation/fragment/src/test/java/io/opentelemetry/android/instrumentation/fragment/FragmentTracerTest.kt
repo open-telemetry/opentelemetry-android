@@ -8,7 +8,7 @@ package io.opentelemetry.android.instrumentation.fragment
 import androidx.fragment.app.Fragment
 import io.mockk.every
 import io.mockk.mockk
-import io.opentelemetry.android.common.RumConstants
+import io.opentelemetry.android.semconv.LastAttributes.LAST_SCREEN_NAME_KEY
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.api.trace.Tracer
@@ -67,7 +67,7 @@ internal class FragmentTracerTest {
         trackableTracer.endActiveSpan()
 
         val span = this.singleSpan
-        assertNull(span.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
+        assertNull(span.attributes.get(LAST_SCREEN_NAME_KEY))
     }
 
     @Test
@@ -88,7 +88,7 @@ internal class FragmentTracerTest {
         trackableTracer.endActiveSpan()
 
         val span = this.singleSpan
-        assertNull(span.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
+        assertNull(span.attributes.get(LAST_SCREEN_NAME_KEY))
     }
 
     @Test
@@ -112,7 +112,7 @@ internal class FragmentTracerTest {
         val span = this.singleSpan
         assertEquals(
             "previousScreen",
-            span.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY),
+            span.attributes.get(LAST_SCREEN_NAME_KEY),
         )
     }
 

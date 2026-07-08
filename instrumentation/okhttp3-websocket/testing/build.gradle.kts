@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":test-common"))
     byteBuddy(project(":instrumentation:okhttp3-websocket:agent"))
     implementation(project(":instrumentation:okhttp3-websocket:library"))
+    implementation(project(":semconv"))
 
     implementation(libs.okhttp)
     implementation(libs.opentelemetry.exporter.otlp)

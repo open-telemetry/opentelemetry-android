@@ -8,8 +8,9 @@ package io.opentelemetry.android.instrumentation.activity
 import android.app.Activity
 import io.mockk.every
 import io.mockk.mockk
-import io.opentelemetry.android.common.RumConstants
-import io.opentelemetry.android.instrumentation.activity.ActivityTracer.Companion.START_TYPE_KEY
+import io.opentelemetry.android.semconv.LastAttributes.LAST_SCREEN_NAME_KEY
+import io.opentelemetry.android.semconv.ActivityAttributes.ACTIVITY_NAME_KEY
+import io.opentelemetry.android.semconv.StartAttributes.START_TYPE_KEY
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
@@ -64,13 +65,13 @@ internal class ActivityCallbacksTest {
         //        assertEquals("cold", startupSpan.getAttributes().get(SplunkRum.START_TYPE_KEY));
         assertEquals(
             activity.javaClass.simpleName,
-            creationSpan.attributes.get(ActivityTracer.ACTIVITY_NAME_KEY),
+            creationSpan.attributes.get(ACTIVITY_NAME_KEY),
         )
         assertEquals(
             activity.javaClass.simpleName,
             creationSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(creationSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
+        assertNull(creationSpan.attributes.get(LAST_SCREEN_NAME_KEY))
 
         val events = creationSpan.events
         assertEquals(9, events.size)
@@ -105,13 +106,13 @@ internal class ActivityCallbacksTest {
         assertEquals("warm", span.attributes.get(START_TYPE_KEY))
         assertEquals(
             activity.javaClass.simpleName,
-            span.attributes.get(ActivityTracer.ACTIVITY_NAME_KEY),
+            span.attributes.get(ACTIVITY_NAME_KEY),
         )
         assertEquals(
             activity.javaClass.simpleName,
             span.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(span.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
+        assertNull(span.attributes.get(LAST_SCREEN_NAME_KEY))
 
         val events = span.events
         assertEquals(9, events.size)
@@ -154,13 +155,13 @@ internal class ActivityCallbacksTest {
         assertEquals("hot", span.attributes.get(START_TYPE_KEY))
         assertEquals(
             activity.javaClass.simpleName,
-            span.attributes.get(ActivityTracer.ACTIVITY_NAME_KEY),
+            span.attributes.get(ACTIVITY_NAME_KEY),
         )
         assertEquals(
             activity.javaClass.simpleName,
             span.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(span.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
+        assertNull(span.attributes.get(LAST_SCREEN_NAME_KEY))
 
         val events = span.events
         assertEquals(6, events.size)
@@ -193,7 +194,7 @@ internal class ActivityCallbacksTest {
         assertEquals("Resumed", span.name)
         assertEquals(
             activity.javaClass.simpleName,
-            span.attributes.get(ActivityTracer.ACTIVITY_NAME_KEY),
+            span.attributes.get(ACTIVITY_NAME_KEY),
         )
         assertEquals(
             activity.javaClass.simpleName,
@@ -201,7 +202,7 @@ internal class ActivityCallbacksTest {
         )
         assertEquals(
             "previousScreen",
-            span.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY),
+            span.attributes.get(LAST_SCREEN_NAME_KEY),
         )
 
         val events = span.events
@@ -230,13 +231,13 @@ internal class ActivityCallbacksTest {
         assertEquals("Destroyed", span.name)
         assertEquals(
             activity.javaClass.simpleName,
-            span.attributes.get(ActivityTracer.ACTIVITY_NAME_KEY),
+            span.attributes.get(ACTIVITY_NAME_KEY),
         )
         assertEquals(
             activity.javaClass.simpleName,
             span.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(span.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
+        assertNull(span.attributes.get(LAST_SCREEN_NAME_KEY))
 
         val events = span.events
         assertEquals(3, events.size)
@@ -264,13 +265,13 @@ internal class ActivityCallbacksTest {
         assertEquals("Stopped", stoppedSpan.name)
         assertEquals(
             activity.javaClass.simpleName,
-            stoppedSpan.attributes.get(ActivityTracer.ACTIVITY_NAME_KEY),
+            stoppedSpan.attributes.get(ACTIVITY_NAME_KEY),
         )
         assertEquals(
             activity.javaClass.simpleName,
             stoppedSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(stoppedSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
+        assertNull(stoppedSpan.attributes.get(LAST_SCREEN_NAME_KEY))
 
         var events: List<EventData> = stoppedSpan.events
         assertEquals(3, events.size)
@@ -284,13 +285,13 @@ internal class ActivityCallbacksTest {
         assertEquals("Destroyed", destroyedSpan.name)
         assertEquals(
             activity.javaClass.simpleName,
-            destroyedSpan.attributes.get(ActivityTracer.ACTIVITY_NAME_KEY),
+            destroyedSpan.attributes.get(ACTIVITY_NAME_KEY),
         )
         assertEquals(
             activity.javaClass.simpleName,
             destroyedSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(destroyedSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
+        assertNull(destroyedSpan.attributes.get(LAST_SCREEN_NAME_KEY))
 
         events = destroyedSpan.events
         assertEquals(3, events.size)
@@ -318,13 +319,13 @@ internal class ActivityCallbacksTest {
         assertEquals("Paused", stoppedSpan.name)
         assertEquals(
             activity.javaClass.simpleName,
-            stoppedSpan.attributes.get(ActivityTracer.ACTIVITY_NAME_KEY),
+            stoppedSpan.attributes.get(ACTIVITY_NAME_KEY),
         )
         assertEquals(
             activity.javaClass.simpleName,
             stoppedSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(stoppedSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
+        assertNull(stoppedSpan.attributes.get(LAST_SCREEN_NAME_KEY))
 
         var events: List<EventData> = stoppedSpan.events
         assertEquals(3, events.size)
@@ -338,13 +339,13 @@ internal class ActivityCallbacksTest {
         assertEquals("Stopped", destroyedSpan.name)
         assertEquals(
             activity.javaClass.simpleName,
-            destroyedSpan.attributes.get(ActivityTracer.ACTIVITY_NAME_KEY),
+            destroyedSpan.attributes.get(ACTIVITY_NAME_KEY),
         )
         assertEquals(
             activity.javaClass.simpleName,
             destroyedSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(destroyedSpan.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
+        assertNull(destroyedSpan.attributes.get(LAST_SCREEN_NAME_KEY))
 
         events = destroyedSpan.events
         assertEquals(3, events.size)

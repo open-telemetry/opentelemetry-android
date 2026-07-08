@@ -10,8 +10,8 @@ import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
-import io.opentelemetry.android.common.RumConstants
-import io.opentelemetry.android.instrumentation.activity.ActivityTracer.Companion.START_TYPE_KEY
+import io.opentelemetry.android.semconv.LastAttributes.LAST_SCREEN_NAME_KEY
+import io.opentelemetry.android.semconv.StartAttributes.START_TYPE_KEY
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
@@ -177,7 +177,7 @@ class ActivityTracerTest {
         trackableTracer.endActiveSpan()
 
         val span = this.singleSpan
-        assertNull(span.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
+        assertNull(span.attributes.get(LAST_SCREEN_NAME_KEY))
     }
 
     @Test
@@ -198,7 +198,7 @@ class ActivityTracerTest {
         trackableTracer.endActiveSpan()
 
         val span = this.singleSpan
-        assertNull(span.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY))
+        assertNull(span.attributes.get(LAST_SCREEN_NAME_KEY))
     }
 
     @Test
@@ -220,7 +220,7 @@ class ActivityTracerTest {
         val span = this.singleSpan
         assertEquals(
             "previousScreen",
-            span.attributes.get(RumConstants.LAST_SCREEN_NAME_KEY),
+            span.attributes.get(LAST_SCREEN_NAME_KEY),
         )
     }
 

@@ -7,6 +7,7 @@
 
 package io.opentelemetry.android.instrumentation.network
 
+import io.opentelemetry.android.semconv.NetworkAttributes.NETWORK_STATUS_KEY
 import android.app.Application
 import android.os.Build
 import androidx.test.ext.junit.runners.AndroidJUnit4

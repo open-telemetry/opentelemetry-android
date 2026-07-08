@@ -16,7 +16,8 @@ import io.opentelemetry.android.instrumentation.startup.InitializationEventNames
 import io.opentelemetry.android.instrumentation.startup.InitializationEventNames.INIT_EVENT_NET_PROVIDER
 import io.opentelemetry.android.instrumentation.startup.InitializationEventNames.INIT_EVENT_SPAN_EXPORTER
 import io.opentelemetry.android.instrumentation.startup.InitializationEventNames.INIT_EVENT_STARTED
-import io.opentelemetry.api.common.AttributeKey.stringKey
+import io.opentelemetry.android.semconv.SpanAttributes.SPAN_EXPORTER_KEY
+import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.common.Value
 import io.opentelemetry.sdk.OpenTelemetrySdk
@@ -82,7 +83,7 @@ class SdkInitializationEventsTest {
             time(now + 200).named(INIT_EVENT_NET_MONITOR),
             time(now + 250).named(INIT_EVENT_JANK_MONITOR),
             time(now + 300).named(INIT_EVENT_SPAN_EXPORTER).withAttributes(
-                "span.exporter",
+                SPAN_EXPORTER_KEY,
                 "com.cool.Exporter",
             ),
         )
@@ -117,10 +118,10 @@ class SdkInitializationEventsTest {
         }
 
         fun withAttributes(
-            key: String,
+            key: AttributeKey<String>,
             value: String,
         ): EventAssert {
-            attrs = Attributes.of(stringKey(key), value)
+            attrs = Attributes.of(key, value)
             return this
         }
     }

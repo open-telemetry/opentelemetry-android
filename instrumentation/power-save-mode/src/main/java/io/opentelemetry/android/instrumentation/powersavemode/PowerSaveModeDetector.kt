@@ -9,7 +9,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.PowerManager
-import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.android.semconv.AndroidAttributes.ANDROID_POWER_SAVE_MODE_ENABLED_KEY
 import io.opentelemetry.api.logs.Logger
 
 /**
@@ -27,8 +27,6 @@ internal class PowerSaveModeDetector(
 ) : BroadcastReceiver() {
     internal companion object {
         const val EVENT_NAME = "device.power_save_mode.change"
-        val POWER_SAVE_MODE_ENABLED: AttributeKey<Boolean> =
-            AttributeKey.booleanKey("android.power_save_mode.enabled")
     }
 
     override fun onReceive(
@@ -38,7 +36,7 @@ internal class PowerSaveModeDetector(
         logger
             .logRecordBuilder()
             .setEventName(EVENT_NAME)
-            .setAttribute(POWER_SAVE_MODE_ENABLED, powerManager.isPowerSaveMode)
+            .setAttribute(ANDROID_POWER_SAVE_MODE_ENABLED_KEY, powerManager.isPowerSaveMode)
             .emit()
     }
 }

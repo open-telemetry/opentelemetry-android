@@ -13,6 +13,8 @@ import io.mockk.mockk
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.common.internal.utils.threadIdCompat
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
+import io.opentelemetry.android.semconv.HeapAttributes.HEAP_FREE_KEY
+import io.opentelemetry.android.semconv.StorageAttributes.STORAGE_FREE_KEY
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Severity
@@ -221,8 +223,8 @@ internal class CrashReportIntegrationTest {
         assertEquals(expectedExcMessage, attrs[ExceptionAttributes.EXCEPTION_MESSAGE])
         assertEquals(thread.threadIdCompat, attrs[ThreadAttributes.THREAD_ID])
         assertEquals(thread.name, attrs[ThreadAttributes.THREAD_NAME])
-        assertNotNull(attrs["heap.free"])
-        assertNotNull(attrs["storage.free"])
+        assertNotNull(attributes.get(HEAP_FREE_KEY))
+        assertNotNull(attributes.get(STORAGE_FREE_KEY))
     }
 
     private fun generateLargeStacktraceException(depth: Int = 1000): Throwable {

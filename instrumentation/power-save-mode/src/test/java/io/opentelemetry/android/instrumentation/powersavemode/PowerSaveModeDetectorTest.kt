@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.instrumentation.powersavemode
 
+import io.opentelemetry.android.semconv.AndroidAttributes.ANDROID_POWER_SAVE_MODE_ENABLED_KEY
 import android.content.Context
 import android.content.Intent
 import android.os.PowerManager
@@ -52,7 +53,7 @@ class PowerSaveModeDetectorTest {
         assertThat(openTelemetryRule.logRecords).hasSize(1)
         val record = openTelemetryRule.logRecords.single()
         assertThat(record.eventName).isEqualTo(PowerSaveModeDetector.EVENT_NAME)
-        assertThat(record.attributes.get(PowerSaveModeDetector.POWER_SAVE_MODE_ENABLED))
+        assertThat(record.attributes.get(ANDROID_POWER_SAVE_MODE_ENABLED_KEY))
             .isEqualTo(true)
     }
 
@@ -68,7 +69,7 @@ class PowerSaveModeDetectorTest {
         assertThat(openTelemetryRule.logRecords).hasSize(1)
         val record = openTelemetryRule.logRecords.single()
         assertThat(record.eventName).isEqualTo(PowerSaveModeDetector.EVENT_NAME)
-        assertThat(record.attributes.get(PowerSaveModeDetector.POWER_SAVE_MODE_ENABLED))
+        assertThat(record.attributes.get(ANDROID_POWER_SAVE_MODE_ENABLED_KEY))
             .isEqualTo(false)
     }
 }

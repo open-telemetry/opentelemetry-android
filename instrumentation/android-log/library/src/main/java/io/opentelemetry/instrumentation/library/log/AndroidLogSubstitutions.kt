@@ -6,7 +6,7 @@
 package io.opentelemetry.instrumentation.library.log
 
 import android.util.Log
-import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.android.semconv.AndroidAttributes.ANDROID_LOG_TAG_KEY
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Severity
 import io.opentelemetry.instrumentation.library.log.internal.LogRecordBuilderCreator.createLogRecordBuilder
@@ -15,8 +15,6 @@ import io.opentelemetry.instrumentation.library.log.internal.LogRecordBuilderCre
 import io.opentelemetry.semconv.ExceptionAttributes
 
 object AndroidLogSubstitutions {
-    val tagKey: AttributeKey<String> = AttributeKey.stringKey("android.log.tag")
-
     @JvmStatic
     fun substitutionForVerbose(
         tag: String?,
@@ -24,7 +22,7 @@ object AndroidLogSubstitutions {
     ): Int {
         createLogRecordBuilder()
             .setSeverity(Severity.TRACE)
-            .setAllAttributes(Attributes.builder().put(tagKey, tag).build())
+            .setAllAttributes(Attributes.builder().put(ANDROID_LOG_TAG_KEY, tag).build())
             .setBody(message)
             .emit()
 
@@ -42,7 +40,7 @@ object AndroidLogSubstitutions {
             .setAllAttributes(
                 Attributes
                     .builder()
-                    .put(tagKey, tag)
+                    .put(ANDROID_LOG_TAG_KEY, tag)
                     .put(ExceptionAttributes.EXCEPTION_TYPE, getTypeName(throwable))
                     .put(ExceptionAttributes.EXCEPTION_STACKTRACE, printStacktrace(throwable))
                     .build(),
@@ -59,7 +57,7 @@ object AndroidLogSubstitutions {
     ): Int {
         createLogRecordBuilder()
             .setSeverity(Severity.DEBUG)
-            .setAllAttributes(Attributes.builder().put(tagKey, tag).build())
+            .setAllAttributes(Attributes.builder().put(ANDROID_LOG_TAG_KEY, tag).build())
             .setBody(message)
             .emit()
 
@@ -77,7 +75,7 @@ object AndroidLogSubstitutions {
             .setAllAttributes(
                 Attributes
                     .builder()
-                    .put(tagKey, tag)
+                    .put(ANDROID_LOG_TAG_KEY, tag)
                     .put(ExceptionAttributes.EXCEPTION_TYPE, getTypeName(throwable))
                     .put(ExceptionAttributes.EXCEPTION_STACKTRACE, printStacktrace(throwable))
                     .build(),
@@ -94,7 +92,7 @@ object AndroidLogSubstitutions {
     ): Int {
         createLogRecordBuilder()
             .setSeverity(Severity.INFO)
-            .setAllAttributes(Attributes.builder().put(tagKey, tag).build())
+            .setAllAttributes(Attributes.builder().put(ANDROID_LOG_TAG_KEY, tag).build())
             .setBody(message)
             .emit()
 
@@ -112,7 +110,7 @@ object AndroidLogSubstitutions {
             .setAllAttributes(
                 Attributes
                     .builder()
-                    .put(tagKey, tag)
+                    .put(ANDROID_LOG_TAG_KEY, tag)
                     .put(ExceptionAttributes.EXCEPTION_TYPE, getTypeName(throwable))
                     .put(ExceptionAttributes.EXCEPTION_STACKTRACE, printStacktrace(throwable))
                     .build(),
@@ -129,7 +127,7 @@ object AndroidLogSubstitutions {
     ): Int {
         createLogRecordBuilder()
             .setSeverity(Severity.WARN)
-            .setAllAttributes(Attributes.builder().put(tagKey, tag).build())
+            .setAllAttributes(Attributes.builder().put(ANDROID_LOG_TAG_KEY, tag).build())
             .setBody(message)
             .emit()
 
@@ -146,7 +144,7 @@ object AndroidLogSubstitutions {
             .setAllAttributes(
                 Attributes
                     .builder()
-                    .put(tagKey, tag)
+                    .put(ANDROID_LOG_TAG_KEY, tag)
                     .put(ExceptionAttributes.EXCEPTION_TYPE, getTypeName(throwable))
                     .put(ExceptionAttributes.EXCEPTION_STACKTRACE, printStacktrace(throwable))
                     .build(),
@@ -166,7 +164,7 @@ object AndroidLogSubstitutions {
             .setAllAttributes(
                 Attributes
                     .builder()
-                    .put(tagKey, tag)
+                    .put(ANDROID_LOG_TAG_KEY, tag)
                     .put(ExceptionAttributes.EXCEPTION_TYPE, getTypeName(throwable))
                     .put(ExceptionAttributes.EXCEPTION_STACKTRACE, printStacktrace(throwable))
                     .build(),
@@ -183,7 +181,7 @@ object AndroidLogSubstitutions {
     ): Int {
         createLogRecordBuilder()
             .setSeverity(Severity.ERROR)
-            .setAllAttributes(Attributes.builder().put(tagKey, tag).build())
+            .setAllAttributes(Attributes.builder().put(ANDROID_LOG_TAG_KEY, tag).build())
             .setBody(message)
             .emit()
 
@@ -201,7 +199,7 @@ object AndroidLogSubstitutions {
             .setAllAttributes(
                 Attributes
                     .builder()
-                    .put(tagKey, tag)
+                    .put(ANDROID_LOG_TAG_KEY, tag)
                     .put(ExceptionAttributes.EXCEPTION_TYPE, getTypeName(throwable))
                     .put(ExceptionAttributes.EXCEPTION_STACKTRACE, printStacktrace(throwable))
                     .build(),
@@ -218,7 +216,7 @@ object AndroidLogSubstitutions {
     ): Int {
         createLogRecordBuilder()
             .setSeverity(Severity.UNDEFINED_SEVERITY_NUMBER)
-            .setAllAttributes(Attributes.builder().put(tagKey, tag).build())
+            .setAllAttributes(Attributes.builder().put(ANDROID_LOG_TAG_KEY, tag).build())
             .setBody(message)
             .emit()
 
@@ -235,7 +233,7 @@ object AndroidLogSubstitutions {
             .setAllAttributes(
                 Attributes
                     .builder()
-                    .put(tagKey, tag)
+                    .put(ANDROID_LOG_TAG_KEY, tag)
                     .put(ExceptionAttributes.EXCEPTION_TYPE, getTypeName(throwable))
                     .put(ExceptionAttributes.EXCEPTION_STACKTRACE, printStacktrace(throwable))
                     .build(),
@@ -255,7 +253,7 @@ object AndroidLogSubstitutions {
             .setAllAttributes(
                 Attributes
                     .builder()
-                    .put(tagKey, tag)
+                    .put(ANDROID_LOG_TAG_KEY, tag)
                     .put(ExceptionAttributes.EXCEPTION_TYPE, getTypeName(throwable))
                     .put(ExceptionAttributes.EXCEPTION_STACKTRACE, printStacktrace(throwable))
                     .build(),

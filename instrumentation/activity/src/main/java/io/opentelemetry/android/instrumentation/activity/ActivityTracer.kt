@@ -9,7 +9,8 @@ import android.app.Activity
 import io.opentelemetry.android.common.internal.SemconvCompat.Companion.map
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
-import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.android.semconv.ActivityAttributes.ACTIVITY_NAME_KEY
+import io.opentelemetry.android.semconv.StartAttributes.START_TYPE_KEY
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.context.Context
@@ -122,8 +123,6 @@ internal class ActivityTracer(
     }
 
     internal companion object {
-        val ACTIVITY_NAME_KEY: AttributeKey<String> = AttributeKey.stringKey("activity.name")
         const val APP_START_SPAN_NAME: String = "AppStart"
-        val START_TYPE_KEY: AttributeKey<String> = AttributeKey.stringKey("start.type")
     }
 }

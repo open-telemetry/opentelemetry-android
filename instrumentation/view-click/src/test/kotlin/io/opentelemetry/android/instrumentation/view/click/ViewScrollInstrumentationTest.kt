@@ -26,15 +26,14 @@ import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_FLING_EVENT_NAME
 import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_SCROLL_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_DISTANCE_X
-import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_DISTANCE_Y
-import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_TYPE
-import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_VELOCITY_X
-import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_VELOCITY_Y
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_DISTANCE_X_KEY
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_DISTANCE_Y_KEY
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_TYPE_KEY
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_VELOCITY_X_KEY
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_VELOCITY_Y_KEY
 import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_FLING_EVENT_NAME
 import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_SCROLL_EVENT_NAME
 import io.opentelemetry.android.session.SessionProvider
-import io.opentelemetry.api.common.AttributeKey.doubleKey
 import io.opentelemetry.api.common.AttributeKey.longKey
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_X
@@ -69,7 +68,7 @@ class ViewScrollInstrumentationTest {
     @MockK
     lateinit var application: Application
 
-    private val toolTypeKey = stringKey(HARDWARE_POINTER_TYPE)
+    private val toolTypeKey = HW_POINTER_TYPE_KEY
 
     @Before
     fun setUp() {
@@ -131,8 +130,8 @@ class ViewScrollInstrumentationTest {
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), newPositionEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), newPositionEvent.y.toLong()),
-                equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_X), horizontalDistance),
-                equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_Y), verticalDistance),
+                equalTo(HW_POINTER_DISTANCE_X_KEY, horizontalDistance),
+                equalTo(HW_POINTER_DISTANCE_Y_KEY, verticalDistance),
                 equalTo(toolTypeKey, "finger"),
             )
 
@@ -145,8 +144,8 @@ class ViewScrollInstrumentationTest {
                 equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
                 equalTo(stringKey(APP_WIDGET_NAME), "10012"),
                 equalTo(toolTypeKey, "finger"),
-                equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_X), horizontalDistance),
-                equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_Y), verticalDistance),
+                equalTo(HW_POINTER_DISTANCE_X_KEY, horizontalDistance),
+                equalTo(HW_POINTER_DISTANCE_Y_KEY, verticalDistance),
             )
     }
 
@@ -259,8 +258,8 @@ class ViewScrollInstrumentationTest {
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), newPositionEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), newPositionEvent.y.toLong()),
-                equalTo(doubleKey(HARDWARE_POINTER_VELOCITY_X), 0.0),
-                equalTo(doubleKey(HARDWARE_POINTER_VELOCITY_Y), verticalVelocity),
+                equalTo(HW_POINTER_VELOCITY_X_KEY, 0.0),
+                equalTo(HW_POINTER_VELOCITY_Y_KEY, verticalVelocity),
                 equalTo(toolTypeKey, "finger"),
             )
 
@@ -272,8 +271,8 @@ class ViewScrollInstrumentationTest {
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
                 equalTo(stringKey(APP_WIDGET_ID), mockView.id.toString()),
                 equalTo(stringKey(APP_WIDGET_NAME), "10012"),
-                equalTo(doubleKey(HARDWARE_POINTER_VELOCITY_X), 0.0),
-                equalTo(doubleKey(HARDWARE_POINTER_VELOCITY_Y), verticalVelocity),
+                equalTo(HW_POINTER_VELOCITY_X_KEY, 0.0),
+                equalTo(HW_POINTER_VELOCITY_Y_KEY, verticalVelocity),
                 equalTo(toolTypeKey, "finger"),
             )
     }
@@ -335,8 +334,8 @@ class ViewScrollInstrumentationTest {
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), newPositionEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), newPositionEvent.y.toLong()),
-                equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_X), 0.0),
-                equalTo(doubleKey(HARDWARE_POINTER_DISTANCE_Y), distance.toDouble()),
+                equalTo(HW_POINTER_DISTANCE_X_KEY, 0.0),
+                equalTo(HW_POINTER_DISTANCE_Y_KEY, distance.toDouble()),
                 equalTo(toolTypeKey, "finger"),
             )
     }

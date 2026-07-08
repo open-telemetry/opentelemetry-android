@@ -20,4 +20,5 @@ android {
 dependencies {
     implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":agent-api"))
+    implementation(project(":semconv"))
 }

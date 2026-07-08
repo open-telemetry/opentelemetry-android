@@ -6,6 +6,8 @@
 package io.opentelemetry.instrumentation.library.okhttp.websocket
 
 import io.opentelemetry.android.test.common.OpenTelemetryRumRule
+import io.opentelemetry.android.semconv.WebsocketAttributes.WEBSOCKET_MESSAGE_SIZE_KEY
+import io.opentelemetry.android.semconv.WebsocketAttributes.WEBSOCKET_MESSAGE_TYPE_KEY
 import io.opentelemetry.instrumentation.library.okhttp.websocket.internal.WebsocketListenerWrapper
 import io.opentelemetry.semconv.HttpAttributes
 import io.opentelemetry.semconv.NetworkAttributes
@@ -123,8 +125,8 @@ class InstrumentationTest {
         val logRecordData = logRecordItems[1]
         val attributes = logRecordData.attributes
 
-        Assert.assertEquals("text", attributes.get(WebsocketListenerWrapper.MESSAGE_TYPE))
-        Assert.assertEquals(5L, attributes.get(WebsocketListenerWrapper.MESSAGE_SIZE))
+        Assert.assertEquals("text", attributes.get(WEBSOCKET_MESSAGE_TYPE_KEY))
+        Assert.assertEquals(5L, attributes.get(WEBSOCKET_MESSAGE_SIZE_KEY))
     }
 
     private val webSocketListenerServer: WebSocketListener =
