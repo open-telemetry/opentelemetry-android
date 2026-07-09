@@ -11,9 +11,9 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.semconv.StartAttributes.START_TYPE_KEY
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
+import io.opentelemetry.android.semconv.StartAttributes.START_TYPE_KEY
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanBuilder

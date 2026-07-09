@@ -10,8 +10,8 @@ import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Bundle
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants
-import io.opentelemetry.android.semconv.StartAttributes.START_TYPE_KEY
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
+import io.opentelemetry.android.semconv.StartAttributes.START_TYPE_KEY
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.sdk.common.Clock

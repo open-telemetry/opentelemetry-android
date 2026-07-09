@@ -6,13 +6,13 @@
 package io.opentelemetry.instrumentation.library.httpurlconnection
 
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import java.util.ServiceLoader
 import io.opentelemetry.android.test.common.OpenTelemetryRumRule
 import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlConnectionTestUtil.executeGet
 import io.opentelemetry.instrumentation.library.httpurlconnection.HttpUrlConnectionTestUtil.post
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Rule
 import org.junit.Test
+import java.util.ServiceLoader
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -95,7 +95,8 @@ class InstrumentationTest {
 
         val instrumentation =
             checkNotNull(
-                ServiceLoader.load(AndroidInstrumentation::class.java)
+                ServiceLoader
+                    .load(AndroidInstrumentation::class.java)
                     .filterIsInstance<HttpUrlInstrumentation>()
                     .firstOrNull(),
             )

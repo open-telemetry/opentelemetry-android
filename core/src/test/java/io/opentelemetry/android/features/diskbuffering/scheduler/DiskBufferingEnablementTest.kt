@@ -14,10 +14,10 @@ import io.mockk.verify
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.internal.services.periodic.PeriodicRunnable
 import io.opentelemetry.android.internal.services.periodic.PeriodicTaskScheduler
-import kotlin.time.Duration.Companion.minutes
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration.Companion.minutes
 
 class DiskBufferingEnablementTest {
     private lateinit var state: DiskBufferingEnablement

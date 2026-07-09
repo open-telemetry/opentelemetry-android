@@ -15,8 +15,9 @@ class NetworkAttributesLogRecordAppender(
     private val currentNetworkProvider: CurrentNetworkProvider,
     private val networkAttributesExtractor: CurrentNetworkAttributesExtractor = CurrentNetworkAttributesExtractor(),
 ) : LogRecordProcessor {
-    constructor(networkProvider: CurrentNetworkProvider) : this(networkProvider,
-        CurrentNetworkAttributesExtractor()
+    constructor(networkProvider: CurrentNetworkProvider) : this(
+        networkProvider,
+        CurrentNetworkAttributesExtractor(),
     )
 
     override fun onEmit(

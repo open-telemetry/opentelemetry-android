@@ -10,11 +10,11 @@ import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
-import io.opentelemetry.android.semconv.LastAttributes.LAST_SCREEN_NAME_KEY
-import io.opentelemetry.android.semconv.StartAttributes.START_TYPE_KEY
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
+import io.opentelemetry.android.semconv.LastAttributes.LAST_SCREEN_NAME_KEY
+import io.opentelemetry.android.semconv.StartAttributes.START_TYPE_KEY
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME

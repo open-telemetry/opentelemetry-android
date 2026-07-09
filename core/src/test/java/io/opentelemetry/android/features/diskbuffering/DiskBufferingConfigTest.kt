@@ -5,9 +5,9 @@
 
 package io.opentelemetry.android.features.diskbuffering
 
-import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.util.concurrent.TimeUnit
 
 class DiskBufferingConfigTest {
     @Test

@@ -10,12 +10,7 @@ spotless {
         licenseHeaderFile(rootProject.file("gradle/spotless.license.java"), "(package|import|public)")
         target("src/**/*.java")
     }
-    plugins.withId("org.jetbrains.kotlin.jvm") {
-        configureKotlin(this@spotless)
-    }
-    plugins.withId("org.jetbrains.kotlin.android") {
-        configureKotlin(this@spotless)
-    }
+    configureKotlin(this@spotless)
     kotlinGradle {
         ktlint()
     }

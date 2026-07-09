@@ -5,15 +5,15 @@
 
 package io.opentelemetry.android.instrumentation.fragment
 
-import io.opentelemetry.android.semconv.FragmentAttributes.FRAGMENT_NAME_KEY
 import androidx.fragment.app.Fragment
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
-import io.opentelemetry.android.semconv.LastAttributes.LAST_SCREEN_NAME_KEY
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
+import io.opentelemetry.android.semconv.FragmentAttributes.FRAGMENT_NAME_KEY
+import io.opentelemetry.android.semconv.LastAttributes.LAST_SCREEN_NAME_KEY
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME
