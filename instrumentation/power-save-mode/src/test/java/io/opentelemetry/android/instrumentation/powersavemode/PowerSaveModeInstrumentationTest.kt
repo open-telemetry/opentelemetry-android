@@ -5,7 +5,6 @@
 
 package io.opentelemetry.android.instrumentation.powersavemode
 
-import io.opentelemetry.android.semconv.AndroidAttributes.ANDROID_POWER_SAVE_MODE_ENABLED_KEY
 import android.content.Context
 import android.content.Intent
 import android.os.Looper
@@ -16,6 +15,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.android.semconv.AndroidAttributes.ANDROID_POWER_SAVE_MODE_ENABLED_KEY
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After

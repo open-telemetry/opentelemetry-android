@@ -5,9 +5,9 @@
 
 package io.opentelemetry.instrumentation.library.log.testing
 
+import io.opentelemetry.android.semconv.AndroidAttributes.ANDROID_LOG_TAG_KEY
 import io.opentelemetry.android.test.common.OpenTelemetryRumRule
 import io.opentelemetry.api.logs.Severity
-import io.opentelemetry.android.semconv.AndroidAttributes.ANDROID_LOG_TAG_KEY
 import io.opentelemetry.instrumentation.library.log.LoggingTestUtil
 import io.opentelemetry.semconv.ExceptionAttributes
 import org.assertj.core.api.Assertions.assertThat

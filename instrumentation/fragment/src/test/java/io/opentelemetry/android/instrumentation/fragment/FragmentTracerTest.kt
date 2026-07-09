@@ -8,9 +8,9 @@ package io.opentelemetry.android.instrumentation.fragment
 import androidx.fragment.app.Fragment
 import io.mockk.every
 import io.mockk.mockk
-import io.opentelemetry.android.semconv.LastAttributes.LAST_SCREEN_NAME_KEY
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
+import io.opentelemetry.android.semconv.LastAttributes.LAST_SCREEN_NAME_KEY
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import io.opentelemetry.sdk.trace.data.SpanData

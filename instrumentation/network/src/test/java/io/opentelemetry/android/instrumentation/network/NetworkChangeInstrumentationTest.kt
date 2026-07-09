@@ -7,7 +7,6 @@
 
 package io.opentelemetry.android.instrumentation.network
 
-import io.opentelemetry.android.semconv.NetworkAttributes.NETWORK_STATUS_KEY
 import android.app.Application
 import android.os.Build
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -22,12 +21,13 @@ import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
-import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
-import io.opentelemetry.android.internal.services.network.NetworkChangeListener
-import io.opentelemetry.android.internal.services.network.NetworkProviderHolder
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener
+import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
+import io.opentelemetry.android.internal.services.network.NetworkChangeListener
+import io.opentelemetry.android.internal.services.network.NetworkProviderHolder
+import io.opentelemetry.android.semconv.NetworkAttributes.NETWORK_STATUS_KEY
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.kotlin.semconv.IncubatingApi

@@ -28,10 +28,10 @@ import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_CLICK_EVENT_NAME
+import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_EVENT_NAME
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_BUTTON_KEY
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_CLICKS_KEY
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_TYPE_KEY
-import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_EVENT_NAME
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.longKey
 import io.opentelemetry.api.common.AttributeKey.stringKey
