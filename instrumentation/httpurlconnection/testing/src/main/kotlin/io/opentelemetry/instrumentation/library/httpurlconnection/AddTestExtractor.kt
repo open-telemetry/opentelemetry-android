@@ -9,7 +9,7 @@ import java.net.URLConnection
 
 @AutoService(InstrumentationConfigurator::class)
 class AddExtractor : InstrumentationConfigurator<HttpUrlInstrumentation> {
-    override val instrumentationName: String = "httpurlconnection"
+    override val instrumentationType = HttpUrlInstrumentation::class.java
 
     override fun configure(instrumentation: HttpUrlInstrumentation) {
         val extractor = object : AttributesExtractor<URLConnection, Int> {

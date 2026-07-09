@@ -10,7 +10,7 @@ class InstrumentationConfiguratorsTest {
     @Test
     fun testCreateAndConfigure(){
         val config1 = object: InstrumentationConfigurator<TestInstrumentation1> {
-            override val instrumentationName: String = "inst1"
+            override val instrumentationType = TestInstrumentation1::class.java
 
             override fun configure(instrumentation: TestInstrumentation1) {
                 instrumentation.configured = true
@@ -18,7 +18,7 @@ class InstrumentationConfiguratorsTest {
 
         }
         val config2 = object: InstrumentationConfigurator<TestInstrumentation2> {
-            override val instrumentationName: String = "inst2"
+            override val instrumentationType = TestInstrumentation2::class.java
 
             override fun configure(instrumentation: TestInstrumentation2) {
                 instrumentation.configured = true

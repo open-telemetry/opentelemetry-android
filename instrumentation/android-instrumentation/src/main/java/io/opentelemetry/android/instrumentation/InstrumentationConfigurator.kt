@@ -5,13 +5,12 @@ package io.opentelemetry.android.instrumentation
  *
  * @param T The instrumentation type this configurator can configure.
  */
-interface InstrumentationConfigurator<in T : AndroidInstrumentation> {
+interface InstrumentationConfigurator<T : AndroidInstrumentation> {
 
     /**
-     * The [AndroidInstrumentation.name] value of the instrumentation this configurator applies to.
-     * This name must exactly match the name returned by the AndroidInstrumentation.name.
+     * The Class of the AndroidInstrumentation that this class can configure.
      */
-    val instrumentationName: String
+    val instrumentationType: Class<T>
 
     /**
      * Called to configure an [instrumentation] before [AndroidInstrumentation.install] is called.
