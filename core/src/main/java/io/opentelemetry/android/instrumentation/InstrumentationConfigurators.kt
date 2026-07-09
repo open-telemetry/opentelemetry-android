@@ -33,7 +33,9 @@ internal class InstrumentationConfigurators
                     } catch (e: ClassCastException) {
                         android.util.Log.w(
                             OTEL_RUM_LOG_TAG,
-                            "InstrumentationConfigurator '${it.javaClass.name}' could not be applied to instrumentation '${instrumentation.javaClass.name}' (name='${instrumentation.name}').",
+                            "InstrumentationConfigurator '${it.javaClass.name}' could not be applied " +
+                                "to instrumentation '${instrumentation.javaClass.name}' " +
+                                "(name='${instrumentation.name}').",
                             e,
                         )
                     }
