@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.instrumentation
 
 /**
@@ -6,7 +11,6 @@ package io.opentelemetry.android.instrumentation
  * @param T The instrumentation type this configurator can configure.
  */
 interface InstrumentationConfigurator<T : AndroidInstrumentation> {
-
     /**
      * The Class of the AndroidInstrumentation that this class can configure.
      */

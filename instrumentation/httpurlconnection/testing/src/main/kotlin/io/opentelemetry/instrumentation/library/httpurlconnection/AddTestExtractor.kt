@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.instrumentation.library.httpurlconnection
 
 import com.google.auto.service.AutoService
@@ -8,29 +13,30 @@ import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor
 import java.net.URLConnection
 
 @AutoService(InstrumentationConfigurator::class)
-class AddExtractor : InstrumentationConfigurator<HttpUrlInstrumentation> {
+class AddTestExtractor : InstrumentationConfigurator<HttpUrlInstrumentation> {
     override val instrumentationType = HttpUrlInstrumentation::class.java
 
     override fun configure(instrumentation: HttpUrlInstrumentation) {
-        val extractor = object : AttributesExtractor<URLConnection, Int> {
-            override fun onStart(
-                builder: AttributesBuilder,
-                ctx: Context,
-                urlConnection: URLConnection,
-            ) {
-                builder.put("extractor.on.start", true)
-            }
+        val extractor: AttributesExtractor<URLConnection, Int?> =
+            object : AttributesExtractor<URLConnection, Int?> {
+                override fun onStart(
+                    builder: AttributesBuilder,
+                    ctx: Context,
+                    urlConnection: URLConnection,
+                ) {
+                    builder.put("extractor.on.start", true)
+                }
 
-            override fun onEnd(
-                builder: AttributesBuilder,
-                ctx: Context,
-                urlConnection: URLConnection,
-                response: Int?,
-                err: Throwable?,
-            ) {
-                builder.put("extractor.on.end", true)
+                override fun onEnd(
+                    builder: AttributesBuilder,
+                    ctx: Context,
+                    urlConnection: URLConnection,
+                    response: Int?,
+                    err: Throwable?,
+                ) {
+                    builder.put("extractor.on.end", true)
+                }
             }
-        }
         instrumentation.addAttributesExtractor(extractor)
     }
 }
