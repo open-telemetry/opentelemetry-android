@@ -2,7 +2,7 @@
 
 This module contains Android-specific semantic convention definitions that are not currently
 defined by the upstream `open-telemetry/semantic-conventions` repository, along with generated
-Kotlin constants for Android-specific attributes.
+Kotlin constants for Android-specific attributes and classes for Android-specific events.
 
 These conventions are modeled as a federated semantic convention registry. The registry manifest
 declares the upstream OpenTelemetry semantic conventions as a dependency so Android-specific
@@ -11,9 +11,10 @@ events can reference upstream attributes without redefining them.
 The model intentionally excludes names that are already covered by upstream semantic conventions,
 such as `app.crash`, `app.jank`, `app.screen.click`, and `app.widget.click`.
 
-## Generating Attribute Constants
+## Generating Semantic Convention Classes
 
-The Kotlin constants are generated automatically as part of the build. They're produced under:
+The Kotlin attribute constants and event classes are generated automatically as part of the build.
+They're produced under:
 
 ```text
 semconv/build/generated/semconv/kotlin/io/opentelemetry/android/semconv/
@@ -32,4 +33,4 @@ automatically. To run it explicitly:
 ./gradlew :semconv:generateSemanticConventions
 ```
 
-Event class generation and production code usage will be added in later phases.
+Production code usage of the generated event classes will be added in a later phase.

@@ -1,0 +1,18 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.android.semconv.events
+
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.logs.Logger
+
+/** An event defined by the OpenTelemetry Android semantic conventions. */
+interface OpenTelemetryEvent {
+    /** Emits this event through [logger], including any [additionalAttributes]. */
+    fun emit(
+        logger: Logger,
+        additionalAttributes: Attributes = Attributes.empty(),
+    )
+}
