@@ -1,7 +1,3 @@
-public final class io/opentelemetry/android/instrumentation/network/NetworkApplicationListenerKt {
-	public static final fun getNETWORK_STATUS_KEY ()Lio/opentelemetry/api/common/AttributeKey;
-}
-
 public abstract interface class io/opentelemetry/android/instrumentation/network/NetworkAttributesExtractor : kotlin/jvm/functions/Function2 {
 }
 

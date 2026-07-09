@@ -28,9 +28,9 @@ import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_CLICK_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_BUTTON
-import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_CLICKS
-import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_TYPE
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_BUTTON_KEY
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_CLICKS_KEY
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_TYPE_KEY
 import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_EVENT_NAME
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.longKey
@@ -74,9 +74,9 @@ class ViewClickInstrumentationTest {
         MockKAnnotations.init(this, relaxUnitFun = true)
     }
 
-    private val clicksKey = longKey(HARDWARE_POINTER_CLICKS)
-    private val toolTypeKey = stringKey(HARDWARE_POINTER_TYPE)
-    private val buttonKey = stringKey(HARDWARE_POINTER_BUTTON)
+    private val clicksKey = HW_POINTER_CLICKS_KEY
+    private val toolTypeKey = HW_POINTER_TYPE_KEY
+    private val buttonKey = HW_POINTER_BUTTON_KEY
 
     @Test
     fun capture_view_click() {

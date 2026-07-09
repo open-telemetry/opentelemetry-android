@@ -6,7 +6,6 @@ public final class io/opentelemetry/instrumentation/library/log/AndroidLogInstru
 
 public final class io/opentelemetry/instrumentation/library/log/AndroidLogSubstitutions {
 	public static final field INSTANCE Lio/opentelemetry/instrumentation/library/log/AndroidLogSubstitutions;
-	public final fun getTagKey ()Lio/opentelemetry/api/common/AttributeKey;
 	public static final fun substitutionForDebug (Ljava/lang/String;Ljava/lang/String;)I
 	public static final fun substitutionForDebug2 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 	public static final fun substitutionForError (Ljava/lang/String;Ljava/lang/String;)I

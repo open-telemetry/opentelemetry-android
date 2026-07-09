@@ -11,7 +11,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
-import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.android.semconv.BatteryAttributes
+import io.opentelemetry.android.semconv.HeapAttributes
+import io.opentelemetry.android.semconv.StorageAttributes
 import io.opentelemetry.api.common.Attributes
 import java.io.File
 
@@ -65,8 +67,8 @@ internal class RuntimeDetailsExtractor(
             return runtimeDetails
         }
 
-        val BATTERY_PERCENT_KEY: AttributeKey<Double> = AttributeKey.doubleKey("battery.percent")
-        val STORAGE_SPACE_FREE_KEY: AttributeKey<Long> = AttributeKey.longKey("storage.free")
-        val HEAP_FREE_KEY: AttributeKey<Long> = AttributeKey.longKey("heap.free")
+        val BATTERY_PERCENT_KEY = BatteryAttributes.BATTERY_PERCENT_KEY
+        val STORAGE_SPACE_FREE_KEY = StorageAttributes.STORAGE_FREE_KEY
+        val HEAP_FREE_KEY = HeapAttributes.HEAP_FREE_KEY
     }
 }

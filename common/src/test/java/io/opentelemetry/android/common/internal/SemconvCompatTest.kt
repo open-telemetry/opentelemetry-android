@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.common.internal
 
+import io.opentelemetry.android.semconv.ScreenAttributes.SCREEN_NAME
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -25,7 +26,7 @@ class SemconvCompatTest {
     @Test
     fun `test compat with legacy`() {
         SemconvCompat.useLatestExperimental = false
-        assertThat(SemconvCompat.map("app.screen.name")).isEqualTo("screen.name")
+        assertThat(SemconvCompat.map("app.screen.name")).isEqualTo(SCREEN_NAME)
         assertThat(SemconvCompat.map("app.crash")).isEqualTo("device.crash")
         assertThat(SemconvCompat.map("rando.semconv.thinger")).isEqualTo("rando.semconv.thinger")
     }

@@ -7,7 +7,7 @@ package io.opentelemetry.instrumentation.library.log.testing
 
 import io.opentelemetry.android.test.common.OpenTelemetryRumRule
 import io.opentelemetry.api.logs.Severity
-import io.opentelemetry.instrumentation.library.log.AndroidLogSubstitutions
+import io.opentelemetry.android.semconv.AndroidAttributes.ANDROID_LOG_TAG_KEY
 import io.opentelemetry.instrumentation.library.log.LoggingTestUtil
 import io.opentelemetry.semconv.ExceptionAttributes
 import org.assertj.core.api.Assertions.assertThat
@@ -21,8 +21,6 @@ class InstrumentationTest {
 
     private val tag = "log.test"
 
-    private val tagKey = AndroidLogSubstitutions.tagKey
-
     @Test
     fun test_verbose_logging() {
         val message = "testing verbose"
@@ -32,7 +30,7 @@ class InstrumentationTest {
         val finishedLogRecordItems = openTelemetryRumRule.inMemoryLogExporter.finishedLogRecordItems
 
         assertThat(finishedLogRecordItems.size).isEqualTo(2)
-        assertThat(finishedLogRecordItems[0].attributes.get(tagKey)).isEqualTo(tag)
+        assertThat(finishedLogRecordItems[0].attributes.get(ANDROID_LOG_TAG_KEY)).isEqualTo(tag)
         assertThat(finishedLogRecordItems[0].severity).isEqualTo(Severity.TRACE)
 
         assertThat(finishedLogRecordItems[0].bodyValue!!.asString()).isEqualTo(message)
@@ -50,7 +48,7 @@ class InstrumentationTest {
         val finishedLogRecordItems = openTelemetryRumRule.inMemoryLogExporter.finishedLogRecordItems
 
         assertThat(finishedLogRecordItems.size).isEqualTo(2)
-        assertThat(finishedLogRecordItems[0].attributes.get(tagKey)).isEqualTo(tag)
+        assertThat(finishedLogRecordItems[0].attributes.get(ANDROID_LOG_TAG_KEY)).isEqualTo(tag)
         assertThat(finishedLogRecordItems[0].severity).isEqualTo(Severity.DEBUG)
 
         assertThat(finishedLogRecordItems[0].bodyValue!!.asString()).isEqualTo(message)
@@ -68,7 +66,7 @@ class InstrumentationTest {
         val finishedLogRecordItems = openTelemetryRumRule.inMemoryLogExporter.finishedLogRecordItems
 
         assertThat(finishedLogRecordItems.size).isEqualTo(2)
-        assertThat(finishedLogRecordItems[0].attributes.get(tagKey)).isEqualTo(tag)
+        assertThat(finishedLogRecordItems[0].attributes.get(ANDROID_LOG_TAG_KEY)).isEqualTo(tag)
         assertThat(finishedLogRecordItems[0].severity).isEqualTo(Severity.INFO)
 
         assertThat(finishedLogRecordItems[0].bodyValue!!.asString()).isEqualTo(message)
@@ -87,7 +85,7 @@ class InstrumentationTest {
         val finishedLogRecordItems = openTelemetryRumRule.inMemoryLogExporter.finishedLogRecordItems
 
         assertThat(finishedLogRecordItems.size).isEqualTo(3)
-        assertThat(finishedLogRecordItems[0].attributes.get(tagKey)).isEqualTo(tag)
+        assertThat(finishedLogRecordItems[0].attributes.get(ANDROID_LOG_TAG_KEY)).isEqualTo(tag)
         assertThat(finishedLogRecordItems[0].severity).isEqualTo(Severity.WARN)
 
         assertThat(finishedLogRecordItems[0].bodyValue!!.asString()).isEqualTo(message)
@@ -106,7 +104,7 @@ class InstrumentationTest {
         val finishedLogRecordItems = openTelemetryRumRule.inMemoryLogExporter.finishedLogRecordItems
 
         assertThat(finishedLogRecordItems.size).isEqualTo(2)
-        assertThat(finishedLogRecordItems[0].attributes.get(tagKey)).isEqualTo(tag)
+        assertThat(finishedLogRecordItems[0].attributes.get(ANDROID_LOG_TAG_KEY)).isEqualTo(tag)
         assertThat(finishedLogRecordItems[0].severity).isEqualTo(Severity.ERROR)
 
         assertThat(finishedLogRecordItems[1].bodyValue!!.asString()).isEqualTo(message)
@@ -125,7 +123,7 @@ class InstrumentationTest {
         val finishedLogRecordItems = openTelemetryRumRule.inMemoryLogExporter.finishedLogRecordItems
 
         assertThat(finishedLogRecordItems.size).isEqualTo(3)
-        assertThat(finishedLogRecordItems[0].attributes.get(tagKey)).isEqualTo(tag)
+        assertThat(finishedLogRecordItems[0].attributes.get(ANDROID_LOG_TAG_KEY)).isEqualTo(tag)
         assertThat(finishedLogRecordItems[0].severity).isEqualTo(Severity.UNDEFINED_SEVERITY_NUMBER)
 
         assertThat(finishedLogRecordItems[0].bodyValue!!.asString()).isEqualTo(message)

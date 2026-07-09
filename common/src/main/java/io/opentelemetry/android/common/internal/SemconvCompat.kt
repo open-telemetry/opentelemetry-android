@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.common.internal
 
+import io.opentelemetry.android.semconv.ScreenAttributes.SCREEN_NAME
 import io.opentelemetry.kotlin.semconv.AppAttributes
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 
@@ -26,7 +27,7 @@ class SemconvCompat internal constructor() {
                 // new -> old
                 "app.crash" -> "device.crash"
 
-                AppAttributes.APP_SCREEN_NAME -> "screen.name"
+                AppAttributes.APP_SCREEN_NAME -> SCREEN_NAME
 
                 else -> key
             }

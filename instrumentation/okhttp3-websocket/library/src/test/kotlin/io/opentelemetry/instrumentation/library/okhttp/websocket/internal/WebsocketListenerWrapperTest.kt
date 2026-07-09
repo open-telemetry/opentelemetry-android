@@ -9,8 +9,8 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.verify
-import io.opentelemetry.instrumentation.library.okhttp.websocket.internal.WebsocketListenerWrapper.Companion.MESSAGE_SIZE
-import io.opentelemetry.instrumentation.library.okhttp.websocket.internal.WebsocketListenerWrapper.Companion.MESSAGE_TYPE
+import io.opentelemetry.android.semconv.WebsocketAttributes.WEBSOCKET_MESSAGE_SIZE_KEY
+import io.opentelemetry.android.semconv.WebsocketAttributes.WEBSOCKET_MESSAGE_TYPE_KEY
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
@@ -97,8 +97,8 @@ internal class WebsocketListenerWrapperTest {
                 equalTo(HttpAttributes.HTTP_REQUEST_METHOD, "GET"),
                 equalTo(UrlAttributes.URL_FULL, "https://example.com:8080/socket"),
                 equalTo(NetworkAttributes.NETWORK_PEER_PORT, 8080L),
-                equalTo(MESSAGE_TYPE, "text"),
-                equalTo(MESSAGE_SIZE, msg.length.toLong()),
+                equalTo(WEBSOCKET_MESSAGE_TYPE_KEY, "text"),
+                equalTo(WEBSOCKET_MESSAGE_SIZE_KEY, msg.length.toLong()),
             )
 
         verify(exactly = 1) { delegateListener.onMessage(webSocket, msg) }
@@ -121,8 +121,8 @@ internal class WebsocketListenerWrapperTest {
                 equalTo(HttpAttributes.HTTP_REQUEST_METHOD, "GET"),
                 equalTo(UrlAttributes.URL_FULL, "https://example.com:8080/socket"),
                 equalTo(NetworkAttributes.NETWORK_PEER_PORT, 8080L),
-                equalTo(MESSAGE_TYPE, "bytes"),
-                equalTo(MESSAGE_SIZE, bytesMessage.size.toLong()),
+                equalTo(WEBSOCKET_MESSAGE_TYPE_KEY, "bytes"),
+                equalTo(WEBSOCKET_MESSAGE_SIZE_KEY, bytesMessage.size.toLong()),
             )
 
         verify(exactly = 1) { delegateListener.onMessage(webSocket, bytesMessage) }

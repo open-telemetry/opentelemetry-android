@@ -5,8 +5,9 @@
 
 package io.opentelemetry.instrumentation.library.okhttp.websocket.internal
 
+import io.opentelemetry.android.semconv.WebsocketAttributes.WEBSOCKET_MESSAGE_SIZE_KEY
+import io.opentelemetry.android.semconv.WebsocketAttributes.WEBSOCKET_MESSAGE_TYPE_KEY
 import io.opentelemetry.api.OpenTelemetry
-import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.semconv.HttpAttributes
@@ -48,8 +49,8 @@ class WebsocketListenerWrapper(
             "websocket.message",
             attributes
                 .toBuilder()
-                .put(MESSAGE_TYPE, "text")
-                .put(MESSAGE_SIZE, text.length.toLong())
+                .put(WEBSOCKET_MESSAGE_TYPE_KEY, "text")
+                .put(WEBSOCKET_MESSAGE_SIZE_KEY, text.length.toLong())
                 .build(),
         )
         delegate.onMessage(webSocket, text)
@@ -64,8 +65,8 @@ class WebsocketListenerWrapper(
             "websocket.message",
             attributes
                 .toBuilder()
-                .put(MESSAGE_TYPE, "bytes")
-                .put(MESSAGE_SIZE, bytes.size.toLong())
+                .put(WEBSOCKET_MESSAGE_TYPE_KEY, "bytes")
+                .put(WEBSOCKET_MESSAGE_SIZE_KEY, bytes.size.toLong())
                 .build(),
         )
         delegate.onMessage(webSocket, bytes)
@@ -105,9 +106,6 @@ class WebsocketListenerWrapper(
 
     companion object {
         private const val SCOPE = "io.opentelemetry.websocket.events"
-
-        val MESSAGE_SIZE: AttributeKey<Long> = AttributeKey.longKey("websocket.message.size")
-        val MESSAGE_TYPE: AttributeKey<String> = AttributeKey.stringKey("websocket.message.type")
 
         private var logger: Logger =
             OpenTelemetry

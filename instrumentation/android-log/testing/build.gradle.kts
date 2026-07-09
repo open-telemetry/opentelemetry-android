@@ -10,6 +10,7 @@ android {
 dependencies {
     byteBuddy(project(":instrumentation:android-log:agent"))
     implementation(project(":instrumentation:android-log:library"))
+    implementation(project(":semconv"))
     implementation(project(":test-common"))
 
     androidTestImplementation(libs.opentelemetry.instrumentation.apiSemconv)

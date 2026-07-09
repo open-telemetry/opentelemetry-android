@@ -22,6 +22,7 @@ android {
 
 dependencies {
     api(platform(libs.opentelemetry.platform.alpha))
+    api(libs.opentelemetry.api)
 }
 
 // Matches opentelemetry-kotlin's semconv module: generated code is not Detekt-reviewed.

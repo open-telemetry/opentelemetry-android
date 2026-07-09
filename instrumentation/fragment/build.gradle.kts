@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":services"))
     implementation(project(":common"))
+    implementation(project(":semconv"))
     implementation(libs.androidx.core)
     api(libs.androidx.navigation.fragment)
     implementation(libs.opentelemetry.semconv.kotlin)

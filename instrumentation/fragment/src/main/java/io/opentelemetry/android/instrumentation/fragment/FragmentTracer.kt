@@ -8,7 +8,7 @@ package io.opentelemetry.android.instrumentation.fragment
 import androidx.fragment.app.Fragment
 import io.opentelemetry.android.common.internal.SemconvCompat.Companion.map
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
-import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.android.semconv.FragmentAttributes.FRAGMENT_NAME_KEY
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME
@@ -60,9 +60,5 @@ internal class FragmentTracer(
     fun addEvent(eventName: String): FragmentTracer {
         activeSpan.addEvent(eventName)
         return this
-    }
-
-    companion object {
-        val FRAGMENT_NAME_KEY: AttributeKey<String?> = AttributeKey.stringKey("fragment.name")
     }
 }

@@ -23,7 +23,7 @@ import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_LONG_PRESS_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.HARDWARE_POINTER_TYPE
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_TYPE_KEY
 import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_LONG_PRESS_EVENT_NAME
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.longKey
@@ -68,7 +68,7 @@ class ViewLongPressInstrumentationTest {
         MockKAnnotations.init(this, relaxUnitFun = true)
     }
 
-    private val toolTypeKey = stringKey(HARDWARE_POINTER_TYPE)
+    private val toolTypeKey = HW_POINTER_TYPE_KEY
 
     @Test
     fun capture_view_long_press() {

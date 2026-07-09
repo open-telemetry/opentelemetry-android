@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.instrumentation.common
 
-import io.opentelemetry.android.common.RumConstants
+import io.opentelemetry.android.semconv.LastAttributes.LAST_SCREEN_NAME_KEY
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.context.Scope
 
@@ -46,7 +46,7 @@ class ActiveSpan(
         span?.let {
             val previouslyVisibleScreen = lastVisibleScreen()
             if (previouslyVisibleScreen != null && screenName != previouslyVisibleScreen) {
-                it.setAttribute(RumConstants.LAST_SCREEN_NAME_KEY, previouslyVisibleScreen)
+                it.setAttribute(LAST_SCREEN_NAME_KEY, previouslyVisibleScreen)
             }
         }
     }

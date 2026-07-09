@@ -9,13 +9,10 @@ import io.opentelemetry.android.common.internal.features.networkattributes.data.
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.network.NetworkChangeListener
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener
-import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
-
-val NETWORK_STATUS_KEY: AttributeKey<String> = AttributeKey.stringKey("network.status")
 
 internal class NetworkApplicationListener(
     private val currentNetworkProvider: CurrentNetworkProvider,

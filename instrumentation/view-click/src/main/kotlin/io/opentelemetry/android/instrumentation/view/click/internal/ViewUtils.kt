@@ -6,18 +6,19 @@
 package io.opentelemetry.android.instrumentation.view.click.internal
 
 import android.view.MotionEvent
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_BUTTON_KEY
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_CLICKS_KEY
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_DISTANCE_X_KEY
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_DISTANCE_Y_KEY
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_TYPE_KEY
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_VELOCITY_X_KEY
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_VELOCITY_Y_KEY
 import io.opentelemetry.api.common.Attributes
 
 internal const val APP_SCREEN_CLICK_EVENT_NAME = "app.screen.click"
 internal const val VIEW_CLICK_EVENT_NAME = "app.widget.click"
 internal const val APP_SCREEN_LONG_PRESS_EVENT_NAME = "app.screen.longpress"
 internal const val VIEW_LONG_PRESS_EVENT_NAME = "app.widget.longpress"
-
-internal const val HARDWARE_POINTER_TYPE = "hw.pointer.type"
-
-internal const val HARDWARE_POINTER_BUTTON = "hw.pointer.button"
-
-internal const val HARDWARE_POINTER_CLICKS = "hw.pointer.clicks"
 
 internal const val APP_SCREEN_SCROLL_EVENT_NAME = "app.screen.scroll"
 
@@ -26,14 +27,6 @@ internal const val VIEW_SCROLL_EVENT_NAME = "app.widget.scroll"
 internal const val APP_SCREEN_FLING_EVENT_NAME = "app.screen.fling"
 
 internal const val VIEW_FLING_EVENT_NAME = "app.widget.fling"
-
-internal const val HARDWARE_POINTER_VELOCITY_X = "hw.pointer.velocity.x"
-
-internal const val HARDWARE_POINTER_VELOCITY_Y = "hw.pointer.velocity.y"
-
-internal const val HARDWARE_POINTER_DISTANCE_X = "hw.pointer.distance.x"
-
-internal const val HARDWARE_POINTER_DISTANCE_Y = "hw.pointer.distance.y"
 
 internal fun buttonStateToString(buttonStateInt: Int): String? =
     when (buttonStateInt) {
@@ -81,9 +74,9 @@ internal sealed class Gesture(
     var attributes = Attributes.empty()
 
     init {
-        attributes = attributes.toBuilder().put(HARDWARE_POINTER_TYPE, t.toolTypeDescription).build()
+        attributes = attributes.toBuilder().put(HW_POINTER_TYPE_KEY, t.toolTypeDescription).build()
         if (t.buttonStateDescription != null) {
-            attributes = attributes.toBuilder().put(HARDWARE_POINTER_BUTTON, t.buttonStateDescription).build()
+            attributes = attributes.toBuilder().put(HW_POINTER_BUTTON_KEY, t.buttonStateDescription).build()
         }
     }
 
@@ -96,7 +89,7 @@ internal sealed class Gesture(
         clicks: Int,
     ) : Gesture(motionEvent) {
         init {
-            attributes = attributes.toBuilder().put(HARDWARE_POINTER_CLICKS, clicks.toLong()).build()
+            attributes = attributes.toBuilder().put(HW_POINTER_CLICKS_KEY, clicks.toLong()).build()
         }
     }
 
@@ -109,8 +102,8 @@ internal sealed class Gesture(
             attributes =
                 attributes
                     .toBuilder()
-                    .put(HARDWARE_POINTER_VELOCITY_X, velocityX)
-                    .put(HARDWARE_POINTER_VELOCITY_Y, velocityY)
+                    .put(HW_POINTER_VELOCITY_X_KEY, velocityX)
+                    .put(HW_POINTER_VELOCITY_Y_KEY, velocityY)
                     .build()
         }
     }
@@ -124,8 +117,8 @@ internal sealed class Gesture(
             attributes =
                 attributes
                     .toBuilder()
-                    .put(HARDWARE_POINTER_DISTANCE_X, distanceX)
-                    .put(HARDWARE_POINTER_DISTANCE_Y, distanceY)
+                    .put(HW_POINTER_DISTANCE_X_KEY, distanceX)
+                    .put(HW_POINTER_DISTANCE_Y_KEY, distanceY)
                     .build()
         }
     }

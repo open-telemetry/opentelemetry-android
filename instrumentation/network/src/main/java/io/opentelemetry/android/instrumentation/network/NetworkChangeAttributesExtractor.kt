@@ -8,6 +8,7 @@ package io.opentelemetry.android.instrumentation.network
 import io.opentelemetry.android.common.internal.features.networkattributes.CurrentNetworkAttributesExtractor
 import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
+import io.opentelemetry.android.semconv.NetworkAttributes.NETWORK_STATUS_KEY
 import io.opentelemetry.api.common.AttributesBuilder
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.kotlin.semconv.NetworkAttributes

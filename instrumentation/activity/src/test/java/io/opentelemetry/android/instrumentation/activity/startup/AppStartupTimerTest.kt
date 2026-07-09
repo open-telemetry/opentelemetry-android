@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.instrumentation.activity.startup
 
-import io.opentelemetry.android.instrumentation.activity.ActivityTracer.Companion.START_TYPE_KEY
+import io.opentelemetry.android.semconv.StartAttributes.START_TYPE_KEY
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
