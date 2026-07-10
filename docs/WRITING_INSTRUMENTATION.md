@@ -131,6 +131,34 @@ Configuration must happen before `OpenTelemetryRum` is built. The loader discove
 instrumentation instance from the classpath, and the builder installs it during
 RUM initialization. So the configuration is read once per RUM initialization.
 
+#### Service-Loaded Configuration
+
+When you need to configure autoloaded `AndroidInstrumentation` classes before
+they are installed, you can build custom instances of 
+[`InstrumentationConfigurator`](../instrumentation/android-instrumentation/src/main/java/io/opentelemetry/android/instrumentation/InstrumentationConfigurator.kt).
+
+These will be automatically found on the classpath at runtime and will be 
+invoked prior to installation. A configurator is matched to an instrumentation by `instrumentationName`, 
+which must equal the target instrumentation's `AndroidInstrumentation.name`. There can be multiple
+configurators for any `AndroidInstrumentation`.
+
+Configurators must be annotated with `@AutoService`:
+
+```kotlin
+@AutoService(InstrumentationConfigurator::class)
+class MyFeatureConfigurator : InstrumentationConfigurator<SomeInstrumentation> {
+    override val instrumentationName: String = "some-instrumentation"
+
+    override fun configure(instrumentation: SomeInstrumentation) {
+        instrumentation.someOption = true
+    }
+}
+```
+
+The builder discovers configurators with `ServiceLoader` and calls `configure()` after
+instrumentation discovery, but before `AndroidInstrumentation.install()`. This lets a
+configurator set properties or invoke setup methods before telemetry hooks are installed.
+
 ### Telemetry
 
 Follow OpenTelemetry semantic conventions where they exist. Keep instrumentation scope
