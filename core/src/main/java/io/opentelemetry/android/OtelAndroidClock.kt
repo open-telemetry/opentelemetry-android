@@ -51,8 +51,8 @@ class OtelAndroidClock
                 try {
                     return currentGnssTimeMillis()
                 } catch (_: Exception) {
+                    // Ignore and fall back to the next available time source.
                 }
-            }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && isNetworkAnchorEnabled) {
                 try {
