@@ -11,6 +11,7 @@ import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import io.mockk.every
 import io.mockk.mockk
 import io.opentelemetry.android.semconv.ScreenAttributes.SCREEN_ORIENTATION_KEY
+import io.opentelemetry.android.semconv.events.DeviceScreenOrientationEvent
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
