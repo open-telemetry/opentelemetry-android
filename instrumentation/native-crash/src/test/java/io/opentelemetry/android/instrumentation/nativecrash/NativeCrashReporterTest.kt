@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.time.Instant
 
 class NativeCrashReporterTest {
     @TempDir
@@ -61,6 +62,16 @@ class NativeCrashReporterTest {
         assertThat(log.attributes.get(stringKey(OS_VERSION))).isEqualTo("crashed-os-version")
         assertThat(store.readCrashRecord()).isNull()
         assertThat(store.readContext()).isEqualTo(crashContext("current"))
+    }
+
+    @Test
+    fun `maps native signal numbers to names`() {
+        val signalNumbers = listOf(4, 5, 6, 7, 8, 11, 15)
+
+        val signalNames = signalNumbers.map { NativeCrashRecord(it, Instant.EPOCH).signalName }
+
+        assertThat(signalNames)
+            .containsExactly("SIGILL", "SIGTRAP", "SIGABRT", "SIGBUS", "SIGFPE", "SIGSEGV", "SIG15")
     }
 
     @Test
