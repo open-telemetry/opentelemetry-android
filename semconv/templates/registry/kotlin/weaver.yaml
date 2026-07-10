@@ -6,6 +6,10 @@ comment_formats:
     footer: " */"
 default_comment_format: kdoc
 templates:
+  - pattern: open_telemetry_event.kt.j2
+    filter: .
+    application_mode: single
+    file_name: "io/opentelemetry/android/semconv/events/OpenTelemetryEvent.kt"
   - pattern: kotlin_semconv_template.kt.j2
     filter: >
       semconv_grouped_attributes({
@@ -16,7 +20,31 @@ templates:
               excluded_attributes: [] })
     application_mode: each
     file_name: "io/opentelemetry/android/semconv/{{ctx.root_namespace | pascal_case}}Attributes.kt"
+  - pattern: kotlin_event_template.kt.j2
+    filter: >
+      semconv_signal("event"; {
+        "exclude_stability": []
+      })
+      | sort_by(.name)
+      | map({
+          name: .name,
+          brief: .brief,
+          note: .note,
+          deprecated: .deprecated,
+          attributes: ((.attributes // []) | unique_by(.name))
+        })
+    application_mode: each
+    file_name: "io/opentelemetry/android/semconv/events/{{ctx.name | pascal_case}}Event.kt"
 text_maps:
   kotlin_enum_type:
     int: Long
     string: String
+  kotlin_event_type:
+    int: Long
+    double: Double
+    boolean: Boolean
+    string: String
+    string[]: List<String>
+    int[]: List<Long>
+    double[]: List<Double>
+    boolean[]: List<Boolean>

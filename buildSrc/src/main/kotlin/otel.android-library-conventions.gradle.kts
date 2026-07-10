@@ -102,7 +102,7 @@ project.tasks.withType(Detekt::class.java).configureEach {
 }
 
 // disable kotlin's binary compat validator for unwanted modules
-val ignoredModules = listOf("test-common")
+val ignoredModules = listOf("semconv", "test-common")
 apiValidation.validationDisabled = ignoredModules.contains(project.name)
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
