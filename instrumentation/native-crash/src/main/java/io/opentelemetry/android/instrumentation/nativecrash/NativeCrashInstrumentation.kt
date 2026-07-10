@@ -9,9 +9,11 @@ package io.opentelemetry.android.instrumentation.nativecrash
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.core.content.pm.PackageInfoCompat
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.common.internal.SemconvCompat.Companion.map
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.session.Session
@@ -147,7 +149,13 @@ internal class FileNativeCrashStore(
     }
 
     override fun deleteCrashRecord() {
-        runCatching { crashRecordPath.delete() }
+        runCatching {
+            if (crashRecordPath.isFile && !crashRecordPath.delete()) {
+                throw IOException("Failed to delete native crash marker")
+            }
+        }.onFailure { error ->
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to delete native crash marker", error)
+        }
     }
 
     override fun readContext(): NativeCrashContext? {
@@ -180,6 +188,8 @@ internal class FileNativeCrashStore(
             } finally {
                 temporaryPath.delete()
             }
+        }.onFailure { error ->
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to persist native crash context", error)
         }
     }
 
