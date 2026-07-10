@@ -10,8 +10,8 @@ import android.content.res.Configuration
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import io.mockk.every
 import io.mockk.mockk
-import io.opentelemetry.android.instrumentation.screenorientation.ScreenOrientationDetector.Companion.EVENT_NAME
 import io.opentelemetry.android.semconv.ScreenAttributes.SCREEN_ORIENTATION_KEY
+import io.opentelemetry.android.semconv.events.DeviceScreenOrientationEvent
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -19,6 +19,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.jupiter.api.assertNotNull
+
+private const val EVENT_NAME = "device.screen_orientation"
 
 class ScreenOrientationDetectorTest {
     private lateinit var sut: ScreenOrientationDetector

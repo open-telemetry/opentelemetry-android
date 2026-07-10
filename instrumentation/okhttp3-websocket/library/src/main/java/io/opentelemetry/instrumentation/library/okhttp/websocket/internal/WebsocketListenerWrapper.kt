@@ -5,8 +5,10 @@
 
 package io.opentelemetry.instrumentation.library.okhttp.websocket.internal
 
-import io.opentelemetry.android.semconv.WebsocketAttributes.WEBSOCKET_MESSAGE_SIZE_KEY
-import io.opentelemetry.android.semconv.WebsocketAttributes.WEBSOCKET_MESSAGE_TYPE_KEY
+import io.opentelemetry.android.semconv.events.WebsocketCloseEvent
+import io.opentelemetry.android.semconv.events.WebsocketErrorEvent
+import io.opentelemetry.android.semconv.events.WebsocketMessageEvent
+import io.opentelemetry.android.semconv.events.WebsocketOpenEvent
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
@@ -27,7 +29,7 @@ class WebsocketListenerWrapper(
         reason: String,
     ) {
         val attributes = extractAttributes(webSocket)
-        emitEvent("websocket.close", attributes)
+        WebsocketCloseEvent().emit(logger, attributes)
         delegate.onClosed(webSocket, code, reason)
     }
 
@@ -36,7 +38,7 @@ class WebsocketListenerWrapper(
         response: Response,
     ) {
         val attributes = extractAttributes(webSocket)
-        emitEvent("websocket.open", attributes)
+        WebsocketOpenEvent().emit(logger, attributes)
         delegate.onOpen(webSocket, response)
     }
 
@@ -45,14 +47,10 @@ class WebsocketListenerWrapper(
         text: String,
     ) {
         val attributes = extractAttributes(webSocket)
-        emitEvent(
-            "websocket.message",
-            attributes
-                .toBuilder()
-                .put(WEBSOCKET_MESSAGE_TYPE_KEY, "text")
-                .put(WEBSOCKET_MESSAGE_SIZE_KEY, text.length.toLong())
-                .build(),
-        )
+        WebsocketMessageEvent(
+            websocketMessageSize = text.length.toLong(),
+            websocketMessageType = "text",
+        ).emit(logger, attributes)
         delegate.onMessage(webSocket, text)
     }
 
@@ -61,14 +59,10 @@ class WebsocketListenerWrapper(
         bytes: ByteString,
     ) {
         val attributes = extractAttributes(webSocket)
-        emitEvent(
-            "websocket.message",
-            attributes
-                .toBuilder()
-                .put(WEBSOCKET_MESSAGE_TYPE_KEY, "bytes")
-                .put(WEBSOCKET_MESSAGE_SIZE_KEY, bytes.size.toLong())
-                .build(),
-        )
+        WebsocketMessageEvent(
+            websocketMessageSize = bytes.size.toLong(),
+            websocketMessageType = "bytes",
+        ).emit(logger, attributes)
         delegate.onMessage(webSocket, bytes)
     }
 
@@ -78,7 +72,7 @@ class WebsocketListenerWrapper(
         response: Response?,
     ) {
         val attributes = extractAttributes(webSocket)
-        emitEvent("websocket.error", attributes)
+        WebsocketErrorEvent().emit(logger, attributes)
         delegate.onFailure(webSocket, t, response)
     }
 
@@ -92,17 +86,6 @@ class WebsocketListenerWrapper(
                 put(UrlAttributes.URL_FULL, request.url.toString())
                 put(NetworkAttributes.NETWORK_PEER_PORT, request.url.port.toLong())
             }.build()
-
-    private fun emitEvent(
-        eventName: String,
-        attributes: Attributes,
-    ) {
-        logger
-            .logRecordBuilder()
-            .setEventName(eventName)
-            .setAllAttributes(attributes)
-            .emit()
-    }
 
     companion object {
         private const val SCOPE = "io.opentelemetry.websocket.events"

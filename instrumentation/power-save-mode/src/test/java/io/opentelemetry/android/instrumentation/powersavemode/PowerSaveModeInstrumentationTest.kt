@@ -25,6 +25,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Shadows.shadowOf
 
+private const val EVENT_NAME = "device.power_save_mode.change"
+
 @RunWith(AndroidJUnit4::class)
 class PowerSaveModeInstrumentationTest {
     @get:Rule
@@ -59,7 +61,7 @@ class PowerSaveModeInstrumentationTest {
 
         assertThat(openTelemetryRule.logRecords).hasSize(1)
         val record = openTelemetryRule.logRecords.single()
-        assertThat(record.eventName).isEqualTo(PowerSaveModeDetector.EVENT_NAME)
+        assertThat(record.eventName).isEqualTo(EVENT_NAME)
         assertThat(record.attributes.get(ANDROID_POWER_SAVE_MODE_ENABLED_KEY))
             .isEqualTo(true)
     }
