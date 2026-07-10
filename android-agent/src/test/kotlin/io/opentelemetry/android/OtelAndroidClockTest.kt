@@ -46,10 +46,11 @@ class OtelAndroidClockTest {
     fun `uses GNSS time when available on API 29+`() {
         every { SystemClock.currentGnssTimeClock() } returns gnssClock
 
-        val clock = OtelAndroidClock(
-            isGnssAnchorEnabled = true,
-            isNetworkAnchorEnabled = true,
-        )
+        val clock =
+            OtelAndroidClock(
+                isGnssAnchorEnabled = true,
+                isNetworkAnchorEnabled = true,
+            )
 
         assertThat(clock.now()).isEqualTo(gnssMillis * 1_000_000)
     }
@@ -60,10 +61,11 @@ class OtelAndroidClockTest {
         every { SystemClock.currentGnssTimeClock() } returns gnssClock
         every { SystemClock.currentNetworkTimeClock() } returns networkClock
 
-        val clock = OtelAndroidClock(
-            isGnssAnchorEnabled = true,
-            isNetworkAnchorEnabled = true,
-        )
+        val clock =
+            OtelAndroidClock(
+                isGnssAnchorEnabled = true,
+                isNetworkAnchorEnabled = true,
+            )
 
         assertThat(clock.now()).isEqualTo(gnssMillis * 1_000_000)
     }
@@ -74,10 +76,11 @@ class OtelAndroidClockTest {
         every { SystemClock.currentGnssTimeClock() } throws RuntimeException("no gnss")
         every { SystemClock.currentNetworkTimeClock() } returns networkClock
 
-        val clock = OtelAndroidClock(
-            isGnssAnchorEnabled = true,
-            isNetworkAnchorEnabled = true,
-        )
+        val clock =
+            OtelAndroidClock(
+                isGnssAnchorEnabled = true,
+                isNetworkAnchorEnabled = true,
+            )
 
         assertThat(clock.now()).isEqualTo(networkMillis * 1_000_000)
     }
@@ -87,10 +90,11 @@ class OtelAndroidClockTest {
     fun `falls back to system time when GNSS clock throws and network time is unavailable`() {
         every { SystemClock.currentGnssTimeClock() } throws RuntimeException("no gnss")
 
-        val clock = OtelAndroidClock(
-            isGnssAnchorEnabled = true,
-            isNetworkAnchorEnabled = true,
-        )
+        val clock =
+            OtelAndroidClock(
+                isGnssAnchorEnabled = true,
+                isNetworkAnchorEnabled = true,
+            )
 
         assertThat(clock.now() / 1_000_000).isCloseTo(System.currentTimeMillis(), within(5000L))
     }
@@ -101,10 +105,11 @@ class OtelAndroidClockTest {
         every { SystemClock.currentGnssTimeClock() } throws RuntimeException("no gnss")
         every { SystemClock.currentNetworkTimeClock() } throws RuntimeException("no network")
 
-        val clock = OtelAndroidClock(
-            isGnssAnchorEnabled = true,
-            isNetworkAnchorEnabled = true,
-        )
+        val clock =
+            OtelAndroidClock(
+                isGnssAnchorEnabled = true,
+                isNetworkAnchorEnabled = true,
+            )
 
         assertThat(clock.now() / 1_000_000).isCloseTo(System.currentTimeMillis(), within(5000L))
     }

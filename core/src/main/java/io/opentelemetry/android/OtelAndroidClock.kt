@@ -24,47 +24,51 @@ import io.opentelemetry.sdk.common.Clock
  * the clock doesn't consistently tick when the process is in the background or cached). It also
  * avoids the problem of [SystemClock.elapsedRealtimeNanos] not providing wall-clock time.
  */
-class OtelAndroidClock @JvmOverloads constructor(
-    /**
-     * Whether the [OtelAndroidClock] should attempt to anchor its monotonic time against
-     * [SystemClock.currentGnssTimeClock] on startup (when available). Setting to `true` does
-     * not guarantee a GNSS anchor.
-     */
-    private val isGnssAnchorEnabled: Boolean = false,
-    /**
-     * Whether the [OtelAndroidClock] should attempt to anchor its monotonic time against
-     * [SystemClock.currentNetworkTimeClock] on startup (when available). Setting to `true` does
-     * not guarantee a network time anchor.
-     */
-    private val isNetworkAnchorEnabled: Boolean = false,
-) : Clock {
-    private val baselineNanos = currentTimeMillis() * 1_000_000 - nanoTime()
+class OtelAndroidClock
+    @JvmOverloads
+    constructor(
+        /**
+         * Whether the [OtelAndroidClock] should attempt to anchor its monotonic time against
+         * [SystemClock.currentGnssTimeClock] on startup (when available). Setting to `true` does
+         * not guarantee a GNSS anchor.
+         */
+        private val isGnssAnchorEnabled: Boolean = false,
+        /**
+         * Whether the [OtelAndroidClock] should attempt to anchor its monotonic time against
+         * [SystemClock.currentNetworkTimeClock] on startup (when available). Setting to `true` does
+         * not guarantee a network time anchor.
+         */
+        private val isNetworkAnchorEnabled: Boolean = false,
+    ) : Clock {
+        private val baselineNanos = currentTimeMillis() * 1_000_000 - nanoTime()
 
-    override fun now(): Long = baselineNanos + nanoTime()
+        override fun now(): Long = baselineNanos + nanoTime()
 
-    override fun nanoTime(): Long = SystemClock.elapsedRealtimeNanos()
+        override fun nanoTime(): Long = SystemClock.elapsedRealtimeNanos()
 
-    private fun currentTimeMillis(): Long {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && isGnssAnchorEnabled) {
-            try {
-                return currentGnssTimeMillis()
-            } catch (_: Exception) {
+        private fun currentTimeMillis(): Long {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && isGnssAnchorEnabled) {
+                try {
+                    return currentGnssTimeMillis()
+                } catch (_: Exception) {
+                    // Ignore and fall back to the next available time source.
+                }
             }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && isNetworkAnchorEnabled) {
+                try {
+                    return currentNetworkTimeMillis()
+                } catch (_: Exception) {
+                    // Ignore and fall back to System.currentTimeMillis().
+                }
+            }
+
+            return System.currentTimeMillis()
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && isNetworkAnchorEnabled) {
-            try {
-                return currentNetworkTimeMillis()
-            } catch (_: Exception) {
-            }
-        }
+        @RequiresApi(api = Build.VERSION_CODES.Q)
+        private fun currentGnssTimeMillis(): Long = SystemClock.currentGnssTimeClock().millis()
 
-        return System.currentTimeMillis()
+        @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+        private fun currentNetworkTimeMillis(): Long = SystemClock.currentNetworkTimeClock().millis()
     }
-
-    @RequiresApi(api = Build.VERSION_CODES.Q)
-    private fun currentGnssTimeMillis(): Long = SystemClock.currentGnssTimeClock().millis()
-
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
-    private fun currentNetworkTimeMillis(): Long = SystemClock.currentNetworkTimeClock().millis()
-}
