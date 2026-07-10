@@ -53,11 +53,13 @@ class OtelAndroidClock
                 } catch (_: Exception) {
                     // Ignore and fall back to the next available time source.
                 }
+            }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && isNetworkAnchorEnabled) {
                 try {
                     return currentNetworkTimeMillis()
                 } catch (_: Exception) {
+                    // Ignore and fall back to System.currentTimeMillis().
                 }
             }
 
