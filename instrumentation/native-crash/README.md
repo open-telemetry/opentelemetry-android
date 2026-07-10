@@ -38,3 +38,7 @@ The module is discovered and installed automatically when it is present on the r
 Native signal handling, native stack unwinding, symbol upload, and symbolication are not included
 in this increment. Until signal handling is added, this module only provides the replay side of the
 native crash reporting flow.
+
+The persisted crash marker is deleted immediately after the event is emitted. Replay is therefore
+at most once: if the application exits before the telemetry is exported, the crash event may be
+lost.

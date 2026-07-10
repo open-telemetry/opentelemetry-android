@@ -31,6 +31,7 @@ import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_ID
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 import java.time.Instant
 import java.util.Properties
 
@@ -160,6 +161,7 @@ internal class FileNativeCrashStore(
         )
     }
 
+    @Synchronized
     override fun writeContext(context: NativeCrashContext) {
         runCatching {
             directory.mkdirs()
@@ -169,7 +171,15 @@ internal class FileNativeCrashStore(
             properties.setIfNotNull(SERVICE_VERSION, context.serviceVersion)
             properties.setIfNotNull(OS_NAME, context.osName)
             properties.setIfNotNull(OS_VERSION, context.osVersion)
-            FileOutputStream(contextPath).use { properties.store(it, null) }
+            val temporaryPath = File(directory, "${contextPath.name}.tmp")
+            try {
+                FileOutputStream(temporaryPath).use { properties.store(it, null) }
+                if (!temporaryPath.renameTo(contextPath)) {
+                    throw IOException("Failed to replace native crash context")
+                }
+            } finally {
+                temporaryPath.delete()
+            }
         }
     }
 

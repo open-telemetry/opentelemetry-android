@@ -65,6 +65,41 @@ class NativeCrashReporterTest {
     }
 
     @Test
+    fun `replays a valid marker without crash-time context`() {
+        val store = FileNativeCrashStore(tempDir)
+        writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L)
+
+        reporter(store).install(crashContext("current"))
+
+        val attributes = otelTesting.logRecords.single().attributes
+        assertThat(attributes.get(stringKey(SESSION_ID))).isNull()
+        assertThat(attributes.get(stringKey(APP_BUILD_ID))).isNull()
+        assertThat(attributes.get(stringKey(SERVICE_VERSION))).isNull()
+        assertThat(attributes.get(stringKey(OS_NAME))).isNull()
+        assertThat(attributes.get(stringKey(OS_VERSION))).isNull()
+    }
+
+    @Test
+    fun `replays a valid marker when crash-time context is corrupt`() {
+        val store = FileNativeCrashStore(tempDir)
+        contextFile().apply {
+            parentFile?.mkdirs()
+            writeText("session.id=\\uZZZZ\n")
+        }
+        writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L)
+
+        reporter(store).install(crashContext("current"))
+
+        assertThat(
+            otelTesting.logRecords
+                .single()
+                .attributes
+                .get(stringKey(SESSION_ID)),
+        ).isNull()
+        assertThat(store.readContext()).isEqualTo(crashContext("current"))
+    }
+
+    @Test
     fun `maps native signal numbers to names`() {
         val signalNumbers = listOf(4, 5, 6, 7, 8, 11, 15)
 
@@ -96,6 +131,27 @@ class NativeCrashReporterTest {
 
         assertThat(otelTesting.logRecords).isEmpty()
         assertThat(markerFile()).doesNotExist()
+    }
+
+    @Test
+    fun `ignores and removes markers with invalid timestamps`() {
+        val store = FileNativeCrashStore(tempDir)
+        val invalidTimestamps = listOf(null, "not-a-number", "0", "-1")
+
+        invalidTimestamps.forEach { timestamp ->
+            markerFile().apply {
+                parentFile?.mkdirs()
+                writeText(
+                    buildString {
+                        appendLine("signal.number=11")
+                        timestamp?.let { appendLine("timestamp.epoch_nanos=$it") }
+                    },
+                )
+            }
+
+            assertThat(store.readCrashRecord()).isNull()
+            assertThat(markerFile()).doesNotExist()
+        }
     }
 
     @Test
@@ -135,6 +191,8 @@ class NativeCrashReporterTest {
     }
 
     private fun markerFile(): File = File(tempDir, "native-crash.properties")
+
+    private fun contextFile(): File = File(tempDir, "native-crash-context.properties")
 
     private fun session(sessionId: String): Session =
         object : Session {
