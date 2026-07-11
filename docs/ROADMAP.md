@@ -6,12 +6,17 @@ categorical topics of interest and the areas were development should focus.
 This roadmap does not contain timelines or due dates. The speed of project
 advancement is primarily limited by contributor availability.
 
-Table of Contents:
+## Table of Contents:
 
 * [Stability](#stability)
   * [API Stability](#api-stability)
   * [Instrumentation Stability](#instrumentation-stability)
   * [Semantic Convention Stability](#semantic-convention-stability)
+* [Agent Enhancements](#agent-enhancements)
+* Android and Kotlin compatibility
+* Declarative Configuration
+* Documentation
+* Instrumentation Enhancements
 
 ## Stability
 
@@ -40,7 +45,7 @@ The following modules are already marked as API stable:
 For this roadmap, we also seek API stability for:
 
 * `common`
-* `core`
+* `core` - This is still TBD. We may want to work toward eliminating `core` long-term.
 * `services`
 
 Other modules not covered below will be out of scope and are not intended to 
@@ -76,9 +81,60 @@ For semantic conventions that are specific to Android, we use federated semantic
 conventions. These conventions will follow the typical stability lifecycle, 
 and we consider stabilization of these to be an OTel Android roadmap priority.
 
+## Agent Enhancements
+
+The `android-agent` domain-specific language (DSL) is the primary API surface
+through which most developers will configure OpenTelemetry Android. We are
+committed to continuing to enhance this DSL in order to make it as 
+user-friendly and feature-rich as practical.
+
+These efforts will expand to include broader instrumentation configuration,
+as well as additional detailed configuration of the underlying OTel SDK.
+
 ## Android and Kotlin compatibility
 
-tbd
+This project seeks to stay current with development updates
+from the upstream Android project and from the Kotlin language.
+This is a stated project roadmap goal. Users who bootstrap a new 
+Android project with the latest Android SDK and AGP should always
+be able to use the latest version of OpenTelemetry Android without
+jumping through many hoops.
+
+Furthermore, users who are still on older, but still supported, versions
+of the Android SDK / AGP should still be able to utilize OpenTelemetry
+Android without considerable effort.
+
+See
+[VERSIONING.md](VERSIONING.md#android-ecosystem-compatibility)
+for additional specifics.
+
+## Declarative Configuration
+
+OpenTelemetry has designed a sophisticated yaml-based, declarative configuration 
+specification that is robust, flexible, and extensible. This allows users to build
+configuration tooling and to mix and match yaml snippets across applications to
+configure their OpenTelemetry SDKs and instrumentation libraries.
+
+OpenTelemetry Android is committed to maintaining and continuously improving our
+`android-agent` DSL, but we must also support declarative configuration. Supporting
+declarative configuration in OpenTelemetry Android is a roadmap priority. We will
+find ways of doing this to remain interoperable with the agent DSL.
+
+We believe that supporting declarative configuration may also be a way to deminish 
+
+## Documentation
+
+...and recipes
+<tbd>
+
+## Instrumentation Enhancements
+
+We believe that there is plenty of room to enhance OpenTelemetry Android with
+additional instrumentation libraries. While this is somewhat open-ended, we 
+welcome pragmatic contributions for new frameworks and libraries, especially
+those used widely by Android developers.
+
+<tbd>
 
 ---
 
@@ -88,8 +144,6 @@ move demo to community
 grow approvers
 accelerate contributions
 android platform and kotlin language updates(?)
-declarative config and agent dsl enhancements
-documentation and recipes
 
 long term future
 - what's in 2.x?
