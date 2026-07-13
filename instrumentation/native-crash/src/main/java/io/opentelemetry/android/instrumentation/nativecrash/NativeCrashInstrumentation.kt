@@ -10,7 +10,6 @@ package io.opentelemetry.android.instrumentation.nativecrash
 import android.content.Context
 import android.os.Build
 import android.util.Log
-import androidx.core.content.pm.PackageInfoCompat
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.common.RumConstants
@@ -22,7 +21,6 @@ import io.opentelemetry.android.session.SessionPublisher
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.common.AttributesBuilder
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_BUILD_ID
 import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_MESSAGE
 import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_TYPE
 import io.opentelemetry.kotlin.semconv.IncubatingApi
@@ -197,7 +195,6 @@ internal class FileNativeCrashStore(
         val properties = runCatching { contextPath.readProperties() }.getOrNull() ?: return null
         return NativeCrashContext(
             sessionId = properties.nonBlankProperty(SESSION_ID),
-            appBuildId = properties.nonBlankProperty(APP_BUILD_ID),
             serviceVersion = properties.nonBlankProperty(SERVICE_VERSION),
             osName = properties.nonBlankProperty(OS_NAME),
             osVersion = properties.nonBlankProperty(OS_VERSION),
@@ -210,7 +207,6 @@ internal class FileNativeCrashStore(
             directory.mkdirs()
             val properties = Properties()
             properties.setIfNotNull(SESSION_ID, context.sessionId)
-            properties.setIfNotNull(APP_BUILD_ID, context.appBuildId)
             properties.setIfNotNull(SERVICE_VERSION, context.serviceVersion)
             properties.setIfNotNull(OS_NAME, context.osName)
             properties.setIfNotNull(OS_VERSION, context.osVersion)
@@ -277,14 +273,12 @@ internal data class NativeCrashRecord(
 
 internal data class NativeCrashContext(
     val sessionId: String?,
-    val appBuildId: String?,
     val serviceVersion: String?,
     val osName: String?,
     val osVersion: String?,
 ) {
     fun addTo(attributes: AttributesBuilder) {
         attributes.putIfNotNull(SESSION_ID, sessionId)
-        attributes.putIfNotNull(APP_BUILD_ID, appBuildId)
         attributes.putIfNotNull(SERVICE_VERSION, serviceVersion)
         attributes.putIfNotNull(OS_NAME, osName)
         attributes.putIfNotNull(OS_VERSION, osVersion)
@@ -295,7 +289,6 @@ private fun Context.currentCrashContext(openTelemetryRum: OpenTelemetryRum): Nat
     val packageInfo = runCatching { packageManager.getPackageInfo(packageName, 0) }.getOrNull()
     return NativeCrashContext(
         sessionId = openTelemetryRum.sessionProvider.getSessionId().takeIf { it.isNotBlank() },
-        appBuildId = packageInfo?.let { PackageInfoCompat.getLongVersionCode(it).toString() },
         serviceVersion = packageInfo?.versionName,
         osName = "Android",
         osVersion = Build.VERSION.RELEASE,

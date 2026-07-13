@@ -21,7 +21,6 @@ import io.opentelemetry.android.session.SessionPublisher
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_BUILD_ID
 import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_MESSAGE
 import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_TYPE
 import io.opentelemetry.kotlin.semconv.IncubatingApi
@@ -60,8 +59,6 @@ class NativeCrashReporterTest {
         val packageInfo =
             PackageInfo().apply {
                 versionName = "1.2.3"
-                @Suppress("DEPRECATION")
-                versionCode = 42
             }
         val packageManager = mockk<PackageManager>()
         val applicationContext = mockk<Context>()
@@ -87,7 +84,6 @@ class NativeCrashReporterTest {
             .isEqualTo(
                 NativeCrashContext(
                     sessionId = "install-session",
-                    appBuildId = "42",
                     serviceVersion = "1.2.3",
                     osName = "Android",
                     osVersion = Build.VERSION.RELEASE,
@@ -112,7 +108,6 @@ class NativeCrashReporterTest {
         assertThat(log.attributes.get(stringKey(EXCEPTION_MESSAGE)))
             .isEqualTo("Native crash signal SIGSEGV (11)")
         assertThat(log.attributes.get(stringKey(SESSION_ID))).isEqualTo("crashed-session")
-        assertThat(log.attributes.get(stringKey(APP_BUILD_ID))).isEqualTo("crashed-build")
         assertThat(log.attributes.get(stringKey(SERVICE_VERSION))).isEqualTo("crashed-version")
         assertThat(log.attributes.get(stringKey(OS_NAME))).isEqualTo("crashed-os")
         assertThat(log.attributes.get(stringKey(OS_VERSION))).isEqualTo("crashed-os-version")
@@ -129,7 +124,6 @@ class NativeCrashReporterTest {
 
         val attributes = otelTesting.logRecords.single().attributes
         assertThat(attributes.get(stringKey(SESSION_ID))).isNull()
-        assertThat(attributes.get(stringKey(APP_BUILD_ID))).isNull()
         assertThat(attributes.get(stringKey(SERVICE_VERSION))).isNull()
         assertThat(attributes.get(stringKey(OS_NAME))).isNull()
         assertThat(attributes.get(stringKey(OS_VERSION))).isNull()
@@ -276,7 +270,6 @@ class NativeCrashReporterTest {
     private fun crashContext(prefix: String): NativeCrashContext =
         NativeCrashContext(
             sessionId = "$prefix-session",
-            appBuildId = "$prefix-build",
             serviceVersion = "$prefix-version",
             osName = "$prefix-os",
             osVersion = "$prefix-os-version",

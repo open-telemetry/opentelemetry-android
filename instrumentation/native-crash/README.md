@@ -16,7 +16,6 @@ The replayed event uses the original crash timestamp and includes:
 * `exception.type`
 * `exception.message`
 * `session.id`, when available
-* `app.build_id`, when available
 * `service.version`, when available
 * `os.name`
 * `os.version`
