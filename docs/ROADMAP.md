@@ -18,11 +18,19 @@ to discuss and work on it.
   * [API Stability](#api-stability)
   * [Instrumentation Stability](#instrumentation-stability)
   * [Semantic Convention Stability](#semantic-convention-stability)
+    * [Semantics and metadata](#semantics-and-metadata)
 * [Agent Enhancements](#agent-enhancements)
-* Android and Kotlin compatibility
-* Declarative Configuration
-* Documentation
-* Instrumentation Enhancements
+* [Android and Kotlin compatibility](#android-and-kotlin-compatibility)
+* [Declarative Configuration](#declarative-configuration)
+* [Documentation](#documentation)
+* [Instrumentation Enhancements](#instrumentation-enhancements)
+* [Growing Contributors](#growing-contributors)
+* [Distant Destinations](#distant-destinations)
+  * [Pure Kotlin-based Upstream](#pure-kotlin-based-upstream)
+  * [Upstream the Demo App](#upstream-the-demo-app)
+  * [Session Replay](#session-replay)
+  * [Additional Native Integrations](#additional-native-integrations)
+* [Conclusion](#conclusion)
 
 ## Stability
 
@@ -168,19 +176,78 @@ additional instrumentation libraries. While this is somewhat open-ended, we
 welcome pragmatic contributions for new frameworks and libraries, especially
 those used widely by Android developers.
 
-<tbd>
+A comprehensive list of future instrumentation modules is not listed here, and
+so it remains open-ended.
 
----
+We will persue additional build-time auto-instrumentation. This helps with 
+our roadmap goal of allowing developers to add OpenTelemetry to their projects
+without having to write much code, especially code that exists in production
+modules. It is expected that additional build-time instrumentation will be
+built as gradle plugins.
 
-add additional instrumentation
-use pure kotlin upstream (not java)
-move demo to community
-grow approvers
-accelerate contributions
-android platform and kotlin language updates(?)
+## Growing Contributors
 
-long term future
-- what's in 2.x?
-- more build-time integration/injection
-- session replay
-- integration with webviews/react native/etc.
+The long-term success of OpenTelemetry Android depends on having a robust
+pipeline of maintainers, approvers, code contributors, and reviewers. We 
+will continue to support and grow our contributor base to help ensure
+that we have consistent, robust coverage in these areas.
+
+## Distant Destinations
+
+It's probably worth noting down briefly other ideas that have surfaced. 
+We expect these to be larger or slower/longer efforts that may not land
+in the next 1-2 years, but we're also open to reprioritizing as things 
+change.
+
+### Pure Kotlin-based Upstream
+
+Once [opentelemetry-kotlin](https://github.com/open-telemetry/opentelemetry-kotlin)
+has reached stable milestones for API and SDK, we can work on switching to
+a different upstream. This allows us to use idiomatic kotlin more consistently
+throughout OpenTelemetry Android, without the need to rely on legacy Java
+syntax and Java interoperation. 
+
+### Upstream the Demo App
+
+We have a pretty feature-rich [demo-app](demo-app) embedded into this
+repo. That's great for local development and for testing and demonstrating
+features, but we also feel like it would be more useful as a first-class
+component within the
+[official OpenTelemetry Demo](https://github.com/open-telemetry/opentelemetry-demo).
+
+There's some work that would need to be done first to get the demo app in 
+a shape to be moved over, including building a non-mocked service layer.
+
+The tracking issue for this work is in
+[#1724](https://github.com/open-telemetry/opentelemetry-android/issues/1724).
+
+### Session Replay
+
+Advanced RUM system leverage "session replay" in order to play back a 
+user's interaction with an application along a timeline. This allows
+user experience (UX) researchers the ability to deeply understand
+how users interact with a given design.
+
+In addition to the technical work required to build this, other challenges
+include obvious privacy concerns and the absence of an appropriate OTLP style
+data model.
+
+### Additional Native Integrations
+
+Many Android applications leverage cross-platform stacks for some of their 
+implementation, including embedded web views, React Native, and Flutter.
+The current state of OpenTelemetry leaves an integration gap here that we 
+should improve one-day. This would help with end-to-end observability.
+
+Sharing the OpenTelemetry context between these stacks should be made
+possible one day, and cross-stack instrumentation should be made 
+installable and/or interoperable.
+
+## Conclusion
+
+This roadmap captures the areas where OpenTelemetry Android needs continued
+investment in order to become more stable, easier to adopt, and more useful
+for Android developers. Progress will depend on focused, incremental
+contributions that improve stability, compatibility, documentation, and
+instrumentation without expanding the project beyond what maintainers can
+support.
