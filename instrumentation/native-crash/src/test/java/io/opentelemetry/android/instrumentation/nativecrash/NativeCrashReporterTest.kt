@@ -52,7 +52,7 @@ class NativeCrashReporterTest {
         val log = otelTesting.logRecords.single()
         assertThat(log.eventName).isEqualTo("app.crash")
         assertThat(log.timestampEpochNanos).isEqualTo(1_783_598_400_000_000_000L)
-        assertThat(log.attributes.get(stringKey(EXCEPTION_TYPE))).isEqualTo("signal.SIGSEGV")
+        assertThat(log.attributes.get(stringKey(EXCEPTION_TYPE))).isEqualTo("SIGSEGV")
         assertThat(log.attributes.get(stringKey(EXCEPTION_MESSAGE)))
             .isEqualTo("Native crash signal SIGSEGV (11)")
         assertThat(log.attributes.get(stringKey(SESSION_ID))).isEqualTo("crashed-session")
@@ -60,7 +60,7 @@ class NativeCrashReporterTest {
         assertThat(log.attributes.get(stringKey(SERVICE_VERSION))).isEqualTo("crashed-version")
         assertThat(log.attributes.get(stringKey(OS_NAME))).isEqualTo("crashed-os")
         assertThat(log.attributes.get(stringKey(OS_VERSION))).isEqualTo("crashed-os-version")
-        assertThat(store.readCrashRecord()).isNull()
+        assertThat(store.readCrashRecords()).isEmpty()
         assertThat(store.readContext()).isEqualTo(crashContext("current"))
     }
 
@@ -149,7 +149,7 @@ class NativeCrashReporterTest {
                 )
             }
 
-            assertThat(store.readCrashRecord()).isNull()
+            assertThat(store.readCrashRecords()).isEmpty()
             assertThat(markerFile()).doesNotExist()
         }
     }
@@ -169,9 +169,25 @@ class NativeCrashReporterTest {
     }
 
     @Test
+    fun `replays multiple markers without one malformed marker blocking the others`() {
+        val store = FileNativeCrashStore(tempDir)
+        store.writeContext(crashContext("crashed"))
+        writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L, markerId = "one")
+        markerFile("two").writeText("signal.number=invalid\ntimestamp.epoch_nanos=123\n")
+        writeMarker(signalNumber = 6, timestampNanos = 1_783_598_401_000_000_000L, markerId = "three")
+
+        reporter(store).install(crashContext("current"))
+
+        assertThat(otelTesting.logRecords.map { it.attributes.get(stringKey(EXCEPTION_TYPE)) })
+            .containsExactly("SIGSEGV", "SIGABRT")
+        assertThat(store.readCrashRecords()).isEmpty()
+        assertThat(markerFile("two")).doesNotExist()
+    }
+
+    @Test
     fun `updates persisted context when the session changes`() {
         val store = FileNativeCrashStore(tempDir)
-        val observer = NativeCrashSessionObserver(store, crashContext("original"))
+        val observer = NativeCrashSessionObserver(store, crashContext("original"), directExecutor)
 
         observer.onSessionStarted(session("new-session"), session("old-session"))
 
@@ -183,14 +199,15 @@ class NativeCrashReporterTest {
     private fun writeMarker(
         signalNumber: Int,
         timestampNanos: Long,
+        markerId: String = "test",
     ) {
-        markerFile().apply {
+        markerFile(markerId).apply {
             parentFile?.mkdirs()
             writeText("signal.number=$signalNumber\ntimestamp.epoch_nanos=$timestampNanos\n")
         }
     }
 
-    private fun markerFile(): File = File(tempDir, "native-crash.properties")
+    private fun markerFile(markerId: String = "test"): File = File(tempDir, "native-crash-record-$markerId.properties")
 
     private fun contextFile(): File = File(tempDir, "native-crash-context.properties")
 
@@ -225,6 +242,8 @@ class NativeCrashReporterTest {
         }
 
     private companion object {
+        val directExecutor = java.util.concurrent.Executor { command -> command.run() }
+
         @RegisterExtension
         val otelTesting: OpenTelemetryExtension = OpenTelemetryExtension.create()
     }

@@ -36,6 +36,8 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.time.Instant
 import java.util.Properties
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 /** Entry point for replaying native crashes captured by a previous app process. */
 @AutoService(AndroidInstrumentation::class)
@@ -43,11 +45,13 @@ class NativeCrashInstrumentation internal constructor(
     private val storeFactory: (Context) -> NativeCrashStore = { context ->
         FileNativeCrashStore(File(context.filesDir, "opentelemetry/native-crash"))
     },
+    private val executor: Executor = Executors.newSingleThreadExecutor(),
 ) : AndroidInstrumentation {
     constructor() : this(
         storeFactory = { context ->
             FileNativeCrashStore(File(context.filesDir, "opentelemetry/native-crash"))
         },
+        executor = Executors.newSingleThreadExecutor(),
     )
 
     override val name: String = "native-crash"
@@ -57,16 +61,17 @@ class NativeCrashInstrumentation internal constructor(
         openTelemetryRum: OpenTelemetryRum,
     ) {
         val applicationContext = context.applicationContext
-        val store = storeFactory(applicationContext)
-        val crashContext = applicationContext.currentCrashContext(openTelemetryRum)
-        NativeCrashReporter(
-            store = store,
-            openTelemetryRum = openTelemetryRum,
-        ).install(crashContext)
-
-        val sessionProvider = openTelemetryRum.sessionProvider
-        if (sessionProvider is SessionPublisher) {
-            sessionProvider.addObserver(NativeCrashSessionObserver(store, crashContext))
+        executor.execute {
+            val store = storeFactory(applicationContext)
+            val crashContext = applicationContext.currentCrashContext(openTelemetryRum)
+            val sessionProvider = openTelemetryRum.sessionProvider
+            if (sessionProvider is SessionPublisher) {
+                sessionProvider.addObserver(NativeCrashSessionObserver(store, crashContext, executor))
+            }
+            NativeCrashReporter(
+                store = store,
+                openTelemetryRum = openTelemetryRum,
+            ).install(crashContext)
         }
     }
 }
@@ -74,12 +79,15 @@ class NativeCrashInstrumentation internal constructor(
 internal class NativeCrashSessionObserver(
     private val store: NativeCrashStore,
     private val crashContext: NativeCrashContext,
+    private val executor: Executor,
 ) : SessionObserver {
     override fun onSessionStarted(
         newSession: Session,
         previousSession: Session,
     ) {
-        store.writeContext(crashContext.copy(sessionId = newSession.id))
+        executor.execute {
+            store.writeContext(crashContext.copy(sessionId = newSession.id))
+        }
     }
 
     override fun onSessionEnded(session: Session) {}
@@ -90,19 +98,26 @@ internal class NativeCrashReporter(
     private val openTelemetryRum: OpenTelemetryRum,
 ) {
     fun install(currentContext: NativeCrashContext) {
-        replayPreviousCrash()
+        replayPreviousCrashes()
         store.writeContext(currentContext)
     }
 
-    private fun replayPreviousCrash() {
-        val record = store.readCrashRecord() ?: return
+    private fun replayPreviousCrashes() {
+        val crashContext = store.readContext()
+        store.readCrashRecords().forEach { record -> replay(record, crashContext) }
+    }
+
+    private fun replay(
+        record: NativeCrashRecord,
+        crashContext: NativeCrashContext?,
+    ) {
         val attributes = Attributes.builder()
-        attributes.put(stringKey(EXCEPTION_TYPE), "signal.${record.signalName}")
+        attributes.put(stringKey(EXCEPTION_TYPE), record.signalName)
         attributes.put(
             stringKey(EXCEPTION_MESSAGE),
             "Native crash signal ${record.signalName} (${record.signalNumber})",
         )
-        store.readContext()?.addTo(attributes)
+        crashContext?.addTo(attributes)
 
         openTelemetryRum.openTelemetry.logsBridge
             .loggerBuilder("io.opentelemetry.native-crash")
@@ -112,14 +127,14 @@ internal class NativeCrashReporter(
             .setTimestamp(record.timestamp)
             .setAllAttributes(attributes.build())
             .emit()
-        store.deleteCrashRecord()
+        store.deleteCrashRecord(record)
     }
 }
 
 internal interface NativeCrashStore {
-    fun readCrashRecord(): NativeCrashRecord?
+    fun readCrashRecords(): List<NativeCrashRecord>
 
-    fun deleteCrashRecord()
+    fun deleteCrashRecord(record: NativeCrashRecord)
 
     fun readContext(): NativeCrashContext?
 
@@ -129,28 +144,48 @@ internal interface NativeCrashStore {
 internal class FileNativeCrashStore(
     private val directory: File,
 ) : NativeCrashStore {
-    private val crashRecordPath = File(directory, "native-crash.properties")
     private val contextPath = File(directory, "native-crash-context.properties")
 
-    override fun readCrashRecord(): NativeCrashRecord? {
-        if (!crashRecordPath.isFile) {
-            return null
-        }
-        val properties = crashRecordPath.readPropertiesOrNull()
-        if (properties == null) {
-            deleteCrashRecord()
-            return null
-        }
-        val record = properties.toCrashRecordOrNull()
-        if (record == null) {
-            deleteCrashRecord()
-        }
-        return record
+    override fun readCrashRecords(): List<NativeCrashRecord> {
+        val paths =
+            directory.listFiles { path ->
+                path.isFile &&
+                    path.name.startsWith(CRASH_RECORD_PREFIX) &&
+                    path.name.endsWith(PROPERTIES_SUFFIX)
+            } ?: return emptyList()
+
+        return paths.sortedBy { it.name }.mapNotNull { path -> readCrashRecord(path) }
     }
 
-    override fun deleteCrashRecord() {
+    override fun deleteCrashRecord(record: NativeCrashRecord) {
+        val markerName = record.markerName ?: return
+        deleteCrashRecord(File(directory, markerName))
+    }
+
+    private fun readCrashRecord(path: File): NativeCrashRecord? {
+        val properties =
+            try {
+                path.readProperties()
+            } catch (error: IllegalArgumentException) {
+                deleteCrashRecord(path)
+                return null
+            } catch (error: IOException) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash marker", error)
+                return null
+            } catch (error: SecurityException) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash marker", error)
+                return null
+            }
+        val record = properties.toCrashRecordOrNull()
+        if (record == null) {
+            deleteCrashRecord(path)
+        }
+        return record?.copy(markerName = path.name)
+    }
+
+    private fun deleteCrashRecord(path: File) {
         runCatching {
-            if (crashRecordPath.isFile && !crashRecordPath.delete()) {
+            if (path.isFile && !path.delete()) {
                 throw IOException("Failed to delete native crash marker")
             }
         }.onFailure { error ->
@@ -159,7 +194,7 @@ internal class FileNativeCrashStore(
     }
 
     override fun readContext(): NativeCrashContext? {
-        val properties = contextPath.readPropertiesOrNull() ?: return null
+        val properties = runCatching { contextPath.readProperties() }.getOrNull() ?: return null
         return NativeCrashContext(
             sessionId = properties.nonBlankProperty(SESSION_ID),
             appBuildId = properties.nonBlankProperty(APP_BUILD_ID),
@@ -210,18 +245,14 @@ internal class FileNativeCrashStore(
         }.getOrNull()
     }
 
-    private fun File.readPropertiesOrNull(): Properties? {
-        if (!isFile) {
-            return null
+    private fun File.readProperties(): Properties =
+        Properties().also { properties ->
+            FileInputStream(this).use { properties.load(it) }
         }
-        return runCatching {
-            Properties().also { properties ->
-                FileInputStream(this).use { properties.load(it) }
-            }
-        }.getOrNull()
-    }
 
     private companion object {
+        const val CRASH_RECORD_PREFIX = "native-crash-record-"
+        const val PROPERTIES_SUFFIX = ".properties"
         const val SIGNAL_NUMBER_KEY = "signal.number"
         const val TIMESTAMP_EPOCH_NANOS_KEY = "timestamp.epoch_nanos"
     }
@@ -230,6 +261,7 @@ internal class FileNativeCrashStore(
 internal data class NativeCrashRecord(
     val signalNumber: Int,
     val timestamp: Instant,
+    internal val markerName: String? = null,
 ) {
     val signalName: String =
         when (signalNumber) {

@@ -5,8 +5,9 @@ Status: development
 The native crash instrumentation replays a persisted native crash as an `app.crash` event when
 the application next starts.
 
-This first increment provides the module, persisted marker/context format, and replay path. Native
-signal capture is intentionally left for a follow-up change.
+This first increment provides the module, persisted marker/context format, and replay path. Each
+crash uses a separate marker so unreadable records can be retried without blocking other crashes.
+Native signal capture is intentionally left for a follow-up change.
 
 ## Telemetry
 
@@ -37,8 +38,9 @@ The module is discovered and installed automatically when it is present on the r
 
 Native signal handling, native stack unwinding, symbol upload, and symbolication are not included
 in this increment. Until signal handling is added, this module only provides the replay side of the
-native crash reporting flow.
+native crash reporting flow. It does not emit native stack frames, so there is no native stack to
+symbolicate in this change.
 
-The persisted crash marker is deleted immediately after the event is emitted. Replay is therefore
-at most once: if the application exits before the telemetry is exported, the crash event may be
-lost.
+Each persisted crash marker is deleted immediately after its event is emitted. Replay is therefore
+at most once per marker: if the application exits before the telemetry is exported, that crash
+event may be lost.
