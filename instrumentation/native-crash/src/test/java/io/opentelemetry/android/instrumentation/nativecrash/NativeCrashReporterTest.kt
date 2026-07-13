@@ -7,9 +7,17 @@
 
 package io.opentelemetry.android.instrumentation.nativecrash
 
+import android.content.Context
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
+import android.os.Build
+import io.mockk.every
+import io.mockk.mockk
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.session.Session
+import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.android.session.SessionPublisher
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
@@ -38,6 +46,54 @@ class NativeCrashReporterTest {
     @AfterEach
     fun cleanup() {
         otelTesting.clearLogRecords()
+    }
+
+    @Test
+    fun `has a stable instrumentation name`() {
+        assertThat(NativeCrashInstrumentation().name).isEqualTo("native-crash")
+    }
+
+    @Test
+    fun `installs replay and session observer using the application context`() {
+        val store = FileNativeCrashStore(tempDir)
+        writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L)
+        val packageInfo =
+            PackageInfo().apply {
+                versionName = "1.2.3"
+                @Suppress("DEPRECATION")
+                versionCode = 42
+            }
+        val packageManager = mockk<PackageManager>()
+        val applicationContext = mockk<Context>()
+        val context = mockk<Context>()
+        every { context.applicationContext } returns applicationContext
+        every { applicationContext.packageManager } returns packageManager
+        every { applicationContext.packageName } returns "test.app"
+        every { packageManager.getPackageInfo("test.app", 0) } returns packageInfo
+        val sessionProvider = RecordingSessionProvider("install-session")
+        val instrumentation =
+            NativeCrashInstrumentation(
+                storeFactory = { actualContext ->
+                    assertThat(actualContext).isSameAs(applicationContext)
+                    store
+                },
+                executor = directExecutor,
+            )
+
+        instrumentation.install(context, fakeRum(sessionProvider))
+
+        assertThat(otelTesting.logRecords).hasSize(1)
+        assertThat(store.readContext())
+            .isEqualTo(
+                NativeCrashContext(
+                    sessionId = "install-session",
+                    appBuildId = "42",
+                    serviceVersion = "1.2.3",
+                    osName = "Android",
+                    osVersion = Build.VERSION.RELEASE,
+                ),
+            )
+        assertThat(sessionProvider.observer).isNotNull()
     }
 
     @Test
@@ -226,10 +282,10 @@ class NativeCrashReporterTest {
             osVersion = "$prefix-os-version",
         )
 
-    private fun fakeRum(): OpenTelemetryRum =
+    private fun fakeRum(sessionProvider: SessionProvider = SessionProvider { "current-session" }): OpenTelemetryRum =
         object : OpenTelemetryRum {
             override val openTelemetry: OpenTelemetry = otelTesting.openTelemetry
-            override val sessionProvider: SessionProvider = SessionProvider { "current-session" }
+            override val sessionProvider: SessionProvider = sessionProvider
             override val clock: Clock = Clock.getDefault()
 
             override fun emitEvent(
@@ -240,6 +296,19 @@ class NativeCrashReporterTest {
 
             override fun shutdown() {}
         }
+
+    private class RecordingSessionProvider(
+        private val sessionId: String,
+    ) : SessionProvider,
+        SessionPublisher {
+        var observer: SessionObserver? = null
+
+        override fun getSessionId(): String = sessionId
+
+        override fun addObserver(observer: SessionObserver) {
+            this.observer = observer
+        }
+    }
 
     private companion object {
         val directExecutor = java.util.concurrent.Executor { command -> command.run() }
