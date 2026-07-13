@@ -17,16 +17,6 @@ import io.opentelemetry.api.common.Attributes
 
 internal const val APP_SCREEN_CLICK_EVENT_NAME = "app.screen.click"
 internal const val VIEW_CLICK_EVENT_NAME = "app.widget.click"
-internal const val APP_SCREEN_LONG_PRESS_EVENT_NAME = "app.screen.longpress"
-internal const val VIEW_LONG_PRESS_EVENT_NAME = "app.widget.longpress"
-
-internal const val APP_SCREEN_SCROLL_EVENT_NAME = "app.screen.scroll"
-
-internal const val VIEW_SCROLL_EVENT_NAME = "app.widget.scroll"
-
-internal const val APP_SCREEN_FLING_EVENT_NAME = "app.screen.fling"
-
-internal const val VIEW_FLING_EVENT_NAME = "app.widget.fling"
 
 internal fun buttonStateToString(buttonStateInt: Int): String? =
     when (buttonStateInt) {
@@ -71,12 +61,14 @@ internal sealed class Gesture(
     val m: MotionEvent,
 ) {
     private val t = TapEventMetadata(m)
+    val buttonStateDescription: String? = t.buttonStateDescription
+    val toolTypeDescription: String = t.toolTypeDescription
     var attributes = Attributes.empty()
 
     init {
-        attributes = attributes.toBuilder().put(HW_POINTER_TYPE_KEY, t.toolTypeDescription).build()
-        if (t.buttonStateDescription != null) {
-            attributes = attributes.toBuilder().put(HW_POINTER_BUTTON_KEY, t.buttonStateDescription).build()
+        attributes = attributes.toBuilder().put(HW_POINTER_TYPE_KEY, toolTypeDescription).build()
+        if (buttonStateDescription != null) {
+            attributes = attributes.toBuilder().put(HW_POINTER_BUTTON_KEY, buttonStateDescription).build()
         }
     }
 

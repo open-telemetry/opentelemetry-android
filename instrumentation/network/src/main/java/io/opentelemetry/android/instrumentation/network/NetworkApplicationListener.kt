@@ -9,6 +9,7 @@ import io.opentelemetry.android.common.internal.features.networkattributes.data.
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.network.NetworkChangeListener
+import io.opentelemetry.android.semconv.events.NetworkChangeEvent
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
 import java.util.concurrent.atomic.AtomicBoolean
@@ -64,11 +65,7 @@ internal class NetworkApplicationListener(
                     extractor(attributesBuilder, currentNetwork)
                 },
             )
-            val builder = eventLogger.logRecordBuilder()
-            builder
-                .setEventName("network.change")
-                .setAllAttributes(attributesBuilder.build())
-                .emit()
+            NetworkChangeEvent().emit(eventLogger, attributesBuilder.build())
         }
     }
 }

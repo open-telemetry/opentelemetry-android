@@ -23,6 +23,7 @@ dependencies {
     implementation(project(":services"))
     implementation(project(":instrumentation:common-api"))
     implementation(project(":common"))
+    implementation(project(":semconv"))
     implementation(libs.androidx.core)
     implementation(libs.opentelemetry.semconv.kotlin)
     implementation(libs.opentelemetry.sdk)

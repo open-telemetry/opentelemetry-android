@@ -7,7 +7,7 @@ package io.opentelemetry.android.instrumentation.thermal
 
 import android.os.PowerManager
 import androidx.annotation.RequiresApi
-import io.opentelemetry.android.semconv.AndroidAttributes.ANDROID_THERMAL_THROTTLING_STATUS_KEY
+import io.opentelemetry.android.semconv.events.DeviceThermalStatusChangeEvent
 import io.opentelemetry.api.logs.Logger
 
 /**
@@ -25,16 +25,8 @@ import io.opentelemetry.api.logs.Logger
 internal class ThermalDetector(
     private val logger: Logger,
 ) : PowerManager.OnThermalStatusChangedListener {
-    internal companion object {
-        const val EVENT_NAME = "device.thermal_status.change"
-    }
-
     override fun onThermalStatusChanged(status: Int) {
-        logger
-            .logRecordBuilder()
-            .setEventName(EVENT_NAME)
-            .setAttribute(ANDROID_THERMAL_THROTTLING_STATUS_KEY, status.name)
-            .emit()
+        DeviceThermalStatusChangeEvent(androidThermalThrottlingStatus = status.name).emit(logger)
     }
 
     private val Int.name: String

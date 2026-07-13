@@ -24,10 +24,6 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_FLING_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_SCROLL_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_FLING_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_SCROLL_EVENT_NAME
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_DISTANCE_X_KEY
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_DISTANCE_Y_KEY
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_TYPE_KEY
@@ -50,6 +46,11 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
+
+private const val APP_SCREEN_FLING_EVENT_NAME = "app.screen.fling"
+private const val APP_SCREEN_SCROLL_EVENT_NAME = "app.screen.scroll"
+private const val VIEW_FLING_EVENT_NAME = "app.widget.fling"
+private const val VIEW_SCROLL_EVENT_NAME = "app.widget.scroll"
 
 @RunWith(AndroidJUnit4::class)
 @ExtendWith(MockKExtension::class)

@@ -22,8 +22,6 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_LONG_PRESS_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_LONG_PRESS_EVENT_NAME
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_TYPE_KEY
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.longKey
@@ -43,6 +41,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
+
+private const val APP_SCREEN_LONG_PRESS_EVENT_NAME = "app.screen.longpress"
+private const val VIEW_LONG_PRESS_EVENT_NAME = "app.widget.longpress"
 
 @OptIn(IncubatingApi::class)
 @RunWith(AndroidJUnit4::class)

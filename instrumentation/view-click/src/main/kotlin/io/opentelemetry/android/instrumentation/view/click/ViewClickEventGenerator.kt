@@ -11,14 +11,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_CLICK_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_FLING_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_LONG_PRESS_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_SCROLL_EVENT_NAME
 import io.opentelemetry.android.instrumentation.view.click.internal.Gesture
 import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_FLING_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_LONG_PRESS_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_SCROLL_EVENT_NAME
+import io.opentelemetry.android.semconv.events.AppScreenFlingEvent
+import io.opentelemetry.android.semconv.events.AppScreenLongpressEvent
+import io.opentelemetry.android.semconv.events.AppScreenScrollEvent
+import io.opentelemetry.android.semconv.events.AppWidgetFlingEvent
+import io.opentelemetry.android.semconv.events.AppWidgetLongpressEvent
+import io.opentelemetry.android.semconv.events.AppWidgetScrollEvent
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.Logger
@@ -86,15 +86,10 @@ internal class ViewClickEventGenerator(
 
                     val safeEvent = MotionEvent.obtain(e)
                     val gesture = Gesture.LongPress(safeEvent)
-                    createEvent(APP_SCREEN_LONG_PRESS_EVENT_NAME, gesture)
-                        .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
-                        .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
-                        .emit()
+                    emitAppScreenLongPress(safeEvent, gesture)
 
                     findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
-                        createEvent(VIEW_LONG_PRESS_EVENT_NAME, gesture)
-                            .setAllAttributes(createViewAttributes(view))
-                            .emit()
+                        emitAppWidgetLongPress(view, gesture)
                     }
                     safeEvent.recycle()
                 }
@@ -110,15 +105,10 @@ internal class ViewClickEventGenerator(
 
                     val safeEvent = MotionEvent.obtain(e2)
                     val gesture = Gesture.Scroll(safeEvent, distanceX.toDouble(), distanceY.toDouble())
-                    createEvent(APP_SCREEN_SCROLL_EVENT_NAME, gesture)
-                        .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
-                        .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
-                        .emit()
+                    emitAppScreenScroll(safeEvent, gesture)
 
                     findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
-                        createEvent(VIEW_SCROLL_EVENT_NAME, gesture)
-                            .setAllAttributes(createViewAttributes(view))
-                            .emit()
+                        emitAppWidgetScroll(view, gesture)
                     }
                     safeEvent.recycle()
                 }
@@ -135,15 +125,10 @@ internal class ViewClickEventGenerator(
 
                     val safeEvent = MotionEvent.obtain(e2)
                     val gesture = Gesture.Fling(safeEvent, velocityX.toDouble(), velocityY.toDouble())
-                    createEvent(APP_SCREEN_FLING_EVENT_NAME, gesture)
-                        .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
-                        .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
-                        .emit()
+                    emitAppScreenFling(safeEvent, gesture)
 
                     findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
-                        createEvent(VIEW_FLING_EVENT_NAME, gesture)
-                            .setAllAttributes(createViewAttributes(view))
-                            .emit()
+                        emitAppWidgetFling(view, gesture)
                     }
                     safeEvent.recycle()
                 }
@@ -187,6 +172,92 @@ internal class ViewClickEventGenerator(
                 .setAllAttributes(gesture.attributes)
 
         return logger
+    }
+
+    private fun emitAppScreenLongPress(
+        motionEvent: MotionEvent,
+        gesture: Gesture.LongPress,
+    ) {
+        AppScreenLongpressEvent(
+            appScreenCoordinateX = motionEvent.x.toLong(),
+            appScreenCoordinateY = motionEvent.y.toLong(),
+            hwPointerButton = gesture.buttonStateDescription,
+            hwPointerType = gesture.toolTypeDescription,
+        ).emit(eventLogger)
+    }
+
+    private fun emitAppWidgetLongPress(
+        view: View,
+        gesture: Gesture.LongPress,
+    ) {
+        AppWidgetLongpressEvent(
+            appScreenCoordinateX = view.x.toLong(),
+            appScreenCoordinateY = view.y.toLong(),
+            appWidgetId = view.id.toString(),
+            appWidgetName = viewToName(view),
+            hwPointerButton = gesture.buttonStateDescription,
+            hwPointerType = gesture.toolTypeDescription,
+        ).emit(eventLogger)
+    }
+
+    private fun emitAppScreenScroll(
+        motionEvent: MotionEvent,
+        gesture: Gesture.Scroll,
+    ) {
+        AppScreenScrollEvent(
+            appScreenCoordinateX = motionEvent.x.toLong(),
+            appScreenCoordinateY = motionEvent.y.toLong(),
+            hwPointerButton = gesture.buttonStateDescription,
+            hwPointerDistanceX = gesture.distanceX,
+            hwPointerDistanceY = gesture.distanceY,
+            hwPointerType = gesture.toolTypeDescription,
+        ).emit(eventLogger)
+    }
+
+    private fun emitAppWidgetScroll(
+        view: View,
+        gesture: Gesture.Scroll,
+    ) {
+        AppWidgetScrollEvent(
+            appScreenCoordinateX = view.x.toLong(),
+            appScreenCoordinateY = view.y.toLong(),
+            appWidgetId = view.id.toString(),
+            appWidgetName = viewToName(view),
+            hwPointerButton = gesture.buttonStateDescription,
+            hwPointerDistanceX = gesture.distanceX,
+            hwPointerDistanceY = gesture.distanceY,
+            hwPointerType = gesture.toolTypeDescription,
+        ).emit(eventLogger)
+    }
+
+    private fun emitAppScreenFling(
+        motionEvent: MotionEvent,
+        gesture: Gesture.Fling,
+    ) {
+        AppScreenFlingEvent(
+            appScreenCoordinateX = motionEvent.x.toLong(),
+            appScreenCoordinateY = motionEvent.y.toLong(),
+            hwPointerButton = gesture.buttonStateDescription,
+            hwPointerType = gesture.toolTypeDescription,
+            hwPointerVelocityX = gesture.velocityX,
+            hwPointerVelocityY = gesture.velocityY,
+        ).emit(eventLogger)
+    }
+
+    private fun emitAppWidgetFling(
+        view: View,
+        gesture: Gesture.Fling,
+    ) {
+        AppWidgetFlingEvent(
+            appScreenCoordinateX = view.x.toLong(),
+            appScreenCoordinateY = view.y.toLong(),
+            appWidgetId = view.id.toString(),
+            appWidgetName = viewToName(view),
+            hwPointerButton = gesture.buttonStateDescription,
+            hwPointerType = gesture.toolTypeDescription,
+            hwPointerVelocityX = gesture.velocityX,
+            hwPointerVelocityY = gesture.velocityY,
+        ).emit(eventLogger)
     }
 
     @OptIn(IncubatingApi::class)
