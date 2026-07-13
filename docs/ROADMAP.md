@@ -130,7 +130,7 @@ of the Android SDK / AGP should still be able to utilize OpenTelemetry
 Android without considerable effort.
 
 See
-[VERSIONING.md](VERSIONING.md#android-ecosystem-compatibility)
+[VERSIONING.md](../VERSIONING.md#android-ecosystem-compatibility)
 for additional specifics.
 
 What this means, in practice, is that we will likely introduce breaking
@@ -213,7 +213,7 @@ syntax and Java interoperation.
 
 ### Upstream the Demo App
 
-We have a pretty feature-rich [demo-app](demo-app) embedded into this
+We have a pretty feature-rich [demo-app](../demo-app) embedded into this
 repo. That's great for local development and for testing and demonstrating
 features, but we also feel like it would be more useful as a first-class
 component within the
