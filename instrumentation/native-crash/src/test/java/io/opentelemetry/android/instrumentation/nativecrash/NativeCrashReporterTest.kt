@@ -119,7 +119,8 @@ class NativeCrashReporterTest {
         )
         writeContext(crashContext("crashed"))
 
-        reporter(store).install(crashContext("current"))
+        reporter(store).replayPreviousCrash()
+        store.writeContext(crashContext("current"))
 
         assertThat(otelTesting.logRecords).hasSize(1)
         val log = otelTesting.logRecords.single()
@@ -141,7 +142,7 @@ class NativeCrashReporterTest {
         val store = FileNativeCrashStore(tempDir)
         writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L)
 
-        reporter(store).install(crashContext("current"))
+        reporter(store).replayPreviousCrash()
 
         val attributes = otelTesting.logRecords.single().attributes
         assertThat(attributes.get(stringKey(SESSION_ID))).isNull()
@@ -159,7 +160,8 @@ class NativeCrashReporterTest {
         }
         writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L)
 
-        reporter(store).install(crashContext("current"))
+        reporter(store).replayPreviousCrash()
+        store.writeContext(crashContext("current"))
 
         assertThat(
             otelTesting.logRecords
@@ -172,19 +174,30 @@ class NativeCrashReporterTest {
 
     @Test
     fun `maps native signal numbers to names`() {
-        val signalNumbers = listOf(4, 5, 6, 7, 8, 11, 15)
+        val signalNumbers = listOf(4, 5, 6, 7, 8, 11, 13, 31, 15)
 
         val signalNames = signalNumbers.map { NativeCrashRecord(it, Instant.EPOCH).signalName }
 
         assertThat(signalNames)
-            .containsExactly("SIGILL", "SIGTRAP", "SIGABRT", "SIGBUS", "SIGFPE", "SIGSEGV", "SIG15")
+            .containsExactly(
+                "SIGILL",
+                "SIGTRAP",
+                "SIGABRT",
+                "SIGBUS",
+                "SIGFPE",
+                "SIGSEGV",
+                "SIGPIPE",
+                "SIGSYS",
+                "SIG15",
+            )
     }
 
     @Test
     fun `does not emit when the marker is missing`() {
         val store = FileNativeCrashStore(tempDir)
 
-        reporter(store).install(crashContext("current"))
+        reporter(store).replayPreviousCrash()
+        store.writeContext(crashContext("current"))
 
         assertThat(otelTesting.logRecords).isEmpty()
         assertThat(store.readContext()).isEqualTo(crashContext("current"))
@@ -198,7 +211,8 @@ class NativeCrashReporterTest {
             writeText("signal.number=not-a-number\ntimestamp.epoch_nanos=123\n")
         }
 
-        reporter(store).install(crashContext("current"))
+        reporter(store).replayPreviousCrash()
+        store.writeContext(crashContext("current"))
 
         assertThat(otelTesting.logRecords).isEmpty()
         assertThat(markerFile()).doesNotExist()
@@ -235,8 +249,10 @@ class NativeCrashReporterTest {
         writeContext(crashContext("crashed"))
         val reporter = reporter(store)
 
-        reporter.install(crashContext("current"))
-        reporter.install(crashContext("later"))
+        reporter.replayPreviousCrash()
+        store.writeContext(crashContext("current"))
+        reporter.replayPreviousCrash()
+        store.writeContext(crashContext("later"))
 
         assertThat(otelTesting.logRecords).hasSize(1)
         assertThat(store.readContext()).isEqualTo(crashContext("later"))

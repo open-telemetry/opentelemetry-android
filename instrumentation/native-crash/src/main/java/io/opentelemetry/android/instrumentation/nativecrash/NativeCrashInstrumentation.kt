@@ -58,7 +58,8 @@ class NativeCrashInstrumentation internal constructor(
             NativeCrashReporter(
                 store = store,
                 openTelemetryRum = openTelemetryRum,
-            ).install(crashContext)
+            ).replayPreviousCrash()
+            store.writeContext(crashContext)
 
             val sessionProvider = openTelemetryRum.sessionProvider
             if (sessionProvider is SessionPublisher) {
@@ -89,12 +90,7 @@ internal class NativeCrashReporter(
     private val store: NativeCrashStore,
     private val openTelemetryRum: OpenTelemetryRum,
 ) {
-    fun install(currentContext: NativeCrashContext) {
-        replayPreviousCrash()
-        store.writeContext(currentContext)
-    }
-
-    private fun replayPreviousCrash() {
+    fun replayPreviousCrash() {
         val crashContext = store.readContext()
         store.readCrashRecord()?.let { record -> replay(record, crashContext) }
     }
@@ -252,6 +248,8 @@ internal data class NativeCrashRecord(
             7 -> "SIGBUS"
             8 -> "SIGFPE"
             11 -> "SIGSEGV"
+            13 -> "SIGPIPE"
+            31 -> "SIGSYS"
             else -> "SIG$signalNumber"
         }
 }
