@@ -45,13 +45,6 @@ class NativeCrashInstrumentation internal constructor(
     },
     private val executor: Executor = Executors.newSingleThreadExecutor(),
 ) : AndroidInstrumentation {
-    constructor() : this(
-        storeFactory = { context ->
-            FileNativeCrashStore(File(context.filesDir, "opentelemetry/native-crash"))
-        },
-        executor = Executors.newSingleThreadExecutor(),
-    )
-
     override val name: String = "native-crash"
 
     override fun install(
@@ -62,14 +55,15 @@ class NativeCrashInstrumentation internal constructor(
         executor.execute {
             val store = storeFactory(applicationContext)
             val crashContext = applicationContext.currentCrashContext(openTelemetryRum)
-            val sessionProvider = openTelemetryRum.sessionProvider
-            if (sessionProvider is SessionPublisher) {
-                sessionProvider.addObserver(NativeCrashSessionObserver(store, crashContext, executor))
-            }
             NativeCrashReporter(
                 store = store,
                 openTelemetryRum = openTelemetryRum,
             ).install(crashContext)
+
+            val sessionProvider = openTelemetryRum.sessionProvider
+            if (sessionProvider is SessionPublisher) {
+                sessionProvider.addObserver(NativeCrashSessionObserver(store, crashContext, executor))
+            }
         }
     }
 }
@@ -101,21 +95,17 @@ internal class NativeCrashReporter(
     }
 
     private fun replayPreviousCrashes() {
-        val crashContext = store.readContext()
-        store.readCrashRecords().forEach { record -> replay(record, crashContext) }
+        store.readCrashRecords().forEach(::replay)
     }
 
-    private fun replay(
-        record: NativeCrashRecord,
-        crashContext: NativeCrashContext?,
-    ) {
+    private fun replay(record: NativeCrashRecord) {
         val attributes = Attributes.builder()
         attributes.put(stringKey(EXCEPTION_TYPE), record.signalName)
         attributes.put(
             stringKey(EXCEPTION_MESSAGE),
             "Native crash signal ${record.signalName} (${record.signalNumber})",
         )
-        crashContext?.addTo(attributes)
+        record.crashContext?.addTo(attributes)
 
         openTelemetryRum.openTelemetry.logsBridge
             .loggerBuilder("io.opentelemetry.native-crash")
@@ -141,6 +131,7 @@ internal interface NativeCrashStore {
 
 internal class FileNativeCrashStore(
     private val directory: File,
+    private val crashRecordReader: (File) -> Properties = { path -> path.readProperties() },
 ) : NativeCrashStore {
     private val contextPath = File(directory, "native-crash-context.properties")
 
@@ -163,17 +154,19 @@ internal class FileNativeCrashStore(
     private fun readCrashRecord(path: File): NativeCrashRecord? {
         val properties =
             try {
-                path.readProperties()
+                crashRecordReader(path)
             } catch (error: IllegalArgumentException) {
                 deleteCrashRecord(path)
                 return null
             } catch (error: IOException) {
-                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash marker", error)
+                recordReadFailure(path, error)
                 return null
             } catch (error: SecurityException) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash marker", error)
+                deleteCrashRecord(path)
                 return null
             }
+        deleteReadFailureCount(path)
         val record = properties.toCrashRecordOrNull()
         if (record == null) {
             deleteCrashRecord(path)
@@ -182,23 +175,60 @@ internal class FileNativeCrashStore(
     }
 
     private fun deleteCrashRecord(path: File) {
+        deleteFile(path, "native crash marker")
+        deleteReadFailureCount(path)
+    }
+
+    private fun deleteReadFailureCount(path: File) {
+        deleteFile(readFailurePath(path), "native crash marker retry state")
+    }
+
+    private fun deleteFile(
+        path: File,
+        description: String,
+    ) {
         runCatching {
             if (path.isFile && !path.delete()) {
-                throw IOException("Failed to delete native crash marker")
+                throw IOException("Failed to delete $description")
             }
         }.onFailure { error ->
-            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to delete native crash marker", error)
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to delete $description", error)
         }
     }
 
+    private fun recordReadFailure(
+        path: File,
+        error: IOException,
+    ) {
+        Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash marker", error)
+        val failurePath = readFailurePath(path)
+        val failureCount =
+            runCatching { failurePath.readText().toInt() }
+                .getOrDefault(0) + 1
+        if (failureCount >= MAX_READ_ATTEMPTS) {
+            Log.w(
+                RumConstants.OTEL_RUM_LOG_TAG,
+                "Discarding native crash marker after $failureCount failed read attempts",
+            )
+            deleteCrashRecord(path)
+            return
+        }
+
+        runCatching { failurePath.writeText(failureCount.toString()) }
+            .onFailure { retryError ->
+                Log.w(
+                    RumConstants.OTEL_RUM_LOG_TAG,
+                    "Failed to persist native crash marker retry state",
+                    retryError,
+                )
+            }
+    }
+
+    private fun readFailurePath(path: File): File = File(directory, "${path.name}.read-failures")
+
     override fun readContext(): NativeCrashContext? {
         val properties = runCatching { contextPath.readProperties() }.getOrNull() ?: return null
-        return NativeCrashContext(
-            sessionId = properties.nonBlankProperty(SESSION_ID),
-            serviceVersion = properties.nonBlankProperty(SERVICE_VERSION),
-            osName = properties.nonBlankProperty(OS_NAME),
-            osVersion = properties.nonBlankProperty(OS_VERSION),
-        )
+        return properties.toCrashContextOrNull()
     }
 
     @Synchronized
@@ -237,26 +267,38 @@ internal class FileNativeCrashStore(
                     ?.takeIf { it > 0 }
                     ?.toInstant()
                     ?: return null
-            NativeCrashRecord(signalNumber, timestamp)
+            NativeCrashRecord(
+                signalNumber = signalNumber,
+                timestamp = timestamp,
+                crashContext = toCrashContextOrNull(),
+            )
         }.getOrNull()
     }
 
-    private fun File.readProperties(): Properties =
-        Properties().also { properties ->
-            FileInputStream(this).use { properties.load(it) }
-        }
+    private fun Properties.toCrashContextOrNull(): NativeCrashContext? {
+        val context =
+            NativeCrashContext(
+                sessionId = nonBlankProperty(SESSION_ID),
+                serviceVersion = nonBlankProperty(SERVICE_VERSION),
+                osName = nonBlankProperty(OS_NAME),
+                osVersion = nonBlankProperty(OS_VERSION),
+            )
+        return context.takeUnless { it.isEmpty() }
+    }
 
     private companion object {
         const val CRASH_RECORD_PREFIX = "native-crash-record-"
         const val PROPERTIES_SUFFIX = ".properties"
         const val SIGNAL_NUMBER_KEY = "signal.number"
         const val TIMESTAMP_EPOCH_NANOS_KEY = "timestamp.epoch_nanos"
+        const val MAX_READ_ATTEMPTS = 3
     }
 }
 
 internal data class NativeCrashRecord(
     val signalNumber: Int,
     val timestamp: Instant,
+    val crashContext: NativeCrashContext? = null,
     internal val markerName: String? = null,
 ) {
     val signalName: String =
@@ -277,6 +319,12 @@ internal data class NativeCrashContext(
     val osName: String?,
     val osVersion: String?,
 ) {
+    fun isEmpty(): Boolean =
+        sessionId == null &&
+            serviceVersion == null &&
+            osName == null &&
+            osVersion == null
+
     fun addTo(attributes: AttributesBuilder) {
         attributes.putIfNotNull(SESSION_ID, sessionId)
         attributes.putIfNotNull(SERVICE_VERSION, serviceVersion)
@@ -310,6 +358,11 @@ private fun Properties.setIfNotNull(
 }
 
 private fun Properties.nonBlankProperty(key: String): String? = getProperty(key)?.takeIf { it.isNotBlank() }
+
+private fun File.readProperties(): Properties =
+    Properties().also { properties ->
+        FileInputStream(this).use { properties.load(it) }
+    }
 
 private const val NANOS_PER_SECOND = 1_000_000_000L
 

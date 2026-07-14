@@ -11,8 +11,11 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
@@ -32,19 +35,33 @@ import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
 import java.time.Instant
+import java.util.Properties
+import java.util.concurrent.atomic.AtomicInteger
 
 class NativeCrashReporterTest {
     @TempDir
     lateinit var tempDir: File
 
+    @BeforeEach
+    fun setUp() {
+        mockkStatic(Log::class)
+        every { Log.w(any<String>(), any<String>()) } returns 0
+        every { Log.w(any<String>(), any<String>(), any<Throwable>()) } returns 0
+    }
+
     @AfterEach
     fun cleanup() {
         otelTesting.clearLogRecords()
+        unmockkStatic(Log::class)
     }
 
     @Test
@@ -67,7 +84,11 @@ class NativeCrashReporterTest {
         every { applicationContext.packageManager } returns packageManager
         every { applicationContext.packageName } returns "test.app"
         every { packageManager.getPackageInfo("test.app", 0) } returns packageInfo
-        val sessionProvider = RecordingSessionProvider("install-session")
+        val sessionProvider =
+            RecordingSessionProvider(
+                sessionId = "install-session",
+                sessionStartedOnRegistration = "started-session",
+            )
         val instrumentation =
             NativeCrashInstrumentation(
                 storeFactory = { actualContext ->
@@ -83,7 +104,7 @@ class NativeCrashReporterTest {
         assertThat(store.readContext())
             .isEqualTo(
                 NativeCrashContext(
-                    sessionId = "install-session",
+                    sessionId = "started-session",
                     serviceVersion = "1.2.3",
                     osName = "Android",
                     osVersion = Build.VERSION.RELEASE,
@@ -95,8 +116,11 @@ class NativeCrashReporterTest {
     @Test
     fun `replays a valid marker with crash-time context`() {
         val store = FileNativeCrashStore(tempDir)
-        store.writeContext(crashContext("crashed"))
-        writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L)
+        writeMarker(
+            signalNumber = 11,
+            timestampNanos = 1_783_598_400_000_000_000L,
+            crashContext = crashContext("crashed"),
+        )
 
         reporter(store).install(crashContext("current"))
 
@@ -207,8 +231,11 @@ class NativeCrashReporterTest {
     @Test
     fun `does not replay an already consumed marker`() {
         val store = FileNativeCrashStore(tempDir)
-        store.writeContext(crashContext("crashed"))
-        writeMarker(signalNumber = 6, timestampNanos = 1_783_598_400_000_000_000L)
+        writeMarker(
+            signalNumber = 6,
+            timestampNanos = 1_783_598_400_000_000_000L,
+            crashContext = crashContext("crashed"),
+        )
         val reporter = reporter(store)
 
         reporter.install(crashContext("current"))
@@ -221,17 +248,76 @@ class NativeCrashReporterTest {
     @Test
     fun `replays multiple markers without one malformed marker blocking the others`() {
         val store = FileNativeCrashStore(tempDir)
-        store.writeContext(crashContext("crashed"))
-        writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L, markerId = "one")
+        writeMarker(
+            signalNumber = 11,
+            timestampNanos = 1_783_598_400_000_000_000L,
+            markerId = "one",
+            crashContext = crashContext("first"),
+        )
         markerFile("two").writeText("signal.number=invalid\ntimestamp.epoch_nanos=123\n")
-        writeMarker(signalNumber = 6, timestampNanos = 1_783_598_401_000_000_000L, markerId = "three")
+        writeMarker(
+            signalNumber = 6,
+            timestampNanos = 1_783_598_401_000_000_000L,
+            markerId = "three",
+            crashContext = crashContext("third"),
+        )
 
         reporter(store).install(crashContext("current"))
 
         assertThat(otelTesting.logRecords.map { it.attributes.get(stringKey(EXCEPTION_TYPE)) })
             .containsExactly("SIGSEGV", "SIGABRT")
+        assertThat(otelTesting.logRecords.map { it.attributes.get(stringKey(SESSION_ID)) })
+            .containsExactly("first-session", "third-session")
         assertThat(store.readCrashRecords()).isEmpty()
         assertThat(markerFile("two")).doesNotExist()
+    }
+
+    @Test
+    fun `removes a marker after repeated read failures`() {
+        val readAttempts = AtomicInteger()
+        val store =
+            FileNativeCrashStore(
+                directory = tempDir,
+                crashRecordReader = {
+                    readAttempts.incrementAndGet()
+                    throw IOException("temporary read failure")
+                },
+            )
+        writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L)
+
+        repeat(2) {
+            assertThat(store.readCrashRecords()).isEmpty()
+            assertThat(markerFile()).exists()
+        }
+        assertThat(store.readCrashRecords()).isEmpty()
+
+        assertThat(readAttempts).hasValue(3)
+        assertThat(markerFile()).doesNotExist()
+        assertThat(readFailureFile()).doesNotExist()
+    }
+
+    @Test
+    fun `clears the failure count after a marker can be read`() {
+        val readAttempts = AtomicInteger()
+        val store =
+            FileNativeCrashStore(
+                directory = tempDir,
+                crashRecordReader = { path ->
+                    if (readAttempts.incrementAndGet() == 1) {
+                        throw IOException("temporary read failure")
+                    }
+                    Properties().also { properties ->
+                        FileInputStream(path).use { properties.load(it) }
+                    }
+                },
+            )
+        writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L)
+
+        assertThat(store.readCrashRecords()).isEmpty()
+        assertThat(readFailureFile()).exists()
+
+        assertThat(store.readCrashRecords()).hasSize(1)
+        assertThat(readFailureFile()).doesNotExist()
     }
 
     @Test
@@ -250,14 +336,27 @@ class NativeCrashReporterTest {
         signalNumber: Int,
         timestampNanos: Long,
         markerId: String = "test",
+        crashContext: NativeCrashContext? = null,
     ) {
-        markerFile(markerId).apply {
-            parentFile?.mkdirs()
-            writeText("signal.number=$signalNumber\ntimestamp.epoch_nanos=$timestampNanos\n")
-        }
+        val path =
+            markerFile(markerId).apply {
+                parentFile?.mkdirs()
+            }
+        val properties =
+            Properties().apply {
+                setProperty("signal.number", signalNumber.toString())
+                setProperty("timestamp.epoch_nanos", timestampNanos.toString())
+                crashContext?.sessionId?.let { setProperty(SESSION_ID, it) }
+                crashContext?.serviceVersion?.let { setProperty(SERVICE_VERSION, it) }
+                crashContext?.osName?.let { setProperty(OS_NAME, it) }
+                crashContext?.osVersion?.let { setProperty(OS_VERSION, it) }
+            }
+        FileOutputStream(path).use { properties.store(it, null) }
     }
 
     private fun markerFile(markerId: String = "test"): File = File(tempDir, "native-crash-record-$markerId.properties")
+
+    private fun readFailureFile(markerId: String = "test"): File = File(tempDir, "native-crash-record-$markerId.properties.read-failures")
 
     private fun contextFile(): File = File(tempDir, "native-crash-context.properties")
 
@@ -292,6 +391,7 @@ class NativeCrashReporterTest {
 
     private class RecordingSessionProvider(
         private val sessionId: String,
+        private val sessionStartedOnRegistration: String? = null,
     ) : SessionProvider,
         SessionPublisher {
         var observer: SessionObserver? = null
@@ -300,6 +400,18 @@ class NativeCrashReporterTest {
 
         override fun addObserver(observer: SessionObserver) {
             this.observer = observer
+            sessionStartedOnRegistration?.let { newSessionId ->
+                observer.onSessionStarted(
+                    object : Session {
+                        override val id: String = newSessionId
+                        override val startTimestamp: Long = 0
+                    },
+                    object : Session {
+                        override val id: String = sessionId
+                        override val startTimestamp: Long = 0
+                    },
+                )
+            }
         }
     }
 
