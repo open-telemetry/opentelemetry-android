@@ -90,22 +90,26 @@ internal class NativeCrashReporter(
     private val openTelemetryRum: OpenTelemetryRum,
 ) {
     fun install(currentContext: NativeCrashContext) {
-        replayPreviousCrashes()
+        replayPreviousCrash()
         store.writeContext(currentContext)
     }
 
-    private fun replayPreviousCrashes() {
-        store.readCrashRecords().forEach(::replay)
+    private fun replayPreviousCrash() {
+        val crashContext = store.readContext()
+        store.readCrashRecord()?.let { record -> replay(record, crashContext) }
     }
 
-    private fun replay(record: NativeCrashRecord) {
+    private fun replay(
+        record: NativeCrashRecord,
+        crashContext: NativeCrashContext?,
+    ) {
         val attributes = Attributes.builder()
         attributes.put(stringKey(EXCEPTION_TYPE), record.signalName)
         attributes.put(
             stringKey(EXCEPTION_MESSAGE),
             "Native crash signal ${record.signalName} (${record.signalNumber})",
         )
-        record.crashContext?.addTo(attributes)
+        crashContext?.addTo(attributes)
 
         openTelemetryRum.openTelemetry.logsBridge
             .loggerBuilder("io.opentelemetry.native-crash")
@@ -115,14 +119,14 @@ internal class NativeCrashReporter(
             .setTimestamp(record.timestamp)
             .setAllAttributes(attributes.build())
             .emit()
-        store.deleteCrashRecord(record)
+        store.deleteCrashRecord()
     }
 }
 
 internal interface NativeCrashStore {
-    fun readCrashRecords(): List<NativeCrashRecord>
+    fun readCrashRecord(): NativeCrashRecord?
 
-    fun deleteCrashRecord(record: NativeCrashRecord)
+    fun deleteCrashRecord()
 
     fun readContext(): NativeCrashContext?
 
@@ -131,100 +135,45 @@ internal interface NativeCrashStore {
 
 internal class FileNativeCrashStore(
     private val directory: File,
-    private val crashRecordReader: (File) -> Properties = { path -> path.readProperties() },
 ) : NativeCrashStore {
     private val contextPath = File(directory, "native-crash-context.properties")
+    private val crashRecordPath = File(directory, "native-crash-record.properties")
 
-    override fun readCrashRecords(): List<NativeCrashRecord> {
-        val paths =
-            directory.listFiles { path ->
-                path.isFile &&
-                    path.name.startsWith(CRASH_RECORD_PREFIX) &&
-                    path.name.endsWith(PROPERTIES_SUFFIX)
-            } ?: return emptyList()
-
-        return paths.sortedBy { it.name }.mapNotNull { path -> readCrashRecord(path) }
-    }
-
-    override fun deleteCrashRecord(record: NativeCrashRecord) {
-        val markerName = record.markerName ?: return
-        deleteCrashRecord(File(directory, markerName))
-    }
-
-    private fun readCrashRecord(path: File): NativeCrashRecord? {
+    override fun readCrashRecord(): NativeCrashRecord? {
+        if (!crashRecordPath.isFile) {
+            return null
+        }
         val properties =
             try {
-                crashRecordReader(path)
+                crashRecordPath.readProperties()
             } catch (error: IllegalArgumentException) {
-                deleteCrashRecord(path)
+                deleteCrashRecord()
                 return null
             } catch (error: IOException) {
-                recordReadFailure(path, error)
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash marker", error)
+                deleteCrashRecord()
                 return null
             } catch (error: SecurityException) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash marker", error)
-                deleteCrashRecord(path)
+                deleteCrashRecord()
                 return null
             }
-        deleteReadFailureCount(path)
         val record = properties.toCrashRecordOrNull()
         if (record == null) {
-            deleteCrashRecord(path)
+            deleteCrashRecord()
         }
-        return record?.copy(markerName = path.name)
+        return record
     }
 
-    private fun deleteCrashRecord(path: File) {
-        deleteFile(path, "native crash marker")
-        deleteReadFailureCount(path)
-    }
-
-    private fun deleteReadFailureCount(path: File) {
-        deleteFile(readFailurePath(path), "native crash marker retry state")
-    }
-
-    private fun deleteFile(
-        path: File,
-        description: String,
-    ) {
+    override fun deleteCrashRecord() {
         runCatching {
-            if (path.isFile && !path.delete()) {
-                throw IOException("Failed to delete $description")
+            if (crashRecordPath.isFile && !crashRecordPath.delete()) {
+                throw IOException("Failed to delete native crash marker")
             }
         }.onFailure { error ->
-            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to delete $description", error)
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to delete native crash marker", error)
         }
     }
-
-    private fun recordReadFailure(
-        path: File,
-        error: IOException,
-    ) {
-        Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash marker", error)
-        val failurePath = readFailurePath(path)
-        val failureCount =
-            runCatching { failurePath.readText().toInt() }
-                .getOrDefault(0) + 1
-        if (failureCount >= MAX_READ_ATTEMPTS) {
-            Log.w(
-                RumConstants.OTEL_RUM_LOG_TAG,
-                "Discarding native crash marker after $failureCount failed read attempts",
-            )
-            deleteCrashRecord(path)
-            return
-        }
-
-        runCatching { failurePath.writeText(failureCount.toString()) }
-            .onFailure { retryError ->
-                Log.w(
-                    RumConstants.OTEL_RUM_LOG_TAG,
-                    "Failed to persist native crash marker retry state",
-                    retryError,
-                )
-            }
-    }
-
-    private fun readFailurePath(path: File): File = File(directory, "${path.name}.read-failures")
 
     override fun readContext(): NativeCrashContext? {
         val properties = runCatching { contextPath.readProperties() }.getOrNull() ?: return null
@@ -270,7 +219,6 @@ internal class FileNativeCrashStore(
             NativeCrashRecord(
                 signalNumber = signalNumber,
                 timestamp = timestamp,
-                crashContext = toCrashContextOrNull(),
             )
         }.getOrNull()
     }
@@ -287,19 +235,14 @@ internal class FileNativeCrashStore(
     }
 
     private companion object {
-        const val CRASH_RECORD_PREFIX = "native-crash-record-"
-        const val PROPERTIES_SUFFIX = ".properties"
         const val SIGNAL_NUMBER_KEY = "signal.number"
         const val TIMESTAMP_EPOCH_NANOS_KEY = "timestamp.epoch_nanos"
-        const val MAX_READ_ATTEMPTS = 3
     }
 }
 
 internal data class NativeCrashRecord(
     val signalNumber: Int,
     val timestamp: Instant,
-    val crashContext: NativeCrashContext? = null,
-    internal val markerName: String? = null,
 ) {
     val signalName: String =
         when (signalNumber) {
