@@ -21,19 +21,13 @@ object {{ my_class_name }} {
     @Deprecated("{{ attribute.deprecated.note | replace('\n', ' ') | trim }}")
 {%- endif %}
     const val {{ attribute.name | screaming_snake_case }}: String = "{{ attribute.name }}"
+{%- if attribute.type != "any" %}
+{%- set itype = attribute.type | instantiated_type %}
+{%- if itype in ["string", "boolean", "int", "double", "string[]", "boolean[]", "int[]", "double[]"] %}
     @JvmField
-{%- if attribute.type == "string" %}
-    val {{ attribute.name | screaming_snake_case }}_KEY: AttributeKey<String> =
-        AttributeKey.stringKey({{ attribute.name | screaming_snake_case }})
-{%- elif attribute.type == "boolean" %}
-    val {{ attribute.name | screaming_snake_case }}_KEY: AttributeKey<Boolean> =
-        AttributeKey.booleanKey({{ attribute.name | screaming_snake_case }})
-{%- elif attribute.type == "int" %}
-    val {{ attribute.name | screaming_snake_case }}_KEY: AttributeKey<Long> =
-        AttributeKey.longKey({{ attribute.name | screaming_snake_case }})
-{%- elif attribute.type == "double" %}
-    val {{ attribute.name | screaming_snake_case }}_KEY: AttributeKey<Double> =
-        AttributeKey.doubleKey({{ attribute.name | screaming_snake_case }})
+    val {{ attribute.name | screaming_snake_case }}_KEY: AttributeKey<{{ itype | map_text("kotlin_key_generic") }}> =
+        AttributeKey.{{ itype | map_text("kotlin_key_factory") }}({{ attribute.name | screaming_snake_case }})
+{%- endif %}
 {%- endif %}
 {%- endfor %}
 }
