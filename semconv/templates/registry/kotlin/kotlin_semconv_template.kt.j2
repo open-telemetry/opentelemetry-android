@@ -30,4 +30,21 @@ object {{ my_class_name }} {
 {%- endif %}
 {%- endif %}
 {%- endfor %}
+{%- for attribute in ctx.attributes | rejectattr("name", "in", ctx.excluded_attributes) %}
+{%- if attribute is enum %}
+
+    {{ ("Values for " ~ (attribute.name | screaming_snake_case) ~ ".") | comment | trim | indent(4) -}}
+{%- if attribute is deprecated %}
+    @Deprecated("{{ attribute.deprecated.note | replace('\n', ' ') | trim }}")
+{%- endif %}
+    enum class {{ attribute.name | pascal_case }}Values(
+        val value: {{ attribute.type | instantiated_type | map_text("kotlin_enum_type") }},
+    ) {
+{%- for member in attribute.type.members %}
+{{ "\n" if not loop.first }}        {{ [member.brief or (member.id ~ '.')] | comment | trim | indent(8) }}
+        {{ member.id | screaming_snake_case }}({{ member.value | print_member_value }}),
+{%- endfor %}
+    }
+{%- endif %}
+{%- endfor %}
 }
