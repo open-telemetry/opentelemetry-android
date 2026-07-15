@@ -32,8 +32,10 @@ jobs:
     needs:
       - prereqs
     steps:
-      # zizmor: ignore[artipacked]: credentials are required by the release branch and update branch pushes below
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # zizmor: ignore[artipacked]: credentials are required by the release branch and update branch pushes below
+          persist-credentials: true
 
       - name: Create release branch
         run: |
@@ -97,8 +99,10 @@ jobs:
     needs:
       - prereqs
     steps:
-      # zizmor: ignore[artipacked]: credentials are required by the update branch push below
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # zizmor: ignore[artipacked]: credentials are required by the update branch push below
+          persist-credentials: true
 
       - name: Set environment variables
         run: |
