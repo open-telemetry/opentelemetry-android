@@ -21,6 +21,7 @@
 #define TEMPORARY_SUFFIX ".tmp"
 #define MARKER_BUFFER_SIZE 128
 #define NANOS_PER_SECOND UINT64_C(1000000000)
+#define ALTERNATE_STACK_SIZE (SIGSTKSZ * 2)
 
 static const int handled_signals[SIGNAL_COUNT] = {
     SIGILL,
@@ -36,9 +37,11 @@ static const int handled_signals[SIGNAL_COUNT] = {
 static char crash_record_path[PATH_MAX];
 static char temporary_crash_record_path[PATH_MAX];
 static struct sigaction previous_actions[SIGNAL_COUNT];
-static bool handler_active[SIGNAL_COUNT];
+static atomic_bool handler_active[SIGNAL_COUNT];
+static unsigned char alternate_signal_stack[ALTERNATE_STACK_SIZE];
 static pthread_mutex_t install_mutex = PTHREAD_MUTEX_INITIALIZER;
 static bool handlers_installed = false;
+static bool alternate_signal_stack_installed = false;
 static atomic_flag handling_signal = ATOMIC_FLAG_INIT;
 
 static int find_signal_index(int signal_number) {
@@ -154,10 +157,41 @@ static void write_crash_marker(int signal_number) {
 
 static void restore_previous_handlers(void) {
     for (int index = 0; index < SIGNAL_COUNT; index++) {
-        if (handler_active[index]) {
+        if (atomic_load_explicit(&handler_active[index], memory_order_relaxed)) {
             sigaction(handled_signals[index], &previous_actions[index], NULL);
         }
     }
+}
+
+static void remove_alternate_signal_stack(void) {
+    if (!alternate_signal_stack_installed) {
+        return;
+    }
+    stack_t disabled_stack;
+    memset(&disabled_stack, 0, sizeof(disabled_stack));
+    disabled_stack.ss_flags = SS_DISABLE;
+    sigaltstack(&disabled_stack, NULL);
+    alternate_signal_stack_installed = false;
+}
+
+static bool prepare_alternate_signal_stack(void) {
+    stack_t current_stack;
+    if (sigaltstack(NULL, &current_stack) != 0) {
+        return false;
+    }
+    if ((current_stack.ss_flags & SS_DISABLE) == 0) {
+        return true;
+    }
+
+    stack_t new_stack;
+    memset(&new_stack, 0, sizeof(new_stack));
+    new_stack.ss_sp = alternate_signal_stack;
+    new_stack.ss_size = sizeof(alternate_signal_stack);
+    if (sigaltstack(&new_stack, NULL) != 0) {
+        return false;
+    }
+    alternate_signal_stack_installed = true;
+    return true;
 }
 
 static void invoke_previous_handler(
@@ -195,6 +229,10 @@ static void handle_signal(
 }
 
 static bool install_handlers(void) {
+    if (!prepare_alternate_signal_stack()) {
+        return false;
+    }
+
     struct sigaction action;
     memset(&action, 0, sizeof(action));
     sigemptyset(&action.sa_mask);
@@ -205,21 +243,28 @@ static bool install_handlers(void) {
     action.sa_flags = SA_SIGINFO | SA_ONSTACK | SA_RESETHAND;
 
     for (int index = 0; index < SIGNAL_COUNT; index++) {
-        if (sigaction(handled_signals[index], NULL, &previous_actions[index]) != 0) {
+        if (!atomic_is_lock_free(&handler_active[index])) {
+            remove_alternate_signal_stack();
             return false;
         }
-        handler_active[index] = false;
+        if (sigaction(handled_signals[index], NULL, &previous_actions[index]) != 0) {
+            remove_alternate_signal_stack();
+            return false;
+        }
+        atomic_store_explicit(&handler_active[index], false, memory_order_relaxed);
     }
 
     for (int index = 0; index < SIGNAL_COUNT; index++) {
         if (previous_actions[index].sa_handler == SIG_IGN) {
             continue;
         }
+        atomic_store_explicit(&handler_active[index], true, memory_order_relaxed);
         if (sigaction(handled_signals[index], &action, NULL) != 0) {
+            atomic_store_explicit(&handler_active[index], false, memory_order_relaxed);
             restore_previous_handlers();
+            remove_alternate_signal_stack();
             return false;
         }
-        handler_active[index] = true;
     }
     return true;
 }

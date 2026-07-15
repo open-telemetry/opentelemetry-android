@@ -79,11 +79,24 @@ internal fun interface NativeSignalHandlerInstaller {
 }
 
 internal object JniNativeSignalHandlerInstaller : NativeSignalHandlerInstaller {
-    override fun install(crashRecordPath: File): Boolean =
-        runCatching { NativeCrashJni.install(crashRecordPath.absolutePath) }
+    override fun install(crashRecordPath: File): Boolean {
+        if (!prepareCrashRecordDirectory(crashRecordPath)) {
+            return false
+        }
+        return runCatching { NativeCrashJni.install(crashRecordPath.absolutePath) }
             .onFailure { error ->
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to load native crash signal handler", error)
             }.getOrDefault(false)
+    }
+}
+
+internal fun prepareCrashRecordDirectory(crashRecordPath: File): Boolean {
+    val directory = crashRecordPath.parentFile ?: return false
+    return runCatching {
+        directory.isDirectory || directory.mkdirs() || directory.isDirectory
+    }.onFailure { error ->
+        Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to prepare native crash marker directory", error)
+    }.getOrDefault(false)
 }
 
 internal class NativeCrashSessionObserver(

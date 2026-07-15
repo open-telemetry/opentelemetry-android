@@ -93,6 +93,23 @@ class NativeCrashReporterTest {
     }
 
     @Test
+    fun `prepares the marker directory before native installation`() {
+        val marker = File(tempDir, "missing/native-crash-record.properties")
+
+        assertThat(prepareCrashRecordDirectory(marker)).isTrue()
+        assertThat(marker.parentFile).isDirectory()
+    }
+
+    @Test
+    fun `rejects an unusable marker directory`() {
+        val fileInsteadOfDirectory = File(tempDir, "not-a-directory").apply { writeText("occupied") }
+        val marker = File(fileInsteadOfDirectory, "native-crash-record.properties")
+
+        assertThat(prepareCrashRecordDirectory(marker)).isFalse()
+        assertThat(marker.parentFile).isFile()
+    }
+
+    @Test
     fun `installs replay and session observer using the application context`() {
         val store = FileNativeCrashStore(tempDir)
         var installedMarkerPath: File? = null
