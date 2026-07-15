@@ -1,3 +1,8 @@
+imports:
+  attribute_groups:
+    - registry.end_user_client.app
+  events:
+    - app.nav_complete
 groups:
   - id: registry.android.semconv
     type: attribute_group
