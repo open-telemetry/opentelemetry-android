@@ -5,6 +5,7 @@
 
 package io.opentelemetry.instrumentation.library.okhttp.websocket.internal
 
+import io.opentelemetry.android.semconv.WebsocketAttributes.WebsocketMessageTypeValues
 import io.opentelemetry.android.semconv.events.WebsocketCloseEvent
 import io.opentelemetry.android.semconv.events.WebsocketErrorEvent
 import io.opentelemetry.android.semconv.events.WebsocketMessageEvent
@@ -49,7 +50,7 @@ class WebsocketListenerWrapper(
         val attributes = extractAttributes(webSocket)
         WebsocketMessageEvent(
             websocketMessageSize = text.length.toLong(),
-            websocketMessageType = "text",
+            websocketMessageType = WebsocketMessageTypeValues.TEXT.value,
         ).emit(logger, attributes)
         delegate.onMessage(webSocket, text)
     }
@@ -61,7 +62,7 @@ class WebsocketListenerWrapper(
         val attributes = extractAttributes(webSocket)
         WebsocketMessageEvent(
             websocketMessageSize = bytes.size.toLong(),
-            websocketMessageType = "bytes",
+            websocketMessageType = WebsocketMessageTypeValues.BYTES.value,
         ).emit(logger, attributes)
         delegate.onMessage(webSocket, bytes)
     }
