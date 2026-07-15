@@ -44,7 +44,7 @@ class NativeCrashInstrumentation internal constructor(
         FileNativeCrashStore(File(context.filesDir, "opentelemetry/native-crash"))
     },
     private val executor: Executor = Executors.newSingleThreadExecutor(),
-    private val signalHandlerInstaller: NativeSignalHandlerInstaller = JniNativeSignalHandlerInstaller,
+    private val signalHandlerInstaller: NativeSignalHandlerInstaller = JniNativeSignalHandlerInstaller(),
 ) : AndroidInstrumentation {
     override val name: String = "native-crash"
 
@@ -78,15 +78,24 @@ internal fun interface NativeSignalHandlerInstaller {
     fun install(crashRecordPath: File): Boolean
 }
 
-internal object JniNativeSignalHandlerInstaller : NativeSignalHandlerInstaller {
+internal class JniNativeSignalHandlerInstaller(
+    private val loadLibrary: (String) -> Unit = System::loadLibrary,
+    private val nativeInstall: (String) -> Boolean = NativeCrashJni::install,
+) : NativeSignalHandlerInstaller {
     override fun install(crashRecordPath: File): Boolean {
         if (!prepareCrashRecordDirectory(crashRecordPath)) {
             return false
         }
-        return runCatching { NativeCrashJni.install(crashRecordPath.absolutePath) }
-            .onFailure { error ->
-                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to load native crash signal handler", error)
-            }.getOrDefault(false)
+        return runCatching {
+            loadLibrary(NATIVE_LIBRARY_NAME)
+            nativeInstall(crashRecordPath.absolutePath)
+        }.onFailure { error ->
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to load native crash signal handler", error)
+        }.getOrDefault(false)
+    }
+
+    private companion object {
+        const val NATIVE_LIBRARY_NAME = "otel_android_native_crash"
     }
 }
 

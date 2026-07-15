@@ -110,6 +110,60 @@ class NativeCrashReporterTest {
     }
 
     @Test
+    fun `loads the native library and installs the handler`() {
+        val marker = File(tempDir, "missing/native-crash-record.properties")
+        var loadedLibrary: String? = null
+        var installedPath: String? = null
+        val installer =
+            JniNativeSignalHandlerInstaller(
+                loadLibrary = { loadedLibrary = it },
+                nativeInstall = { path ->
+                    installedPath = path
+                    true
+                },
+            )
+
+        assertThat(installer.install(marker)).isTrue()
+        assertThat(loadedLibrary).isEqualTo("otel_android_native_crash")
+        assertThat(installedPath).isEqualTo(marker.absolutePath)
+    }
+
+    @Test
+    fun `does not load the native library when the marker directory is unusable`() {
+        val fileInsteadOfDirectory = File(tempDir, "not-a-directory").apply { writeText("occupied") }
+        val marker = File(fileInsteadOfDirectory, "native-crash-record.properties")
+        var libraryLoaded = false
+        val installer =
+            JniNativeSignalHandlerInstaller(
+                loadLibrary = { libraryLoaded = true },
+                nativeInstall = { true },
+            )
+
+        assertThat(installer.install(marker)).isFalse()
+        assertThat(libraryLoaded).isFalse()
+    }
+
+    @Test
+    fun `returns false when the native library cannot be loaded`() {
+        val marker = File(tempDir, "native-crash-record.properties")
+        val failure = UnsatisfiedLinkError("missing library")
+        val installer =
+            JniNativeSignalHandlerInstaller(
+                loadLibrary = { throw failure },
+                nativeInstall = { true },
+            )
+
+        assertThat(installer.install(marker)).isFalse()
+        verify {
+            Log.w(
+                any<String>(),
+                "Failed to load native crash signal handler",
+                failure,
+            )
+        }
+    }
+
+    @Test
     fun `installs replay and session observer using the application context`() {
         val store = FileNativeCrashStore(tempDir)
         var installedMarkerPath: File? = null
