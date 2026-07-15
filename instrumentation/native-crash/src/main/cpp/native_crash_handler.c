@@ -10,13 +10,14 @@
 #include <pthread.h>
 #include <signal.h>
 #include <stdbool.h>
+#include <stdatomic.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
 
-#define SIGNAL_COUNT 6
+#define SIGNAL_COUNT 8
 #define TEMPORARY_SUFFIX ".tmp"
 #define MARKER_BUFFER_SIZE 128
 #define NANOS_PER_SECOND UINT64_C(1000000000)
@@ -28,14 +29,17 @@ static const int handled_signals[SIGNAL_COUNT] = {
     SIGBUS,
     SIGFPE,
     SIGSEGV,
+    SIGPIPE,
+    SIGSYS,
 };
 
 static char crash_record_path[PATH_MAX];
 static char temporary_crash_record_path[PATH_MAX];
 static struct sigaction previous_actions[SIGNAL_COUNT];
+static bool handler_active[SIGNAL_COUNT];
 static pthread_mutex_t install_mutex = PTHREAD_MUTEX_INITIALIZER;
 static bool handlers_installed = false;
-static volatile sig_atomic_t handling_signal = 0;
+static atomic_flag handling_signal = ATOMIC_FLAG_INIT;
 
 static int find_signal_index(int signal_number) {
     for (int index = 0; index < SIGNAL_COUNT; index++) {
@@ -150,7 +154,9 @@ static void write_crash_marker(int signal_number) {
 
 static void restore_previous_handlers(void) {
     for (int index = 0; index < SIGNAL_COUNT; index++) {
-        sigaction(handled_signals[index], &previous_actions[index], NULL);
+        if (handler_active[index]) {
+            sigaction(handled_signals[index], &previous_actions[index], NULL);
+        }
     }
 }
 
@@ -181,8 +187,7 @@ static void handle_signal(
     siginfo_t *signal_info,
     void *user_context) {
     int saved_errno = errno;
-    if (!handling_signal) {
-        handling_signal = 1;
+    if (!atomic_flag_test_and_set_explicit(&handling_signal, memory_order_relaxed)) {
         write_crash_marker(signal_number);
     }
     invoke_previous_handler(signal_number, signal_info, user_context);
@@ -199,26 +204,24 @@ static bool install_handlers(void) {
     action.sa_sigaction = handle_signal;
     action.sa_flags = SA_SIGINFO | SA_ONSTACK | SA_RESETHAND;
 
-    int installed_count = 0;
-    for (; installed_count < SIGNAL_COUNT; installed_count++) {
-        if (sigaction(
-                handled_signals[installed_count],
-                &action,
-                &previous_actions[installed_count]) != 0) {
-            break;
+    for (int index = 0; index < SIGNAL_COUNT; index++) {
+        if (sigaction(handled_signals[index], NULL, &previous_actions[index]) != 0) {
+            return false;
         }
+        handler_active[index] = false;
     }
-    if (installed_count == SIGNAL_COUNT) {
-        return true;
+
+    for (int index = 0; index < SIGNAL_COUNT; index++) {
+        if (previous_actions[index].sa_handler == SIG_IGN) {
+            continue;
+        }
+        if (sigaction(handled_signals[index], &action, NULL) != 0) {
+            restore_previous_handlers();
+            return false;
+        }
+        handler_active[index] = true;
     }
-    while (installed_count > 0) {
-        installed_count--;
-        sigaction(
-            handled_signals[installed_count],
-            &previous_actions[installed_count],
-            NULL);
-    }
-    return false;
+    return true;
 }
 
 static bool install_for_path(const char *path, size_t path_length) {

@@ -6,8 +6,9 @@ The native crash instrumentation records fatal native signals and replays the pe
 `app.crash` event when the application next starts.
 
 It uses one marker for the most recent crash and a separate context snapshot maintained while the
-app is running. The signal handler records `SIGILL`, `SIGTRAP`, `SIGABRT`, `SIGBUS`, `SIGFPE`, and
-`SIGSEGV`, then restores and invokes the handler that was installed before this instrumentation.
+app is running. The signal handler records `SIGILL`, `SIGTRAP`, `SIGABRT`, `SIGBUS`, `SIGFPE`,
+`SIGSEGV`, `SIGPIPE`, and `SIGSYS`, then restores and invokes the handler that was installed before
+this instrumentation. Signals that were already ignored remain ignored.
 
 ## Telemetry
 

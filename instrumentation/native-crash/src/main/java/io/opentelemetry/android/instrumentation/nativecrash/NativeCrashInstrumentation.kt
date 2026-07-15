@@ -53,17 +53,18 @@ class NativeCrashInstrumentation internal constructor(
         openTelemetryRum: OpenTelemetryRum,
     ) {
         val applicationContext = context.applicationContext
+        val store = storeFactory(applicationContext)
+        if (!signalHandlerInstaller.install(store.crashRecordPath)) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to install native crash signal handler")
+        }
+
         executor.execute {
-            val store = storeFactory(applicationContext)
             val crashContext = applicationContext.currentCrashContext(openTelemetryRum)
             NativeCrashReporter(
                 store = store,
                 openTelemetryRum = openTelemetryRum,
             ).replayPreviousCrash()
             store.writeContext(crashContext)
-            if (!signalHandlerInstaller.install(store.crashRecordPath)) {
-                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to install native crash signal handler")
-            }
 
             val sessionProvider = openTelemetryRum.sessionProvider
             if (sessionProvider is SessionPublisher) {

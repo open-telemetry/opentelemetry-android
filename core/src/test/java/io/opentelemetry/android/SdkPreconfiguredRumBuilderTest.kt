@@ -20,17 +20,19 @@ import org.junit.jupiter.api.fail
 
 class SdkPreconfiguredRumBuilderTest {
     @Test
-    fun `session instrumentation must come first`() {
+    fun `session and native crash instrumentations must come first`() {
         val context = mockk<Context>()
         val sdk = mockk<OpenTelemetrySdk>()
         val config = mockk<OtelRumConfig>()
         val fooInstrumentation = mockk<AndroidInstrumentation>()
         val sessionInstrumentation = mockk<AndroidInstrumentation>()
+        val nativeCrashInstrumentation = mockk<AndroidInstrumentation>()
 
         every { config.shouldDiscoverInstrumentations() } returns false // irrelevant
         every { config.isSuppressed(any()) } returns false
         every { fooInstrumentation.name } returns "foo"
         every { sessionInstrumentation.name } returns "session"
+        every { nativeCrashInstrumentation.name } returns "native-crash"
 
         val sessionProvider =
             object : SessionProvider {
@@ -49,10 +51,12 @@ class SdkPreconfiguredRumBuilderTest {
                 AndroidInstrumentationLoaderImpl(),
             )
         builder.addInstrumentation(fooInstrumentation)
+        builder.addInstrumentation(nativeCrashInstrumentation)
         builder.addInstrumentation(sessionInstrumentation)
 
         val result = builder.getEnabledInstrumentations()
 
         assertThat(result[0]).isSameAs(sessionInstrumentation)
+        assertThat(result[1]).isSameAs(nativeCrashInstrumentation)
     }
 }

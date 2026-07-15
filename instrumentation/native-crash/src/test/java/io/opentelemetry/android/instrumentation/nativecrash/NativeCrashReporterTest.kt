@@ -68,6 +68,31 @@ class NativeCrashReporterTest {
     }
 
     @Test
+    fun `installs the signal handler before scheduling replay`() {
+        val store = FileNativeCrashStore(tempDir)
+        val applicationContext = mockk<Context>()
+        val context = mockk<Context>()
+        every { context.applicationContext } returns applicationContext
+        var queuedTask: Runnable? = null
+        var signalHandlerInstalled = false
+        val instrumentation =
+            NativeCrashInstrumentation(
+                storeFactory = { store },
+                executor = { task -> queuedTask = task },
+                signalHandlerInstaller = {
+                    assertThat(queuedTask).isNull()
+                    signalHandlerInstalled = true
+                    true
+                },
+            )
+
+        instrumentation.install(context, fakeRum())
+
+        assertThat(signalHandlerInstalled).isTrue()
+        assertThat(queuedTask).isNotNull()
+    }
+
+    @Test
     fun `installs replay and session observer using the application context`() {
         val store = FileNativeCrashStore(tempDir)
         var installedMarkerPath: File? = null
