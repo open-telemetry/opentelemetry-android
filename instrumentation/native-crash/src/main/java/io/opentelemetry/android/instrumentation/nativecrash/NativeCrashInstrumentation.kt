@@ -44,6 +44,7 @@ class NativeCrashInstrumentation internal constructor(
         FileNativeCrashStore(File(context.filesDir, "opentelemetry/native-crash"))
     },
     private val executor: Executor = Executors.newSingleThreadExecutor(),
+    private val signalHandlerInstaller: NativeSignalHandlerInstaller = JniNativeSignalHandlerInstaller,
 ) : AndroidInstrumentation {
     override val name: String = "native-crash"
 
@@ -60,6 +61,9 @@ class NativeCrashInstrumentation internal constructor(
                 openTelemetryRum = openTelemetryRum,
             ).replayPreviousCrash()
             store.writeContext(crashContext)
+            if (!signalHandlerInstaller.install(store.crashRecordPath)) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to install native crash signal handler")
+            }
 
             val sessionProvider = openTelemetryRum.sessionProvider
             if (sessionProvider is SessionPublisher) {
@@ -67,6 +71,18 @@ class NativeCrashInstrumentation internal constructor(
             }
         }
     }
+}
+
+internal fun interface NativeSignalHandlerInstaller {
+    fun install(crashRecordPath: File): Boolean
+}
+
+internal object JniNativeSignalHandlerInstaller : NativeSignalHandlerInstaller {
+    override fun install(crashRecordPath: File): Boolean =
+        runCatching { NativeCrashJni.install(crashRecordPath.absolutePath) }
+            .onFailure { error ->
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to load native crash signal handler", error)
+            }.getOrDefault(false)
 }
 
 internal class NativeCrashSessionObserver(
@@ -120,6 +136,8 @@ internal class NativeCrashReporter(
 }
 
 internal interface NativeCrashStore {
+    val crashRecordPath: File
+
     fun readCrashRecord(): NativeCrashRecord?
 
     fun deleteCrashRecord()
@@ -133,7 +151,7 @@ internal class FileNativeCrashStore(
     private val directory: File,
 ) : NativeCrashStore {
     private val contextPath = File(directory, "native-crash-context.properties")
-    private val crashRecordPath = File(directory, "native-crash-record.properties")
+    override val crashRecordPath = File(directory, "native-crash-record.properties")
 
     override fun readCrashRecord(): NativeCrashRecord? {
         if (!crashRecordPath.isFile) {
