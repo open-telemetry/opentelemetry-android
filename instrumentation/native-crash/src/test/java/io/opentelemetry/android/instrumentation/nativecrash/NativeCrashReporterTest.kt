@@ -272,13 +272,13 @@ class NativeCrashReporterTest {
     }
 
     @Test
-    fun `reads the marker format written by the native handler`() {
+    fun `reads the native marker format with nanosecond precision`() {
         val store = FileNativeCrashStore(tempDir)
         markerFile().apply {
             parentFile?.mkdirs()
             writeText(
                 "signal.number=11\n" +
-                    "timestamp.epoch_nanos=1783598400000000000\n",
+                    "timestamp.epoch_nanos=1783598400123456789\n",
             )
         }
 
@@ -286,7 +286,7 @@ class NativeCrashReporterTest {
             .isEqualTo(
                 NativeCrashRecord(
                     signalNumber = 11,
-                    timestamp = Instant.ofEpochSecond(1_783_598_400),
+                    timestamp = Instant.ofEpochSecond(1_783_598_400, 123_456_789),
                 ),
             )
     }

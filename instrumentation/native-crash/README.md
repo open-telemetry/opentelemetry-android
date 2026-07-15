@@ -10,6 +10,17 @@ app is running. The signal handler records `SIGILL`, `SIGTRAP`, `SIGABRT`, `SIGB
 `SIGSEGV`, `SIGPIPE`, and `SIGSYS`, then restores and invokes the handler that was installed before
 this instrumentation. Signals that were already ignored remain ignored.
 
+## Persisted marker format
+
+The native handler writes the marker as UTF-8 text with a trailing newline:
+
+```properties
+signal.number=<positive integer>
+timestamp.epoch_nanos=<positive integer>
+```
+
+The native writer and Kotlin reader must keep these keys and value formats in sync.
+
 ## Telemetry
 
 The replayed event uses the original crash timestamp and includes:
