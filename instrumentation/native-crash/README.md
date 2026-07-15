@@ -2,12 +2,12 @@
 
 Status: development
 
-The native crash instrumentation replays a persisted native crash as an `app.crash` event when
-the application next starts.
+The native crash instrumentation records fatal native signals and replays the persisted crash as an
+`app.crash` event when the application next starts.
 
-This first increment provides the module, persisted marker/context format, and replay path. It uses
-one marker for the most recent crash and a separate context snapshot maintained while the app is
-running. Native signal capture is intentionally left for a follow-up change.
+It uses one marker for the most recent crash and a separate context snapshot maintained while the
+app is running. The signal handler records `SIGILL`, `SIGTRAP`, `SIGABRT`, `SIGBUS`, `SIGFPE`, and
+`SIGSEGV`, then restores and invokes the handler that was installed before this instrumentation.
 
 ## Telemetry
 
@@ -35,10 +35,9 @@ The module is discovered and installed automatically when it is present on the r
 
 ## Limitations
 
-Native signal handling and native stack capture are not included in this increment. Until signal
-handling is added, this module only provides the replay side of the native crash reporting flow.
-It does not create or attach a binary crash dump. Symbol upload and symbolication are downstream
-concerns and require a separate design once native stack frames are available.
+Native stack capture is not included. This module does not create or attach a binary crash dump.
+Symbol upload and symbolication are downstream concerns and require a separate design once native
+stack frames are available.
 
 The persisted crash marker is deleted immediately after its event is emitted. Replay is therefore
 at most once: if the application exits before the telemetry is exported, that crash event may be

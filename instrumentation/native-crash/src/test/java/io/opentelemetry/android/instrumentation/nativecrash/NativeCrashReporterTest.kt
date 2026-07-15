@@ -16,6 +16,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
+import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
@@ -69,6 +70,7 @@ class NativeCrashReporterTest {
     @Test
     fun `installs replay and session observer using the application context`() {
         val store = FileNativeCrashStore(tempDir)
+        var installedMarkerPath: File? = null
         writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L)
         val packageInfo =
             PackageInfo().apply {
@@ -93,6 +95,10 @@ class NativeCrashReporterTest {
                     store
                 },
                 executor = directExecutor,
+                signalHandlerInstaller = { markerPath ->
+                    installedMarkerPath = markerPath
+                    true
+                },
             )
 
         instrumentation.install(context, fakeRum(sessionProvider))
@@ -108,6 +114,38 @@ class NativeCrashReporterTest {
                 ),
             )
         assertThat(sessionProvider.observer).isNotNull()
+        assertThat(installedMarkerPath).isEqualTo(store.crashRecordPath)
+    }
+
+    @Test
+    fun `continues installation when the native handler is unavailable`() {
+        val store = FileNativeCrashStore(tempDir)
+        val packageManager = mockk<PackageManager>()
+        val applicationContext = mockk<Context>()
+        val context = mockk<Context>()
+        every { context.applicationContext } returns applicationContext
+        every { applicationContext.packageManager } returns packageManager
+        every { applicationContext.packageName } returns "test.app"
+        every { packageManager.getPackageInfo("test.app", 0) } throws
+            PackageManager.NameNotFoundException()
+        val sessionProvider = RecordingSessionProvider(sessionId = "install-session")
+        val instrumentation =
+            NativeCrashInstrumentation(
+                storeFactory = { store },
+                executor = directExecutor,
+                signalHandlerInstaller = { false },
+            )
+
+        instrumentation.install(context, fakeRum(sessionProvider))
+
+        assertThat(store.readContext()?.sessionId).isEqualTo("install-session")
+        assertThat(sessionProvider.observer).isNotNull()
+        verify {
+            Log.w(
+                any<String>(),
+                "Failed to install native crash signal handler",
+            )
+        }
     }
 
     @Test
@@ -135,6 +173,26 @@ class NativeCrashReporterTest {
         assertThat(log.attributes.get(stringKey(OS_VERSION))).isEqualTo("crashed-os-version")
         assertThat(store.readCrashRecord()).isNull()
         assertThat(store.readContext()).isEqualTo(crashContext("current"))
+    }
+
+    @Test
+    fun `reads the marker format written by the native handler`() {
+        val store = FileNativeCrashStore(tempDir)
+        markerFile().apply {
+            parentFile?.mkdirs()
+            writeText(
+                "signal.number=11\n" +
+                    "timestamp.epoch_nanos=1783598400000000000\n",
+            )
+        }
+
+        assertThat(store.readCrashRecord())
+            .isEqualTo(
+                NativeCrashRecord(
+                    signalNumber = 11,
+                    timestamp = Instant.ofEpochSecond(1_783_598_400),
+                ),
+            )
     }
 
     @Test
