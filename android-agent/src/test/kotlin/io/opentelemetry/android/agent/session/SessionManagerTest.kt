@@ -155,6 +155,55 @@ internal class SessionManagerTest {
     }
 
     @Test
+    fun `observer can be added while observers are notified`() {
+        val clock = TestClock.create()
+        val mockObserver = mockk<SessionObserver>()
+        every { mockObserver.onSessionStarted(any(), any()) } just Runs
+        every { mockObserver.onSessionEnded(any()) } just Runs
+
+        lateinit var sessionManager: SessionManager
+        var observerAdded = false
+        val observer =
+            object : SessionObserver {
+                override fun onSessionStarted(
+                    newSession: Session,
+                    previousSession: Session,
+                ) = Unit
+
+                override fun onSessionEnded(session: Session) {
+                    if (!observerAdded) {
+                        // We are in the callback but can still add to the list
+                        sessionManager.addObserver(mockObserver)
+                        observerAdded = true
+                    }
+                }
+            }
+        sessionManager =
+            SessionManager(
+                clock,
+                timeoutHandler = timeoutHandler,
+                maxSessionLifetime = MAX_SESSION_LIFETIME.hours,
+            )
+        sessionManager.addObserver(observer)
+
+        val firstSessionId = sessionManager.getSessionId()
+
+        verify(exactly = 0) { mockObserver.onSessionEnded(any()) }
+        verify(exactly = 0) { mockObserver.onSessionStarted(any(), any()) }
+
+        clock.advance(MAX_SESSION_LIFETIME, TimeUnit.HOURS)
+        val secondSessionId = sessionManager.getSessionId()
+
+        verify(exactly = 1) { mockObserver.onSessionEnded(match { it.id == firstSessionId }) }
+        verify(exactly = 1) {
+            mockObserver.onSessionStarted(
+                match { it.id == secondSessionId },
+                match { it.id == firstSessionId },
+            )
+        }
+    }
+
+    @Test
     fun shouldCreateNewSessionIdAfterTimeout() {
         // Given
         val sessionId =
