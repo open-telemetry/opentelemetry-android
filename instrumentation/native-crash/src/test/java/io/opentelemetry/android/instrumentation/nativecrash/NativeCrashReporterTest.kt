@@ -328,7 +328,7 @@ class NativeCrashReporterTest {
 
     @Test
     fun `maps native signal numbers to names`() {
-        val signalNumbers = listOf(4, 5, 6, 7, 8, 11, 13, 31, 15)
+        val signalNumbers = listOf(4, 5, 6, 7, 8, 11, 31, 15)
 
         val signalNames = signalNumbers.map { NativeCrashRecord(it, Instant.EPOCH).signalName }
 
@@ -340,7 +340,6 @@ class NativeCrashReporterTest {
                 "SIGBUS",
                 "SIGFPE",
                 "SIGSEGV",
-                "SIGPIPE",
                 "SIGSYS",
                 "SIG15",
             )

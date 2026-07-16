@@ -7,8 +7,8 @@ The native crash instrumentation records fatal native signals and replays the pe
 
 It uses one marker for the most recent crash and a separate context snapshot maintained while the
 app is running. The signal handler records `SIGILL`, `SIGTRAP`, `SIGABRT`, `SIGBUS`, `SIGFPE`,
-`SIGSEGV`, `SIGPIPE`, and `SIGSYS`, then restores and invokes the handler that was installed before
-this instrumentation. Signals that were already ignored remain ignored.
+`SIGSEGV`, and `SIGSYS`, then restores and invokes the handler that was installed before this
+instrumentation. Signals that were already ignored remain ignored.
 
 ## Persisted marker format
 
@@ -36,6 +36,8 @@ The app and OS fields are read from the persisted crash-time context before it i
 new process context, so the replayed event describes the process that crashed.
 
 ## Installation
+
+Building the native library requires CMake 3.22.1 or newer.
 
 Add the instrumentation dependency:
 

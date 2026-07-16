@@ -289,7 +289,6 @@ internal data class NativeCrashRecord(
             7 -> "SIGBUS"
             8 -> "SIGFPE"
             11 -> "SIGSEGV"
-            13 -> "SIGPIPE"
             31 -> "SIGSYS"
             else -> "SIG$signalNumber"
         }

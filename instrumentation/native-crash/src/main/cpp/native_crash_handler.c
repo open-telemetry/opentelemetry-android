@@ -17,7 +17,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define SIGNAL_COUNT 8
+#define SIGNAL_COUNT 7
 #define TEMPORARY_SUFFIX ".tmp"
 #define MARKER_BUFFER_SIZE 128
 #define NANOS_PER_SECOND UINT64_C(1000000000)
@@ -30,7 +30,6 @@ static const int handled_signals[SIGNAL_COUNT] = {
     SIGBUS,
     SIGFPE,
     SIGSEGV,
-    SIGPIPE,
     SIGSYS,
 };
 
