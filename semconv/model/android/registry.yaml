@@ -109,11 +109,23 @@ groups:
           The current application screen name used by the Android SDK.
         examples: ["user.login", "Cart"]
       - id: screen.orientation
-        type: string
+        type:
+          members:
+            - id: portrait
+              value: "portrait"
+              stability: development
+              brief: The screen is in portrait orientation.
+            - id: landscape
+              value: "landscape"
+              stability: development
+              brief: The screen is in landscape orientation.
+            - id: undefined
+              value: "undefined"
+              stability: development
+              brief: The screen orientation could not be determined.
         stability: development
         brief: >
           The Android screen orientation.
-        examples: ["portrait", "landscape", "undefined"]
       - id: span.exporter
         type: string
         stability: development
@@ -121,11 +133,23 @@ groups:
           A string representation of the span exporter configured during SDK initialization.
         examples: ["OtlpHttpSpanExporter"]
       - id: start.type
-        type: string
+        type:
+          members:
+            - id: cold
+              value: "cold"
+              stability: development
+              brief: The application started from scratch, with no process or activity reused.
+            - id: warm
+              value: "warm"
+              stability: development
+              brief: The application process was reused but the activity had to be recreated.
+            - id: hot
+              value: "hot"
+              stability: development
+              brief: The application and its activity were already in memory and brought to the foreground.
         stability: development
         brief: >
           The application start type.
-        examples: ["cold", "warm", "hot"]
       - id: storage.free
         type: int
         stability: development
@@ -139,8 +163,16 @@ groups:
           The size of a WebSocket message payload.
         examples: [128]
       - id: websocket.message.type
-        type: string
+        type:
+          members:
+            - id: text
+              value: "text"
+              stability: development
+              brief: A text message.
+            - id: bytes
+              value: "bytes"
+              stability: development
+              brief: A binary message.
         stability: development
         brief: >
           The WebSocket message payload type.
-        examples: ["text", "bytes"]

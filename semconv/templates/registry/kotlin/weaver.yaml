@@ -31,7 +31,9 @@ templates:
           brief: .brief,
           note: .note,
           deprecated: .deprecated,
-          attributes: ((.attributes // []) | unique_by(.name))
+          attributes: ((.attributes // [])
+            | map(select(.type != "any"))
+            | unique_by(.name))
         })
     application_mode: each
     file_name: "io/opentelemetry/android/semconv/events/{{ctx.name | pascal_case}}Event.kt"
@@ -39,6 +41,24 @@ text_maps:
   kotlin_enum_type:
     int: Long
     string: String
+  kotlin_key_generic:
+    string: String
+    boolean: Boolean
+    int: Long
+    double: Double
+    "string[]": List<String>
+    "boolean[]": List<Boolean>
+    "int[]": List<Long>
+    "double[]": List<Double>
+  kotlin_key_factory:
+    string: stringKey
+    boolean: booleanKey
+    int: longKey
+    double: doubleKey
+    "string[]": stringArrayKey
+    "boolean[]": booleanArrayKey
+    "int[]": longArrayKey
+    "double[]": doubleArrayKey
   kotlin_event_type:
     int: Long
     double: Double

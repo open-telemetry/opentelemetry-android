@@ -10,6 +10,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
+import io.opentelemetry.android.semconv.ScreenAttributes.ScreenOrientationValues
 import io.opentelemetry.android.semconv.events.DeviceScreenOrientationEvent
 import io.opentelemetry.api.logs.Logger
 
@@ -36,9 +37,9 @@ internal class ScreenOrientationDetector(
     private val Int.name: String
         get() {
             return when (this) {
-                ORIENTATION_LANDSCAPE -> "landscape"
-                ORIENTATION_PORTRAIT -> "portrait"
-                else -> "undefined"
+                ORIENTATION_LANDSCAPE -> ScreenOrientationValues.LANDSCAPE.value
+                ORIENTATION_PORTRAIT -> ScreenOrientationValues.PORTRAIT.value
+                else -> ScreenOrientationValues.UNDEFINED.value
             }
         }
 

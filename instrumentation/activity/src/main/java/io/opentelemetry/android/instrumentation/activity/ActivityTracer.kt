@@ -11,6 +11,7 @@ import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.android.semconv.ActivityAttributes.ACTIVITY_NAME_KEY
 import io.opentelemetry.android.semconv.StartAttributes.START_TYPE_KEY
+import io.opentelemetry.android.semconv.StartAttributes.StartTypeValues
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.context.Context
@@ -51,7 +52,7 @@ internal class ActivityTracer(
             return createSpanWithParent("Created", appStartupTimer.startupSpan)
         }
         if (activityName == initialAppActivity) {
-            return createAppStartSpan("warm")
+            return createAppStartSpan(StartTypeValues.WARM.value)
         }
         return createSpan("Created")
     }
@@ -69,7 +70,7 @@ internal class ActivityTracer(
         // Note: in a multi-activity application, navigating back to the first activity can trigger
         // this, so it would not be ideal to call it an AppStart.
         if (!multiActivityApp && activityName == initialAppActivity) {
-            return createAppStartSpan("hot")
+            return createAppStartSpan(StartTypeValues.HOT.value)
         }
         return createSpan("Restarted")
     }
