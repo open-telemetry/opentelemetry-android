@@ -81,10 +81,14 @@ class NativeCrashReporterTest {
         every { packageManager.getPackageInfo("test.app", 0) } throws
             PackageManager.NameNotFoundException()
         var queuedTask: Runnable? = null
+        var storeCreated = false
         var signalHandlerInstalled = false
         val instrumentation =
             NativeCrashInstrumentation(
-                storeFactory = { store },
+                storeFactory = {
+                    storeCreated = true
+                    store
+                },
                 executor = { task -> queuedTask = task },
                 signalHandlerInstaller = {
                     assertThat(store.readCrashRecord()).isNull()
@@ -102,12 +106,14 @@ class NativeCrashReporterTest {
 
         instrumentation.install(context, fakeRum())
 
+        assertThat(storeCreated).isFalse()
         assertThat(signalHandlerInstalled).isFalse()
         assertThat(store.readCrashRecord()).isNotNull()
         assertThat(queuedTask).isNotNull()
 
         queuedTask!!.run()
 
+        assertThat(storeCreated).isTrue()
         assertThat(signalHandlerInstalled).isTrue()
     }
 

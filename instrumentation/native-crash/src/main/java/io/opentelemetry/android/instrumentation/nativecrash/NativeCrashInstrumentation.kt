@@ -53,8 +53,8 @@ class NativeCrashInstrumentation internal constructor(
         openTelemetryRum: OpenTelemetryRum,
     ) {
         val applicationContext = context.applicationContext
-        val store = storeFactory(applicationContext)
         executor.execute {
+            val store = storeFactory(applicationContext)
             val crashContext = applicationContext.currentCrashContext(openTelemetryRum)
             NativeCrashReporter(
                 store = store,
