@@ -114,6 +114,7 @@ public final class io/opentelemetry/android/agent/dsl/instrumentation/Instrument
 	public final fun activity (Lkotlin/jvm/functions/Function1;)V
 	public final fun anrReporter (Lkotlin/jvm/functions/Function1;)V
 	public final fun crashReporter (Lkotlin/jvm/functions/Function1;)V
+	public final fun disableInstrumentationAutoDiscovery ()V
 	public final fun fragment (Lkotlin/jvm/functions/Function1;)V
 	public final fun networkMonitoring (Lkotlin/jvm/functions/Function1;)V
 	public final fun screenOrientation (Lkotlin/jvm/functions/Function1;)V
