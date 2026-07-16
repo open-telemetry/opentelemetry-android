@@ -28,6 +28,14 @@ android {
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")
     }
+
+    testOptions {
+        unitTests {
+            // Required so Robolectric reads the merged manifest (which declares the
+            // ComponentActivity that Compose's createComposeRule launches).
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -48,6 +56,10 @@ dependencies {
 
     testImplementation(libs.compose)
     testImplementation(libs.androidx.navigation.compose)
+    testImplementation(libs.compose.ui.test.junit4)
+    // Provides the ComponentActivity that createComposeRule launches; merged into the manifest the
+    // Robolectric unit tests run against.
+    debugImplementation(libs.compose.ui.test.manifest)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
 }

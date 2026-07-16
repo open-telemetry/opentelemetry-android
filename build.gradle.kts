@@ -52,7 +52,6 @@ kover {
             excludes {
                 androidGeneratedClasses()
                 classes("*.BuildConfig")
-                annotatedBy("androidx.compose.runtime.Composable")
             }
         }
     }
