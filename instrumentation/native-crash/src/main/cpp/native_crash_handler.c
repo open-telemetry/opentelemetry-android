@@ -23,6 +23,10 @@
 #define NANOS_PER_SECOND UINT64_C(1000000000)
 #define ALTERNATE_STACK_SIZE (SIGSTKSZ * 2)
 
+#ifndef SA_EXPOSE_TAGBITS
+#define SA_EXPOSE_TAGBITS 0x00000800
+#endif
+
 static const int handled_signals[SIGNAL_COUNT] = {
     SIGILL,
     SIGTRAP,
@@ -223,6 +227,7 @@ static void handle_signal(
     if (!atomic_flag_test_and_set_explicit(&handling_signal, memory_order_relaxed)) {
         write_crash_marker(signal_number);
     }
+    errno = saved_errno;
     invoke_previous_handler(signal_number, signal_info, user_context);
     errno = saved_errno;
 }
@@ -234,12 +239,12 @@ static bool install_handlers(void) {
 
     struct sigaction action;
     memset(&action, 0, sizeof(action));
-    sigemptyset(&action.sa_mask);
-    for (int index = 0; index < SIGNAL_COUNT; index++) {
-        sigaddset(&action.sa_mask, handled_signals[index]);
+    if (sigfillset(&action.sa_mask) != 0) {
+        remove_alternate_signal_stack();
+        return false;
     }
     action.sa_sigaction = handle_signal;
-    action.sa_flags = SA_SIGINFO | SA_ONSTACK | SA_RESETHAND;
+    action.sa_flags = SA_RESTART | SA_SIGINFO | SA_ONSTACK | SA_RESETHAND | SA_EXPOSE_TAGBITS;
 
     for (int index = 0; index < SIGNAL_COUNT; index++) {
         if (!atomic_is_lock_free(&handler_active[index])) {

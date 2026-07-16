@@ -68,11 +68,18 @@ class NativeCrashReporterTest {
     }
 
     @Test
-    fun `installs the signal handler before scheduling replay`() {
+    fun `installs the signal handler after replay and current context persistence`() {
         val store = FileNativeCrashStore(tempDir)
+        writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L)
+        writeContext(crashContext("crashed"))
+        val packageManager = mockk<PackageManager>()
         val applicationContext = mockk<Context>()
         val context = mockk<Context>()
         every { context.applicationContext } returns applicationContext
+        every { applicationContext.packageManager } returns packageManager
+        every { applicationContext.packageName } returns "test.app"
+        every { packageManager.getPackageInfo("test.app", 0) } throws
+            PackageManager.NameNotFoundException()
         var queuedTask: Runnable? = null
         var signalHandlerInstalled = false
         val instrumentation =
@@ -80,7 +87,14 @@ class NativeCrashReporterTest {
                 storeFactory = { store },
                 executor = { task -> queuedTask = task },
                 signalHandlerInstaller = {
-                    assertThat(queuedTask).isNull()
+                    assertThat(store.readCrashRecord()).isNull()
+                    assertThat(store.readContext()?.sessionId).isEqualTo("current-session")
+                    assertThat(
+                        otelTesting.logRecords
+                            .single()
+                            .attributes
+                            .get(stringKey(SESSION_ID)),
+                    ).isEqualTo("crashed-session")
                     signalHandlerInstalled = true
                     true
                 },
@@ -88,8 +102,51 @@ class NativeCrashReporterTest {
 
         instrumentation.install(context, fakeRum())
 
-        assertThat(signalHandlerInstalled).isTrue()
+        assertThat(signalHandlerInstalled).isFalse()
+        assertThat(store.readCrashRecord()).isNotNull()
         assertThat(queuedTask).isNotNull()
+
+        queuedTask!!.run()
+
+        assertThat(signalHandlerInstalled).isTrue()
+    }
+
+    @Test
+    fun `does not install the signal handler when current context cannot be persisted`() {
+        val marker = File(tempDir, "native-crash-record.properties")
+        val store = mockk<NativeCrashStore>(relaxed = true)
+        every { store.crashRecordPath } returns marker
+        every { store.readCrashRecord() } returns null
+        every { store.readContext() } returns null
+        every { store.writeContext(any()) } returns false
+        val packageManager = mockk<PackageManager>()
+        val applicationContext = mockk<Context>()
+        val context = mockk<Context>()
+        every { context.applicationContext } returns applicationContext
+        every { applicationContext.packageManager } returns packageManager
+        every { applicationContext.packageName } returns "test.app"
+        every { packageManager.getPackageInfo("test.app", 0) } throws
+            PackageManager.NameNotFoundException()
+        var signalHandlerInstalled = false
+        val instrumentation =
+            NativeCrashInstrumentation(
+                storeFactory = { store },
+                executor = directExecutor,
+                signalHandlerInstaller = {
+                    signalHandlerInstalled = true
+                    true
+                },
+            )
+
+        instrumentation.install(context, fakeRum())
+
+        assertThat(signalHandlerInstalled).isFalse()
+        verify {
+            Log.w(
+                any<String>(),
+                "Native crash signal handler disabled because crash context could not be persisted",
+            )
+        }
     }
 
     @Test

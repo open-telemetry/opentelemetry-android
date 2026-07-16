@@ -46,12 +46,16 @@ implementation("io.opentelemetry.android.instrumentation:native-crash:1.5.0-alph
 ```
 
 The module is discovered and installed automatically when it is present on the runtime classpath.
+It replays any marker from the previous process and persists the current process context before
+enabling the native signal handler.
 
 ## Limitations
 
 Native stack capture is not included. This module does not create or attach a binary crash dump.
 Symbol upload and symbolication are downstream concerns and require a separate design once native
 stack frames are available.
+
+Crashes that happen before native crash instrumentation finishes initialization are not recorded.
 
 The persisted crash marker is deleted immediately after its event is emitted. Replay is therefore
 at most once: if the application exits before the telemetry is exported, that crash event may be

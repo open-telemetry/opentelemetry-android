@@ -54,21 +54,27 @@ class NativeCrashInstrumentation internal constructor(
     ) {
         val applicationContext = context.applicationContext
         val store = storeFactory(applicationContext)
-        if (!signalHandlerInstaller.install(store.crashRecordPath)) {
-            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to install native crash signal handler")
-        }
-
         executor.execute {
             val crashContext = applicationContext.currentCrashContext(openTelemetryRum)
             NativeCrashReporter(
                 store = store,
                 openTelemetryRum = openTelemetryRum,
             ).replayPreviousCrash()
-            store.writeContext(crashContext)
+            if (!store.writeContext(crashContext)) {
+                Log.w(
+                    RumConstants.OTEL_RUM_LOG_TAG,
+                    "Native crash signal handler disabled because crash context could not be persisted",
+                )
+                return@execute
+            }
 
             val sessionProvider = openTelemetryRum.sessionProvider
             if (sessionProvider is SessionPublisher) {
                 sessionProvider.addObserver(NativeCrashSessionObserver(store, crashContext, executor))
+            }
+
+            if (!signalHandlerInstaller.install(store.crashRecordPath)) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to install native crash signal handler")
             }
         }
     }
@@ -167,7 +173,7 @@ internal interface NativeCrashStore {
 
     fun readContext(): NativeCrashContext?
 
-    fun writeContext(context: NativeCrashContext)
+    fun writeContext(context: NativeCrashContext): Boolean
 }
 
 internal class FileNativeCrashStore(
@@ -218,7 +224,7 @@ internal class FileNativeCrashStore(
     }
 
     @Synchronized
-    override fun writeContext(context: NativeCrashContext) {
+    override fun writeContext(context: NativeCrashContext): Boolean =
         runCatching {
             directory.mkdirs()
             val properties = Properties()
@@ -237,8 +243,7 @@ internal class FileNativeCrashStore(
             }
         }.onFailure { error ->
             Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to persist native crash context", error)
-        }
-    }
+        }.isSuccess
 
     private fun Properties.toCrashRecordOrNull(): NativeCrashRecord? {
         return runCatching {
