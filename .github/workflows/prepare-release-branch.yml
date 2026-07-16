@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
 
       - name: Verify prerequisites
         run: |
@@ -31,6 +33,9 @@ jobs:
       - prereqs
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # zizmor: ignore[artipacked]: credentials are required by the release branch and update branch pushes below
+          persist-credentials: true
 
       - name: Create release branch
         run: |
@@ -70,6 +75,7 @@ jobs:
         with:
           client-id: ${{ vars.OTELBOT_CLIENT_ID }}
           private-key: ${{ secrets.OTELBOT_PRIVATE_KEY }}
+          permission-pull-requests: write
 
       - name: Create pull request against the release branch
         env:
@@ -94,6 +100,9 @@ jobs:
       - prereqs
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # zizmor: ignore[artipacked]: credentials are required by the update branch push below
+          persist-credentials: true
 
       - name: Set environment variables
         run: |
@@ -140,6 +149,7 @@ jobs:
         with:
           client-id: ${{ vars.OTELBOT_CLIENT_ID }}
           private-key: ${{ secrets.OTELBOT_PRIVATE_KEY }}
+          permission-pull-requests: write
 
       - name: Create pull request against main
         env:
