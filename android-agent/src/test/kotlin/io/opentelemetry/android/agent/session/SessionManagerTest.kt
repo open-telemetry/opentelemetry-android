@@ -191,23 +191,17 @@ internal class SessionManagerTest {
         verify(exactly = 0) { mockObserver.onSessionEnded(any()) }
         verify(exactly = 0) { mockObserver.onSessionStarted(any(), any()) }
 
-        // Trigger a session update; mockObserver is added during notification and should not be
-        // invoked until the next session update.
+        // Trigger the next session update; mockObserver was added during the previous notification
+        // and should now be invoked.
         clock.advance(MAX_SESSION_LIFETIME, TimeUnit.HOURS)
         val secondSessionId = sessionManager.getSessionId()
 
         assertThat(secondSessionId).isNotEqualTo(firstSessionId)
-        verify(exactly = 0) { mockObserver.onSessionEnded(any()) }
-        verify(exactly = 0) { mockObserver.onSessionStarted(any(), any()) }
-
-        clock.advance(MAX_SESSION_LIFETIME, TimeUnit.HOURS)
-        val thirdSessionId = sessionManager.getSessionId()
-
-        verify(exactly = 1) { mockObserver.onSessionEnded(match { it.id == secondSessionId }) }
+        verify(exactly = 1) { mockObserver.onSessionEnded(match { it.id == firstSessionId }) }
         verify(exactly = 1) {
             mockObserver.onSessionStarted(
-                match { it.id == thirdSessionId },
                 match { it.id == secondSessionId },
+                match { it.id == firstSessionId },
             )
         }
     }
