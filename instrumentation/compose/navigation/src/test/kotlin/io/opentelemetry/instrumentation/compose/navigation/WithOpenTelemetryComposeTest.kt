@@ -8,7 +8,7 @@ package io.opentelemetry.instrumentation.compose.navigation
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -83,5 +83,36 @@ class WithOpenTelemetryComposeTest {
                 record.attributes.get(stringKey(map(APP_SCREEN_NAME)))
             }
         assertThat(names).containsExactly("first", "first", "second")
+    }
+
+    @Test
+    fun `removing the instrumentation stops emitting on later navigation`() {
+        var instrumented by mutableStateOf(true)
+        lateinit var navController: NavHostController
+        composeRule.setContent {
+            navController = rememberNavController()
+            if (instrumented) {
+                navController.withOpenTelemetry(rum)
+            }
+            NavHost(navController, startDestination = "a") {
+                composable("a") {}
+                composable("b") {}
+            }
+        }
+
+        composeRule.runOnIdle { navController.navigate("b") }
+        composeRule.waitForIdle()
+        val countWhileInstrumented =
+            openTelemetryRule.logRecords.count { it.eventName == SCREEN_VIEW_EVENT_NAME }
+
+        // Remove the instrumenting composable from the tree; onDispose should remove the listener.
+        composeRule.runOnIdle { instrumented = false }
+        composeRule.waitForIdle()
+        composeRule.runOnIdle { navController.navigate("a") }
+        composeRule.waitForIdle()
+
+        val countAfterRemoval =
+            openTelemetryRule.logRecords.count { it.eventName == SCREEN_VIEW_EVENT_NAME }
+        assertThat(countAfterRemoval).isEqualTo(countWhileInstrumented)
     }
 }

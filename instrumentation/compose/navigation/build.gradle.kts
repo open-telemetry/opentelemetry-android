@@ -43,6 +43,7 @@ dependencies {
 
     implementation(project(":agent-api"))
     implementation(project(":common"))
+    implementation(project(":semconv"))
 
     compileOnly(libs.compose) {
         exclude(group = "org.jetbrains.kotlinx")

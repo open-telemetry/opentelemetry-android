@@ -66,13 +66,15 @@ fun NavHostController.withOpenTelemetry(
 
 /**
  * Drop-in replacement for `rememberNavController()` that attaches OpenTelemetry navigation
- * instrumentation; it delegates to [withOpenTelemetry].
+ * instrumentation; it delegates to [withOpenTelemetry]. Accepts the same [screenName] override so
+ * callers don't have to switch to chaining [withOpenTelemetry].
  */
 @Composable
 fun rememberObservedNavController(
     rum: OpenTelemetryRum,
+    screenName: (NavDestination, Bundle?) -> String = ::defaultScreenName,
     vararg navigators: Navigator<out NavDestination>,
-): NavHostController = rememberNavController(*navigators).withOpenTelemetry(rum)
+): NavHostController = rememberNavController(*navigators).withOpenTelemetry(rum, screenName)
 
 /**
  * Registers an [NavController.OnDestinationChangedListener] that emits a screen-view event through

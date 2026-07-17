@@ -1,4 +1,13 @@
 groups:
+  - id: event.app.screen.view
+    type: event
+    name: app.screen.view
+    stability: development
+    brief: >
+      This event represents a navigation to a screen of an application.
+    attributes:
+      - ref: app.screen.name
+        requirement_level: required
   - id: event.app.screen.longpress
     type: event
     name: app.screen.longpress

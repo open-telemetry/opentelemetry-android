@@ -20,6 +20,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
+// The event name emitted by the generated AppScreenViewEvent (semconv/model/android/events.yaml).
+internal const val SCREEN_VIEW_EVENT_NAME = "app.screen.view"
+
 @OptIn(IncubatingApi::class)
 @RunWith(AndroidJUnit4::class)
 class NavigationEmitterTest {
