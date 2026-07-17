@@ -24,6 +24,7 @@ class InstrumentationConfigurationTest {
         rumConfig = mockk()
         every { rumConfig.setDiskBufferingConfig(any<DiskBufferingConfig>()) } returns rumConfig
         every { rumConfig.suppressInstrumentation(any<String>()) } returns rumConfig
+        every { rumConfig.disableInstrumentationDiscovery() } returns rumConfig
         otelConfig =
             OpenTelemetryConfiguration(
                 rumConfig = rumConfig,
@@ -42,5 +43,14 @@ class InstrumentationConfigurationTest {
             rumConfig.suppressInstrumentation("two")
             rumConfig.suppressInstrumentation("three")
         }
+    }
+
+    @Test
+    fun canDisableInstrumentationAutoDiscovery() {
+        otelConfig.instrumentations {
+            disableInstrumentationAutoDiscovery()
+        }
+
+        verify { rumConfig.disableInstrumentationDiscovery() }
     }
 }

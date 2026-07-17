@@ -96,4 +96,14 @@ class InstrumentationConfiguration internal constructor(
             config.suppressInstrumentation(it)
         }
     }
+
+    /**
+     * Disables automatic discovery of instrumentations on the classpath.
+     *
+     * When disabled, classpath instrumentations will not be installed unless they are added
+     * programmatically (e.g., via the underlying RumBuilder/OpenTelemetryRumBuilder APIs).
+     */
+    fun disableInstrumentationAutoDiscovery() {
+        config.disableInstrumentationDiscovery()
+    }
 }
