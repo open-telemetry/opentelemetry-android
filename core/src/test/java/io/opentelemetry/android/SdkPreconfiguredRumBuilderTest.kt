@@ -51,8 +51,8 @@ class SdkPreconfiguredRumBuilderTest {
                 AndroidInstrumentationLoaderImpl(),
             )
         builder.addInstrumentation(fooInstrumentation)
-        builder.addInstrumentation(nativeCrashInstrumentation)
         builder.addInstrumentation(sessionInstrumentation)
+        builder.addInstrumentation(nativeCrashInstrumentation)
 
         val result = builder.getEnabledInstrumentations()
 
