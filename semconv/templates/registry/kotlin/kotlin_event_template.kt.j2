@@ -6,7 +6,10 @@
 
 package io.opentelemetry.android.semconv.events
 
+{%- set has_array_attributes = (ctx.attributes | selectattr("type", "in", ["string[]", "boolean[]", "int[]", "double[]"]) | list | length) > 0 -%}
+{%- if has_array_attributes %}
 import io.opentelemetry.api.common.AttributeKey
+{%- endif %}
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
 
