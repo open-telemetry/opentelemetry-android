@@ -7,8 +7,10 @@ The native crash instrumentation records fatal native signals and replays the pe
 
 It uses one marker for the most recent crash and a separate context snapshot maintained while the
 app is running. The signal handler records `SIGILL`, `SIGTRAP`, `SIGABRT`, `SIGBUS`, `SIGFPE`,
-`SIGSEGV`, and `SIGSYS`, then restores and invokes the handler that was installed before this
-instrumentation. Signals that were already ignored remain ignored.
+`SIGSEGV`, and `SIGSYS`, then restores the previous action for that signal and re-delivers it
+through the kernel. This preserves the previous handler's signal mask, flags, and available fault
+details without changing registrations for the other signals. Signals that were already ignored
+remain ignored.
 
 ## Persisted marker format
 

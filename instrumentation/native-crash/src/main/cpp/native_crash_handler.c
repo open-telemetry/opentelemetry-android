@@ -198,6 +198,33 @@ static bool prepare_alternate_signal_stack(void) {
     return true;
 }
 
+static bool signal_will_reraise_autonomously(
+    int signal_number,
+    const siginfo_t *signal_info) {
+    if (signal_info == NULL ||
+        (signal_number != SIGBUS && signal_number != SIGFPE &&
+         signal_number != SIGILL && signal_number != SIGSEGV)) {
+        return false;
+    }
+
+    int signal_code = signal_info->si_code;
+    return signal_code > 0 && signal_code != SI_ASYNCIO && signal_code != SI_MESGQ &&
+        signal_code != SI_QUEUE && signal_code != SI_TIMER && signal_code != SI_USER &&
+#ifdef SI_DETHREAD
+        signal_code != SI_DETHREAD &&
+#endif
+#ifdef SI_KERNEL
+        signal_code != SI_KERNEL &&
+#endif
+#ifdef SI_SIGIO
+        signal_code != SI_SIGIO &&
+#endif
+#ifdef SI_TKILL
+        signal_code != SI_TKILL &&
+#endif
+        true;
+}
+
 static void restore_previous_handler_and_reraise(
     int signal_number,
     siginfo_t *signal_info) {
@@ -217,18 +244,27 @@ static void restore_previous_handler_and_reraise(
     }
 
 #if defined(SYS_rt_tgsigqueueinfo) && defined(SYS_gettid)
-    if (signal_info != NULL &&
-        syscall(
-            SYS_rt_tgsigqueueinfo,
-            getpid(),
-            syscall(SYS_gettid),
-            signal_number,
-            signal_info) == 0) {
-        return;
+    if (signal_info != NULL) {
+        if (syscall(
+                SYS_rt_tgsigqueueinfo,
+                getpid(),
+                syscall(SYS_gettid),
+                signal_number,
+                signal_info) == 0) {
+            return;
+        }
+        // Linux kernels before 3.9 reject self-sent siginfo with EPERM. Other failures are
+        // unexpected, so stop rather than invoke the previous handler with altered semantics.
+        if (errno != EPERM) {
+            _exit(128 + signal_number);
+        }
     }
 #endif
 
-    if (raise(signal_number) != 0) {
+    // A synchronous hardware fault will recur when this handler returns. Raising it here would
+    // replace the original fault details, including si_addr, on older kernels.
+    if (!signal_will_reraise_autonomously(signal_number, signal_info) &&
+        raise(signal_number) != 0) {
         _exit(128 + signal_number);
     }
 }
