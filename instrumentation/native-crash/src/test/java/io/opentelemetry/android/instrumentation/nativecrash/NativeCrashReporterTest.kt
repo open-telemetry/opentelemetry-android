@@ -484,6 +484,16 @@ class NativeCrashReporterTest {
         assertThat(store.readContext()).isEqualTo(crashContext("original").copy(sessionId = "new-session"))
     }
 
+    @Test
+    fun `replaces an existing persisted context`() {
+        val store = FileNativeCrashStore(tempDir)
+
+        assertThat(store.writeContext(crashContext("first"))).isTrue()
+        assertThat(store.writeContext(crashContext("second"))).isTrue()
+
+        assertThat(store.readContext()).isEqualTo(crashContext("second"))
+    }
+
     private fun reporter(store: NativeCrashStore): NativeCrashReporter = NativeCrashReporter(store, fakeRum())
 
     private fun writeMarker(

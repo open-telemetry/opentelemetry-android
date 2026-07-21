@@ -235,7 +235,10 @@ internal class FileNativeCrashStore(
             val temporaryPath = File(directory, "${contextPath.name}.tmp")
             try {
                 FileOutputStream(temporaryPath).use { properties.store(it, null) }
-                if (!temporaryPath.renameTo(contextPath)) {
+                val replaced =
+                    temporaryPath.renameTo(contextPath) ||
+                        (contextPath.isFile && contextPath.delete() && temporaryPath.renameTo(contextPath))
+                if (!replaced) {
                     throw IOException("Failed to replace native crash context")
                 }
             } finally {

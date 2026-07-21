@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/syscall.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -158,7 +159,7 @@ static void write_crash_marker(int signal_number) {
     }
 }
 
-static void restore_previous_handlers(void) {
+static void rollback_installed_handlers(void) {
     for (int index = 0; index < SIGNAL_COUNT; index++) {
         if (atomic_load_explicit(&handler_active[index], memory_order_relaxed)) {
             sigaction(handled_signals[index], &previous_actions[index], NULL);
@@ -197,25 +198,38 @@ static bool prepare_alternate_signal_stack(void) {
     return true;
 }
 
-static void invoke_previous_handler(
+static void restore_previous_handler_and_reraise(
     int signal_number,
-    siginfo_t *signal_info,
-    void *user_context) {
+    siginfo_t *signal_info) {
     int index = find_signal_index(signal_number);
-    restore_previous_handlers();
     if (index < 0) {
         return;
     }
 
     struct sigaction previous = previous_actions[index];
-    if (previous.sa_handler == SIG_DFL) {
-        raise(signal_number);
-    } else if (previous.sa_handler == SIG_IGN) {
+    // Re-deliver through the kernel so the previous action keeps its own mask and flags. Only the
+    // crashing signal is restored; registrations for the other fatal signals remain untouched.
+    if (sigaction(signal_number, &previous, NULL) != 0) {
+        _exit(128 + signal_number);
+    }
+    if (previous.sa_handler == SIG_IGN) {
         return;
-    } else if ((previous.sa_flags & SA_SIGINFO) != 0) {
-        previous.sa_sigaction(signal_number, signal_info, user_context);
-    } else {
-        previous.sa_handler(signal_number);
+    }
+
+#if defined(SYS_rt_tgsigqueueinfo) && defined(SYS_gettid)
+    if (signal_info != NULL &&
+        syscall(
+            SYS_rt_tgsigqueueinfo,
+            getpid(),
+            syscall(SYS_gettid),
+            signal_number,
+            signal_info) == 0) {
+        return;
+    }
+#endif
+
+    if (raise(signal_number) != 0) {
+        _exit(128 + signal_number);
     }
 }
 
@@ -223,12 +237,13 @@ static void handle_signal(
     int signal_number,
     siginfo_t *signal_info,
     void *user_context) {
+    (void) user_context;
     int saved_errno = errno;
     if (!atomic_flag_test_and_set_explicit(&handling_signal, memory_order_relaxed)) {
         write_crash_marker(signal_number);
     }
     errno = saved_errno;
-    invoke_previous_handler(signal_number, signal_info, user_context);
+    restore_previous_handler_and_reraise(signal_number, signal_info);
     errno = saved_errno;
 }
 
@@ -265,7 +280,7 @@ static bool install_handlers(void) {
         atomic_store_explicit(&handler_active[index], true, memory_order_relaxed);
         if (sigaction(handled_signals[index], &action, NULL) != 0) {
             atomic_store_explicit(&handler_active[index], false, memory_order_relaxed);
-            restore_previous_handlers();
+            rollback_installed_handlers();
             remove_alternate_signal_stack();
             return false;
         }
