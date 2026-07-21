@@ -1,4 +1,13 @@
 groups:
+  - id: event.app.nav_started
+    type: event
+    name: app.nav_started
+    stability: development
+    brief: >
+      Test event
+    attributes:
+      - ref: app.nav.destination
+        requirement_level: recommended
   - id: event.app.screen.longpress
     type: event
     name: app.screen.longpress

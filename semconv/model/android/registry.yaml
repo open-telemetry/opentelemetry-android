@@ -1,3 +1,8 @@
+imports:
+  attribute_groups:
+    - registry.end_user_client.app
+  events:
+    - app.nav_complete
 groups:
   - id: registry.android.semconv
     type: attribute_group
@@ -114,15 +119,15 @@ groups:
             - id: portrait
               value: "portrait"
               stability: development
-              brief: The screen is in portrait orientation.
+              brief: Screen orientation is portrait.
             - id: landscape
               value: "landscape"
               stability: development
-              brief: The screen is in landscape orientation.
+              brief: Screen orientation is landscape.
             - id: undefined
               value: "undefined"
               stability: development
-              brief: The screen orientation could not be determined.
+              brief: Screen orientation could not be determined.
         stability: development
         brief: >
           The Android screen orientation.
@@ -138,15 +143,17 @@ groups:
             - id: cold
               value: "cold"
               stability: development
-              brief: The application started from scratch, with no process or activity reused.
+              brief: The application started with no existing process in memory prior to app launch
             - id: warm
               value: "warm"
               stability: development
-              brief: The application process was reused but the activity had to be recreated.
+              brief: >
+                The application started with an existing process and application object was already created, but without any user-facing
+                components like Activities initialized
             - id: hot
               value: "hot"
               stability: development
-              brief: The application and its activity were already in memory and brought to the foreground.
+              brief: The application has already been fully initialized previously and this "start" just brings it to the foreground.
         stability: development
         brief: >
           The application start type.
