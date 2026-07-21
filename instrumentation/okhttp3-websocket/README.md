@@ -6,7 +6,7 @@ The OpenTelemetry OkHttp WebSocket instrumentation for Android instruments
 client-side OkHttp WebSocket usage. It creates telemetry for websocket lifecycle
 events and can capture metadata about connections and messages.
 
-Provides OpenTelemetry instrumentation for [okhttp3 websockets](https://square.github.io/okhttp/3.x/okhttp/okhttp3/WebSocket.html).
+Provides OpenTelemetry instrumentation for [okhttp3 websockets](https://lysine.dev/okhttp/3.x/okhttp/okhttp3/WebSocket.html).
 
 ## Telemetry
 
