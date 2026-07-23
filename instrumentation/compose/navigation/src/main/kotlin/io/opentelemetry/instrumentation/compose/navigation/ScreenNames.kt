@@ -13,7 +13,7 @@ import androidx.navigation.NavDestination
  *
  * Uses the route *pattern* (for example `user/{id}`, not the filled-in arguments) to avoid leaking
  * PII. Callers can supply their own resolver (including one that reads [arguments]) via
- * [withOpenTelemetry][NavHostController.withOpenTelemetry].
+ * [withOpenTelemetry].
  */
 internal fun defaultScreenName(
     destination: NavDestination,

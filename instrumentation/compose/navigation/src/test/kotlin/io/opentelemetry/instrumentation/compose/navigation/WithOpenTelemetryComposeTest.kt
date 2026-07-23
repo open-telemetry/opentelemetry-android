@@ -17,36 +17,33 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.every
 import io.mockk.mockk
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.common.internal.SemconvCompat.Companion.map
-import io.opentelemetry.api.common.AttributeKey.stringKey
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME
-import io.opentelemetry.kotlin.semconv.IncubatingApi
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
-import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
+import io.opentelemetry.api.OpenTelemetry
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.GraphicsMode
 
-@OptIn(IncubatingApi::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @RunWith(AndroidJUnit4::class)
 class WithOpenTelemetryComposeTest {
     @get:Rule
     val composeRule = createComposeRule()
 
-    private val openTelemetryRule = OpenTelemetryRule.create()
     private val rum =
         mockk<OpenTelemetryRum> {
-            every { openTelemetry } returns openTelemetryRule.openTelemetry
+            every { openTelemetry } returns OpenTelemetry.noop()
         }
 
     @Test
-    fun `rememberObservedNavController emits a screen-view event on navigation`() {
+    fun `rememberObservedNavController resolves a screen name on navigation`() {
+        val seen = mutableListOf<String>()
         lateinit var navController: NavHostController
         composeRule.setContent {
-            navController = rememberObservedNavController(rum)
+            navController =
+                rememberObservedNavController(rum, screenName = { destination, arguments ->
+                    defaultScreenName(destination, arguments).also { seen += it }
+                })
             NavHost(navController, startDestination = "a") {
                 composable("a") {}
                 composable("b") {}
@@ -56,18 +53,20 @@ class WithOpenTelemetryComposeTest {
         composeRule.runOnIdle { navController.navigate("b") }
         composeRule.waitForIdle()
 
-        val screenViews = openTelemetryRule.logRecords.filter { it.eventName == SCREEN_VIEW_EVENT_NAME }
-        assertThat(screenViews).isNotEmpty()
-        assertThat(screenViews.last())
-            .hasAttributesSatisfying(equalTo(stringKey(map(APP_SCREEN_NAME)), "b"))
+        assertThat(seen).isNotEmpty()
+        assertThat(seen.last()).isEqualTo("b")
     }
 
     @Test
     fun `withOpenTelemetry uses the latest screenName after recomposition`() {
         var name by mutableStateOf("first")
+        val seen = mutableListOf<String>()
         lateinit var navController: NavHostController
         composeRule.setContent {
-            navController = rememberNavController().withOpenTelemetry(rum) { _, _ -> name }
+            navController =
+                rememberNavController().withOpenTelemetry(rum) { _, _ ->
+                    name.also { seen += it }
+                }
             NavHost(navController, startDestination = "a") {
                 composable("a") {}
                 composable("b") {}
@@ -78,21 +77,20 @@ class WithOpenTelemetryComposeTest {
         composeRule.runOnIdle { name = "second" }
         composeRule.runOnIdle { navController.navigate("a") }
 
-        val names =
-            openTelemetryRule.logRecords.map { record ->
-                record.attributes.get(stringKey(map(APP_SCREEN_NAME)))
-            }
-        assertThat(names).containsExactly("first", "first", "second")
+        assertThat(seen).containsExactly("first", "first", "second")
     }
 
     @Test
-    fun `removing the instrumentation stops emitting on later navigation`() {
+    fun `removing the instrumentation stops resolving screen names on later navigation`() {
         var instrumented by mutableStateOf(true)
+        val seen = mutableListOf<String>()
         lateinit var navController: NavHostController
         composeRule.setContent {
             navController = rememberNavController()
             if (instrumented) {
-                navController.withOpenTelemetry(rum)
+                navController.withOpenTelemetry(rum) { destination, arguments ->
+                    defaultScreenName(destination, arguments).also { seen += it }
+                }
             }
             NavHost(navController, startDestination = "a") {
                 composable("a") {}
@@ -102,8 +100,7 @@ class WithOpenTelemetryComposeTest {
 
         composeRule.runOnIdle { navController.navigate("b") }
         composeRule.waitForIdle()
-        val countWhileInstrumented =
-            openTelemetryRule.logRecords.count { it.eventName == SCREEN_VIEW_EVENT_NAME }
+        val countWhileInstrumented = seen.size
 
         // Remove the instrumenting composable from the tree; onDispose should remove the listener.
         composeRule.runOnIdle { instrumented = false }
@@ -111,8 +108,6 @@ class WithOpenTelemetryComposeTest {
         composeRule.runOnIdle { navController.navigate("a") }
         composeRule.waitForIdle()
 
-        val countAfterRemoval =
-            openTelemetryRule.logRecords.count { it.eventName == SCREEN_VIEW_EVENT_NAME }
-        assertThat(countAfterRemoval).isEqualTo(countWhileInstrumented)
+        assertThat(seen).hasSize(countWhileInstrumented)
     }
 }

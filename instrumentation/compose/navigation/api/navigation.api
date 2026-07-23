@@ -1,6 +1,5 @@
 public final class io/opentelemetry/instrumentation/compose/navigation/NavControllerExtensionsKt {
 	public static final fun rememberObservedNavController (Lio/opentelemetry/android/OpenTelemetryRum;Lkotlin/jvm/functions/Function2;[Landroidx/navigation/Navigator;Landroidx/compose/runtime/Composer;II)Landroidx/navigation/NavHostController;
 	public static final fun withOpenTelemetry (Landroidx/navigation/NavController;Lio/opentelemetry/android/OpenTelemetryRum;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)Landroidx/navigation/NavController;
-	public static final fun withOpenTelemetry (Landroidx/navigation/NavHostController;Lio/opentelemetry/android/OpenTelemetryRum;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)Landroidx/navigation/NavHostController;
 }
 

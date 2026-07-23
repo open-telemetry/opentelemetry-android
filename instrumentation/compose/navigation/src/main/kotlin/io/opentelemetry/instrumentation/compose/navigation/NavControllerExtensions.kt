@@ -19,22 +19,25 @@ import androidx.navigation.compose.rememberNavController
 import io.opentelemetry.android.OpenTelemetryRum
 
 /**
- * Attaches OpenTelemetry navigation instrumentation to this [NavController]: on every destination
- * change a screen-view event is emitted through [rum]. The listener is scoped to the composition
- * via [DisposableEffect] and removed when the controller leaves it.
+ * Attaches OpenTelemetry navigation instrumentation to this [NavController]: on every completed
+ * destination change the new destination is resolved to a screen name and handed to the
+ * instrumentation backed by [rum] (telemetry emission is tracked in issue #1909). The listener is
+ * scoped to the composition via [DisposableEffect] and removed when the controller leaves it.
  *
- * This base-class overload works for any controller you already hold, including nested/child
- * controllers, not just the host controller returned by `rememberNavController()`.
+ * Works for any controller you already hold, including nested/child controllers, not just the host
+ * controller returned by `rememberNavController()`. The receiver is returned with its static type
+ * preserved (e.g. [NavHostController]), so the call can be grafted onto a `rememberNavController()`
+ * result (the auto-instrumentation seam) without down-typing.
  *
  * @param rum the [OpenTelemetryRum] instance to emit through.
  * @param screenName maps a destination (and its arguments) to a screen name. Defaults to the route
  *   pattern to avoid leaking PII.
  */
 @Composable
-fun NavController.withOpenTelemetry(
+fun <T : NavController> T.withOpenTelemetry(
     rum: OpenTelemetryRum,
     screenName: (NavDestination, Bundle?) -> String = ::defaultScreenName,
-): NavController {
+): T {
     // The listener is registered once per controller (the effect is keyed only on `this`), yet it
     // must always use the latest `rum`/`screenName`; rememberUpdatedState lets a changed value take
     // effect without re-registering.
@@ -45,22 +48,6 @@ fun NavController.withOpenTelemetry(
         val listener = attachOpenTelemetry({ currentEmitter }, { currentScreenName })
         onDispose { removeOnDestinationChangedListener(listener) }
     }
-    return this
-}
-
-/**
- * [NavHostController] overload of [withOpenTelemetry]. Behaves identically to the [NavController]
- * one but returns [NavHostController], preserving the type of a `rememberNavController()` result so
- * the call can be grafted onto it (the auto-instrumentation seam) without down-typing.
- */
-@Composable
-fun NavHostController.withOpenTelemetry(
-    rum: OpenTelemetryRum,
-    screenName: (NavDestination, Bundle?) -> String = ::defaultScreenName,
-): NavHostController {
-    // Statically typed as NavController so overload resolution picks the base extension (no
-    // recursion), which does the actual wiring.
-    (this as NavController).withOpenTelemetry(rum, screenName)
     return this
 }
 
@@ -77,9 +64,9 @@ fun rememberObservedNavController(
 ): NavHostController = rememberNavController(*navigators).withOpenTelemetry(rum, screenName)
 
 /**
- * Registers an [NavController.OnDestinationChangedListener] that emits a screen-view event through
- * the [emitter] on each destination change. The [emitter] and [screenName] are resolved lazily on
- * every change, so callers can back them with values that vary over time.
+ * Registers an [NavController.OnDestinationChangedListener] that resolves a screen name and hands
+ * it to the [emitter] on each destination change. The [emitter] and [screenName] are resolved
+ * lazily on every change, so callers can back them with values that vary over time.
  *
  * This is the non-Compose core of [withOpenTelemetry], extracted so it can be tested by invoking
  * the returned listener directly.

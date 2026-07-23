@@ -6,8 +6,10 @@ Status: development
 ## Navigation version
 Targets `androidx.navigation:navigation-compose` (Jetpack Compose Navigation).
 
-This instrumentation has the ability to generate an event whenever the current
-navigation destination of a `NavController` changes.
+This instrumentation observes completed navigations: whenever the current
+destination of a `NavController` changes, it resolves a screen name for the
+new destination. Note that a destination change means a navigation has
+completed — it does not guarantee that any meaningful UI has rendered.
 
 It is a manual instrumentation: because Compose Navigation has no global callback,
 you attach it to the controller you already hold and pass in your
@@ -17,19 +19,13 @@ This instrumentation is not currently enabled by default.
 
 ## Telemetry
 
-Data produced by this instrumentation will have an instrumentation scope
-name of `io.opentelemetry.android.instrumentation.compose.navigation`.
-This instrumentation produces the following telemetry:
-
-### Screen views
-
-* Type: Event
-* Name: `app.screen.view` (provisional, pending mobile semantic convention agreement)
-* Description: This event is emitted when the current navigation destination changes.
-* Attributes:
-  * `app.screen.name`: the screen name derived from the destination. By default, this
-    is the route *pattern* (for example `user/{id}`, not the filled-in arguments) to
-    avoid leaking PII.
+This instrumentation does not emit any telemetry yet. Destination changes are
+resolved to screen names (by default the route *pattern*, for example
+`user/{id}` — not the filled-in arguments — to avoid leaking PII). How they are
+reported — as an event and/or as screen attribution on other telemetry — is
+tracked in
+[#1909](https://github.com/open-telemetry/opentelemetry-android/issues/1909),
+pending the mobile semantic-conventions discussion on modelling navigation.
 
 ## Installation
 
