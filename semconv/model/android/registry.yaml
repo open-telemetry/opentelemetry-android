@@ -1,3 +1,8 @@
+# Imports events defined in dependency registries, by event name, so event classes are
+# generated for them in this module.
+imports:
+  events:
+    - app.jank
 groups:
   - id: registry.android.semconv
     type: attribute_group
