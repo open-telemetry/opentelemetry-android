@@ -44,6 +44,7 @@ class NativeCrashInstrumentation internal constructor(
         FileNativeCrashStore(File(context.filesDir, "opentelemetry/native-crash"))
     },
     private val executor: Executor = Executors.newSingleThreadExecutor(),
+    private val signalHandlerInstaller: NativeSignalHandlerInstaller = JniNativeSignalHandlerInstaller(),
 ) : AndroidInstrumentation {
     override val name: String = "native-crash"
 
@@ -59,14 +60,58 @@ class NativeCrashInstrumentation internal constructor(
                 store = store,
                 openTelemetryRum = openTelemetryRum,
             ).replayPreviousCrash()
-            store.writeContext(crashContext)
+            if (!store.writeContext(crashContext)) {
+                Log.w(
+                    RumConstants.OTEL_RUM_LOG_TAG,
+                    "Native crash signal handler disabled because crash context could not be persisted",
+                )
+                return@execute
+            }
 
             val sessionProvider = openTelemetryRum.sessionProvider
             if (sessionProvider is SessionPublisher) {
                 sessionProvider.addObserver(NativeCrashSessionObserver(store, crashContext, executor))
             }
+
+            if (!signalHandlerInstaller.install(store.crashRecordPath)) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to install native crash signal handler")
+            }
         }
     }
+}
+
+internal fun interface NativeSignalHandlerInstaller {
+    fun install(crashRecordPath: File): Boolean
+}
+
+internal class JniNativeSignalHandlerInstaller(
+    private val loadLibrary: (String) -> Unit = System::loadLibrary,
+    private val nativeInstall: (String) -> Boolean = NativeCrashJni::install,
+) : NativeSignalHandlerInstaller {
+    override fun install(crashRecordPath: File): Boolean {
+        if (!prepareCrashRecordDirectory(crashRecordPath)) {
+            return false
+        }
+        return runCatching {
+            loadLibrary(NATIVE_LIBRARY_NAME)
+            nativeInstall(crashRecordPath.absolutePath)
+        }.onFailure { error ->
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to load native crash signal handler", error)
+        }.getOrDefault(false)
+    }
+
+    private companion object {
+        const val NATIVE_LIBRARY_NAME = "otel_android_native_crash"
+    }
+}
+
+internal fun prepareCrashRecordDirectory(crashRecordPath: File): Boolean {
+    val directory = crashRecordPath.parentFile ?: return false
+    return runCatching {
+        directory.isDirectory || directory.mkdirs() || directory.isDirectory
+    }.onFailure { error ->
+        Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to prepare native crash marker directory", error)
+    }.getOrDefault(false)
 }
 
 internal class NativeCrashSessionObserver(
@@ -120,20 +165,22 @@ internal class NativeCrashReporter(
 }
 
 internal interface NativeCrashStore {
+    val crashRecordPath: File
+
     fun readCrashRecord(): NativeCrashRecord?
 
     fun deleteCrashRecord()
 
     fun readContext(): NativeCrashContext?
 
-    fun writeContext(context: NativeCrashContext)
+    fun writeContext(context: NativeCrashContext): Boolean
 }
 
 internal class FileNativeCrashStore(
     private val directory: File,
 ) : NativeCrashStore {
     private val contextPath = File(directory, "native-crash-context.properties")
-    private val crashRecordPath = File(directory, "native-crash-record.properties")
+    override val crashRecordPath = File(directory, "native-crash-record.properties")
 
     override fun readCrashRecord(): NativeCrashRecord? {
         if (!crashRecordPath.isFile) {
@@ -177,7 +224,7 @@ internal class FileNativeCrashStore(
     }
 
     @Synchronized
-    override fun writeContext(context: NativeCrashContext) {
+    override fun writeContext(context: NativeCrashContext): Boolean =
         runCatching {
             directory.mkdirs()
             val properties = Properties()
@@ -188,7 +235,10 @@ internal class FileNativeCrashStore(
             val temporaryPath = File(directory, "${contextPath.name}.tmp")
             try {
                 FileOutputStream(temporaryPath).use { properties.store(it, null) }
-                if (!temporaryPath.renameTo(contextPath)) {
+                val replaced =
+                    temporaryPath.renameTo(contextPath) ||
+                        (contextPath.isFile && contextPath.delete() && temporaryPath.renameTo(contextPath))
+                if (!replaced) {
                     throw IOException("Failed to replace native crash context")
                 }
             } finally {
@@ -196,8 +246,7 @@ internal class FileNativeCrashStore(
             }
         }.onFailure { error ->
             Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to persist native crash context", error)
-        }
-    }
+        }.isSuccess
 
     private fun Properties.toCrashRecordOrNull(): NativeCrashRecord? {
         return runCatching {
@@ -248,7 +297,6 @@ internal data class NativeCrashRecord(
             7 -> "SIGBUS"
             8 -> "SIGFPE"
             11 -> "SIGSEGV"
-            13 -> "SIGPIPE"
             31 -> "SIGSYS"
             else -> "SIG$signalNumber"
         }

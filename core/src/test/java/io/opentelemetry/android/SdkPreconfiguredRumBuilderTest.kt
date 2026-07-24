@@ -20,17 +20,19 @@ import org.junit.jupiter.api.fail
 
 class SdkPreconfiguredRumBuilderTest {
     @Test
-    fun `session instrumentation must come first`() {
+    fun `session and native crash instrumentations must come first`() {
         val context = mockk<Context>()
         val sdk = mockk<OpenTelemetrySdk>()
         val config = mockk<OtelRumConfig>()
         val fooInstrumentation = mockk<AndroidInstrumentation>()
         val sessionInstrumentation = mockk<AndroidInstrumentation>()
+        val nativeCrashInstrumentation = mockk<AndroidInstrumentation>()
 
         every { config.shouldDiscoverInstrumentations() } returns false // irrelevant
         every { config.isSuppressed(any()) } returns false
         every { fooInstrumentation.name } returns "foo"
         every { sessionInstrumentation.name } returns "session"
+        every { nativeCrashInstrumentation.name } returns "native-crash"
 
         val sessionProvider =
             object : SessionProvider {
@@ -50,9 +52,46 @@ class SdkPreconfiguredRumBuilderTest {
             )
         builder.addInstrumentation(fooInstrumentation)
         builder.addInstrumentation(sessionInstrumentation)
+        builder.addInstrumentation(nativeCrashInstrumentation)
 
         val result = builder.getEnabledInstrumentations()
 
-        assertThat(result[0]).isSameAs(sessionInstrumentation)
+        assertThat(result)
+            .containsExactly(
+                sessionInstrumentation,
+                nativeCrashInstrumentation,
+                fooInstrumentation,
+            )
+    }
+
+    @Test
+    fun `native crash instrumentation comes first when session instrumentation is unavailable`() {
+        val context = mockk<Context>()
+        val sdk = mockk<OpenTelemetrySdk>()
+        val config = mockk<OtelRumConfig>()
+        val fooInstrumentation = mockk<AndroidInstrumentation>()
+        val nativeCrashInstrumentation = mockk<AndroidInstrumentation>()
+
+        every { config.shouldDiscoverInstrumentations() } returns false // irrelevant
+        every { config.isSuppressed(any()) } returns false
+        every { fooInstrumentation.name } returns "foo"
+        every { nativeCrashInstrumentation.name } returns "native-crash"
+
+        val sessionProvider = SessionProvider { fail("Should not have been called!") }
+        val builder =
+            SdkPreconfiguredRumBuilder(
+                context,
+                sdk,
+                sessionProvider,
+                config,
+                getDefault(),
+                AndroidInstrumentationLoaderImpl(),
+            )
+        builder.addInstrumentation(fooInstrumentation)
+        builder.addInstrumentation(nativeCrashInstrumentation)
+
+        val result = builder.getEnabledInstrumentations()
+
+        assertThat(result).containsExactly(nativeCrashInstrumentation, fooInstrumentation)
     }
 }
