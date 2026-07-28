@@ -7,11 +7,8 @@ package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants
-import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.android.semconv.events.AppJankEvent
 import io.opentelemetry.api.logs.Logger
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_JANK_FRAME_COUNT
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_JANK_PERIOD
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_JANK_THRESHOLD
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 
 internal class EventJankReporter(
@@ -41,18 +38,13 @@ internal class EventJankReporter(
         }
 
         if (frameCount > 0) {
-            val eventBuilder = eventLogger.logRecordBuilder()
-            val attributes =
-                Attributes
-                    .builder()
-                    .put(APP_JANK_FRAME_COUNT, frameCount)
-                    .put(APP_JANK_PERIOD, periodSeconds)
-                    .put(APP_JANK_THRESHOLD, threshold)
-                    .build()
-            eventBuilder
-                .setEventName("app.jank")
-                .setAllAttributes(attributes)
-                .emit()
+            AppJankEvent(
+                appJankFrameCount = frameCount,
+                appJankPeriod = periodSeconds,
+                appJankThreshold = threshold,
+            ).emit(
+                logger = eventLogger,
+            )
         }
     }
 }
