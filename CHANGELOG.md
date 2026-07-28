@@ -2,6 +2,69 @@
 
 ## Unreleased
 
+OpenTelemetry Android now has a [project roadmap](docs/ROADMAP.md) describing the project's
+priorities and future direction.
+([#1893](https://github.com/open-telemetry/opentelemetry-android/pull/1893))
+
+### 🌟 New instrumentation
+
+- Add opt-in native crash instrumentation that captures fatal native signals and reports a single
+  `app.crash` event on the next app launch, preserving the crashed process's session, app, and OS
+  context.
+  ([#1887](https://github.com/open-telemetry/opentelemetry-android/pull/1887),
+  [#1899](https://github.com/open-telemetry/opentelemetry-android/pull/1899))
+- Add manual Jetpack Compose Navigation 2 instrumentation that emits an `app.screen.view` event
+  when the navigation destination changes.
+  ([#1901](https://github.com/open-telemetry/opentelemetry-android/pull/1901))
+
+### 📈 Enhancements
+
+- Auto-discovered instrumentations can now be customized before installation with the new
+  `InstrumentationConfigurator` API.
+  ([#1783](https://github.com/open-telemetry/opentelemetry-android/pull/1783))
+- The Android agent DSL now supports disabling automatic instrumentation discovery with
+  `disableInstrumentationAutoDiscovery()`.
+  ([#1903](https://github.com/open-telemetry/opentelemetry-android/pull/1903))
+- `OtelAndroidClock` now prefers GNSS or network time when available, reducing timestamp drift
+  caused by changes to the device wall clock.
+  ([#1880](https://github.com/open-telemetry/opentelemetry-android/pull/1880))
+
+### 🛠️ Bug fixes
+
+- Session observers can now safely register another observer from within a session callback.
+  ([#1902](https://github.com/open-telemetry/opentelemetry-android/pull/1902))
+
+### 🧰 Tooling
+
+- Semantic convention attribute and event sources are now generated from the federated Android
+  registry, including support for enum and array attributes and the upstream `app.jank` event.
+  ([#1828](https://github.com/open-telemetry/opentelemetry-android/pull/1828),
+  [#1876](https://github.com/open-telemetry/opentelemetry-android/pull/1876),
+  [#1882](https://github.com/open-telemetry/opentelemetry-android/pull/1882),
+  [#1883](https://github.com/open-telemetry/opentelemetry-android/pull/1883),
+  [#1888](https://github.com/open-telemetry/opentelemetry-android/pull/1888),
+  [#1895](https://github.com/open-telemetry/opentelemetry-android/pull/1895),
+  [#1898](https://github.com/open-telemetry/opentelemetry-android/pull/1898))
+- Kotlin formatting is now standardized and enforced with Spotless across the project.
+  ([#1854](https://github.com/open-telemetry/opentelemetry-android/pull/1854),
+  [#1855](https://github.com/open-telemetry/opentelemetry-android/pull/1855),
+  [#1856](https://github.com/open-telemetry/opentelemetry-android/pull/1856),
+  [#1857](https://github.com/open-telemetry/opentelemetry-android/pull/1857),
+  [#1858](https://github.com/open-telemetry/opentelemetry-android/pull/1858),
+  [#1859](https://github.com/open-telemetry/opentelemetry-android/pull/1859),
+  [#1860](https://github.com/open-telemetry/opentelemetry-android/pull/1860),
+  [#1889](https://github.com/open-telemetry/opentelemetry-android/pull/1889))
+- Temporarily disable CodeQL until it supports the project's Kotlin version.
+  ([#1851](https://github.com/open-telemetry/opentelemetry-android/pull/1851))
+- Update Lychee and restore automated dependency updates for it.
+  ([#1872](https://github.com/open-telemetry/opentelemetry-android/pull/1872))
+- Harden workflows that use protected secrets and GitHub App tokens.
+  ([#1870](https://github.com/open-telemetry/opentelemetry-android/pull/1870),
+  [#1897](https://github.com/open-telemetry/opentelemetry-android/pull/1897))
+- Add shared Zizmor security scanning and resolve its existing workflow findings.
+  ([#1900](https://github.com/open-telemetry/opentelemetry-android/pull/1900))
+
+
 ## Version 1.5.1 (2026-07-06)
 
 This version v1.5.1 is a patch release. 
