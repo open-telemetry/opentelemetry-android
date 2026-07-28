@@ -19,7 +19,7 @@ detekt = "1.23.8"
 binaryCompatValidator = "0.18.1"
 fragment = "1.8.9"
 koverGradlePlugin = "0.9.9"
-openTelemetryProto = "1.10.0-alpha"
+openTelemetryProto = "1.11.0-alpha"
 protobufKotlin = "4.35.1"
 weaver = "0.25.0"
 
