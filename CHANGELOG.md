@@ -64,7 +64,6 @@ priorities and future direction.
 - Add shared Zizmor security scanning and resolve its existing workflow findings.
   ([#1900](https://github.com/open-telemetry/opentelemetry-android/pull/1900))
 
-
 ## Version 1.5.1 (2026-07-06)
 
 This version v1.5.1 is a patch release. 
