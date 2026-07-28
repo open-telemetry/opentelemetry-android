@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.6.0 (2026-07-28)
+
 OpenTelemetry Android now has a [project roadmap](docs/ROADMAP.md) describing the project's
 priorities and future direction.
 ([#1893](https://github.com/open-telemetry/opentelemetry-android/pull/1893))

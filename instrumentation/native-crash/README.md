@@ -44,7 +44,7 @@ Building the native library requires CMake 3.22.1 or newer.
 Add the instrumentation dependency:
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:native-crash:1.5.0-alpha")
+implementation("io.opentelemetry.android.instrumentation:native-crash:1.6.0-alpha")
 ```
 
 The module is discovered and installed automatically when it is present on the runtime classpath.
