@@ -31,6 +31,7 @@ dependencies {
     implementation(project(":instrumentation:screen-orientation"))
 
     testImplementation(libs.opentelemetry.semconv.kotlin)
+    testImplementation(project(":semconv"))
     testImplementation(libs.robolectric)
     testImplementation(libs.okhttp.mockwebserver)
     testImplementation(libs.androidx.test.core)
