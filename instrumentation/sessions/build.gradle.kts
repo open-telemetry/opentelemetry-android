@@ -20,6 +20,5 @@ dependencies {
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.semconv.kotlin)
     implementation(project(":core"))
-    implementation(project(":common"))
     implementation(project(":session"))
 }

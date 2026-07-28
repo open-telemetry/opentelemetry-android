@@ -9,9 +9,9 @@ import io.mockk.every
 import io.mockk.mockk
 import io.opentelemetry.android.agent.FakeClock
 import io.opentelemetry.android.agent.FakeInstrumentationLoader
-import io.opentelemetry.android.common.internal.SemconvCompat
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
+import io.opentelemetry.android.semconv.internal.SemconvCompat
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach

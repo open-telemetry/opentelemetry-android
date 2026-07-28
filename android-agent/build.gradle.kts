@@ -13,6 +13,7 @@ dependencies {
 
     implementation(project(":core"))
     implementation(project(":common"))
+    implementation(project(":semconv"))
     implementation(project(":session"))
     implementation(project(":services"))
     implementation(project(":instrumentation:android-instrumentation"))

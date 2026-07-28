@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.agent.dsl
 
-import io.opentelemetry.android.common.internal.SemconvCompat
+import io.opentelemetry.android.semconv.internal.SemconvCompat
 
 /**
  * Type-safe DSL configuration of semantic conventions behaviors.
