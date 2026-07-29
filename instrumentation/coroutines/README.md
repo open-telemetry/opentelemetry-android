@@ -5,6 +5,38 @@ Status: development
 Automatically propagates the current OpenTelemetry `Context` into Kotlin coroutines started with
 `CoroutineScope.launch`. It does **not** create coroutine spans or emit any other telemetry.
 
+## What this does in practice
+
+Given:
+
+```kotlin
+val span = tracer.spanBuilder("work").startSpan()
+span.makeCurrent().use {
+    scope.launch {
+        val inner = tracer.spanBuilder("coroutine-work").startSpan()
+        // ...
+        inner.end()
+    }
+}
+span.end()
+```
+
+**Without** this instrumentation, `coroutine-work` does not inherit the active context and is recorded
+as a separate root span:
+
+```
+work
+coroutine-work
+```
+
+**With** this instrumentation, the active context is carried into the coroutine automatically, and
+`coroutine-work` is recorded as a child of `work`:
+
+```
+work
+└── coroutine-work
+```
+
 ## Supported API
 
 - `CoroutineScope.launch` (both the default-parameter form and the explicit form)
