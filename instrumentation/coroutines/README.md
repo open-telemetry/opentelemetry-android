@@ -1,4 +1,4 @@
-# coroutines
+# Kotlin coroutines
 
 Status: development
 
@@ -21,7 +21,7 @@ The following are out of scope for this instrumentation:
 - External dependencies and sibling library modules consumed as dependencies
 - `async`, `withContext`, `runBlocking`, Flow, and all other coroutine builders
 
-## Setup
+## Installation
 
 Add the ByteBuddy Gradle plugin to your application module:
 
