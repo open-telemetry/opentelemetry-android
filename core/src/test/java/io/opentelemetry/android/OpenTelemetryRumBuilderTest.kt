@@ -213,7 +213,7 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    fun preservesExplicitSessionIdOnLogs() {
+    fun preservesEndedSessionIdOnSessionEndLogs() {
         createAndSetServiceManager()
         val openTelemetryRum =
             makeBuilder()
@@ -228,15 +228,13 @@ class OpenTelemetryRumBuilderTest {
             .loggerBuilder("test")
             .build()
             .logRecordBuilder()
-            .setAttribute(stringKey(SESSION_ID), "persisted-session")
+            .setEventName("session.end")
+            .setAttribute(stringKey(SESSION_ID), "ended-session")
             .emit()
 
-        assertThat(
-            logsExporter.finishedLogRecordItems
-                .single()
-                .attributes
-                .get(stringKey(SESSION_ID)),
-        ).isEqualTo("persisted-session")
+        val sessionEnd = logsExporter.finishedLogRecordItems.single()
+        assertThat(sessionEnd.eventName).isEqualTo("session.end")
+        assertThat(sessionEnd.attributes.get(stringKey(SESSION_ID))).isEqualTo("ended-session")
     }
 
     @Test

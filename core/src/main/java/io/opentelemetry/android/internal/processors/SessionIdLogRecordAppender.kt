@@ -24,6 +24,7 @@ internal class SessionIdLogRecordAppender(
         context: Context,
         logRecord: ReadWriteLogRecord,
     ) {
+        // Recovered crashes and session-end events can describe a session that is no longer current.
         if (logRecord.getAttribute(sessionIdKey) == null) {
             logRecord.setAttribute(sessionIdKey, sessionProvider.getSessionId())
         }
