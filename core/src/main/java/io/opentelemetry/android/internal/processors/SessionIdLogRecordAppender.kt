@@ -24,6 +24,8 @@ internal class SessionIdLogRecordAppender(
         context: Context,
         logRecord: ReadWriteLogRecord,
     ) {
-        logRecord.setAttribute(sessionIdKey, sessionProvider.getSessionId())
+        if (logRecord.getAttribute(sessionIdKey) == null) {
+            logRecord.setAttribute(sessionIdKey, sessionProvider.getSessionId())
+        }
     }
 }
