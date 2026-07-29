@@ -140,9 +140,9 @@ class OpenTelemetryRumSmokeTest {
         assertThat(currentSessionId).isNotEqualTo(endedSessionId)
         val request =
             server.awaitLogRequest {
-                findEvent(it, "session.end") != null
+                findSessionEvent(it, "session.end") != null
             }
-        val sessionEnd = checkNotNull(findEvent(request, "session.end"))
+        val sessionEnd = checkNotNull(findSessionEvent(request, "session.end"))
         val exportedSessionId =
             sessionEnd.attributesList
                 .first { it.key == SESSION_ID }
@@ -179,7 +179,7 @@ class OpenTelemetryRumSmokeTest {
                 logRecord.body.stringValue
             }.contains(logMessage)
 
-    private fun findEvent(
+    private fun findSessionEvent(
         request: ExportLogsServiceRequest,
         eventName: String,
     ): LogRecord? =
