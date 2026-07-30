@@ -6,6 +6,7 @@
   ],
   packageRules: [
     {
+      // this is to reduce the number of renovate PRs
       matchManagers: [
         'github-actions',
         'dockerfile',
