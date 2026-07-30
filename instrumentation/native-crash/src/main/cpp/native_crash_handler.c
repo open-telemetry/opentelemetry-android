@@ -108,20 +108,7 @@ static bool write_all(int file_descriptor, const char *buffer, size_t length) {
     return true;
 }
 
-static void write_crash_marker(int signal_number) {
-    struct timespec crash_time;
-    if (clock_gettime(CLOCK_REALTIME, &crash_time) != 0 || crash_time.tv_sec < 0 ||
-        crash_time.tv_nsec < 0) {
-        return;
-    }
-
-    uint64_t seconds = (uint64_t) crash_time.tv_sec;
-    uint64_t nanoseconds = (uint64_t) crash_time.tv_nsec;
-    if (seconds > (UINT64_MAX - nanoseconds) / NANOS_PER_SECOND) {
-        return;
-    }
-    uint64_t timestamp_epoch_nanos = seconds * NANOS_PER_SECOND + nanoseconds;
-
+static bool write_crash_marker_at(int signal_number, uint64_t timestamp_epoch_nanos) {
     char marker[MARKER_BUFFER_SIZE];
     size_t marker_length = 0;
     static const char signal_key[] = "signal.number=";
@@ -137,26 +124,41 @@ static void write_crash_marker(int signal_number) {
             sizeof(timestamp_key) - 1) ||
         !append_uint64(marker, sizeof(marker), &marker_length, timestamp_epoch_nanos) ||
         !append_bytes(marker, sizeof(marker), &marker_length, newline, sizeof(newline) - 1)) {
-        return;
+        return false;
     }
 
     int file_descriptor =
         open(temporary_crash_record_path, O_CREAT | O_WRONLY | O_TRUNC | O_CLOEXEC, 0600);
     if (file_descriptor < 0) {
-        return;
+        return false;
     }
 
     bool complete = write_all(file_descriptor, marker, marker_length) && fsync(file_descriptor) == 0;
     if (close(file_descriptor) != 0) {
         complete = false;
     }
-    if (complete) {
-        if (rename(temporary_crash_record_path, crash_record_path) != 0) {
-            unlink(temporary_crash_record_path);
-        }
-    } else {
+    if (!complete || rename(temporary_crash_record_path, crash_record_path) != 0) {
         unlink(temporary_crash_record_path);
+        return false;
     }
+    return true;
+}
+
+static void write_crash_marker(int signal_number) {
+    struct timespec crash_time;
+    if (clock_gettime(CLOCK_REALTIME, &crash_time) != 0 || crash_time.tv_sec < 0 ||
+        crash_time.tv_nsec < 0) {
+        return;
+    }
+
+    uint64_t seconds = (uint64_t) crash_time.tv_sec;
+    uint64_t nanoseconds = (uint64_t) crash_time.tv_nsec;
+    if (seconds > (UINT64_MAX - nanoseconds) / NANOS_PER_SECOND) {
+        return;
+    }
+    (void) write_crash_marker_at(
+        signal_number,
+        seconds * NANOS_PER_SECOND + nanoseconds);
 }
 
 static void rollback_installed_handlers(void) {
@@ -324,23 +326,26 @@ static bool install_handlers(void) {
     return true;
 }
 
-static bool install_for_path(const char *path, size_t path_length) {
+static bool set_crash_record_paths(const char *path, size_t path_length) {
     size_t suffix_length = sizeof(TEMPORARY_SUFFIX) - 1;
     if (path == NULL || path_length == 0 || path_length >= sizeof(crash_record_path) ||
         path_length + suffix_length >= sizeof(temporary_crash_record_path)) {
         return false;
     }
+    memcpy(crash_record_path, path, path_length);
+    crash_record_path[path_length] = '\0';
+    memcpy(temporary_crash_record_path, path, path_length);
+    memcpy(temporary_crash_record_path + path_length, TEMPORARY_SUFFIX, suffix_length + 1);
+    return true;
+}
 
+static bool install_for_path(const char *path, size_t path_length) {
     pthread_mutex_lock(&install_mutex);
     bool installed;
     if (handlers_installed) {
         installed = strcmp(crash_record_path, path) == 0;
     } else {
-        memcpy(crash_record_path, path, path_length);
-        crash_record_path[path_length] = '\0';
-        memcpy(temporary_crash_record_path, path, path_length);
-        memcpy(temporary_crash_record_path + path_length, TEMPORARY_SUFFIX, suffix_length + 1);
-        installed = install_handlers();
+        installed = set_crash_record_paths(path, path_length) && install_handlers();
         handlers_installed = installed;
     }
     pthread_mutex_unlock(&install_mutex);
@@ -372,3 +377,38 @@ Java_io_opentelemetry_android_instrumentation_nativecrash_NativeCrashJni_install
     (*environment)->ReleaseStringUTFChars(environment, marker_path, path);
     return installed ? JNI_TRUE : JNI_FALSE;
 }
+
+#ifdef OTEL_NATIVE_CRASH_TESTING
+JNIEXPORT jboolean JNICALL
+Java_io_opentelemetry_android_instrumentation_nativecrash_NativeCrashTestJni_writeCrashMarker(
+    JNIEnv *environment,
+    jclass native_crash_test_jni,
+    jstring marker_path,
+    jint signal_number,
+    jlong timestamp_epoch_nanos) {
+    (void) native_crash_test_jni;
+    if (marker_path == NULL || signal_number <= 0 || timestamp_epoch_nanos <= 0) {
+        return JNI_FALSE;
+    }
+
+    jsize path_length = (*environment)->GetStringUTFLength(environment, marker_path);
+    if (path_length <= 0) {
+        return JNI_FALSE;
+    }
+
+    const char *path = (*environment)->GetStringUTFChars(environment, marker_path, NULL);
+    if (path == NULL) {
+        return JNI_FALSE;
+    }
+
+    pthread_mutex_lock(&install_mutex);
+    bool written =
+        !handlers_installed &&
+        set_crash_record_paths(path, (size_t) path_length) &&
+        write_crash_marker_at((int) signal_number, (uint64_t) timestamp_epoch_nanos);
+    pthread_mutex_unlock(&install_mutex);
+
+    (*environment)->ReleaseStringUTFChars(environment, marker_path, path);
+    return written ? JNI_TRUE : JNI_FALSE;
+}
+#endif

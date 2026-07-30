@@ -4,6 +4,8 @@
 cmake_minimum_required(VERSION 3.22.1)
 project(otel_android_native_crash LANGUAGES C)
 
+option(OTEL_NATIVE_CRASH_TESTING "Build native crash instrumentation test hooks" OFF)
+
 add_library(otel_android_native_crash SHARED native_crash_handler.c)
 
 set_target_properties(
@@ -21,3 +23,11 @@ target_compile_options(
         -Wextra
         -Werror
 )
+
+if(OTEL_NATIVE_CRASH_TESTING)
+    target_compile_definitions(
+        otel_android_native_crash
+        PRIVATE
+            OTEL_NATIVE_CRASH_TESTING=1
+    )
+endif()
