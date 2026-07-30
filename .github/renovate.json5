@@ -1,103 +1,120 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:best-practices",
-    "helpers:pinGitHubActionDigests"
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:best-practices',
+    'helpers:pinGitHubActionDigests',
   ],
-  "packageRules": [
+  packageRules: [
     {
       // this is to reduce the number of renovate PRs
-      "matchManagers": [
-        "github-actions",
-        "dockerfile"
+      matchManagers: [
+        'github-actions',
+        'dockerfile',
       ],
-      "extends": ["schedule:weekly"],
-      "groupName": "weekly update"
+      extends: [
+        'schedule:weekly',
+      ],
+      groupName: 'weekly update',
     },
     {
-      "matchPackageNames": [
-        "io.opentelemetry.contrib:opentelemetry-disk-buffering",
-        "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha",
-        "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator",
-        "io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0",
-        "io.opentelemetry.semconv:**",
-        "io.opentelemetry.proto:**"
+      matchPackageNames: [
+        'io.opentelemetry.contrib:opentelemetry-disk-buffering',
+        'io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha',
+        'io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator',
+        'io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0',
+        'io.opentelemetry.semconv:**',
+        'io.opentelemetry.proto:**',
       ],
       // Renovate's default behavior is only to update from unstable -> unstable if it's for the
       // major.minor.patch, under the assumption that you would want to update to the stable version
       // of that release instead of the unstable version for a future release (but there's never any
       // stable version of opentelemetry-instrumentation-bom-alpha so this logic doesn't apply
-      "ignoreUnstable": false,
-      "allowedVersions": "!/\\-SNAPSHOT$/"
+      ignoreUnstable: false,
+      allowedVersions: '!/\\-SNAPSHOT$/',
     },
     {
       // Group updates from otel java core repo
-      "matchPackageNames": [
-        "io.opentelemetry:opentelemetry-api",
-        "io.opentelemetry:opentelemetry-api-incubator",
-        "io.opentelemetry:opentelemetry-context",
-        "io.opentelemetry:opentelemetry-exporter-logging",
-        "io.opentelemetry:opentelemetry-exporter-otlp",
-        "io.opentelemetry:opentelemetry-sdk",
-        "io.opentelemetry:opentelemetry-sdk-testing",
-        "io.opentelemetry:opentelemetry-sdk-extension-incubator"
+      matchPackageNames: [
+        'io.opentelemetry:opentelemetry-api',
+        'io.opentelemetry:opentelemetry-api-incubator',
+        'io.opentelemetry:opentelemetry-context',
+        'io.opentelemetry:opentelemetry-exporter-logging',
+        'io.opentelemetry:opentelemetry-exporter-otlp',
+        'io.opentelemetry:opentelemetry-sdk',
+        'io.opentelemetry:opentelemetry-sdk-testing',
+        'io.opentelemetry:opentelemetry-sdk-extension-incubator',
       ],
-      "ignoreUnstable": false,
-      "groupName": "otel-core"
+      ignoreUnstable: false,
+      groupName: 'otel-core',
     },
     {
       // Group updates from otel java semconv
-      "matchPackageNames": [
-        "io.opentelemetry.semconv:**"
+      matchPackageNames: [
+        'io.opentelemetry.semconv:**',
       ],
-      "groupName": "otel-semconv-java"
+      groupName: 'otel-semconv-java',
     },
     {
       // navigation-fragment 2.7.0 and above require android api 34+, which we are not ready for
       // yet due to android gradle plugin only supporting min 33.
-      "matchPackagePrefixes": ["androidx.navigation"],
-      "matchUpdateTypes": ["major", "minor"],
-      "enabled": false
+      matchUpdateTypes: [
+        'major',
+        'minor',
+      ],
+      enabled: false,
+      matchPackageNames: [
+        'androidx.navigation{/,}**',
+      ],
     },
     {
       matchPackageNames: [
-        "com.toasttab.android:gummy-bears-api-23"
+        'com.toasttab.android:gummy-bears-api-23',
       ],
-      enabled: false
+      enabled: false,
     },
     {
       // Try and force the demo app's kotlin and compose compilers to be in lockstep
       // See https://github.com/renovatebot/renovate/issues/18354
-      "includePaths": ["demo-app/"],
-      "matchPackagePatterns": [
-        "^org.jetbrains.kotlin",
-        "^com.google.devtools.ksp",
-        "^androidx.compose.compiler"
+      includePaths: [
+        'demo-app/',
       ],
-      "groupName": "kotlin"
-    },
-    {
-      "includePaths": ["demo-app/"],
-      "matchPackagePatterns": [
-        "^androidx.lifecycle"
+      groupName: 'kotlin',
+      matchPackageNames: [
+        '/^org.jetbrains.kotlin/',
+        '/^com.google.devtools.ksp/',
+        '/^androidx.compose.compiler/',
       ],
-      "groupName": "androidx.lifecycle"
     },
     {
-      "matchPackagePatterns": [
-        "^androidx.core"
+      includePaths: [
+        'demo-app/',
       ],
-      "groupName": "androidx.core"
+      groupName: 'androidx.lifecycle',
+      matchPackageNames: [
+        '/^androidx.lifecycle/',
+      ],
     },
     {
-      "matchPackagePrefixes": ["com.gradle.develocity"],
-      "groupName": "gradle develocity packages"
+      groupName: 'androidx.core',
+      matchPackageNames: [
+        '/^androidx.core/',
+      ],
     },
     {
-      "groupName": "all patch versions",
-      "matchUpdateTypes": ["patch"],
-      "schedule": ["before 8am every weekday"]
-    }
+      groupName: 'gradle develocity packages',
+      matchPackageNames: [
+        'com.gradle.develocity{/,}**',
+      ],
+    },
+    {
+      groupName: 'all patch versions',
+      matchUpdateTypes: [
+        'patch',
+      ],
+      schedule: [
+        'before 8am every weekday',
+      ],
+    },
   ],
   customManagers: [
     {
