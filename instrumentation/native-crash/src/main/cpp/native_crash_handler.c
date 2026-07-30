@@ -108,7 +108,11 @@ static bool write_all(int file_descriptor, const char *buffer, size_t length) {
     return true;
 }
 
-static bool write_crash_marker_at(int signal_number, uint64_t timestamp_epoch_nanos) {
+static bool write_crash_marker_at(
+    const char *record_path,
+    const char *temporary_record_path,
+    int signal_number,
+    uint64_t timestamp_epoch_nanos) {
     char marker[MARKER_BUFFER_SIZE];
     size_t marker_length = 0;
     static const char signal_key[] = "signal.number=";
@@ -128,7 +132,7 @@ static bool write_crash_marker_at(int signal_number, uint64_t timestamp_epoch_na
     }
 
     int file_descriptor =
-        open(temporary_crash_record_path, O_CREAT | O_WRONLY | O_TRUNC | O_CLOEXEC, 0600);
+        open(temporary_record_path, O_CREAT | O_WRONLY | O_TRUNC | O_CLOEXEC, 0600);
     if (file_descriptor < 0) {
         return false;
     }
@@ -137,8 +141,8 @@ static bool write_crash_marker_at(int signal_number, uint64_t timestamp_epoch_na
     if (close(file_descriptor) != 0) {
         complete = false;
     }
-    if (!complete || rename(temporary_crash_record_path, crash_record_path) != 0) {
-        unlink(temporary_crash_record_path);
+    if (!complete || rename(temporary_record_path, record_path) != 0) {
+        unlink(temporary_record_path);
         return false;
     }
     return true;
@@ -157,6 +161,8 @@ static void write_crash_marker(int signal_number) {
         return;
     }
     (void) write_crash_marker_at(
+        crash_record_path,
+        temporary_crash_record_path,
         signal_number,
         seconds * NANOS_PER_SECOND + nanoseconds);
 }
@@ -326,16 +332,23 @@ static bool install_handlers(void) {
     return true;
 }
 
-static bool set_crash_record_paths(const char *path, size_t path_length) {
+static bool build_crash_record_paths(
+    const char *path,
+    size_t path_length,
+    char *record_path,
+    size_t record_path_capacity,
+    char *temporary_record_path,
+    size_t temporary_record_path_capacity) {
     size_t suffix_length = sizeof(TEMPORARY_SUFFIX) - 1;
-    if (path == NULL || path_length == 0 || path_length >= sizeof(crash_record_path) ||
-        path_length + suffix_length >= sizeof(temporary_crash_record_path)) {
+    if (path == NULL || path_length == 0 || path_length >= record_path_capacity ||
+        suffix_length >= temporary_record_path_capacity ||
+        path_length >= temporary_record_path_capacity - suffix_length) {
         return false;
     }
-    memcpy(crash_record_path, path, path_length);
-    crash_record_path[path_length] = '\0';
-    memcpy(temporary_crash_record_path, path, path_length);
-    memcpy(temporary_crash_record_path + path_length, TEMPORARY_SUFFIX, suffix_length + 1);
+    memcpy(record_path, path, path_length);
+    record_path[path_length] = '\0';
+    memcpy(temporary_record_path, path, path_length);
+    memcpy(temporary_record_path + path_length, TEMPORARY_SUFFIX, suffix_length + 1);
     return true;
 }
 
@@ -345,7 +358,15 @@ static bool install_for_path(const char *path, size_t path_length) {
     if (handlers_installed) {
         installed = strcmp(crash_record_path, path) == 0;
     } else {
-        installed = set_crash_record_paths(path, path_length) && install_handlers();
+        installed =
+            build_crash_record_paths(
+                path,
+                path_length,
+                crash_record_path,
+                sizeof(crash_record_path),
+                temporary_crash_record_path,
+                sizeof(temporary_crash_record_path)) &&
+            install_handlers();
         handlers_installed = installed;
     }
     pthread_mutex_unlock(&install_mutex);
@@ -401,12 +422,21 @@ Java_io_opentelemetry_android_instrumentation_nativecrash_NativeCrashTestJni_wri
         return JNI_FALSE;
     }
 
-    pthread_mutex_lock(&install_mutex);
+    char test_crash_record_path[PATH_MAX];
+    char test_temporary_crash_record_path[PATH_MAX];
     bool written =
-        !handlers_installed &&
-        set_crash_record_paths(path, (size_t) path_length) &&
-        write_crash_marker_at((int) signal_number, (uint64_t) timestamp_epoch_nanos);
-    pthread_mutex_unlock(&install_mutex);
+        build_crash_record_paths(
+            path,
+            (size_t) path_length,
+            test_crash_record_path,
+            sizeof(test_crash_record_path),
+            test_temporary_crash_record_path,
+            sizeof(test_temporary_crash_record_path)) &&
+        write_crash_marker_at(
+            test_crash_record_path,
+            test_temporary_crash_record_path,
+            (int) signal_number,
+            (uint64_t) timestamp_epoch_nanos);
 
     (*environment)->ReleaseStringUTFChars(environment, marker_path, path);
     return written ? JNI_TRUE : JNI_FALSE;
