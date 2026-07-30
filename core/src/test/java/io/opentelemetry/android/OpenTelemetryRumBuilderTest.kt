@@ -213,6 +213,33 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
+    fun preservesExplicitSessionIdOnLogs() {
+        createAndSetServiceManager()
+        val openTelemetryRum =
+            makeBuilder()
+                .setSessionProvider(SessionProvider { "current-session" })
+                .addLoggerProviderCustomizer { logRecordProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
+                    logRecordProviderBuilder.addLogRecordProcessor(
+                        SimpleLogRecordProcessor.create(logsExporter),
+                    )
+                }.build()
+
+        openTelemetryRum.openTelemetry.logsBridge
+            .loggerBuilder("test")
+            .build()
+            .logRecordBuilder()
+            .setAttribute(stringKey(SESSION_ID), "persisted-session")
+            .emit()
+
+        assertThat(
+            logsExporter.finishedLogRecordItems
+                .single()
+                .attributes
+                .get(stringKey(SESSION_ID)),
+        ).isEqualTo("persisted-session")
+    }
+
+    @Test
     fun canCustomizeMetrics() {
         val metricReader = InMemoryMetricReader.create()
         val openTelemetryRum =

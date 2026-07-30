@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 🛠️ Bug fixes
+
+- Preserve explicit session IDs on logs so recovered native crashes and session-end events remain
+  associated with the session they describe.
+  ([#1939](https://github.com/open-telemetry/opentelemetry-android/pull/1939))
+
 ## Version 1.6.0 (2026-07-28)
 
 OpenTelemetry Android now has a [project roadmap](docs/ROADMAP.md) describing the project's
