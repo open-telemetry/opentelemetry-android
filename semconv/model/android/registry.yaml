@@ -3,6 +3,8 @@
 imports:
   events:
     - app.jank
+    - session.end
+    - session.start
 groups:
   - id: registry.android.semconv
     type: attribute_group
