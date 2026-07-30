@@ -33,6 +33,7 @@
       allowedVersions: '!/\\-SNAPSHOT$/',
     },
     {
+      // Group updates from otel java core repo
       matchPackageNames: [
         'io.opentelemetry:opentelemetry-api',
         'io.opentelemetry:opentelemetry-api-incubator',
