@@ -1,0 +1,70 @@
+name: Auto-update semantic convention schema
+
+on:
+  schedule:
+    # nightly at 09:17 UTC
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  update-semconv-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check for a new schema version
+        id: check-version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          current=$(grep -oE 'semantic-conventions@v[0-9]+\.[0-9]+\.[0-9]+' \
+            semconv/model/manifest.yaml | sed 's/.*@v//')
+          latest=$(gh release view --repo open-telemetry/semantic-conventions \
+            --json tagName --jq .tagName | sed 's/^v//')
+          branch="otelbot/update-semconv-schema-to-${latest}"
+          open_pr=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')
+
+          echo "version=$latest" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          if [[ $current != "$latest" && -z $open_pr ]]; then
+            echo "update-needed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "update-needed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        if: steps.check-version.outputs.update-needed == 'true'
+        id: otelbot-token
+        with:
+          client-id: ${{ vars.OTELBOT_CLIENT_ID }}
+          private-key: ${{ secrets.OTELBOT_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Update schema and create pull request
+        if: steps.check-version.outputs.update-needed == 'true'
+        env:
+          GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
+          VERSION: ${{ steps.check-version.outputs.version }}
+          BRANCH: ${{ steps.check-version.outputs.branch }}
+        run: |
+          .github/scripts/update-semconv-schema-version.sh "$VERSION"
+          .github/scripts/use-cla-approved-github-bot.sh
+
+          message="Update the upstream semantic convention schema to $VERSION"
+          git checkout -b "$BRANCH"
+          git add semconv/model/manifest.yaml
+          git commit -m "$message"
+          auth_header=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth_header" \
+            push --set-upstream origin "$BRANCH"
+          gh pr create \
+            --title "$message" \
+            --body "Update the upstream semantic convention registry and schema URL to \`$VERSION\`." \
+            --base main
