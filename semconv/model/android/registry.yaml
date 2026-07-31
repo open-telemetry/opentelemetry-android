@@ -3,6 +3,8 @@
 imports:
   events:
     - app.jank
+    - app.screen.click
+    - app.widget.click
     - session.end
     - session.start
 groups:
