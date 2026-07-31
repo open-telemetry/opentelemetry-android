@@ -28,11 +28,11 @@ jobs:
           latest=$(gh release view --repo open-telemetry/semantic-conventions \
             --json tagName --jq .tagName | sed 's/^v//')
           branch="otelbot/update-semconv-schema-to-${latest}"
-          open_pr=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')
+          open_pr=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number // empty')
 
           echo "version=$latest" >> "$GITHUB_OUTPUT"
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
-          if [[ $current != "$latest" && -z $open_pr ]]; then
+          if [[ "$current" != "$latest" && -z "$open_pr" ]]; then
             echo "update-needed=true" >> "$GITHUB_OUTPUT"
           else
             echo "update-needed=false" >> "$GITHUB_OUTPUT"
