@@ -33,6 +33,8 @@ import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_COORDINATE_X_KE
 import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_COORDINATE_Y_KEY
 import io.opentelemetry.android.semconv.AppAttributes.APP_WIDGET_ID_KEY
 import io.opentelemetry.android.semconv.AppAttributes.APP_WIDGET_NAME_KEY
+import io.opentelemetry.android.semconv.events.AppScreenClickEvent.Companion.APP_SCREEN_CLICK_EVENT_NAME
+import io.opentelemetry.android.semconv.events.AppWidgetClickEvent.Companion.APP_WIDGET_CLICK_EVENT_NAME
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
@@ -109,7 +111,7 @@ internal class ComposeClickEventGeneratorTest {
         var event = events[0]
         OpenTelemetryAssertions
             .assertThat(event)
-            .hasEventName("app.screen.click")
+            .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(APP_SCREEN_COORDINATE_X_KEY, motionEvent.x.toLong()),
                 equalTo(APP_SCREEN_COORDINATE_Y_KEY, motionEvent.y.toLong()),
@@ -117,7 +119,7 @@ internal class ComposeClickEventGeneratorTest {
 
         event = events[1]
         assertThat(event)
-            .hasEventName("app.widget.click")
+            .hasEventName(APP_WIDGET_CLICK_EVENT_NAME)
             .hasAttributesSatisfying(
                 equalTo(APP_WIDGET_ID_KEY, "2"),
                 equalTo(APP_WIDGET_NAME_KEY, "click"),
@@ -146,7 +148,7 @@ internal class ComposeClickEventGeneratorTest {
         var event = events[0]
         OpenTelemetryAssertions
             .assertThat(event)
-            .hasEventName("app.screen.click")
+            .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(APP_SCREEN_COORDINATE_X_KEY, motionEvent.x.toLong()),
                 equalTo(APP_SCREEN_COORDINATE_Y_KEY, motionEvent.y.toLong()),
@@ -154,7 +156,7 @@ internal class ComposeClickEventGeneratorTest {
 
         event = events[1]
         assertThat(event)
-            .hasEventName("app.widget.click")
+            .hasEventName(APP_WIDGET_CLICK_EVENT_NAME)
             .hasAttributesSatisfying(
                 equalTo(APP_WIDGET_ID_KEY, "3"),
                 equalTo(APP_WIDGET_NAME_KEY, "click"),
@@ -184,7 +186,7 @@ internal class ComposeClickEventGeneratorTest {
         var event = events[0]
         OpenTelemetryAssertions
             .assertThat(event)
-            .hasEventName("app.screen.click")
+            .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(APP_SCREEN_COORDINATE_X_KEY, motionEvent.x.toLong()),
                 equalTo(APP_SCREEN_COORDINATE_Y_KEY, motionEvent.y.toLong()),
@@ -192,7 +194,7 @@ internal class ComposeClickEventGeneratorTest {
 
         event = events[1]
         assertThat(event)
-            .hasEventName("app.widget.click")
+            .hasEventName(APP_WIDGET_CLICK_EVENT_NAME)
             .hasAttributesSatisfying(
                 equalTo(APP_WIDGET_ID_KEY, "3"),
                 equalTo(APP_WIDGET_NAME_KEY, "clickMe"),

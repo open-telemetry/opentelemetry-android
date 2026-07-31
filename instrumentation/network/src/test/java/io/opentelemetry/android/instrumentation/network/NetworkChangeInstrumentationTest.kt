@@ -28,6 +28,7 @@ import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.network.NetworkChangeListener
 import io.opentelemetry.android.internal.services.network.NetworkProviderHolder
 import io.opentelemetry.android.semconv.NetworkAttributes.NETWORK_STATUS_KEY
+import io.opentelemetry.android.semconv.events.NetworkChangeEvent.Companion.NETWORK_CHANGE_EVENT_NAME
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.kotlin.semconv.IncubatingApi
@@ -89,7 +90,7 @@ class NetworkChangeInstrumentationTest {
         assertThat(events).hasSize(1)
         val event = events[0]
         assertThat(event)
-            .hasEventName("network.change")
+            .hasEventName(NETWORK_CHANGE_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(NETWORK_STATUS_KEY, "available"),
                 equalTo(stringKey(NETWORK_CONNECTION_TYPE), "wifi"),
@@ -120,7 +121,7 @@ class NetworkChangeInstrumentationTest {
         assertThat(events).hasSize(1)
         val event = events[0]
         assertThat(event)
-            .hasEventName("network.change")
+            .hasEventName(NETWORK_CHANGE_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(NETWORK_STATUS_KEY, "available"),
                 equalTo(stringKey(NETWORK_CONNECTION_TYPE), "cell"),
@@ -149,7 +150,7 @@ class NetworkChangeInstrumentationTest {
         assertThat(events).hasSize(1)
         val event = events[0]
         assertThat(event)
-            .hasEventName("network.change")
+            .hasEventName(NETWORK_CHANGE_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(NETWORK_STATUS_KEY, "lost"),
                 equalTo(stringKey(NETWORK_CONNECTION_TYPE), "unavailable"),
@@ -189,7 +190,7 @@ class NetworkChangeInstrumentationTest {
         assertThat(otelTesting.logRecords).hasSize(1)
         val event = otelTesting.logRecords[0]
         assertThat(event)
-            .hasEventName("network.change")
+            .hasEventName(NETWORK_CHANGE_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(NETWORK_STATUS_KEY, "lost"),
                 equalTo(stringKey(NETWORK_CONNECTION_TYPE), "unavailable"),

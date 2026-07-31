@@ -11,6 +11,10 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.verify
 import io.opentelemetry.android.semconv.WebsocketAttributes.WEBSOCKET_MESSAGE_SIZE_KEY
 import io.opentelemetry.android.semconv.WebsocketAttributes.WEBSOCKET_MESSAGE_TYPE_KEY
+import io.opentelemetry.android.semconv.events.WebsocketCloseEvent.Companion.WEBSOCKET_CLOSE_EVENT_NAME
+import io.opentelemetry.android.semconv.events.WebsocketErrorEvent.Companion.WEBSOCKET_ERROR_EVENT_NAME
+import io.opentelemetry.android.semconv.events.WebsocketMessageEvent.Companion.WEBSOCKET_MESSAGE_EVENT_NAME
+import io.opentelemetry.android.semconv.events.WebsocketOpenEvent.Companion.WEBSOCKET_OPEN_EVENT_NAME
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
@@ -69,7 +73,7 @@ internal class WebsocketListenerWrapperTest {
 
         val event = logRecords[0]
         assertThat(event)
-            .hasEventName("websocket.open")
+            .hasEventName(WEBSOCKET_OPEN_EVENT_NAME)
             .hasAttributesSatisfying(
                 equalTo(NetworkAttributes.NETWORK_PROTOCOL_NAME, "websocket"),
                 equalTo(HttpAttributes.HTTP_REQUEST_METHOD, "GET"),
@@ -91,7 +95,7 @@ internal class WebsocketListenerWrapperTest {
 
         val event = logRecords[0]
         assertThat(event)
-            .hasEventName("websocket.message")
+            .hasEventName(WEBSOCKET_MESSAGE_EVENT_NAME)
             .hasAttributesSatisfying(
                 equalTo(NetworkAttributes.NETWORK_PROTOCOL_NAME, "websocket"),
                 equalTo(HttpAttributes.HTTP_REQUEST_METHOD, "GET"),
@@ -115,7 +119,7 @@ internal class WebsocketListenerWrapperTest {
 
         val event = logRecords[0]
         assertThat(event)
-            .hasEventName("websocket.message")
+            .hasEventName(WEBSOCKET_MESSAGE_EVENT_NAME)
             .hasAttributesSatisfying(
                 equalTo(NetworkAttributes.NETWORK_PROTOCOL_NAME, "websocket"),
                 equalTo(HttpAttributes.HTTP_REQUEST_METHOD, "GET"),
@@ -140,7 +144,7 @@ internal class WebsocketListenerWrapperTest {
 
         val event = logRecords[0]
         assertThat(event)
-            .hasEventName("websocket.close")
+            .hasEventName(WEBSOCKET_CLOSE_EVENT_NAME)
             .hasAttributesSatisfying(
                 equalTo(NetworkAttributes.NETWORK_PROTOCOL_NAME, "websocket"),
                 equalTo(HttpAttributes.HTTP_REQUEST_METHOD, "GET"),
@@ -162,7 +166,7 @@ internal class WebsocketListenerWrapperTest {
 
         val event = logRecords[0]
         assertThat(event)
-            .hasEventName("websocket.error")
+            .hasEventName(WEBSOCKET_ERROR_EVENT_NAME)
             .hasAttributesSatisfying(
                 equalTo(NetworkAttributes.NETWORK_PROTOCOL_NAME, "websocket"),
                 equalTo(HttpAttributes.HTTP_REQUEST_METHOD, "GET"),

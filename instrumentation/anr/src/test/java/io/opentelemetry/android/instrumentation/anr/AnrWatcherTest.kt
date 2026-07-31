@@ -10,6 +10,7 @@ import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.opentelemetry.android.semconv.events.DeviceAnrEvent.Companion.DEVICE_ANR_EVENT_NAME
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.Logger
@@ -95,7 +96,7 @@ class AnrWatcherTest {
             anrWatcher.run()
         }
         verify(exactly = 1) { logger.logRecordBuilder() }
-        verify(exactly = 1) { logRecordBuilder.setEventName("device.anr") }
+        verify(exactly = 1) { logRecordBuilder.setEventName(DEVICE_ANR_EVENT_NAME) }
         verify(exactly = 1) { logRecordBuilder.setAllAttributes(any<Attributes>()) }
         verify(exactly = 1) { logRecordBuilder.emit() }
 
@@ -109,7 +110,7 @@ class AnrWatcherTest {
         anrWatcher.run()
 
         verify(exactly = 2) { logger.logRecordBuilder() }
-        verify(exactly = 2) { logRecordBuilder.setEventName("device.anr") }
+        verify(exactly = 2) { logRecordBuilder.setEventName(DEVICE_ANR_EVENT_NAME) }
         verify(exactly = 2) { logRecordBuilder.setAllAttributes(any<Attributes>()) }
         verify(exactly = 2) { logRecordBuilder.emit() }
     }

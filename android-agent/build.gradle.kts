@@ -30,6 +30,7 @@ dependencies {
     implementation(project(":instrumentation:sessions"))
     implementation(project(":instrumentation:screen-orientation"))
 
+    testImplementation(project(":semconv"))
     testImplementation(libs.opentelemetry.semconv.kotlin)
     testImplementation(libs.robolectric)
     testImplementation(libs.okhttp.mockwebserver)

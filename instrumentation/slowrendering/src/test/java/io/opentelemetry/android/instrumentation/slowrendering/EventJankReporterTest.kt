@@ -11,6 +11,7 @@ import io.mockk.mockkStatic
 import io.opentelemetry.android.semconv.AppAttributes.APP_JANK_FRAME_COUNT_KEY
 import io.opentelemetry.android.semconv.AppAttributes.APP_JANK_PERIOD_KEY
 import io.opentelemetry.android.semconv.AppAttributes.APP_JANK_THRESHOLD_KEY
+import io.opentelemetry.android.semconv.events.AppJankEvent.Companion.APP_JANK_EVENT_NAME
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Rule
@@ -35,7 +36,7 @@ class EventJankReporterTest {
 
         assertThat(otelTesting.logRecords.size).isEqualTo(1)
         val log = otelTesting.logRecords.get(0)
-        assertThat(log.eventName).isEqualTo("app.jank")
+        assertThat(log.eventName).isEqualTo(APP_JANK_EVENT_NAME)
         assertThat(log.attributes.get(APP_JANK_FRAME_COUNT_KEY)).isEqualTo(1)
         assertThat(log.attributes.get(APP_JANK_PERIOD_KEY)).isEqualTo(10.5)
         assertThat(log.attributes.get(APP_JANK_THRESHOLD_KEY)).isEqualTo(0.6)

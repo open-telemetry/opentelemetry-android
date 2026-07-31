@@ -29,6 +29,10 @@ import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_DISTANCE_Y_KEY
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_TYPE_KEY
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_VELOCITY_X_KEY
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_VELOCITY_Y_KEY
+import io.opentelemetry.android.semconv.events.AppScreenFlingEvent.Companion.APP_SCREEN_FLING_EVENT_NAME
+import io.opentelemetry.android.semconv.events.AppScreenScrollEvent.Companion.APP_SCREEN_SCROLL_EVENT_NAME
+import io.opentelemetry.android.semconv.events.AppWidgetFlingEvent.Companion.APP_WIDGET_FLING_EVENT_NAME
+import io.opentelemetry.android.semconv.events.AppWidgetScrollEvent.Companion.APP_WIDGET_SCROLL_EVENT_NAME
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.longKey
 import io.opentelemetry.api.common.AttributeKey.stringKey
@@ -46,11 +50,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
-
-private const val APP_SCREEN_FLING_EVENT_NAME = "app.screen.fling"
-private const val APP_SCREEN_SCROLL_EVENT_NAME = "app.screen.scroll"
-private const val VIEW_FLING_EVENT_NAME = "app.widget.fling"
-private const val VIEW_SCROLL_EVENT_NAME = "app.widget.scroll"
 
 @RunWith(AndroidJUnit4::class)
 @ExtendWith(MockKExtension::class)
@@ -138,7 +137,7 @@ class ViewScrollInstrumentationTest {
 
         event = events[1]
         assertThat(event)
-            .hasEventName(VIEW_SCROLL_EVENT_NAME)
+            .hasEventName(APP_WIDGET_SCROLL_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
@@ -266,7 +265,7 @@ class ViewScrollInstrumentationTest {
 
         event = events[3]
         assertThat(event)
-            .hasEventName(VIEW_FLING_EVENT_NAME)
+            .hasEventName(APP_WIDGET_FLING_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),

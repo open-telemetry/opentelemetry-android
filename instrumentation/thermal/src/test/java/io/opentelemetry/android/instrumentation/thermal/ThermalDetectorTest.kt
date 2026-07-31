@@ -7,13 +7,12 @@ package io.opentelemetry.android.instrumentation.thermal
 
 import android.os.PowerManager
 import io.opentelemetry.android.semconv.AndroidAttributes.ANDROID_THERMAL_THROTTLING_STATUS_KEY
+import io.opentelemetry.android.semconv.events.DeviceThermalStatusChangeEvent.Companion.DEVICE_THERMAL_STATUS_CHANGE_EVENT_NAME
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-
-private const val EVENT_NAME = "device.thermal_status.change"
 
 class ThermalDetectorTest {
     private lateinit var detector: ThermalDetector
@@ -40,7 +39,7 @@ class ThermalDetectorTest {
         // then
         assertThat(openTelemetryRule.logRecords).hasSize(1)
         val record = openTelemetryRule.logRecords.single()
-        assertThat(record.eventName).isEqualTo(EVENT_NAME)
+        assertThat(record.eventName).isEqualTo(DEVICE_THERMAL_STATUS_CHANGE_EVENT_NAME)
         assertThat(record.attributes.get(ANDROID_THERMAL_THROTTLING_STATUS_KEY))
             .isEqualTo("severe")
     }
