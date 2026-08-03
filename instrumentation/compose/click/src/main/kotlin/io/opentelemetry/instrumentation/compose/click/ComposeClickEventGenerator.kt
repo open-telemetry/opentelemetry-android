@@ -10,14 +10,9 @@ package io.opentelemetry.instrumentation.compose.click
 import android.view.MotionEvent
 import android.view.Window
 import androidx.compose.ui.node.LayoutNode
-import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.logs.LogRecordBuilder
+import io.opentelemetry.android.semconv.events.AppScreenClickEvent
+import io.opentelemetry.android.semconv.events.AppWidgetClickEvent
 import io.opentelemetry.api.logs.Logger
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_X
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_Y
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_ID
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_NAME
-import io.opentelemetry.kotlin.semconv.IncubatingApi
 import java.lang.ref.WeakReference
 import kotlin.let
 
@@ -34,20 +29,23 @@ internal class ComposeClickEventGenerator(
         window.callback = WindowCallbackWrapper(currentCallback, this)
     }
 
-    @OptIn(IncubatingApi::class)
     fun generateClick(motionEvent: MotionEvent?) {
         windowRef?.get()?.let { window ->
             if (motionEvent != null && motionEvent.actionMasked == MotionEvent.ACTION_UP) {
-                createEvent(APP_SCREEN_CLICK_EVENT_NAME)
-                    .setAttribute(APP_SCREEN_COORDINATE_Y, motionEvent.y.toLong())
-                    .setAttribute(APP_SCREEN_COORDINATE_X, motionEvent.x.toLong())
-                    .emit()
+                AppScreenClickEvent(
+                    appScreenCoordinateX = motionEvent.x.toLong(),
+                    appScreenCoordinateY = motionEvent.y.toLong(),
+                ).emit(eventLogger)
 
                 val node: LayoutNode? = composeTapTargetDetector.findTapTarget(window.decorView, motionEvent.x, motionEvent.y)
                 node?.let { layoutNode ->
-                    createEvent(VIEW_CLICK_EVENT_NAME)
-                        .setAllAttributes(createNodeAttributes(layoutNode))
-                        .emit()
+                    val position = composeLayoutNodeUtil.getLayoutNodePositionInWindow(layoutNode)
+                    AppWidgetClickEvent(
+                        appScreenCoordinateX = position?.x?.toLong(),
+                        appScreenCoordinateY = position?.y?.toLong(),
+                        appWidgetId = layoutNode.semanticsId.toString(),
+                        appWidgetName = composeTapTargetDetector.nodeToName(layoutNode),
+                    ).emit(eventLogger)
                 }
             }
         }
@@ -60,23 +58,5 @@ internal class ComposeClickEventGenerator(
             }
         }
         windowRef = null
-    }
-
-    private fun createEvent(name: String): LogRecordBuilder =
-        eventLogger
-            .logRecordBuilder()
-            .setEventName(name)
-
-    @OptIn(IncubatingApi::class)
-    private fun createNodeAttributes(node: LayoutNode): Attributes {
-        val builder = Attributes.builder()
-        builder.put(APP_WIDGET_NAME, composeTapTargetDetector.nodeToName(node))
-        builder.put(APP_WIDGET_ID, node.semanticsId.toString())
-
-        composeLayoutNodeUtil.getLayoutNodePositionInWindow(node)?.let {
-            builder.put(APP_SCREEN_COORDINATE_X, it.x.toLong())
-            builder.put(APP_SCREEN_COORDINATE_Y, it.y.toLong())
-        }
-        return builder.build()
     }
 }

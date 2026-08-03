@@ -31,11 +31,6 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.mockkClass
 import io.opentelemetry.api.common.AttributeKey.longKey
 import io.opentelemetry.api.common.AttributeKey.stringKey
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_X
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_Y
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_ID
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_NAME
-import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
@@ -44,7 +39,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@OptIn(IncubatingApi::class)
 @RunWith(AndroidJUnit4::class)
 internal class ComposeClickEventGeneratorTest {
     private lateinit var openTelemetryRule: OpenTelemetryRule
@@ -113,18 +107,18 @@ internal class ComposeClickEventGeneratorTest {
         var event = events[0]
         OpenTelemetryAssertions
             .assertThat(event)
-            .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
+            .hasEventName("app.screen.click")
             .hasAttributesSatisfyingExactly(
-                equalTo(longKey(APP_SCREEN_COORDINATE_X), motionEvent.x.toLong()),
-                equalTo(longKey(APP_SCREEN_COORDINATE_Y), motionEvent.y.toLong()),
+                equalTo(longKey("app.screen.coordinate.x"), motionEvent.x.toLong()),
+                equalTo(longKey("app.screen.coordinate.y"), motionEvent.y.toLong()),
             )
 
         event = events[1]
         assertThat(event)
-            .hasEventName(VIEW_CLICK_EVENT_NAME)
+            .hasEventName("app.widget.click")
             .hasAttributesSatisfying(
-                equalTo(stringKey(APP_WIDGET_ID), "2"),
-                equalTo(stringKey(APP_WIDGET_NAME), "click"),
+                equalTo(stringKey("app.widget.id"), "2"),
+                equalTo(stringKey("app.widget.name"), "click"),
             )
     }
 
@@ -150,18 +144,18 @@ internal class ComposeClickEventGeneratorTest {
         var event = events[0]
         OpenTelemetryAssertions
             .assertThat(event)
-            .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
+            .hasEventName("app.screen.click")
             .hasAttributesSatisfyingExactly(
-                equalTo(longKey(APP_SCREEN_COORDINATE_X), motionEvent.x.toLong()),
-                equalTo(longKey(APP_SCREEN_COORDINATE_Y), motionEvent.y.toLong()),
+                equalTo(longKey("app.screen.coordinate.x"), motionEvent.x.toLong()),
+                equalTo(longKey("app.screen.coordinate.y"), motionEvent.y.toLong()),
             )
 
         event = events[1]
         assertThat(event)
-            .hasEventName(VIEW_CLICK_EVENT_NAME)
+            .hasEventName("app.widget.click")
             .hasAttributesSatisfying(
-                equalTo(stringKey(APP_WIDGET_ID), "3"),
-                equalTo(stringKey(APP_WIDGET_NAME), "click"),
+                equalTo(stringKey("app.widget.id"), "3"),
+                equalTo(stringKey("app.widget.name"), "click"),
             )
     }
 
@@ -188,18 +182,18 @@ internal class ComposeClickEventGeneratorTest {
         var event = events[0]
         OpenTelemetryAssertions
             .assertThat(event)
-            .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
+            .hasEventName("app.screen.click")
             .hasAttributesSatisfyingExactly(
-                equalTo(longKey(APP_SCREEN_COORDINATE_X), motionEvent.x.toLong()),
-                equalTo(longKey(APP_SCREEN_COORDINATE_Y), motionEvent.y.toLong()),
+                equalTo(longKey("app.screen.coordinate.x"), motionEvent.x.toLong()),
+                equalTo(longKey("app.screen.coordinate.y"), motionEvent.y.toLong()),
             )
 
         event = events[1]
         assertThat(event)
-            .hasEventName(VIEW_CLICK_EVENT_NAME)
+            .hasEventName("app.widget.click")
             .hasAttributesSatisfying(
-                equalTo(stringKey(APP_WIDGET_ID), "3"),
-                equalTo(stringKey(APP_WIDGET_NAME), "clickMe"),
+                equalTo(stringKey("app.widget.id"), "3"),
+                equalTo(stringKey("app.widget.name"), "clickMe"),
             )
     }
 
