@@ -74,6 +74,10 @@ If `CoroutineScope.launch` is called with an explicit, non-root OpenTelemetry co
 element already in the supplied `CoroutineContext`, that user-supplied context takes precedence and
 automatic capture is skipped.
 
+Propagation is one-directional: context flows from the calling thread into the coroutine at launch
+time. Work dispatched from within a coroutine to a plain Java `Executor` or thread starts with a
+fresh context, as it would without this instrumentation.
+
 ## Suppression
 
 This instrumentation can be suppressed by its stable name `"coroutines"` using the standard
