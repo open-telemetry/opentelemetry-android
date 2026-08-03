@@ -10,6 +10,17 @@ android {
 
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        getByName("debug") {
+            externalNativeBuild {
+                cmake {
+                    arguments += "-DOTEL_NATIVE_CRASH_TESTING=ON"
+                }
+            }
+        }
     }
 
     externalNativeBuild {
@@ -31,4 +42,8 @@ dependencies {
     implementation(libs.opentelemetry.semconv.kotlin)
 
     testImplementation(project(":test-common"))
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.assertj.core)
 }
