@@ -34,12 +34,41 @@ jobs:
         working-directory: ./demo-app
         run: ./gradlew assembleRelease --stacktrace
 
+  android-instrumented-tests:
+    name: "android-instrumented-tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up JDK for running Gradle
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Setup Gradle build action
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - name: touch local props
+        run: touch demo-app/local.properties
+      - name: Enable KVM for Android tests
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Run Android tests
+        uses: reactivecircus/android-emulator-runner@e89f39f1abbbd05b1113a29cf4db69e7540cae5a # v2.37.0
+        with:
+          api-level: 29
+          script: ./gradlew connectedCheck --stacktrace
+
   required-status-check:
     needs:
       - pr-checks
+      - android-instrumented-tests
     runs-on: ubuntu-latest
     if: always()
     steps:
       - if: |
-          needs.pr-checks.result != 'success'
+          needs.pr-checks.result != 'success' ||
+          needs.android-instrumented-tests.result != 'success'
         run: exit 1
