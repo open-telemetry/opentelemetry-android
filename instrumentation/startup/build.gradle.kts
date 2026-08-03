@@ -19,7 +19,6 @@ dependencies {
     implementation(project(":agent-api"))
     implementation(project(":core"))
     implementation(project(":instrumentation:android-instrumentation"))
-    implementation(project(":common"))
     implementation(project(":services"))
     implementation(project(":session"))
     implementation(project(":semconv"))
