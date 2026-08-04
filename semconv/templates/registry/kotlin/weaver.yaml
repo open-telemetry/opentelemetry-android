@@ -12,11 +12,32 @@ templates:
     file_name: "io/opentelemetry/android/semconv/events/OpenTelemetryEvent.kt"
   - pattern: kotlin_semconv_template.kt.j2
     filter: >
-      semconv_grouped_attributes({
-        "exclude_stability": []
-      })
-      | map({ root_namespace: .root_namespace,
-              attributes: (.attributes | unique_by(.name)),
+      (
+        (
+          semconv_grouped_attributes({
+            "exclude_stability": []
+          })
+          | map({ root_namespace: .root_namespace,
+                  attributes: (.attributes | unique_by(.name)),
+                  excluded_attributes: [] })
+        )
+        +
+        (
+          semconv_signal("event"; {
+            "exclude_stability": []
+          })
+          | map(.attributes // [])
+          | flatten
+          | unique_by(.name)
+          | group_by(.name | split(".")[0])
+          | map({ root_namespace: (.[0].name | split(".")[0]),
+                  attributes: .,
+                  excluded_attributes: [] })
+        )
+      )
+      | group_by(.root_namespace)
+      | map({ root_namespace: .[0].root_namespace,
+              attributes: (map(.attributes) | flatten | unique_by(.name)),
               excluded_attributes: [] })
     application_mode: each
     file_name: "io/opentelemetry/android/semconv/{{ctx.root_namespace | pascal_case}}Attributes.kt"
