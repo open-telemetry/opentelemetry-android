@@ -12,11 +12,15 @@ permissions:
 
 jobs:
   update-semconv-schema:
+    permissions:
+      contents: write  # for Git to git push
+      pull-requests: read
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          persist-credentials: false
+          # zizmor: ignore[artipacked]: credentials are required by the update branch push below
+          persist-credentials: true
 
       - name: Check for a new schema version
         id: check-version
@@ -44,7 +48,6 @@ jobs:
         with:
           client-id: ${{ vars.OTELBOT_CLIENT_ID }}
           private-key: ${{ secrets.OTELBOT_PRIVATE_KEY }}
-          permission-contents: write
           permission-pull-requests: write
 
       - name: Update schema and create pull request
@@ -61,7 +64,6 @@ jobs:
           git checkout -b "$BRANCH"
           git add semconv/model/manifest.yaml
           git commit -m "$message"
-          gh auth setup-git
           git push --set-upstream origin "$BRANCH"
           gh pr create \
             --title "$message" \
