@@ -1,4 +1,13 @@
 groups:
+  - id: event.app.navigation
+    type: event
+    name: app.navigation
+    stability: development
+    brief: >
+      This event represents a completed navigation to a destination of an application.
+    attributes:
+      - ref: app.navigation.destination.name
+        requirement_level: required
   - id: event.app.screen.longpress
     type: event
     name: app.screen.longpress

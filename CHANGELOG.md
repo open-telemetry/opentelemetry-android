@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### 📈 Enhancements
+
+- The Compose Navigation instrumentation, which shipped in 1.6.0 without emitting any telemetry,
+  now records an `app.navigation` event carrying the `app.navigation.destination.name` attribute
+  whenever a navigation completes.
+  ([#1920](https://github.com/open-telemetry/opentelemetry-android/issues/1920))
+
 ### 🛠️ Bug fixes
 
 - Preserve explicit session IDs on logs so recovered native crashes and session-end events remain
@@ -21,8 +28,10 @@ priorities and future direction.
   context.
   ([#1887](https://github.com/open-telemetry/opentelemetry-android/pull/1887),
   [#1899](https://github.com/open-telemetry/opentelemetry-android/pull/1899))
-- Add manual Jetpack Compose Navigation 2 instrumentation that emits an `app.screen.view` event
-  when the navigation destination changes.
+- Add manual Jetpack Compose Navigation 2 instrumentation that resolves a screen name whenever the
+  navigation destination changes. Note: this release emits no telemetry for those changes. An
+  earlier version of this entry incorrectly stated that it emits an `app.screen.view` event; event
+  emission was removed during review of the pull request and did not ship in 1.6.0.
   ([#1901](https://github.com/open-telemetry/opentelemetry-android/pull/1901))
 
 ### 📈 Enhancements

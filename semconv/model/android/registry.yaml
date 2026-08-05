@@ -39,6 +39,15 @@ groups:
         brief: >
           The Android thermal throttling status.
         examples: ["none", "light", "moderate", "severe", "critical", "emergency", "shutdown", "unknown"]
+      - id: app.navigation.destination.name
+        type: string
+        stability: development
+        brief: >
+          The name of the navigation destination reached by a completed navigation.
+        note: >
+          By default, for route-based navigation this is the route pattern rather than the filled-in
+          arguments, so that argument values are not recorded.
+        examples: ["home", "user/{id}"]
       - id: battery.percent
         type: double
         stability: development

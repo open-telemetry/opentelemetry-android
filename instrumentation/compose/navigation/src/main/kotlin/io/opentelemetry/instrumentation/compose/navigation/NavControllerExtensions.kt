@@ -20,9 +20,9 @@ import io.opentelemetry.android.OpenTelemetryRum
 
 /**
  * Attaches OpenTelemetry navigation instrumentation to this [NavController]: on every completed
- * destination change the new destination is resolved to a screen name and handed to the
- * instrumentation backed by [rum] (telemetry emission is tracked in issue #1909). The listener is
- * scoped to the composition via [DisposableEffect] and removed when the controller leaves it.
+ * destination change, the new destination is resolved to a screen name and emitted as an
+ * `app.navigation` event through [rum]. The listener is scoped to the composition via
+ * [DisposableEffect] and removed when the controller leaves it.
  *
  * Works for any controller you already hold, including nested/child controllers, not just the host
  * controller returned by `rememberNavController()`. The receiver is returned with its static type

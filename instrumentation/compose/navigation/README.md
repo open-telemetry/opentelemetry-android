@@ -19,13 +19,27 @@ This instrumentation is not currently enabled by default.
 
 ## Telemetry
 
-This instrumentation does not emit any telemetry yet. Destination changes are
-resolved to screen names (by default the route *pattern*, for example
-`user/{id}` — not the filled-in arguments — to avoid leaking PII). How they are
-reported — as an event and/or as screen attribution on other telemetry — is
-tracked in
-[#1909](https://github.com/open-telemetry/opentelemetry-android/issues/1909),
-pending the mobile semantic-conventions discussion on modelling navigation.
+This instrumentation produces the following telemetry:
+
+### Navigation
+
+* Type: Event
+* Name: `app.navigation`
+* Description: An event that fires whenever a navigation completes, that is,
+  whenever the destination of an instrumented `NavController` changes.
+* Attributes:
+
+| Attribute | Type | Description | Values | Requirement Level |
+|---|---|---|---|---|
+| `app.navigation.destination.name` | string | The name of the navigation destination reached by the completed navigation. | `home`; `user/{id}` | Required |
+
+The destination name defaults to the route *pattern*, for example `user/{id}` —
+not the filled-in arguments — to avoid leaking PII. Override it with the
+`screenName` parameter shown below.
+
+Using these Compose screen names for screen attribution on unrelated telemetry
+is tracked separately in
+[#1909](https://github.com/open-telemetry/opentelemetry-android/issues/1909).
 
 ## Installation
 
