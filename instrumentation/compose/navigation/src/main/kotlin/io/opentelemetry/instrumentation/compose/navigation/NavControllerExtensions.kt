@@ -24,6 +24,11 @@ import io.opentelemetry.android.OpenTelemetryRum
  * `app.navigation.complete` event through [rum]. The listener is scoped to the composition via
  * [DisposableEffect] and removed when the controller leaves it.
  *
+ * Registering the listener replays the current destination, so attaching emits for the screen
+ * already showing, and re-attaching (for example after a configuration change) emits again without
+ * a navigation. The replay supplies no arguments, even for a parameterised start destination. See
+ * the module README for the full event contract.
+ *
  * Works for any controller you already hold, including nested/child controllers, not just the host
  * controller returned by `rememberNavController()`. The receiver is returned with its static type
  * preserved (e.g. [NavHostController]), so the call can be grafted onto a `rememberNavController()`

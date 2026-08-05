@@ -13,7 +13,11 @@ internal const val INSTRUMENTATION_SCOPE_NAME =
     "io.opentelemetry.android.instrumentation.compose.navigation"
 
 /**
- * Emits an `app.navigation.complete` event each time a navigation completes (the destination changes).
+ * Emits an `app.navigation.complete` event for each screen name it is handed.
+ *
+ * Callers drive this from a [androidx.navigation.NavController.OnDestinationChangedListener], which
+ * is not one-to-one with user-initiated navigation: it also replays the current destination when the
+ * listener is registered, so re-attaching emits without a navigation having happened.
  */
 internal class NavigationEmitter(
     private val eventLogger: Logger,

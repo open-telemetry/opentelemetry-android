@@ -17,7 +17,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
-// Emitted by the generated AppNavigationEvent (semconv/model/android/events.yaml).
+// Emitted by the generated AppNavigationCompleteEvent (semconv/model/android/events.yaml).
 internal const val NAVIGATION_EVENT_NAME = "app.navigation.complete"
 internal const val DESTINATION_NAME_KEY = "app.navigation.destination.name"
 
