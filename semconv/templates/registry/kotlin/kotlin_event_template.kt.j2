@@ -6,10 +6,9 @@
 
 package io.opentelemetry.android.semconv.events
 
-{%- set has_array_attributes = (ctx.attributes | selectattr("type", "in", ["string[]", "boolean[]", "int[]", "double[]"]) | list | length) > 0 -%}
-{%- if has_array_attributes %}
-import io.opentelemetry.api.common.AttributeKey
-{%- endif %}
+{%- for attribute in ctx.attributes %}
+import io.opentelemetry.android.semconv.{{ attribute.root_namespace | pascal_case }}Attributes.{{ attribute.name | screaming_snake_case }}_KEY
+{%- endfor %}
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
 
@@ -34,17 +33,10 @@ class {{ my_class_name }}(
         val attributes = Attributes.builder()
 {%- for attribute in ctx.attributes %}
         {%- set required = attribute.requirement_level == "required" %}
-        {%- if attribute.type in ["string[]", "boolean[]", "int[]", "double[]"] %}
-        {%- set key = 'AttributeKey.' ~ (attribute.type | map_text("kotlin_key_factory")) ~ '("' ~ attribute.name ~ '")' %}
         {%- if required %}
-        attributes.put({{ key }}, {{ attribute.name | camel_case }})
+        attributes.put({{ attribute.name | screaming_snake_case }}_KEY, {{ attribute.name | camel_case }})
         {%- else %}
-        {{ attribute.name | camel_case }}?.let { attributes.put({{ key }}, it) }
-        {%- endif %}
-        {%- elif required %}
-        attributes.put("{{ attribute.name }}", {{ attribute.name | camel_case }})
-        {%- else %}
-        {{ attribute.name | camel_case }}?.let { attributes.put("{{ attribute.name }}", it) }
+        {{ attribute.name | camel_case }}?.let { attributes.put({{ attribute.name | screaming_snake_case }}_KEY, it) }
         {%- endif %}
 {%- endfor %}
         attributes.putAll(additionalAttributes)

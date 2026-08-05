@@ -9,14 +9,12 @@ import android.util.Log
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.semconv.events.AppJankEvent
 import io.opentelemetry.api.logs.Logger
-import io.opentelemetry.kotlin.semconv.IncubatingApi
 
 internal class EventJankReporter(
     private val eventLogger: Logger,
     private val threshold: Double,
     private val debugVerbose: Boolean = false,
 ) : JankReporter {
-    @OptIn(IncubatingApi::class)
     override fun reportSlow(
         durationToCountHistogram: Map<Int, Int>,
         periodSeconds: Double,

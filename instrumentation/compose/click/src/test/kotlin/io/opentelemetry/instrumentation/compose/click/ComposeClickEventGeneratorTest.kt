@@ -29,8 +29,10 @@ import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockkClass
-import io.opentelemetry.api.common.AttributeKey.longKey
-import io.opentelemetry.api.common.AttributeKey.stringKey
+import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_COORDINATE_X_KEY
+import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_COORDINATE_Y_KEY
+import io.opentelemetry.android.semconv.AppAttributes.APP_WIDGET_ID_KEY
+import io.opentelemetry.android.semconv.AppAttributes.APP_WIDGET_NAME_KEY
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
@@ -109,16 +111,16 @@ internal class ComposeClickEventGeneratorTest {
             .assertThat(event)
             .hasEventName("app.screen.click")
             .hasAttributesSatisfyingExactly(
-                equalTo(longKey("app.screen.coordinate.x"), motionEvent.x.toLong()),
-                equalTo(longKey("app.screen.coordinate.y"), motionEvent.y.toLong()),
+                equalTo(APP_SCREEN_COORDINATE_X_KEY, motionEvent.x.toLong()),
+                equalTo(APP_SCREEN_COORDINATE_Y_KEY, motionEvent.y.toLong()),
             )
 
         event = events[1]
         assertThat(event)
             .hasEventName("app.widget.click")
             .hasAttributesSatisfying(
-                equalTo(stringKey("app.widget.id"), "2"),
-                equalTo(stringKey("app.widget.name"), "click"),
+                equalTo(APP_WIDGET_ID_KEY, "2"),
+                equalTo(APP_WIDGET_NAME_KEY, "click"),
             )
     }
 
@@ -146,16 +148,16 @@ internal class ComposeClickEventGeneratorTest {
             .assertThat(event)
             .hasEventName("app.screen.click")
             .hasAttributesSatisfyingExactly(
-                equalTo(longKey("app.screen.coordinate.x"), motionEvent.x.toLong()),
-                equalTo(longKey("app.screen.coordinate.y"), motionEvent.y.toLong()),
+                equalTo(APP_SCREEN_COORDINATE_X_KEY, motionEvent.x.toLong()),
+                equalTo(APP_SCREEN_COORDINATE_Y_KEY, motionEvent.y.toLong()),
             )
 
         event = events[1]
         assertThat(event)
             .hasEventName("app.widget.click")
             .hasAttributesSatisfying(
-                equalTo(stringKey("app.widget.id"), "3"),
-                equalTo(stringKey("app.widget.name"), "click"),
+                equalTo(APP_WIDGET_ID_KEY, "3"),
+                equalTo(APP_WIDGET_NAME_KEY, "click"),
             )
     }
 
@@ -184,16 +186,16 @@ internal class ComposeClickEventGeneratorTest {
             .assertThat(event)
             .hasEventName("app.screen.click")
             .hasAttributesSatisfyingExactly(
-                equalTo(longKey("app.screen.coordinate.x"), motionEvent.x.toLong()),
-                equalTo(longKey("app.screen.coordinate.y"), motionEvent.y.toLong()),
+                equalTo(APP_SCREEN_COORDINATE_X_KEY, motionEvent.x.toLong()),
+                equalTo(APP_SCREEN_COORDINATE_Y_KEY, motionEvent.y.toLong()),
             )
 
         event = events[1]
         assertThat(event)
             .hasEventName("app.widget.click")
             .hasAttributesSatisfying(
-                equalTo(stringKey("app.widget.id"), "3"),
-                equalTo(stringKey("app.widget.name"), "clickMe"),
+                equalTo(APP_WIDGET_ID_KEY, "3"),
+                equalTo(APP_WIDGET_NAME_KEY, "clickMe"),
             )
     }
 

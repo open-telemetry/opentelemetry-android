@@ -26,7 +26,6 @@ dependencies {
     implementation(project(":agent-api"))
     implementation(project(":semconv"))
     implementation(libs.androidx.core)
-    implementation(libs.opentelemetry.semconv.kotlin)
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.instrumentation.api)
     testImplementation(libs.robolectric)

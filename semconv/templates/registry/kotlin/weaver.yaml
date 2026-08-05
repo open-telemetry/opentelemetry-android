@@ -54,7 +54,8 @@ templates:
           deprecated: .deprecated,
           attributes: ((.attributes // [])
             | map(select(.type != "any"))
-            | unique_by(.name))
+            | unique_by(.name)
+            | map(. + { root_namespace: (.name | split(".")[0]) }))
         })
     application_mode: each
     file_name: "io/opentelemetry/android/semconv/events/{{ctx.name | pascal_case}}Event.kt"

@@ -40,9 +40,11 @@ import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_COORDINATE_X_KEY
+import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_COORDINATE_Y_KEY
+import io.opentelemetry.android.semconv.AppAttributes.APP_WIDGET_ID_KEY
+import io.opentelemetry.android.semconv.AppAttributes.APP_WIDGET_NAME_KEY
 import io.opentelemetry.android.session.SessionProvider
-import io.opentelemetry.api.common.AttributeKey.longKey
-import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
@@ -151,16 +153,16 @@ internal class ComposeInstrumentationTest {
         assertThat(event)
             .hasEventName("app.screen.click")
             .hasAttributesSatisfyingExactly(
-                equalTo(longKey("app.screen.coordinate.x"), motionEvent.x.toLong()),
-                equalTo(longKey("app.screen.coordinate.y"), motionEvent.y.toLong()),
+                equalTo(APP_SCREEN_COORDINATE_X_KEY, motionEvent.x.toLong()),
+                equalTo(APP_SCREEN_COORDINATE_Y_KEY, motionEvent.y.toLong()),
             )
 
         event = events[1]
         assertThat(event)
             .hasEventName("app.widget.click")
             .hasAttributesSatisfying(
-                equalTo(stringKey("app.widget.id"), mockLayoutNode.semanticsId.toString()),
-                equalTo(stringKey("app.widget.name"), "clickMe"),
+                equalTo(APP_WIDGET_ID_KEY, mockLayoutNode.semanticsId.toString()),
+                equalTo(APP_WIDGET_NAME_KEY, "clickMe"),
             )
     }
 
