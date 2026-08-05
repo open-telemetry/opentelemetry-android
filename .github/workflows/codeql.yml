@@ -34,6 +34,8 @@ jobs:
           java-version: 21
 
       - name: Set up gradle
+        # zizmor: ignore[cache-poisoning] This workflow analyzes release branches
+        # but does not build or publish release artifacts.
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
 
       - name: touch local props
