@@ -1,5 +1,5 @@
 groups:
-  - id: event.app.navigation
+  - id: event.app.navigation.complete
     type: event
     name: app.navigation.complete
     stability: development
