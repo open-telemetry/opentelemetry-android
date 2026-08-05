@@ -6,14 +6,14 @@
 package io.opentelemetry.instrumentation.compose.navigation
 
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.semconv.events.AppNavigationEvent
+import io.opentelemetry.android.semconv.events.AppNavigationCompleteEvent
 import io.opentelemetry.api.logs.Logger
 
 internal const val INSTRUMENTATION_SCOPE_NAME =
     "io.opentelemetry.android.instrumentation.compose.navigation"
 
 /**
- * Emits an `app.navigation` event each time a navigation completes (the destination changes).
+ * Emits an `app.navigation.complete` event each time a navigation completes (the destination changes).
  */
 internal class NavigationEmitter(
     private val eventLogger: Logger,
@@ -24,7 +24,7 @@ internal class NavigationEmitter(
             .build(),
     )
 
-    fun onScreenView(screenName: String) {
-        AppNavigationEvent(appNavigationDestinationName = screenName).emit(eventLogger)
+    fun onNavigation(screenName: String) {
+        AppNavigationCompleteEvent(appNavigationDestinationName = screenName).emit(eventLogger)
     }
 }

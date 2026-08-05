@@ -32,5 +32,3 @@ automatically. To run it explicitly:
 ```bash
 ./gradlew :semconv:generateSemanticConventions
 ```
-
-Production code usage of the generated event classes will be added in a later phase.

@@ -21,7 +21,7 @@ import io.opentelemetry.android.OpenTelemetryRum
 /**
  * Attaches OpenTelemetry navigation instrumentation to this [NavController]: on every completed
  * destination change, the new destination is resolved to a screen name and emitted as an
- * `app.navigation` event through [rum]. The listener is scoped to the composition via
+ * `app.navigation.complete` event through [rum]. The listener is scoped to the composition via
  * [DisposableEffect] and removed when the controller leaves it.
  *
  * Works for any controller you already hold, including nested/child controllers, not just the host
@@ -77,7 +77,7 @@ internal fun NavController.attachOpenTelemetry(
 ): NavController.OnDestinationChangedListener {
     val listener =
         NavController.OnDestinationChangedListener { _, destination, arguments ->
-            emitter().onScreenView(screenName()(destination, arguments))
+            emitter().onNavigation(screenName()(destination, arguments))
         }
     addOnDestinationChangedListener(listener)
     return listener

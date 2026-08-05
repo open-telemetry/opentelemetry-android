@@ -5,8 +5,8 @@
 ### 📈 Enhancements
 
 - The Compose Navigation instrumentation, which shipped in 1.6.0 without emitting any telemetry,
-  now records an `app.navigation` event carrying the `app.navigation.destination.name` attribute
-  whenever a navigation completes.
+  now records an `app.navigation.complete` event carrying the `app.navigation.destination.name`
+  attribute whenever a navigation completes.
   ([#1920](https://github.com/open-telemetry/opentelemetry-android/issues/1920))
 
 ### 🛠️ Bug fixes

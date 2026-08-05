@@ -24,9 +24,9 @@ This instrumentation produces the following telemetry:
 ### Navigation
 
 * Type: Event
-* Name: `app.navigation`
-* Description: An event that fires whenever a navigation completes, that is,
-  whenever the destination of an instrumented `NavController` changes.
+* Name: `app.navigation.complete`
+* Description: An event that fires on every completed navigation of an instrumented
+  `NavController`, plus on listener attach (see below).
 * Attributes:
 
 | Attribute | Type | Description | Values | Requirement Level |
@@ -36,6 +36,17 @@ This instrumentation produces the following telemetry:
 The destination name defaults to the route *pattern*, for example `user/{id}` —
 not the filled-in arguments — to avoid leaking PII. Override it with the
 `screenName` parameter shown below.
+
+The event maps 1:1 to `NavController.OnDestinationChangedListener` callbacks, so it
+also fires:
+
+* **on attach** — registering replays the current destination, so the screen visible
+  at attach time is recorded. A configuration change re-attaches and replays again
+  without a navigation. The replay supplies no `arguments`, even for a parameterised
+  start destination.
+* **on argument-only changes** — `user/1` → `user/2` is a real navigation, but the
+  default resolver names both `user/{id}`. Read `arguments` in `screenName` to tell
+  them apart, subject to the attach caveat above.
 
 Using these Compose screen names for screen attribution on unrelated telemetry
 is tracked separately in

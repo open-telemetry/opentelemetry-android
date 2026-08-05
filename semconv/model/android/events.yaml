@@ -1,7 +1,7 @@
 groups:
   - id: event.app.navigation
     type: event
-    name: app.navigation
+    name: app.navigation.complete
     stability: development
     brief: >
       This event represents a completed navigation to a destination of an application.

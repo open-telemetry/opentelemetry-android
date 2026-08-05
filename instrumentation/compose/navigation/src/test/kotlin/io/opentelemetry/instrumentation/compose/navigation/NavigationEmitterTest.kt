@@ -18,7 +18,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 // Emitted by the generated AppNavigationEvent (semconv/model/android/events.yaml).
-internal const val NAVIGATION_EVENT_NAME = "app.navigation"
+internal const val NAVIGATION_EVENT_NAME = "app.navigation.complete"
 internal const val DESTINATION_NAME_KEY = "app.navigation.destination.name"
 
 @RunWith(AndroidJUnit4::class)
@@ -39,7 +39,7 @@ class NavigationEmitterTest {
 
     @Test
     fun `emits a navigation event carrying the destination name`() {
-        navigationEmitter.onScreenView("home")
+        navigationEmitter.onNavigation("home")
 
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(1)
@@ -57,7 +57,7 @@ class NavigationEmitterTest {
                 every { openTelemetry } returns openTelemetryRule.openTelemetry
             }
 
-        NavigationEmitter(rum).onScreenView("home")
+        NavigationEmitter(rum).onNavigation("home")
 
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(1)
@@ -69,9 +69,9 @@ class NavigationEmitterTest {
     }
 
     @Test
-    fun `emits one event per destination change`() {
-        navigationEmitter.onScreenView("home")
-        navigationEmitter.onScreenView("cart")
+    fun `emits one event per onNavigation invocation`() {
+        navigationEmitter.onNavigation("home")
+        navigationEmitter.onNavigation("cart")
 
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
