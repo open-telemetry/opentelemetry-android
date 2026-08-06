@@ -22,13 +22,12 @@ import getSingleTapSequence
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_CLICK_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_EVENT_NAME
+import io.opentelemetry.android.instrumentation.view.common.ViewClickActivityCallback
+import io.opentelemetry.android.instrumentation.view.common.WindowCallbackWrapper
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_BUTTON_KEY
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_CLICKS_KEY
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_TYPE_KEY
@@ -48,11 +47,9 @@ import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import mockView
 import org.junit.Before
 import org.junit.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-@ExtendWith(MockKExtension::class)
 class ViewClickInstrumentationTest {
     private lateinit var openTelemetryRule: OpenTelemetryRule
 

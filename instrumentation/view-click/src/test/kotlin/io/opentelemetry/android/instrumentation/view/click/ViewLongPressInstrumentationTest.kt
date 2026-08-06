@@ -22,6 +22,8 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.android.instrumentation.view.common.ViewClickActivityCallback
+import io.opentelemetry.android.instrumentation.view.common.WindowCallbackWrapper
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_TYPE_KEY
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.longKey
