@@ -65,12 +65,12 @@ before submitting a pull request.
    in the PR description, so that the issue can be automatically closed when the PR is
    merged. This also leaves a nice audit trail for future developers.
 
-### Copilot Reviews 
+### Copilot Reviews
 
 This project uses automated GitHub Copilot reviews for PRs. Copilot may comment
 on your PR to provide feedback, suggest changes, or call out potential bugs or
-other problems. This is often a good "first-pass" review, and maintainers will 
-usually notice these Copilot comments and consider if they have been handled. 
+other problems. This is often a good "first-pass" review, and maintainers will
+usually notice these Copilot comments and consider if they have been handled.
 As a contributor, you should respond to Copilot comments, make corresponding
 code changes when necessary, and close the message threads. Leaving threads
 open may signal to the maintainers that you are not ready for a human review.
