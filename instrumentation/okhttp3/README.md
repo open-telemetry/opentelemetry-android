@@ -3,7 +3,7 @@
 Status: development
 
 The OpenTelemetry OkHttp instrumentation for Android instruments client-side requests
-made via OkHttp (version 3.0 +) [okhttp3](https://square.github.io/okhttp/). It adds distributed tracing context,
+made via OkHttp (version 3.0 +) [okhttp3](https://lysine.dev/okhttp/). It adds distributed tracing context,
 creates client HTTP spans, and records request/response metadata.
 
 ## Telemetry
@@ -52,8 +52,8 @@ plugins {
 #### Project dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:okhttp3-library:1.5.0-alpha")
-byteBuddy("io.opentelemetry.android.instrumentation:okhttp3-agent:1.5.0-alpha")
+implementation("io.opentelemetry.android.instrumentation:okhttp3-library:1.6.0-alpha")
+byteBuddy("io.opentelemetry.android.instrumentation:okhttp3-agent:1.6.0-alpha")
 ```
 
 After adding the plugin and the dependencies to your project, your OkHttp requests will be traced

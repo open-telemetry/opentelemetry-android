@@ -8,12 +8,9 @@ package io.opentelemetry.android.instrumentation.slowrendering
 import android.util.Log
 import io.mockk.every
 import io.mockk.mockkStatic
-import io.opentelemetry.api.common.AttributeKey.doubleKey
-import io.opentelemetry.api.common.AttributeKey.longKey
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_JANK_FRAME_COUNT
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_JANK_PERIOD
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_JANK_THRESHOLD
-import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.android.semconv.AppAttributes.APP_JANK_FRAME_COUNT_KEY
+import io.opentelemetry.android.semconv.AppAttributes.APP_JANK_PERIOD_KEY
+import io.opentelemetry.android.semconv.AppAttributes.APP_JANK_THRESHOLD_KEY
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Rule
@@ -23,7 +20,6 @@ class EventJankReporterTest {
     @Rule
     var otelTesting: OpenTelemetryRule = OpenTelemetryRule.create()
 
-    @OptIn(IncubatingApi::class)
     @Test
     fun `event is generated`() {
         val eventLogger = otelTesting.openTelemetry.logsBridge.get("JANK!")
@@ -40,8 +36,8 @@ class EventJankReporterTest {
         assertThat(otelTesting.logRecords.size).isEqualTo(1)
         val log = otelTesting.logRecords.get(0)
         assertThat(log.eventName).isEqualTo("app.jank")
-        assertThat(log.attributes.get(longKey(APP_JANK_FRAME_COUNT))).isEqualTo(1)
-        assertThat(log.attributes.get(doubleKey(APP_JANK_PERIOD))).isEqualTo(10.5)
-        assertThat(log.attributes.get(doubleKey(APP_JANK_THRESHOLD))).isEqualTo(0.6)
+        assertThat(log.attributes.get(APP_JANK_FRAME_COUNT_KEY)).isEqualTo(1)
+        assertThat(log.attributes.get(APP_JANK_PERIOD_KEY)).isEqualTo(10.5)
+        assertThat(log.attributes.get(APP_JANK_THRESHOLD_KEY)).isEqualTo(0.6)
     }
 }

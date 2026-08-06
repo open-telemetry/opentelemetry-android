@@ -18,6 +18,7 @@ dependencies {
 
     implementation(project(":agent-api"))
     implementation(project(":instrumentation:android-instrumentation"))
+    implementation(project(":semconv"))
     implementation(project(":services"))
 
     compileOnly(libs.compose) {
@@ -25,7 +26,6 @@ dependencies {
         exclude(group = "androidx.savedstate")
     }
     implementation(libs.opentelemetry.instrumentation.apiSemconv)
-    implementation(libs.opentelemetry.semconv.kotlin)
 
     testImplementation(project(":test-common"))
     testImplementation(project(":session"))

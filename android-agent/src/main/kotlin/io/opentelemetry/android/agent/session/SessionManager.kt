@@ -11,7 +11,7 @@ import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.android.session.SessionPublisher
 import io.opentelemetry.sdk.common.Clock
-import java.util.Collections.synchronizedList
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 import kotlin.time.Duration
@@ -25,7 +25,7 @@ internal class SessionManager(
 ) : SessionProvider,
     SessionPublisher {
     private val session: AtomicReference<Session> = AtomicReference(invalidSession)
-    private val observers = synchronizedList(ArrayList<SessionObserver>())
+    private val observers = CopyOnWriteArrayList<SessionObserver>()
 
     init {
         sessionStorage.save(session.get())

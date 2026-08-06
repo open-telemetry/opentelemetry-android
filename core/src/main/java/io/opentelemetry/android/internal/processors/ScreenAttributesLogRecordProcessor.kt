@@ -5,8 +5,8 @@
 
 package io.opentelemetry.android.internal.processors
 
-import io.opentelemetry.android.common.internal.SemconvCompat.Companion.map
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
+import io.opentelemetry.android.semconv.internal.SemconvCompat.Companion.map
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.context.Context
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME

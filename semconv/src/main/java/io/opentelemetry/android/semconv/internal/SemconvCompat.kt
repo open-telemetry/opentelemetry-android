@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.common.internal
+package io.opentelemetry.android.semconv.internal
 
 import io.opentelemetry.android.semconv.ScreenAttributes.SCREEN_NAME
 import io.opentelemetry.kotlin.semconv.AppAttributes

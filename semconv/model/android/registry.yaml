@@ -1,3 +1,12 @@
+# Imports events defined in dependency registries, by event name, so event classes are
+# generated for them in this module.
+imports:
+  events:
+    - app.jank
+    - app.screen.click
+    - app.widget.click
+    - session.end
+    - session.start
 groups:
   - id: registry.android.semconv
     type: attribute_group
