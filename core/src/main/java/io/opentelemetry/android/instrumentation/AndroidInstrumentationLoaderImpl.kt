@@ -11,10 +11,26 @@ import java.util.ServiceLoader
 
 internal class AndroidInstrumentationLoaderImpl : AndroidInstrumentationLoader {
     private val instrumentations: MutableMap<Class<out AndroidInstrumentation>, AndroidInstrumentation> by lazy {
-        ServiceLoader
-            .load(AndroidInstrumentation::class.java)
+        loadInstrumentations()
             .associateBy { it.javaClass }
             .toMutableMap()
+    }
+
+    /**
+     * Loads the [AndroidInstrumentation] implementations declared via SPI. Before making changes to
+     * this function please study R8's ServiceLoaderRewriter as it replaces
+     * reflective lookup with direct instantiation, keeping reflection off the startup path. The
+     * two-argument `load` overload, the literal class reference and the local for-each are all
+     * required for this optimization to occur.
+     *
+     * https://r8.googlesource.com/r8/+/refs/heads/main/src/main/java/com/android/tools/r8/ir/optimize/ServiceLoaderRewriter.java
+     */
+    private fun loadInstrumentations(): List<AndroidInstrumentation> {
+        val instrumentations = mutableListOf<AndroidInstrumentation>()
+        for (instrumentation in ServiceLoader.load(AndroidInstrumentation::class.java, AndroidInstrumentation::class.java.classLoader)) {
+            instrumentations.add(instrumentation)
+        }
+        return instrumentations
     }
 
     @Suppress("UNCHECKED_CAST")

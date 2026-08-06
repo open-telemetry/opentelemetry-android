@@ -15,12 +15,25 @@ internal class InstrumentationConfigurators
         private val configurators: Map<Class<out AndroidInstrumentation>, List<Konfigurator>>,
     ) {
         companion object {
-            fun create(): InstrumentationConfigurators = create { ServiceLoader.load(Konfigurator::class.java) }
+            fun create(): InstrumentationConfigurators = create { loadConfigurators() }
 
             // Exists for testing
             inline fun create(loader: () -> Iterable<Konfigurator>): InstrumentationConfigurators {
                 val configurators = loader().groupBy { it.instrumentationType }
                 return InstrumentationConfigurators(configurators)
+            }
+
+            /**
+             * Loads the [InstrumentationConfigurator] implementations declared via SPI. See the R8
+             * note on [AndroidInstrumentationLoaderImpl.loadInstrumentations] before changing the
+             * shape of this function.
+             */
+            private fun loadConfigurators(): List<Konfigurator> {
+                val configurators = mutableListOf<Konfigurator>()
+                for (configurator in ServiceLoader.load(Konfigurator::class.java, Konfigurator::class.java.classLoader)) {
+                    configurators.add(configurator)
+                }
+                return configurators
             }
         }
 
