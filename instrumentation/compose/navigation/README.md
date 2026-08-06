@@ -19,13 +19,38 @@ This instrumentation is not currently enabled by default.
 
 ## Telemetry
 
-This instrumentation does not emit any telemetry yet. Destination changes are
-resolved to screen names (by default the route *pattern*, for example
-`user/{id}` — not the filled-in arguments — to avoid leaking PII). How they are
-reported — as an event and/or as screen attribution on other telemetry — is
-tracked in
-[#1909](https://github.com/open-telemetry/opentelemetry-android/issues/1909),
-pending the mobile semantic-conventions discussion on modelling navigation.
+This instrumentation produces the following telemetry:
+
+### Navigation
+
+* Type: Event
+* Name: `app.navigation.complete`
+* Description: An event that fires on every completed navigation of an instrumented
+  `NavController`, plus on listener attach (see below).
+* Attributes:
+
+| Attribute | Type | Description | Values | Requirement Level |
+|---|---|---|---|---|
+| `app.navigation.destination.name` | string | The name of the navigation destination reached by the completed navigation. | `home`; `user/{id}` | Required |
+
+The destination name defaults to the route *pattern*, for example `user/{id}` —
+not the filled-in arguments — to avoid leaking PII. Override it with the
+`screenName` parameter shown below.
+
+The event maps 1:1 to `NavController.OnDestinationChangedListener` callbacks, so it
+also fires:
+
+* **on attach** — registering replays the current destination, so the screen visible
+  at attach time is recorded. A configuration change re-attaches and replays again
+  without a navigation. The replay supplies no `arguments`, even for a parameterised
+  start destination.
+* **on argument-only changes** — `user/1` → `user/2` is a real navigation, but the
+  default resolver names both `user/{id}`. Read `arguments` in `screenName` to tell
+  them apart, subject to the attach caveat above.
+
+Using these Compose screen names for screen attribution on unrelated telemetry
+is tracked separately in
+[#1909](https://github.com/open-telemetry/opentelemetry-android/issues/1909).
 
 ## Installation
 

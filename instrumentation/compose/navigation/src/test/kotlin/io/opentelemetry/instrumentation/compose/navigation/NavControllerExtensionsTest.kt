@@ -25,7 +25,7 @@ class NavControllerExtensionsTest {
 
         listener.onDestinationChanged(controller, mockk<NavDestination>(), null)
 
-        verify(exactly = 1) { emitter.onScreenView("home") }
+        verify(exactly = 1) { emitter.onNavigation("home") }
     }
 
     @Test
@@ -40,8 +40,8 @@ class NavControllerExtensionsTest {
         listener.onDestinationChanged(controller, destination, null)
 
         verifyOrder {
-            emitter.onScreenView("first")
-            emitter.onScreenView("second")
+            emitter.onNavigation("first")
+            emitter.onNavigation("second")
         }
     }
 }
