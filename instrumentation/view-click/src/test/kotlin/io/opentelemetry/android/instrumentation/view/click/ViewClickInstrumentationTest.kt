@@ -27,11 +27,11 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_CLICK_EVENT_NAME
-import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_EVENT_NAME
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_BUTTON_KEY
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_CLICKS_KEY
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_TYPE_KEY
+import io.opentelemetry.android.semconv.events.AppScreenClickEvent.Companion.APP_SCREEN_CLICK_EVENT_NAME
+import io.opentelemetry.android.semconv.events.AppWidgetClickEvent.Companion.APP_WIDGET_CLICK_EVENT_NAME
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.longKey
 import io.opentelemetry.api.common.AttributeKey.stringKey
@@ -138,7 +138,7 @@ class ViewClickInstrumentationTest {
 
         event = events[1]
         assertThat(event)
-            .hasEventName(VIEW_CLICK_EVENT_NAME)
+            .hasEventName(APP_WIDGET_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
@@ -210,7 +210,7 @@ class ViewClickInstrumentationTest {
 
         event = events[1]
         assertThat(event)
-            .hasEventName(VIEW_CLICK_EVENT_NAME)
+            .hasEventName(APP_WIDGET_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
@@ -383,7 +383,7 @@ class ViewClickInstrumentationTest {
         event = events[1]
         OpenTelemetryAssertions
             .assertThat(event)
-            .hasEventName(VIEW_CLICK_EVENT_NAME)
+            .hasEventName(APP_WIDGET_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
@@ -453,7 +453,7 @@ class ViewClickInstrumentationTest {
         event = events[1]
         OpenTelemetryAssertions
             .assertThat(event)
-            .hasEventName(VIEW_CLICK_EVENT_NAME)
+            .hasEventName(APP_WIDGET_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
@@ -522,7 +522,7 @@ class ViewClickInstrumentationTest {
 
         event = events[1]
         assertThat(event)
-            .hasEventName(VIEW_CLICK_EVENT_NAME)
+            .hasEventName(APP_WIDGET_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
@@ -593,7 +593,7 @@ class ViewClickInstrumentationTest {
 
         event = events[1]
         assertThat(event)
-            .hasEventName(VIEW_CLICK_EVENT_NAME)
+            .hasEventName(APP_WIDGET_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
@@ -729,7 +729,7 @@ class ViewClickInstrumentationTest {
         event = events[1]
         OpenTelemetryAssertions
             .assertThat(event)
-            .hasEventName(VIEW_CLICK_EVENT_NAME)
+            .hasEventName(APP_WIDGET_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),

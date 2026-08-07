@@ -12,8 +12,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.agent.OpenTelemetryRumInitializer
 import io.opentelemetry.android.agent.dsl.OpenTelemetryConfiguration
-import io.opentelemetry.kotlin.semconv.IncubatingApi
-import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_ID
+import io.opentelemetry.android.semconv.SessionAttributes.SESSION_ID
+import io.opentelemetry.android.semconv.events.SessionEndEvent.Companion.SESSION_END_EVENT_NAME
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest
 import io.opentelemetry.proto.logs.v1.LogRecord
@@ -114,7 +114,6 @@ class OpenTelemetryRumSmokeTest {
     }
 
     @Test
-    @OptIn(IncubatingApi::class)
     fun testSessionEndUsesEndedSessionId() {
         val clock = TestClock.create()
         lateinit var endedSessionId: String
@@ -140,9 +139,9 @@ class OpenTelemetryRumSmokeTest {
         assertThat(currentSessionId).isNotEqualTo(endedSessionId)
         val request =
             server.awaitLogRequest {
-                findSessionEvent(it, "session.end") != null
+                findSessionEvent(it, SESSION_END_EVENT_NAME) != null
             }
-        val sessionEnd = checkNotNull(findSessionEvent(request, "session.end"))
+        val sessionEnd = checkNotNull(findSessionEvent(request, SESSION_END_EVENT_NAME))
         val exportedSessionId =
             sessionEnd.attributesList
                 .first { it.key == SESSION_ID }
