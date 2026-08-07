@@ -30,6 +30,7 @@ allprojects {
 }
 
 nexusPublishing {
+    useStaging.set(findProperty("final") == "true")
     repositories {
         // see https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/#configuration
         sonatype {
