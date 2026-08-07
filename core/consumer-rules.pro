@@ -2,6 +2,8 @@
 -dontwarn com.google.auto.value.AutoValue$CopyAnnotations
 -dontwarn com.google.auto.value.AutoValue
 -dontwarn com.google.auto.value.extension.memoized.Memoized
+-dontwarn com.google.errorprone.annotations.CanIgnoreReturnValue
+-dontwarn com.google.errorprone.annotations.MustBeClosed
 -dontwarn io.grpc.Channel
 -dontwarn io.grpc.MethodDescriptor$Builder
 -dontwarn io.grpc.MethodDescriptor$Marshaller
