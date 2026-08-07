@@ -1,8 +1,6 @@
-# These dependencies run only in the test APK. Keep their complete runtime because R8 also sees
-# the optimized target APK, whose copies may have had classes removed as unreachable from the app.
+# Kotlin runs from the optimized target APK because AndroidJUnitRunner executes in its process.
+# Keep the runtime methods used only by the test APK.
 -keep class kotlin.** { *; }
--keep class okhttp3.** { *; }
--keep class okio.** { *; }
 
 # AndroidX Test references these compile-time annotations without requiring them at runtime.
 -dontwarn com.google.errorprone.annotations.**

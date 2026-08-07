@@ -10,6 +10,7 @@ import android.os.Bundle
 import io.opentelemetry.android.agent.OpenTelemetryRumInitializer
 
 const val OTLP_ENDPOINT_EXTRA = "io.opentelemetry.android.smoketest.OTLP_ENDPOINT"
+const val SMOKE_TEST_SCOPE_NAME = "smoke-test"
 const val SMOKE_TEST_SPAN_NAME = "minified-app-smoke-test"
 
 class SmokeTestActivity : Activity() {
@@ -35,11 +36,12 @@ class SmokeTestActivity : Activity() {
         try {
             openTelemetryRum.openTelemetry
                 .tracerProvider
-                .get("smoke-test")
+                .get(SMOKE_TEST_SCOPE_NAME)
                 .spanBuilder(SMOKE_TEST_SPAN_NAME)
                 .startSpan()
                 .end()
         } finally {
+            // Shutdown starts the exporter flush; the instrumentation test waits for its request.
             openTelemetryRum.shutdown()
         }
     }

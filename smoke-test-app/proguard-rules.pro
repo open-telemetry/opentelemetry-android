@@ -4,8 +4,3 @@
 # AGP treats dependencies shared by a minified target and its test APK as target-provided. Keep
 # Kotlin's runtime available to AndroidJUnitRunner, which executes inside the target process.
 -keep class kotlin.** { *; }
-
-# MockWebServer runs in the target process and shares OkHttp with the exporter. Retain that shared
-# runtime so test-only call paths are not removed while R8 optimizes the target in isolation.
--keep class okhttp3.** { *; }
--keep class okio.** { *; }

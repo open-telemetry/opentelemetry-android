@@ -45,6 +45,7 @@ android {
 }
 
 androidComponents {
+    // The test must run against the target's minified release variant.
     beforeVariants(selector().withBuildType("debug")) {
         it.enable = false
     }
@@ -55,10 +56,5 @@ dependencies {
     implementation(libs.androidx.test.core)
     implementation(libs.androidx.test.rules)
     implementation(libs.androidx.test.runner)
-    implementation(libs.okhttp.mockwebserver)
     implementation(libs.opentelemetry.proto)
-}
-
-configurations.implementation {
-    exclude(group = "io.opentelemetry", module = "opentelemetry-sdk-testing")
 }

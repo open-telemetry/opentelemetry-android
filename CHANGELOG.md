@@ -11,6 +11,9 @@
 
 ### 🛠️ Bug fixes
 
+- Fix R8 failures caused by optional Error Prone annotations in minified applications.
+  ([#1972](https://github.com/open-telemetry/opentelemetry-android/pull/1972))
+
 - Preserve explicit session IDs on logs so recovered native crashes and session-end events remain
   associated with the session they describe.
   ([#1939](https://github.com/open-telemetry/opentelemetry-android/pull/1939))
