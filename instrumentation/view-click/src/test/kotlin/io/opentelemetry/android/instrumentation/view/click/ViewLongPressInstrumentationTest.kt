@@ -17,7 +17,6 @@ import getLongPressSequence
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
@@ -41,7 +40,6 @@ import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import mockView
 import org.junit.Before
 import org.junit.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 
 private const val APP_SCREEN_LONG_PRESS_EVENT_NAME = "app.screen.longpress"
@@ -49,7 +47,6 @@ private const val VIEW_LONG_PRESS_EVENT_NAME = "app.widget.longpress"
 
 @OptIn(IncubatingApi::class)
 @RunWith(AndroidJUnit4::class)
-@ExtendWith(MockKExtension::class)
 class ViewLongPressInstrumentationTest {
     private lateinit var openTelemetryRule: OpenTelemetryRule
 
