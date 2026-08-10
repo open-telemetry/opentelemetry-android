@@ -91,7 +91,7 @@ fun AstronomyShopScreen() {
                             astronomyShopNavController.navigateToProductDetail(productId)
                         })
                     }
-                    composable("${MainDestinations.PRODUCT_DETAIL_ROUTE}/{${MainDestinations.PRODUCT_ID_KEY}}") { backStackEntry ->
+                    composable(MainDestinations.PRODUCT_DETAIL_ROUTE_PATTERN) { backStackEntry ->
                         val productId = backStackEntry.arguments?.getString(MainDestinations.PRODUCT_ID_KEY)
                         val product = products.find { it.id == productId }
                         product?.let { ProductDetails(

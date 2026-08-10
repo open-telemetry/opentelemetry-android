@@ -5,7 +5,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
@@ -28,6 +27,7 @@ object MainDestinations {
     const val HOME_ROUTE = "prod-list"
     const val PRODUCT_DETAIL_ROUTE = "product"
     const val PRODUCT_ID_KEY = "productId"
+    const val PRODUCT_DETAIL_ROUTE_PATTERN = "$PRODUCT_DETAIL_ROUTE/{$PRODUCT_ID_KEY}"
     const val CHECKOUT_INFO_ROUTE = "checkout-info"
     const val CHECKOUT_CONFIRMATION_ROUTE = "checkout-confirmation"
 }
@@ -100,15 +100,15 @@ fun BottomNavigationBar(
 
 // Maps the shop's route patterns to display names. Product details reads the product id out of
 // `arguments` so the screen name identifies which product was viewed
-private fun astronomyShopScreenName(destination: NavDestination, arguments: Bundle?): String {
-    arguments?.getString(MainDestinations.PRODUCT_ID_KEY)?.let {
-        return "Product Details: $it"
-    }
-    return when (destination.route) {
+private fun astronomyShopScreenName(destination: NavDestination, arguments: Bundle?): String =
+    when (destination.route) {
+        MainDestinations.PRODUCT_DETAIL_ROUTE_PATTERN ->
+            arguments?.getString(MainDestinations.PRODUCT_ID_KEY)
+                ?.let { "Product Details: $it" }
+                ?: "Product Details"
         MainDestinations.HOME_ROUTE -> "Product List"
         BottomNavItem.Cart.route -> "Cart"
         MainDestinations.CHECKOUT_INFO_ROUTE -> "Checkout Info"
         MainDestinations.CHECKOUT_CONFIRMATION_ROUTE -> "Checkout Confirmation"
         else -> destination.route ?: "unknown"
     }
-}
