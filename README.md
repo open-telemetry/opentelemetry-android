@@ -72,7 +72,7 @@ Then use the latest snapshot version with the BOM in your app's `build.gradle.kt
 
 ```kotlin
 dependencies {
-    api(platform("io.opentelemetry.android:opentelemetry-android-bom:1.7.0-alpha-SNAPSHOT"))
+    implementation(platform("io.opentelemetry.android:opentelemetry-android-bom:1.7.0-alpha-SNAPSHOT"))
     implementation("io.opentelemetry.android:android-agent")
 }
 ```
