@@ -1,5 +1,6 @@
 package io.opentelemetry.android.demo.shop.ui
 
+import android.os.Bundle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.List
@@ -12,8 +13,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.material3.*
+import androidx.navigation.NavDestination
 import io.opentelemetry.android.demo.OtelDemoApplication
-import io.opentelemetry.api.common.AttributeKey.stringKey
+import io.opentelemetry.instrumentation.compose.navigation.rememberObservedNavController
 
 
 sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
@@ -31,10 +33,20 @@ object MainDestinations {
 }
 
 @Composable
-fun rememberAstronomyShopNavController(navController: NavHostController = rememberNavController())
-        : InstrumentedAstronomyShopNavController = remember(navController)
-{
-    InstrumentedAstronomyShopNavController(AstronomyShopNavController(navController))
+fun rememberAstronomyShopNavController(
+    navController: NavHostController = rememberAstronomyShopHostController(),
+): AstronomyShopNavController = remember(navController) {
+    AstronomyShopNavController(navController)
+}
+
+@Composable
+private fun rememberAstronomyShopHostController(): NavHostController {
+    val rum = OtelDemoApplication.rum
+    return if (rum != null) {
+        rememberObservedNavController(rum = rum, screenName = ::astronomyShopScreenName)
+    } else {
+        rememberNavController()
+    }
 }
 
 @Stable
@@ -61,52 +73,6 @@ class AstronomyShopNavController(
     }
 }
 
-class InstrumentedAstronomyShopNavController(
-    private val delegate : AstronomyShopNavController
-){
-    val navController: NavHostController
-        get() = delegate.navController
-
-    val currentRoute: String?
-        get() = delegate.currentRoute
-
-    fun upPress() {
-        delegate.upPress()
-    }
-
-    fun navigateToProductDetail(productId: String) {
-        delegate.navigateToProductDetail(productId)
-        generateNavigationEvent(
-            eventName = "navigate.to.product.details",
-            payload = mapOf("product.id" to productId)
-        )
-    }
-
-    fun navigateToCheckoutInfo() {
-        delegate.navigateToCheckoutInfo()
-        generateNavigationEvent(
-            eventName = "navigate.to.checkout.info",
-            payload = emptyMap()
-        )
-    }
-
-    fun navigateToCheckoutConfirmation() {
-        delegate.navigateToCheckoutConfirmation()
-        generateNavigationEvent(
-            eventName = "navigate.to.checkout.confirmation",
-            payload = emptyMap()
-        )
-    }
-
-    private fun generateNavigationEvent(eventName: String, payload: Map<String, String>) {
-        val eventBuilder = OtelDemoApplication.eventBuilder("otel.demo.app.navigation", eventName)
-        payload.forEach { (key, value) ->
-            eventBuilder.setAttribute(stringKey(key), value)
-        }
-        eventBuilder.emit()
-    }
-}
-
 @Composable
 fun BottomNavigationBar(
     items: List<BottomNavItem>,
@@ -129,5 +95,20 @@ fun BottomNavigationBar(
                 label = { Text(item.label) }
             )
         }
+    }
+}
+
+// Maps the shop's route patterns to display names. Product details reads the product id out of
+// `arguments` so the screen name identifies which product was viewed
+private fun astronomyShopScreenName(destination: NavDestination, arguments: Bundle?): String {
+    arguments?.getString(MainDestinations.PRODUCT_ID_KEY)?.let {
+        return "Product Details: $it"
+    }
+    return when (destination.route) {
+        MainDestinations.HOME_ROUTE -> "Product List"
+        BottomNavItem.Cart.route -> "Cart"
+        MainDestinations.CHECKOUT_INFO_ROUTE -> "Checkout Info"
+        MainDestinations.CHECKOUT_CONFIRMATION_ROUTE -> "Checkout Confirmation"
+        else -> destination.route ?: "unknown"
     }
 }

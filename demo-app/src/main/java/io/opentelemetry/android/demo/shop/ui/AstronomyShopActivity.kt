@@ -128,7 +128,7 @@ fun AstronomyShopScreen() {
 }
 
 private fun instrumentedPlaceOrder(
-    astronomyShopNavController: InstrumentedAstronomyShopNavController,
+    astronomyShopNavController: AstronomyShopNavController,
     cartViewModel: CartViewModel,
     checkoutInfoViewModel: CheckoutInfoViewModel
 ){
