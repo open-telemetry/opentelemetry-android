@@ -72,14 +72,13 @@ Then use the latest snapshot version with the BOM in your app's `build.gradle.kt
 
 ```kotlin
 dependencies {
-    api(platform("io.opentelemetry.android:opentelemetry-android-bom:[SNAPSHOT VERSION]"))
+    api(platform("io.opentelemetry.android:opentelemetry-android-bom:1.7.0-alpha-SNAPSHOT"))
     implementation("io.opentelemetry.android:android-agent")
 }
 ```
 
-Replace `[SNAPSHOT VERSION]` with the version shown in the snapshot repository. Gradle caches
-snapshot dependencies; run `./gradlew --refresh-dependencies` to retrieve a newly published
-snapshot.
+Gradle caches snapshot dependencies; run `./gradlew --refresh-dependencies` to retrieve a newly
+published snapshot.
 
 ## Agent Initialization
 
