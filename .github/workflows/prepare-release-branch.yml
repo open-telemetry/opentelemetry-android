@@ -126,7 +126,7 @@ jobs:
         run: .github/scripts/update-version.sh $NEXT_VERSION
 
       - name: Update version in README
-        run: sed -Ei "s/(\"io.opentelemetry.android:opentelemetry-android-bom:).*\"/\1${VERSION}-alpha\"/" README.md
+        run: sed -Ei "s/(\"io.opentelemetry.android:opentelemetry-android-bom:)[^[:space:]]*-alpha\"/\1${VERSION}-alpha\"/" README.md
 
       - name: Update instrumentation README.md versions
         run: |

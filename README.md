@@ -7,6 +7,7 @@
 
 * [About](#about)
 * [Getting Started](#getting-started)
+  * [Snapshot Builds](#snapshot-builds)
 * [Features](#features)
 * [Contributing](#contributing)
 
@@ -48,6 +49,36 @@ dependencies {
     //...
 }
 ```
+
+## Snapshot Builds
+
+A snapshot is published for every commit to the `main` branch. Snapshots are intended for testing
+upcoming changes and should not be used in production. You can find the available versions in the
+[Sonatype snapshot repository](https://central.sonatype.com/service/rest/repository/browse/maven-snapshots/io/opentelemetry/android/).
+
+To use a snapshot, add the Sonatype snapshot repository to `settings.gradle.kts`:
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven(url = "https://central.sonatype.com/repository/maven-snapshots/") // Add this line
+    }
+}
+```
+
+Then use the latest snapshot version with the BOM in your app's `build.gradle.kts`:
+
+```kotlin
+dependencies {
+    implementation(platform("io.opentelemetry.android:opentelemetry-android-bom:1.7.0-alpha-SNAPSHOT"))
+    implementation("io.opentelemetry.android:android-agent")
+}
+```
+
+Gradle caches snapshot dependencies; run `./gradlew --refresh-dependencies` to retrieve a newly
+published snapshot.
 
 ## Agent Initialization
 
