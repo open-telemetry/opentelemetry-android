@@ -40,8 +40,6 @@ android {
             languageVersion.set(rootProject.extra["kotlin_min_supported_version"] as KotlinVersion)
         }
     }
-
-    packaging.resources.excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
 }
 
 androidComponents {
