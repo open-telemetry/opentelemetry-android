@@ -52,13 +52,24 @@ The OpenTelemetry Android Demo App currently supports the following features:
   - The span includes attributes such as `activity.name`, `screen.name`, `count`, and network details to help diagnose performance issues.
   - To trigger a slowly rendering animation in the demo app, add any quantity of The Comet Book (the last product on the product list) to the cart. Note that the number of `slow-render` spans and their respective `count` attributes may vary between runs or across different machines.
 
+* Compose Navigation Instrumentation
+  - The shop's `NavController` is created by `rememberObservedNavController` in `Navigation.kt`, so
+    every completed navigation in the astronomy shop emits an `app.navigation.complete` event
+    carrying the resolved screen name in `app.navigation.destination.name`.
+  - Because it observes destination changes rather than individual call sites, it covers navigation
+    the app doesn't route through an explicit helper: bottom navigation bar taps, back/up presses,
+    and deep links.
+  - Demonstrates the `screenName` override: instead of the default route pattern, the
+    `astronomyShopScreenName` function in `Navigation.kt` maps each destination to a display name
+    (`Product List`, `Cart`, `Checkout Info`, ...). Product details reads the product id out of the
+    destination arguments, for example `Product Details: OLJCESPC7Z`.
+
 * Manual Instrumentation
   - Provides access to the OpenTelemetry APIs for manual instrumentation, allowing developers to create custom spans and events as needed.
   - See `OtelDemoApplication.kt` for an example of a tracer and an event builder initialization.
   - In the app, a custom span is emitted in `MainOtelButton.kt` after clicking on the OpenTelemetry logo button.
   - Custom events are emitted:
     - in `MainOtelButton.kt` after clicking on the OpenTelemetry logo button,
-    - in `Navigation.kt` for screen changes in the app,
     - in `AstronomyShopActivity.kt` after placing an order in the shop,
     - in `Cart.kt` after emptying a cart in the shop.
   - Note: Events aren't visible in the Jaeger UI, only in the collector output.
