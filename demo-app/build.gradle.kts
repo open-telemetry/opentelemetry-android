@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "io.opentelemetry.android.demo"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "io.opentelemetry.android.demo"
