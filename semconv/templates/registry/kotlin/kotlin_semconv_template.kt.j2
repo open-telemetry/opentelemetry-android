@@ -24,6 +24,10 @@ object {{ my_class_name }} {
 {%- if attribute.type != "any" %}
 {%- set itype = attribute.type | instantiated_type %}
 {%- if itype in ["string", "boolean", "int", "double", "string[]", "boolean[]", "int[]", "double[]"] %}
+{%- if attribute is deprecated %}
+    @Deprecated("{{ attribute.deprecated.note | replace('\n', ' ') | trim }}")
+    @Suppress("DEPRECATION")
+{%- endif %}
     @JvmField
     val {{ attribute.name | screaming_snake_case }}_KEY: AttributeKey<{{ itype | map_text("kotlin_key_generic") }}> =
         AttributeKey.{{ itype | map_text("kotlin_key_factory") }}({{ attribute.name | screaming_snake_case }})

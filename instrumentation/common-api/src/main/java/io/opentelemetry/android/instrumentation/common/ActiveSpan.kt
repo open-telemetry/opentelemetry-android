@@ -5,7 +5,8 @@
 
 package io.opentelemetry.android.instrumentation.common
 
-import io.opentelemetry.android.semconv.LastAttributes.LAST_SCREEN_NAME_KEY
+import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_PREVIOUS_NAME
+import io.opentelemetry.android.semconv.internal.SemconvCompat.Companion.map
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.context.Scope
 
@@ -46,7 +47,7 @@ class ActiveSpan(
         span?.let {
             val previouslyVisibleScreen = lastVisibleScreen()
             if (previouslyVisibleScreen != null && screenName != previouslyVisibleScreen) {
-                it.setAttribute(LAST_SCREEN_NAME_KEY, previouslyVisibleScreen)
+                it.setAttribute(map(APP_SCREEN_PREVIOUS_NAME), previouslyVisibleScreen)
             }
         }
     }

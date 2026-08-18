@@ -93,7 +93,7 @@ internal class ActivityTracer(
             spanBuilder.setParent(parentSpan.storeInContext(Context.current()))
         }
         val span = spanBuilder.startSpan()
-        // do this after the span is started, so we can override the default screen.name set by the
+        // do this after the span is started, so we can override the default app.screen.name set by the
         // RumAttributeAppender.
         span.setAttribute(map(APP_SCREEN_NAME), screenName)
         return span

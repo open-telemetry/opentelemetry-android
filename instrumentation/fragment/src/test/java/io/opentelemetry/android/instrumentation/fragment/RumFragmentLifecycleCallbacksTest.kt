@@ -12,8 +12,8 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
+import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_PREVIOUS_NAME_KEY
 import io.opentelemetry.android.semconv.FragmentAttributes.FRAGMENT_NAME_KEY
-import io.opentelemetry.android.semconv.LastAttributes.LAST_SCREEN_NAME_KEY
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME
@@ -70,7 +70,7 @@ internal class RumFragmentLifecycleCallbacksTest {
             fragment.javaClass.simpleName,
             spanData.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(spanData.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(spanData.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         val events = spanData.events
         assertEquals(7, events.size)
@@ -107,7 +107,7 @@ internal class RumFragmentLifecycleCallbacksTest {
         )
         assertEquals(
             "previousScreen",
-            spanData.attributes.get(LAST_SCREEN_NAME_KEY),
+            spanData.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY),
         )
 
         val events = spanData.events
@@ -134,7 +134,7 @@ internal class RumFragmentLifecycleCallbacksTest {
             fragment.javaClass.simpleName,
             spanData.attributes.get(FRAGMENT_NAME_KEY),
         )
-        assertNull(spanData.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(spanData.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         val events = spanData.events
         assertEquals(1, events.size)
@@ -164,7 +164,7 @@ internal class RumFragmentLifecycleCallbacksTest {
             fragment.javaClass.simpleName,
             spanData.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(spanData.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(spanData.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         val events = spanData.events
         assertEquals(1, events.size)
@@ -181,7 +181,7 @@ internal class RumFragmentLifecycleCallbacksTest {
             fragment.javaClass.simpleName,
             stopSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(stopSpan.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(stopSpan.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         val stopEvents = stopSpan.events
         assertEquals(1, stopEvents.size)
@@ -211,7 +211,7 @@ internal class RumFragmentLifecycleCallbacksTest {
             fragment.javaClass.simpleName,
             pauseSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(pauseSpan.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(pauseSpan.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         var events: List<EventData> = pauseSpan.events
         assertEquals(1, events.size)
@@ -226,7 +226,7 @@ internal class RumFragmentLifecycleCallbacksTest {
             fragment.javaClass.simpleName,
             stopSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(stopSpan.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(stopSpan.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         val stopEvents = stopSpan.events
         assertEquals(1, stopEvents.size)
@@ -243,7 +243,7 @@ internal class RumFragmentLifecycleCallbacksTest {
             fragment.javaClass.simpleName,
             destroyViewSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(destroyViewSpan.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(destroyViewSpan.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         events = destroyViewSpan.events
         assertEquals(1, events.size)
@@ -255,7 +255,7 @@ internal class RumFragmentLifecycleCallbacksTest {
         Assertions.assertNotNull(
             detachSpan.attributes.get(FRAGMENT_NAME_KEY),
         )
-        assertNull(detachSpan.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(detachSpan.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         events = detachSpan.events
         assertEquals(2, events.size)
@@ -284,7 +284,7 @@ internal class RumFragmentLifecycleCallbacksTest {
             fragment.javaClass.simpleName,
             span.attributes.get(FRAGMENT_NAME_KEY),
         )
-        assertNull(span.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(span.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         val events = span.events
         assertEquals(1, events.size)
@@ -312,7 +312,7 @@ internal class RumFragmentLifecycleCallbacksTest {
             fragment.javaClass.simpleName,
             destroyViewSpan.attributes.get(FRAGMENT_NAME_KEY),
         )
-        assertNull(destroyViewSpan.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(destroyViewSpan.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         var events: List<EventData> = destroyViewSpan.events
         assertEquals(1, events.size)
@@ -325,7 +325,7 @@ internal class RumFragmentLifecycleCallbacksTest {
             fragment.javaClass.simpleName,
             detachSpan.attributes.get(FRAGMENT_NAME_KEY),
         )
-        assertNull(detachSpan.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(detachSpan.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         events = detachSpan.events
         assertEquals(2, events.size)
@@ -354,7 +354,7 @@ internal class RumFragmentLifecycleCallbacksTest {
             fragment.javaClass.simpleName,
             detachSpan.attributes.get(FRAGMENT_NAME_KEY),
         )
-        assertNull(detachSpan.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(detachSpan.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         val events = detachSpan.events
         assertEquals(1, events.size)
