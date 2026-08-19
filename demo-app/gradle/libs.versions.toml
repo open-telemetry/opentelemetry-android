@@ -1,5 +1,5 @@
 [versions]
-byteBuddy = "1.18.12-jdk5"
+byteBuddy = "1.18.12"
 okhttp = "5.5.0"
 opentelemetry = "1.65.0"
 opentelemetry-alpha = "1.65.0-alpha"
