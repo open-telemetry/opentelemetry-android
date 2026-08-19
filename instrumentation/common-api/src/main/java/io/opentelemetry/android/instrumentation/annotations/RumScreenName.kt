@@ -6,7 +6,7 @@
 package io.opentelemetry.android.instrumentation.annotations
 
 /**
- * This annotation can be used to customize the `screen.name` attribute for an instrumented
+ * This annotation can be used to customize the `app.screen.name` attribute for an instrumented
  * Fragment or Activity.
  */
 @Retention(AnnotationRetention.RUNTIME)

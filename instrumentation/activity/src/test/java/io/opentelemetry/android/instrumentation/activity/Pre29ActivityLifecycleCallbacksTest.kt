@@ -14,7 +14,7 @@ import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.android.semconv.ActivityAttributes.ACTIVITY_NAME_KEY
-import io.opentelemetry.android.semconv.LastAttributes.LAST_SCREEN_NAME_KEY
+import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_PREVIOUS_NAME_KEY
 import io.opentelemetry.android.semconv.StartAttributes.START_TYPE_KEY
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME
@@ -76,7 +76,7 @@ internal class Pre29ActivityLifecycleCallbacksTest {
             activity.javaClass.simpleName,
             creationSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(creationSpan.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(creationSpan.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         val events = creationSpan.events
         assertEquals(3, events.size)
@@ -109,7 +109,7 @@ internal class Pre29ActivityLifecycleCallbacksTest {
             activity.javaClass.simpleName,
             span.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(span.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(span.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         val events = span.events
         assertEquals(3, events.size)
@@ -150,7 +150,7 @@ internal class Pre29ActivityLifecycleCallbacksTest {
             activity.javaClass.simpleName,
             span.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(span.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(span.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         val events = span.events
         assertEquals(2, events.size)
@@ -187,7 +187,7 @@ internal class Pre29ActivityLifecycleCallbacksTest {
         )
         assertEquals(
             "previousScreen",
-            span.attributes.get(LAST_SCREEN_NAME_KEY),
+            span.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY),
         )
 
         val events = span.events
@@ -220,7 +220,7 @@ internal class Pre29ActivityLifecycleCallbacksTest {
             activity.javaClass.simpleName,
             span.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(span.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(span.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         val events = span.events
         assertEquals(1, events.size)
@@ -252,7 +252,7 @@ internal class Pre29ActivityLifecycleCallbacksTest {
             activity.javaClass.simpleName,
             stoppedSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(stoppedSpan.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(stoppedSpan.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         var events: List<EventData> = stoppedSpan.events
         assertEquals(1, events.size)
@@ -270,7 +270,7 @@ internal class Pre29ActivityLifecycleCallbacksTest {
             activity.javaClass.simpleName,
             destroyedSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(destroyedSpan.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(destroyedSpan.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         events = destroyedSpan.events
         assertEquals(1, events.size)
@@ -302,7 +302,7 @@ internal class Pre29ActivityLifecycleCallbacksTest {
             activity.javaClass.simpleName,
             stoppedSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(stoppedSpan.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(stoppedSpan.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         var events: List<EventData> = stoppedSpan.events
         assertEquals(1, events.size)
@@ -320,7 +320,7 @@ internal class Pre29ActivityLifecycleCallbacksTest {
             activity.javaClass.simpleName,
             destroyedSpan.attributes.get(stringKey(APP_SCREEN_NAME)),
         )
-        assertNull(destroyedSpan.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(destroyedSpan.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
 
         events = destroyedSpan.events
         assertEquals(1, events.size)

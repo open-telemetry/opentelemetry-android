@@ -111,6 +111,15 @@ groups:
       - id: last.screen.name
         type: string
         stability: development
+        deprecated:
+          reason: renamed
+          renamed_to: app.screen.previous.name
+        brief: >
+          Deprecated, use `app.screen.previous.name` instead.
+        examples: ["MainActivity"]
+      - id: app.screen.previous.name
+        type: string
+        stability: development
         brief: >
           The previously visible screen name.
         examples: ["MainActivity"]
@@ -123,8 +132,11 @@ groups:
       - id: screen.name
         type: string
         stability: development
+        deprecated:
+          reason: renamed
+          renamed_to: app.screen.name
         brief: >
-          The current application screen name used by the Android SDK.
+          Deprecated, use `app.screen.name` instead.
         examples: ["user.login", "Cart"]
       - id: screen.orientation
         type:

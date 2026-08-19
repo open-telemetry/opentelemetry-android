@@ -20,8 +20,9 @@ This instrumentation produces the following telemetry:
   `fragmentViewDestroyed` | `fragmentDestroyed` | `fragmentDetached` }
 * Attributes:
     * `fragment.name`:  name of fragment
-    * `screen.name`:  name of screen
-    * `last.screen.name`:  name of screen, when span contains the `fragmentResumed` event.
+    * `app.screen.name`: name of screen
+    * `app.screen.previous.name`: name of the previously visible screen, when the span contains the
+      `fragmentResumed` event.
 
 ## Installation
 
