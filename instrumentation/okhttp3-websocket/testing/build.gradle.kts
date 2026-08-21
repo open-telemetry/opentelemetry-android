@@ -16,4 +16,5 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.opentelemetry.exporter.otlp)
     androidTestImplementation(libs.okhttp.mockwebserver)
+    androidTestImplementation(libs.opentelemetry.instrumentation.apiSemconv)
 }
