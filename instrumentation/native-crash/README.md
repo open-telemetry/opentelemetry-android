@@ -23,6 +23,9 @@ timestamp.epoch_nanos=<positive integer>
 
 The native writer and Kotlin reader must keep these keys and value formats in sync.
 
+The versioned binary format used for native frame recovery is documented in
+[`SNAPSHOT_FORMAT.md`](SNAPSHOT_FORMAT.md).
+
 ## Telemetry
 
 The replayed event uses the original crash timestamp and includes:
