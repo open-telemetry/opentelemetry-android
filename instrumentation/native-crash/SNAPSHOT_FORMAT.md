@@ -4,6 +4,9 @@ Status: proposed version 1 design for
 [#1940](https://github.com/open-telemetry/opentelemetry-android/issues/1940). Runtime capture,
 recovery, and replay are follow-up work and are not implemented by this change.
 
+The writer and reader rules below are normative requirements for those follow-up changes. They
+describe the completed version 1 behavior even though this PR defines only the shared contract.
+
 The native crash implementation uses a fixed-size snapshot so the signal handler can copy bounded
 state without allocation, locks, JNI, logging, or process-map parsing. Capture, parsing, unwinding,
 and replay are separate changes. `native_crash_snapshot.h` is the source of truth for the binary
@@ -49,6 +52,15 @@ satisfies `loadBias <= executableStart < executableEnd`. Names are nonblank UTF-
 characters, use at most 63 bytes, and always include a NUL terminator followed by zero padding.
 Build IDs longer than 32 bytes are recorded as unavailable rather than truncated.
 
+## Files And Pairing
+
+The marker and snapshot are separate fixed internal files whose paths are supplied when the native
+handler is installed. Temporary writes use the corresponding destination path with a `.tmp` suffix.
+Exact destination names are implementation details rather than part of the binary format.
+
+Recovery pairs a snapshot with a marker only when their signal number and timestamp match. A stale
+or otherwise mismatched snapshot is invalid and is never attached to the marker's crash event.
+
 ## Writer Rules
 
 Register and module addresses are unsigned. A 32-bit writer zero-extends every address into its
@@ -63,13 +75,12 @@ outside the signal handler. This costs 20,568 bytes of process storage but does 
 alternate signal stack or allocate during a crash.
 
 The marker and snapshot use the same signal number and a timestamp from a single `clock_gettime`
-call. The snapshot is written and atomically renamed before the marker, making the marker the commit
-record for a complete crash capture. The snapshot skips `fsync` to bound work in the fatal signal
-handler; process death does not discard completed page-cache writes. The smaller marker is synced
-before rename. A marker without a snapshot remains a valid crash without native frames. A snapshot
-without a marker is an orphan and is removed during startup recovery. This ordering treats the
-marker as the commit record, but an abrupt process termination during the snapshot write can lose
-the crash before the marker is created.
+call. The marker is written, synced, and atomically renamed first. The snapshot is then written and
+atomically renamed without `fsync` to bound work in the fatal signal handler. A second fault or
+abrupt process termination during the larger snapshot write therefore still leaves the marker as a
+valid crash without native frames. A snapshot without a marker is an orphan and is removed during
+startup recovery. Signal and timestamp matching prevents an older snapshot from being attached to
+a newer marker.
 
 Stack copying is fault-tolerant; a failed or short read produces a stack size from zero through
 4,096 rather than reading through an invalid page. The handler loops over interrupted short writes,
@@ -85,10 +96,12 @@ it is not an authenticity mechanism. Malformed module entries are skipped withou
 structurally valid entries. A record with no usable module entries remains valid but produces no
 native frames.
 
-Readers reject zero program counters or stack pointers, a stack start that differs from the stack
-pointer, and a stack start that is not aligned to the recorded architecture's pointer width. A
-misaligned or otherwise corrupt stack pointer therefore produces no native frames. Readers ignore
-the link-register field on x86 and x86_64.
+Readers reject zero stack pointers, a stack start that differs from the stack pointer, and a stack
+start that is not aligned to the recorded architecture's pointer width. A zero program counter is
+valid for crashes such as an indirect call through a null function pointer. Readers omit the
+program-counter frame in that case and continue with frame-pointer and link-register recovery. A
+misaligned or otherwise corrupt stack pointer produces no native frames. Readers ignore the
+link-register field on x86 and x86_64.
 
 ARM64 readers preserve captured values and try the raw address first. If it does not resolve, they
 retry after clearing bits 56 through 63, then 52 through 63, then 48 through 63 to account for
@@ -102,26 +115,40 @@ When a frame-pointer walk yields no caller, ARM and ARM64 readers may add a nonz
 The link register can be stale for a non-leaf crash, so readers preserve its provenance even when a
 stacktrace renderer cannot distinguish it from a frame-pointer result.
 
-A bounded stack scan may collect deduplicated heuristic candidates when no frame-pointer caller is
-recovered. Candidates are marked as unordered and are not rendered as confirmed stack frames. Only
-addresses inside a captured executable segment are retained. Confirmed frames are reported as
-`normalizedAddress - module.loadBias`, with the module build ID when available. The normalized
-address is the first architecture-specific candidate that resolves inside an executable segment.
+Confirmed frames are reported as `normalizedAddress - module.loadBias`, with the module build ID
+when available. The normalized address is the first architecture-specific candidate that resolves
+inside an executable segment.
 
-Recovery deletes the marker and snapshot only after replay succeeds. Retryable read or cleanup
-failures retain both files for a later launch; invalid snapshots are removed while the marker can
-still produce a crash without native frames. Implementations contain recovery exceptions so they
-cannot terminate the host application. Retries must be bounded by count or age; after the limit is
-reached, recovery files are discarded and the signal handler can be installed again.
+A malformed marker is discarded together with its snapshot and recovery state without emitting an
+event. A missing, malformed, or mismatched snapshot is discarded while its valid marker continues
+as a crash without native frames. Transient marker or snapshot read failures are retried. If
+snapshot retries are exhausted, recovery discards the snapshot and emits the valid marker-only
+crash. Other exhausted read failures discard all recovery files without emitting an event.
+
+Before emitting an event, recovery durably records that delivery has been claimed. If that state
+cannot be persisted, recovery does not emit and abandons the crash with best-effort cleanup. Once
+delivery is claimed, later launches perform cleanup only and never emit the event again. After the
+event is handed to OpenTelemetry, recovery deletes the marker, snapshot, and recovery state.
+Cleanup failures retain the remaining files for bounded cleanup-only retries.
+
+The signal handler is not installed while a retry is pending because version 1 uses one fixed marker
+and snapshot pair that a new crash would overwrite. Ordinary recovery exceptions and linkage errors
+are contained at the instrumentation boundary so they cannot terminate the host application;
+unrecoverable virtual-machine errors are not intercepted. Every retry path is bounded by count or
+age. After the applicable limit is reached, recovery performs best-effort cleanup and allows the
+signal handler to be installed again.
 
 ## Limitations
 
 Version 1 does not interpret DWARF or compact unwind metadata. ARM32 does not use frame-pointer
 walking, and optimized builds on other architectures can omit usable frame pointers, so recovery
-can contain only the crashing frame and, on ARM, a link-register candidate. Heuristic stack-scan
-candidates are not a call chain.
+can contain only the crashing frame and, on ARM and ARM64, a link-register candidate.
 
 The snapshot is limited to 128 executable segments and 4 KiB of stack memory. Modules loaded after
 the module table is prepared are not represented, so recovery can return a partial stack. A future
 CFI-aware unwinder or Crashpad integration can replace the reader without changing the
 signal-handler safety model. Symbol upload and backend symbolication remain separate work.
+
+While recovery is pending, native crashes in that process are not captured. Supporting concurrent
+pending and new crashes requires per-crash paths or renaming the pending files out of the handler's
+fixed destinations and is outside version 1.
