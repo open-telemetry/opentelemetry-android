@@ -23,8 +23,9 @@ timestamp.epoch_nanos=<positive integer>
 
 The native writer and Kotlin reader must keep these keys and value formats in sync.
 
-The versioned binary format used for native frame recovery is documented in
-[`SNAPSHOT_FORMAT.md`](SNAPSHOT_FORMAT.md).
+The proposed versioned binary format for future native frame recovery is documented in
+[`SNAPSHOT_FORMAT.md`](SNAPSHOT_FORMAT.md). Runtime snapshot capture and recovery are follow-up
+work.
 
 ## Telemetry
 

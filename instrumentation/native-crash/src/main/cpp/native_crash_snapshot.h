@@ -33,7 +33,7 @@
 #elif defined(__x86_64__)
 #define OTEL_NCS_ARCH_CURRENT OTEL_NCS_ARCH_X86_64
 #else
-#define OTEL_NCS_ARCH_CURRENT UINT32_C(0)
+#error "Unsupported architecture for native crash snapshots"
 #endif
 
 // The binary layout is documented in SNAPSHOT_FORMAT.md. Keep both in sync.
@@ -75,9 +75,19 @@ _Static_assert(offsetof(struct otel_native_crash_module, build_id_size) == 88, "
 _Static_assert(offsetof(struct otel_native_crash_module, build_id) == 92, "Unexpected build ID offset");
 _Static_assert(offsetof(struct otel_native_crash_module, reserved) == 124, "Unexpected module reserved offset");
 _Static_assert(sizeof(struct otel_native_crash_module) == 128, "Unexpected module layout");
+_Static_assert(OTEL_NCS_MAGIC_SIZE == 8, "Unexpected magic size");
+_Static_assert(offsetof(struct otel_native_crash_snapshot, magic) == 0, "Unexpected magic offset");
+_Static_assert(offsetof(struct otel_native_crash_snapshot, version) == 8, "Unexpected version offset");
+_Static_assert(offsetof(struct otel_native_crash_snapshot, architecture) == 12, "Unexpected architecture offset");
+_Static_assert(offsetof(struct otel_native_crash_snapshot, record_size) == 16, "Unexpected record size offset");
+_Static_assert(offsetof(struct otel_native_crash_snapshot, signal_number) == 20, "Unexpected signal number offset");
 _Static_assert(offsetof(struct otel_native_crash_snapshot, timestamp_epoch_nanos) == 24, "Unexpected timestamp offset");
 _Static_assert(offsetof(struct otel_native_crash_snapshot, program_counter) == 32, "Unexpected program counter offset");
+_Static_assert(offsetof(struct otel_native_crash_snapshot, stack_pointer) == 40, "Unexpected stack pointer offset");
+_Static_assert(offsetof(struct otel_native_crash_snapshot, frame_pointer) == 48, "Unexpected frame pointer offset");
+_Static_assert(offsetof(struct otel_native_crash_snapshot, link_register) == 56, "Unexpected link register offset");
 _Static_assert(offsetof(struct otel_native_crash_snapshot, module_count) == 64, "Unexpected module count offset");
+_Static_assert(offsetof(struct otel_native_crash_snapshot, stack_size) == 68, "Unexpected stack size offset");
 _Static_assert(offsetof(struct otel_native_crash_snapshot, stack_start) == 72, "Unexpected stack start offset");
 _Static_assert(offsetof(struct otel_native_crash_snapshot, modules) == 80, "Unexpected header layout");
 _Static_assert(offsetof(struct otel_native_crash_snapshot, stack) == 16464, "Unexpected stack offset");

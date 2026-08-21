@@ -1,6 +1,8 @@
 # Native Crash Snapshot Format
 
-Status: version 1 design for [#1940](https://github.com/open-telemetry/opentelemetry-android/issues/1940)
+Status: proposed version 1 design for
+[#1940](https://github.com/open-telemetry/opentelemetry-android/issues/1940). Runtime capture,
+recovery, and replay are follow-up work and are not implemented by this change.
 
 The native crash implementation uses a fixed-size snapshot so the signal handler can copy bounded
 state without allocation, locks, JNI, logging, or process-map parsing. Capture, parsing, unwinding,
@@ -51,9 +53,10 @@ Build IDs longer than 32 bytes are recorded as unavailable rather than truncated
 
 Register and module addresses are unsigned. A 32-bit writer zero-extends every address into its
 64-bit field. Registers come from the signal handler's `ucontext_t.uc_mcontext`, never from the
-handler's own frame or alternate stack. The stack start equals the recorded stack pointer and is
-aligned to the architecture's pointer width. ARM64 register and stack values retain their raw tag
-and pointer-authentication bits; readers normalize those values before module comparisons.
+handler's own frame or alternate stack. The stack start equals the unmodified recorded stack
+pointer. ARM64 register and stack values retain their raw tag and pointer-authentication bits;
+readers normalize those values before module comparisons. Writers set the link-register field to
+zero on x86 and x86_64.
 
 The snapshot record lives in pre-allocated static storage, including the module table prepared
 outside the signal handler. This costs 20,568 bytes of process storage but does not consume the
@@ -64,7 +67,9 @@ call. The snapshot is written and atomically renamed before the marker, making t
 record for a complete crash capture. The snapshot skips `fsync` to bound work in the fatal signal
 handler; process death does not discard completed page-cache writes. The smaller marker is synced
 before rename. A marker without a snapshot remains a valid crash without native frames. A snapshot
-without a marker is an orphan and is removed during startup recovery.
+without a marker is an orphan and is removed during startup recovery. This ordering treats the
+marker as the commit record, but an abrupt process termination during the snapshot write can lose
+the crash before the marker is created.
 
 Stack copying is fault-tolerant; a failed or short read produces a stack size from zero through
 4,096 rather than reading through an invalid page. The handler loops over interrupted short writes,
@@ -80,25 +85,40 @@ it is not an authenticity mechanism. Malformed module entries are skipped withou
 structurally valid entries. A record with no usable module entries remains valid but produces no
 native frames.
 
-ARM64 readers preserve captured values but try module lookup after clearing bits 56 through 63,
-then 52 through 63, then 48 through 63 to account for top-byte tags and pointer authentication.
-ARM readers clear the Thumb bit before lookup. The first candidate inside a captured executable
-segment wins.
+Readers reject zero program counters or stack pointers, a stack start that differs from the stack
+pointer, and a stack start that is not aligned to the recorded architecture's pointer width. A
+misaligned or otherwise corrupt stack pointer therefore produces no native frames. Readers ignore
+the link-register field on x86 and x86_64.
 
-Version 1 recovers at most 64 frames using a frame-pointer walk. A bounded stack scan may collect
-deduplicated heuristic candidates when no caller frame is recovered, but candidates are marked as
-unordered and are not rendered as confirmed stack frames. Only addresses inside a captured
-executable segment are retained. Confirmed frames are reported as module-relative addresses with
-the module build ID when available.
+ARM64 readers preserve captured values and try the raw address first. If it does not resolve, they
+retry after clearing bits 56 through 63, then 52 through 63, then 48 through 63 to account for
+top-byte tags and pointer authentication. ARM readers clear the Thumb bit before lookup. The first
+candidate inside a captured executable segment wins.
+
+Version 1 recovers at most 64 frames. ARM64, x86, and x86_64 readers walk frame records containing
+the previous frame pointer at `[fp]` and the return address at `[fp + pointerSize]`. ARM32 readers do
+not perform a frame-pointer walk; they report the program counter and may use the link register.
+When a frame-pointer walk yields no caller, ARM and ARM64 readers may add a nonzero link register.
+The link register can be stale for a non-leaf crash, so readers preserve its provenance even when a
+stacktrace renderer cannot distinguish it from a frame-pointer result.
+
+A bounded stack scan may collect deduplicated heuristic candidates when no frame-pointer caller is
+recovered. Candidates are marked as unordered and are not rendered as confirmed stack frames. Only
+addresses inside a captured executable segment are retained. Confirmed frames are reported as
+`normalizedAddress - module.loadBias`, with the module build ID when available. The normalized
+address is the first architecture-specific candidate that resolves inside an executable segment.
 
 Recovery deletes the marker and snapshot only after replay succeeds. Retryable read or cleanup
-failures retain both files for the next launch; invalid snapshots are removed while the marker can
-still produce a crash without native frames.
+failures retain both files for a later launch; invalid snapshots are removed while the marker can
+still produce a crash without native frames. Implementations contain recovery exceptions so they
+cannot terminate the host application. Retries must be bounded by count or age; after the limit is
+reached, recovery files are discarded and the signal handler can be installed again.
 
 ## Limitations
 
-Version 1 does not interpret DWARF or compact unwind metadata. ARM32 and optimized builds commonly
-omit usable frame pointers, so recovery can contain only the crashing frame. Heuristic stack-scan
+Version 1 does not interpret DWARF or compact unwind metadata. ARM32 does not use frame-pointer
+walking, and optimized builds on other architectures can omit usable frame pointers, so recovery
+can contain only the crashing frame and, on ARM, a link-register candidate. Heuristic stack-scan
 candidates are not a call chain.
 
 The snapshot is limited to 128 executable segments and 4 KiB of stack memory. Modules loaded after
