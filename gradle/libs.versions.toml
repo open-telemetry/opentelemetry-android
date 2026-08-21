@@ -78,6 +78,7 @@ opentelemetry-proto = { module = "io.opentelemetry.proto:opentelemetry-proto", v
 protobuf-kotlin = { module = "com.google.protobuf:protobuf-kotlin", version.ref = "protobufKotlin" }
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.11.0" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = "1.11.0" }
+opentelemetry-extension-kotlin = { module = "io.opentelemetry:opentelemetry-extension-kotlin" }
 
 #Compilation tools
 desugarJdkLibs = "com.android.tools:desugar_jdk_libs:2.1.5"
