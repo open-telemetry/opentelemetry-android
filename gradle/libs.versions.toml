@@ -23,6 +23,12 @@ openTelemetryProto = "1.11.0-alpha"
 protobufKotlin = "4.36.1"
 weaver = "0.26.1"
 
+# Minimum toolchain that a consumer of the published artifacts must be able to build with,
+# as documented in VERSIONING.md. Enforced by the :gradle-integration-test module.
+minSupportedAgp = "7.4.2"
+minSupportedGradle = "7.5"
+minSupportedKotlin = "2.0.0"
+
 [libraries]
 opentelemetry-platform-alpha = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-instrumentation-alpha" }
 opentelemetry-platform = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom" }

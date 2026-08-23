@@ -24,6 +24,7 @@ include(":semconv")
 include(":opentelemetry-android-bom")
 include(":smoke-test")
 include(":smoke-test-app")
+include(":gradle-integration-test")
 includeFromDir("instrumentation")
 
 fun includeFromDir(
