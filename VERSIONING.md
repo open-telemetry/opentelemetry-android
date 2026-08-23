@@ -25,13 +25,17 @@ builds, but their use in production is strongly discouraged.
 
 The android-agent currently supports the following minimum versions:
 
-- Kotlin 2.0
+- Kotlin 2.2
 - API 23+ ([desugaring of the core library](https://developer.android.com/studio/write/java8-support#library-desugaring) required for API <26)
-- Android Gradle Plugin (AGP) 7.4 and Gradle 7.5
-- JDK 11 (build-time)
+- Android Gradle Plugin (AGP) 8.13.2 and Gradle 8.13
+- `compileSdk` 37
+- JDK 17 (build-time)
 - Java language level 8 as per [opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java/blob/main/VERSIONING.md#language-version-compatibility)
 
-These versions can be bumped in a major version release when:
+These are verified on every pull request by the `gradle-integration-test` module, which builds
+consumer apps against the published artifacts at exactly these versions.
+
+The minimum versions can be bumped in a major version release when:
 
 1. [Google Play Services](https://developers.google.com/android/guides/setup) drops support for any of the above versions
 2. A new version of Kotlin is released that drops support for the minimum Kotlin version that

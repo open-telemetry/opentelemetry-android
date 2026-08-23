@@ -5,8 +5,11 @@ plugins {
 
 description = "Verifies the published artifacts are consumable at the minimum supported toolchain"
 
+val minSupportedJdk = libs.versions.minSupportedJdk.get()
+
+// TestKit starts the fixture builds on the JVM that runs the tests, so this is the consumer's JDK.
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(minSupportedJdk.toInt())
 }
 
 dependencies {
@@ -61,6 +64,7 @@ tasks.register<Test>("minSupportedVersionsTest") {
     systemProperty("catalogPath", catalog.asFile.absolutePath)
     systemProperty("bomVersion", bomVersion)
     systemProperty("minSupportedGradle", libs.versions.minSupportedGradle.get())
+    systemProperty("minSupportedJdk", minSupportedJdk)
     systemProperty("minSdk", minSdk)
     systemProperty("minCompileSdk", minCompileSdk)
     systemProperty("androidSdkDir", androidSdkDir.get())
