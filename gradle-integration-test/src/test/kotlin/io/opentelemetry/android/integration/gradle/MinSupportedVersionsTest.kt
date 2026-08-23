@@ -15,7 +15,7 @@ import java.nio.file.StandardCopyOption
 
 /**
  * Builds a real consumer app against the snapshot artifacts in mavenLocal, using the minimum
- * Gradle, AGP, Kotlin and compileSdk that VERSIONING.md promises to support.
+ * JDK, Gradle, AGP, Kotlin and compileSdk that VERSIONING.md promises to support.
  */
 class MinSupportedVersionsTest {
     @Test
@@ -36,6 +36,7 @@ class MinSupportedVersionsTest {
         fixtureName: String,
         tmp: Path,
     ) {
+        requireMinSupportedJdk()
         copyRecursively(File(systemProperty("fixtureSrcDir"), fixtureName).toPath(), tmp)
         writeLocalProperties(tmp)
 
@@ -53,6 +54,16 @@ class MinSupportedVersionsTest {
                 "--no-configuration-cache",
             ).forwardOutput()
             .build()
+    }
+
+    // TestKit starts the fixture build on the JVM running this test, so a fixture that builds on a
+    // newer JDK than the documented minimum proves nothing about that minimum.
+    private fun requireMinSupportedJdk() {
+        val expected = systemProperty("minSupportedJdk").toInt()
+        val actual = Runtime.version().feature()
+        check(actual == expected) {
+            "fixtures must build on JDK $expected, the documented minimum, but this test runs on JDK $actual"
+        }
     }
 
     private fun writeLocalProperties(projectDir: Path) {

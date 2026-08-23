@@ -51,6 +51,9 @@ android {
     }
 
     kotlin {
+        // Publish a kotlin-stdlib dependency that matches apiVersion rather than the compiler, so
+        // our POMs do not raise the minimum Kotlin version consumers need.
+        coreLibrariesVersion = "2.0.21"
         compilerOptions {
             jvmTarget.set(targetJvm)
             apiVersion.set(minKotlinVersion)

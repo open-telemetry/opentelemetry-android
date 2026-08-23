@@ -101,6 +101,17 @@
       ],
     },
     {
+      // androidx.core 1.19.0+ requires consumers to use AGP 9.1.0, which would raise our minimum
+      // supported AGP version. See VERSIONING.md.
+      matchFileNames: [
+        'gradle/libs.versions.toml',
+      ],
+      matchPackageNames: [
+        '/^androidx.core/',
+      ],
+      allowedVersions: '<1.19.0',
+    },
+    {
       groupName: 'gradle develocity packages',
       matchPackageNames: [
         'com.gradle.develocity{/,}**',
