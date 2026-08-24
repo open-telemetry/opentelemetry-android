@@ -10,11 +10,10 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
-import java.io.File
 import org.junit.Test
+import java.io.File
 
 class CacheStorageImplTest {
-
     @Test
     fun `check cacheDir is cached and calls appContext cacheDir only once`() {
         val context = mockk<Context>()
