@@ -48,7 +48,7 @@ This instrumentation produces the following telemetry:
 
 * Type: Event
 * Name: `app.screen.longpress`
-* Description: This event is emitted when the user performs a confirmed single tap or double tap on a clickable Android `View`.
+* Description: This event represents a long press on the screen of an application.
 * Common attributes:
     * `app.screen.coordinate.x`
     * `app.screen.coordinate.y`
@@ -61,12 +61,12 @@ This instrumentation produces the following telemetry:
 
 * Type: Event
 * Name: `app.widget.longpress`
-* Description: This event is emitted when the user performs a confirmed single tap or double tap on a clickable Android `View`.
+* Description: This event represents a long press on an application widget.
 * Common attributes:
     * `app.screen.coordinate.x`
     * `app.screen.coordinate.y`
     * `app.widget.id`
-    * `app.wideget.name`
+    * `app.widget.name`
     * `app.screen.id`
     * `app.screen.name`
     * `hw.pointer.type` (`finger`, `mouse`, `stylus`, `eraser`, or `unknown`)
@@ -76,7 +76,7 @@ This instrumentation produces the following telemetry:
 
 * Type: Event
 * Name: `app.screen.scroll`
-* Description: This event is emitted when the user performs a confirmed single tap or double tap on a clickable Android `View`.
+* Description: This event represents a scroll on the screen of an application.
 * Common attributes:
     * `app.screen.coordinate.x`
     * `app.screen.coordinate.y`
@@ -91,12 +91,12 @@ This instrumentation produces the following telemetry:
 
 * Type: Event
 * Name: `app.widget.scroll`
-* Description: This event is emitted when the user performs a confirmed single tap or double tap on a clickable Android `View`.
+* Description: This event represents a scroll on an application widget.
 * Common attributes:
     * `app.screen.coordinate.x`
     * `app.screen.coordinate.y`
     * `app.widget.id`
-    * `app.wideget.name`
+    * `app.widget.name`
     * `app.screen.id`
     * `app.screen.name`
     * `hw.pointer.type` (`finger`, `mouse`, `stylus`, `eraser`, or `unknown`)
@@ -108,7 +108,7 @@ This instrumentation produces the following telemetry:
 
 * Type: Event
 * Name: `app.screen.fling`
-* Description: This event is emitted when the user performs a confirmed single tap or double tap on a clickable Android `View`.
+* Description: This event represents a fling on the screen of an application.
 * Common attributes:
     * `app.screen.coordinate.x`
     * `app.screen.coordinate.y`
@@ -123,12 +123,12 @@ This instrumentation produces the following telemetry:
 
 * Type: Event
 * Name: `app.widget.fling`
-* Description: This event is emitted when the user performs a confirmed single tap or double tap on a clickable Android `View`.
+* Description: This event represents a fling on an application widget.
 * Common attributes:
     * `app.screen.coordinate.x`
     * `app.screen.coordinate.y`
     * `app.widget.id`
-    * `app.wideget.name`
+    * `app.widget.name`
     * `app.screen.id`
     * `app.screen.name`
     * `hw.pointer.type` (`finger`, `mouse`, `stylus`, `eraser`, or `unknown`)
