@@ -46,6 +46,98 @@ This instrumentation produces the following telemetry:
 * See the [semantic convention definition](https://github.com/open-telemetry/semantic-conventions/blob/main/docs/app/app-events.md#event-appwidgetclick)
   for more details.
 
+* Type: Event
+* Name: `app.screen.longpress`
+* Description: This event is emitted when the user performs a confirmed single tap or double tap on a clickable Android `View`.
+* Common attributes:
+    * `app.screen.coordinate.x`
+    * `app.screen.coordinate.y`
+    * `app.screen.id`
+    * `app.screen.name`
+    * `hw.pointer.type` (`finger`, `mouse`, `stylus`, `eraser`, or `unknown`)
+    * `hw.pointer.button` for supported mouse and stylus button interactions
+* See the [semantic convention definition](https://github.com/open-telemetry/opentelemetry-android/blob/1d7cd77538bd0e83c8efb1d80d6edbf8c0f365f5/semconv/model/android/events.yaml#L11)
+  for more details.
+
+* Type: Event
+* Name: `app.widget.longpress`
+* Description: This event is emitted when the user performs a confirmed single tap or double tap on a clickable Android `View`.
+* Common attributes:
+    * `app.screen.coordinate.x`
+    * `app.screen.coordinate.y`
+    * `app.widget.id`
+    * `app.wideget.name`
+    * `app.screen.id`
+    * `app.screen.name`
+    * `hw.pointer.type` (`finger`, `mouse`, `stylus`, `eraser`, or `unknown`)
+    * `hw.pointer.button` for supported mouse and stylus button interactions
+* See the [semantic convention definition](https://github.com/open-telemetry/opentelemetry-android/blob/1d7cd77538bd0e83c8efb1d80d6edbf8c0f365f5/semconv/model/android/events.yaml#L30)
+  for more details.
+
+* Type: Event
+* Name: `app.screen.scroll`
+* Description: This event is emitted when the user performs a confirmed single tap or double tap on a clickable Android `View`.
+* Common attributes:
+    * `app.screen.coordinate.x`
+    * `app.screen.coordinate.y`
+    * `app.screen.id`
+    * `app.screen.name`
+    * `hw.pointer.type` (`finger`, `mouse`, `stylus`, `eraser`, or `unknown`)
+    * `hw.pointer.button` for supported mouse and stylus button interactions
+    * `hw.pointer.distance.x`
+    * `hw.pointer.distance.y`
+* See the [semantic convention definition](https://github.com/open-telemetry/opentelemetry-android/blob/1d7cd77538bd0e83c8efb1d80d6edbf8c0f365f5/semconv/model/android/events.yaml#L53)
+  for more details.
+
+* Type: Event
+* Name: `app.widget.scroll`
+* Description: This event is emitted when the user performs a confirmed single tap or double tap on a clickable Android `View`.
+* Common attributes:
+    * `app.screen.coordinate.x`
+    * `app.screen.coordinate.y`
+    * `app.widget.id`
+    * `app.wideget.name`
+    * `app.screen.id`
+    * `app.screen.name`
+    * `hw.pointer.type` (`finger`, `mouse`, `stylus`, `eraser`, or `unknown`)
+    * `hw.pointer.button` for supported mouse and stylus button interactions
+    * `hw.pointer.distance.x`
+    * `hw.pointer.distance.y`
+* See the [semantic convention definition](https://github.com/open-telemetry/opentelemetry-android/blob/1d7cd77538bd0e83c8efb1d80d6edbf8c0f365f5/semconv/model/android/events.yaml#L76)
+  for more details.
+
+* Type: Event
+* Name: `app.screen.fling`
+* Description: This event is emitted when the user performs a confirmed single tap or double tap on a clickable Android `View`.
+* Common attributes:
+    * `app.screen.coordinate.x`
+    * `app.screen.coordinate.y`
+    * `app.screen.id`
+    * `app.screen.name`
+    * `hw.pointer.type` (`finger`, `mouse`, `stylus`, `eraser`, or `unknown`)
+    * `hw.pointer.button` for supported mouse and stylus button interactions
+    * `hw.pointer.velocity.x`
+    * `hw.pointer.velocity.y`
+* See the [semantic convention definition](https://github.com/open-telemetry/opentelemetry-android/blob/1d7cd77538bd0e83c8efb1d80d6edbf8c0f365f5/semconv/model/android/events.yaml#L103)
+  for more details.
+
+* Type: Event
+* Name: `app.widget.fling`
+* Description: This event is emitted when the user performs a confirmed single tap or double tap on a clickable Android `View`.
+* Common attributes:
+    * `app.screen.coordinate.x`
+    * `app.screen.coordinate.y`
+    * `app.widget.id`
+    * `app.wideget.name`
+    * `app.screen.id`
+    * `app.screen.name`
+    * `hw.pointer.type` (`finger`, `mouse`, `stylus`, `eraser`, or `unknown`)
+    * `hw.pointer.button` for supported mouse and stylus button interactions
+    * `hw.pointer.velocity.x`
+    * `hw.pointer.velocity.y`
+* See the [semantic convention definition](https://github.com/open-telemetry/opentelemetry-android/blob/1d7cd77538bd0e83c8efb1d80d6edbf8c0f365f5/semconv/model/android/events.yaml#L126)
+  for more details.
+
 
 ## Installation
 
