@@ -21,8 +21,9 @@ import java.util.concurrent.ScheduledExecutorService
 class AnrInstrumentation : AndroidInstrumentation {
     private val additionalExtractors: MutableList<EventAttributesExtractor<Array<StackTraceElement>>> =
         mutableListOf()
-    private var mainLooper: Looper = Looper.getMainLooper()
-    private var scheduler: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
+    private var mainLooper: Looper? = null
+    private var scheduler: ScheduledExecutorService? = null
+    private val defaultScheduler by lazy { Executors.newScheduledThreadPool(1) }
 
     /** Adds an [EventAttributesExtractor] that will extract additional attributes.  */
     fun addAttributesExtractor(extractor: EventAttributesExtractor<Array<StackTraceElement>>): AnrInstrumentation {
@@ -50,8 +51,8 @@ class AnrInstrumentation : AndroidInstrumentation {
         val anrDetector =
             AnrDetector(
                 additionalExtractors,
-                mainLooper,
-                scheduler,
+                mainLooper ?: Looper.getMainLooper(),
+                scheduler ?: defaultScheduler,
                 get(context).appLifecycle,
                 openTelemetryRum.openTelemetry,
             )

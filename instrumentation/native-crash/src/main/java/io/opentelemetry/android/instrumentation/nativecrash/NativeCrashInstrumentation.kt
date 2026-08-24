@@ -43,9 +43,10 @@ class NativeCrashInstrumentation internal constructor(
     private val storeFactory: (Context) -> NativeCrashStore = { context ->
         FileNativeCrashStore(File(context.filesDir, "opentelemetry/native-crash"))
     },
-    private val executor: Executor = Executors.newSingleThreadExecutor(),
+    executor: Executor? = null,
     private val signalHandlerInstaller: NativeSignalHandlerInstaller = JniNativeSignalHandlerInstaller(),
 ) : AndroidInstrumentation {
+    private val executor: Executor by lazy { executor ?: Executors.newSingleThreadExecutor() }
     override val name: String = "native-crash"
 
     override fun install(
