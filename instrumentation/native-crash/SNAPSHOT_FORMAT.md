@@ -93,8 +93,8 @@ version, checksum, architecture, bounds, reserved fields, module metadata, and m
 signal and timestamp. The checksum uses 32-bit FNV-1a with offset basis `0x811c9dc5` and prime
 `0x01000193`, applying XOR before multiplication for each byte. It detects accidental corruption;
 it is not an authenticity mechanism. Malformed module entries are skipped without discarding
-structurally valid entries. A record with no usable module entries remains valid but produces no
-native frames.
+structurally valid entries. A record with one or more populated module entries remains valid if
+none of those entries are usable after validation, but it produces no native frames.
 
 Readers reject zero stack pointers, a stack start that differs from the stack pointer, and a stack
 start that is not aligned to the recorded architecture's pointer width. A zero program counter is
