@@ -51,7 +51,7 @@ internal fun hasTelephonyFeature(context: Context): Boolean = context.packageMan
 /**
  * Maps [TelephonyManager] network type constants to human-readable strings.
  */
-internal fun getNetworkTypeName(networkType: Int): String =
+internal fun getNetworkTypeName(networkType: Int?): String =
     getGsmNetworkTypeName(networkType)
         ?: getCdmaNetworkTypeName(networkType)
         ?: getLteAndModernNetworkTypeName(networkType)
@@ -62,7 +62,7 @@ internal fun getNetworkTypeName(networkType: Int): String =
  */
 internal fun isValidString(str: CharSequence?): Boolean = !str.isNullOrEmpty()
 
-private fun getGsmNetworkTypeName(networkType: Int): String? =
+private fun getGsmNetworkTypeName(networkType: Int?): String? =
     when (networkType) {
         TelephonyManager.NETWORK_TYPE_GPRS -> "GPRS"
         TelephonyManager.NETWORK_TYPE_EDGE -> "EDGE"
@@ -77,7 +77,7 @@ private fun getGsmNetworkTypeName(networkType: Int): String? =
     }
 
 @Suppress("DEPRECATION")
-private fun getCdmaNetworkTypeName(networkType: Int): String? =
+private fun getCdmaNetworkTypeName(networkType: Int?): String? =
     when (networkType) {
         TelephonyManager.NETWORK_TYPE_CDMA -> "CDMA"
 
@@ -97,7 +97,7 @@ private fun getCdmaNetworkTypeName(networkType: Int): String? =
         else -> null
     }
 
-private fun getLteAndModernNetworkTypeName(networkType: Int): String? =
+private fun getLteAndModernNetworkTypeName(networkType: Int?): String? =
     when (networkType) {
         TelephonyManager.NETWORK_TYPE_LTE -> "LTE"
         TelephonyManager.NETWORK_TYPE_IWLAN -> "IWLAN"
