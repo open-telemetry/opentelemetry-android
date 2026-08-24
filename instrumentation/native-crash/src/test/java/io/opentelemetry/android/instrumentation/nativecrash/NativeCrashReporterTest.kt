@@ -44,6 +44,9 @@ import java.io.File
 import java.io.FileOutputStream
 import java.time.Instant
 import java.util.Properties
+import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 class NativeCrashReporterTest {
     @TempDir
@@ -65,6 +68,20 @@ class NativeCrashReporterTest {
     @Test
     fun `has a stable instrumentation name`() {
         assertThat(NativeCrashInstrumentation().name).isEqualTo("native-crash")
+    }
+
+    @Test
+    fun `does not create executor when not installed`() {
+        mockkStatic(Executors::class)
+        try {
+            every { Executors.newSingleThreadExecutor() } returns mockk<ExecutorService>(relaxed = true)
+
+            assertThat(NativeCrashInstrumentation().name).isEqualTo("native-crash")
+
+            verify(exactly = 0) { Executors.newSingleThreadExecutor() }
+        } finally {
+            unmockkStatic(Executors::class)
+        }
     }
 
     @Test
