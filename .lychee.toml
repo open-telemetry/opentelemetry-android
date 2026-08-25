@@ -12,5 +12,5 @@ exclude = [
   '^https://github.com/open-telemetry/opentelemetry-android/(issues|pull)/\d+$',
   "^https://maven-badges.sml.io/maven-central/io.opentelemetry.android/.*$",
   "^https://central.sonatype.com/service/rest/repository/browse/maven-snapshots/.*$",
-  "^https://cloud-native\.slack\.com/archives/C05J0T9K27Q$",
+  "^https://cloud-native.slack.com/archives/C05J0T9K27Q$",
 ]
