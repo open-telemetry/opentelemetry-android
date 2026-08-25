@@ -16,6 +16,8 @@ layout; this document explains the corresponding fields and invariants. Keep bot
 
 Version 1 is a 20,568-byte, little-endian record. Readers require the exact version and record size.
 An incompatible record is discarded rather than interpreted using a newer layout.
+It covers the four Android NDK ABIs currently produced by this module's native build. The explicit
+architecture value lets readers apply the correct pointer width and register rules.
 
 | Offset | Size | Field |
 | ---: | ---: | --- |
@@ -34,6 +36,11 @@ An incompatible record is discarded rather than interpreted using a newer layout
 | 20560 | 4 | Reserved; must be zero |
 | 20564 | 4 | 32-bit FNV-1a checksum of bytes 0 through 20563 |
 
+Each module entry identifies one executable `PT_LOAD` segment from an ELF image loaded in the
+process. Its address range and load bias let the reader turn a captured address into a
+module-relative frame; its basename and build ID identify the corresponding binary for downstream
+symbolication.
+
 Each 128-byte module entry contains:
 
 | Relative offset | Size | Field |
@@ -50,7 +57,9 @@ The writer zero-fills unused entries. It records app-owned modules before system
 preserves loader order within each group, so the table is not address-sorted. Every populated entry
 satisfies `loadBias <= executableStart < executableEnd`. Names are nonblank UTF-8 without control
 characters, use at most 63 bytes, and always include a NUL terminator followed by zero padding.
-Build IDs longer than 32 bytes are recorded as unavailable rather than truncated.
+The 32-byte capacity accommodates build IDs up through 256 bits. Longer IDs are recorded as
+unavailable rather than truncated because a partial identifier is not safe for exact artifact
+matching; increasing a fixed-size field would only move that bound.
 
 ## Files And Pairing
 
@@ -70,9 +79,12 @@ pointer. ARM64 register and stack values retain their raw tag and pointer-authen
 readers normalize those values before module comparisons. Writers set the link-register field to
 zero on x86 and x86_64.
 
-The snapshot record lives in pre-allocated static storage, including the module table prepared
-outside the signal handler. This costs 20,568 bytes of process storage but does not consume the
-alternate signal stack or allocate during a crash.
+The snapshot record lives in pre-allocated static storage. Before installing the signal handler,
+the writer walks the loaded ELF program headers and prepares the module table while normal runtime
+services are available. At crash time, the handler uses that table as-is; it does not inspect ELF
+metadata. If module preparation fails, marker capture remains enabled but snapshot capture is
+omitted. This costs 20,568 bytes of process storage but does not consume the alternate signal stack
+or allocate during a crash.
 
 The marker and snapshot use the same signal number and a timestamp from a single `clock_gettime`
 call. The marker is written, synced, and atomically renamed first. The snapshot is then written and
