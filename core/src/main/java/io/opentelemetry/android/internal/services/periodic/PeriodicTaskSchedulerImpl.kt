@@ -14,7 +14,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 internal class PeriodicTaskSchedulerImpl(
-    dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : PeriodicTaskScheduler {
     private val job = SupervisorJob()
     private val scope = CoroutineScope(job + dispatcher)
