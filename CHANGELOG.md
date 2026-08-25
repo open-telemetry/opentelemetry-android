@@ -8,6 +8,11 @@
   now records an `app.navigation.complete` event carrying the `app.navigation.destination.name`
   attribute whenever a navigation completes.
   ([#1920](https://github.com/open-telemetry/opentelemetry-android/issues/1920))
+- `VisibleScreenTracker` can now be told about a screen that is neither an Activity nor a Fragment,
+  and the Compose Navigation instrumentation reports its resolved destination name through it. For
+  apps that attach that instrumentation, the destination takes precedence over the last resumed
+  fragment and activity until the controller leaves the composition.
+  ([#1909](https://github.com/open-telemetry/opentelemetry-android/issues/1909))
 
 ### 🛠️ Bug fixes
 

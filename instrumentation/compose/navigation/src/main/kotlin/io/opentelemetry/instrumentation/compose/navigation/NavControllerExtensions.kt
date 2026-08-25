@@ -11,12 +11,14 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.Navigator
 import androidx.navigation.compose.rememberNavController
 import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.android.internal.services.Services
 
 /**
  * Attaches OpenTelemetry navigation instrumentation to this [NavController]: on every completed
@@ -28,6 +30,11 @@ import io.opentelemetry.android.OpenTelemetryRum
  * already showing, and re-attaching (for example after a configuration change) emits again without
  * a navigation. The replay supplies no arguments, even for a parameterised start destination. See
  * the module README for the full event contract.
+ *
+ * The resolved screen name is also reported to the visible screen tracker, which uses it as the
+ * currently visible screen until this controller leaves the composition and clears it. Clearing
+ * only takes effect while this controller's destination is still the recorded one, so a nested or
+ * sibling controller's newer destination survives.
  *
  * Works for any controller you already hold, including nested/child controllers, not just the host
  * controller returned by `rememberNavController()`. The receiver is returned with its static type
@@ -49,9 +56,16 @@ fun <T : NavController> T.withOpenTelemetry(
     val emitter = remember(rum) { NavigationEmitter(rum) }
     val currentEmitter by rememberUpdatedState(emitter)
     val currentScreenName by rememberUpdatedState(screenName)
-    DisposableEffect(this) {
-        val listener = attachOpenTelemetry({ currentEmitter }, { currentScreenName })
-        onDispose { removeOnDestinationChangedListener(listener) }
+    val appContext = LocalContext.current.applicationContext
+    val visibleScreenTracker =
+        remember(appContext) { Services.get(appContext).visibleScreenTracker }
+    DisposableEffect(this, visibleScreenTracker) {
+        val reporter = NavigationDestinationReporter(visibleScreenTracker)
+        val listener = attachOpenTelemetry({ currentEmitter }, { currentScreenName }, reporter)
+        onDispose {
+            removeOnDestinationChangedListener(listener)
+            reporter.clear()
+        }
     }
     return this
 }
@@ -70,8 +84,9 @@ fun rememberObservedNavController(
 
 /**
  * Registers an [NavController.OnDestinationChangedListener] that resolves a screen name and hands
- * it to the [emitter] on each destination change. The [emitter] and [screenName] are resolved
- * lazily on every change, so callers can back them with values that vary over time.
+ * it to the [emitter] and the [reporter] on each destination change. The [emitter] and
+ * [screenName] are resolved lazily on every change, so callers can back them with values that vary
+ * over time.
  *
  * This is the non-Compose core of [withOpenTelemetry], extracted so it can be tested by invoking
  * the returned listener directly.
@@ -79,10 +94,13 @@ fun rememberObservedNavController(
 internal fun NavController.attachOpenTelemetry(
     emitter: () -> NavigationEmitter,
     screenName: () -> (NavDestination, Bundle?) -> String,
+    reporter: NavigationDestinationReporter,
 ): NavController.OnDestinationChangedListener {
     val listener =
         NavController.OnDestinationChangedListener { _, destination, arguments ->
-            emitter().onNavigation(screenName()(destination, arguments))
+            val resolvedScreenName = screenName()(destination, arguments)
+            reporter.report(resolvedScreenName)
+            emitter().onNavigation(resolvedScreenName)
         }
     addOnDestinationChangedListener(listener)
     return listener

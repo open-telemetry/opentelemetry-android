@@ -22,10 +22,15 @@ import java.util.concurrent.atomic.AtomicReference
  * Wherein we do our best to figure out what "screen" is visible and what was the previously visible
  * "screen".
  *
- * In general, we favor using the last fragment that was resumed, but fall back to the last
- * resumed activity in case we don't have a fragment.
+ * In general, we favor the most recently reported navigation destination, then the last fragment
+ * that was resumed, and fall back to the last resumed activity in case we have neither. While a
+ * destination is recorded it outranks both, including a DialogFragment shown over it.
  *
- * We always ignore NavHostFragment instances since they aren't ever visible to the user.
+ * Navigation destinations contribute only to the currently visible screen. The previously visible
+ * screen is still derived from fragments and activities alone.
+ *
+ * We always ignore NavHostFragment instances since they aren't ever visible to the user. That
+ * concerns the host fragment itself, not the destinations a navigation library reports to us.
  *
  * We have to treat DialogFragments slightly differently since they don't replace the launching
  * screen, and the launching screen never leaves visibility.
@@ -37,6 +42,7 @@ internal class VisibleScreenTrackerImpl internal constructor(
     private val previouslyLastResumedActivity = AtomicReference<String>()
     private val lastResumedFragment = AtomicReference<String>()
     private val previouslyLastResumedFragment = AtomicReference<String?>()
+    private val currentNavigationDestination = AtomicReference<String?>()
     private val activityLifecycleTracker by lazy { buildActivitiesTracker() }
     private val fragmentLifecycleTrackerRegisterer by lazy { buildFragmentsTrackerRegisterer() }
 
@@ -76,6 +82,10 @@ internal class VisibleScreenTrackerImpl internal constructor(
 
     override val currentlyVisibleScreen: String
         get() {
+            val destination = currentNavigationDestination.get()
+            if (destination != null) {
+                return destination
+            }
             val lastFragment = lastResumedFragment.get()
             if (lastFragment != null) {
                 return lastFragment
@@ -119,6 +129,14 @@ internal class VisibleScreenTrackerImpl internal constructor(
             lastResumedFragment.compareAndSet(fragment.javaClass.simpleName, null)
         }
         previouslyLastResumedFragment.set(fragment.javaClass.simpleName)
+    }
+
+    override fun navigationDestinationChanged(destinationName: String) {
+        currentNavigationDestination.set(destinationName)
+    }
+
+    override fun navigationDestinationCleared(destinationName: String) {
+        currentNavigationDestination.compareAndSet(destinationName, null)
     }
 
     override fun close() {

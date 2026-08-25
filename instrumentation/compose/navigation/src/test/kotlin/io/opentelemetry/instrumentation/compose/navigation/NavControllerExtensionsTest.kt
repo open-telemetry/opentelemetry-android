@@ -17,22 +17,24 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class NavControllerExtensionsTest {
     private val emitter = mockk<NavigationEmitter>(relaxed = true)
+    private val reporter = mockk<NavigationDestinationReporter>(relaxed = true)
 
     @Test
     fun `notifies the emitter on each destination change`() {
         val controller = mockk<NavController>(relaxed = true)
-        val listener = controller.attachOpenTelemetry({ emitter }, { { _, _ -> "home" } })
+        val listener = controller.attachOpenTelemetry({ emitter }, { { _, _ -> "home" } }, reporter)
 
         listener.onDestinationChanged(controller, mockk<NavDestination>(), null)
 
         verify(exactly = 1) { emitter.onNavigation("home") }
+        verify(exactly = 1) { reporter.report("home") }
     }
 
     @Test
     fun `listener uses the latest screenName supplied at fire time`() {
         val controller = mockk<NavController>(relaxed = true)
         var name = "first"
-        val listener = controller.attachOpenTelemetry({ emitter }, { { _, _ -> name } })
+        val listener = controller.attachOpenTelemetry({ emitter }, { { _, _ -> name } }, reporter)
 
         val destination = mockk<NavDestination>()
         listener.onDestinationChanged(controller, destination, null)
