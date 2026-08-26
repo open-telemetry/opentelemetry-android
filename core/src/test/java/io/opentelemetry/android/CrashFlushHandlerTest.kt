@@ -19,6 +19,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.time.Duration.Companion.seconds
 
 class CrashFlushHandlerTest {
     private var previousHandler: Thread.UncaughtExceptionHandler? = null
@@ -99,7 +101,26 @@ class CrashFlushHandlerTest {
     }
 
     @Test
-    fun `previous handler runs before flush`() {
+    fun `still delegates to previous handler when flush fails`() {
+        val existingHandler = mockk<Thread.UncaughtExceptionHandler>(relaxed = true)
+        Thread.setDefaultUncaughtExceptionHandler(existingHandler)
+
+        val loggerProvider = mockk<SdkLoggerProvider>()
+        val sdk = mockSdk(loggerProvider = loggerProvider)
+        every { loggerProvider.forceFlush() } throws RuntimeException("flush failed")
+
+        CrashFlushHandler(sdk).install()
+
+        val handler = Thread.getDefaultUncaughtExceptionHandler()!!
+        val thread = Thread.currentThread()
+        val exception = RuntimeException("test")
+        handler.uncaughtException(thread, exception)
+
+        verify { existingHandler.uncaughtException(thread, exception) }
+    }
+
+    @Test
+    fun `flush completes before previous handler runs`() {
         val existingHandler = mockk<Thread.UncaughtExceptionHandler>(relaxed = true)
         Thread.setDefaultUncaughtExceptionHandler(existingHandler)
 
@@ -119,9 +140,49 @@ class CrashFlushHandlerTest {
         handler.uncaughtException(thread, RuntimeException("test"))
 
         verifyOrder {
-            existingHandler.uncaughtException(thread, any())
+            loggerProvider.forceFlush()
             tracerProvider.forceFlush()
+            meterProvider.forceFlush()
+            existingHandler.uncaughtException(thread, any())
         }
+    }
+
+    @Test
+    fun `flush is awaited before previous handler runs`() {
+        val flushResult = CompletableResultCode()
+        val flushObservedIncomplete = AtomicBoolean(false)
+        val existingHandler =
+            Thread.UncaughtExceptionHandler { _, _ ->
+                flushObservedIncomplete.set(!flushResult.isDone)
+            }
+        Thread.setDefaultUncaughtExceptionHandler(existingHandler)
+
+        val tracerProvider = mockk<SdkTracerProvider>()
+        val loggerProvider = mockk<SdkLoggerProvider>()
+        val meterProvider = mockk<SdkMeterProvider>()
+        val sdk = mockSdk(tracerProvider, loggerProvider, meterProvider)
+
+        every { loggerProvider.forceFlush() } returns flushResult
+        every { tracerProvider.forceFlush() } returns CompletableResultCode.ofSuccess()
+        every { meterProvider.forceFlush() } returns CompletableResultCode.ofSuccess()
+
+        CrashFlushHandler(sdk, flushTimeout = 10.seconds).install()
+
+        val handler = Thread.getDefaultUncaughtExceptionHandler()!!
+        val crashThread =
+            Thread {
+                handler.uncaughtException(Thread.currentThread(), RuntimeException("test"))
+            }
+        crashThread.start()
+
+        // The handler must still be blocked on the incomplete flush.
+        crashThread.join(500)
+        assertThat(crashThread.isAlive).isTrue()
+
+        flushResult.succeed()
+        crashThread.join(5_000)
+        assertThat(crashThread.isAlive).isFalse()
+        assertThat(flushObservedIncomplete).isFalse()
     }
 
     private fun mockSdk(

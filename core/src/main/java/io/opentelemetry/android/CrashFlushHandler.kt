@@ -49,10 +49,6 @@ internal class CrashFlushHandler(
             thread: Thread,
             throwable: Throwable,
         ) {
-            // Let any previously installed handler run first (e.g. the crash
-            // instrumentation emits the crash log record in its handler).
-            previousHandler?.uncaughtException(thread, throwable)
-
             try {
                 awaitCompletion(
                     flushTimeout,
@@ -62,6 +58,11 @@ internal class CrashFlushHandler(
                 )
             } catch (e: Exception) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to flush telemetry on crash", e)
+            } finally {
+                // Delegate after flushing. The previous handler is often the
+                // platform default, which terminates the process and would
+                // otherwise prevent the flush from completing.
+                previousHandler?.uncaughtException(thread, throwable)
             }
         }
 
