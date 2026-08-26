@@ -19,6 +19,7 @@
 #define OTEL_NCS_BUILD_ID_SIZE 32
 #define OTEL_NCS_STACK_CAPACITY 4096
 
+#define OTEL_NCS_ARCH_UNKNOWN UINT32_C(0)
 #define OTEL_NCS_ARCH_ARM UINT32_C(1)
 #define OTEL_NCS_ARCH_ARM64 UINT32_C(2)
 #define OTEL_NCS_ARCH_X86 UINT32_C(3)
@@ -33,7 +34,7 @@
 #elif defined(__x86_64__)
 #define OTEL_NCS_ARCH_CURRENT OTEL_NCS_ARCH_X86_64
 #else
-#error "Unsupported architecture for native crash snapshots"
+#define OTEL_NCS_ARCH_CURRENT OTEL_NCS_ARCH_UNKNOWN
 #endif
 
 // The binary layout is documented in SNAPSHOT_FORMAT.md. Keep both in sync.

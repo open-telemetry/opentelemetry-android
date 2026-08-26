@@ -17,7 +17,9 @@ layout; this document explains the corresponding fields and invariants. Keep bot
 Version 1 is a 20,568-byte, little-endian record. Readers require the exact version and record size.
 An incompatible record is discarded rather than interpreted using a newer layout.
 It covers the four Android NDK ABIs currently produced by this module's native build. The explicit
-architecture value lets readers apply the correct pointer width and register rules.
+architecture value lets readers apply the correct pointer width and register rules. Value `0`
+(`OTEL_NCS_ARCH_UNKNOWN`) is an internal compile-time sentinel and is not a valid serialized
+architecture.
 
 | Offset | Size | Field |
 | ---: | ---: | --- |
@@ -82,9 +84,9 @@ zero on x86 and x86_64.
 The snapshot record lives in pre-allocated static storage. Before installing the signal handler,
 the writer walks the loaded ELF program headers and prepares the module table while normal runtime
 services are available. At crash time, the handler uses that table as-is; it does not inspect ELF
-metadata. If module preparation fails, marker capture remains enabled but snapshot capture is
-omitted. This costs 20,568 bytes of process storage but does not consume the alternate signal stack
-or allocate during a crash.
+metadata. If `OTEL_NCS_ARCH_CURRENT` is `OTEL_NCS_ARCH_UNKNOWN`, or if module preparation fails,
+marker capture remains enabled but snapshot capture is omitted. This costs 20,568 bytes of process
+storage but does not consume the alternate signal stack or allocate during a crash.
 
 The marker and snapshot use the same signal number and a timestamp from a single `clock_gettime`
 call. The marker is written, synced, and atomically renamed first. The snapshot is then written and
