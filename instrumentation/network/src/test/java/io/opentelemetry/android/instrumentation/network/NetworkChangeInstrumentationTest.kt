@@ -220,6 +220,30 @@ class NetworkChangeInstrumentationTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
+    fun legacySemconv_networkAvailable() {
+        SemconvCompat.useLatestExperimental = false
+        val networkChangeListenerSlot = slot<NetworkChangeListener>()
+        val (context, openTelemetryRum) = createTestDependencies()
+        NetworkChangeInstrumentation().install(context, openTelemetryRum)
+
+        verify {
+            currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
+        }
+
+        networkChangeListenerSlot.captured.onNetworkChange(
+            CurrentNetwork(NetworkState.TRANSPORT_WIFI),
+        )
+
+        assertThat(otelTesting.logRecords.single())
+            .hasEventName(NETWORK_CHANGE_EVENT_NAME)
+            .hasAttributesSatisfyingExactly(
+                equalTo(NETWORK_STATUS_KEY, "available"),
+                equalTo(stringKey(NETWORK_CONNECTION_TYPE), "wifi"),
+            )
+    }
+
+    @Test
     fun uninstall() {
         val networkChangeListenerSlot = slot<NetworkChangeListener>()
         val appStateListenerSlot = slot<ApplicationStateListener>()
