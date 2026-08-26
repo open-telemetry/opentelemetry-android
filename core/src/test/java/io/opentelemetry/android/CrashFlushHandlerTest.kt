@@ -61,6 +61,22 @@ class CrashFlushHandlerTest {
     }
 
     @Test
+    fun `flushes without delegating when there is no previous handler`() {
+        Thread.setDefaultUncaughtExceptionHandler(null)
+
+        val loggerProvider = mockk<SdkLoggerProvider>()
+        val sdk = mockSdk(loggerProvider = loggerProvider)
+        every { loggerProvider.forceFlush() } returns CompletableResultCode.ofSuccess()
+
+        CrashFlushHandler(sdk).install()
+
+        val handler = Thread.getDefaultUncaughtExceptionHandler()!!
+        handler.uncaughtException(Thread.currentThread(), RuntimeException("test"))
+
+        verify { loggerProvider.forceFlush() }
+    }
+
+    @Test
     fun `flushes all signal providers on crash`() {
         val tracerProvider = mockk<SdkTracerProvider>()
         val loggerProvider = mockk<SdkLoggerProvider>()
