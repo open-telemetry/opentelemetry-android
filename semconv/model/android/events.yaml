@@ -190,6 +190,8 @@ groups:
     brief: >
       This event indicates that Android network connectivity changed.
     attributes:
+      - ref: network.status
+        requirement_level: recommended
       - ref: network.connection.type
         requirement_level: recommended
   - id: event.rum.sdk.init.started
