@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.logs.SdkLoggerProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.trace.SdkTracerProvider
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -58,22 +59,6 @@ class CrashFlushHandlerTest {
         handler.uncaughtException(thread, exception)
 
         verify { existingHandler.uncaughtException(thread, exception) }
-    }
-
-    @Test
-    fun `flushes without delegating when there is no previous handler`() {
-        Thread.setDefaultUncaughtExceptionHandler(null)
-
-        val loggerProvider = mockk<SdkLoggerProvider>()
-        val sdk = mockSdk(loggerProvider = loggerProvider)
-        every { loggerProvider.forceFlush() } returns CompletableResultCode.ofSuccess()
-
-        CrashFlushHandler(sdk).install()
-
-        val handler = Thread.getDefaultUncaughtExceptionHandler()!!
-        handler.uncaughtException(Thread.currentThread(), RuntimeException("test"))
-
-        verify { loggerProvider.forceFlush() }
     }
 
     @Test
@@ -133,6 +118,45 @@ class CrashFlushHandlerTest {
         handler.uncaughtException(thread, exception)
 
         verify { existingHandler.uncaughtException(thread, exception) }
+    }
+
+    @Test
+    fun `still delegates to previous handler when flush throws an error`() {
+        val existingHandler = mockk<Thread.UncaughtExceptionHandler>(relaxed = true)
+        Thread.setDefaultUncaughtExceptionHandler(existingHandler)
+
+        val loggerProvider = mockk<SdkLoggerProvider>()
+        val sdk = mockSdk(loggerProvider = loggerProvider)
+        // Errors are not caught, so the handler exits by propagating; the
+        // finally block must still delegate on the way out.
+        every { loggerProvider.forceFlush() } throws StackOverflowError("flush failed")
+
+        CrashFlushHandler(sdk).install()
+
+        val handler = Thread.getDefaultUncaughtExceptionHandler()!!
+        val thread = Thread.currentThread()
+        val exception = RuntimeException("test")
+
+        assertThatThrownBy { handler.uncaughtException(thread, exception) }
+            .isInstanceOf(StackOverflowError::class.java)
+
+        verify { existingHandler.uncaughtException(thread, exception) }
+    }
+
+    @Test
+    fun `propagates flush error when there is no previous handler`() {
+        Thread.setDefaultUncaughtExceptionHandler(null)
+
+        val loggerProvider = mockk<SdkLoggerProvider>()
+        val sdk = mockSdk(loggerProvider = loggerProvider)
+        every { loggerProvider.forceFlush() } throws StackOverflowError("flush failed")
+
+        CrashFlushHandler(sdk).install()
+
+        val handler = Thread.getDefaultUncaughtExceptionHandler()!!
+
+        assertThatThrownBy { handler.uncaughtException(Thread.currentThread(), RuntimeException("test")) }
+            .isInstanceOf(StackOverflowError::class.java)
     }
 
     @Test
