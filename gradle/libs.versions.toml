@@ -61,6 +61,7 @@ binary-compat-validator = { module = "org.jetbrains.kotlinx:binary-compatibility
 
 #Test tools
 opentelemetry-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-testing" }
+opentelemetry-testing-common = { module = "io.opentelemetry.javaagent:opentelemetry-testing-common", version.ref = "opentelemetry-instrumentation-alpha" }
 androidx-test-core = "androidx.test:core:1.7.0"
 androidx-test-rules = "androidx.test:rules:1.7.0"
 androidx-test-runner = "androidx.test:runner:1.7.0"
@@ -78,6 +79,8 @@ opentelemetry-proto = { module = "io.opentelemetry.proto:opentelemetry-proto", v
 protobuf-kotlin = { module = "com.google.protobuf:protobuf-kotlin", version.ref = "protobufKotlin" }
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.11.0" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = "1.11.0" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.11.0" }
+testcontainers = { module = "org.testcontainers:testcontainers", version = "2.0.5" }
 
 #Compilation tools
 desugarJdkLibs = "com.android.tools:desugar_jdk_libs:2.1.5"
