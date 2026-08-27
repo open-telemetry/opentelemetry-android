@@ -24,12 +24,12 @@ kotlin {
 dependencies {
     testImplementation(platform(libs.opentelemetry.platform.alpha))
     testImplementation(libs.assertj.core)
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.14.4")
+    testImplementation(libs.junit5.jupiter.api)
     testImplementation(libs.kotlinx.serialization.json)
     testImplementation(libs.opentelemetry.testing.common)
     testImplementation(libs.testcontainers)
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.14.4")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.14.4")
+    testRuntimeOnly(libs.junit5.jupiter.engine)
+    testRuntimeOnly(libs.junit5.platform.launcher)
 }
 
 val smokeTestAppApk =
