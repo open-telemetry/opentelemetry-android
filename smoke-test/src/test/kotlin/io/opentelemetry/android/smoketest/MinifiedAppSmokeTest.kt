@@ -16,6 +16,7 @@ import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.Duration
 import java.util.Properties
 import java.util.concurrent.TimeUnit
@@ -24,7 +25,7 @@ class MinifiedAppSmokeTest {
     @Test
     fun appLaunchesAndExportsTrace() {
         val adb = findAdb()
-        val apk = Path.of(System.getProperty("smoke-test.apk"))
+        val apk = Paths.get(System.getProperty("smoke-test.apk"))
 
         assertThat(adb).isExecutable()
         assertThat(apk).isRegularFile()
@@ -112,14 +113,14 @@ class MinifiedAppSmokeTest {
         if (sdk.isNullOrBlank()) {
             val properties = Properties()
             val localProperties =
-                Path.of(System.getProperty("smoke-test.root-dir"), "local.properties")
+                Paths.get(System.getProperty("smoke-test.root-dir"), "local.properties")
             Files.newInputStream(localProperties).use(properties::load)
             sdk = properties.getProperty("sdk.dir")
         }
         check(!sdk.isNullOrBlank()) { "Android SDK path is not configured" }
 
         val executable = if (System.getProperty("os.name").startsWith("Windows")) "adb.exe" else "adb"
-        return Path.of(sdk, "platform-tools", executable)
+        return Paths.get(sdk, "platform-tools", executable)
     }
 
     private fun runAdb(
@@ -133,7 +134,7 @@ class MinifiedAppSmokeTest {
             error("Timed out running: ${command.joinToString(" ")}")
         }
 
-        val output = String(process.inputStream.readAllBytes(), StandardCharsets.UTF_8)
+        val output = String(process.inputStream.readBytes(), StandardCharsets.UTF_8)
         check(process.exitValue() == 0) {
             "Command failed (${process.exitValue()}): ${command.joinToString(" ")}\n$output"
         }

@@ -7,26 +7,29 @@ plugins {
     id("otel.spotless-conventions")
 }
 
+val javaVersion = rootProject.extra["java_version"] as JavaVersion
+val targetJvm = rootProject.extra["jvm_target"] as JvmTarget
+
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
 }
 
 kotlin {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
+        jvmTarget.set(targetJvm)
     }
 }
 
 dependencies {
     testImplementation(platform(libs.opentelemetry.platform.alpha))
     testImplementation(libs.assertj.core)
-    testImplementation(libs.junit.jupiter.api)
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.14.4")
     testImplementation(libs.kotlinx.serialization.json)
     testImplementation(libs.opentelemetry.testing.common)
     testImplementation(libs.testcontainers)
-    testRuntimeOnly(libs.junit.jupiter.engine)
-    testRuntimeOnly(libs.junit.platform.launcher)
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.14.4")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.14.4")
 }
 
 val smokeTestAppApk =
@@ -46,7 +49,7 @@ tasks.named<Test>("test") {
 tasks.register<Test>("smokeTest") {
     description = "Runs the minified app smoke test on a connected Android emulator."
     group = "verification"
-    onlyIf { smokeTestRequested }
+    enabled = smokeTestRequested
     useJUnitPlatform()
     testClassesDirs =
         sourceSets.test

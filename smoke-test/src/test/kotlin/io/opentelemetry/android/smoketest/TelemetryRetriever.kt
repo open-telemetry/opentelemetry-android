@@ -25,7 +25,7 @@ internal class TelemetryRetriever(
         val requests =
             try {
                 Json
-                    .decodeFromString<List<JsonElement>>(waitForContent("get-traces"))
+                    .decodeFromString<List<JsonElement>>(waitForContent("/get-traces"))
                     .map { requestJson ->
                         val builder = ExportTraceServiceRequest.newBuilder()
                         JsonFormat.parser().merge(requestJson.toString(), builder)
