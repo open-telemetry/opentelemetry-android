@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### 📣 Migration notes
+
+- Network change events now use `network.connection.type` instead of the deprecated
+  `network.status`. To keep emitting `network.status` while migrating, configure
+  `semanticConventions { useLatestExperimental = false }`.
+  ([#2014](https://github.com/open-telemetry/opentelemetry-android/pull/2014))
+
 ### 📈 Enhancements
 
 - The Compose Navigation instrumentation, which shipped in 1.6.0 without emitting any telemetry,

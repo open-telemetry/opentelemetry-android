@@ -126,9 +126,14 @@ groups:
       - id: network.status
         type: string
         stability: development
+        deprecated:
+          reason: obsoleted
+          note: >
+            Use `network.connection.type` instead. A value of `unavailable` indicates that no
+            network connection is available.
         brief: >
-          The Android network status after a network change.
-        examples: ["TRANSPORT_WIFI", "TRANSPORT_CELLULAR", "NO_NETWORK_AVAILABLE"]
+          Deprecated. Use `network.connection.type` instead.
+        examples: ["available", "lost"]
       - id: screen.name
         type: string
         stability: development
