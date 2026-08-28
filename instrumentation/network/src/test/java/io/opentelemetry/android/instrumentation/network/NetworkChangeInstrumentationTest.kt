@@ -18,15 +18,9 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier
-import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
-import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener
-import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
-import io.opentelemetry.android.internal.services.network.NetworkChangeListener
-import io.opentelemetry.android.internal.services.network.NetworkProviderHolder
 import io.opentelemetry.android.semconv.NetworkAttributes.NETWORK_STATUS_KEY
 import io.opentelemetry.android.semconv.events.NetworkChangeEvent.Companion.NETWORK_CHANGE_EVENT_NAME
 import io.opentelemetry.android.semconv.internal.SemconvCompat

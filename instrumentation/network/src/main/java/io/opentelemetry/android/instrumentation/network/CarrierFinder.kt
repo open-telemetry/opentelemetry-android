@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.services.network
+package io.opentelemetry.android.instrumentation.network
 
 import android.content.Context
 import android.os.Build
@@ -12,7 +12,6 @@ import android.telephony.TelephonyManager.UNKNOWN_CARRIER_ID
 import android.util.Log
 import androidx.annotation.RequiresApi
 import io.opentelemetry.android.common.RumConstants
-import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier
 
 /**
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.

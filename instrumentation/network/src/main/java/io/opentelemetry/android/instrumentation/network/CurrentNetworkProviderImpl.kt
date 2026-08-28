@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.services.network
+package io.opentelemetry.android.instrumentation.network
 
 import android.net.ConnectivityManager
 import android.net.ConnectivityManager.NetworkCallback
@@ -14,7 +14,6 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import io.opentelemetry.android.common.RumConstants
-import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
 

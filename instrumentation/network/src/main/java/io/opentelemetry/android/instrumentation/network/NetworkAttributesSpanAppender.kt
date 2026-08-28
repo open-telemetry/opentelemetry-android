@@ -3,17 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.processors
+package io.opentelemetry.android.instrumentation.network
 
-import io.opentelemetry.android.common.internal.features.networkattributes.CurrentNetworkAttributesExtractor
-import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.context.Context
 import io.opentelemetry.sdk.trace.ReadWriteSpan
 import io.opentelemetry.sdk.trace.ReadableSpan
 import io.opentelemetry.sdk.trace.SpanProcessor
 
 /**
- * A [io.opentelemetry.sdk.trace.SpanProcessor] implementation that appends a set of [attributes][io.opentelemetry.api.common.Attributes]
+ * A [SpanProcessor] implementation that appends a set of [attributes][io.opentelemetry.api.common.Attributes]
  * describing the
  * [current network][io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork]
  * to every span that is exported.

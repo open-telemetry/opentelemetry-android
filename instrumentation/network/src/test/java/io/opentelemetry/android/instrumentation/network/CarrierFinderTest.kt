@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.services.network
+package io.opentelemetry.android.instrumentation.network
 
 import android.Manifest.permission.READ_BASIC_PHONE_STATE
 import android.Manifest.permission.READ_PHONE_STATE
@@ -19,7 +19,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test

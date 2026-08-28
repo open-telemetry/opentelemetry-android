@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.common.internal.features.networkattributes.data
+package io.opentelemetry.android.instrumentation.network
 
 /**
  * A value class representing the current network that the device is connected to.

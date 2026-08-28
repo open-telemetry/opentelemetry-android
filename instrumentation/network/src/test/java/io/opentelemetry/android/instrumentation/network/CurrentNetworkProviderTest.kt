@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.services.network
+package io.opentelemetry.android.instrumentation.network
 
 import android.net.ConnectivityManager
 import android.net.ConnectivityManager.NetworkCallback
@@ -17,9 +17,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
-import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
-import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider.Companion.UNKNOWN_NETWORK
+import io.opentelemetry.android.instrumentation.network.CurrentNetworkProvider.Companion.UNKNOWN_NETWORK
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith

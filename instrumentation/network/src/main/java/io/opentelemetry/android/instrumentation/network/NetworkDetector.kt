@@ -3,15 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.services.network
+package io.opentelemetry.android.instrumentation.network
 
 import android.content.Context
-import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 
 /**
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
  */
-interface NetworkDetector {
+internal interface NetworkDetector {
     fun detectCurrentNetwork(): CurrentNetwork
 
     companion object {

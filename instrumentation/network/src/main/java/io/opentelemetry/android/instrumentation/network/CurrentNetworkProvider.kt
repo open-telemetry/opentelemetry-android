@@ -3,10 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.services.network
+package io.opentelemetry.android.instrumentation.network
 
-import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
-import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
 import java.io.Closeable
 
 // note: based on ideas from stack overflow:

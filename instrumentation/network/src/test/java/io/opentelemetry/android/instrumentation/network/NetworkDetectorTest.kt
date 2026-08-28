@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.services.network
+package io.opentelemetry.android.instrumentation.network
 
 import android.Manifest
 import android.content.Context
@@ -21,9 +21,6 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
-import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier
-import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
-import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before

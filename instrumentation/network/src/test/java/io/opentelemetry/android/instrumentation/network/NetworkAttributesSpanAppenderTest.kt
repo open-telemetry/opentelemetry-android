@@ -3,24 +3,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.internal.processors
+package io.opentelemetry.android.instrumentation.network
 
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.verify
-import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
-import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
-import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
-import io.opentelemetry.api.common.AttributeKey.stringKey
+import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.context.Context
 import io.opentelemetry.kotlin.semconv.IncubatingApi
-import io.opentelemetry.kotlin.semconv.NetworkAttributes.NETWORK_CONNECTION_SUBTYPE
-import io.opentelemetry.kotlin.semconv.NetworkAttributes.NETWORK_CONNECTION_TYPE
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
+import io.opentelemetry.kotlin.semconv.NetworkAttributes
 import io.opentelemetry.sdk.trace.ReadWriteSpan
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -52,9 +48,9 @@ internal class NetworkAttributesSpanAppenderTest {
         verify {
             span.setAllAttributes(
                 Attributes.of(
-                    stringKey(NETWORK_CONNECTION_TYPE),
+                    AttributeKey.stringKey(NetworkAttributes.NETWORK_CONNECTION_TYPE),
                     "cell",
-                    stringKey(NETWORK_CONNECTION_SUBTYPE),
+                    AttributeKey.stringKey(NetworkAttributes.NETWORK_CONNECTION_SUBTYPE),
                     "LTE",
                 ),
             )
