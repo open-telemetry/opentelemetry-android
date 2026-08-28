@@ -18,6 +18,10 @@
 
 ### 🛠️ Bug fixes
 
+- Flush telemetry on crash before delegating to the previous uncaught exception handler, so the
+  process is not terminated before the flush completes.
+  ([#1997](https://github.com/open-telemetry/opentelemetry-android/issues/1997))
+
 - Fix R8 failures caused by optional Error Prone annotations in minified applications.
   ([#1972](https://github.com/open-telemetry/opentelemetry-android/pull/1972))
 
