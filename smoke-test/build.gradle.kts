@@ -57,6 +57,7 @@ tasks.register<Test>("smokeTest") {
             .output.classesDirs
     classpath = sourceSets.test.get().runtimeClasspath
     dependsOn(":smoke-test-app:assembleRelease")
+    inputs.file(smokeTestAppApk)
     systemProperty("smoke-test.apk", smokeTestAppApk.get().asFile.absolutePath)
     systemProperty("smoke-test.root-dir", rootDirectory)
 }
