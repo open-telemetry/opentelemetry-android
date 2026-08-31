@@ -129,6 +129,7 @@ class TelemetryDocsPluginTest {
                   "type":"span",
                   "name":"toy.span",
                   "scope":"toy.scope",
+                  "span_kind":"internal",
                   "attributes":[{"name":"toy.second.attribute","type":"boolean","value":true}]
                 }]}
                 """.trimIndent(),
@@ -159,6 +160,7 @@ class TelemetryDocsPluginTest {
                                 "\"type\":\"span\"," +
                                 "\"name\":\"toy.span\"," +
                                 "\"scope\":\"toy.scope\"," +
+                                "\"span_kind\":\"internal\"," +
                                 "\"attributes\":[{" +
                                     "\"name\":\"toy.attribute\"," +
                                     "\"type\":\"string\"," +
@@ -198,9 +200,8 @@ class TelemetryDocsPluginTest {
               - "toy.scope"
             signals:
               - type: span
-                name: "toy.span"
                 scope: "toy.scope"
-                registry_id: null
+                registry_id: "unidentified"
                 attributes:
                   - name: "toy.attribute"
                     type: string

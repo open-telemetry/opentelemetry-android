@@ -4,7 +4,7 @@ Instrumentation modules that participate in generated telemetry documentation co
 `telemetry.yaml` file. The `mergeAllTelemetryDocs` task owns this generated file; contributors
 should not edit it manually.
 
-Version 1 has this structure:
+An event-only instrumentation has this structure:
 
 ```yaml
 schema_version: 1
@@ -22,6 +22,26 @@ signals:
         registry: upstream
 ```
 
+A span-only instrumentation has a separate file:
+
+```yaml
+schema_version: 1
+module: "okhttp3"
+scopes:
+  - "io.opentelemetry.okhttp-3.0"
+signals:
+  - type: span
+    scope: "io.opentelemetry.okhttp-3.0"
+    registry_id: "span.http.client"
+    attributes:
+      - name: "http.request.method"
+        type: string
+        registry: upstream
+```
+
 `type` is one of `event`, `log`, or `span`. Metrics are deferred from schema version 1.
-`registry_id` is `null` when the signal has no resolved semantic convention group. Attribute
-`registry` is `local`, `upstream`, or `none`. Captured values are intentionally excluded.
+Events use their unique event name. Spans omit their runtime name and use `registry_id` as their
+stable identity. If span inference finds no unique registry group, `registry_id` is `unidentified`
+and the candidate ambiguity is logged. For non-span signals, `registry_id` is `null` when no
+resolved group exists. Attribute `registry` is `local`, `upstream`, or `none`. Captured values are
+intentionally excluded.

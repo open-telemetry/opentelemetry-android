@@ -31,7 +31,7 @@ class TelemetryDocsMergerTest {
                           {"type":"event","name":"toy.event","scope":"toy.scope","attributes":[
                             {"name":"toy.required","type":"string","value":"secret"}
                           ]},
-                          {"type":"span","name":"ignored","scope":"another.scope","attributes":[]}
+                          {"type":"span","name":"ignored","scope":"another.scope","span_kind":"internal","attributes":[]}
                         ]}
                         """.trimIndent(),
                     )
@@ -122,6 +122,78 @@ class TelemetryDocsMergerTest {
             """.trimIndent(),
         )
         assertThat(output.readText()).doesNotContain("secret", "toy.metric")
+    }
+
+    @Test
+    fun `identifies a unique span registry group and marks ambiguous spans unidentified`() {
+        val observation =
+            temporaryDirectory
+                .resolve("spans.telemetry.json")
+                .createFile()
+                .apply {
+                    writeText(
+                        """
+                        {"signals":[
+                          {"type":"span","name":"GET","scope":"http.scope","span_kind":"client","attributes":[
+                            {"name":"http.request.method","type":"string"},
+                            {"name":"server.address","type":"string"}
+                          ]},
+                          {"type":"span","name":"operation","scope":"ambiguous.scope","span_kind":"internal","attributes":[
+                            {"name":"code.function.name","type":"string"}
+                          ]}
+                        ]}
+                        """.trimIndent(),
+                    )
+                }
+        val registry =
+            temporaryDirectory
+                .resolve("span-registry.json")
+                .createFile()
+                .apply {
+                    writeText(
+                        """
+                        {"groups":[
+                          {"id":"span.http.client","type":"span","span_kind":"client","attributes":[
+                            {"name":"http.request.method","requirement_level":"required"},
+                            {"name":"server.address","requirement_level":"required"}
+                          ]},
+                          {"id":"span.rpc.client","type":"span","span_kind":"client","attributes":[
+                            {"name":"rpc.system","requirement_level":"required"}
+                          ]},
+                          {"id":"span.internal.first","type":"span","span_kind":"internal","attributes":[
+                            {"name":"code.function.name","requirement_level":"required"}
+                          ]},
+                          {"id":"span.internal.second","type":"span","span_kind":"internal","attributes":[
+                            {"name":"code.function.name","requirement_level":"required"}
+                          ]}
+                        ]}
+                        """.trimIndent(),
+                    )
+                }
+        val localRegistry =
+            temporaryDirectory
+                .resolve("empty-events.yaml")
+                .createFile()
+                .apply { writeText("groups: []\n") }
+        val output = temporaryDirectory.resolve("span-telemetry.yaml").toFile()
+
+        TelemetryDocsMerger.merge(
+            moduleName = "span-module",
+            scopeNames = listOf("http.scope", "ambiguous.scope"),
+            observationFiles = setOf(observation.toFile()),
+            resolvedRegistryFile = registry.toFile(),
+            localRegistryFile = localRegistry.toFile(),
+            outputFile = output,
+        )
+
+        assertThat(output.readText())
+            .contains(
+                """registry_id: "span.http.client"""",
+                """registry_id: "unidentified"""",
+            ).doesNotContain(
+                """name: "GET"""",
+                """name: "operation"""",
+            )
     }
 
     @Test

@@ -7,9 +7,12 @@ package io.opentelemetry.android.instrumentation
 
 import groovy.json.JsonSlurper
 import org.gradle.api.GradleException
+import org.gradle.api.logging.Logging
 import java.io.File
 
 internal object TelemetryDocsMerger {
+    private val logger = Logging.getLogger(TelemetryDocsMerger::class.java)
+
     fun merge(
         moduleName: String,
         scopeNames: List<String>,
@@ -42,12 +45,29 @@ internal object TelemetryDocsMerger {
                 .toSet()
         val merged =
             observations
-                .groupBy { SignalKey(it.type, it.name, it.scope) }
-                .map { (key, signals) ->
+                .map { signal ->
+                    ClassifiedSignal(
+                        signal = signal,
+                        registryGroup = findRegistryGroup(moduleName, signal, registry.groups),
+                    )
+                }.groupBy { classified ->
+                    val signal = classified.signal
+                    SignalKey(
+                        type = signal.type,
+                        name = signal.name.takeUnless { signal.type == "span" },
+                        scope = signal.scope,
+                        spanKind = signal.spanKind,
+                        registryId =
+                            classified.registryGroup?.id
+                                ?: if (signal.type == "span") UNIDENTIFIED_REGISTRY_ID else null,
+                    )
+                }.map { (key, classifiedSignals) ->
+                    val signals = classifiedSignals.map(ClassifiedSignal::signal)
                     val registryGroup =
-                        registry.groups.firstOrNull {
-                            it.type == key.type && it.name == key.name
-                        }
+                        classifiedSignals
+                            .mapNotNull(ClassifiedSignal::registryGroup)
+                            .distinctBy(RegistryGroup::id)
+                            .singleOrNull()
                     val attributes =
                         mergeAttributes(
                             moduleName,
@@ -59,13 +79,67 @@ internal object TelemetryDocsMerger {
                     validateCoverage(moduleName, key, attributes, registryGroup, localGroupIds)
                     MergedSignal(
                         key = key,
-                        registryId = registryGroup?.id,
                         attributes = attributes,
                     )
-                }.sortedWith(compareBy({ it.key.type }, { it.key.name }, { it.key.scope }))
+                }.sortedWith(compareBy({ it.key.type }, { it.key.registryId }, { it.key.scope }))
 
         outputFile.parentFile.mkdirs()
         outputFile.writeText(renderYaml(moduleName, scopeNames.distinct().sorted(), merged))
+    }
+
+    private fun findRegistryGroup(
+        moduleName: String,
+        signal: ObservedSignal,
+        registryGroups: List<RegistryGroup>,
+    ): RegistryGroup? {
+        if (signal.type != "span") {
+            return registryGroups.firstOrNull {
+                it.type == signal.type && it.name == signal.name
+            }
+        }
+
+        val observedAttributes = signal.attributes.map(ObservedAttribute::name).toSet()
+        val candidates =
+            registryGroups
+                .asSequence()
+                .filter { it.type == "span" && it.spanKind == signal.spanKind }
+                .filter { group ->
+                    group.attributes
+                        .filter { it.requirementLevel == "required" }
+                        .all { it.name in observedAttributes }
+                }.map { group ->
+                    group to group.attributes.count { it.name in observedAttributes }
+                }.filter { (_, matchingAttributeCount) -> matchingAttributeCount > 0 }
+                .toList()
+        val highestMatchingAttributeCount =
+            candidates.maxOfOrNull { (_, matchingAttributeCount) -> matchingAttributeCount }
+        val bestMatches =
+            candidates
+                .filter { (_, matchingAttributeCount) ->
+                    matchingAttributeCount == highestMatchingAttributeCount
+                }.map { (group, _) -> group }
+
+        return when (bestMatches.size) {
+            1 -> bestMatches.single()
+            0 -> {
+                logger.warn(
+                    "$moduleName span '${signal.name}' with kind '${signal.spanKind}' and scope " +
+                        "'${signal.scope}' did not match a semantic convention registry group; " +
+                        "using '$UNIDENTIFIED_REGISTRY_ID'.",
+                )
+                null
+            }
+
+            else -> {
+                logger.warn(
+                    "$moduleName span '${signal.name}' with kind '${signal.spanKind}' and scope " +
+                        "'${signal.scope}' matched multiple semantic convention registry groups: " +
+                        "${bestMatches.map(RegistryGroup::id).sorted().joinToString()}; " +
+                        "using '$UNIDENTIFIED_REGISTRY_ID'.",
+                )
+                null
+            }
+        }
     }
 
     private fun readObservations(file: File): List<ObservedSignal> {
@@ -86,11 +160,13 @@ internal object TelemetryDocsMerger {
                             type = attribute.requiredString("type", file),
                         )
                     }
+            val type = signal.requiredString("type", file)
             ObservedSignal(
-                type = signal.requiredString("type", file),
+                type = type,
                 name = signal.requiredString("name", file),
                 scope = signal.requiredString("scope", file),
                 attributes = attributes,
+                spanKind = if (type == "span") signal["span_kind"] as? String else null,
             )
         }
     }
@@ -130,16 +206,17 @@ internal object TelemetryDocsMerger {
                 val type = group.requiredString("type", file)
                 val name =
                     when (type) {
-                        "event", "log", "span" -> group["name"] as? String
+                        "event", "log" -> group["name"] as? String
                         else -> null
                     }
-                if (name == null) {
+                if (type != "span" && name == null) {
                     null
                 } else {
                     RegistryGroup(
                         id = group.requiredString("id", file),
                         type = type,
                         name = name,
+                        spanKind = group["span_kind"] as? String,
                         attributes = attributes,
                     )
                 }
@@ -216,9 +293,9 @@ internal object TelemetryDocsMerger {
             appendLine("signals:")
             signals.forEach { signal ->
                 appendLine("  - type: ${signal.key.type}")
-                appendLine("    name: ${signal.key.name.yamlString()}")
+                signal.key.name?.let { appendLine("    name: ${it.yamlString()}") }
                 appendLine("    scope: ${signal.key.scope.yamlString()}")
-                appendLine("    registry_id: ${signal.registryId?.yamlString() ?: "null"}")
+                appendLine("    registry_id: ${signal.key.registryId?.yamlString() ?: "null"}")
                 if (signal.attributes.isEmpty()) {
                     appendLine("    attributes: []")
                 } else {
@@ -244,12 +321,15 @@ internal object TelemetryDocsMerger {
 
     private val LOCAL_GROUP_ID = Regex("""\s*-\s+id:\s+(\S+)\s*""")
     private val SUPPORTED_SIGNAL_TYPES = setOf("event", "log", "span")
+    private const val UNIDENTIFIED_REGISTRY_ID = "unidentified"
 }
 
 private data class SignalKey(
     val type: String,
-    val name: String,
+    val name: String?,
     val scope: String,
+    val spanKind: String?,
+    val registryId: String?,
 )
 
 private data class ObservedSignal(
@@ -257,6 +337,7 @@ private data class ObservedSignal(
     val name: String,
     val scope: String,
     val attributes: List<ObservedAttribute>,
+    val spanKind: String?,
 )
 
 private data class ObservedAttribute(
@@ -267,7 +348,8 @@ private data class ObservedAttribute(
 private data class RegistryGroup(
     val id: String,
     val type: String,
-    val name: String,
+    val name: String?,
+    val spanKind: String?,
     val attributes: List<RegistryAttribute>,
 )
 
@@ -282,9 +364,13 @@ private data class RegistryAttribute(
     val provenance: String,
 )
 
+private data class ClassifiedSignal(
+    val signal: ObservedSignal,
+    val registryGroup: RegistryGroup?,
+)
+
 private data class MergedSignal(
     val key: SignalKey,
-    val registryId: String?,
     val attributes: List<MergedAttribute>,
 )
 

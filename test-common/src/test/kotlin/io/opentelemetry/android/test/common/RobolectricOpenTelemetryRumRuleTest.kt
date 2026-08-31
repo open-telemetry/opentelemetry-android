@@ -46,6 +46,21 @@ class RobolectricOpenTelemetryRumRuleTest {
                             .setEventName("toy.event")
                             .setAttribute(AttributeKey.longKey("toy.event.attribute"), 42)
                             .emit()
+                        openTelemetry
+                            .logsBridge
+                            .loggerBuilder("toy.scope")
+                            .build()
+                            .logRecordBuilder()
+                            .setAttribute(AttributeKey.stringKey("otel.event.name"), "fallback.event")
+                            .emit()
+                        openTelemetry
+                            .logsBridge
+                            .loggerBuilder("toy.scope")
+                            .build()
+                            .logRecordBuilder()
+                            .setEventName("wire.event")
+                            .setAttribute(AttributeKey.stringKey("otel.event.name"), "ignored.event")
+                            .emit()
                     }
                 },
                 Description.createTestDescription(javaClass, "toy telemetry"),
@@ -62,14 +77,17 @@ class RobolectricOpenTelemetryRumRuleTest {
         assertThat(observation)
             .contains(
                 "\"type\":\"span\",\"name\":\"toy.span\",\"scope\":\"toy.scope\"",
+                "\"span_kind\":\"internal\"",
                 "\"type\":\"event\",\"name\":\"toy.event\",\"scope\":\"toy.scope\"",
+                "\"type\":\"event\",\"name\":\"fallback.event\",\"scope\":\"toy.scope\"",
+                "\"type\":\"event\",\"name\":\"wire.event\",\"scope\":\"toy.scope\"",
                 "\"name\":\"toy.span.attribute\",\"type\":\"string\"",
                 "\"name\":\"toy.span.array\",\"type\":\"string_array\"",
                 "\"name\":\"toy.event.attribute\",\"type\":\"int\"",
                 "\"value\":\"secret-span-value\"",
                 "\"value\":[\"first\",\"second\"]",
                 "\"value\":42",
-            )
+            ).doesNotContain("\"type\":\"event\",\"name\":\"ignored.event\"")
     }
 
     @Test

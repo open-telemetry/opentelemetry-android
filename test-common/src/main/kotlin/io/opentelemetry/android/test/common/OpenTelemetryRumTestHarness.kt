@@ -8,6 +8,7 @@ package io.opentelemetry.android.test.common
 import android.content.Context
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.RumBuilder
+import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.AttributeType
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor
@@ -20,6 +21,7 @@ import org.junit.runner.Description
 
 internal const val COLLECT_TELEMETRY_DOCS_PROPERTY = "collectTelemetryDocs"
 internal const val TELEMETRY_DOCS_OUTPUT_DIRECTORY_PROPERTY = "otel.telemetryDocs.outputDirectory"
+private val OTEL_EVENT_NAME_ATTRIBUTE = AttributeKey.stringKey("otel.event.name")
 
 internal class OpenTelemetryRumTestHarness {
     lateinit var openTelemetryRum: OpenTelemetryRum
@@ -60,14 +62,16 @@ internal class OpenTelemetryRumTestHarness {
                 name = span.name,
                 scope = span.instrumentationScopeInfo.name,
                 attributes = span.attributes.observedAttributes(),
+                spanKind = span.kind.name.lowercase(),
             )
         }
 
     private fun captureLogs(): List<ObservedSignal> =
         inMemoryLogExporter.finishedLogRecordItems.map { log ->
+            val eventName = log.eventName ?: log.attributes.get(OTEL_EVENT_NAME_ATTRIBUTE)
             ObservedSignal(
-                type = if (log.eventName == null) "log" else "event",
-                name = log.eventName ?: "log",
+                type = if (eventName == null) "log" else "event",
+                name = eventName ?: "log",
                 scope = log.instrumentationScopeInfo.name,
                 attributes = log.attributes.observedAttributes(),
             )
@@ -79,6 +83,7 @@ private data class ObservedSignal(
     val name: String,
     val scope: String,
     val attributes: List<ObservedAttribute>,
+    val spanKind: String? = null,
 ) {
     fun toJson(): JSONObject =
         JSONObject()
@@ -86,6 +91,7 @@ private data class ObservedSignal(
             .put("name", name)
             .put("scope", scope)
             .apply {
+                spanKind?.let { put("span_kind", it) }
                 put(
                     "attributes",
                     JSONArray().apply {
