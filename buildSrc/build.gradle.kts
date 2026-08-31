@@ -20,4 +20,13 @@ dependencies {
     implementation(libs.binary.compat.validator)
     implementation(libs.ksp.plugin)
     implementation(libs.kover.plugin)
+    testImplementation(gradleTestKit())
+    testImplementation(libs.assertj.core)
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
