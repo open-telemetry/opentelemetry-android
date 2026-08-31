@@ -12,10 +12,9 @@ import kotlin.coroutines.CoroutineContext
 
 /**
  * Decides whether the current OpenTelemetry [Context] should be added to an about-to-launch
- * coroutine. Not intended as public API; public JVM visibility is required so that the runtime
- * instrumentation in the parent package can configure it.
+ * coroutine.
  */
-object CoroutinesContextHelper {
+internal object CoroutinesContextHelper {
     @Volatile
     private var enabled = false
 
