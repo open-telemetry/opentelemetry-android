@@ -5,12 +5,6 @@ public final class io/opentelemetry/instrumentation/library/coroutines/Coroutine
 	public fun uninstall (Landroid/content/Context;Lio/opentelemetry/android/OpenTelemetryRum;)V
 }
 
-public final class io/opentelemetry/instrumentation/library/coroutines/internal/CoroutinesContextHelper {
-	public static final field INSTANCE Lio/opentelemetry/instrumentation/library/coroutines/internal/CoroutinesContextHelper;
-	public static final fun addCurrentContextIfNeeded (Lkotlin/coroutines/CoroutineContext;)Lkotlin/coroutines/CoroutineContext;
-	public static final fun setEnabled (Z)V
-}
-
 public final class io/opentelemetry/instrumentation/library/coroutines/internal/CoroutinesLaunchBridge {
 	public static final field INSTANCE Lio/opentelemetry/instrumentation/library/coroutines/internal/CoroutinesLaunchBridge;
 	public static final fun launch (Lkotlinx/coroutines/CoroutineScope;Lkotlin/coroutines/CoroutineContext;Lkotlinx/coroutines/CoroutineStart;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/Job;
