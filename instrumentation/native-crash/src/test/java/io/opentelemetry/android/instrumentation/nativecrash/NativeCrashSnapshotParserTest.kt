@@ -31,7 +31,7 @@ class NativeCrashSnapshotParserTest {
         val snapshot =
             requireNotNull(
                 parse { buffer ->
-                    buffer.putInt(NativeCrashSnapshotLayout.MODULE_COUNT_OFFSET, 128)
+                    buffer.writeMaximumModuleTable()
                     buffer.putInt(NativeCrashSnapshotLayout.STACK_SIZE_OFFSET, 4096)
                     buffer.fill(MODULE_OFFSET + 24, 64, 0)
                     buffer.fill(MODULE_OFFSET + 24, 63, 'a'.code.toByte())
@@ -48,8 +48,9 @@ class NativeCrashSnapshotParserTest {
         assertThat(snapshot.linkRegister).isEqualTo(0x1130UL)
         assertThat(snapshot.stack).hasSize(4096)
         assertThat(snapshot.stack.copyOf(4)).containsExactly(1, 2, 3, 4)
-        assertThat(snapshot.modules)
-            .containsExactly(
+        assertThat(snapshot.modules).hasSize(NativeCrashSnapshotLayout.MAX_MODULES)
+        assertThat(snapshot.modules.first())
+            .isEqualTo(
                 NativeCrashModule(
                     0x1000UL,
                     0x1100UL,
@@ -58,6 +59,8 @@ class NativeCrashSnapshotParserTest {
                     "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
                 ),
             )
+        assertThat(snapshot.modules.last())
+            .isEqualTo(NativeCrashModule(0xaef0UL, 0xaf00UL, 0xaf80UL, "lib127.so", null))
     }
 
     @TestFactory
@@ -80,6 +83,7 @@ class NativeCrashSnapshotParserTest {
                 assertThat(snapshot.architecture).isEqualTo(architecture)
                 assertThat(snapshot.linkRegister)
                     .isEqualTo(if (architecture.hasLinkRegister) encodedLinkRegister.toULong() else 0UL)
+                assertThat(snapshot.stack).containsExactly(1, 2, 3, 4)
             }
         }
 
@@ -113,9 +117,18 @@ class NativeCrashSnapshotParserTest {
     @Test
     fun `never throws for checksum-valid mutations`() {
         val random = Random(1940)
-        repeat(500) {
-            val bytes = SnapshotBuilder().build()
-            bytes[random.nextInt(NativeCrashSnapshotLayout.CHECKSUM_OFFSET)] = random.nextInt().toByte()
+        val interpretedRanges =
+            listOf(
+                0 until NativeCrashSnapshotLayout.MODULES_OFFSET,
+                NativeCrashSnapshotLayout.MODULES_OFFSET until MODULE_OFFSET + NativeCrashSnapshotLayout.MODULE_ENTRY_SIZE,
+                NativeCrashSnapshotLayout.RESERVED_OFFSET until NativeCrashSnapshotLayout.CHECKSUM_OFFSET,
+            )
+        repeat(500) { iteration ->
+            val architecture = NativeCrashArchitecture.entries[iteration % NativeCrashArchitecture.entries.size]
+            val bytes = SnapshotBuilder(architecture).build()
+            val range = interpretedRanges[iteration % interpretedRanges.size]
+            val index = random.nextInt(range.first, range.last + 1)
+            bytes[index] = (bytes[index].toInt() xor (1 shl random.nextInt(8))).toByte()
             ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).putInt(
                 NativeCrashSnapshotLayout.CHECKSUM_OFFSET,
                 NativeCrashSnapshotParser.checksum(bytes).toInt(),
@@ -168,6 +181,7 @@ class NativeCrashSnapshotParserTest {
 
     @TestFactory
     fun `skips malformed module entries`() =
+        // Raw relative offsets intentionally cross-check the mirrored binary layout constants.
         listOf<Pair<String, (ByteBuffer) -> Unit>>(
             "load bias after start" to { it.putLong(MODULE_OFFSET, 0x1200) },
             "empty executable range" to { it.putLong(MODULE_OFFSET + 16, 0x1100) },
@@ -232,6 +246,7 @@ class NativeCrashSnapshotParserTest {
             buffer.writeModule(MODULE_OFFSET, 0x1000, 0x1100, 0x2000, "libapp.so", byteArrayOf(1, 0x23, 0xfe.toByte()))
             buffer.position(NativeCrashSnapshotLayout.STACK_OFFSET)
             buffer.put(byteArrayOf(1, 2, 3, 4))
+            buffer.put(NativeCrashSnapshotLayout.STACK_OFFSET + 100, 9)
             mutate(buffer)
             buffer.putInt(NativeCrashSnapshotLayout.CHECKSUM_OFFSET, NativeCrashSnapshotParser.checksum(bytes).toInt())
             return bytes
@@ -254,6 +269,20 @@ class NativeCrashSnapshotParserTest {
         putInt(offset + 88, buildId.size)
         position(offset + 92)
         put(buildId)
+    }
+
+    private fun ByteBuffer.writeMaximumModuleTable() {
+        putInt(NativeCrashSnapshotLayout.MODULE_COUNT_OFFSET, NativeCrashSnapshotLayout.MAX_MODULES)
+        for (index in 1 until NativeCrashSnapshotLayout.MAX_MODULES) {
+            val executableStart = 0x3000L + index * 0x100L
+            writeModule(
+                MODULE_OFFSET + index * NativeCrashSnapshotLayout.MODULE_ENTRY_SIZE,
+                executableStart - 0x10,
+                executableStart,
+                executableStart + 0x80,
+                "lib$index.so",
+            )
+        }
     }
 
     private fun ByteBuffer.fill(
