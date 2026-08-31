@@ -31,6 +31,7 @@ class TelemetryDocsMergerTest {
                           {"type":"event","name":"toy.event","scope":"toy.scope","attributes":[
                             {"name":"toy.required","type":"string","value":"secret"}
                           ]},
+                          {"type":"event","name":"z.event","scope":"toy.scope","attributes":[]},
                           {"type":"span","name":"ignored","scope":"another.scope","span_kind":"internal","attributes":[]}
                         ]}
                         """.trimIndent(),
@@ -48,6 +49,7 @@ class TelemetryDocsMergerTest {
                             {"name":"toy.upstream","type":"int"},
                             {"name":"toy.extra","type":"boolean"}
                           ]},
+                          {"type":"event","name":"a.event","scope":"toy.scope","attributes":[]},
                           {"type":"metric","name":"toy.metric","scope":"toy.scope","instrument":"counter","unit":"request","attributes":[]}
                         ]}
                         """.trimIndent(),
@@ -104,6 +106,16 @@ class TelemetryDocsMergerTest {
             scopes:
               - "toy.scope"
             signals:
+              - type: event
+                name: "a.event"
+                scope: "toy.scope"
+                registry_id: null
+                attributes: []
+              - type: event
+                name: "z.event"
+                scope: "toy.scope"
+                registry_id: null
+                attributes: []
               - type: event
                 name: "toy.event"
                 scope: "toy.scope"

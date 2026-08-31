@@ -81,7 +81,15 @@ internal object TelemetryDocsMerger {
                         key = key,
                         attributes = attributes,
                     )
-                }.sortedWith(compareBy({ it.key.type }, { it.key.registryId }, { it.key.scope }))
+                }.sortedWith(
+                    compareBy(
+                        { it.key.type },
+                        { it.key.registryId },
+                        { it.key.name },
+                        { it.key.scope },
+                        { it.key.spanKind },
+                    ),
+                )
 
         outputFile.parentFile.mkdirs()
         outputFile.writeText(renderYaml(moduleName, scopeNames.distinct().sorted(), merged))
