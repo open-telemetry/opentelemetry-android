@@ -133,6 +133,11 @@ internal object NativeCrashSnapshotParser {
         )
     }
 
+    /**
+     * Calculates the checksum over the fixed prefix covered by the snapshot format.
+     *
+     * @throws IllegalArgumentException if [bytes] does not contain the complete prefix.
+     */
     internal fun checksum(bytes: ByteArray): UInt {
         require(bytes.size >= NativeCrashSnapshotLayout.CHECKSUM_OFFSET)
         var checksum = FNV_OFFSET_BASIS
