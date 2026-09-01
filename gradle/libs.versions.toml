@@ -20,7 +20,7 @@ binaryCompatValidator = "0.18.1"
 fragment = "1.9.0"
 koverGradlePlugin = "0.9.9"
 openTelemetryProto = "1.11.0-alpha"
-protobufKotlin = "4.36.0"
+protobufKotlin = "4.36.1"
 weaver = "0.25.1"
 
 [libraries]
