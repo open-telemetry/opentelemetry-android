@@ -100,10 +100,14 @@ internal class ComposeInstrumentationTest {
 
     @Test
     fun capture_compose_click() {
+        val activitySessionProvider = mockk<SessionProvider>(relaxUnitFun = true)
+        every { activitySessionProvider.recordActivity() } answers {
+            assertThat(openTelemetryRule.logRecords).isEmpty()
+        }
         val openTelemetryRum =
             mockk<OpenTelemetryRum> {
                 every { openTelemetry } returns openTelemetryRule.openTelemetry
-                every { sessionProvider } returns mockk<SessionProvider>()
+                every { sessionProvider } returns activitySessionProvider
                 every { clock } returns Clock.getDefault()
             }
 
@@ -124,8 +128,8 @@ internal class ComposeInstrumentationTest {
         val wrapperCapturingSlot = slot<WindowCallbackWrapper>()
         every { window.callback = any() } returns Unit
 
-        val motionEvent =
-            MotionEvent.obtain(0L, SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, 250f, 50f, 0)
+        val downEvent = createMotionEvent(MotionEvent.ACTION_DOWN)
+        val motionEvent = createMotionEvent(MotionEvent.ACTION_UP)
         every { window.decorView } returns composeView
         every { composeView.childCount } returns 0
 
@@ -144,9 +148,8 @@ internal class ComposeInstrumentationTest {
             window.callback = capture(wrapperCapturingSlot)
         }
 
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            motionEvent,
-        )
+        listOf(downEvent, motionEvent).forEach { wrapperCapturingSlot.captured.dispatchTouchEvent(it) }
+        verify(exactly = 1) { activitySessionProvider.recordActivity() }
 
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
@@ -167,6 +170,8 @@ internal class ComposeInstrumentationTest {
                 equalTo(APP_WIDGET_NAME_KEY, "clickMe"),
             )
     }
+
+    private fun createMotionEvent(action: Int): MotionEvent = MotionEvent.obtain(0L, SystemClock.uptimeMillis(), action, 250f, 50f, 0)
 
     private fun createMockLayoutNode(
         targetX: Float = 0f,

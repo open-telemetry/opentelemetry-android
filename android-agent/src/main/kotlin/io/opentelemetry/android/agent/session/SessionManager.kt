@@ -6,6 +6,7 @@
 package io.opentelemetry.android.agent.session
 
 import io.opentelemetry.android.Incubating
+import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.android.session.SessionProvider
@@ -23,9 +24,11 @@ internal class SessionManager(
     private val idGenerator: SessionIdGenerator = DefaultSessionIdGenerator(Random.Default),
     private val maxSessionLifetime: Duration,
 ) : SessionProvider,
-    SessionPublisher {
+    SessionPublisher,
+    ApplicationStateListener {
     private val session: AtomicReference<Session> = AtomicReference(invalidSession)
     private val observers = CopyOnWriteArrayList<SessionObserver>()
+    private val accessLock = Any()
 
     init {
         sessionStorage.save(session.get())
@@ -35,33 +38,45 @@ internal class SessionManager(
         observers.add(observer)
     }
 
-    override fun getSessionId(): String {
-        val currentSession = session.get()
+    override fun getSessionId(): String = accessSession(recordActivity = true)
 
-        // Check if we need to create a new session.
-        return if (sessionHasExpired(currentSession) || timeoutHandler.hasTimedOut()) {
-            val newId = idGenerator.generateSessionId()
-            val newSession = SessionImpl(newId, clock.now())
+    override fun getSessionIdForAttribution(): String = accessSession(recordActivity = false)
 
-            // Atomically update the session only if it hasn't been changed by another thread.
-            if (session.compareAndSet(currentSession, newSession)) {
-                sessionStorage.save(newSession)
-                timeoutHandler.bump()
-                // Observers need to be called after bumping the timer because it may create a new
-                // span.
-                notifyObserversOfSessionUpdate(currentSession, newSession)
-                newSession.id
-            } else {
-                // Another thread accessed this function prior to creating a new session. Use the
-                // current session.
-                timeoutHandler.bump()
-                session.get().id
+    override fun recordActivity() {
+        accessSession(recordActivity = true)
+    }
+
+    override fun onApplicationForegrounded() {
+        recordActivity()
+    }
+
+    override fun onApplicationBackgrounded() = Unit
+
+    private fun accessSession(recordActivity: Boolean): String {
+        var transition: Pair<Session, Session>? = null
+        val sessionId =
+            synchronized(accessLock) {
+                val currentSession = session.get()
+                if (sessionHasExpired(currentSession) || timeoutHandler.hasTimedOut()) {
+                    val newSession = SessionImpl(idGenerator.generateSessionId(), clock.now())
+                    session.set(newSession)
+                    sessionStorage.save(newSession)
+                    // A new session starts a new inactivity window even for passive attribution.
+                    timeoutHandler.bump()
+                    transition = currentSession to newSession
+                    newSession.id
+                } else {
+                    if (recordActivity) {
+                        timeoutHandler.bump()
+                    }
+                    currentSession.id
+                }
             }
-        } else {
-            // No new session needed, just bump the timeout and return current session ID
-            timeoutHandler.bump()
-            currentSession.id
+
+        transition?.let { (previousSession, newSession) ->
+            notifyObserversOfSessionUpdate(previousSession, newSession)
         }
+        return sessionId
     }
 
     private fun notifyObserversOfSessionUpdate(

@@ -11,6 +11,12 @@
 
 ### 📈 Enhancements
 
+- Sessions now expire after 15 minutes without meaningful activity. Foreground returns and
+  instrumented pointer input refresh the inactivity window, while passive telemetry does not. The
+  four-hour maximum lifetime remains unchanged.
+  ([#794](https://github.com/open-telemetry/opentelemetry-android/issues/794),
+  [#910](https://github.com/open-telemetry/opentelemetry-android/issues/910))
+
 - The Compose Navigation instrumentation, which shipped in 1.6.0 without emitting any telemetry,
   now records an `app.navigation.complete` event carrying the `app.navigation.destination.name`
   attribute whenever a navigation completes.

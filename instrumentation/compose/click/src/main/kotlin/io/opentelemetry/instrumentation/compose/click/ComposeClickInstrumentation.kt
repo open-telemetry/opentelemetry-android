@@ -26,6 +26,7 @@ class ComposeClickInstrumentation : AndroidInstrumentation {
                         .logsBridge
                         .loggerBuilder("io.opentelemetry.android.instrumentation.compose.click")
                         .build(),
+                    recordActivity = openTelemetryRum.sessionProvider::recordActivity,
                 ),
             ),
         )

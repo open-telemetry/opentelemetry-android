@@ -32,7 +32,7 @@ internal class SessionIdSpanAppenderTest {
     @BeforeEach
     fun setUp() {
         MockKAnnotations.init(this)
-        every { sessionProvider.getSessionId() }.returns("42")
+        every { sessionProvider.getSessionIdForAttribution() }.returns("42")
         every { span.setAttribute(any<AttributeKey<String>>(), any<String>()) } returns span
     }
 
@@ -44,6 +44,7 @@ internal class SessionIdSpanAppenderTest {
         underTest.onStart(Context.root(), span)
 
         verify { span.setAttribute(stringKey(SESSION_ID), "42") }
+        verify(exactly = 0) { sessionProvider.getSessionId() }
 
         assertFalse(underTest.isEndRequired)
     }

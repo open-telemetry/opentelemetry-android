@@ -12,7 +12,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.Incubating
-import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
+import io.opentelemetry.android.agent.session.SessionManager
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.session.SessionObserver
@@ -39,7 +39,7 @@ class OpenTelemetryRumInitializerTest {
     }
 
     @Test
-    fun `Verify timeoutHandler initialization 2`() {
+    fun `registers session manager for application lifecycle events`() {
         val rum =
             OpenTelemetryRumInitializer.initialize(
                 context = RuntimeEnvironment.getApplication(),
@@ -52,7 +52,7 @@ class OpenTelemetryRumInitializerTest {
         rum.shutdown()
 
         verify {
-            appLifecycle.registerListener(any<SessionIdTimeoutHandler>())
+            appLifecycle.registerListener(any<SessionManager>())
         }
     }
 

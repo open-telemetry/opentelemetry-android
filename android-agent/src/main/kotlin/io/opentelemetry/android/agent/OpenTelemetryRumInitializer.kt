@@ -155,8 +155,8 @@ object OpenTelemetryRumInitializer {
             )
         val clock = cfg.clock
         val timeoutHandler = SessionIdTimeoutHandler(sessionConfig, clock)
-        appLifecycle.registerListener(timeoutHandler)
         val sessionManager = SessionManager.create(timeoutHandler, sessionConfig, clock)
+        appLifecycle.registerListener(sessionManager)
         cfg.sessionConfig.getObservers().forEach { sessionManager.addObserver(it) }
         return sessionManager
     }

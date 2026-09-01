@@ -15,6 +15,8 @@ internal class OpenTelemetryRumNoopTest {
         val noop = RumBuilder.noop()
         assertEquals(OpenTelemetry.noop(), noop.openTelemetry)
         assertEquals("", noop.sessionProvider.getSessionId())
+        assertEquals("", noop.sessionProvider.getSessionIdForAttribution())
+        noop.sessionProvider.recordActivity()
 
         // assert no exceptions thrown
         noop.emitEvent("event")

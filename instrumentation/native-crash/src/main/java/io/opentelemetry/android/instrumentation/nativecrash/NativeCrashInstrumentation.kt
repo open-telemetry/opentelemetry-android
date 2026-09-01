@@ -325,7 +325,7 @@ internal data class NativeCrashContext(
 private fun Context.currentCrashContext(openTelemetryRum: OpenTelemetryRum): NativeCrashContext {
     val packageInfo = runCatching { packageManager.getPackageInfo(packageName, 0) }.getOrNull()
     return NativeCrashContext(
-        sessionId = openTelemetryRum.sessionProvider.getSessionId().takeIf { it.isNotBlank() },
+        sessionId = openTelemetryRum.sessionProvider.getSessionIdForAttribution().takeIf { it.isNotBlank() },
         serviceVersion = packageInfo?.versionName,
         osName = "Android",
         osVersion = Build.VERSION.RELEASE,

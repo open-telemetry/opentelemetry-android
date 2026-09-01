@@ -36,7 +36,7 @@ class SessionIdRatioBasedSampler(
         // Replace traceId with sessionId
         return ratioBasedSampler.shouldSample(
             parentContext,
-            sessionProvider.getSessionId(),
+            sessionProvider.getSessionIdForAttribution(),
             name,
             spanKind,
             attributes,

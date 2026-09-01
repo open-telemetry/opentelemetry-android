@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 
 private const val SESSION_AWAIT_SECONDS: Long = 5
 private const val SESSION_ID_LENGTH = 32
@@ -233,6 +234,91 @@ internal class SessionManagerTest {
     }
 
     @Test
+    fun `passive attribution does not extend inactivity`() {
+        val clock = TestClock.create()
+        val sessionManager = createSessionManager(clock)
+        val initialSessionId = sessionManager.getSessionId()
+
+        clock.advance(10, TimeUnit.MINUTES)
+        assertThat(sessionManager.getSessionIdForAttribution()).isEqualTo(initialSessionId)
+
+        clock.advance(5, TimeUnit.MINUTES)
+        assertThat(sessionManager.getSessionIdForAttribution()).isNotEqualTo(initialSessionId)
+    }
+
+    @Test
+    fun `meaningful activity extends inactivity`() {
+        val clock = TestClock.create()
+        val sessionManager = createSessionManager(clock)
+        val initialSessionId = sessionManager.getSessionId()
+
+        clock.advance(10, TimeUnit.MINUTES)
+        sessionManager.recordActivity()
+        clock.advance(10, TimeUnit.MINUTES)
+        assertThat(sessionManager.getSessionIdForAttribution()).isEqualTo(initialSessionId)
+
+        clock.advance(5, TimeUnit.MINUTES)
+        assertThat(sessionManager.getSessionIdForAttribution()).isNotEqualTo(initialSessionId)
+    }
+
+    @Test
+    fun `foreground return checks expiry before recording activity`() {
+        val clock = TestClock.create()
+        val sessionManager = createSessionManager(clock)
+        val initialSessionId = sessionManager.getSessionId()
+
+        sessionManager.onApplicationBackgrounded()
+        clock.advance(15, TimeUnit.MINUTES)
+        sessionManager.onApplicationForegrounded()
+
+        assertThat(sessionManager.getSessionIdForAttribution()).isNotEqualTo(initialSessionId)
+    }
+
+    @Test
+    fun `foreground return refreshes an unexpired session`() {
+        val clock = TestClock.create()
+        val sessionManager = createSessionManager(clock)
+        val initialSessionId = sessionManager.getSessionId()
+
+        sessionManager.onApplicationBackgrounded()
+        clock.advance(10, TimeUnit.MINUTES)
+        sessionManager.onApplicationForegrounded()
+        clock.advance(10, TimeUnit.MINUTES)
+
+        assertThat(sessionManager.getSessionIdForAttribution()).isEqualTo(initialSessionId)
+    }
+
+    @Test
+    fun `background transition alone does not extend inactivity`() {
+        val clock = TestClock.create()
+        val sessionManager = createSessionManager(clock)
+        val initialSessionId = sessionManager.getSessionId()
+
+        clock.advance(10, TimeUnit.MINUTES)
+        sessionManager.onApplicationBackgrounded()
+        clock.advance(5, TimeUnit.MINUTES)
+
+        assertThat(sessionManager.getSessionIdForAttribution()).isNotEqualTo(initialSessionId)
+    }
+
+    @Test
+    fun `meaningful activity cannot extend the four hour maximum lifetime`() {
+        val clock = TestClock.create()
+        val sessionManager = createSessionManager(clock)
+        val initialSessionId = sessionManager.getSessionId()
+
+        repeat(23) {
+            clock.advance(10, TimeUnit.MINUTES)
+            sessionManager.recordActivity()
+        }
+        assertThat(sessionManager.getSessionIdForAttribution()).isEqualTo(initialSessionId)
+
+        clock.advance(10, TimeUnit.MINUTES)
+        sessionManager.recordActivity()
+        assertThat(sessionManager.getSessionIdForAttribution()).isNotEqualTo(initialSessionId)
+    }
+
+    @Test
     fun `concurrent access during timeout should create only one new session`() {
         // Given
         val clock = TestClock.create()
@@ -276,6 +362,39 @@ internal class SessionManagerTest {
         // Then - verify that only one new session was created
         assertThat(sessionIds).hasSize(1)
         assertThat(sessionIds.first()).isNotEqualTo(initialSessionId)
+        assertThat(sessionIdCount.get()).isEqualTo(numThreads)
+    }
+
+    @Test
+    fun `concurrent passive attribution after inactivity creates one session`() {
+        val clock = TestClock.create()
+        val sessionManager = createSessionManager(clock)
+        val initialSessionId = sessionManager.getSessionId()
+        clock.advance(15, TimeUnit.MINUTES)
+
+        val numThreads = 10
+        val executor = Executors.newFixedThreadPool(numThreads)
+        val firstLatch = CountDownLatch(numThreads)
+        val lastLatch = CountDownLatch(numThreads)
+        val sessionIds = mutableSetOf<String>()
+        val sessionIdCount = AtomicInteger(0)
+        val params =
+            AddSessionIdsParameters(
+                numThreads,
+                executor,
+                firstLatch,
+                lastLatch,
+                sessionManager,
+                sessionIds,
+                sessionIdCount,
+            )
+
+        addSessionIdsAcrossThreads(params, passive = true)
+
+        assertThat(lastLatch.await(SESSION_AWAIT_SECONDS, TimeUnit.SECONDS)).isTrue()
+        executor.shutdown()
+        assertThat(sessionIds).hasSize(1)
+        assertThat(sessionIds.single()).isNotEqualTo(initialSessionId)
         assertThat(sessionIdCount.get()).isEqualTo(numThreads)
     }
 
@@ -411,14 +530,22 @@ internal class SessionManagerTest {
         assertThat(thirdSessionId).isNotEqualTo(secondSessionId)
     }
 
-    private fun addSessionIdsAcrossThreads(params: AddSessionIdsParameters) {
+    private fun addSessionIdsAcrossThreads(
+        params: AddSessionIdsParameters,
+        passive: Boolean = false,
+    ) {
         repeat(params.numThreads) {
             params.executor.submit {
                 try {
                     params.firstLatch.countDown()
                     params.firstLatch.await(SESSION_AWAIT_SECONDS, TimeUnit.SECONDS)
 
-                    val sessionId = params.sessionManager.getSessionId()
+                    val sessionId =
+                        if (passive) {
+                            params.sessionManager.getSessionIdForAttribution()
+                        } else {
+                            params.sessionManager.getSessionId()
+                        }
                     synchronized(params.sessionIds) {
                         params.sessionIds.add(sessionId)
                         params.sessionIdCount.incrementAndGet()
@@ -429,6 +556,13 @@ internal class SessionManagerTest {
             }
         }
     }
+
+    private fun createSessionManager(clock: TestClock): SessionManager =
+        SessionManager(
+            clock = clock,
+            timeoutHandler = SessionIdTimeoutHandler(clock, 15.minutes),
+            maxSessionLifetime = MAX_SESSION_LIFETIME.hours,
+        )
 
     private data class AddSessionIdsParameters(
         val numThreads: Int,
