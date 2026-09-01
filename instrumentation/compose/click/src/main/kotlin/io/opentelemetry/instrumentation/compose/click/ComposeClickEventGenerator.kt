@@ -7,9 +7,11 @@
 
 package io.opentelemetry.instrumentation.compose.click
 
+import android.util.Log
 import android.view.MotionEvent
 import android.view.Window
 import androidx.compose.ui.node.LayoutNode
+import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.semconv.events.AppScreenClickEvent
 import io.opentelemetry.android.semconv.events.AppWidgetClickEvent
 import io.opentelemetry.api.logs.Logger
@@ -33,7 +35,7 @@ internal class ComposeClickEventGenerator(
     fun generateClick(motionEvent: MotionEvent?) {
         windowRef?.get()?.let { window ->
             if (motionEvent?.actionMasked == MotionEvent.ACTION_DOWN) {
-                recordActivity()
+                recordActivitySafely()
             } else if (motionEvent != null && motionEvent.actionMasked == MotionEvent.ACTION_UP) {
                 AppScreenClickEvent(
                     appScreenCoordinateX = motionEvent.x.toLong(),
@@ -51,6 +53,14 @@ internal class ComposeClickEventGenerator(
                     ).emit(eventLogger)
                 }
             }
+        }
+    }
+
+    private fun recordActivitySafely() {
+        try {
+            recordActivity()
+        } catch (error: Throwable) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to record session activity", error)
         }
     }
 

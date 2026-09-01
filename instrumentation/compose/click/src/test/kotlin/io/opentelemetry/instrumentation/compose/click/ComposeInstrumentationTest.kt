@@ -99,6 +99,30 @@ internal class ComposeInstrumentationTest {
     }
 
     @Test
+    fun `activity failure does not block touch dispatch`() {
+        val recordActivity = mockk<() -> Unit>()
+        every { recordActivity() } throws IllegalStateException("activity failed")
+        every { window.callback } returns callback
+        every { callback.dispatchTouchEvent(any()) } returns true
+
+        val generator =
+            ComposeClickEventGenerator(
+                eventLogger = mockk(relaxed = true),
+                recordActivity = recordActivity,
+            )
+        val wrapper = slot<WindowCallbackWrapper>()
+        every { window.callback = capture(wrapper) } returns Unit
+        generator.startTracking(window)
+
+        val event = MotionEvent.obtain(0L, SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, 0f, 0f, 0)
+        wrapper.captured.dispatchTouchEvent(event)
+
+        verify(exactly = 1) { recordActivity() }
+        verify(exactly = 1) { callback.dispatchTouchEvent(event) }
+        event.recycle()
+    }
+
+    @Test
     fun capture_compose_click() {
         val activitySessionProvider = mockk<SessionProvider>(relaxUnitFun = true)
         every { activitySessionProvider.recordActivity() } answers {
