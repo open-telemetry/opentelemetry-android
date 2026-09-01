@@ -94,7 +94,7 @@ internal class SessionInputActivityTrackerTest {
     }
 
     @Test
-    fun `resume wraps a callback replaced after activity creation`() {
+    fun `resume leaves a callback replaced after activity creation in place`() {
         val activity = mockk<Activity>()
         val window = mockk<Window>()
         val originalCallback = mockk<Window.Callback>()
@@ -109,8 +109,29 @@ internal class SessionInputActivityTrackerTest {
         installedCallback = replacementCallback
         tracker.onActivityResumed(activity)
 
-        val wrapper = installedCallback as SessionInputWindowCallback
-        assertThat(wrapper.unwrap()).isSameAs(replacementCallback)
+        assertThat(installedCallback).isSameAs(replacementCallback)
+    }
+
+    @Test
+    fun `foreign wrapper does not cause another session wrapper on resume`() {
+        val activity = mockk<Activity>()
+        val window = mockk<Window>()
+        val callback = mockk<Window.Callback>()
+        var installedCallback: Window.Callback = callback
+        every { activity.window } returns window
+        every { window.callback } answers { installedCallback }
+        every { window.callback = any() } answers { installedCallback = firstArg() }
+        val tracker = SessionInputActivityTracker {}
+
+        tracker.onActivityCreated(activity, null)
+        val sessionCallback = installedCallback
+        val foreignCallback = DelegatingWindowCallback(sessionCallback)
+        installedCallback = foreignCallback
+
+        repeat(5) { tracker.onActivityResumed(activity) }
+
+        assertThat(installedCallback).isSameAs(foreignCallback)
+        assertThat(foreignCallback.unwrap()).isSameAs(sessionCallback)
     }
 
     @Test
@@ -147,6 +168,53 @@ internal class SessionInputActivityTrackerTest {
         tracker.close()
 
         assertThat(installedCallback).isSameAs(replacementCallback)
+    }
+
+    @Test
+    fun `destroy restores and detaches the activity callback`() {
+        val activity = mockk<Activity>()
+        val window = mockk<Window>()
+        val callback = mockk<Window.Callback>()
+        val recordActivity = mockk<() -> Unit>(relaxed = true)
+        val event = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 1f, 1f, 0)
+        var installedCallback: Window.Callback = callback
+        every { activity.window } returns window
+        every { window.callback } answers { installedCallback }
+        every { window.callback = any() } answers { installedCallback = firstArg() }
+        every { callback.dispatchTouchEvent(event) } returns false
+        val tracker = SessionInputActivityTracker(recordActivity)
+
+        tracker.onActivityCreated(activity, null)
+        val sessionCallback = installedCallback
+        tracker.onActivityDestroyed(activity)
+        sessionCallback.dispatchTouchEvent(event)
+
+        assertThat(installedCallback).isSameAs(callback)
+        verify(exactly = 0) { recordActivity() }
+        event.recycle()
+    }
+
+    @Test
+    fun `close detaches a session callback nested below a foreign wrapper`() {
+        val activity = mockk<Activity>()
+        val window = mockk<Window>()
+        val callback = mockk<Window.Callback>()
+        val recordActivity = mockk<() -> Unit>(relaxed = true)
+        val event = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 1f, 1f, 0)
+        var installedCallback: Window.Callback = callback
+        every { activity.window } returns window
+        every { window.callback } answers { installedCallback }
+        every { window.callback = any() } answers { installedCallback = firstArg() }
+        every { callback.dispatchTouchEvent(event) } returns false
+        val tracker = SessionInputActivityTracker(recordActivity)
+
+        tracker.onActivityCreated(activity, null)
+        installedCallback = DelegatingWindowCallback(installedCallback)
+        tracker.close()
+        installedCallback.dispatchTouchEvent(event)
+
+        verify(exactly = 0) { recordActivity() }
+        event.recycle()
     }
 
     @Test
@@ -222,5 +290,11 @@ internal class SessionInputActivityTrackerTest {
         assertThat(wrapper.dispatchTouchEvent(event)).isTrue()
         verify(exactly = 1) { callback.dispatchTouchEvent(event) }
         event.recycle()
+    }
+
+    private class DelegatingWindowCallback(
+        private val callback: Window.Callback,
+    ) : Window.Callback by callback {
+        fun unwrap(): Window.Callback = callback
     }
 }

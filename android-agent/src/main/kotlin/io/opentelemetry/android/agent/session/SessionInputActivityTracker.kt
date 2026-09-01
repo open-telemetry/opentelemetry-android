@@ -70,9 +70,18 @@ internal class SessionInputActivityTracker(
         track(activity)
     }
 
+    override fun onActivityDestroyed(activity: Activity) {
+        synchronized(trackedWindows) {
+            untrack(activity.window, trackedWindows.remove(activity.window))
+        }
+    }
+
     private fun track(activity: Activity) {
         synchronized(trackedWindows) {
             val window = activity.window
+            if (trackedWindows.containsKey(window)) {
+                return
+            }
             val callback = window.callback
             if (callback !is SessionInputWindowCallback) {
                 SessionInputWindowCallback(callback, recordActivity).also {
@@ -86,19 +95,31 @@ internal class SessionInputActivityTracker(
     fun close() {
         synchronized(trackedWindows) {
             trackedWindows.forEach { (window, callback) ->
-                if (window.callback === callback) {
-                    window.callback = callback.unwrap()
-                }
+                untrack(window, callback)
             }
             trackedWindows.clear()
         }
+    }
+
+    private fun untrack(
+        window: Window,
+        callback: SessionInputWindowCallback?,
+    ) {
+        callback ?: return
+        if (window.callback === callback) {
+            window.callback = callback.unwrap()
+        }
+        callback.detach()
     }
 }
 
 internal class SessionInputWindowCallback(
     private val callback: Window.Callback,
-    private val recordActivity: () -> Unit,
+    recordActivity: () -> Unit,
 ) : Window.Callback by callback {
+    @Volatile
+    private var activityRecorder: (() -> Unit)? = recordActivity
+
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
         if (event?.actionMasked == MotionEvent.ACTION_DOWN) {
             recordActivitySafely()
@@ -121,7 +142,7 @@ internal class SessionInputWindowCallback(
     }
 
     private fun recordActivitySafely() {
-        runCatching(recordActivity)
+        activityRecorder?.let { runCatching(it) }
     }
 
     @RequiresApi(api = VERSION_CODES.O)
@@ -146,4 +167,8 @@ internal class SessionInputWindowCallback(
     ): ActionMode? = this.callback.onWindowStartingActionMode(callback, type)
 
     fun unwrap(): Window.Callback = callback
+
+    fun detach() {
+        activityRecorder = null
+    }
 }
