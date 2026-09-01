@@ -102,6 +102,25 @@ class NativeCrashSnapshotParserTest {
     }
 
     @Test
+    fun `parsed build id length is preserved during unwind`() {
+        assertThat(NativeCrashSnapshotUnwinder.unwind(requireNotNull(parse())))
+            .containsExactly(
+                NativeCrashFrame(
+                    moduleName = "libapp.so",
+                    moduleRelativeAddress = 0x120UL,
+                    buildId = "0123fe",
+                    origin = NativeCrashFrameOrigin.PROGRAM_COUNTER,
+                ),
+                NativeCrashFrame(
+                    moduleName = "libapp.so",
+                    moduleRelativeAddress = 0x130UL,
+                    buildId = "0123fe",
+                    origin = NativeCrashFrameOrigin.LINK_REGISTER,
+                ),
+            )
+    }
+
+    @Test
     fun `rejects size checksum signal and timestamp mismatches`() {
         val valid = SnapshotBuilder().build()
         val corrupt = valid.copyOf().apply { this[NativeCrashSnapshotLayout.STACK_OFFSET] = 9 }
@@ -117,17 +136,16 @@ class NativeCrashSnapshotParserTest {
     @Test
     fun `never throws for checksum-valid mutations`() {
         val random = Random(1940)
-        val interpretedRanges =
+        val interpretedIndexes =
             listOf(
                 0 until NativeCrashSnapshotLayout.MODULES_OFFSET,
                 NativeCrashSnapshotLayout.MODULES_OFFSET until MODULE_OFFSET + NativeCrashSnapshotLayout.MODULE_ENTRY_SIZE,
                 NativeCrashSnapshotLayout.RESERVED_OFFSET until NativeCrashSnapshotLayout.CHECKSUM_OFFSET,
-            )
+            ).flatMap { it }
         repeat(500) { iteration ->
             val architecture = NativeCrashArchitecture.entries[iteration % NativeCrashArchitecture.entries.size]
             val bytes = SnapshotBuilder(architecture).build()
-            val range = interpretedRanges[iteration % interpretedRanges.size]
-            val index = random.nextInt(range.first, range.last + 1)
+            val index = interpretedIndexes[random.nextInt(interpretedIndexes.size)]
             bytes[index] = (bytes[index].toInt() xor (1 shl random.nextInt(8))).toByte()
             ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).putInt(
                 NativeCrashSnapshotLayout.CHECKSUM_OFFSET,

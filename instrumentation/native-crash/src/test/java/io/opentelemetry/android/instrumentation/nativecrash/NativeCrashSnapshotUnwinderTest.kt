@@ -30,31 +30,75 @@ class NativeCrashSnapshotUnwinderTest {
             NativeCrashSnapshotUnwinder.unwind(
                 snapshot(
                     architecture = NativeCrashArchitecture.ARM,
-                    programCounter = 0x1121UL,
+                    programCounter = 0x1123UL,
                 ),
             )
 
-        assertThat(frames.single().moduleRelativeAddress).isEqualTo(0x120UL)
+        assertThat(frames.single().moduleRelativeAddress).isEqualTo(0x122UL)
     }
 
     @TestFactory
     fun `normalizes ARM64 addresses in contract order`() =
         listOf(
-            "top byte" to 0xab00_0000_0000_1120UL,
-            "bits 52 through 63" to 0x00f0_0000_0000_1120UL,
-            "bits 48 through 63" to 0x000a_0000_0000_1120UL,
-        ).map { (name, address) ->
-            dynamicTest(name) {
+            Arm64AddressCase(
+                name = "bits 56 through 63",
+                address = 0xaba0_0000_0000_1120UL,
+                normalizedAddress = 0x00a0_0000_0000_1120UL,
+            ),
+            Arm64AddressCase(
+                name = "bits 52 through 63",
+                address = 0x00fa_0000_0000_1120UL,
+                normalizedAddress = 0x000a_0000_0000_1120UL,
+            ),
+            Arm64AddressCase(
+                name = "bits 48 through 63",
+                address = 0x000a_a000_0000_1120UL,
+                normalizedAddress = 0x0000_a000_0000_1120UL,
+            ),
+            Arm64AddressCase(
+                name = "bits 47 through 63",
+                address = 0x0000_c000_0000_1120UL,
+                normalizedAddress = 0x0000_4000_0000_1120UL,
+            ),
+            Arm64AddressCase(
+                name = "bits 39 through 63",
+                address = 0x0000_00c0_0000_1120UL,
+                normalizedAddress = 0x0000_0040_0000_1120UL,
+            ),
+        ).map { case ->
+            dynamicTest(case.name) {
+                val normalizedModule =
+                    module(
+                        loadBias = case.normalizedAddress - 0x120UL,
+                        start = case.normalizedAddress - 0x20UL,
+                        end = case.normalizedAddress + 0x100UL,
+                    )
                 val frame =
                     NativeCrashSnapshotUnwinder
                         .unwind(
                             snapshot(
                                 architecture = NativeCrashArchitecture.ARM64,
-                                programCounter = address,
+                                programCounter = case.address,
+                                modules = listOf(normalizedModule),
                             ),
                         ).single()
 
                 assertThat(frame.moduleRelativeAddress).isEqualTo(0x120UL)
+            }
+        }
+
+    @TestFactory
+    fun `does not apply ARM address normalization to x86`() =
+        listOf(NativeCrashArchitecture.X86, NativeCrashArchitecture.X86_64).map { architecture ->
+            dynamicTest(architecture.name) {
+                assertThat(
+                    NativeCrashSnapshotUnwinder.unwind(
+                        snapshot(
+                            architecture = architecture,
+                            programCounter = 0xab00_0000_0000_1120UL,
+                        ),
+                    ),
+                ).isEmpty()
             }
         }
 
@@ -80,6 +124,37 @@ class NativeCrashSnapshotUnwinderTest {
 
         assertThat(frame.moduleName).isEqualTo("libtagged.so")
         assertThat(frame.moduleRelativeAddress).isEqualTo(0x120UL)
+    }
+
+    @Test
+    fun `uses executable start and excludes executable end`() {
+        assertThat(
+            NativeCrashSnapshotUnwinder.unwind(
+                snapshot(programCounter = 0x1100UL),
+            ),
+        ).containsExactly(frame(0x100UL, NativeCrashFrameOrigin.PROGRAM_COUNTER))
+        assertThat(
+            NativeCrashSnapshotUnwinder.unwind(
+                snapshot(programCounter = 0x2000UL),
+            ),
+        ).isEmpty()
+    }
+
+    @Test
+    fun `does not underflow a module-relative address`() {
+        assertThat(
+            NativeCrashSnapshotUnwinder.unwind(
+                snapshot(
+                    modules =
+                        listOf(
+                            module(
+                                loadBias = 0x1200UL,
+                                start = 0x1100UL,
+                            ),
+                        ),
+                ),
+            ),
+        ).isEmpty()
     }
 
     @Test
@@ -222,7 +297,6 @@ class NativeCrashSnapshotUnwinderTest {
             "zero frame pointer" to snapshot(framePointer = 0UL, stack = ByteArray(16)),
             "below captured stack" to snapshot(framePointer = STACK_START - 8UL, stack = ByteArray(16)),
             "past captured stack" to snapshot(framePointer = STACK_START + 24UL, stack = ByteArray(16)),
-            "misaligned frame pointer" to snapshot(framePointer = STACK_START + 1UL, stack = ByteArray(16)),
             "truncated record" to snapshot(framePointer = STACK_START, stack = ByteArray(8)),
             "overflowing return slot" to
                 snapshot(
@@ -238,6 +312,18 @@ class NativeCrashSnapshotUnwinderTest {
         }
 
     @Test
+    fun `rejects a readable but misaligned frame record`() {
+        val stack = ByteArray(24)
+        stack.writeFrame(STACK_START + 1UL, 0UL, 0x1128UL, Long.SIZE_BYTES)
+
+        assertThat(
+            NativeCrashSnapshotUnwinder.unwind(
+                snapshot(framePointer = STACK_START + 1UL, stack = stack),
+            ),
+        ).containsExactly(frame(0x120UL, NativeCrashFrameOrigin.PROGRAM_COUNTER))
+    }
+
+    @Test
     fun `stops a non-increasing frame chain after the current caller`() {
         val stack = ByteArray(16)
         stack.writeFrame(STACK_START, STACK_START, 0x1128UL, Long.SIZE_BYTES)
@@ -245,6 +331,22 @@ class NativeCrashSnapshotUnwinderTest {
         assertThat(
             NativeCrashSnapshotUnwinder.unwind(
                 snapshot(framePointer = STACK_START, stack = stack),
+            ),
+        ).containsExactly(
+            frame(0x120UL, NativeCrashFrameOrigin.PROGRAM_COUNTER),
+            frame(0x128UL, NativeCrashFrameOrigin.FRAME_POINTER),
+        )
+    }
+
+    @Test
+    fun `stops a decreasing frame chain after the current caller`() {
+        val stack = ByteArray(32)
+        stack.writeFrame(STACK_START, 0UL, 0x1130UL, Long.SIZE_BYTES)
+        stack.writeFrame(STACK_START + 16UL, STACK_START, 0x1128UL, Long.SIZE_BYTES)
+
+        assertThat(
+            NativeCrashSnapshotUnwinder.unwind(
+                snapshot(framePointer = STACK_START + 16UL, stack = stack),
             ),
         ).containsExactly(
             frame(0x120UL, NativeCrashFrameOrigin.PROGRAM_COUNTER),
@@ -272,7 +374,7 @@ class NativeCrashSnapshotUnwinderTest {
     }
 
     @Test
-    fun `caps unresolved frame traversal at 64 records`() {
+    fun `continues bounded traversal after 64 unresolved records`() {
         val stack = ByteArray(66 * 2 * Long.SIZE_BYTES)
         repeat(66) { index ->
             val framePointer = STACK_START + index.toULong() * 16UL
@@ -289,7 +391,7 @@ class NativeCrashSnapshotUnwinderTest {
                     stack = stack,
                 ),
             ),
-        ).isEmpty()
+        ).containsExactly(frame(0x128UL, NativeCrashFrameOrigin.FRAME_POINTER))
     }
 
     private fun snapshot(
@@ -349,4 +451,10 @@ class NativeCrashSnapshotUnwinderTest {
     private companion object {
         const val STACK_START = 0x7000UL
     }
+
+    private data class Arm64AddressCase(
+        val name: String,
+        val address: ULong,
+        val normalizedAddress: ULong,
+    )
 }

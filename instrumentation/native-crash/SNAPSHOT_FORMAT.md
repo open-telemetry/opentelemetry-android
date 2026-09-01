@@ -118,9 +118,10 @@ misaligned or otherwise corrupt stack pointer produces no native frames. Readers
 link-register field on x86 and x86_64.
 
 ARM64 readers preserve captured values and try the raw address first. If it does not resolve, they
-retry after clearing bits 56 through 63, then 52 through 63, then 48 through 63 to account for
-top-byte tags and pointer authentication. ARM readers clear the Thumb bit before lookup. The first
-candidate inside a captured executable segment wins.
+retry after clearing bits 56 through 63, then 52 through 63, 48 through 63, 47 through 63, and 39
+through 63 to account for top-byte tags, pointer authentication, and Android's supported ARM64
+virtual-address widths. ARM readers clear the Thumb bit before lookup. The first candidate inside a
+captured executable segment wins.
 
 Version 1 recovers at most 64 frames. ARM64, x86, and x86_64 readers walk frame records containing
 the previous frame pointer at `[fp]` and the return address at `[fp + pointerSize]`. ARM32 readers do

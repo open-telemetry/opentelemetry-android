@@ -23,6 +23,8 @@ internal object NativeCrashSnapshotUnwinder {
     private const val ARM64_CLEAR_BITS_56_TO_63 = 0x00ff_ffff_ffff_ffffUL
     private const val ARM64_CLEAR_BITS_52_TO_63 = 0x000f_ffff_ffff_ffffUL
     private const val ARM64_CLEAR_BITS_48_TO_63 = 0x0000_ffff_ffff_ffffUL
+    private const val ARM64_CLEAR_BITS_47_TO_63 = 0x0000_7fff_ffff_ffffUL
+    private const val ARM64_CLEAR_BITS_39_TO_63 = 0x0000_007f_ffff_ffffUL
     private const val ARM_CLEAR_THUMB_BIT = 0xffff_ffff_ffff_fffeUL
 
     fun unwind(snapshot: NativeCrashSnapshot): List<NativeCrashFrame> {
@@ -47,11 +49,9 @@ internal object NativeCrashSnapshotUnwinder {
         frames: MutableList<NativeCrashFrame>,
     ): Int {
         var framePointer = snapshot.framePointer
-        var walkedRecords = 0
         var recoveredCallers = 0
-        while (walkedRecords < MAX_FRAMES && frames.size < MAX_FRAMES) {
+        while (frames.size < MAX_FRAMES) {
             val record = snapshot.readFrameRecord(framePointer) ?: return recoveredCallers
-            walkedRecords++
             snapshot.resolve(record.returnAddress, NativeCrashFrameOrigin.FRAME_POINTER)?.let {
                 frames.add(it)
                 recoveredCallers++
@@ -96,6 +96,8 @@ internal object NativeCrashSnapshotUnwinder {
                     address and ARM64_CLEAR_BITS_56_TO_63,
                     address and ARM64_CLEAR_BITS_52_TO_63,
                     address and ARM64_CLEAR_BITS_48_TO_63,
+                    address and ARM64_CLEAR_BITS_47_TO_63,
+                    address and ARM64_CLEAR_BITS_39_TO_63,
                 ).distinct()
             }
 
