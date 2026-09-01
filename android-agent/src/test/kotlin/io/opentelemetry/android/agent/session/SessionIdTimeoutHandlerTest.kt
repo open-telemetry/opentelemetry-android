@@ -17,7 +17,7 @@ class SessionIdTimeoutHandlerTest {
     fun `times out at the default inactivity boundary`() {
         val clock = TestClock.create()
         val timeoutHandler =
-            SessionIdTimeoutHandler(clock, SessionConfig.withDefaults().backgroundInactivityTimeout)
+            SessionIdTimeoutHandler(clock, SessionConfig.withDefaults().inactivityTimeout)
 
         clock.advance(14, TimeUnit.MINUTES)
         clock.advance(59, TimeUnit.SECONDS)
@@ -31,7 +31,7 @@ class SessionIdTimeoutHandlerTest {
     fun `meaningful activity restarts the inactivity window`() {
         val clock = TestClock.create()
         val timeoutHandler =
-            SessionIdTimeoutHandler(clock, SessionConfig.withDefaults().backgroundInactivityTimeout)
+            SessionIdTimeoutHandler(clock, SessionConfig.withDefaults().inactivityTimeout)
 
         clock.advance(10, TimeUnit.MINUTES)
         timeoutHandler.bump()

@@ -30,7 +30,7 @@ internal class SessionConfigurationTest {
 
     @Test
     fun testDefaults() {
-        assertEquals(15.minutes, otelConfig.sessionConfig.backgroundInactivityTimeout)
+        assertEquals(15.minutes, otelConfig.sessionConfig.inactivityTimeout)
         assertEquals(4.hours, otelConfig.sessionConfig.maxLifetime)
     }
 
@@ -41,12 +41,21 @@ internal class SessionConfigurationTest {
         val otelConfig =
             otelConfig.apply {
                 session {
-                    backgroundInactivityTimeout = customTimeout
+                    inactivityTimeout = customTimeout
                     maxLifetime = customLifetime
                 }
             }
-        assertEquals(customTimeout, otelConfig.sessionConfig.backgroundInactivityTimeout)
+        assertEquals(customTimeout, otelConfig.sessionConfig.inactivityTimeout)
         assertEquals(customLifetime, otelConfig.sessionConfig.maxLifetime)
+    }
+
+    @Suppress("DEPRECATION")
+    @Test
+    fun `background timeout remains a compatible alias`() {
+        otelConfig.sessionConfig.backgroundInactivityTimeout = 30.minutes
+
+        assertEquals(30.minutes, otelConfig.sessionConfig.inactivityTimeout)
+        assertEquals(30.minutes, otelConfig.sessionConfig.backgroundInactivityTimeout)
     }
 
     @Test

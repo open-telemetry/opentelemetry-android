@@ -4,6 +4,11 @@
 
 ### 📣 Migration notes
 
+- Foreground sessions now expire after the configured inactivity window; previously they remained
+  active until the four-hour maximum. Expired sessions rotate on the next access, including passive
+  telemetry attribution. Use `inactivityTimeout`; `backgroundInactivityTimeout` remains as a
+  deprecated alias.
+
 - Network change events now use `network.connection.type` instead of the deprecated
   `network.status`. To keep emitting `network.status` while migrating, configure
   `semanticConventions { useLatestExperimental = false }`.
@@ -12,8 +17,8 @@
 ### 📈 Enhancements
 
 - Sessions now expire after 15 minutes without meaningful activity. Foreground returns and
-  instrumented pointer input refresh the inactivity window, while passive telemetry does not. The
-  four-hour maximum lifetime remains unchanged.
+  touch, key, and scroll input refresh the inactivity window, while passive telemetry does not.
+  The four-hour maximum lifetime remains unchanged.
   ([#794](https://github.com/open-telemetry/opentelemetry-android/issues/794),
   [#910](https://github.com/open-telemetry/opentelemetry-android/issues/910))
 

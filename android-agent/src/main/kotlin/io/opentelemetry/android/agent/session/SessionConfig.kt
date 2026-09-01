@@ -10,7 +10,7 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
 internal class SessionConfig(
-    val backgroundInactivityTimeout: Duration = 15.minutes,
+    val inactivityTimeout: Duration = 15.minutes,
     val maxLifetime: Duration = 4.hours,
 ) {
     companion object {

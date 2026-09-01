@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.agent
 
+import android.app.Activity
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.Runs
 import io.mockk.every
@@ -12,14 +13,17 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.Incubating
+import io.opentelemetry.android.agent.session.SessionInputWindowCallback
 import io.opentelemetry.android.agent.session.SessionManager
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RuntimeEnvironment
 
 @OptIn(Incubating::class)
@@ -54,6 +58,26 @@ class OpenTelemetryRumInitializerTest {
         verify {
             appLifecycle.registerListener(any<SessionManager>())
         }
+    }
+
+    @Test
+    fun `tracks input for activities created after initialization`() {
+        val rum =
+            OpenTelemetryRumInitializer.initialize(
+                context = RuntimeEnvironment.getApplication(),
+                configuration = {
+                    httpExport {
+                        baseUrl = "http://127.0.0.1:4318"
+                    }
+                },
+            )
+        val activityController = Robolectric.buildActivity(Activity::class.java).create()
+
+        assertThat(activityController.get().window.callback)
+            .isInstanceOf(SessionInputWindowCallback::class.java)
+
+        activityController.destroy()
+        rum.shutdown()
     }
 
     @Test

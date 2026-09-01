@@ -21,7 +21,7 @@ You can customize session behavior using the configuration DSL:
 OpenTelemetryRumInitializer.initialize(context) {
     session {
         // Session expires after 15 minutes without meaningful activity (default)
-        backgroundInactivityTimeout = 15.minutes
+        inactivityTimeout = 15.minutes
 
         // Session expires after 4 hours regardless of activity (default)
         maxLifetime = 4.hours
@@ -29,10 +29,10 @@ OpenTelemetryRumInitializer.initialize(context) {
 }
 ```
 
-Returning to the foreground and pointer input captured by the View or Compose click
-instrumentation record meaningful activity. The agent checks whether the current session has
-expired before it records that activity. Passive telemetry, including spans and logs, does not
-extend the inactivity window.
+Returning to the foreground, pointer input, hardware key input, and mouse or trackpad scrolling
+record meaningful activity. The agent checks whether the current session has expired before it
+records that activity. Passive telemetry, including spans and logs, does not extend the inactivity
+window.
 
 Custom integrations can record other meaningful activity explicitly:
 

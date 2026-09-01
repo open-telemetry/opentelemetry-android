@@ -112,7 +112,7 @@ private fun initOTel(context: Context): OpenTelemetryRum? =
                     }
                 }
                 session {
-                    backgroundInactivityTimeout = 5.minutes
+                    inactivityTimeout = 5.minutes
                     maxLifetime = 1.days
                 }
                 globalAttributes {

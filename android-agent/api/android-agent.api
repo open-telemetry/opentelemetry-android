@@ -82,9 +82,11 @@ public final class io/opentelemetry/android/agent/dsl/SemanticConventionsConfigu
 
 public final class io/opentelemetry/android/agent/dsl/SessionConfiguration {
 	public final fun getBackgroundInactivityTimeout-UwyO8pc ()J
+	public final fun getInactivityTimeout-UwyO8pc ()J
 	public final fun getMaxLifetime-UwyO8pc ()J
 	public final fun observers ([Lio/opentelemetry/android/session/SessionObserver;)V
 	public final fun setBackgroundInactivityTimeout-LRDsOJo (J)V
+	public final fun setInactivityTimeout-LRDsOJo (J)V
 	public final fun setMaxLifetime-LRDsOJo (J)V
 }
 

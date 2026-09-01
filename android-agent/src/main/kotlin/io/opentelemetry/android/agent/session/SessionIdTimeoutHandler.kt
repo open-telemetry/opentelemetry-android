@@ -23,7 +23,7 @@ internal class SessionIdTimeoutHandler(
     @OptIn(Incubating::class)
     internal constructor(sessionConfig: SessionConfig, clock: Clock) : this(
         clock,
-        sessionConfig.backgroundInactivityTimeout,
+        sessionConfig.inactivityTimeout,
     )
 
     fun hasTimedOut(): Boolean {
