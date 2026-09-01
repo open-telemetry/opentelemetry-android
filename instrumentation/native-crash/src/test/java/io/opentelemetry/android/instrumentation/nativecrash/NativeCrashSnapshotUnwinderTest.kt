@@ -141,6 +141,45 @@ class NativeCrashSnapshotUnwinderTest {
     }
 
     @Test
+    fun `adjusts caller return addresses into the executable range`() {
+        val stack = ByteArray(16)
+        stack.writeFrame(STACK_START, 0UL, 0x2000UL, Long.SIZE_BYTES)
+
+        assertThat(
+            NativeCrashSnapshotUnwinder.unwind(
+                snapshot(programCounter = 0UL, framePointer = STACK_START, stack = stack),
+            ),
+        ).containsExactly(frame(0xfffUL, NativeCrashFrameOrigin.FRAME_POINTER))
+        assertThat(
+            NativeCrashSnapshotUnwinder.unwind(
+                snapshot(
+                    architecture = NativeCrashArchitecture.ARM64,
+                    programCounter = 0UL,
+                    linkRegister = 0x2000UL,
+                ),
+            ),
+        ).containsExactly(frame(0xffcUL, NativeCrashFrameOrigin.LINK_REGISTER))
+        assertThat(
+            NativeCrashSnapshotUnwinder.unwind(
+                snapshot(
+                    architecture = NativeCrashArchitecture.ARM,
+                    programCounter = 0UL,
+                    linkRegister = 0x2001UL,
+                ),
+            ),
+        ).containsExactly(frame(0xffeUL, NativeCrashFrameOrigin.LINK_REGISTER))
+        assertThat(
+            NativeCrashSnapshotUnwinder.unwind(
+                snapshot(
+                    architecture = NativeCrashArchitecture.ARM,
+                    programCounter = 0UL,
+                    linkRegister = 0x2000UL,
+                ),
+            ),
+        ).containsExactly(frame(0xffcUL, NativeCrashFrameOrigin.LINK_REGISTER))
+    }
+
+    @Test
     fun `does not underflow a module-relative address`() {
         assertThat(
             NativeCrashSnapshotUnwinder.unwind(
@@ -196,9 +235,31 @@ class NativeCrashSnapshotUnwinderTest {
         assertThat(frames)
             .containsExactly(
                 frame(0x120UL, NativeCrashFrameOrigin.PROGRAM_COUNTER),
-                frame(0x128UL, NativeCrashFrameOrigin.FRAME_POINTER),
-                NativeCrashFrame("libfeature.so", 0x120UL, null, NativeCrashFrameOrigin.FRAME_POINTER),
+                frame(0x124UL, NativeCrashFrameOrigin.FRAME_POINTER),
+                NativeCrashFrame("libfeature.so", 0x11cUL, null, NativeCrashFrameOrigin.FRAME_POINTER),
             )
+    }
+
+    @Test
+    fun `normalizes tagged and PAC-signed ARM64 frame pointers before stack reads`() {
+        val stack = ByteArray(48)
+        stack.writeFrame(STACK_START, 0x0000_0080_0000_7010UL, 0x1128UL, Long.SIZE_BYTES)
+        stack.writeFrame(STACK_START + 16UL, 0UL, 0x1130UL, Long.SIZE_BYTES)
+
+        assertThat(
+            NativeCrashSnapshotUnwinder.unwind(
+                snapshot(
+                    architecture = NativeCrashArchitecture.ARM64,
+                    framePointer = 0xab00_0000_0000_7000UL,
+                    stackStart = 0xab00_0000_0000_7000UL,
+                    stack = stack,
+                ),
+            ),
+        ).containsExactly(
+            frame(0x120UL, NativeCrashFrameOrigin.PROGRAM_COUNTER),
+            frame(0x124UL, NativeCrashFrameOrigin.FRAME_POINTER),
+            frame(0x12cUL, NativeCrashFrameOrigin.FRAME_POINTER),
+        )
     }
 
     @Test
@@ -220,7 +281,7 @@ class NativeCrashSnapshotUnwinderTest {
                     stack = stack,
                 ),
             ),
-        ).containsExactly(frame(0x128UL, NativeCrashFrameOrigin.FRAME_POINTER))
+        ).containsExactly(frame(0x127UL, NativeCrashFrameOrigin.FRAME_POINTER))
     }
 
     @Test
@@ -240,7 +301,7 @@ class NativeCrashSnapshotUnwinderTest {
             ),
         ).containsExactly(
             frame(0x120UL, NativeCrashFrameOrigin.PROGRAM_COUNTER),
-            frame(0x130UL, NativeCrashFrameOrigin.LINK_REGISTER),
+            frame(0x12eUL, NativeCrashFrameOrigin.LINK_REGISTER),
         )
     }
 
@@ -276,6 +337,45 @@ class NativeCrashSnapshotUnwinderTest {
     }
 
     @Test
+    fun `uses the link register before older frame records when the crash PC is missing`() {
+        val stack = ByteArray(16)
+        stack.writeFrame(STACK_START, 0UL, 0x1180UL, Long.SIZE_BYTES)
+
+        assertThat(
+            NativeCrashSnapshotUnwinder.unwind(
+                snapshot(
+                    architecture = NativeCrashArchitecture.ARM64,
+                    programCounter = 0UL,
+                    framePointer = STACK_START,
+                    linkRegister = 0x1130UL,
+                    stack = stack,
+                ),
+            ),
+        ).containsExactly(
+            frame(0x12cUL, NativeCrashFrameOrigin.LINK_REGISTER),
+            frame(0x17cUL, NativeCrashFrameOrigin.FRAME_POINTER),
+        )
+    }
+
+    @Test
+    fun `does not duplicate a link register already recovered from a frame record`() {
+        val stack = ByteArray(16)
+        stack.writeFrame(STACK_START, 0UL, 0x1130UL, Long.SIZE_BYTES)
+
+        assertThat(
+            NativeCrashSnapshotUnwinder.unwind(
+                snapshot(
+                    architecture = NativeCrashArchitecture.ARM64,
+                    programCounter = 0UL,
+                    framePointer = STACK_START,
+                    linkRegister = 0x1130UL,
+                    stack = stack,
+                ),
+            ),
+        ).containsExactly(frame(0x12cUL, NativeCrashFrameOrigin.FRAME_POINTER))
+    }
+
+    @Test
     fun `continues walking after an unresolved return address`() {
         val stack = ByteArray(48)
         stack.writeFrame(STACK_START, STACK_START + 16UL, 0x9000UL, Long.SIZE_BYTES)
@@ -287,7 +387,7 @@ class NativeCrashSnapshotUnwinderTest {
             ),
         ).containsExactly(
             frame(0x120UL, NativeCrashFrameOrigin.PROGRAM_COUNTER),
-            frame(0x128UL, NativeCrashFrameOrigin.FRAME_POINTER),
+            frame(0x127UL, NativeCrashFrameOrigin.FRAME_POINTER),
         )
     }
 
@@ -334,7 +434,7 @@ class NativeCrashSnapshotUnwinderTest {
             ),
         ).containsExactly(
             frame(0x120UL, NativeCrashFrameOrigin.PROGRAM_COUNTER),
-            frame(0x128UL, NativeCrashFrameOrigin.FRAME_POINTER),
+            frame(0x127UL, NativeCrashFrameOrigin.FRAME_POINTER),
         )
     }
 
@@ -350,7 +450,7 @@ class NativeCrashSnapshotUnwinderTest {
             ),
         ).containsExactly(
             frame(0x120UL, NativeCrashFrameOrigin.PROGRAM_COUNTER),
-            frame(0x128UL, NativeCrashFrameOrigin.FRAME_POINTER),
+            frame(0x127UL, NativeCrashFrameOrigin.FRAME_POINTER),
         )
     }
 
@@ -374,24 +474,26 @@ class NativeCrashSnapshotUnwinderTest {
     }
 
     @Test
-    fun `continues bounded traversal after 64 unresolved records`() {
-        val stack = ByteArray(66 * 2 * Long.SIZE_BYTES)
-        repeat(66) { index ->
+    fun `unresolved records do not consume the recovered frame limit`() {
+        val unresolvedRecords = 64
+        val recordCount = unresolvedRecords + 70
+        val stack = ByteArray(recordCount * 2 * Long.SIZE_BYTES)
+        repeat(recordCount) { index ->
             val framePointer = STACK_START + index.toULong() * 16UL
-            val previous = if (index == 65) 0UL else framePointer + 16UL
-            val returnAddress = if (index == 64) 0x1128UL else 0x9000UL
+            val previous = if (index == recordCount - 1) 0UL else framePointer + 16UL
+            val returnAddress = if (index < unresolvedRecords) 0x9000UL else 0x1128UL
             stack.writeFrame(framePointer, previous, returnAddress, Long.SIZE_BYTES)
         }
 
-        assertThat(
+        val frames =
             NativeCrashSnapshotUnwinder.unwind(
-                snapshot(
-                    programCounter = 0UL,
-                    framePointer = STACK_START,
-                    stack = stack,
-                ),
-            ),
-        ).containsExactly(frame(0x128UL, NativeCrashFrameOrigin.FRAME_POINTER))
+                snapshot(programCounter = 0UL, framePointer = STACK_START, stack = stack),
+            )
+
+        assertThat(frames).hasSize(64)
+        assertThat(frames).allMatch {
+            it == frame(0x127UL, NativeCrashFrameOrigin.FRAME_POINTER)
+        }
     }
 
     private fun snapshot(

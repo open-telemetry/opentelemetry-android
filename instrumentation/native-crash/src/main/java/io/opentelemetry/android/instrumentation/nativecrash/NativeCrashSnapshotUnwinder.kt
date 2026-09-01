@@ -29,37 +29,50 @@ internal object NativeCrashSnapshotUnwinder {
 
     fun unwind(snapshot: NativeCrashSnapshot): List<NativeCrashFrame> {
         val frames = ArrayList<NativeCrashFrame>(MAX_FRAMES)
-        snapshot.resolve(snapshot.programCounter, NativeCrashFrameOrigin.PROGRAM_COUNTER)?.let(frames::add)
+        val programCounterFrame = snapshot.resolve(snapshot.programCounter, NativeCrashFrameOrigin.PROGRAM_COUNTER)
+        programCounterFrame?.let(frames::add)
 
-        val callerCount =
+        val callerFrames =
             if (snapshot.architecture == NativeCrashArchitecture.ARM) {
-                0
+                emptyList()
             } else {
-                walkFramePointers(snapshot, frames)
+                walkFramePointers(snapshot)
             }
-
-        if (callerCount == 0 && snapshot.architecture.hasLinkRegister) {
-            snapshot.resolve(snapshot.linkRegister, NativeCrashFrameOrigin.LINK_REGISTER)?.let(frames::add)
+        val linkRegisterFrame =
+            snapshot
+                .takeIf { it.architecture.hasLinkRegister }
+                ?.resolve(snapshot.linkRegister, NativeCrashFrameOrigin.LINK_REGISTER)
+        if (linkRegisterFrame != null) {
+            val fillsMissingCaller = programCounterFrame == null || callerFrames.isEmpty()
+            val duplicatesFrame =
+                frames.any { it.sameLocationAs(linkRegisterFrame) } ||
+                    callerFrames.any { it.sameLocationAs(linkRegisterFrame) }
+            if (fillsMissingCaller && !duplicatesFrame) frames.add(linkRegisterFrame)
+        }
+        for (callerFrame in callerFrames) {
+            if (frames.size == MAX_FRAMES) break
+            frames.add(callerFrame)
         }
         return frames
     }
 
-    private fun walkFramePointers(
-        snapshot: NativeCrashSnapshot,
-        frames: MutableList<NativeCrashFrame>,
-    ): Int {
+    private fun walkFramePointers(snapshot: NativeCrashSnapshot): List<NativeCrashFrame> {
+        val frames = ArrayList<NativeCrashFrame>(MAX_FRAMES)
         var framePointer = snapshot.framePointer
-        var recoveredCallers = 0
-        while (frames.size < MAX_FRAMES) {
-            val record = snapshot.readFrameRecord(framePointer) ?: return recoveredCallers
+        var remainingRecords =
+            minOf(snapshot.stack.size, NativeCrashSnapshotLayout.STACK_CAPACITY) /
+                snapshot.architecture.pointerSize
+        while (frames.size < MAX_FRAMES && remainingRecords > 0) {
+            remainingRecords--
+            val record = snapshot.readFrameRecord(framePointer) ?: return frames
             snapshot.resolve(record.returnAddress, NativeCrashFrameOrigin.FRAME_POINTER)?.let {
                 frames.add(it)
-                recoveredCallers++
             }
-            if (record.previousFramePointer <= framePointer) return recoveredCallers
+            val previousLocation = snapshot.locateFrameRecord(record.previousFramePointer) ?: return frames
+            if (previousLocation.offset <= record.offset) return frames
             framePointer = record.previousFramePointer
         }
-        return recoveredCallers
+        return frames
     }
 
     private fun NativeCrashSnapshot.resolve(
@@ -67,21 +80,43 @@ internal object NativeCrashSnapshotUnwinder {
         origin: NativeCrashFrameOrigin,
     ): NativeCrashFrame? {
         if (address == 0UL) return null
+        val returnAddressAdjustment = returnAddressAdjustment(address, origin)
         for (candidate in addressCandidates(address)) {
-            val module =
-                modules.firstOrNull {
-                    it.loadBias <= candidate &&
-                        candidate >= it.executableStart &&
-                        candidate < it.executableEnd
-                } ?: continue
-            return NativeCrashFrame(
-                moduleName = module.name,
-                moduleRelativeAddress = candidate - module.loadBias,
-                buildId = module.buildId,
-                origin = origin,
-            )
+            if (candidate >= returnAddressAdjustment) {
+                val instructionAddress = candidate - returnAddressAdjustment
+                val module =
+                    modules.firstOrNull {
+                        it.loadBias <= instructionAddress &&
+                            instructionAddress >= it.executableStart &&
+                            instructionAddress < it.executableEnd
+                    }
+                if (module != null) {
+                    return NativeCrashFrame(
+                        moduleName = module.name,
+                        moduleRelativeAddress = instructionAddress - module.loadBias,
+                        buildId = module.buildId,
+                        origin = origin,
+                    )
+                }
+            }
         }
         return null
+    }
+
+    private fun NativeCrashSnapshot.returnAddressAdjustment(
+        address: ULong,
+        origin: NativeCrashFrameOrigin,
+    ): ULong {
+        if (origin == NativeCrashFrameOrigin.PROGRAM_COUNTER) return 0UL
+        return when (architecture) {
+            NativeCrashArchitecture.ARM -> if (address and 1UL == 1UL) 2UL else 4UL
+
+            NativeCrashArchitecture.ARM64 -> 4UL
+
+            NativeCrashArchitecture.X86,
+            NativeCrashArchitecture.X86_64,
+            -> 1UL
+        }
     }
 
     private fun NativeCrashSnapshot.addressCandidates(address: ULong): List<ULong> =
@@ -110,31 +145,63 @@ internal object NativeCrashSnapshotUnwinder {
 
     private fun NativeCrashSnapshot.readFrameRecord(framePointer: ULong): FrameRecord? {
         val pointerSize = architecture.pointerSize
-        if (framePointer % pointerSize.toULong() != 0UL) return null
-        val returnAddressLocation = framePointer.addWithoutOverflow(pointerSize.toULong()) ?: return null
-        val previousFramePointer = readStackPointer(framePointer) ?: return null
-        val returnAddress = readStackPointer(returnAddressLocation) ?: return null
-        return FrameRecord(previousFramePointer, returnAddress)
+        val location = locateFrameRecord(framePointer) ?: return null
+        val previousFramePointer = readStackPointer(location.offset)
+        val returnAddress = readStackPointer(location.offset + pointerSize)
+        return FrameRecord(location.offset, previousFramePointer, returnAddress)
     }
 
-    private fun NativeCrashSnapshot.readStackPointer(address: ULong): ULong? {
-        if (address < stackStart) return null
-        val offset = address - stackStart
+    private fun NativeCrashSnapshot.locateFrameRecord(address: ULong): StackLocation? {
         val pointerSize = architecture.pointerSize.toULong()
+        val recordSize = pointerSize * 2UL
         val stackSize = stack.size.toULong()
-        if (offset > stackSize || pointerSize > stackSize - offset) return null
-        val index = offset.toInt()
+        for ((candidate, candidateStackStart) in stackAddressCandidates(address, stackStart)) {
+            val recordEndDoesNotOverflow = candidate <= ULong.MAX_VALUE - (recordSize - 1UL)
+            if (candidate % pointerSize == 0UL && recordEndDoesNotOverflow && candidate >= candidateStackStart) {
+                val offset = candidate - candidateStackStart
+                if (offset <= stackSize && recordSize <= stackSize - offset) {
+                    return StackLocation(offset.toInt())
+                }
+            }
+        }
+        return null
+    }
+
+    private fun NativeCrashSnapshot.stackAddressCandidates(
+        address: ULong,
+        stackStart: ULong,
+    ): List<Pair<ULong, ULong>> =
+        if (architecture == NativeCrashArchitecture.ARM64) {
+            listOf(
+                ULong.MAX_VALUE,
+                ARM64_CLEAR_BITS_56_TO_63,
+                ARM64_CLEAR_BITS_52_TO_63,
+                ARM64_CLEAR_BITS_48_TO_63,
+                ARM64_CLEAR_BITS_47_TO_63,
+                ARM64_CLEAR_BITS_39_TO_63,
+            ).map { mask -> (address and mask) to (stackStart and mask) }.distinct()
+        } else {
+            listOf(address to stackStart)
+        }
+
+    private fun NativeCrashSnapshot.readStackPointer(offset: Int): ULong {
         var value = 0UL
         repeat(architecture.pointerSize) { byteIndex ->
-            value = value or (stack[index + byteIndex].toUByte().toULong() shl (byteIndex * Byte.SIZE_BITS))
+            value = value or (stack[offset + byteIndex].toUByte().toULong() shl (byteIndex * Byte.SIZE_BITS))
         }
         return value
     }
 
-    private fun ULong.addWithoutOverflow(value: ULong): ULong? = takeIf { it <= ULong.MAX_VALUE - value }?.plus(value)
+    private fun NativeCrashFrame.sameLocationAs(other: NativeCrashFrame): Boolean =
+        moduleName == other.moduleName && moduleRelativeAddress == other.moduleRelativeAddress && buildId == other.buildId
 
     private data class FrameRecord(
+        val offset: Int,
         val previousFramePointer: ULong,
         val returnAddress: ULong,
+    )
+
+    private data class StackLocation(
+        val offset: Int,
     )
 }

@@ -121,7 +121,7 @@ class NativeCrashSnapshotParserTest {
                 ),
                 NativeCrashFrame(
                     moduleName = "libapp.so",
-                    moduleRelativeAddress = 0x130UL,
+                    moduleRelativeAddress = 0x12cUL,
                     buildId = "0123fe",
                     origin = NativeCrashFrameOrigin.LINK_REGISTER,
                 ),

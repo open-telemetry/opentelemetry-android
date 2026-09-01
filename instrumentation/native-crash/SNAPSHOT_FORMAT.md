@@ -78,8 +78,8 @@ Register and module addresses are unsigned. A 32-bit writer zero-extends every a
 64-bit field. Registers come from the signal handler's `ucontext_t.uc_mcontext`, never from the
 handler's own frame or alternate stack. The stack start equals the unmodified recorded stack
 pointer. ARM64 register and stack values retain their raw tag and pointer-authentication bits;
-readers normalize those values before module comparisons. Writers set the link-register field to
-zero on x86 and x86_64.
+readers normalize those values before module or captured-stack comparisons. Writers set the
+link-register field to zero on x86 and x86_64.
 
 The snapshot record lives in pre-allocated static storage. Before installing the signal handler,
 the writer walks the loaded ELF program headers and prepares the module table while normal runtime
@@ -123,12 +123,20 @@ through 63 to account for top-byte tags, pointer authentication, and Android's s
 virtual-address widths. ARM readers clear the Thumb bit before lookup. The first candidate inside a
 captured executable segment wins.
 
-Version 1 recovers at most 64 frames. ARM64, x86, and x86_64 readers walk frame records containing
-the previous frame pointer at `[fp]` and the return address at `[fp + pointerSize]`. ARM32 readers do
-not perform a frame-pointer walk; they report the program counter and may use the link register.
-When a frame-pointer walk yields no caller, ARM and ARM64 readers may add a nonzero link register.
-The link register can be stale for a non-leaf crash, so readers preserve its provenance even when a
-stacktrace renderer cannot distinguish it from a frame-pointer result.
+Version 1 reports at most 64 frames. ARM64, x86, and x86_64 readers walk frame records containing
+the previous frame pointer at `[fp]` and the return address at `[fp + pointerSize]`. The captured
+stack bounds the number of records examined; malformed records do not consume the 64-frame output
+limit. ARM32 readers do not perform a frame-pointer walk; they report the program counter and may
+use the link register. When the program counter does not resolve or a frame-pointer walk yields no
+caller, ARM and ARM64 readers may add a nonzero link register before frame-pointer callers. Readers
+omit a link-register candidate that duplicates a recovered frame. The link register can be stale
+for a non-leaf crash, so readers preserve its provenance even when a stacktrace renderer cannot
+distinguish it from a frame-pointer result.
+
+The crash-time program counter is reported exactly after architecture-specific normalization.
+Frame-pointer and link-register return addresses are adjusted into the calling instruction after
+normalization: one byte on x86 and x86_64, four bytes on ARM64 and ARM state, and two bytes on Thumb
+state when executable bytes are unavailable to distinguish a two-byte from a four-byte call.
 
 Confirmed frames are reported as `normalizedAddress - module.loadBias`, with the module build ID
 when available. The normalized address is the first architecture-specific candidate that resolves
