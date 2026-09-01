@@ -60,7 +60,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
           api-level: 29
-          script: ./gradlew connectedCheck --stacktrace
+          script: ./gradlew connectedCheck :smoke-test:smokeTest --stacktrace
 
   required-status-check:
     needs:

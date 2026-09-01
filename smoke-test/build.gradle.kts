@@ -1,58 +1,63 @@
+import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
-    id("com.android.test")
+    java
+    kotlin("jvm")
     id("otel.spotless-conventions")
 }
 
-android {
-    namespace = "io.opentelemetry.android.smoketest"
-    compileSdk = (property("android.compileSdk") as String).toInt()
+val javaVersion = rootProject.extra["java_version"] as JavaVersion
+val targetJvm = rootProject.extra["jvm_target"] as JvmTarget
 
-    defaultConfig {
-        minSdk = (property("android.minSdk") as String).toInt()
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    targetProjectPath = ":smoke-test-app"
-
-    buildTypes {
-        create("release") {
-            isMinifyEnabled = true
-            signingConfig = signingConfigs.getByName("debug")
-            testProguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility(rootProject.extra["java_version"] as JavaVersion)
-        targetCompatibility(rootProject.extra["java_version"] as JavaVersion)
-    }
-
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(rootProject.extra["jvm_target"] as JvmTarget)
-            apiVersion.set(rootProject.extra["kotlin_min_supported_version"] as KotlinVersion)
-            languageVersion.set(rootProject.extra["kotlin_min_supported_version"] as KotlinVersion)
-        }
-    }
+java {
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
 }
 
-androidComponents {
-    // The test must run against the target's minified release variant.
-    beforeVariants(selector().withBuildType("debug")) {
-        it.enable = false
+kotlin {
+    compilerOptions {
+        jvmTarget.set(targetJvm)
     }
 }
 
 dependencies {
-    implementation(libs.androidx.junit)
-    implementation(libs.androidx.test.core)
-    implementation(libs.androidx.test.rules)
-    implementation(libs.androidx.test.runner)
-    implementation(libs.opentelemetry.proto)
+    testImplementation(platform(libs.opentelemetry.platform.alpha))
+    testImplementation(libs.assertj.core)
+    testImplementation(libs.junit5.jupiter.api)
+    testImplementation(libs.kotlinx.serialization.json)
+    testImplementation(libs.opentelemetry.testing.common)
+    testImplementation(libs.testcontainers)
+    testRuntimeOnly(libs.junit5.jupiter.engine)
+    testRuntimeOnly(libs.junit5.platform.launcher)
+}
+
+val smokeTestAppApk =
+    project(":smoke-test-app").layout.buildDirectory.file(
+        "outputs/apk/release/smoke-test-app-release.apk",
+    )
+val rootDirectory = rootProject.layout.projectDirectory.asFile.absolutePath
+val smokeTestRequested =
+    gradle.startParameter.taskNames.any { taskName ->
+        taskName == "smokeTest" || taskName.endsWith(":smokeTest")
+    }
+
+tasks.named<Test>("test") {
+    enabled = false
+}
+
+tasks.register<Test>("smokeTest") {
+    description = "Runs the minified app smoke test on a connected Android emulator."
+    group = "verification"
+    enabled = smokeTestRequested
+    useJUnitPlatform()
+    testClassesDirs =
+        sourceSets.test
+            .get()
+            .output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    dependsOn(":smoke-test-app:assembleRelease")
+    inputs.file(smokeTestAppApk)
+    systemProperty("smoke-test.apk", smokeTestAppApk.get().asFile.absolutePath)
+    systemProperty("smoke-test.root-dir", rootDirectory)
 }
