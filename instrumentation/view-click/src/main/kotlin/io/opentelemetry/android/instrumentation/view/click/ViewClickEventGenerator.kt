@@ -161,7 +161,7 @@ internal class ViewClickEventGenerator(
     private fun recordActivitySafely() {
         try {
             recordActivity()
-        } catch (error: Throwable) {
+        } catch (error: Exception) {
             Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to record session activity", error)
         }
     }

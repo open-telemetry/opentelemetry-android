@@ -95,11 +95,14 @@ class ViewClickInstrumentationTest {
         generator.startTracking(window)
 
         val event = MotionEvent.obtain(0L, SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, 0f, 0f, 0)
-        wrapper.captured.dispatchTouchEvent(event)
+        try {
+            wrapper.captured.dispatchTouchEvent(event)
 
-        verify(exactly = 1) { recordActivity() }
-        verify(exactly = 1) { callback.dispatchTouchEvent(event) }
-        event.recycle()
+            verify(exactly = 1) { recordActivity() }
+            verify(exactly = 1) { callback.dispatchTouchEvent(event) }
+        } finally {
+            event.recycle()
+        }
     }
 
     @Test

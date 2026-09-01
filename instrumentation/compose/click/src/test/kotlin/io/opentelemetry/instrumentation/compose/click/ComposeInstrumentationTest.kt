@@ -115,11 +115,14 @@ internal class ComposeInstrumentationTest {
         generator.startTracking(window)
 
         val event = MotionEvent.obtain(0L, SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, 0f, 0f, 0)
-        wrapper.captured.dispatchTouchEvent(event)
+        try {
+            wrapper.captured.dispatchTouchEvent(event)
 
-        verify(exactly = 1) { recordActivity() }
-        verify(exactly = 1) { callback.dispatchTouchEvent(event) }
-        event.recycle()
+            verify(exactly = 1) { recordActivity() }
+            verify(exactly = 1) { callback.dispatchTouchEvent(event) }
+        } finally {
+            event.recycle()
+        }
     }
 
     @Test
@@ -172,22 +175,31 @@ internal class ComposeInstrumentationTest {
             window.callback = capture(wrapperCapturingSlot)
         }
 
-        listOf(downEvent, motionEvent).forEach { wrapperCapturingSlot.captured.dispatchTouchEvent(it) }
-        verify(exactly = 1) { activitySessionProvider.recordActivity() }
+        try {
+            listOf(downEvent, motionEvent).forEach { wrapperCapturingSlot.captured.dispatchTouchEvent(it) }
+            verify(exactly = 1) { activitySessionProvider.recordActivity() }
+            assertComposeClickEvents(motionEvent, mockLayoutNode)
+        } finally {
+            downEvent.recycle()
+            motionEvent.recycle()
+        }
+    }
 
+    private fun assertComposeClickEvents(
+        motionEvent: MotionEvent,
+        mockLayoutNode: LayoutNode,
+    ) {
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
 
-        var event = events[0]
-        assertThat(event)
+        assertThat(events[0])
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(APP_SCREEN_COORDINATE_X_KEY, motionEvent.x.toLong()),
                 equalTo(APP_SCREEN_COORDINATE_Y_KEY, motionEvent.y.toLong()),
             )
 
-        event = events[1]
-        assertThat(event)
+        assertThat(events[1])
             .hasEventName(APP_WIDGET_CLICK_EVENT_NAME)
             .hasAttributesSatisfying(
                 equalTo(APP_WIDGET_ID_KEY, mockLayoutNode.semanticsId.toString()),
