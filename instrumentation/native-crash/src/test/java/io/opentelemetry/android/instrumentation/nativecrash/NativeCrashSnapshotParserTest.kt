@@ -6,6 +6,7 @@
 package io.opentelemetry.android.instrumentation.nativecrash
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
@@ -24,6 +25,13 @@ class NativeCrashSnapshotParserTest {
         bytes[NativeCrashSnapshotLayout.CHECKSUM_OFFSET - 1] = 0xff.toByte()
 
         assertThat(NativeCrashSnapshotParser.checksum(bytes)).isEqualTo(0x974ee9fcu)
+    }
+
+    @Test
+    fun `checksum rejects a truncated prefix`() {
+        assertThatThrownBy {
+            NativeCrashSnapshotParser.checksum(ByteArray(NativeCrashSnapshotLayout.CHECKSUM_OFFSET - 1))
+        }.isInstanceOf(IllegalArgumentException::class.java)
     }
 
     @Test
