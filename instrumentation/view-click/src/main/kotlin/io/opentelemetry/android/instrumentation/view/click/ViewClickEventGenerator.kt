@@ -32,6 +32,7 @@ import java.util.LinkedList
 
 internal class ViewClickEventGenerator(
     private val eventLogger: Logger,
+    private val recordActivity: () -> Unit = {},
 ) {
     private var windowRef: WeakReference<Window>? = null
 
@@ -148,6 +149,9 @@ internal class ViewClickEventGenerator(
 
     fun generateClick(motionEvent: MotionEvent?) {
         if (motionEvent != null) {
+            if (motionEvent.actionMasked == MotionEvent.ACTION_DOWN && windowRef?.get() != null) {
+                recordActivity()
+            }
             gestureDetector.onTouchEvent(motionEvent)
         }
     }

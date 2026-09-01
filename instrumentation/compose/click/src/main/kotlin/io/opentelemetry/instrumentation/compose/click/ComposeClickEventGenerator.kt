@@ -20,6 +20,7 @@ internal class ComposeClickEventGenerator(
     private val eventLogger: Logger,
     private val composeLayoutNodeUtil: ComposeLayoutNodeUtil = ComposeLayoutNodeUtil(),
     private val composeTapTargetDetector: ComposeTapTargetDetector = ComposeTapTargetDetector(composeLayoutNodeUtil),
+    private val recordActivity: () -> Unit = {},
 ) {
     private var windowRef: WeakReference<Window>? = null
 
@@ -31,7 +32,9 @@ internal class ComposeClickEventGenerator(
 
     fun generateClick(motionEvent: MotionEvent?) {
         windowRef?.get()?.let { window ->
-            if (motionEvent != null && motionEvent.actionMasked == MotionEvent.ACTION_UP) {
+            if (motionEvent?.actionMasked == MotionEvent.ACTION_DOWN) {
+                recordActivity()
+            } else if (motionEvent != null && motionEvent.actionMasked == MotionEvent.ACTION_UP) {
                 AppScreenClickEvent(
                     appScreenCoordinateX = motionEvent.x.toLong(),
                     appScreenCoordinateY = motionEvent.y.toLong(),
