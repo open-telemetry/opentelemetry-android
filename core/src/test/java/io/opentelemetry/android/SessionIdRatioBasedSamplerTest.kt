@@ -8,6 +8,7 @@ package io.opentelemetry.android
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.verify
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
@@ -36,18 +37,19 @@ internal class SessionIdRatioBasedSamplerTest {
 
     @Test
     fun samplerDropsHigh() {
-        every { sessionProvider.getSessionId() } returns HIGH_ID
+        every { sessionProvider.getSessionIdForAttribution() } returns HIGH_ID
 
         val sampler = SessionIdRatioBasedSampler(0.5, sessionProvider)
 
         // Sampler drops if TraceIdRatioBasedSampler would drop this sessionId
         assertThat(shouldSample(sampler)).isEqualTo(SamplingDecision.DROP)
+        verify(exactly = 0) { sessionProvider.getSessionId() }
     }
 
     @Test
     fun samplerKeepsLowestId() {
         // Sampler accepts if TraceIdRatioBasedSampler would accept this sessionId
-        every { sessionProvider.getSessionId() } returns LOW_ID
+        every { sessionProvider.getSessionIdForAttribution() } returns LOW_ID
 
         val sampler = SessionIdRatioBasedSampler(0.5, sessionProvider)
         assertThat(shouldSample(sampler)).isEqualTo(SamplingDecision.RECORD_AND_SAMPLE)
@@ -55,13 +57,13 @@ internal class SessionIdRatioBasedSamplerTest {
 
     @Test
     fun zeroRatioDropsAll() {
-        every { sessionProvider.getSessionId() } returns HIGH_ID
+        every { sessionProvider.getSessionIdForAttribution() } returns HIGH_ID
 
         val samplerHigh =
             SessionIdRatioBasedSampler(0.0, sessionProvider)
         assertThat(shouldSample(samplerHigh)).isEqualTo(SamplingDecision.DROP)
 
-        every { sessionProvider.getSessionId() } returns LOW_ID
+        every { sessionProvider.getSessionIdForAttribution() } returns LOW_ID
 
         val samplerLow =
             SessionIdRatioBasedSampler(0.0, sessionProvider)
@@ -70,13 +72,13 @@ internal class SessionIdRatioBasedSamplerTest {
 
     @Test
     fun oneRatioAcceptsAll() {
-        every { sessionProvider.getSessionId() } returns HIGH_ID
+        every { sessionProvider.getSessionIdForAttribution() } returns HIGH_ID
 
         val samplerHigh =
             SessionIdRatioBasedSampler(1.0, sessionProvider)
         assertThat(shouldSample(samplerHigh)).isEqualTo(SamplingDecision.RECORD_AND_SAMPLE)
 
-        every { sessionProvider.getSessionId() } returns LOW_ID
+        every { sessionProvider.getSessionIdForAttribution() } returns LOW_ID
 
         val samplerLow =
             SessionIdRatioBasedSampler(1.0, sessionProvider)

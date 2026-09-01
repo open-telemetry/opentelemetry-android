@@ -11,6 +11,11 @@
 
 ### 📈 Enhancements
 
+- Session providers can now separate explicit activity from passive telemetry attribution through
+  `recordActivity()` and `getSessionIdForAttribution()`. Existing providers retain their previous
+  behavior by default.
+  ([#910](https://github.com/open-telemetry/opentelemetry-android/issues/910))
+
 - The Compose Navigation instrumentation, which shipped in 1.6.0 without emitting any telemetry,
   now records an `app.navigation.complete` event carrying the `app.navigation.destination.name`
   attribute whenever a navigation completes.
