@@ -16,12 +16,11 @@ import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 import io.opentelemetry.android.agent.dsl.OpenTelemetryConfiguration
 import io.opentelemetry.android.agent.session.SessionConfig
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
+import io.opentelemetry.android.agent.session.SessionInputActivityInstrumentation
 import io.opentelemetry.android.agent.session.SessionManager
-import io.opentelemetry.android.agent.session.registerSessionInputActivityTracker
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
-import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
@@ -65,7 +64,9 @@ object OpenTelemetryRumInitializer {
                         instrumentationLoader = instrumentationLoader,
                     ).also(configuration)
 
-                setSessionProvider(createSessionProvider(ctx, Services.get(ctx).appLifecycle, cfg))
+                val sessionManager = createSessionManager(Services.get(ctx).appLifecycle, cfg)
+                setSessionProvider(sessionManager)
+                addInstrumentation(SessionInputActivityInstrumentation(sessionManager::recordActivity))
                 setResource(
                     AndroidResource
                         .createDefault(ctx)
@@ -145,11 +146,10 @@ object OpenTelemetryRumInitializer {
             else -> "none"
         }
 
-    private fun createSessionProvider(
-        context: Context,
+    private fun createSessionManager(
         appLifecycle: AppLifecycle,
         cfg: OpenTelemetryConfiguration,
-    ): SessionProvider {
+    ): SessionManager {
         val sessionConfig =
             SessionConfig(
                 cfg.sessionConfig.inactivityTimeout,
@@ -158,7 +158,6 @@ object OpenTelemetryRumInitializer {
         val clock = cfg.clock
         val timeoutHandler = SessionIdTimeoutHandler(sessionConfig, clock)
         val sessionManager = SessionManager.create(timeoutHandler, sessionConfig, clock)
-        registerSessionInputActivityTracker(context, sessionManager::recordActivity)
         appLifecycle.registerListener(sessionManager)
         cfg.sessionConfig.getObservers().forEach { sessionManager.addObserver(it) }
         return sessionManager

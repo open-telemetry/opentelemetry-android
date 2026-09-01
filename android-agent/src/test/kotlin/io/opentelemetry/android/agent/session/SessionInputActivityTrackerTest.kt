@@ -18,6 +18,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,20 +28,32 @@ internal class SessionInputActivityTrackerTest {
     @Test
     fun `registers tracker for application contexts`() {
         val application = mockk<Application>()
+        val openTelemetryRum = mockk<OpenTelemetryRum>()
+        val callback = slot<Application.ActivityLifecycleCallbacks>()
         every { application.registerActivityLifecycleCallbacks(any()) } just Runs
+        every { application.unregisterActivityLifecycleCallbacks(any()) } just Runs
+        val instrumentation = SessionInputActivityInstrumentation {}
 
-        registerSessionInputActivityTracker(application) {}
+        instrumentation.install(application, openTelemetryRum)
+        verify(exactly = 1) {
+            application.registerActivityLifecycleCallbacks(capture(callback))
+        }
+
+        instrumentation.uninstall(application, openTelemetryRum)
 
         verify(exactly = 1) {
-            application.registerActivityLifecycleCallbacks(any<SessionInputActivityTracker>())
+            application.unregisterActivityLifecycleCallbacks(callback.captured)
         }
     }
 
     @Test
     fun `does not register tracker for non-application contexts`() {
         val context = mockk<Context>(relaxed = true)
+        val openTelemetryRum = mockk<OpenTelemetryRum>()
+        val instrumentation = SessionInputActivityInstrumentation {}
 
-        registerSessionInputActivityTracker(context) {}
+        instrumentation.install(context, openTelemetryRum)
+        instrumentation.uninstall(context, openTelemetryRum)
 
         verify(exactly = 0) { context.applicationContext }
     }
@@ -50,15 +63,90 @@ internal class SessionInputActivityTrackerTest {
         val activity = mockk<Activity>()
         val window = mockk<Window>()
         val callback = mockk<Window.Callback>()
-        val installedCallback = slot<Window.Callback>()
+        var installedCallback: Window.Callback = callback
         every { activity.window } returns window
-        every { window.callback } returns callback
-        every { window.callback = capture(installedCallback) } just Runs
+        every { window.callback } answers { installedCallback }
+        every { window.callback = any() } answers { installedCallback = firstArg() }
         val tracker = SessionInputActivityTracker {}
 
         tracker.onActivityCreated(activity, null)
+        val createdCallback = installedCallback
+        tracker.onActivityResumed(activity)
 
-        assertThat(installedCallback.captured).isInstanceOf(SessionInputWindowCallback::class.java)
+        assertThat(createdCallback).isInstanceOf(SessionInputWindowCallback::class.java)
+        assertThat(installedCallback).isSameAs(createdCallback)
+    }
+
+    @Test
+    fun `wraps an activity first seen when it resumes`() {
+        val activity = mockk<Activity>()
+        val window = mockk<Window>()
+        val callback = mockk<Window.Callback>()
+        var installedCallback: Window.Callback = callback
+        every { activity.window } returns window
+        every { window.callback } answers { installedCallback }
+        every { window.callback = any() } answers { installedCallback = firstArg() }
+        val tracker = SessionInputActivityTracker {}
+
+        tracker.onActivityResumed(activity)
+
+        assertThat(installedCallback).isInstanceOf(SessionInputWindowCallback::class.java)
+    }
+
+    @Test
+    fun `resume wraps a callback replaced after activity creation`() {
+        val activity = mockk<Activity>()
+        val window = mockk<Window>()
+        val originalCallback = mockk<Window.Callback>()
+        val replacementCallback = mockk<Window.Callback>()
+        var installedCallback: Window.Callback = originalCallback
+        every { activity.window } returns window
+        every { window.callback } answers { installedCallback }
+        every { window.callback = any() } answers { installedCallback = firstArg() }
+        val tracker = SessionInputActivityTracker {}
+
+        tracker.onActivityCreated(activity, null)
+        installedCallback = replacementCallback
+        tracker.onActivityResumed(activity)
+
+        val wrapper = installedCallback as SessionInputWindowCallback
+        assertThat(wrapper.unwrap()).isSameAs(replacementCallback)
+    }
+
+    @Test
+    fun `close restores a callback installed by the tracker`() {
+        val activity = mockk<Activity>()
+        val window = mockk<Window>()
+        val callback = mockk<Window.Callback>()
+        var installedCallback: Window.Callback = callback
+        every { activity.window } returns window
+        every { window.callback } answers { installedCallback }
+        every { window.callback = any() } answers { installedCallback = firstArg() }
+        val tracker = SessionInputActivityTracker {}
+
+        tracker.onActivityCreated(activity, null)
+        tracker.close()
+
+        assertThat(installedCallback).isSameAs(callback)
+    }
+
+    @Test
+    fun `close does not replace a callback installed later`() {
+        val activity = mockk<Activity>()
+        val window = mockk<Window>()
+        val callback = mockk<Window.Callback>()
+        val replacementCallback = mockk<Window.Callback>()
+        var installedCallback: Window.Callback = callback
+        every { activity.window } returns window
+        every { window.callback } answers { installedCallback }
+        every { window.callback = any() } answers { installedCallback = firstArg() }
+        val tracker = SessionInputActivityTracker {}
+
+        tracker.onActivityCreated(activity, null)
+        installedCallback = replacementCallback
+        tracker.close()
+
+        assertThat(installedCallback).isSameAs(replacementCallback)
     }
 
     @Test

@@ -18,28 +18,79 @@ import android.view.MotionEvent
 import android.view.SearchEvent
 import android.view.Window
 import androidx.annotation.RequiresApi
+import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
+import java.util.WeakHashMap
 
-internal fun registerSessionInputActivityTracker(
-    context: Context,
-    recordActivity: () -> Unit,
-) {
-    (context as? Application)?.registerActivityLifecycleCallbacks(
-        SessionInputActivityTracker(recordActivity),
-    )
+internal class SessionInputActivityInstrumentation(
+    private val recordActivity: () -> Unit,
+) : AndroidInstrumentation {
+    override val name: String = "session-input-activity"
+
+    private var tracker: SessionInputActivityTracker? = null
+
+    override fun install(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
+        val application = context as? Application ?: return
+        SessionInputActivityTracker(recordActivity).also {
+            tracker = it
+            application.registerActivityLifecycleCallbacks(it)
+        }
+    }
+
+    override fun uninstall(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
+        val application = context as? Application ?: return
+        tracker?.let {
+            application.unregisterActivityLifecycleCallbacks(it)
+            it.close()
+        }
+        tracker = null
+    }
 }
 
 internal class SessionInputActivityTracker(
     private val recordActivity: () -> Unit,
 ) : DefaultingActivityLifecycleCallbacks {
+    private val trackedWindows = WeakHashMap<Window, SessionInputWindowCallback>()
+
     override fun onActivityCreated(
         activity: Activity,
         savedInstanceState: Bundle?,
     ) {
-        val window = activity.window
-        val callback = window.callback
-        if (callback !is SessionInputWindowCallback) {
-            window.callback = SessionInputWindowCallback(callback, recordActivity)
+        track(activity)
+    }
+
+    override fun onActivityResumed(activity: Activity) {
+        track(activity)
+    }
+
+    private fun track(activity: Activity) {
+        synchronized(trackedWindows) {
+            val window = activity.window
+            val callback = window.callback
+            if (callback !is SessionInputWindowCallback) {
+                SessionInputWindowCallback(callback, recordActivity).also {
+                    window.callback = it
+                    trackedWindows[window] = it
+                }
+            }
+        }
+    }
+
+    fun close() {
+        synchronized(trackedWindows) {
+            trackedWindows.forEach { (window, callback) ->
+                if (window.callback === callback) {
+                    window.callback = callback.unwrap()
+                }
+            }
+            trackedWindows.clear()
         }
     }
 }
@@ -93,4 +144,6 @@ internal class SessionInputWindowCallback(
         callback: ActionMode.Callback?,
         type: Int,
     ): ActionMode? = this.callback.onWindowStartingActionMode(callback, type)
+
+    fun unwrap(): Window.Callback = callback
 }
