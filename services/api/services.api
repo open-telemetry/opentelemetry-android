@@ -73,6 +73,8 @@ public abstract interface class io/opentelemetry/android/internal/services/visib
 	public abstract fun fragmentResumed (Landroidx/fragment/app/Fragment;)V
 	public abstract fun getCurrentlyVisibleScreen ()Ljava/lang/String;
 	public abstract fun getPreviouslyVisibleScreen ()Ljava/lang/String;
+	public abstract fun navigationDestinationChanged (Ljava/lang/String;)V
+	public abstract fun navigationDestinationCleared (Ljava/lang/String;)V
 }
 
 public abstract interface class io/opentelemetry/android/internal/services/visiblescreen/activities/DefaultingActivityLifecycleCallbacks : android/app/Application$ActivityLifecycleCallbacks {
