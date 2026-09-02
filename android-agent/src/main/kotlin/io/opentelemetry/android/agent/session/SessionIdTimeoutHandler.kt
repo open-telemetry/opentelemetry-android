@@ -6,7 +6,6 @@
 package io.opentelemetry.android.agent.session
 
 import io.opentelemetry.android.Incubating
-import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener
 import io.opentelemetry.sdk.common.Clock
 import kotlin.time.Duration
 
@@ -14,25 +13,29 @@ import kotlin.time.Duration
  * This class encapsulates the following criteria about the sessionId timeout:
  *
  *
- *  * If the app is in the foreground sessionId should never time out.
- *  * If the app is in the background and no activity (spans) happens for >15 minutes, sessionId
+ *  * While the user is active the sessionId should never time out.
+ *  * If the user is inactive and no activity (spans) happens for >15 minutes, sessionId
  * should time out.
- *  * If the app is in the background and some activity (spans) happens in <15 minute intervals,
+ *  * If the user is inactive and some activity (spans) happens in <15 minute intervals,
  * sessionId should not time out.
  *
  *
- * Consequently, when the app spent >15 minutes without any activity (spans) in the background,
- * after moving to the foreground the first span should trigger the sessionId timeout.
+ * Consequently, when >15 minutes went by without any activity (spans) while the user was inactive,
+ * the first span after the user becomes active again should trigger the sessionId timeout.
+ *
+ * Whether the user is active or not is reported through [onUserActive] and [onUserInactive].
+ * Those are driven by [SessionActivityApi], which apps can call directly and which the agent's
+ * default lifecycle based inference also writes through.
  */
 internal class SessionIdTimeoutHandler(
     private val clock: Clock,
     private val sessionBackgroundInactivityTimeout: Duration,
-) : ApplicationStateListener {
+) {
     @Volatile
     private var timeoutStartNanos: Long = 0
 
     @Volatile
-    private var state = State.FOREGROUND
+    private var state = State.ACTIVE
 
     // for testing
     @OptIn(Incubating::class)
@@ -41,17 +44,22 @@ internal class SessionIdTimeoutHandler(
         sessionConfig.backgroundInactivityTimeout,
     )
 
-    override fun onApplicationForegrounded() {
-        state = State.TRANSITIONING_TO_FOREGROUND
+    fun onUserActive() {
+        // Only leave the inactive state. The timeout is evaluated lazily on the next session id
+        // request, so the first telemetry item after the user becomes active can still start a
+        // new session when the inactivity timeout has elapsed.
+        if (state == State.INACTIVE) {
+            state = State.TRANSITIONING_TO_ACTIVE
+        }
     }
 
-    override fun onApplicationBackgrounded() {
-        state = State.BACKGROUND
+    fun onUserInactive() {
+        state = State.INACTIVE
     }
 
     fun hasTimedOut(): Boolean {
-        // don't apply sessionId timeout to apps in the foreground
-        if (state == State.FOREGROUND) {
+        // don't apply sessionId timeout while the user is active
+        if (state == State.ACTIVE) {
             return false
         }
         val elapsedTime = clock.nanoTime() - timeoutStartNanos
@@ -61,17 +69,17 @@ internal class SessionIdTimeoutHandler(
     fun bump() {
         timeoutStartNanos = clock.nanoTime()
 
-        // move from the temporary transition state to foreground after the first span
-        if (state == State.TRANSITIONING_TO_FOREGROUND) {
-            state = State.FOREGROUND
+        // move from the temporary transition state to active after the first span
+        if (state == State.TRANSITIONING_TO_ACTIVE) {
+            state = State.ACTIVE
         }
     }
 
     private enum class State {
-        FOREGROUND,
-        BACKGROUND,
+        ACTIVE,
+        INACTIVE,
 
-        /** A temporary state representing the first event after the app has been brought back.  */
-        TRANSITIONING_TO_FOREGROUND,
+        /** A temporary state representing the first event after the user became active again. */
+        TRANSITIONING_TO_ACTIVE,
     }
 }

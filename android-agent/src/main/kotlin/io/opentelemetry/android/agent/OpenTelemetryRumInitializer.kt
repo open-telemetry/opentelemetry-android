@@ -14,12 +14,15 @@ import io.opentelemetry.android.RumBuilder
 import io.opentelemetry.android.agent.connectivity.Compression
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 import io.opentelemetry.android.agent.dsl.OpenTelemetryConfiguration
+import io.opentelemetry.android.agent.session.SessionActivityApi
+import io.opentelemetry.android.agent.session.SessionActivityApiImpl
 import io.opentelemetry.android.agent.session.SessionConfig
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.agent.session.SessionManager
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
+import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
@@ -64,7 +67,10 @@ object OpenTelemetryRumInitializer {
                         instrumentationLoader = instrumentationLoader,
                     ).also(configuration)
 
-                setSessionProvider(createSessionProvider(Services.get(ctx).appLifecycle, cfg))
+                val sessionComponents = createSessionComponents(Services.get(ctx).appLifecycle, cfg)
+                setSessionProvider(sessionComponents.sessionProvider)
+                // Registered explicitly because it wraps internals created right here.
+                addApiExtension(sessionComponents.activityApi)
                 setResource(
                     AndroidResource
                         .createDefault(ctx)
@@ -144,10 +150,10 @@ object OpenTelemetryRumInitializer {
             else -> "none"
         }
 
-    private fun createSessionProvider(
+    private fun createSessionComponents(
         appLifecycle: AppLifecycle,
         cfg: OpenTelemetryConfiguration,
-    ): SessionProvider {
+    ): SessionComponents {
         val sessionConfig =
             SessionConfig(
                 cfg.sessionConfig.backgroundInactivityTimeout,
@@ -155,9 +161,25 @@ object OpenTelemetryRumInitializer {
             )
         val clock = cfg.clock
         val timeoutHandler = SessionIdTimeoutHandler(sessionConfig, clock)
-        appLifecycle.registerListener(timeoutHandler)
+        val sessionActivityApi = SessionActivityApiImpl(timeoutHandler)
+
+        // Default inference of user activity from the app lifecycle. It writes through the same
+        // API that apps use, so whichever signal came last wins.
+        appLifecycle.registerListener(
+            object : ApplicationStateListener {
+                override fun onApplicationForegrounded() = sessionActivityApi.userActive()
+
+                override fun onApplicationBackgrounded() = sessionActivityApi.userInactive()
+            },
+        )
+
         val sessionManager = SessionManager.create(timeoutHandler, sessionConfig, clock)
         cfg.sessionConfig.getObservers().forEach { sessionManager.addObserver(it) }
-        return sessionManager
+        return SessionComponents(sessionManager, sessionActivityApi)
     }
+
+    private class SessionComponents(
+        val sessionProvider: SessionProvider,
+        val activityApi: SessionActivityApi,
+    )
 }
