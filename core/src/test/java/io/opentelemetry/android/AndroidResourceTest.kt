@@ -86,8 +86,7 @@ internal class AndroidResourceTest {
                 .put(
                     AndroidAttributes.ANDROID_OS_API_LEVEL,
                     Build.VERSION.SDK_INT.toString(),
-                )
-                .put(OsAttributes.OS_BUILD_ID, Build.ID)
+                ).put(OsAttributes.OS_BUILD_ID, Build.ID)
                 .put(OsAttributes.OS_DESCRIPTION, osDescription)
                 .put(APP_INSTALLATION_ID, installId)
     }
