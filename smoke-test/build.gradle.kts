@@ -7,8 +7,8 @@ plugins {
     id("otel.spotless-conventions")
 }
 
-val javaVersion = rootProject.extra["java_version"] as JavaVersion
-val targetJvm = rootProject.extra["jvm_target"] as JvmTarget
+val javaVersion = JavaVersion.VERSION_17
+val targetJvm = JvmTarget.JVM_17
 
 java {
     sourceCompatibility = javaVersion
@@ -24,12 +24,12 @@ kotlin {
 dependencies {
     testImplementation(platform(libs.opentelemetry.platform.alpha))
     testImplementation(libs.assertj.core)
-    testImplementation(libs.junit5.jupiter.api)
+    testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.kotlinx.serialization.json)
     testImplementation(libs.opentelemetry.testing.common)
     testImplementation(libs.testcontainers)
-    testRuntimeOnly(libs.junit5.jupiter.engine)
-    testRuntimeOnly(libs.junit5.platform.launcher)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 val smokeTestAppApk =
