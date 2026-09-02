@@ -89,6 +89,10 @@ internal object NativeCrashSnapshotParser {
 
     private val magic = "OTELNCS\u0000".toByteArray(Charsets.US_ASCII)
 
+    /**
+     * Parses a complete snapshot record, returning `null` when the record is malformed or does not
+     * match [crashRecord].
+     */
     fun parse(
         bytes: ByteArray,
         crashRecord: NativeCrashRecord,
@@ -106,11 +110,7 @@ internal object NativeCrashSnapshotParser {
         val moduleCount = buffer.getInt(NativeCrashSnapshotLayout.MODULE_COUNT_OFFSET)
         val stackSize = buffer.getInt(NativeCrashSnapshotLayout.STACK_SIZE_OFFSET)
 
-        if (stackPointer == 0UL || stackStart != stackPointer) return null
-        if (stackStart % architecture.pointerSize.toULong() != 0UL) return null
-        if (moduleCount !in 1..NativeCrashSnapshotLayout.MAX_MODULES) return null
-        if (stackSize !in 0..NativeCrashSnapshotLayout.STACK_CAPACITY) return null
-        if (buffer.getInt(NativeCrashSnapshotLayout.RESERVED_OFFSET) != 0) return null
+        if (!buffer.hasValidPayloadMetadata(architecture, stackPointer, stackStart, moduleCount, stackSize)) return null
 
         val modules =
             (0 until moduleCount).mapNotNull { index ->
@@ -135,6 +135,8 @@ internal object NativeCrashSnapshotParser {
 
     /**
      * Calculates the checksum over the fixed prefix covered by the snapshot format.
+     *
+     * [parse] checks the complete record length before calling this helper.
      *
      * @throws IllegalArgumentException if [bytes] does not contain the complete prefix.
      */
@@ -176,6 +178,22 @@ internal object NativeCrashSnapshotParser {
         if (timestampNanos <= 0 || epochSecond < 0 || epochSecond > (Long.MAX_VALUE - nano) / NANOS_PER_SECOND) return false
         return timestampNanos == epochSecond * NANOS_PER_SECOND + nano
     }
+
+    private fun ByteBuffer.hasValidPayloadMetadata(
+        architecture: NativeCrashArchitecture,
+        stackPointer: ULong,
+        stackStart: ULong,
+        moduleCount: Int,
+        stackSize: Int,
+    ): Boolean =
+        with(NativeCrashSnapshotLayout) {
+            stackPointer != 0UL &&
+                stackStart == stackPointer &&
+                stackStart % architecture.pointerSize.toULong() == 0UL &&
+                moduleCount in 1..MAX_MODULES &&
+                stackSize in 0..STACK_CAPACITY &&
+                getInt(RESERVED_OFFSET) == 0
+        }
 
     private fun readModule(
         bytes: ByteArray,
