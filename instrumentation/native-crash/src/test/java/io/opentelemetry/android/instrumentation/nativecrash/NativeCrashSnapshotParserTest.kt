@@ -35,6 +35,20 @@ class NativeCrashSnapshotParserTest {
     }
 
     @Test
+    fun `parser rejects a truncated record without throwing`() {
+        val result =
+            runCatching {
+                NativeCrashSnapshotParser.parse(
+                    ByteArray(NativeCrashSnapshotLayout.RECORD_SIZE - 1),
+                    crashRecord,
+                )
+            }
+
+        assertThat(result.exceptionOrNull()).isNull()
+        assertThat(result.getOrNull()).isNull()
+    }
+
+    @Test
     fun `parses a complete snapshot at maximum bounds`() {
         val snapshot =
             requireNotNull(
@@ -133,7 +147,6 @@ class NativeCrashSnapshotParserTest {
         val valid = SnapshotBuilder().build()
         val corrupt = valid.copyOf().apply { this[NativeCrashSnapshotLayout.STACK_OFFSET] = 9 }
 
-        assertThat(NativeCrashSnapshotParser.parse(valid.copyOf(valid.size - 1), crashRecord)).isNull()
         assertThat(NativeCrashSnapshotParser.parse(valid + byteArrayOf(0), crashRecord)).isNull()
         assertThat(NativeCrashSnapshotParser.parse(corrupt, crashRecord)).isNull()
         assertThat(NativeCrashSnapshotParser.parse(valid, crashRecord.copy(signalNumber = 6))).isNull()
@@ -144,16 +157,17 @@ class NativeCrashSnapshotParserTest {
     @Test
     fun `never throws for checksum-valid mutations`() {
         val random = Random(1940)
-        val interpretedIndexes =
+        val interpretedRanges =
             listOf(
                 0 until NativeCrashSnapshotLayout.MODULES_OFFSET,
                 NativeCrashSnapshotLayout.MODULES_OFFSET until MODULE_OFFSET + NativeCrashSnapshotLayout.MODULE_ENTRY_SIZE,
                 NativeCrashSnapshotLayout.RESERVED_OFFSET until NativeCrashSnapshotLayout.CHECKSUM_OFFSET,
-            ).flatMap { it }
+            )
         repeat(500) { iteration ->
             val architecture = NativeCrashArchitecture.entries[iteration % NativeCrashArchitecture.entries.size]
             val bytes = SnapshotBuilder(architecture).build()
-            val index = interpretedIndexes[random.nextInt(interpretedIndexes.size)]
+            val range = interpretedRanges[iteration % interpretedRanges.size]
+            val index = random.nextInt(range.first, range.last + 1)
             bytes[index] = (bytes[index].toInt() xor (1 shl random.nextInt(8))).toByte()
             ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).putInt(
                 NativeCrashSnapshotLayout.CHECKSUM_OFFSET,

@@ -4,11 +4,11 @@ opentelemetry-instrumentation-alpha = "2.31.1-alpha"
 opentelemetry-contrib = "1.60.0-alpha"
 opentelemetry-semconv-kotlin = "0.7.0"
 junit = "6.1.3"
-byteBuddy = "1.18.12"
+byteBuddy = "1.18.13"
 okhttp = "5.5.0"
 spotless = "8.10.1"
 kotlin = "2.4.10"
-androidPlugin = "9.3.2"
+androidPlugin = "9.4.0"
 kspPlugin = "2.3.11"
 junitKtx = "1.3.0"
 autoServiceProcessor = "1.2.0"
@@ -16,12 +16,12 @@ autoService = "1.1.1"
 androidx-navigation = "2.7.7"
 compose = "1.11.4"
 detekt = "1.23.8"
-binaryCompatValidator = "0.18.1"
+binaryCompatValidator = "0.18.2"
 fragment = "1.9.0"
 koverGradlePlugin = "0.9.9"
 openTelemetryProto = "1.11.0-alpha"
-protobufKotlin = "4.36.0"
-weaver = "0.25.1"
+protobufKotlin = "4.36.1"
+weaver = "0.26.1"
 
 [libraries]
 opentelemetry-platform-alpha = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-instrumentation-alpha" }
@@ -61,6 +61,7 @@ binary-compat-validator = { module = "org.jetbrains.kotlinx:binary-compatibility
 
 #Test tools
 opentelemetry-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-testing" }
+opentelemetry-testing-common = { module = "io.opentelemetry.javaagent:opentelemetry-testing-common", version.ref = "opentelemetry-instrumentation-alpha" }
 androidx-test-core = "androidx.test:core:1.7.0"
 androidx-test-rules = "androidx.test:rules:1.7.0"
 androidx-test-runner = "androidx.test:runner:1.7.0"
@@ -78,6 +79,8 @@ opentelemetry-proto = { module = "io.opentelemetry.proto:opentelemetry-proto", v
 protobuf-kotlin = { module = "com.google.protobuf:protobuf-kotlin", version.ref = "protobufKotlin" }
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.11.0" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = "1.11.0" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.11.0" }
+testcontainers = { module = "org.testcontainers:testcontainers", version = "2.0.5" }
 
 #Compilation tools
 desugarJdkLibs = "com.android.tools:desugar_jdk_libs:2.1.5"

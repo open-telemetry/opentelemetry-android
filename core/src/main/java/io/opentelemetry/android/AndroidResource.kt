@@ -14,6 +14,7 @@ import io.opentelemetry.kotlin.semconv.DeviceAttributes.DEVICE_MANUFACTURER
 import io.opentelemetry.kotlin.semconv.DeviceAttributes.DEVICE_MODEL_IDENTIFIER
 import io.opentelemetry.kotlin.semconv.DeviceAttributes.DEVICE_MODEL_NAME
 import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.semconv.OsAttributes.OS_BUILD_ID
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_DESCRIPTION
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_NAME
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_TYPE
@@ -46,6 +47,7 @@ object AndroidResource {
             .put(ANDROID_OS_API_LEVEL, Build.VERSION.SDK_INT.toString())
             .put(OS_TYPE, "linux")
             .put(OS_VERSION, Build.VERSION.RELEASE)
+            .put(OS_BUILD_ID, Build.ID)
             .put(OS_DESCRIPTION, oSDescription)
             .put(APP_INSTALLATION_ID, readInstallId(context))
             .build()
