@@ -85,7 +85,11 @@ class NativeCrashSnapshotUnwinderTest {
                     programCounter = 0UL,
                     framePointer = 0x0000_1200_0000_7008UL,
                     stackStart = 0x0000_7f00_0000_7000UL,
-                    stack = ByteArray(24),
+                    stack =
+                        ByteArray(24).also { bytes ->
+                            bytes[16] = 0x28
+                            bytes[17] = 0x11
+                        },
                 ),
             ),
         )
@@ -149,7 +153,11 @@ class NativeCrashSnapshotUnwinderTest {
             "past stack" to snapshot(framePointer = STACK_START + 24UL, stack = ByteArray(16)),
             "truncated record" to snapshot(framePointer = STACK_START, stack = ByteArray(8)),
             "partial record at stack end" to snapshot(framePointer = STACK_START + 16UL, stack = ByteArray(24)),
-            "misaligned record" to snapshot(framePointer = STACK_START + 1UL, stack = ByteArray(24)),
+            "misaligned record" to
+                snapshot(
+                    framePointer = STACK_START + 1UL,
+                    stack = stack(24, 8, record(STACK_START + 1UL, 0UL, 0x1128UL)),
+                ),
             "overflowing return slot" to
                 snapshot(framePointer = ULong.MAX_VALUE - 7UL, stackStart = ULong.MAX_VALUE - 7UL, stack = ByteArray(16)),
         ).map { (name, input) -> case(name, input, frame(0x120UL, PROGRAM_COUNTER)) }
