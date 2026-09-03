@@ -553,11 +553,7 @@ class NativeCrashReporterTest {
         assertThat(store.readContext()).isEqualTo(crashContext("second"))
     }
 
-    private fun reporter(
-        store: NativeCrashStore,
-        openTelemetryRum: OpenTelemetryRum = fakeRum(),
-        nowMillis: () -> Long = { 2_000 },
-    ): NativeCrashReporter = NativeCrashReporter(store, openTelemetryRum, nowMillis)
+    private fun reporter(store: NativeCrashStore): NativeCrashReporter = NativeCrashReporter(store, fakeRum())
 
     private fun writeMarker(
         signalNumber: Int,
@@ -618,13 +614,9 @@ class NativeCrashReporterTest {
             stack = byteArrayOf(),
         )
 
-    private fun fakeRum(
-        sessionProvider: SessionProvider = SessionProvider { "current-session" },
-        openTelemetry: () -> OpenTelemetry = { otelTesting.openTelemetry },
-    ): OpenTelemetryRum =
+    private fun fakeRum(sessionProvider: SessionProvider = SessionProvider { "current-session" }): OpenTelemetryRum =
         object : OpenTelemetryRum {
-            override val openTelemetry: OpenTelemetry
-                get() = openTelemetry()
+            override val openTelemetry: OpenTelemetry = otelTesting.openTelemetry
             override val sessionProvider: SessionProvider = sessionProvider
             override val clock: Clock = Clock.getDefault()
 
@@ -664,11 +656,28 @@ class NativeCrashReporterTest {
     }
 
     private companion object {
-        val record = NativeCrashRecord(11, Instant.ofEpochSecond(1_783_598_400))
         val directExecutor = java.util.concurrent.Executor { command -> command.run() }
 
         @RegisterExtension
         val otelTesting: OpenTelemetryExtension = OpenTelemetryExtension.create()
+    }
+}
+
+class NativeCrashRecoveryTest {
+    @TempDir
+    lateinit var tempDir: File
+
+    @BeforeEach
+    fun setUp() {
+        mockkStatic(Log::class)
+        every { Log.w(any<String>(), any<String>()) } returns 0
+        every { Log.w(any<String>(), any<String>(), any<Throwable>()) } returns 0
+    }
+
+    @AfterEach
+    fun cleanup() {
+        otelTesting.clearLogRecords()
+        unmockkStatic(Log::class)
     }
 
     @Test
@@ -712,7 +721,7 @@ class NativeCrashReporterTest {
         val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
         val processDeath = SimulatedProcessDeath()
         assertThatThrownBy {
-            reporter(store, fakeRum(openTelemetry = { throw processDeath })).replayPreviousCrash()
+            reporter(store, fakeRum(otel = { throw processDeath })).replayPreviousCrash()
         }.isSameAs(processDeath)
         assertThat((store.recoveryState as NativeCrashRead.Success).value.phase)
             .isEqualTo(NativeCrashRecoveryPhase.DELIVERY_CLAIMED)
@@ -761,7 +770,7 @@ class NativeCrashReporterTest {
         assertThat(unclaimedStore.marker).isEqualTo(NativeCrashRead.Missing)
         val claimedStore = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
         val result =
-            reporter(claimedStore, fakeRum(openTelemetry = { error("broken logger") }))
+            reporter(claimedStore, fakeRum(otel = { error("broken logger") }))
                 .replayPreviousCrash()
         assertThat(result).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
         assertThat(otelTesting.logRecords).isEmpty()
@@ -845,6 +854,12 @@ class NativeCrashReporterTest {
         assertThat(store.contextWriteCount).isZero()
     }
 
+    private fun reporter(
+        store: NativeCrashStore,
+        openTelemetryRum: OpenTelemetryRum = fakeRum(),
+        nowMillis: () -> Long = { 2_000 },
+    ): NativeCrashReporter = NativeCrashReporter(store, openTelemetryRum, nowMillis)
+
     private fun contextForInstallation(): Context {
         val applicationContext = mockk<Context>(relaxed = true)
         val context = mockk<Context>()
@@ -862,6 +877,12 @@ class NativeCrashReporterTest {
         NativeCrashRead.Success(
             NativeCrashRecoveryState.create(phase, firstAttemptEpochMillis, crashRecord).copy(attempts = attempts),
         )
+
+    private fun fakeRum(otel: () -> OpenTelemetry = { otelTesting.openTelemetry }): OpenTelemetryRum =
+        mockk(relaxed = true) {
+            every { openTelemetry } answers { otel() }
+            every { sessionProvider } returns SessionProvider { "current-session" }
+        }
 
     private class FakeNativeCrashStore(
         directory: File,
@@ -916,4 +937,12 @@ class NativeCrashReporterTest {
     }
 
     private class SimulatedProcessDeath : VirtualMachineError()
+
+    private companion object {
+        val record = NativeCrashRecord(11, Instant.ofEpochSecond(1_783_598_400))
+        val directExecutor = java.util.concurrent.Executor { command -> command.run() }
+
+        @RegisterExtension
+        val otelTesting: OpenTelemetryExtension = OpenTelemetryExtension.create()
+    }
 }
