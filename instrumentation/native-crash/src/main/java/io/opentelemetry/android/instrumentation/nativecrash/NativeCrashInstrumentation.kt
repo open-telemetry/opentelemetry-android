@@ -331,6 +331,8 @@ internal class FileNativeCrashStore(
                 return null
             }
         return try {
+            // Recovery owns fixed marker and snapshot paths until cleanup completes. Wait on this
+            // background executor so another process cannot install a handler and overwrite them.
             val lock = channel.lock()
             NativeCrashRecoveryLock {
                 try {
@@ -478,9 +480,7 @@ internal class FileNativeCrashStore(
                     properties.store(it, null)
                     it.fd.sync()
                 }
-                val replaced =
-                    temporaryPath.renameTo(recoveryStatePath) ||
-                        (recoveryStatePath.isFile && recoveryStatePath.delete() && temporaryPath.renameTo(recoveryStatePath))
+                val replaced = temporaryPath.renameTo(recoveryStatePath)
                 if (!replaced) throw IOException("Failed to replace ${recoveryStatePath.name}")
             } finally {
                 temporaryPath.delete()

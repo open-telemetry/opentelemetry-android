@@ -85,7 +85,7 @@ class NativeCrashRecoveryStateTest {
     }
 
     @Test
-    fun `serializes recovery across store instances`() {
+    fun `rejects an overlapping recovery lock in the same process`() {
         val first = FileNativeCrashStore(tempDir).acquireRecoveryLock()
 
         assertThat(first).isNotNull()
