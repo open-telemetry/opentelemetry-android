@@ -29,6 +29,20 @@ public final class io/opentelemetry/android/agent/connectivity/SSLContextConnect
 
 public final class io/opentelemetry/android/agent/dsl/DiskBufferingConfigurationSpec : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled {
 	public fun enabled (Z)V
+	public final fun getExportPeriod-UwyO8pc ()J
+	public final fun getMaxCacheFileSize ()I
+	public final fun getMaxCacheSize ()I
+	public final fun getMaxFileAgeForRead-UwyO8pc ()J
+	public final fun getMaxFileAgeForWrite-UwyO8pc ()J
+	public final fun getMinFileAgeForRead-UwyO8pc ()J
+	public final fun getSignalsBufferDir ()Ljava/io/File;
+	public final fun setExportPeriod-LRDsOJo (J)V
+	public final fun setMaxCacheFileSize (I)V
+	public final fun setMaxCacheSize (I)V
+	public final fun setMaxFileAgeForRead-LRDsOJo (J)V
+	public final fun setMaxFileAgeForWrite-LRDsOJo (J)V
+	public final fun setMinFileAgeForRead-LRDsOJo (J)V
+	public final fun setSignalsBufferDir (Ljava/io/File;)V
 }
 
 public final class io/opentelemetry/android/agent/dsl/EndpointConfiguration {
