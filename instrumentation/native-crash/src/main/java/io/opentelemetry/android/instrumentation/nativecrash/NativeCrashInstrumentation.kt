@@ -170,12 +170,9 @@ internal class NativeCrashReporter(
         val state =
             when (val stateRead = store.readRecoveryState()) {
                 is NativeCrashRead.Success -> stateRead.value
-
                 NativeCrashRead.Missing -> null
-
-                NativeCrashRead.Malformed,
-                NativeCrashRead.Failed,
-                -> return discardUnreadableState()
+                NativeCrashRead.Malformed -> return discardUnreadableState()
+                NativeCrashRead.Failed -> return NativeCrashRecoveryResult.RETRY_PENDING
             }
         return when (val markerRead = store.readCrashRecordForRecovery()) {
             is NativeCrashRead.Success -> recover(markerRead.value, state)
@@ -198,7 +195,7 @@ internal class NativeCrashReporter(
                 NativeCrashRecoveryPhase.CLEANUP,
                 -> return cleanup(state.asCleanup())
 
-                NativeCrashRecoveryPhase.ABANDONED -> return NativeCrashRecoveryResult.COMPLETE
+                NativeCrashRecoveryPhase.ABANDONED -> return cleanupAbandoned(state, record)
 
                 else -> Unit
             }
@@ -225,7 +222,7 @@ internal class NativeCrashReporter(
                 }
             }
 
-        val claim = newState(NativeCrashRecoveryPhase.DELIVERY_CLAIMED, record)
+        val claim = newState(NativeCrashRecoveryPhase.DELIVERY_CLAIMED, record, state)
         if (!store.writeRecoveryState(claim)) return abandon(claim)
         try {
             replay(record, store.readContext(), snapshot)
@@ -286,7 +283,7 @@ internal class NativeCrashReporter(
         }.joinToString("\n")
 
     private fun recoverMarkerFailure(state: NativeCrashRecoveryState?): NativeCrashRecoveryResult {
-        if (state?.phase == NativeCrashRecoveryPhase.ABANDONED) return NativeCrashRecoveryResult.COMPLETE
+        if (state?.phase == NativeCrashRecoveryPhase.ABANDONED) return cleanupAbandoned(state)
         if (state?.phase == NativeCrashRecoveryPhase.DELIVERY_CLAIMED ||
             state?.phase == NativeCrashRecoveryPhase.CLEANUP
         ) {
@@ -306,7 +303,7 @@ internal class NativeCrashReporter(
                 it.phase == phase &&
                     ((record == null && !it.hasIdentity()) || (record != null && it.matches(record)))
             }
-        return (matching ?: newState(phase, record)).copy(attempts = (matching?.attempts ?: 0) + 1)
+        return (matching ?: newState(phase, record, state)).copy(attempts = (matching?.attempts ?: 0) + 1)
     }
 
     private fun persistRetry(state: NativeCrashRecoveryState): NativeCrashRecoveryResult =
@@ -319,15 +316,23 @@ internal class NativeCrashReporter(
     }
 
     private fun abandon(state: NativeCrashRecoveryState): NativeCrashRecoveryResult {
-        val terminalStatePersisted =
-            store.writeRecoveryState(state.copy(phase = NativeCrashRecoveryPhase.ABANDONED))
+        store.writeRecoveryState(state.copy(phase = NativeCrashRecoveryPhase.ABANDONED))
         val crashFilesDeleted = store.deleteCrashFiles()
         if (crashFilesDeleted) store.deleteRecoveryState()
-        return if (terminalStatePersisted || crashFilesDeleted) {
-            NativeCrashRecoveryResult.COMPLETE
-        } else {
-            NativeCrashRecoveryResult.RETRY_PENDING
+        return NativeCrashRecoveryResult.COMPLETE
+    }
+
+    private fun cleanupAbandoned(
+        state: NativeCrashRecoveryState,
+        record: NativeCrashRecord? = null,
+    ): NativeCrashRecoveryResult {
+        if (record != null && !state.hasIdentity()) {
+            store.writeRecoveryState(
+                newState(NativeCrashRecoveryPhase.ABANDONED, record, state).copy(attempts = state.attempts),
+            )
         }
+        if (store.deleteCrashFiles()) store.deleteRecoveryState()
+        return NativeCrashRecoveryResult.COMPLETE
     }
 
     private fun discardUnreadableState(): NativeCrashRecoveryResult = abandon(newState(NativeCrashRecoveryPhase.ABANDONED))
@@ -340,7 +345,16 @@ internal class NativeCrashReporter(
     private fun newState(
         phase: NativeCrashRecoveryPhase,
         record: NativeCrashRecord? = null,
-    ): NativeCrashRecoveryState = NativeCrashRecoveryState.create(phase, nowMillis(), record)
+        previousState: NativeCrashRecoveryState? = null,
+    ): NativeCrashRecoveryState =
+        NativeCrashRecoveryState.create(
+            phase,
+            previousState
+                ?.takeIf {
+                    if (record == null) !it.hasIdentity() else it.appliesTo(record)
+                }?.firstAttemptEpochMillis ?: nowMillis(),
+            record,
+        )
 
     private fun NativeCrashRecoveryState.asCleanup(): NativeCrashRecoveryState = copy(phase = NativeCrashRecoveryPhase.CLEANUP)
 

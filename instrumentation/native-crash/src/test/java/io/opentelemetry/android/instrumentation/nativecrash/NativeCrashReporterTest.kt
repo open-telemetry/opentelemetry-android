@@ -553,7 +553,11 @@ class NativeCrashReporterTest {
         assertThat(store.readContext()).isEqualTo(crashContext("second"))
     }
 
-    private fun reporter(store: NativeCrashStore): NativeCrashReporter = NativeCrashReporter(store, fakeRum())
+    private fun reporter(
+        store: NativeCrashStore,
+        openTelemetryRum: OpenTelemetryRum = fakeRum(),
+        nowMillis: () -> Long = { 2_000 },
+    ): NativeCrashReporter = NativeCrashReporter(store, openTelemetryRum, nowMillis)
 
     private fun writeMarker(
         signalNumber: Int,
@@ -614,9 +618,13 @@ class NativeCrashReporterTest {
             stack = byteArrayOf(),
         )
 
-    private fun fakeRum(sessionProvider: SessionProvider = SessionProvider { "current-session" }): OpenTelemetryRum =
+    private fun fakeRum(
+        sessionProvider: SessionProvider = SessionProvider { "current-session" },
+        openTelemetry: () -> OpenTelemetry = { otelTesting.openTelemetry },
+    ): OpenTelemetryRum =
         object : OpenTelemetryRum {
-            override val openTelemetry: OpenTelemetry = otelTesting.openTelemetry
+            override val openTelemetry: OpenTelemetry
+                get() = openTelemetry()
             override val sessionProvider: SessionProvider = sessionProvider
             override val clock: Clock = Clock.getDefault()
 
@@ -656,40 +664,22 @@ class NativeCrashReporterTest {
     }
 
     private companion object {
+        val record = NativeCrashRecord(11, Instant.ofEpochSecond(1_783_598_400))
         val directExecutor = java.util.concurrent.Executor { command -> command.run() }
 
         @RegisterExtension
         val otelTesting: OpenTelemetryExtension = OpenTelemetryExtension.create()
     }
-}
-
-class NativeCrashRecoveryTest {
-    @TempDir
-    lateinit var tempDir: File
-
-    @BeforeEach
-    fun setUp() {
-        mockkStatic(Log::class)
-        every { Log.w(any<String>(), any<String>()) } returns 0
-        every { Log.w(any<String>(), any<String>(), any<Throwable>()) } returns 0
-    }
-
-    @AfterEach
-    fun cleanup() {
-        otelTesting.clearLogRecords()
-        unmockkStatic(Log::class)
-    }
 
     @Test
-    fun `retries snapshot reads twice then emits the marker without frames`() {
-        val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
-        store.snapshot = NativeCrashRead.Failed
-        val reporter = reporter(store)
-
-        assertThat(reporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
-        assertThat(reporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+    fun `bounds snapshot retries by attempts and age`() {
+        val attemptStore = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
+        attemptStore.snapshot = NativeCrashRead.Failed
+        val attemptReporter = reporter(attemptStore)
+        assertThat(attemptReporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+        assertThat(attemptReporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
         assertThat(otelTesting.logRecords).isEmpty()
-        assertThat(reporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(attemptReporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
         assertThat(otelTesting.logRecords).hasSize(1)
         assertThat(
             otelTesting.logRecords
@@ -697,13 +687,19 @@ class NativeCrashRecoveryTest {
                 .attributes
                 .get(stringKey(EXCEPTION_STACKTRACE)),
         ).isNull()
+        otelTesting.clearLogRecords()
+        val ageStore = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
+        ageStore.snapshot = NativeCrashRead.Failed
+        ageStore.recoveryState = recoveryState(NativeCrashRecoveryPhase.SNAPSHOT_READ)
+        val result = reporter(ageStore, nowMillis = { 86_402_000 }).replayPreviousCrash()
+        assertThat(result).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(otelTesting.logRecords).hasSize(1)
     }
 
     @Test
     fun `bounds marker retries without emitting`() {
         val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Failed)
         val reporter = reporter(store)
-
         assertThat(reporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
         assertThat(reporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
         assertThat(reporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
@@ -715,114 +711,117 @@ class NativeCrashRecoveryTest {
     fun `does not replay a durable claim after process death`() {
         val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
         val processDeath = SimulatedProcessDeath()
-
         assertThatThrownBy {
             reporter(store, fakeRum(openTelemetry = { throw processDeath })).replayPreviousCrash()
         }.isSameAs(processDeath)
         assertThat((store.recoveryState as NativeCrashRead.Success).value.phase)
             .isEqualTo(NativeCrashRecoveryPhase.DELIVERY_CLAIMED)
-
         assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
         assertThat(otelTesting.logRecords).isEmpty()
     }
 
     @Test
-    fun `retries cleanup without emitting twice`() {
-        val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
-        store.crashFilesDeleteSucceeds = false
-        val reporter = reporter(store)
-
-        assertThat(reporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+    fun `handles transient and exhausted cleanup without duplicate replay`() {
+        val transientStore = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
+        transientStore.crashFilesDeleteSucceeds = false
+        val transientReporter = reporter(transientStore)
+        assertThat(transientReporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
         assertThat(otelTesting.logRecords).hasSize(1)
-        store.crashFilesDeleteSucceeds = true
-        assertThat(reporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        transientStore.crashFilesDeleteSucceeds = true
+        assertThat(transientReporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
         assertThat(otelTesting.logRecords).hasSize(1)
-        assertThat(store.recoveryState).isEqualTo(NativeCrashRead.Missing)
-    }
-
-    @Test
-    fun `bounds cleanup retries without duplicate replay`() {
-        val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
-        store.crashFilesDeleteSucceeds = false
-        val reporter = reporter(store)
-
-        assertThat(reporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
-        assertThat(reporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
-        assertThat(reporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(transientStore.recoveryState).isEqualTo(NativeCrashRead.Missing)
+        otelTesting.clearLogRecords()
+        val exhaustedStore = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
+        exhaustedStore.crashFilesDeleteSucceeds = false
+        val exhaustedReporter = reporter(exhaustedStore)
+        assertThat(exhaustedReporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+        assertThat(exhaustedReporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+        assertThat(exhaustedReporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
         assertThat(otelTesting.logRecords).hasSize(1)
-        assertThat((store.recoveryState as NativeCrashRead.Success).value.phase)
+        assertThat((exhaustedStore.recoveryState as NativeCrashRead.Success).value.phase)
             .isEqualTo(NativeCrashRecoveryPhase.ABANDONED)
-    }
-
-    @Test
-    fun `does not emit when the delivery claim cannot be persisted`() {
-        val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
-        store.stateWriteSucceeds = false
-        store.crashFilesDeleteSucceeds = false
-
-        assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
-        assertThat(store.marker).isEqualTo(NativeCrashRead.Success(record))
-        store.crashFilesDeleteSucceeds = true
-        assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
-        assertThat(otelTesting.logRecords).isEmpty()
-        assertThat(store.marker).isEqualTo(NativeCrashRead.Missing)
-    }
-
-    @Test
-    fun `bounds snapshot retries by age`() {
-        val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
-        store.snapshot = NativeCrashRead.Failed
-        store.recoveryState =
-            NativeCrashRead.Success(
-                NativeCrashRecoveryState.create(
-                    NativeCrashRecoveryPhase.SNAPSHOT_READ,
-                    nowMillis = 2_000,
-                    record = record,
-                ),
-            )
-
-        val result = reporter(store, nowMillis = { 86_402_000 }).replayPreviousCrash()
-
-        assertThat(result).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        exhaustedStore.crashFilesDeleteSucceeds = true
+        assertThat(exhaustedReporter.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(exhaustedStore.marker).isEqualTo(NativeCrashRead.Missing)
+        assertThat(exhaustedStore.recoveryState).isEqualTo(NativeCrashRead.Missing)
         assertThat(otelTesting.logRecords).hasSize(1)
     }
 
     @Test
-    fun `discards unreadable recovery state without emitting`() {
-        val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
-        store.recoveryState = NativeCrashRead.Malformed
-
-        assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+    fun `fails safely before and after the delivery claim`() {
+        val unclaimedStore = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
+        unclaimedStore.stateWriteSucceeds = false
+        unclaimedStore.crashFilesDeleteSucceeds = false
+        assertThat(reporter(unclaimedStore).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(unclaimedStore.marker).isEqualTo(NativeCrashRead.Success(record))
+        unclaimedStore.crashFilesDeleteSucceeds = true
+        assertThat(reporter(unclaimedStore).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
         assertThat(otelTesting.logRecords).isEmpty()
-        assertThat(store.marker).isEqualTo(NativeCrashRead.Missing)
+        assertThat(unclaimedStore.marker).isEqualTo(NativeCrashRead.Missing)
+        val claimedStore = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
+        val result =
+            reporter(claimedStore, fakeRum(openTelemetry = { error("broken logger") }))
+                .replayPreviousCrash()
+        assertThat(result).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(otelTesting.logRecords).isEmpty()
+        assertThat(claimedStore.marker).isEqualTo(NativeCrashRead.Missing)
     }
 
     @Test
-    fun `contains ordinary replay failures after the delivery claim`() {
-        val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
-
-        val result =
-            reporter(store, fakeRum(openTelemetry = { error("broken logger") }))
-                .replayPreviousCrash()
-
-        assertThat(result).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+    fun `handles malformed and failed recovery state safely`() {
+        val malformedStore = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
+        malformedStore.recoveryState = NativeCrashRead.Malformed
+        assertThat(reporter(malformedStore).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
         assertThat(otelTesting.logRecords).isEmpty()
+        assertThat(malformedStore.marker).isEqualTo(NativeCrashRead.Missing)
+        val failedStore = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
+        failedStore.recoveryState = NativeCrashRead.Failed
+        assertThat(reporter(failedStore).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+        assertThat(failedStore.marker).isEqualTo(NativeCrashRead.Success(record))
+        assertThat(otelTesting.logRecords).isEmpty()
+        failedStore.recoveryState = NativeCrashRead.Missing
+        assertThat(reporter(failedStore).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(otelTesting.logRecords).hasSize(1)
+    }
+
+    @Test
+    fun `keeps the original retry deadline across phases`() {
+        val firstAttempt = record.timestamp.toEpochMilli() + 1_000
+        val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
+        store.recoveryState =
+            recoveryState(
+                phase = NativeCrashRecoveryPhase.MARKER_READ,
+                attempts = 2,
+                firstAttemptEpochMillis = firstAttempt,
+                crashRecord = null,
+            )
+        store.crashFilesDeleteSucceeds = false
+        val result = reporter(store, nowMillis = { firstAttempt + 86_400_000 }).replayPreviousCrash()
+        assertThat(result).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat((store.recoveryState as NativeCrashRead.Success).value)
+            .extracting({ it.phase }, { it.firstAttemptEpochMillis })
+            .containsExactly(NativeCrashRecoveryPhase.ABANDONED, firstAttempt)
+    }
+
+    @Test
+    fun `retries when crash files are removed but recovery state remains`() {
+        val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
+        store.recoveryStateDeleteSucceeds = false
+        assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
         assertThat(store.marker).isEqualTo(NativeCrashRead.Missing)
+        assertThat(otelTesting.logRecords).hasSize(1)
+        store.recoveryStateDeleteSucceeds = true
+        assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(store.recoveryState).isEqualTo(NativeCrashRead.Missing)
+        assertThat(otelTesting.logRecords).hasSize(1)
     }
 
     @Test
     fun `does not let abandoned state suppress a newer crash`() {
         val newerRecord = record.copy(timestamp = record.timestamp.plusSeconds(1))
         val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(newerRecord))
-        store.recoveryState =
-            NativeCrashRead.Success(
-                NativeCrashRecoveryState.create(
-                    NativeCrashRecoveryPhase.ABANDONED,
-                    nowMillis = 2_000,
-                    record = record,
-                ),
-            )
-
+        store.recoveryState = recoveryState(NativeCrashRecoveryPhase.ABANDONED)
         assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
         assertThat(otelTesting.logRecords.single().timestampEpochNanos)
             .isEqualTo(1_783_598_401_000_000_000L)
@@ -841,45 +840,28 @@ class NativeCrashRecoveryTest {
                     true
                 },
             )
-
         instrumentation.install(contextForInstallation(), fakeRum())
-
         assertThat(handlerInstalled).isFalse()
         assertThat(store.contextWriteCount).isZero()
     }
 
-    private fun reporter(
-        store: NativeCrashStore,
-        openTelemetryRum: OpenTelemetryRum = fakeRum(),
-        nowMillis: () -> Long = { 2_000 },
-    ): NativeCrashReporter = NativeCrashReporter(store, openTelemetryRum, nowMillis)
-
     private fun contextForInstallation(): Context {
-        val packageManager = mockk<PackageManager>()
-        val applicationContext = mockk<Context>()
+        val applicationContext = mockk<Context>(relaxed = true)
         val context = mockk<Context>()
         every { context.applicationContext } returns applicationContext
-        every { applicationContext.packageManager } returns packageManager
         every { applicationContext.packageName } returns "test.app"
-        every { packageManager.getPackageInfo("test.app", 0) } throws PackageManager.NameNotFoundException()
         return context
     }
 
-    private fun fakeRum(openTelemetry: () -> OpenTelemetry = { otelTesting.openTelemetry }): OpenTelemetryRum =
-        object : OpenTelemetryRum {
-            override val openTelemetry: OpenTelemetry
-                get() = openTelemetry()
-            override val sessionProvider: SessionProvider = SessionProvider { "current-session" }
-            override val clock: Clock = Clock.getDefault()
-
-            override fun emitEvent(
-                eventName: String,
-                body: String,
-                attributes: Attributes,
-            ) {}
-
-            override fun shutdown() {}
-        }
+    private fun recoveryState(
+        phase: NativeCrashRecoveryPhase,
+        attempts: Int = 0,
+        firstAttemptEpochMillis: Long = 2_000,
+        crashRecord: NativeCrashRecord? = record,
+    ): NativeCrashRead.Success<NativeCrashRecoveryState> =
+        NativeCrashRead.Success(
+            NativeCrashRecoveryState.create(phase, firstAttemptEpochMillis, crashRecord).copy(attempts = attempts),
+        )
 
     private class FakeNativeCrashStore(
         directory: File,
@@ -891,6 +873,7 @@ class NativeCrashRecoveryTest {
         var recoveryState: NativeCrashRead<NativeCrashRecoveryState> = NativeCrashRead.Missing
         var stateWriteSucceeds = true
         var crashFilesDeleteSucceeds = true
+        var recoveryStateDeleteSucceeds = true
         var contextWriteCount = 0
 
         override fun readCrashRecord(): NativeCrashRecord? = (marker as? NativeCrashRead.Success)?.value
@@ -923,25 +906,14 @@ class NativeCrashRecoveryTest {
         }
 
         override fun deleteRecoveryState(): Boolean {
-            recoveryState = NativeCrashRead.Missing
-            return true
+            if (recoveryStateDeleteSucceeds) recoveryState = NativeCrashRead.Missing
+            return recoveryStateDeleteSucceeds
         }
 
         override fun readContext(): NativeCrashContext? = null
 
-        override fun writeContext(context: NativeCrashContext): Boolean {
-            contextWriteCount++
-            return true
-        }
+        override fun writeContext(context: NativeCrashContext): Boolean = true.also { contextWriteCount++ }
     }
 
     private class SimulatedProcessDeath : VirtualMachineError()
-
-    private companion object {
-        val record = NativeCrashRecord(11, Instant.ofEpochSecond(1_783_598_400))
-        val directExecutor = java.util.concurrent.Executor { command -> command.run() }
-
-        @RegisterExtension
-        val otelTesting: OpenTelemetryExtension = OpenTelemetryExtension.create()
-    }
 }
