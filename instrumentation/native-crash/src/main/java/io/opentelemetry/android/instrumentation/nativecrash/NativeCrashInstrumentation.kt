@@ -22,6 +22,7 @@ import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.common.AttributesBuilder
 import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_MESSAGE
+import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE
 import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_TYPE
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_NAME
@@ -137,12 +138,18 @@ internal class NativeCrashReporter(
 ) {
     fun replayPreviousCrash() {
         val crashContext = store.readContext()
-        store.readCrashRecord()?.let { record -> replay(record, crashContext) }
+        val record = store.readCrashRecord()
+        if (record == null) {
+            store.deleteCrashSnapshot()
+            return
+        }
+        replay(record, crashContext, store.readCrashSnapshot(record))
     }
 
     private fun replay(
         record: NativeCrashRecord,
         crashContext: NativeCrashContext?,
+        snapshot: NativeCrashSnapshot?,
     ) {
         val attributes = Attributes.builder()
         attributes.put(stringKey(EXCEPTION_TYPE), record.signalName)
@@ -150,6 +157,10 @@ internal class NativeCrashReporter(
             stringKey(EXCEPTION_MESSAGE),
             "Native crash signal ${record.signalName} (${record.signalNumber})",
         )
+        snapshot
+            ?.let(::recoverFrames)
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { attributes.put(stringKey(EXCEPTION_STACKTRACE), it.toStackTrace(snapshot.architecture)) }
         crashContext?.addTo(attributes)
 
         openTelemetryRum.openTelemetry.logsBridge
@@ -160,16 +171,45 @@ internal class NativeCrashReporter(
             .setTimestamp(record.timestamp)
             .setAllAttributes(attributes.build())
             .emit()
-        store.deleteCrashRecord()
+        store.deleteCrashFiles()
     }
+
+    private fun recoverFrames(snapshot: NativeCrashSnapshot): List<NativeCrashFrame> =
+        try {
+            NativeCrashSnapshotUnwinder.unwind(snapshot)
+        } catch (error: Exception) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to unwind native crash snapshot", error)
+            emptyList()
+        } catch (error: LinkageError) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to unwind native crash snapshot", error)
+            emptyList()
+        }
+
+    private fun List<NativeCrashFrame>.toStackTrace(architecture: NativeCrashArchitecture): String =
+        mapIndexed { index, frame ->
+            buildString {
+                append("#${index.toString().padStart(2, '0')} pc ")
+                append(frame.moduleRelativeAddress.toString(16).padStart(architecture.pointerSize * 2, '0'))
+                append("  ${frame.moduleName}")
+                frame.buildId?.let { append(" (BuildId: $it)") }
+            }
+        }.joinToString("\n")
 }
 
 internal interface NativeCrashStore {
     val crashRecordPath: File
 
+    val crashSnapshotPath: File
+
     fun readCrashRecord(): NativeCrashRecord?
 
+    fun readCrashSnapshot(record: NativeCrashRecord): NativeCrashSnapshot?
+
     fun deleteCrashRecord()
+
+    fun deleteCrashSnapshot(): Boolean
+
+    fun deleteCrashFiles(): Boolean
 
     fun readContext(): NativeCrashContext?
 
@@ -181,6 +221,7 @@ internal class FileNativeCrashStore(
 ) : NativeCrashStore {
     private val contextPath = File(directory, "native-crash-context.properties")
     override val crashRecordPath = File(directory, "native-crash-record.properties")
+    override val crashSnapshotPath = File(directory, "native-crash-snapshot.bin")
 
     override fun readCrashRecord(): NativeCrashRecord? {
         if (!crashRecordPath.isFile) {
@@ -190,32 +231,50 @@ internal class FileNativeCrashStore(
             try {
                 crashRecordPath.readProperties()
             } catch (error: IllegalArgumentException) {
-                deleteCrashRecord()
+                deleteCrashFiles()
                 return null
             } catch (error: IOException) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash marker", error)
-                deleteCrashRecord()
+                deleteCrashFiles()
                 return null
             } catch (error: SecurityException) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash marker", error)
-                deleteCrashRecord()
+                deleteCrashFiles()
                 return null
             }
         val record = properties.toCrashRecordOrNull()
         if (record == null) {
-            deleteCrashRecord()
+            deleteCrashFiles()
         }
         return record
     }
 
-    override fun deleteCrashRecord() {
-        runCatching {
-            if (crashRecordPath.isFile && !crashRecordPath.delete()) {
-                throw IOException("Failed to delete native crash marker")
+    override fun readCrashSnapshot(record: NativeCrashRecord): NativeCrashSnapshot? {
+        if (!crashSnapshotPath.isFile) return null
+        val snapshot =
+            try {
+                NativeCrashSnapshotParser.parse(crashSnapshotPath.readBytes(), record)
+            } catch (error: Exception) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash snapshot", error)
+                null
+            } catch (error: LinkageError) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash snapshot", error)
+                null
             }
-        }.onFailure { error ->
-            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to delete native crash marker", error)
-        }
+        if (snapshot == null) deleteCrashSnapshot()
+        return snapshot
+    }
+
+    override fun deleteCrashRecord() {
+        deleteFile(crashRecordPath, "native crash marker")
+    }
+
+    override fun deleteCrashSnapshot(): Boolean = deleteFile(crashSnapshotPath, "native crash snapshot")
+
+    override fun deleteCrashFiles(): Boolean {
+        val markerDeleted = deleteFile(crashRecordPath, "native crash marker")
+        val snapshotDeleted = deleteCrashSnapshot()
+        return markerDeleted && snapshotDeleted
     }
 
     override fun readContext(): NativeCrashContext? {
@@ -278,6 +337,21 @@ internal class FileNativeCrashStore(
             )
         return context.takeUnless { it.isEmpty() }
     }
+
+    private fun deleteFile(
+        file: File,
+        description: String,
+    ): Boolean =
+        try {
+            if (file.exists() && !file.delete()) throw IOException("Failed to delete $description")
+            true
+        } catch (error: Exception) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to delete $description", error)
+            false
+        } catch (error: LinkageError) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to delete $description", error)
+            false
+        }
 
     private companion object {
         const val SIGNAL_NUMBER_KEY = "signal.number"
