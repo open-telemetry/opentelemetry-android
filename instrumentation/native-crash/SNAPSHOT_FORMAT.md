@@ -1,11 +1,11 @@
 # Native Crash Snapshot Format
 
-Status: proposed version 1 design for
-[#1940](https://github.com/open-telemetry/opentelemetry-android/issues/1940). Runtime capture,
-recovery, and replay are follow-up work and are not implemented by this change.
+Status: version 1 format for
+[#1940](https://github.com/open-telemetry/opentelemetry-android/issues/1940). Parsing,
+validation, unwinding, and restart-time replay use this contract. Runtime capture remains follow-up
+work.
 
-The writer and reader rules below are normative requirements for those follow-up changes. They
-describe the completed version 1 behavior even though this PR defines only the shared contract.
+The writer and reader rules below are the normative requirements for version 1.
 
 The native crash implementation uses a fixed-size snapshot so the signal handler can copy bounded
 state without allocation, locks, JNI, logging, or process-map parsing. Capture, parsing, unwinding,
