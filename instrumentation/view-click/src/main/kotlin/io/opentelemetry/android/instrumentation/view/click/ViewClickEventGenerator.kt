@@ -5,11 +5,13 @@
 
 package io.opentelemetry.android.instrumentation.view.click
 
+import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.instrumentation.view.click.internal.Gesture
 import io.opentelemetry.android.semconv.events.AppScreenClickEvent.Companion.APP_SCREEN_CLICK_EVENT_NAME
 import io.opentelemetry.android.semconv.events.AppScreenFlingEvent
@@ -32,6 +34,7 @@ import java.util.LinkedList
 
 internal class ViewClickEventGenerator(
     private val eventLogger: Logger,
+    private val recordActivity: () -> Unit = {},
 ) {
     private var windowRef: WeakReference<Window>? = null
 
@@ -148,7 +151,18 @@ internal class ViewClickEventGenerator(
 
     fun generateClick(motionEvent: MotionEvent?) {
         if (motionEvent != null) {
+            if (motionEvent.actionMasked == MotionEvent.ACTION_DOWN && windowRef?.get() != null) {
+                recordActivitySafely()
+            }
             gestureDetector.onTouchEvent(motionEvent)
+        }
+    }
+
+    private fun recordActivitySafely() {
+        try {
+            recordActivity()
+        } catch (error: Exception) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to record session activity", error)
         }
     }
 

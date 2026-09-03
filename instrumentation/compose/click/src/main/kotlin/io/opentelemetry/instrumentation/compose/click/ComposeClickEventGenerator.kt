@@ -7,9 +7,11 @@
 
 package io.opentelemetry.instrumentation.compose.click
 
+import android.util.Log
 import android.view.MotionEvent
 import android.view.Window
 import androidx.compose.ui.node.LayoutNode
+import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.semconv.events.AppScreenClickEvent
 import io.opentelemetry.android.semconv.events.AppWidgetClickEvent
 import io.opentelemetry.api.logs.Logger
@@ -20,6 +22,7 @@ internal class ComposeClickEventGenerator(
     private val eventLogger: Logger,
     private val composeLayoutNodeUtil: ComposeLayoutNodeUtil = ComposeLayoutNodeUtil(),
     private val composeTapTargetDetector: ComposeTapTargetDetector = ComposeTapTargetDetector(composeLayoutNodeUtil),
+    private val recordActivity: () -> Unit = {},
 ) {
     private var windowRef: WeakReference<Window>? = null
 
@@ -31,7 +34,9 @@ internal class ComposeClickEventGenerator(
 
     fun generateClick(motionEvent: MotionEvent?) {
         windowRef?.get()?.let { window ->
-            if (motionEvent != null && motionEvent.actionMasked == MotionEvent.ACTION_UP) {
+            if (motionEvent?.actionMasked == MotionEvent.ACTION_DOWN) {
+                recordActivitySafely()
+            } else if (motionEvent != null && motionEvent.actionMasked == MotionEvent.ACTION_UP) {
                 AppScreenClickEvent(
                     appScreenCoordinateX = motionEvent.x.toLong(),
                     appScreenCoordinateY = motionEvent.y.toLong(),
@@ -48,6 +53,14 @@ internal class ComposeClickEventGenerator(
                     ).emit(eventLogger)
                 }
             }
+        }
+    }
+
+    private fun recordActivitySafely() {
+        try {
+            recordActivity()
+        } catch (error: Exception) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to record session activity", error)
         }
     }
 

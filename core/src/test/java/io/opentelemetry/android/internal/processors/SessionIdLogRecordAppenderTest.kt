@@ -32,7 +32,7 @@ class SessionIdLogRecordAppenderTest {
     @BeforeEach
     fun setUp() {
         MockKAnnotations.init(this)
-        every { sessionProvider.getSessionId() }.returns(SESSION_ID_VALUE)
+        every { sessionProvider.getSessionIdForAttribution() }.returns(SESSION_ID_VALUE)
         every { log.getAttribute(any<AttributeKey<String>>()) } returns null
         every { log.setAttribute(any<AttributeKey<String>>(), any<String>()) } returns log
     }
@@ -44,6 +44,7 @@ class SessionIdLogRecordAppenderTest {
         underTest.onEmit(Context.root(), log)
 
         verify { log.setAttribute(stringKey(SESSION_ID), SESSION_ID_VALUE) }
+        verify(exactly = 0) { sessionProvider.getSessionId() }
     }
 
     @Test
@@ -54,5 +55,6 @@ class SessionIdLogRecordAppenderTest {
         underTest.onEmit(Context.root(), log)
 
         verify(exactly = 0) { log.setAttribute(any<AttributeKey<String>>(), any<String>()) }
+        verify(exactly = 0) { sessionProvider.getSessionIdForAttribution() }
     }
 }

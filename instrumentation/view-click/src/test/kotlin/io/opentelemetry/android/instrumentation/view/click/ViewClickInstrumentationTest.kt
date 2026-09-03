@@ -79,11 +79,42 @@ class ViewClickInstrumentationTest {
     private val buttonKey = HW_POINTER_BUTTON_KEY
 
     @Test
+    fun `activity failure does not block touch dispatch`() {
+        val recordActivity = mockk<() -> Unit>()
+        every { recordActivity() } throws IllegalStateException("activity failed")
+        every { window.callback } returns callback
+        every { callback.dispatchTouchEvent(any()) } returns true
+
+        val generator =
+            ViewClickEventGenerator(
+                eventLogger = mockk(relaxed = true),
+                recordActivity = recordActivity,
+            )
+        val wrapper = slot<WindowCallbackWrapper>()
+        every { window.callback = capture(wrapper) } returns Unit
+        generator.startTracking(window)
+
+        val event = MotionEvent.obtain(0L, SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, 0f, 0f, 0)
+        try {
+            wrapper.captured.dispatchTouchEvent(event)
+
+            verify(exactly = 1) { recordActivity() }
+            verify(exactly = 1) { callback.dispatchTouchEvent(event) }
+        } finally {
+            event.recycle()
+        }
+    }
+
+    @Test
     fun capture_view_click() {
+        val activitySessionProvider = mockk<SessionProvider>(relaxUnitFun = true)
+        every { activitySessionProvider.recordActivity() } answers {
+            assertThat(openTelemetryRule.logRecords).isEmpty()
+        }
         val openTelemetryRum =
             mockk<OpenTelemetryRum> {
                 every { openTelemetry } returns openTelemetryRule.openTelemetry
-                every { sessionProvider } returns mockk<SessionProvider>()
+                every { sessionProvider } returns activitySessionProvider
                 every { clock } returns Clock.getDefault()
             }
 
@@ -115,13 +146,9 @@ class ViewClickInstrumentationTest {
             window.callback = capture(wrapperCapturingSlot)
         }
 
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            singleTapSequence[0],
-        )
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            singleTapSequence[1],
-        )
+        singleTapSequence.forEach { wrapperCapturingSlot.captured.dispatchTouchEvent(it) }
         fastForwardDoubleTapTimeout()
+        verify(exactly = 1) { activitySessionProvider.recordActivity() }
 
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
@@ -154,7 +181,7 @@ class ViewClickInstrumentationTest {
         val openTelemetryRum =
             mockk<OpenTelemetryRum> {
                 every { openTelemetry } returns openTelemetryRule.openTelemetry
-                every { sessionProvider } returns mockk<SessionProvider>()
+                every { sessionProvider } returns mockk<SessionProvider>(relaxUnitFun = true)
                 every { clock } returns Clock.getDefault()
             }
 
@@ -226,7 +253,7 @@ class ViewClickInstrumentationTest {
         val openTelemetryRum =
             mockk<OpenTelemetryRum> {
                 every { openTelemetry } returns openTelemetryRule.openTelemetry
-                every { sessionProvider } returns mockk<SessionProvider>()
+                every { sessionProvider } returns mockk<SessionProvider>(relaxUnitFun = true)
                 every { clock } returns Clock.getDefault()
             }
 
@@ -289,7 +316,7 @@ class ViewClickInstrumentationTest {
         val openTelemetryRum =
             mockk<OpenTelemetryRum> {
                 every { openTelemetry } returns openTelemetryRule.openTelemetry
-                every { sessionProvider } returns mockk<SessionProvider>()
+                every { sessionProvider } returns mockk<SessionProvider>(relaxUnitFun = true)
                 every { clock } returns Clock.getDefault()
             }
 
@@ -330,7 +357,7 @@ class ViewClickInstrumentationTest {
         val openTelemetryRum =
             mockk<OpenTelemetryRum> {
                 every { openTelemetry } returns openTelemetryRule.openTelemetry
-                every { sessionProvider } returns mockk<SessionProvider>()
+                every { sessionProvider } returns mockk<SessionProvider>(relaxUnitFun = true)
                 every { clock } returns Clock.getDefault()
             }
 
@@ -399,7 +426,7 @@ class ViewClickInstrumentationTest {
         val openTelemetryRum =
             mockk<OpenTelemetryRum> {
                 every { openTelemetry } returns openTelemetryRule.openTelemetry
-                every { sessionProvider } returns mockk<SessionProvider>()
+                every { sessionProvider } returns mockk<SessionProvider>(relaxUnitFun = true)
                 every { clock } returns Clock.getDefault()
             }
 
@@ -470,7 +497,7 @@ class ViewClickInstrumentationTest {
         val openTelemetryRum =
             mockk<OpenTelemetryRum> {
                 every { openTelemetry } returns openTelemetryRule.openTelemetry
-                every { sessionProvider } returns mockk<SessionProvider>()
+                every { sessionProvider } returns mockk<SessionProvider>(relaxUnitFun = true)
                 every { clock } returns Clock.getDefault()
             }
 
@@ -539,7 +566,7 @@ class ViewClickInstrumentationTest {
         val openTelemetryRum =
             mockk<OpenTelemetryRum> {
                 every { openTelemetry } returns openTelemetryRule.openTelemetry
-                every { sessionProvider } returns mockk<SessionProvider>()
+                every { sessionProvider } returns mockk<SessionProvider>(relaxUnitFun = true)
                 every { clock } returns Clock.getDefault()
             }
 
@@ -609,7 +636,7 @@ class ViewClickInstrumentationTest {
         val openTelemetryRum =
             mockk<OpenTelemetryRum> {
                 every { openTelemetry } returns openTelemetryRule.openTelemetry
-                every { sessionProvider } returns mockk<SessionProvider>()
+                every { sessionProvider } returns mockk<SessionProvider>(relaxUnitFun = true)
                 every { clock } returns Clock.getDefault()
             }
 
@@ -671,7 +698,7 @@ class ViewClickInstrumentationTest {
         val openTelemetryRum =
             mockk<OpenTelemetryRum> {
                 every { openTelemetry } returns openTelemetryRule.openTelemetry
-                every { sessionProvider } returns mockk<SessionProvider>()
+                every { sessionProvider } returns mockk<SessionProvider>(relaxUnitFun = true)
                 every { clock } returns Clock.getDefault()
             }
 

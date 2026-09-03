@@ -99,11 +99,42 @@ internal class ComposeInstrumentationTest {
     }
 
     @Test
+    fun `activity failure does not block touch dispatch`() {
+        val recordActivity = mockk<() -> Unit>()
+        every { recordActivity() } throws IllegalStateException("activity failed")
+        every { window.callback } returns callback
+        every { callback.dispatchTouchEvent(any()) } returns true
+
+        val generator =
+            ComposeClickEventGenerator(
+                eventLogger = mockk(relaxed = true),
+                recordActivity = recordActivity,
+            )
+        val wrapper = slot<WindowCallbackWrapper>()
+        every { window.callback = capture(wrapper) } returns Unit
+        generator.startTracking(window)
+
+        val event = MotionEvent.obtain(0L, SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, 0f, 0f, 0)
+        try {
+            wrapper.captured.dispatchTouchEvent(event)
+
+            verify(exactly = 1) { recordActivity() }
+            verify(exactly = 1) { callback.dispatchTouchEvent(event) }
+        } finally {
+            event.recycle()
+        }
+    }
+
+    @Test
     fun capture_compose_click() {
+        val activitySessionProvider = mockk<SessionProvider>(relaxUnitFun = true)
+        every { activitySessionProvider.recordActivity() } answers {
+            assertThat(openTelemetryRule.logRecords).isEmpty()
+        }
         val openTelemetryRum =
             mockk<OpenTelemetryRum> {
                 every { openTelemetry } returns openTelemetryRule.openTelemetry
-                every { sessionProvider } returns mockk<SessionProvider>()
+                every { sessionProvider } returns activitySessionProvider
                 every { clock } returns Clock.getDefault()
             }
 
@@ -124,8 +155,8 @@ internal class ComposeInstrumentationTest {
         val wrapperCapturingSlot = slot<WindowCallbackWrapper>()
         every { window.callback = any() } returns Unit
 
-        val motionEvent =
-            MotionEvent.obtain(0L, SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, 250f, 50f, 0)
+        val downEvent = createMotionEvent(MotionEvent.ACTION_DOWN)
+        val motionEvent = createMotionEvent(MotionEvent.ACTION_UP)
         every { window.decorView } returns composeView
         every { composeView.childCount } returns 0
 
@@ -144,29 +175,39 @@ internal class ComposeInstrumentationTest {
             window.callback = capture(wrapperCapturingSlot)
         }
 
-        wrapperCapturingSlot.captured.dispatchTouchEvent(
-            motionEvent,
-        )
+        try {
+            listOf(downEvent, motionEvent).forEach { wrapperCapturingSlot.captured.dispatchTouchEvent(it) }
+            verify(exactly = 1) { activitySessionProvider.recordActivity() }
+            assertComposeClickEvents(motionEvent, mockLayoutNode)
+        } finally {
+            downEvent.recycle()
+            motionEvent.recycle()
+        }
+    }
 
+    private fun assertComposeClickEvents(
+        motionEvent: MotionEvent,
+        mockLayoutNode: LayoutNode,
+    ) {
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
 
-        var event = events[0]
-        assertThat(event)
+        assertThat(events[0])
             .hasEventName(APP_SCREEN_CLICK_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(APP_SCREEN_COORDINATE_X_KEY, motionEvent.x.toLong()),
                 equalTo(APP_SCREEN_COORDINATE_Y_KEY, motionEvent.y.toLong()),
             )
 
-        event = events[1]
-        assertThat(event)
+        assertThat(events[1])
             .hasEventName(APP_WIDGET_CLICK_EVENT_NAME)
             .hasAttributesSatisfying(
                 equalTo(APP_WIDGET_ID_KEY, mockLayoutNode.semanticsId.toString()),
                 equalTo(APP_WIDGET_NAME_KEY, "clickMe"),
             )
     }
+
+    private fun createMotionEvent(action: Int): MotionEvent = MotionEvent.obtain(0L, SystemClock.uptimeMillis(), action, 250f, 50f, 0)
 
     private fun createMockLayoutNode(
         targetX: Float = 0f,

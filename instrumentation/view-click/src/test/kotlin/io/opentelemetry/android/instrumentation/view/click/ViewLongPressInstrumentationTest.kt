@@ -75,7 +75,7 @@ class ViewLongPressInstrumentationTest {
         val openTelemetryRum =
             mockk<OpenTelemetryRum> {
                 every { openTelemetry } returns openTelemetryRule.openTelemetry
-                every { sessionProvider } returns mockk<SessionProvider>()
+                every { sessionProvider } returns mockk<SessionProvider>(relaxUnitFun = true)
                 every { clock } returns Clock.getDefault()
             }
 
@@ -144,7 +144,7 @@ class ViewLongPressInstrumentationTest {
         val openTelemetryRum =
             mockk<OpenTelemetryRum> {
                 every { openTelemetry } returns openTelemetryRule.openTelemetry
-                every { sessionProvider } returns mockk<SessionProvider>()
+                every { sessionProvider } returns mockk<SessionProvider>(relaxUnitFun = true)
                 every { clock } returns Clock.getDefault()
             }
 
@@ -210,7 +210,7 @@ class ViewLongPressInstrumentationTest {
         val openTelemetryRum =
             mockk<OpenTelemetryRum> {
                 every { openTelemetry } returns openTelemetryRule.openTelemetry
-                every { sessionProvider } returns mockk<SessionProvider>()
+                every { sessionProvider } returns mockk<SessionProvider>(relaxUnitFun = true)
                 every { clock } returns Clock.getDefault()
             }
 

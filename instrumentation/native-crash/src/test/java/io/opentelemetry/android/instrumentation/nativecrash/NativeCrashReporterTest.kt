@@ -273,6 +273,8 @@ class NativeCrashReporterTest {
                 ),
             )
         assertThat(sessionProvider.observer).isNotNull()
+        assertThat(sessionProvider.attributionAccesses).isEqualTo(1)
+        assertThat(sessionProvider.activityAccesses).isZero()
         assertThat(installedMarkerPath).isEqualTo(store.crashRecordPath)
     }
 
@@ -555,8 +557,18 @@ class NativeCrashReporterTest {
     ) : SessionProvider,
         SessionPublisher {
         var observer: SessionObserver? = null
+        var activityAccesses = 0
+        var attributionAccesses = 0
 
-        override fun getSessionId(): String = sessionId
+        override fun getSessionId(): String {
+            activityAccesses++
+            return sessionId
+        }
+
+        override fun getSessionIdForAttribution(): String {
+            attributionAccesses++
+            return sessionId
+        }
 
         override fun addObserver(observer: SessionObserver) {
             this.observer = observer
