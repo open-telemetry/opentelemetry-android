@@ -21,7 +21,7 @@ fragment = "1.9.0"
 koverGradlePlugin = "0.9.9"
 openTelemetryProto = "1.11.0-alpha"
 protobufKotlin = "4.36.1"
-weaver = "0.25.1"
+weaver = "0.26.1"
 
 [libraries]
 opentelemetry-platform-alpha = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-instrumentation-alpha" }
