@@ -21,6 +21,7 @@ class NativeCrashSnapshotUnwinderTest {
             case("x86_64 keeps ARM64 tag bits", snapshot(X86_64, programCounter = TAGGED_PC)),
             case("executable start", snapshot(programCounter = 0x1100UL), frame(0x100UL, PROGRAM_COUNTER)),
             case("executable end", snapshot(programCounter = 0x2000UL)),
+            case("below executable segment", snapshot(programCounter = 0x1050UL)),
             case(
                 "load bias underflow",
                 snapshot(modules = listOf(module(loadBias = 0x1200UL, start = 0x1100UL))),
