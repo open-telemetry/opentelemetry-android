@@ -77,8 +77,9 @@ or otherwise mismatched snapshot is invalid and is never attached to the marker'
 Register and module addresses are unsigned. A 32-bit writer zero-extends every address into its
 64-bit field. Registers come from the signal handler's `ucontext_t.uc_mcontext`, never from the
 handler's own frame or alternate stack. The stack start equals the unmodified recorded stack
-pointer. ARM64 register and stack values retain their raw tag and pointer-authentication bits;
-readers normalize those values before module or captured-stack comparisons. Writers set the
+pointer. ARM64 code-address registers retain their raw tag and pointer-authentication bits, while
+stack and frame pointers retain raw top-byte tags. Readers normalize code addresses before module
+comparisons and remove only top-byte tags before captured-stack comparisons. Writers set the
 link-register field to zero on x86 and x86_64.
 
 The snapshot record lives in pre-allocated static storage. Before installing the signal handler,
@@ -117,11 +118,13 @@ program-counter frame in that case and continue with frame-pointer and link-regi
 misaligned or otherwise corrupt stack pointer produces no native frames. Readers ignore the
 link-register field on x86 and x86_64.
 
-ARM64 readers preserve captured values and try the raw address first. If it does not resolve, they
-retry after clearing bits 56 through 63, then 52 through 63, 48 through 63, 47 through 63, and 39
-through 63 to account for top-byte tags, pointer authentication, and Android's supported ARM64
-virtual-address widths. ARM readers clear the Thumb bit before lookup. The first candidate inside a
-captured executable segment wins.
+ARM64 readers preserve captured values and try the raw address first. For code addresses that do
+not resolve, they retry after clearing bits 56 through 63, then 52 through 63, 48 through 63, 47
+through 63, and 39 through 63 to account for top-byte tags, pointer authentication, and Android's
+supported ARM64 virtual-address widths. Captured-stack comparisons only retry after clearing bits
+56 through 63 because stack and frame pointers may be tagged but are not pointer-authenticated. ARM
+readers clear the Thumb bit before lookup. The first candidate inside a captured executable segment
+wins.
 
 Version 1 reports at most 64 frames. ARM64, x86, and x86_64 readers walk frame records containing
 the previous frame pointer at `[fp]` and the return address at `[fp + pointerSize]`. The captured
@@ -138,9 +141,10 @@ Frame-pointer and link-register return addresses are adjusted into the calling i
 normalization: one byte on x86 and x86_64, four bytes on ARM64 and ARM state, and two bytes on Thumb
 state when executable bytes are unavailable to distinguish a two-byte from a four-byte call.
 
-Confirmed frames are reported as `normalizedAddress - module.loadBias`, with the module build ID
-when available. The normalized address is the first architecture-specific candidate that resolves
-inside an executable segment.
+Confirmed frames are reported from the resolved instruction address: the normalized program
+counter, or a normalized caller address after the architecture-specific return-address adjustment.
+The module-relative address is `instructionAddress - module.loadBias`, with the module build ID when
+available. Segment containment is checked against that instruction address.
 
 A malformed marker is discarded together with its snapshot and recovery state without emitting an
 event. A missing, malformed, or mismatched snapshot is discarded while its valid marker continues

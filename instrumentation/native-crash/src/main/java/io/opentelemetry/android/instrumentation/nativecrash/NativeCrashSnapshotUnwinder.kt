@@ -59,6 +59,8 @@ internal object NativeCrashSnapshotUnwinder {
     private fun walkFramePointers(snapshot: NativeCrashSnapshot): List<NativeCrashFrame> {
         val frames = ArrayList<NativeCrashFrame>(MAX_FRAMES)
         var framePointer = snapshot.framePointer
+        // Stack bounds and strictly increasing frame pointers should terminate first. Keep an
+        // independent record cap because this code consumes crash data.
         var remainingRecords =
             minOf(snapshot.stack.size, NativeCrashSnapshotLayout.STACK_CAPACITY) /
                 snapshot.architecture.pointerSize
@@ -175,10 +177,6 @@ internal object NativeCrashSnapshotUnwinder {
             listOf(
                 ULong.MAX_VALUE,
                 ARM64_CLEAR_BITS_56_TO_63,
-                ARM64_CLEAR_BITS_52_TO_63,
-                ARM64_CLEAR_BITS_48_TO_63,
-                ARM64_CLEAR_BITS_47_TO_63,
-                ARM64_CLEAR_BITS_39_TO_63,
             ).map { mask -> (address and mask) to (stackStart and mask) }.distinct()
         } else {
             listOf(address to stackStart)
