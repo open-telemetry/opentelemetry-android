@@ -33,6 +33,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
+import java.nio.channels.FileChannel
 import java.time.Instant
 import java.util.Properties
 import java.util.concurrent.Executor
@@ -203,13 +204,25 @@ internal interface NativeCrashStore {
 
     fun readCrashRecord(): NativeCrashRecord?
 
+    fun readCrashRecordForRecovery(): NativeCrashRead<NativeCrashRecord>
+
     fun readCrashSnapshot(record: NativeCrashRecord): NativeCrashSnapshot?
+
+    fun readCrashSnapshotForRecovery(record: NativeCrashRecord): NativeCrashRead<NativeCrashSnapshot>
+
+    fun readRecoveryState(): NativeCrashRead<NativeCrashRecoveryState>
+
+    fun writeRecoveryState(state: NativeCrashRecoveryState): Boolean
+
+    fun acquireRecoveryLock(): NativeCrashRecoveryLock?
 
     fun deleteCrashRecord()
 
     fun deleteCrashSnapshot(): Boolean
 
     fun deleteCrashFiles(): Boolean
+
+    fun deleteRecoveryState(): Boolean
 
     fun readContext(): NativeCrashContext?
 
@@ -220,49 +233,125 @@ internal class FileNativeCrashStore(
     private val directory: File,
 ) : NativeCrashStore {
     private val contextPath = File(directory, "native-crash-context.properties")
+    private val recoveryStatePath = File(directory, "native-crash-recovery.properties")
+    private val recoveryLockPath = File(directory, "native-crash-recovery.lock")
     override val crashRecordPath = File(directory, "native-crash-record.properties")
     override val crashSnapshotPath = File(directory, "native-crash-snapshot.bin")
 
     override fun readCrashRecord(): NativeCrashRecord? {
-        if (!crashRecordPath.isFile) {
-            return null
-        }
+        val result = readCrashRecordForRecovery()
+        if (result is NativeCrashRead.Success) return result.value
+        if (result != NativeCrashRead.Missing) deleteCrashFiles()
+        return null
+    }
+
+    override fun readCrashRecordForRecovery(): NativeCrashRead<NativeCrashRecord> {
+        if (!crashRecordPath.isFile) return NativeCrashRead.Missing
         val properties =
             try {
                 crashRecordPath.readProperties()
             } catch (error: IllegalArgumentException) {
-                deleteCrashFiles()
-                return null
+                return NativeCrashRead.Malformed
             } catch (error: IOException) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash marker", error)
-                deleteCrashFiles()
-                return null
+                return NativeCrashRead.Failed
             } catch (error: SecurityException) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash marker", error)
-                deleteCrashFiles()
-                return null
+                return NativeCrashRead.Failed
             }
-        val record = properties.toCrashRecordOrNull()
-        if (record == null) {
-            deleteCrashFiles()
-        }
-        return record
+        return properties.toCrashRecordOrNull()?.let { NativeCrashRead.Success(it) }
+            ?: NativeCrashRead.Malformed
     }
 
     override fun readCrashSnapshot(record: NativeCrashRecord): NativeCrashSnapshot? {
-        if (!crashSnapshotPath.isFile) return null
-        val snapshot =
+        val result =
             try {
-                NativeCrashSnapshotParser.parse(crashSnapshotPath.readBytes(), record)
+                readCrashSnapshotForRecovery(record)
             } catch (error: Exception) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash snapshot", error)
-                null
+                NativeCrashRead.Failed
             } catch (error: LinkageError) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash snapshot", error)
-                null
+                NativeCrashRead.Failed
             }
-        if (snapshot == null) deleteCrashSnapshot()
-        return snapshot
+        if (result is NativeCrashRead.Success) return result.value
+        if (result != NativeCrashRead.Missing) deleteCrashSnapshot()
+        return null
+    }
+
+    override fun readCrashSnapshotForRecovery(record: NativeCrashRecord): NativeCrashRead<NativeCrashSnapshot> {
+        if (!crashSnapshotPath.isFile) return NativeCrashRead.Missing
+        val bytes =
+            try {
+                crashSnapshotPath.readBytes()
+            } catch (error: IOException) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash snapshot", error)
+                return NativeCrashRead.Failed
+            } catch (error: SecurityException) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash snapshot", error)
+                return NativeCrashRead.Failed
+            }
+        return NativeCrashSnapshotParser.parse(bytes, record)?.let { NativeCrashRead.Success(it) }
+            ?: NativeCrashRead.Malformed
+    }
+
+    override fun readRecoveryState(): NativeCrashRead<NativeCrashRecoveryState> {
+        if (!recoveryStatePath.isFile) return NativeCrashRead.Missing
+        val properties =
+            try {
+                recoveryStatePath.readProperties()
+            } catch (error: IllegalArgumentException) {
+                return NativeCrashRead.Malformed
+            } catch (error: IOException) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash recovery state", error)
+                return NativeCrashRead.Failed
+            } catch (error: SecurityException) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash recovery state", error)
+                return NativeCrashRead.Failed
+            }
+        return properties.toRecoveryStateOrNull()?.let { NativeCrashRead.Success(it) }
+            ?: NativeCrashRead.Malformed
+    }
+
+    @Synchronized
+    override fun writeRecoveryState(state: NativeCrashRecoveryState): Boolean = writeRecoveryStateFile(state.toProperties())
+
+    override fun acquireRecoveryLock(): NativeCrashRecoveryLock? {
+        val channel =
+            try {
+                if (!directory.isDirectory && !directory.mkdirs() && !directory.isDirectory) {
+                    throw IOException("Failed to create native crash directory")
+                }
+                FileOutputStream(recoveryLockPath, true).channel
+            } catch (error: Exception) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to open native crash recovery lock", error)
+                return null
+            } catch (error: LinkageError) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to open native crash recovery lock", error)
+                return null
+            }
+        return try {
+            val lock = channel.lock()
+            NativeCrashRecoveryLock {
+                try {
+                    lock.release()
+                } catch (error: Exception) {
+                    Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to release native crash recovery lock", error)
+                } catch (error: LinkageError) {
+                    Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to release native crash recovery lock", error)
+                } finally {
+                    closeRecoveryChannel(channel)
+                }
+            }
+        } catch (error: Exception) {
+            closeRecoveryChannel(channel)
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to acquire native crash recovery lock", error)
+            null
+        } catch (error: LinkageError) {
+            closeRecoveryChannel(channel)
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to acquire native crash recovery lock", error)
+            null
+        }
     }
 
     override fun deleteCrashRecord() {
@@ -276,6 +365,8 @@ internal class FileNativeCrashStore(
         val snapshotDeleted = deleteCrashSnapshot()
         return markerDeleted && snapshotDeleted
     }
+
+    override fun deleteRecoveryState(): Boolean = deleteFile(recoveryStatePath, "native crash recovery state")
 
     override fun readContext(): NativeCrashContext? {
         val properties = runCatching { contextPath.readProperties() }.getOrNull() ?: return null
@@ -338,6 +429,71 @@ internal class FileNativeCrashStore(
         return context.takeUnless { it.isEmpty() }
     }
 
+    private fun Properties.toRecoveryStateOrNull(): NativeCrashRecoveryState? {
+        if (getProperty(RECOVERY_VERSION_KEY) != RECOVERY_VERSION.toString()) return null
+        val phase =
+            getProperty(RECOVERY_PHASE_KEY)
+                ?.let { value -> NativeCrashRecoveryPhase.entries.firstOrNull { it.name == value } }
+                ?: return null
+        val attempts = getProperty(RECOVERY_ATTEMPTS_KEY)?.toIntOrNull()?.takeIf { it >= 0 } ?: return null
+        val firstAttempt =
+            getProperty(RECOVERY_FIRST_ATTEMPT_KEY)?.toLongOrNull()?.takeIf { it > 0 }
+                ?: return null
+        val signalNumber = getProperty(SIGNAL_NUMBER_KEY)?.toIntOrNull()?.takeIf { it > 0 }
+        val timestampSecond = getProperty(RECOVERY_TIMESTAMP_SECOND_KEY)?.toLongOrNull()?.takeIf { it >= 0 }
+        val timestampNano = getProperty(RECOVERY_TIMESTAMP_NANO_KEY)?.toIntOrNull()?.takeIf { it in 0..999_999_999 }
+        val identityFields = listOf(signalNumber, timestampSecond, timestampNano).count { it != null }
+        if (identityFields != 0 && identityFields != 3) return null
+        if (phase == NativeCrashRecoveryPhase.MARKER_READ && identityFields != 0) return null
+        if (phase in IDENTITY_REQUIRED_PHASES && identityFields != 3) return null
+        return NativeCrashRecoveryState(
+            phase = phase,
+            attempts = attempts,
+            firstAttemptEpochMillis = firstAttempt,
+            signalNumber = signalNumber,
+            timestampEpochSecond = timestampSecond,
+            timestampNano = timestampNano,
+        )
+    }
+
+    private fun NativeCrashRecoveryState.toProperties(): Properties =
+        Properties().also { properties ->
+            properties.setProperty(RECOVERY_VERSION_KEY, RECOVERY_VERSION.toString())
+            properties.setProperty(RECOVERY_PHASE_KEY, phase.name)
+            properties.setProperty(RECOVERY_ATTEMPTS_KEY, attempts.toString())
+            properties.setProperty(RECOVERY_FIRST_ATTEMPT_KEY, firstAttemptEpochMillis.toString())
+            signalNumber?.let { properties.setProperty(SIGNAL_NUMBER_KEY, it.toString()) }
+            timestampEpochSecond?.let { properties.setProperty(RECOVERY_TIMESTAMP_SECOND_KEY, it.toString()) }
+            timestampNano?.let { properties.setProperty(RECOVERY_TIMESTAMP_NANO_KEY, it.toString()) }
+        }
+
+    private fun writeRecoveryStateFile(properties: Properties): Boolean =
+        try {
+            if (!directory.isDirectory && !directory.mkdirs() && !directory.isDirectory) {
+                throw IOException("Failed to create native crash directory")
+            }
+            val temporaryPath = File(directory, "${recoveryStatePath.name}.tmp")
+            try {
+                FileOutputStream(temporaryPath).use {
+                    properties.store(it, null)
+                    it.fd.sync()
+                }
+                val replaced =
+                    temporaryPath.renameTo(recoveryStatePath) ||
+                        (recoveryStatePath.isFile && recoveryStatePath.delete() && temporaryPath.renameTo(recoveryStatePath))
+                if (!replaced) throw IOException("Failed to replace ${recoveryStatePath.name}")
+            } finally {
+                temporaryPath.delete()
+            }
+            true
+        } catch (error: Exception) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to persist native crash recovery state", error)
+            false
+        } catch (error: LinkageError) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to persist native crash recovery state", error)
+            false
+        }
+
     private fun deleteFile(
         file: File,
         description: String,
@@ -353,9 +509,31 @@ internal class FileNativeCrashStore(
             false
         }
 
+    private fun closeRecoveryChannel(channel: FileChannel) {
+        try {
+            channel.close()
+        } catch (error: Exception) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to close native crash recovery lock", error)
+        } catch (error: LinkageError) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to close native crash recovery lock", error)
+        }
+    }
+
     private companion object {
+        const val RECOVERY_VERSION = 1
         const val SIGNAL_NUMBER_KEY = "signal.number"
         const val TIMESTAMP_EPOCH_NANOS_KEY = "timestamp.epoch_nanos"
+        const val RECOVERY_VERSION_KEY = "recovery.version"
+        const val RECOVERY_PHASE_KEY = "recovery.phase"
+        const val RECOVERY_ATTEMPTS_KEY = "recovery.attempts"
+        const val RECOVERY_FIRST_ATTEMPT_KEY = "recovery.first_attempt_epoch_millis"
+        const val RECOVERY_TIMESTAMP_SECOND_KEY = "recovery.timestamp_epoch_second"
+        const val RECOVERY_TIMESTAMP_NANO_KEY = "recovery.timestamp_nano"
+        val IDENTITY_REQUIRED_PHASES =
+            setOf(
+                NativeCrashRecoveryPhase.SNAPSHOT_READ,
+                NativeCrashRecoveryPhase.DELIVERY_CLAIMED,
+            )
     }
 }
 
