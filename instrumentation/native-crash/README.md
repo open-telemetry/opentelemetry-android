@@ -69,8 +69,9 @@ up to three attempts per phase and 24 hours from the first attempt. The signal h
 disabled while a retry is pending so it cannot overwrite the files being recovered.
 
 Recovery waits for the fixed marker and snapshot paths when another app process is using them. If
-the process lock or recovery state cannot be read safely, the handler remains disabled rather than
-guessing whether the crash was already claimed.
+the process lock cannot be acquired, or the recovery state cannot be read while a crash may be
+pending, the handler remains disabled rather than guessing whether the crash was already claimed.
+Malformed recovery state is discarded with the pending crash because ownership cannot be proven.
 
 Only one crash can be pending. Supporting multiple consecutive startup crashes requires per-crash
 paths and remains follow-up work.

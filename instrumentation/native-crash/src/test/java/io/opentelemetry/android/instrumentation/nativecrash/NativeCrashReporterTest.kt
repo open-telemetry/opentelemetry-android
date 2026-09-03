@@ -792,6 +792,10 @@ class NativeCrashRecoveryTest {
         failedStore.recoveryState = NativeCrashRead.Missing
         assertThat(reporter(failedStore).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
         assertThat(otelTesting.logRecords).hasSize(1)
+        val noCrashStore = FakeNativeCrashStore(tempDir, NativeCrashRead.Missing)
+        noCrashStore.recoveryState = NativeCrashRead.Failed
+        assertThat(reporter(noCrashStore).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(noCrashStore.recoveryState).isEqualTo(NativeCrashRead.Missing)
     }
 
     @Test
@@ -811,6 +815,20 @@ class NativeCrashRecoveryTest {
         assertThat((store.recoveryState as NativeCrashRead.Success).value)
             .extracting({ it.phase }, { it.firstAttemptEpochMillis })
             .containsExactly(NativeCrashRecoveryPhase.ABANDONED, firstAttempt)
+
+        val reverseStore = FakeNativeCrashStore(tempDir, NativeCrashRead.Failed)
+        reverseStore.recoveryState =
+            recoveryState(
+                phase = NativeCrashRecoveryPhase.SNAPSHOT_READ,
+                attempts = 2,
+                firstAttemptEpochMillis = firstAttempt,
+            )
+        reverseStore.crashFilesDeleteSucceeds = false
+        assertThat(reporter(reverseStore, nowMillis = { firstAttempt + 86_400_000 }).replayPreviousCrash())
+            .isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat((reverseStore.recoveryState as NativeCrashRead.Success).value)
+            .extracting({ it.phase }, { it.firstAttemptEpochMillis })
+            .containsExactly(NativeCrashRecoveryPhase.ABANDONED, firstAttempt)
     }
 
     @Test
@@ -828,9 +846,27 @@ class NativeCrashRecoveryTest {
 
     @Test
     fun `does not let abandoned state suppress a newer crash`() {
+        val firstAttempt = record.timestamp.plusSeconds(2).toEpochMilli()
         val newerRecord = record.copy(timestamp = record.timestamp.plusSeconds(1))
-        val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(newerRecord))
-        store.recoveryState = recoveryState(NativeCrashRecoveryPhase.ABANDONED)
+        val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
+        store.recoveryState =
+            recoveryState(
+                phase = NativeCrashRecoveryPhase.ABANDONED,
+                attempts = 3,
+                firstAttemptEpochMillis = firstAttempt,
+                crashRecord = null,
+            )
+        store.crashFilesDeleteSucceeds = false
+        assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        val anchoredState = (store.recoveryState as NativeCrashRead.Success).value
+        assertThat(anchoredState.matches(record)).isTrue()
+        assertThat(anchoredState.firstAttemptEpochMillis).isEqualTo(firstAttempt)
+        store.crashFilesDeleteSucceeds = true
+        store.marker = NativeCrashRead.Failed
+        assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(store.marker).isEqualTo(NativeCrashRead.Failed)
+        assertThat(store.recoveryState).isEqualTo(NativeCrashRead.Success(anchoredState))
+        store.marker = NativeCrashRead.Success(newerRecord)
         assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
         assertThat(otelTesting.logRecords.single().timestampEpochNanos)
             .isEqualTo(1_783_598_401_000_000_000L)

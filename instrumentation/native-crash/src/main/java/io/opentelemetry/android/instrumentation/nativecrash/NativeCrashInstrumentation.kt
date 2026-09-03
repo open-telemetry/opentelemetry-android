@@ -172,7 +172,7 @@ internal class NativeCrashReporter(
                 is NativeCrashRead.Success -> stateRead.value
                 NativeCrashRead.Missing -> null
                 NativeCrashRead.Malformed -> return discardUnreadableState()
-                NativeCrashRead.Failed -> return NativeCrashRecoveryResult.RETRY_PENDING
+                NativeCrashRead.Failed -> return recoverFailedStateRead()
             }
         return when (val markerRead = store.readCrashRecordForRecovery()) {
             is NativeCrashRead.Success -> recover(markerRead.value, state)
@@ -283,7 +283,7 @@ internal class NativeCrashReporter(
         }.joinToString("\n")
 
     private fun recoverMarkerFailure(state: NativeCrashRecoveryState?): NativeCrashRecoveryResult {
-        if (state?.phase == NativeCrashRecoveryPhase.ABANDONED) return cleanupAbandoned(state)
+        if (state?.phase == NativeCrashRecoveryPhase.ABANDONED) return NativeCrashRecoveryResult.COMPLETE
         if (state?.phase == NativeCrashRecoveryPhase.DELIVERY_CLAIMED ||
             state?.phase == NativeCrashRecoveryPhase.CLEANUP
         ) {
@@ -292,6 +292,17 @@ internal class NativeCrashReporter(
         val retry = nextRetry(NativeCrashRecoveryPhase.MARKER_READ, state)
         return if (retry.isExhausted()) abandon(retry) else persistRetry(retry)
     }
+
+    private fun recoverFailedStateRead(): NativeCrashRecoveryResult =
+        when (store.readCrashRecordForRecovery()) {
+            is NativeCrashRead.Success,
+            NativeCrashRead.Failed,
+            -> NativeCrashRecoveryResult.RETRY_PENDING
+
+            NativeCrashRead.Missing,
+            NativeCrashRead.Malformed,
+            -> cleanup(newState(NativeCrashRecoveryPhase.CLEANUP))
+        }
 
     private fun nextRetry(
         phase: NativeCrashRecoveryPhase,
@@ -350,9 +361,8 @@ internal class NativeCrashReporter(
         NativeCrashRecoveryState.create(
             phase,
             previousState
-                ?.takeIf {
-                    if (record == null) !it.hasIdentity() else it.appliesTo(record)
-                }?.firstAttemptEpochMillis ?: nowMillis(),
+                ?.takeIf { record == null || it.appliesTo(record) }
+                ?.firstAttemptEpochMillis ?: nowMillis(),
             record,
         )
 
