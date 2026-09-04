@@ -8,8 +8,8 @@ package io.opentelemetry.android.internal.services.network
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.kotlin.semconv.NetworkAttributes
-import org.junit.Assert
-import org.junit.Test
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 
 @OptIn(IncubatingApi::class)
 class CurrentNetworkAttributesExtractorTest {
@@ -34,7 +34,7 @@ class CurrentNetworkAttributesExtractorTest {
                 AttributeKey.stringKey(NetworkAttributes.NETWORK_CARRIER_MCC) to "usa",
                 AttributeKey.stringKey(NetworkAttributes.NETWORK_CARRIER_MNC) to "omg",
             )
-        Assert.assertEquals(expected, attributes)
+        assertThat(attributes).isEqualTo(expected)
     }
 
     @Test
@@ -47,6 +47,6 @@ class CurrentNetworkAttributesExtractorTest {
                 AttributeKey.stringKey(NetworkAttributes.NETWORK_CONNECTION_SUBTYPE) to "aaa",
                 AttributeKey.stringKey(NetworkAttributes.NETWORK_CONNECTION_TYPE) to "cell",
             )
-        Assert.assertEquals(expected, attributes)
+        assertThat(attributes).isEqualTo(expected)
     }
 }
