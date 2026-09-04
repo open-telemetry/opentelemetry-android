@@ -48,5 +48,5 @@ manually install this instrumentation by following the steps below.
 ### Adding dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:network:1.6.0-alpha")
+implementation("io.opentelemetry.android.instrumentation:network:1.7.0-alpha")
 ```
