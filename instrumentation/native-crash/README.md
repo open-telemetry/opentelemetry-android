@@ -23,9 +23,8 @@ timestamp.epoch_nanos=<positive integer>
 
 The native writer and Kotlin reader must keep these keys and value formats in sync.
 
-The proposed versioned binary format for future native frame recovery is documented in
-[`SNAPSHOT_FORMAT.md`](SNAPSHOT_FORMAT.md). Runtime snapshot capture and recovery are follow-up
-work.
+The versioned binary format used for native frame recovery is documented in
+[`SNAPSHOT_FORMAT.md`](SNAPSHOT_FORMAT.md). Runtime snapshot capture remains follow-up work.
 
 ## Telemetry
 
@@ -33,6 +32,7 @@ The replayed event uses the original crash timestamp and includes:
 
 * `exception.type`
 * `exception.message`
+* `exception.stacktrace`, when a matching snapshot contains recoverable frames
 * `session.id`, when available
 * `service.version`, when available
 * `os.name`
@@ -57,9 +57,8 @@ enabling the native signal handler.
 
 ## Limitations
 
-Native stack capture is not included. This module does not create or attach a binary crash dump.
-Symbol upload and symbolication are downstream concerns and require a separate design once native
-stack frames are available.
+Native stack capture is not included. Recovery only consumes a snapshot written by a compatible
+future signal handler. Symbol upload and symbolication are downstream concerns.
 
 Crashes that happen before native crash instrumentation finishes initialization are not recorded.
 
