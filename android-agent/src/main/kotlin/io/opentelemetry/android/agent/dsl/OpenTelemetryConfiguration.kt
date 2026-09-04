@@ -105,6 +105,7 @@ class OpenTelemetryConfiguration internal constructor(
      */
     fun diskBuffering(action: DiskBufferingConfigurationSpec.() -> Unit) {
         diskBufferingConfig.action()
+        diskBufferingConfig.applyToRumConfig()
     }
 
     /**
