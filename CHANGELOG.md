@@ -9,28 +9,92 @@
   `semanticConventions { useLatestExperimental = false }`.
   ([#2014](https://github.com/open-telemetry/opentelemetry-android/pull/2014))
 
+- The previous-screen attribute is now `app.screen.previous.name` instead of `last.screen.name`.
+  To retain legacy semantic convention names while migrating, configure
+  `semanticConventions { useLatestExperimental = false }`.
+  ([#1991](https://github.com/open-telemetry/opentelemetry-android/pull/1991))
+
 ### 📈 Enhancements
 
 - The Compose Navigation instrumentation, which shipped in 1.6.0 without emitting any telemetry,
   now records an `app.navigation.complete` event carrying the `app.navigation.destination.name`
   attribute whenever a navigation completes.
-  ([#1920](https://github.com/open-telemetry/opentelemetry-android/issues/1920))
+  ([#1964](https://github.com/open-telemetry/opentelemetry-android/pull/1964),
+  [#1920](https://github.com/open-telemetry/opentelemetry-android/issues/1920))
 
 - Add the `os.build_id` resource attribute, reporting the OS build identifier from `Build.ID`.
-  ([#1089](https://github.com/open-telemetry/opentelemetry-android/issues/1089))
+  ([#2019](https://github.com/open-telemetry/opentelemetry-android/pull/2019),
+  [#1089](https://github.com/open-telemetry/opentelemetry-android/issues/1089))
+
+- R8 can now optimize SDK initialization by replacing reflective service-loader instantiation with
+  direct calls in release builds.
+  ([#1958](https://github.com/open-telemetry/opentelemetry-android/pull/1958))
+
+- Cache storage now initializes its cache directory lazily, avoiding repeated disk checks during
+  startup.
+  ([#2008](https://github.com/open-telemetry/opentelemetry-android/pull/2008))
 
 ### 🛠️ Bug fixes
 
 - Flush telemetry on crash before delegating to the previous uncaught exception handler, so the
   process is not terminated before the flush completes.
-  ([#1997](https://github.com/open-telemetry/opentelemetry-android/issues/1997))
+  ([#2016](https://github.com/open-telemetry/opentelemetry-android/pull/2016),
+  [#1997](https://github.com/open-telemetry/opentelemetry-android/issues/1997))
 
 - Fix R8 failures caused by optional Error Prone annotations in minified applications.
+  The minified emulator smoke test also validates SDK startup and OTLP/HTTP export.
   ([#1972](https://github.com/open-telemetry/opentelemetry-android/pull/1972))
 
 - Preserve explicit session IDs on logs so recovered native crashes and session-end events remain
   associated with the session they describe.
   ([#1939](https://github.com/open-telemetry/opentelemetry-android/pull/1939))
+
+- Network detection now tolerates unavailable Android system services instead of failing with an
+  unsafe cast.
+  ([#2003](https://github.com/open-telemetry/opentelemetry-android/pull/2003))
+
+- Periodic tasks now use `Dispatchers.IO` by default.
+  ([#2007](https://github.com/open-telemetry/opentelemetry-android/pull/2007))
+
+### 🧰 Tooling
+
+- Semantic convention event and attribute definitions are now imported from upstream and generated
+  locally, replacing hard-coded literals in affected instrumentations. The weaver schema URL and
+  upstream registry are also kept current.
+  ([#1941](https://github.com/open-telemetry/opentelemetry-android/pull/1941),
+  [#1945](https://github.com/open-telemetry/opentelemetry-android/pull/1945),
+  [#1948](https://github.com/open-telemetry/opentelemetry-android/pull/1948),
+  [#1949](https://github.com/open-telemetry/opentelemetry-android/pull/1949),
+  [#1950](https://github.com/open-telemetry/opentelemetry-android/pull/1950),
+  [#1951](https://github.com/open-telemetry/opentelemetry-android/pull/1951),
+  [#1965](https://github.com/open-telemetry/opentelemetry-android/pull/1965))
+
+- A nightly job now checks for upstream semantic convention updates.
+  ([#1946](https://github.com/open-telemetry/opentelemetry-android/pull/1946),
+  [#1962](https://github.com/open-telemetry/opentelemetry-android/pull/1962))
+
+- Instrumented tests now run in pull request CI, with native-crash marker compatibility coverage
+  and a host-side fake backend for minified smoke tests.
+  ([#1944](https://github.com/open-telemetry/opentelemetry-android/pull/1944),
+  [#1956](https://github.com/open-telemetry/opentelemetry-android/pull/1956),
+  [#2021](https://github.com/open-telemetry/opentelemetry-android/pull/2021),
+  [#2036](https://github.com/open-telemetry/opentelemetry-android/pull/2036))
+
+- CodeQL and OSSF Scorecard now use the repository's current security workflows, with documented
+  safe cache handling for CodeQL.
+  ([#1917](https://github.com/open-telemetry/opentelemetry-android/pull/1917),
+  [#1967](https://github.com/open-telemetry/opentelemetry-android/pull/1967),
+  [#1973](https://github.com/open-telemetry/opentelemetry-android/pull/1973))
+
+- Non-release builds now bypass Sonatype staging, and SNAPSHOT publishing has been
+  restored, and its usage is documented.
+  ([#1969](https://github.com/open-telemetry/opentelemetry-android/pull/1969),
+  [#1977](https://github.com/open-telemetry/opentelemetry-android/pull/1977))
+
+- The demo app now uses Compose Navigation instrumentation for screen tracking and the current
+  Compose BOM.
+  ([#1979](https://github.com/open-telemetry/opentelemetry-android/pull/1979),
+  [#1984](https://github.com/open-telemetry/opentelemetry-android/pull/1984))
 
 ## Version 1.6.0 (2026-07-28)
 
