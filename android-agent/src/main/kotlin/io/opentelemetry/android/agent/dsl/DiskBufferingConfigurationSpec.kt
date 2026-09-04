@@ -41,8 +41,7 @@ class DiskBufferingConfigurationSpec internal constructor(
     var maxFileAgeForWrite: Duration = 30.seconds
 
     /**
-     * The minimum age a buffer file must reach before its eligible for
-     * export.
+     * The minimum age a buffer file must reach before it’s eligible for export.
      */
     var minFileAgeForRead: Duration = 33.seconds
 
