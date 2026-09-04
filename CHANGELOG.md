@@ -16,6 +16,9 @@
   attribute whenever a navigation completes.
   ([#1920](https://github.com/open-telemetry/opentelemetry-android/issues/1920))
 
+- Add the `os.build_id` resource attribute, reporting the OS build identifier from `Build.ID`.
+  ([#1089](https://github.com/open-telemetry/opentelemetry-android/issues/1089))
+
 ### 🛠️ Bug fixes
 
 - Flush telemetry on crash before delegating to the previous uncaught exception handler, so the

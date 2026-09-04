@@ -23,6 +23,10 @@ timestamp.epoch_nanos=<positive integer>
 
 The native writer and Kotlin reader must keep these keys and value formats in sync.
 
+The proposed versioned binary format for future native frame recovery is documented in
+[`SNAPSHOT_FORMAT.md`](SNAPSHOT_FORMAT.md). Runtime snapshot capture and recovery are follow-up
+work.
+
 ## Telemetry
 
 The replayed event uses the original crash timestamp and includes:
@@ -59,7 +63,7 @@ stack frames are available.
 
 Crashes that happen before native crash instrumentation finishes initialization are not recorded.
 
-The persisted crash marker is deleted immediately after its event is emitted. Replay is therefore
-at most once: if the application exits before the telemetry is exported, that crash event may be
-lost. A later change may add support for preserving multiple consecutive startup crashes.
-Unreadable or malformed markers are discarded rather than retried.
+The current marker-only implementation deletes the persisted marker immediately after its event is
+emitted. Replay is therefore at most once: if the application exits before the telemetry is
+exported, that crash event may be lost. A later change may add support for preserving multiple
+consecutive startup crashes. Unreadable or malformed markers are discarded rather than retried.

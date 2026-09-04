@@ -3,7 +3,3 @@ public final class io/opentelemetry/android/common/RumConstants {
 	public static final field OTEL_RUM_LOG_TAG Ljava/lang/String;
 }
 
-public final class io/opentelemetry/android/common/internal/utils/AndroidUtilsKt {
-	public static final fun getThreadIdCompat (Ljava/lang/Thread;)J
-}
-
