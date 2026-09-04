@@ -57,7 +57,7 @@ is tracked separately in
 ### Adding dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:compose-navigation:1.6.0-alpha")
+implementation("io.opentelemetry.android.instrumentation:compose-navigation:1.7.0-alpha")
 ```
 
 ### Instrumenting a NavController
