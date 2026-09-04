@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.network
+package io.opentelemetry.android.internal.services.network
 
 import android.content.Context
 import android.net.ConnectivityManager
@@ -13,7 +13,7 @@ import android.telephony.TelephonyManager
 import android.util.Log
 import androidx.annotation.RequiresApi
 import io.opentelemetry.android.common.RumConstants
-import io.opentelemetry.android.instrumentation.network.NetworkState.TRANSPORT_CELLULAR
+import io.opentelemetry.android.internal.services.network.NetworkState.TRANSPORT_CELLULAR
 
 /**
  * Implementation of NetworkDetector interface.
