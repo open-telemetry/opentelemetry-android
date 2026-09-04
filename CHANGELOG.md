@@ -86,8 +86,8 @@
   [#1967](https://github.com/open-telemetry/opentelemetry-android/pull/1967),
   [#1973](https://github.com/open-telemetry/opentelemetry-android/pull/1973))
 
-- Non-release builds now bypass Sonatype staging, and SNAPSHOT publishing has been
-  restored, and its usage is documented.
+- Non-release builds now bypass Sonatype staging; SNAPSHOT publishing has been restored, and its
+  usage is documented.
   ([#1969](https://github.com/open-telemetry/opentelemetry-android/pull/1969),
   [#1977](https://github.com/open-telemetry/opentelemetry-android/pull/1977))
 
