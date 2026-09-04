@@ -1,0 +1,42 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.android.internal.services.network
+
+import io.opentelemetry.context.Context
+import io.opentelemetry.sdk.trace.ReadWriteSpan
+import io.opentelemetry.sdk.trace.ReadableSpan
+import io.opentelemetry.sdk.trace.SpanProcessor
+
+/**
+ * A [SpanProcessor] implementation that appends a set of [attributes][io.opentelemetry.api.common.Attributes]
+ * describing the
+ * [current network][io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork]
+ * to every span that is exported.
+ */
+class NetworkAttributesSpanAppender(
+    private val currentNetworkProvider: CurrentNetworkProvider,
+) : SpanProcessor {
+    private val networkAttributesExtractor = CurrentNetworkAttributesExtractor()
+
+    override fun onStart(
+        parentContext: Context,
+        span: ReadWriteSpan,
+    ) {
+        val currentNetwork = currentNetworkProvider.currentNetwork
+        span.setAllAttributes(networkAttributesExtractor.extract(currentNetwork))
+    }
+
+    override fun isStartRequired(): Boolean = true
+
+    override fun onEnd(span: ReadableSpan) {}
+
+    override fun isEndRequired(): Boolean = false
+
+    companion object {
+        @JvmStatic
+        fun create(currentNetworkProvider: CurrentNetworkProvider): SpanProcessor = NetworkAttributesSpanAppender(currentNetworkProvider)
+    }
+}
