@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.7.0 (2026-09-04)
+
 ### 📣 Migration notes
 
 - Network change events now use `network.connection.type` instead of the deprecated
