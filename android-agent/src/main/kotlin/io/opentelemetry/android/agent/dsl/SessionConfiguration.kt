@@ -6,6 +6,8 @@
 package io.opentelemetry.android.agent.dsl
 
 import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.android.session.SessionPublisher
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
@@ -25,6 +27,14 @@ class SessionConfiguration internal constructor() {
      * The maximum duration which a session can remain open before it automatically expires.
      */
     var maxLifetime: Duration = 4.hours
+
+    /**
+     * A custom [SessionProvider] that controls the session ID. When this is set
+     * [backgroundInactivityTimeout] and [maxLifetime] have no effect
+     * and the supplied provider owns the session lifecycle entirely. Any [observers] are registered
+     * on the supplied provider only if it also implements [SessionPublisher].
+     */
+    var provider: SessionProvider? = null
 
     private var observersList: MutableList<SessionObserver> = mutableListOf()
 
