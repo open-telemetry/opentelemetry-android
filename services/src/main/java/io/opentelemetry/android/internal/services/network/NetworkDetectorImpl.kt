@@ -25,13 +25,13 @@ internal class NetworkDetectorImpl(
     private val context: Context,
 ) : NetworkDetector {
     private val connectivityManager =
-        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
     private val telephonyManager =
-        context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        context.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
     private val carrierFinder = CarrierFinder(context, telephonyManager)
 
     override fun detectCurrentNetwork(): CurrentNetwork {
-        val network = connectivityManager.activeNetwork
+        val network = connectivityManager?.activeNetwork
         val capabilities =
             network?.let {
                 connectivityManager.getNetworkCapabilities(it)
@@ -113,7 +113,7 @@ internal class NetworkDetectorImpl(
                     getNetworkSubTypePostApi24()
                 } else {
                     @Suppress("DEPRECATION")
-                    telephonyManager.networkType
+                    telephonyManager?.networkType
                 }
             getNetworkTypeName(networkType)
         } catch (e: SecurityException) {
@@ -128,5 +128,5 @@ internal class NetworkDetectorImpl(
 
     @RequiresApi(Build.VERSION_CODES.N)
     @Suppress("MissingPermission")
-    private fun getNetworkSubTypePostApi24(): Int = telephonyManager.dataNetworkType
+    private fun getNetworkSubTypePostApi24(): Int? = telephonyManager?.dataNetworkType
 }

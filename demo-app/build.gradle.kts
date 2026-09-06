@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "io.opentelemetry.android.demo"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "io.opentelemetry.android.demo"
@@ -69,6 +69,7 @@ dependencies {
     // configured substitutions.
     implementation("io.opentelemetry.android:android-agent")    //parent dir
     implementation("io.opentelemetry.android.instrumentation:compose-click")
+    implementation("io.opentelemetry.android.instrumentation:compose-navigation")
     implementation("io.opentelemetry.android.instrumentation:sessions")
     implementation("io.opentelemetry.android.instrumentation:okhttp3-library")
     byteBuddy("io.opentelemetry.android.instrumentation:okhttp3-agent")

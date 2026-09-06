@@ -11,6 +11,7 @@ import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import io.mockk.every
 import io.mockk.mockk
 import io.opentelemetry.android.semconv.ScreenAttributes.SCREEN_ORIENTATION_KEY
+import io.opentelemetry.android.semconv.events.DeviceScreenOrientationEvent.Companion.DEVICE_SCREEN_ORIENTATION_EVENT_NAME
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -18,8 +19,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.jupiter.api.assertNotNull
-
-private const val EVENT_NAME = "device.screen_orientation"
 
 class ScreenOrientationDetectorTest {
     private lateinit var sut: ScreenOrientationDetector
@@ -61,7 +60,7 @@ class ScreenOrientationDetectorTest {
         )
 
         // then
-        val record = openTelemetryRule.logRecords.find { it.eventName == EVENT_NAME }
+        val record = openTelemetryRule.logRecords.find { it.eventName == DEVICE_SCREEN_ORIENTATION_EVENT_NAME }
         assertEquals(1, openTelemetryRule.logRecords.size)
         assertNotNull(record)
         assertEquals("landscape", record.attributes.get(SCREEN_ORIENTATION_KEY))
@@ -78,6 +77,8 @@ class ScreenOrientationDetectorTest {
 
         // then
         assertEquals(0, openTelemetryRule.logRecords.size)
-        assertNull(openTelemetryRule.logRecords.find { it.eventName == EVENT_NAME })
+        assertNull(
+            openTelemetryRule.logRecords.find { it.eventName == DEVICE_SCREEN_ORIENTATION_EVENT_NAME },
+        )
     }
 }

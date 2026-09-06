@@ -7,6 +7,8 @@ package io.opentelemetry.android.instrumentation.sessions
 
 import io.opentelemetry.android.semconv.SessionAttributes.SESSION_ID_KEY
 import io.opentelemetry.android.semconv.SessionAttributes.SESSION_PREVIOUS_ID_KEY
+import io.opentelemetry.android.semconv.events.SessionEndEvent.Companion.SESSION_END_EVENT_NAME
+import io.opentelemetry.android.semconv.events.SessionStartEvent.Companion.SESSION_START_EVENT_NAME
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
@@ -42,7 +44,7 @@ class SessionIdEventSenderTest {
         sender.onSessionStarted(newSession, previousSession)
         assertThat(otelTesting.logRecords).hasSize(1)
         val event = otelTesting.logRecords[0]
-        assertThat(event.eventName).isEqualTo("session.start")
+        assertThat(event.eventName).isEqualTo(SESSION_START_EVENT_NAME)
         assertThat(event.attributes.get(SESSION_ID_KEY)).isEqualTo(newSession.id)
         assertThat(event.attributes.get(SESSION_PREVIOUS_ID_KEY)).isNull()
     }
@@ -55,7 +57,7 @@ class SessionIdEventSenderTest {
         sender.onSessionStarted(newSession, previousSession)
         assertThat(otelTesting.logRecords).hasSize(1)
         val event = otelTesting.logRecords[0]
-        assertThat(event.eventName).isEqualTo("session.start")
+        assertThat(event.eventName).isEqualTo(SESSION_START_EVENT_NAME)
         assertThat(event.attributes.get(SESSION_ID_KEY)).isEqualTo(newSession.id)
         assertThat(event.attributes.get(SESSION_PREVIOUS_ID_KEY)).isEqualTo(previousSession.id)
     }
@@ -67,7 +69,7 @@ class SessionIdEventSenderTest {
         sender.onSessionEnded(session)
         assertThat(otelTesting.logRecords).hasSize(1)
         val event = otelTesting.logRecords[0]
-        assertThat(event.eventName).isEqualTo("session.end")
+        assertThat(event.eventName).isEqualTo(SESSION_END_EVENT_NAME)
         assertThat(event.attributes.get(SESSION_ID_KEY)).isEqualTo(session.id)
         assertThat(event.attributes.get(SESSION_PREVIOUS_ID_KEY)).isNull()
     }

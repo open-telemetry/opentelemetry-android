@@ -11,6 +11,7 @@ import android.os.PowerManager
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.opentelemetry.android.semconv.AndroidAttributes.ANDROID_POWER_SAVE_MODE_ENABLED_KEY
+import io.opentelemetry.android.semconv.events.DevicePowerSaveModeChangeEvent.Companion.DEVICE_POWER_SAVE_MODE_CHANGE_EVENT_NAME
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -18,8 +19,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Shadows.shadowOf
-
-private const val EVENT_NAME = "device.power_save_mode.change"
 
 @RunWith(AndroidJUnit4::class)
 class PowerSaveModeDetectorTest {
@@ -54,7 +53,7 @@ class PowerSaveModeDetectorTest {
         // then
         assertThat(openTelemetryRule.logRecords).hasSize(1)
         val record = openTelemetryRule.logRecords.single()
-        assertThat(record.eventName).isEqualTo(EVENT_NAME)
+        assertThat(record.eventName).isEqualTo(DEVICE_POWER_SAVE_MODE_CHANGE_EVENT_NAME)
         assertThat(record.attributes.get(ANDROID_POWER_SAVE_MODE_ENABLED_KEY))
             .isEqualTo(true)
     }
@@ -70,7 +69,7 @@ class PowerSaveModeDetectorTest {
         // then
         assertThat(openTelemetryRule.logRecords).hasSize(1)
         val record = openTelemetryRule.logRecords.single()
-        assertThat(record.eventName).isEqualTo(EVENT_NAME)
+        assertThat(record.eventName).isEqualTo(DEVICE_POWER_SAVE_MODE_CHANGE_EVENT_NAME)
         assertThat(record.attributes.get(ANDROID_POWER_SAVE_MODE_ENABLED_KEY))
             .isEqualTo(false)
     }

@@ -18,6 +18,16 @@ import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_VELOCITY_Y_KEY
 import io.opentelemetry.api.common.Attributes
 import java.util.LinkedList
 
+internal fun buttonStateToString(buttonStateInt: Int): String? =
+    when (buttonStateInt) {
+        MotionEvent.BUTTON_PRIMARY, MotionEvent.BUTTON_STYLUS_PRIMARY -> "primary"
+        MotionEvent.BUTTON_SECONDARY, MotionEvent.BUTTON_STYLUS_SECONDARY -> "secondary"
+        MotionEvent.BUTTON_TERTIARY -> "tertiary"
+        MotionEvent.BUTTON_BACK -> "back"
+        MotionEvent.BUTTON_FORWARD -> "forward"
+        else -> null
+    }
+
 internal fun toolTypeToString(toolTypeInt: Int): String =
     when (toolTypeInt) {
         MotionEvent.TOOL_TYPE_MOUSE -> "mouse"
@@ -140,15 +150,6 @@ fun viewToName(view: View): String =
         view.id.toString()
     }
 
-private fun buttonStateToString(buttonStateInt: Int): String? =
-    when (buttonStateInt) {
-        MotionEvent.BUTTON_PRIMARY, MotionEvent.BUTTON_STYLUS_PRIMARY -> "primary"
-        MotionEvent.BUTTON_SECONDARY, MotionEvent.BUTTON_STYLUS_SECONDARY -> "secondary"
-        MotionEvent.BUTTON_TERTIARY -> "tertiary"
-        MotionEvent.BUTTON_BACK -> "back"
-        MotionEvent.BUTTON_FORWARD -> "forward"
-        else -> null
-    }
 
 private fun isJetpackComposeView(view: View): Boolean = view::class.java.name.startsWith("androidx.compose.ui.platform.ComposeView")
 

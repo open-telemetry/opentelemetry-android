@@ -26,6 +26,10 @@ class {{ my_class_name }}(
     val {{ attribute.name | camel_case }}: {{ attribute.type | instantiated_type | map_text("kotlin_event_type") }}{{ '?' if not required else '' }}{{ ' = null' if not required else '' }},
 {%- endfor %}
 ) : OpenTelemetryEvent {
+    companion object {
+        const val {{ ctx.name | screaming_snake_case }}_EVENT_NAME: String = "{{ ctx.name }}"
+    }
+
     override fun emit(
         logger: Logger,
         additionalAttributes: Attributes,
@@ -43,7 +47,7 @@ class {{ my_class_name }}(
 
         logger
             .logRecordBuilder()
-            .setEventName("{{ ctx.name }}")
+            .setEventName({{ ctx.name | screaming_snake_case }}_EVENT_NAME)
             .setAllAttributes(attributes.build())
             .emit()
     }

@@ -13,7 +13,7 @@ import io.mockk.mockk
 import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
-import io.opentelemetry.android.semconv.LastAttributes.LAST_SCREEN_NAME_KEY
+import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_PREVIOUS_NAME_KEY
 import io.opentelemetry.android.semconv.StartAttributes.START_TYPE_KEY
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.trace.Tracer
@@ -177,7 +177,7 @@ class ActivityTracerTest {
         trackableTracer.endActiveSpan()
 
         val span = this.singleSpan
-        assertNull(span.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(span.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
     }
 
     @Test
@@ -198,7 +198,7 @@ class ActivityTracerTest {
         trackableTracer.endActiveSpan()
 
         val span = this.singleSpan
-        assertNull(span.attributes.get(LAST_SCREEN_NAME_KEY))
+        assertNull(span.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY))
     }
 
     @Test
@@ -220,7 +220,7 @@ class ActivityTracerTest {
         val span = this.singleSpan
         assertEquals(
             "previousScreen",
-            span.attributes.get(LAST_SCREEN_NAME_KEY),
+            span.attributes.get(APP_SCREEN_PREVIOUS_NAME_KEY),
         )
     }
 

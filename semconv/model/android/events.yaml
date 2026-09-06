@@ -1,4 +1,13 @@
 groups:
+  - id: event.app.navigation.complete
+    type: event
+    name: app.navigation.complete
+    stability: development
+    brief: >
+      This event represents a completed navigation to a destination of an application.
+    attributes:
+      - ref: app.navigation.destination.name
+        requirement_level: required
   - id: event.app.screen.longpress
     type: event
     name: app.screen.longpress
@@ -182,6 +191,8 @@ groups:
       This event indicates that Android network connectivity changed.
     attributes:
       - ref: network.status
+        requirement_level: recommended
+      - ref: network.connection.type
         requirement_level: recommended
   - id: event.rum.sdk.init.started
     type: event

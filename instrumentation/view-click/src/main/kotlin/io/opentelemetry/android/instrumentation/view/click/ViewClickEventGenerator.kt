@@ -16,6 +16,12 @@ import io.opentelemetry.android.instrumentation.view.common.WindowCallbackWrappe
 import io.opentelemetry.android.instrumentation.view.common.findTargetForTap
 import io.opentelemetry.android.instrumentation.view.common.viewToName
 import io.opentelemetry.android.semconv.events.AppScreenLongpressEvent
+import io.opentelemetry.android.semconv.events.AppScreenClickEvent.Companion.APP_SCREEN_CLICK_EVENT_NAME
+import io.opentelemetry.android.semconv.events.AppScreenFlingEvent
+import io.opentelemetry.android.semconv.events.AppScreenLongpressEvent
+import io.opentelemetry.android.semconv.events.AppScreenScrollEvent
+import io.opentelemetry.android.semconv.events.AppWidgetClickEvent.Companion.APP_WIDGET_CLICK_EVENT_NAME
+import io.opentelemetry.android.semconv.events.AppWidgetFlingEvent
 import io.opentelemetry.android.semconv.events.AppWidgetLongpressEvent
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
@@ -48,7 +54,7 @@ internal class ViewClickEventGenerator(
                         .emit()
 
                     findTargetForTap(window.decorView, safeEvent.x, safeEvent.y, viewCoordinates)?.let { view ->
-                        createEvent(VIEW_CLICK_EVENT_NAME, gesture)
+                        createEvent(APP_WIDGET_CLICK_EVENT_NAME, gesture)
                             .setAllAttributes(createViewAttributes(view))
                             .emit()
                     }
@@ -70,7 +76,7 @@ internal class ViewClickEventGenerator(
                         .emit()
 
                     findTargetForTap(window.decorView, safeEvent.x, safeEvent.y, viewCoordinates)?.let { view ->
-                        createEvent(VIEW_CLICK_EVENT_NAME, gesture)
+                        createEvent(APP_WIDGET_CLICK_EVENT_NAME, gesture)
                             .setAllAttributes(createViewAttributes(view))
                             .emit()
                     }

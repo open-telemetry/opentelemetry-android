@@ -88,18 +88,19 @@ class SdkPreconfiguredRumBuilder internal constructor(
                 onShutdown.run()
             }
 
+        // Install the crash flush handler before instrumentations so that any
+        // UncaughtExceptionHandler set by an instrumentation (e.g. the crash reporter)
+        // wraps it. The instrumentation then records its crash telemetry, this handler
+        // flushes it, and only afterwards is the platform handler - which terminates the
+        // process - invoked.
+        CrashFlushHandler(sdk).install()
+
         val configurator = InstrumentationConfigurators.create()
         // Install instrumentations
         for (instrumentation in enabledInstrumentations) {
             configurator.configure(instrumentation)
             instrumentation.install(context, openTelemetryRum)
         }
-
-        // Install crash flush handler after instrumentations so it wraps any
-        // UncaughtExceptionHandler set by instrumentations (e.g. crash reporter).
-        // This ensures all telemetry (including crash events) is flushed before
-        // the process terminates.
-        CrashFlushHandler(sdk).install()
 
         return openTelemetryRum
     }

@@ -51,7 +51,6 @@ dependencies {
     }
     compileOnly(libs.androidx.navigation.compose)
     implementation(libs.opentelemetry.instrumentation.apiSemconv)
-    implementation(libs.opentelemetry.semconv.kotlin)
 
     testImplementation(project(":test-common"))
 

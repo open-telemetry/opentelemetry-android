@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.semconv.internal
 
+import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_PREVIOUS_NAME
+import io.opentelemetry.android.semconv.LastAttributes.LAST_SCREEN_NAME
 import io.opentelemetry.android.semconv.ScreenAttributes.SCREEN_NAME
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -24,9 +26,11 @@ class SemconvCompatTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun `test compat with legacy`() {
         SemconvCompat.useLatestExperimental = false
         assertThat(SemconvCompat.map("app.screen.name")).isEqualTo(SCREEN_NAME)
+        assertThat(SemconvCompat.map(APP_SCREEN_PREVIOUS_NAME)).isEqualTo(LAST_SCREEN_NAME)
         assertThat(SemconvCompat.map("app.crash")).isEqualTo("device.crash")
         assertThat(SemconvCompat.map("rando.semconv.thinger")).isEqualTo("rando.semconv.thinger")
     }
@@ -35,6 +39,7 @@ class SemconvCompatTest {
     fun `test compat with latest experimental`() {
         SemconvCompat.useLatestExperimental = true
         assertThat(SemconvCompat.map("app.screen.name")).isEqualTo("app.screen.name")
+        assertThat(SemconvCompat.map(APP_SCREEN_PREVIOUS_NAME)).isEqualTo(APP_SCREEN_PREVIOUS_NAME)
         assertThat(SemconvCompat.map("app.crash")).isEqualTo("app.crash")
         assertThat(SemconvCompat.map("rando.semconv.thinger")).isEqualTo("rando.semconv.thinger")
     }

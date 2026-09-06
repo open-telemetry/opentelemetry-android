@@ -35,8 +35,9 @@ This instrumentation produces the following telemetry:
   `activityPreDestroyed` | `activityDestroyed` | `activityPostDestroyed` }
 * Attributes:
   * `activity.name`:  name of activity
-  * `screen.name`:  name of screen
-  * `last.screen.name`:  name of screen, only when span contains the `activityPostResumed` event.
+  * `app.screen.name`: name of screen
+  * `app.screen.previous.name`: name of the previously visible screen, only when the span contains
+    the `activityPostResumed` event.
 
 ## Installation
 
@@ -48,5 +49,5 @@ manually install this instrumentation by following the steps below.
 ### Adding dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:activity:1.6.0-alpha")
+implementation("io.opentelemetry.android.instrumentation:activity:1.7.0-alpha")
 ```

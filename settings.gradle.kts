@@ -22,6 +22,8 @@ include(":services")
 include(":session")
 include(":semconv")
 include(":opentelemetry-android-bom")
+include(":smoke-test")
+include(":smoke-test-app")
 includeFromDir("instrumentation")
 
 fun includeFromDir(

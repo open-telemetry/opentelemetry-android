@@ -23,6 +23,7 @@ import io.mockk.verify
 import io.opentelemetry.android.semconv.AppAttributes.APP_JANK_FRAME_COUNT_KEY
 import io.opentelemetry.android.semconv.AppAttributes.APP_JANK_PERIOD_KEY
 import io.opentelemetry.android.semconv.AppAttributes.APP_JANK_THRESHOLD_KEY
+import io.opentelemetry.android.semconv.events.AppJankEvent.Companion.APP_JANK_EVENT_NAME
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import kotlinx.coroutines.Runnable
@@ -241,13 +242,13 @@ class SlowRenderListenerTest {
         assertThat(otelTesting.logRecords).hasSize(2)
 
         val slowLog = otelTesting.logRecords[0]
-        assertThat(slowLog.eventName).isEqualTo("app.jank")
+        assertThat(slowLog.eventName).isEqualTo(APP_JANK_EVENT_NAME)
         assertThat(slowLog.attributes.get(APP_JANK_FRAME_COUNT_KEY)).isEqualTo(4)
         assertThat(slowLog.attributes.get(APP_JANK_PERIOD_KEY)).isEqualTo(periodSeconds)
         assertThat(slowLog.attributes.get(APP_JANK_THRESHOLD_KEY)).isEqualTo(0.016)
 
         val frozenLog = otelTesting.logRecords[1]
-        assertThat(frozenLog.eventName).isEqualTo("app.jank")
+        assertThat(frozenLog.eventName).isEqualTo(APP_JANK_EVENT_NAME)
         assertThat(frozenLog.attributes.get(APP_JANK_FRAME_COUNT_KEY)).isEqualTo(1)
         assertThat(frozenLog.attributes.get(APP_JANK_PERIOD_KEY)).isEqualTo(periodSeconds)
         assertThat(frozenLog.attributes.get(APP_JANK_THRESHOLD_KEY)).isEqualTo(0.7)

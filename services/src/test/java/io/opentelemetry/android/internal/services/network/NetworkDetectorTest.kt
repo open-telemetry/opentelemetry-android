@@ -95,6 +95,18 @@ class NetworkDetectorTest {
 
     @Test
     @Config(sdk = [Build.VERSION_CODES.M])
+    fun nullSystemService_returnsNoNetwork() {
+        every { context.getSystemService(Context.CONNECTIVITY_SERVICE) } returns null
+        every { context.getSystemService(Context.TELEPHONY_SERVICE) } returns null
+
+        val networkDetector = NetworkDetector.create(context)
+        val currentNetwork = networkDetector.detectCurrentNetwork()
+
+        assertThat(currentNetwork).isEqualTo(CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE))
+    }
+
+    @Test
+    @Config(sdk = [Build.VERSION_CODES.M])
     fun unknown_modern() {
         every { connectivityManager.getNetworkCapabilities(network) } returns null
         val networkDetector = NetworkDetector.create(context)
