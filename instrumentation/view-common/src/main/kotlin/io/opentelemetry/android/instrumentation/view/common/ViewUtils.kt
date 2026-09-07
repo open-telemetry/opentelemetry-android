@@ -150,7 +150,6 @@ fun viewToName(view: View): String =
         view.id.toString()
     }
 
-
 private fun isJetpackComposeView(view: View): Boolean = view::class.java.name.startsWith("androidx.compose.ui.platform.ComposeView")
 
 private fun handleViewGroup(

@@ -15,13 +15,9 @@ import io.opentelemetry.android.instrumentation.view.common.TouchEventConsumer
 import io.opentelemetry.android.instrumentation.view.common.WindowCallbackWrapper
 import io.opentelemetry.android.instrumentation.view.common.findTargetForTap
 import io.opentelemetry.android.instrumentation.view.common.viewToName
-import io.opentelemetry.android.semconv.events.AppScreenLongpressEvent
 import io.opentelemetry.android.semconv.events.AppScreenClickEvent.Companion.APP_SCREEN_CLICK_EVENT_NAME
-import io.opentelemetry.android.semconv.events.AppScreenFlingEvent
 import io.opentelemetry.android.semconv.events.AppScreenLongpressEvent
-import io.opentelemetry.android.semconv.events.AppScreenScrollEvent
 import io.opentelemetry.android.semconv.events.AppWidgetClickEvent.Companion.APP_WIDGET_CLICK_EVENT_NAME
-import io.opentelemetry.android.semconv.events.AppWidgetFlingEvent
 import io.opentelemetry.android.semconv.events.AppWidgetLongpressEvent
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
