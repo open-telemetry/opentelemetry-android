@@ -29,6 +29,7 @@ import io.opentelemetry.kotlin.semconv.OsAttributes.OS_NAME
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_VERSION
 import io.opentelemetry.kotlin.semconv.ServiceAttributes.SERVICE_VERSION
 import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_ID
+import java.io.DataInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -140,7 +141,7 @@ internal class NativeCrashReporter(
         val crashContext = store.readContext()
         val record = store.readCrashRecord()
         if (record == null) {
-            store.deleteCrashSnapshot()
+            store.deleteCrashFiles()
             return
         }
         replay(record, crashContext, store.readCrashSnapshot(record))
@@ -253,7 +254,11 @@ internal class FileNativeCrashStore(
         if (!crashSnapshotPath.isFile) return null
         val snapshot =
             try {
-                NativeCrashSnapshotParser.parse(crashSnapshotPath.readBytes(), record)
+                DataInputStream(FileInputStream(crashSnapshotPath)).use { input ->
+                    val bytes = ByteArray(NativeCrashSnapshotLayout.RECORD_SIZE)
+                    input.readFully(bytes)
+                    if (input.read() == -1) NativeCrashSnapshotParser.parse(bytes, record) else null
+                }
             } catch (error: Exception) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash snapshot", error)
                 null
