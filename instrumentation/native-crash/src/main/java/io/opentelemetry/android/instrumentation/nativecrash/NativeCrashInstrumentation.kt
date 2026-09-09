@@ -206,8 +206,6 @@ internal interface NativeCrashStore {
 
     fun readCrashSnapshot(record: NativeCrashRecord): NativeCrashSnapshot?
 
-    fun deleteCrashRecord()
-
     fun deleteCrashSnapshot(): Boolean
 
     fun deleteCrashFiles(): Boolean
@@ -268,10 +266,6 @@ internal class FileNativeCrashStore(
             }
         if (snapshot == null) deleteCrashSnapshot()
         return snapshot
-    }
-
-    override fun deleteCrashRecord() {
-        deleteFile(crashRecordPath, "native crash marker")
     }
 
     override fun deleteCrashSnapshot(): Boolean = deleteFile(crashSnapshotPath, "native crash snapshot")
