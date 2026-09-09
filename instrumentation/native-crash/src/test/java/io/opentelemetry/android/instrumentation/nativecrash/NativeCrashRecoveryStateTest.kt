@@ -7,7 +7,9 @@ package io.opentelemetry.android.instrumentation.nativecrash
 
 import android.util.Log
 import io.mockk.every
+import io.mockk.mockkObject
 import io.mockk.mockkStatic
+import io.mockk.unmockkObject
 import io.mockk.unmockkStatic
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -82,6 +84,45 @@ class NativeCrashRecoveryStateTest {
         assertThat(store.readCrashSnapshotForRecovery(record)).isEqualTo(NativeCrashRead.Malformed)
         assertThat(marker).exists()
         assertThat(snapshot).exists()
+    }
+
+    @Test
+    fun `contains snapshot parser failures without consuming crash files`() {
+        val store = FileNativeCrashStore(tempDir)
+        store.crashRecordPath.writeText("signal.number=11\ntimestamp.epoch_nanos=1783598400000000000\n")
+        store.crashSnapshotPath.writeBytes(ByteArray(NativeCrashSnapshotLayout.RECORD_SIZE))
+        mockkObject(NativeCrashSnapshotParser)
+        try {
+            listOf(IllegalStateException("parser failed"), UnsatisfiedLinkError("parser unavailable")).forEach { error ->
+                every { NativeCrashSnapshotParser.parse(any(), any()) } throws error
+
+                assertThat(store.readCrashSnapshotForRecovery(record)).isEqualTo(NativeCrashRead.Malformed)
+                assertThat(store.readCrashRecordForRecovery()).isEqualTo(NativeCrashRead.Success(record))
+                assertThat(store.crashSnapshotPath).exists()
+            }
+        } finally {
+            unmockkObject(NativeCrashSnapshotParser)
+        }
+    }
+
+    @Test
+    fun `failed replacement preserves the previous claim and can be retried`() {
+        val store = FileNativeCrashStore(tempDir)
+        val claim = NativeCrashRecoveryState.create(NativeCrashRecoveryPhase.DELIVERY_CLAIMED, 2_000, record)
+        assertThat(store.writeRecoveryState(claim)).isTrue()
+        val temporaryPath = File(tempDir, "native-crash-recovery.properties.tmp")
+        assertThat(temporaryPath.mkdir()).isTrue()
+        val child = File(temporaryPath, "child").apply { writeText("prevents replacement") }
+        val cleanup = claim.copy(phase = NativeCrashRecoveryPhase.CLEANUP, attempts = 1)
+
+        assertThat(store.writeRecoveryState(cleanup)).isFalse()
+        assertThat(FileNativeCrashStore(tempDir).readRecoveryState()).isEqualTo(NativeCrashRead.Success(claim))
+
+        assertThat(child.delete()).isTrue()
+        assertThat(temporaryPath.delete()).isTrue()
+        assertThat(store.writeRecoveryState(cleanup)).isTrue()
+        assertThat(FileNativeCrashStore(tempDir).readRecoveryState()).isEqualTo(NativeCrashRead.Success(cleanup))
+        assertThat(temporaryPath).doesNotExist()
     }
 
     @Test

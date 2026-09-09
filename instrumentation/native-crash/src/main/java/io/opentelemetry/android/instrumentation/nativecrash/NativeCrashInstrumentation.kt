@@ -291,8 +291,16 @@ internal class FileNativeCrashStore(
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash snapshot", error)
                 return NativeCrashRead.Failed
             }
-        return NativeCrashSnapshotParser.parse(bytes, record)?.let { NativeCrashRead.Success(it) }
-            ?: NativeCrashRead.Malformed
+        return try {
+            NativeCrashSnapshotParser.parse(bytes, record)?.let { NativeCrashRead.Success(it) }
+                ?: NativeCrashRead.Malformed
+        } catch (error: Exception) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to parse native crash snapshot", error)
+            NativeCrashRead.Malformed
+        } catch (error: LinkageError) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to parse native crash snapshot", error)
+            NativeCrashRead.Malformed
+        }
     }
 
     override fun readRecoveryState(): NativeCrashRead<NativeCrashRecoveryState> {
