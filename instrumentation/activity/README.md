@@ -49,5 +49,5 @@ manually install this instrumentation by following the steps below.
 ### Adding dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:activity:1.6.0-alpha")
+implementation("io.opentelemetry.android.instrumentation:activity:1.7.0-alpha")
 ```

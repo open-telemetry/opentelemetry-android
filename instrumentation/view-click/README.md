@@ -132,5 +132,5 @@ This instrumentation produces the following telemetry:
 ### Adding dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:view-click:1.6.0-alpha")
+implementation("io.opentelemetry.android.instrumentation:view-click:1.7.0-alpha")
 ```
