@@ -115,6 +115,11 @@ private fun initOTel(context: Context): OpenTelemetryRum? =
                     backgroundInactivityTimeout = 5.minutes
                     maxLifetime = 1.days
                 }
+                diskBuffering {
+                    enabled(true)
+                    maxCacheSize = 5 * 1024 * 1024
+                    exportPeriod = 30.seconds
+                }
                 globalAttributes {
                     Attributes.of(stringKey("demo-version"), "test")
                 }
