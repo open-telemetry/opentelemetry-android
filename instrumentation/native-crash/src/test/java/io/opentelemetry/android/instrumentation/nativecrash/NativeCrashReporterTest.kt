@@ -26,6 +26,7 @@ import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_MESSAGE
+import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE
 import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_TYPE
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_NAME
@@ -335,6 +336,55 @@ class NativeCrashReporterTest {
     }
 
     @Test
+    fun `attaches recovered native frames from a matching snapshot`() {
+        val record = NativeCrashRecord(11, Instant.ofEpochSecond(1_783_598_400))
+        val store = mockk<NativeCrashStore>(relaxed = true)
+        every { store.readContext() } returns crashContext("crashed")
+        every { store.readCrashRecord() } returns record
+        every { store.readCrashSnapshot(record) } returns snapshot()
+        every { store.deleteCrashFiles() } returns true
+
+        reporter(store).replayPreviousCrash()
+
+        assertThat(
+            otelTesting.logRecords
+                .single()
+                .attributes
+                .get(stringKey(EXCEPTION_STACKTRACE)),
+        ).isEqualTo("#00 pc 0000000000000120  libapp.so (BuildId: 1234abcd)")
+        verify(exactly = 1) { store.deleteCrashFiles() }
+    }
+
+    @Test
+    fun `replays marker only and removes a malformed snapshot`() {
+        val store = FileNativeCrashStore(tempDir)
+        writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L)
+        store.crashSnapshotPath.writeText("not a snapshot")
+
+        reporter(store).replayPreviousCrash()
+
+        assertThat(otelTesting.logRecords).hasSize(1)
+        assertThat(
+            otelTesting.logRecords
+                .single()
+                .attributes
+                .get(stringKey(EXCEPTION_STACKTRACE)),
+        ).isNull()
+        assertThat(store.crashSnapshotPath).doesNotExist()
+    }
+
+    @Test
+    fun `removes an orphan snapshot without emitting`() {
+        val store = FileNativeCrashStore(tempDir)
+        store.crashSnapshotPath.writeText("orphan")
+
+        reporter(store).replayPreviousCrash()
+
+        assertThat(otelTesting.logRecords).isEmpty()
+        assertThat(store.crashSnapshotPath).doesNotExist()
+    }
+
+    @Test
     fun `reads the native marker format with nanosecond precision`() {
         val store = FileNativeCrashStore(tempDir)
         markerFile().apply {
@@ -532,6 +582,27 @@ class NativeCrashReporterTest {
             serviceVersion = "$prefix-version",
             osName = "$prefix-os",
             osVersion = "$prefix-os-version",
+        )
+
+    private fun snapshot(): NativeCrashSnapshot =
+        NativeCrashSnapshot(
+            architecture = NativeCrashArchitecture.ARM64,
+            programCounter = 0x1120UL,
+            stackPointer = 0x8000UL,
+            framePointer = 0UL,
+            linkRegister = 0UL,
+            modules =
+                listOf(
+                    NativeCrashModule(
+                        loadBias = 0x1000UL,
+                        executableStart = 0x1100UL,
+                        executableEnd = 0x2000UL,
+                        name = "libapp.so",
+                        buildId = "1234abcd",
+                    ),
+                ),
+            stackStart = 0x8000UL,
+            stack = byteArrayOf(),
         )
 
     private fun fakeRum(sessionProvider: SessionProvider = SessionProvider { "current-session" }): OpenTelemetryRum =
