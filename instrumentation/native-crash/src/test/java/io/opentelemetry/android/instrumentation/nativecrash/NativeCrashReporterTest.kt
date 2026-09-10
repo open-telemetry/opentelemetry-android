@@ -948,10 +948,6 @@ class NativeCrashRecoveryTest {
 
         override fun acquireRecoveryLock(): NativeCrashRecoveryLock = NativeCrashRecoveryLock {}
 
-        override fun deleteCrashRecord() {
-            marker = NativeCrashRead.Missing
-        }
-
         override fun deleteCrashSnapshot(): Boolean = crashFilesDeleteSucceeds
 
         override fun deleteCrashFiles(): Boolean {
