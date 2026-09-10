@@ -10,6 +10,9 @@ import android.content.Context
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.config.OtelRumConfig
+import io.opentelemetry.android.extensions.ApiExtension
+import io.opentelemetry.android.extensions.ApiExtensionLoader
+import io.opentelemetry.android.extensions.ApiExtensionRegistry
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.InstrumentationConfigurators
@@ -27,6 +30,7 @@ class SdkPreconfiguredRumBuilder internal constructor(
 ) {
     private var onShutdown: Runnable = Runnable {} // nop
     private val instrumentations = mutableListOf<AndroidInstrumentation>()
+    private val apiExtensions = mutableListOf<ApiExtension>()
 
     /**
      * Adds an instrumentation to be applied as a part of the [build] method call.
@@ -35,6 +39,19 @@ class SdkPreconfiguredRumBuilder internal constructor(
      */
     fun addInstrumentation(instrumentation: AndroidInstrumentation): SdkPreconfiguredRumBuilder {
         instrumentations.add(instrumentation)
+        return this
+    }
+
+    /**
+     * Registers an [ApiExtension] to be exposed through [OpenTelemetryRum.getExtension]. Use this
+     * for extensions that wrap internals created during initialization, which therefore can't be
+     * discovered from the classpath. An extension registered here replaces a discovered extension
+     * of the same [ApiExtension.type].
+     *
+     * @return `this`
+     */
+    fun addApiExtension(extension: ApiExtension): SdkPreconfiguredRumBuilder {
+        apiExtensions.add(extension)
         return this
     }
 
@@ -67,6 +84,14 @@ class SdkPreconfiguredRumBuilder internal constructor(
         }
 
         val enabledInstrumentations = getEnabledInstrumentations()
+        // Extensions are resolved before instrumentations are installed so that instrumentations
+        // can obtain them from the OpenTelemetryRum instance they receive in install().
+        // TODO: add a dedicated config toggle to disable classpath discovery of extensions.
+        val apiExtensionRegistry =
+            ApiExtensionRegistry.create(
+                discovered = ApiExtensionLoader.load(),
+                registered = apiExtensions,
+            )
         val openTelemetryRum =
             OpenTelemetryRumImpl(
                 openTelemetry =
@@ -78,6 +103,7 @@ class SdkPreconfiguredRumBuilder internal constructor(
                     ),
                 sessionProvider = sessionProvider,
                 clock = clock,
+                apiExtensions = apiExtensionRegistry,
             )
         openTelemetryRum.onShutdown =
             Runnable {
