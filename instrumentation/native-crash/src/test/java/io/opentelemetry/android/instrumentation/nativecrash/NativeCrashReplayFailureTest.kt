@@ -30,6 +30,7 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.io.IOException
+import java.io.RandomAccessFile
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermission
 import java.time.Instant
@@ -103,6 +104,60 @@ class NativeCrashReplayFailureTest {
                 "Failed to delete native crash snapshot",
                 any<IOException>(),
             )
+        }
+    }
+
+    @Test
+    fun `removes an empty directory at the marker path before the next crash`() {
+        val store = FileNativeCrashStore(tempDir)
+        assertThat(store.crashRecordPath.mkdir()).isTrue()
+        store.crashSnapshotPath.writeText("orphan")
+
+        reporter(store).replayPreviousCrash()
+
+        assertThat(otelTesting.logRecords).isEmpty()
+        assertCrashFilesRemoved(store)
+        fileStoreWithCrashFiles()
+        reporter(store).replayPreviousCrash()
+        assertReplayedWithoutStacktrace()
+        assertCrashFilesRemoved(store)
+    }
+
+    @Test
+    fun `rejects a snapshot larger than a byte array without allocating its file size`() {
+        val store = fileStoreWithCrashFiles()
+        RandomAccessFile(store.crashSnapshotPath, "rw").use {
+            it.setLength(Int.MAX_VALUE.toLong() + 1)
+        }
+
+        reporter(store).replayPreviousCrash()
+
+        assertReplayedWithoutStacktrace()
+        assertCrashFilesRemoved(store)
+    }
+
+    @Test
+    fun `only parses snapshots with exactly one record`() {
+        val store = fileStoreWithCrashFiles()
+        val bytes = ByteArray(NativeCrashSnapshotLayout.RECORD_SIZE)
+        val parsed = snapshot()
+        mockkObject(NativeCrashSnapshotParser)
+        try {
+            every { NativeCrashSnapshotParser.parse(any(), crashRecord) } returns parsed
+            for (size in listOf(0, bytes.size - 1, bytes.size + 1)) {
+                store.crashSnapshotPath.writeBytes(bytes.copyOf(size))
+                assertThat(store.readCrashSnapshot(crashRecord)).isNull()
+                assertThat(store.crashSnapshotPath).doesNotExist()
+            }
+            verify(exactly = 0) { NativeCrashSnapshotParser.parse(any(), any()) }
+
+            store.crashSnapshotPath.writeBytes(bytes)
+            assertThat(store.readCrashSnapshot(crashRecord)).isSameAs(parsed)
+            verify(exactly = 1) { NativeCrashSnapshotParser.parse(bytes, crashRecord) }
+            assertThat(store.crashSnapshotPath).exists()
+            assertThat(store.crashRecordPath).exists()
+        } finally {
+            unmockkObject(NativeCrashSnapshotParser)
         }
     }
 

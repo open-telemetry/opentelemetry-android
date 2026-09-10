@@ -13,10 +13,14 @@ import io.mockk.unmockkObject
 import io.mockk.unmockkStatic
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assumptions.assumeFalse
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.io.RandomAccessFile
+import java.nio.file.Files
 import java.time.Instant
 
 class NativeCrashRecoveryStateTest {
@@ -87,6 +91,42 @@ class NativeCrashRecoveryStateTest {
     }
 
     @Test
+    fun `wrong snapshot lengths are malformed without consuming recovery files`() {
+        val store = FileNativeCrashStore(tempDir)
+        val bytes = ByteArray(NativeCrashSnapshotLayout.RECORD_SIZE)
+        for (size in listOf(0, bytes.size - 1, bytes.size + 1)) {
+            store.crashSnapshotPath.writeBytes(bytes.copyOf(size))
+
+            assertThat(store.readCrashSnapshotForRecovery(record)).isEqualTo(NativeCrashRead.Malformed)
+            assertThat(store.crashSnapshotPath).hasSize(size.toLong())
+        }
+
+        RandomAccessFile(store.crashSnapshotPath, "rw").use {
+            it.setLength(Int.MAX_VALUE.toLong() + 1)
+        }
+        assertThat(store.readCrashSnapshotForRecovery(record)).isEqualTo(NativeCrashRead.Malformed)
+        assertThat(store.crashSnapshotPath).hasSize(Int.MAX_VALUE.toLong() + 1)
+    }
+
+    @Test
+    fun `unreadable snapshot is retryable and remains on disk`() {
+        val store = FileNativeCrashStore(tempDir)
+        store.crashSnapshotPath.writeBytes(ByteArray(NativeCrashSnapshotLayout.RECORD_SIZE))
+        val path = store.crashSnapshotPath.toPath()
+        assumeTrue(path.fileSystem.supportedFileAttributeViews().contains("posix"))
+        val permissions = Files.getPosixFilePermissions(path)
+        try {
+            Files.setPosixFilePermissions(path, emptySet())
+            assumeFalse(Files.isReadable(path))
+
+            assertThat(store.readCrashSnapshotForRecovery(record)).isEqualTo(NativeCrashRead.Failed)
+            assertThat(store.crashSnapshotPath).exists()
+        } finally {
+            Files.setPosixFilePermissions(path, permissions)
+        }
+    }
+
+    @Test
     fun `contains snapshot parser failures without consuming crash files`() {
         val store = FileNativeCrashStore(tempDir)
         store.crashRecordPath.writeText("signal.number=11\ntimestamp.epoch_nanos=1783598400000000000\n")
@@ -123,6 +163,16 @@ class NativeCrashRecoveryStateTest {
         assertThat(store.writeRecoveryState(cleanup)).isTrue()
         assertThat(FileNativeCrashStore(tempDir).readRecoveryState()).isEqualTo(NativeCrashRead.Success(cleanup))
         assertThat(temporaryPath).doesNotExist()
+    }
+
+    @Test
+    fun `lock creation failure does not consume crash files`() {
+        val store = FileNativeCrashStore(tempDir)
+        store.crashRecordPath.writeText("signal.number=11\n")
+        File(tempDir, "native-crash-recovery.lock").mkdir()
+
+        assertThat(store.acquireRecoveryLock()).isNull()
+        assertThat(store.crashRecordPath).exists()
     }
 
     @Test

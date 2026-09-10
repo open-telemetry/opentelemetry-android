@@ -29,6 +29,8 @@ import io.opentelemetry.kotlin.semconv.OsAttributes.OS_NAME
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_VERSION
 import io.opentelemetry.kotlin.semconv.ServiceAttributes.SERVICE_VERSION
 import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_ID
+import java.io.DataInputStream
+import java.io.EOFException
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -141,7 +143,7 @@ internal class NativeCrashReporter(
         val crashContext = store.readContext()
         val record = store.readCrashRecord()
         if (record == null) {
-            store.deleteCrashSnapshot()
+            store.deleteCrashFiles()
             return
         }
         replay(record, crashContext, store.readCrashSnapshot(record))
@@ -216,8 +218,6 @@ internal interface NativeCrashStore {
 
     fun acquireRecoveryLock(): NativeCrashRecoveryLock?
 
-    fun deleteCrashRecord()
-
     fun deleteCrashSnapshot(): Boolean
 
     fun deleteCrashFiles(): Boolean
@@ -283,7 +283,14 @@ internal class FileNativeCrashStore(
         if (!crashSnapshotPath.isFile) return NativeCrashRead.Missing
         val bytes =
             try {
-                crashSnapshotPath.readBytes()
+                DataInputStream(FileInputStream(crashSnapshotPath)).use { input ->
+                    val bytes = ByteArray(NativeCrashSnapshotLayout.RECORD_SIZE)
+                    input.readFully(bytes)
+                    if (input.read() != -1) return NativeCrashRead.Malformed
+                    bytes
+                }
+            } catch (error: EOFException) {
+                return NativeCrashRead.Malformed
             } catch (error: IOException) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash snapshot", error)
                 return NativeCrashRead.Failed
@@ -362,10 +369,6 @@ internal class FileNativeCrashStore(
             Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to acquire native crash recovery lock", error)
             null
         }
-    }
-
-    override fun deleteCrashRecord() {
-        deleteFile(crashRecordPath, "native crash marker")
     }
 
     override fun deleteCrashSnapshot(): Boolean = deleteFile(crashSnapshotPath, "native crash snapshot")
