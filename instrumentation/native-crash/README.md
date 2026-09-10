@@ -23,9 +23,8 @@ timestamp.epoch_nanos=<positive integer>
 
 The native writer and Kotlin reader must keep these keys and value formats in sync.
 
-The proposed versioned binary format for future native frame recovery is documented in
-[`SNAPSHOT_FORMAT.md`](SNAPSHOT_FORMAT.md). Runtime snapshot capture and recovery are follow-up
-work.
+The versioned binary format used for native frame recovery is documented in
+[`SNAPSHOT_FORMAT.md`](SNAPSHOT_FORMAT.md). Runtime snapshot capture remains follow-up work.
 
 ## Telemetry
 
@@ -33,6 +32,7 @@ The replayed event uses the original crash timestamp and includes:
 
 * `exception.type`
 * `exception.message`
+* `exception.stacktrace`, when a matching snapshot contains recoverable frames
 * `session.id`, when available
 * `service.version`, when available
 * `os.name`
@@ -57,13 +57,21 @@ enabling the native signal handler.
 
 ## Limitations
 
-Native stack capture is not included. This module does not create or attach a binary crash dump.
-Symbol upload and symbolication are downstream concerns and require a separate design once native
-stack frames are available.
+Native stack capture is not included. Recovery only consumes a snapshot written by a compatible
+future signal handler. Symbol upload and symbolication are downstream concerns.
 
 Crashes that happen before native crash instrumentation finishes initialization are not recorded.
 
-The current marker-only implementation deletes the persisted marker immediately after its event is
-emitted. Replay is therefore at most once: if the application exits before the telemetry is
-exported, that crash event may be lost. A later change may add support for preserving multiple
-consecutive startup crashes. Unreadable or malformed markers are discarded rather than retried.
+Recovery records a process-durable delivery claim before handing the event to OpenTelemetry. A
+claimed crash is never emitted again, so replay is at most once and the event may be lost if the
+process exits before export. Marker, snapshot, and cleanup failures are retried on later launches,
+up to three attempts per phase and 24 hours from the first attempt. The signal handler stays
+disabled while a retry is pending so it cannot overwrite the files being recovered.
+
+Recovery waits for the fixed marker and snapshot paths when another app process is using them. If
+the process lock cannot be acquired, or the recovery state cannot be read while a crash may be
+pending, the handler remains disabled rather than guessing whether the crash was already claimed.
+Malformed recovery state is discarded with the pending crash because ownership cannot be proven.
+
+Only one crash can be pending. Supporting multiple consecutive startup crashes requires per-crash
+paths and remains follow-up work.
