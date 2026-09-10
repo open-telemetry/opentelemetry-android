@@ -31,10 +31,10 @@ public final class io/opentelemetry/android/agent/dsl/DiskBufferingConfiguration
 	public fun enabled (Z)V
 	public final fun getExportPeriod-UwyO8pc ()J
 	public final fun getMaxCacheSize ()I
-	public final fun getSignalsBufferDir ()Ljava/io/File;
+	public final fun getTelemetryStorageDir ()Ljava/io/File;
 	public final fun setExportPeriod-LRDsOJo (J)V
 	public final fun setMaxCacheSize (I)V
-	public final fun setSignalsBufferDir (Ljava/io/File;)V
+	public final fun setTelemetryStorageDir (Ljava/io/File;)V
 }
 
 public final class io/opentelemetry/android/agent/dsl/EndpointConfiguration {

@@ -24,6 +24,9 @@ class DiskBufferingConfigurationSpec internal constructor(
 
     /**
      * The maximum amount of disk space, in bytes, that buffered telemetry may occupy.
+     *
+     * This budget is split evenly three ways, so spans, logs, and metrics each get a third of
+     * the value set here, regardless of which signals the application actually emits.
      */
     var maxCacheSize: Int = DEFAULT_MAX_CACHE_SIZE
 
@@ -33,10 +36,11 @@ class DiskBufferingConfigurationSpec internal constructor(
     var exportPeriod: Duration = 10.seconds
 
     /**
-     * The directory in which buffered telemetry is stored until it is exported. By default
-     * the application's cache directory is used.
+     * The root directory in which buffered telemetry is stored until it is exported. Each signal
+     * type is stored in its own subdirectory of this location, as a directory may only hold one
+     * of spans, logs, or metrics. By default the application's cache directory is used.
      */
-    var signalsBufferDir: File? = null
+    var telemetryStorageDir: File? = null
 
     init {
         applyToRumConfig()
@@ -54,7 +58,7 @@ class DiskBufferingConfigurationSpec internal constructor(
             DiskBufferingConfig.create(
                 enabled = enabled,
                 maxCacheSize = maxCacheSize,
-                signalsBufferDir = signalsBufferDir,
+                signalsBufferDir = telemetryStorageDir,
                 exportPeriodMillis = exportPeriod.inWholeMilliseconds,
             ),
         )

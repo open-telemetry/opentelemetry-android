@@ -44,7 +44,7 @@ class DiskBufferingConfigTest {
         val spec = otelConfig.diskBufferingConfig
         assertThat(spec.maxCacheSize).isEqualTo(10 * 1024 * 1024)
         assertThat(spec.exportPeriod).isEqualTo(10.seconds)
-        assertThat(spec.signalsBufferDir).isNull()
+        assertThat(spec.telemetryStorageDir).isNull()
     }
 
     @Test
@@ -63,7 +63,7 @@ class DiskBufferingConfigTest {
             enabled(true)
             maxCacheSize = 5 * 1024 * 1024
             exportPeriod = 30.seconds
-            signalsBufferDir = bufferDir
+            telemetryStorageDir = bufferDir
         }
 
         assertThat(otelConfig.rumConfig.getDiskBufferingConfig())
