@@ -21,6 +21,7 @@ import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.android.session.SessionPublisher
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
@@ -148,6 +149,17 @@ object OpenTelemetryRumInitializer {
         appLifecycle: AppLifecycle,
         cfg: OpenTelemetryConfiguration,
     ): SessionProvider {
+        val provider = cfg.sessionConfig.provider ?: createSessionManager(appLifecycle, cfg)
+        if (provider is SessionPublisher) {
+            cfg.sessionConfig.getObservers().forEach { provider.addObserver(it) }
+        }
+        return provider
+    }
+
+    private fun createSessionManager(
+        appLifecycle: AppLifecycle,
+        cfg: OpenTelemetryConfiguration,
+    ): SessionManager {
         val sessionConfig =
             SessionConfig(
                 cfg.sessionConfig.backgroundInactivityTimeout,
@@ -156,8 +168,6 @@ object OpenTelemetryRumInitializer {
         val clock = cfg.clock
         val timeoutHandler = SessionIdTimeoutHandler(sessionConfig, clock)
         appLifecycle.registerListener(timeoutHandler)
-        val sessionManager = SessionManager.create(timeoutHandler, sessionConfig, clock)
-        cfg.sessionConfig.getObservers().forEach { sessionManager.addObserver(it) }
-        return sessionManager
+        return SessionManager.create(timeoutHandler, sessionConfig, clock)
     }
 }
