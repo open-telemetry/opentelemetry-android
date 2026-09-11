@@ -13,6 +13,7 @@ develocity {
 }
 
 include(":agent-api")
+include(":agent-api-ktx")
 include(":core")
 include(":android-agent")
 include(":test-common")

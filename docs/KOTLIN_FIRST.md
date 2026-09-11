@@ -17,6 +17,9 @@ The OpenTelemetry Android Agent is currently built on the OTel Java SDK and ecos
 signals. This will be the case until official Kotlin versions are released and stabilized under the OpenTelemetry org, which is currently 
 under development.
 
+As a stepping stone, the optional [`agent-api-ktx`](../agent-api-ktx) module exposes the opentelemetry-kotlin API from an `OpenTelemetryRum` 
+instance, delegating to the same OTel Java SDK underneath.
+
 ## Java Compatibility
 
 Java and Kotlin are interoperable from a language standpoint, so in theory, the Agent API is callable from Java. But from a public API 

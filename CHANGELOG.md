@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### 📈 Enhancements
+
+- New optional `agent-api-ktx` module adding an `OpenTelemetryRum.openTelemetryKotlin` extension
+  property. This allows you to use opentelemetry-kotlin's APIs within opentelemetry-android,
+  backed by the agent's existing Java SDK instance. This module and opentelemetry-kotlin are not
+  stable yet and may change their APIs in future.
+  ([#XXXX](https://github.com/open-telemetry/opentelemetry-android/pull/XXXX))
+
 ## Version 1.7.0 (2026-09-04)
 
 ### 📣 Migration notes
