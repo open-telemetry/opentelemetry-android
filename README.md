@@ -138,7 +138,7 @@ private fun initOTel(context: Context): OpenTelemetryRum? =
     }.getOrNull()
 ```
 
-This call will return an `OpenTelemetryRum` instance. You can these use the Agent APIs, and additionally
+This call will return an `OpenTelemetryRum` instance. You can then use the Agent APIs, and additionally
 retrieve the opentelemetry-kotlin and opentelemetry-java APIs for more fine-grained control:
 
 ```kotlin
