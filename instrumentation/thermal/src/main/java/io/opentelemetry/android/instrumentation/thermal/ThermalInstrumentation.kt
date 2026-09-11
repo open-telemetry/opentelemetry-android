@@ -12,6 +12,8 @@ import androidx.annotation.RequiresApi
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.openTelemetryKotlin
+import io.opentelemetry.kotlin.ExperimentalApi
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -22,6 +24,7 @@ import java.util.concurrent.Executors
  * available on API level 29 (Android Q) and higher, so this instrumentation no-ops on older
  * devices even though the library supports a lower minSdk.
  */
+@OptIn(ExperimentalApi::class)
 @AutoService(AndroidInstrumentation::class)
 class ThermalInstrumentation : AndroidInstrumentation {
     private var detector: ThermalDetector? = null
@@ -42,10 +45,9 @@ class ThermalInstrumentation : AndroidInstrumentation {
                 ?: return
 
         val logger =
-            openTelemetryRum.openTelemetry
-                .logsBridge
-                .loggerBuilder("io.opentelemetry.$name")
-                .build()
+            openTelemetryRum.openTelemetryKotlin
+                .loggerProvider
+                .getLogger("io.opentelemetry.$name")
 
         val executor = Executors.newSingleThreadExecutor()
         val detector = ThermalDetector(logger)

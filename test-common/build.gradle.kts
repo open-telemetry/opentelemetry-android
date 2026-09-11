@@ -17,6 +17,8 @@ dependencies {
     api(project(":agent-api"))
     api(libs.opentelemetry.sdk)
     api(libs.opentelemetry.sdk.testing)
+    api(libs.opentelemetry.kotlin.api)
+    implementation(libs.opentelemetry.kotlin.compat)
     api(libs.assertj.core)
     implementation(libs.androidx.core)
     implementation(libs.androidx.junit)
