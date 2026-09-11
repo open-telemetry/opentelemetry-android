@@ -86,6 +86,7 @@ public final class io/opentelemetry/android/agent/dsl/SessionConfiguration {
 	public final fun observers ([Lio/opentelemetry/android/session/SessionObserver;)V
 	public final fun setBackgroundInactivityTimeout-LRDsOJo (J)V
 	public final fun setMaxLifetime-LRDsOJo (J)V
+	public final fun storage (Lio/opentelemetry/android/agent/session/SessionStorage;)V
 }
 
 public final class io/opentelemetry/android/agent/dsl/instrumentation/ActivityLifecycleConfiguration : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled, io/opentelemetry/android/agent/dsl/instrumentation/ScreenLifecycleConfigurable {
@@ -135,5 +136,10 @@ public final class io/opentelemetry/android/agent/dsl/instrumentation/SlowRender
 	public final fun detectionPollInterval-LRDsOJo (J)V
 	public final fun enableVerboseDebugLogging ()V
 	public fun enabled (Z)V
+}
+
+public abstract interface class io/opentelemetry/android/agent/session/SessionStorage {
+	public abstract fun get ()Lio/opentelemetry/android/session/Session;
+	public abstract fun save (Lio/opentelemetry/android/session/Session;)V
 }
 
