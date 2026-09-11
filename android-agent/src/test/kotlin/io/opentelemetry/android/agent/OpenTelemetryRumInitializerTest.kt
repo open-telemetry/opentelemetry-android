@@ -13,14 +13,22 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
+import io.opentelemetry.android.agent.session.SessionStorage
+import io.opentelemetry.android.agent.session.invalidSession
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
+import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.sdk.testing.time.TestClock
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RuntimeEnvironment
+import java.util.Collections
+import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.hours
 
 @OptIn(Incubating::class)
 @RunWith(AndroidJUnit4::class)
@@ -82,6 +90,41 @@ class OpenTelemetryRumInitializerTest {
         verify {
             o1.onSessionStarted(any(), any())
             o2.onSessionStarted(any(), any())
+        }
+    }
+
+    @Test
+    fun `custom storage is used by the configured manager`() {
+        val storage = mockk<SessionStorage>()
+        val saved = Collections.synchronizedList(mutableListOf<Session>())
+        every { storage.save(capture(saved)) } returns Unit
+        val testClock = TestClock.create()
+        val observer = mockk<SessionObserver>(relaxed = true)
+        val rum =
+            OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
+                clock = testClock
+                disableLogging()
+                disableTracing()
+                disableMetrics()
+                session {
+                    storage(storage)
+                    maxLifetime = 1.hours
+                    observers(observer)
+                }
+            }
+        try {
+            val first = rum.sessionProvider.getSessionId()
+            assertThat(saved.first()).isSameAs(invalidSession)
+            assertThat(saved.last().id).isEqualTo(first)
+            testClock.advance(1, TimeUnit.HOURS)
+            val second = rum.sessionProvider.getSessionId()
+            assertThat(second).isNotEqualTo(first)
+            assertThat(saved.map { it.id }).containsExactly("", first, second)
+            verify { observer.onSessionStarted(match { it.id == second }, match { it.id == first }) }
+            verify { appLifecycle.registerListener(any<SessionIdTimeoutHandler>()) }
+            verify(exactly = 0) { storage.get() }
+        } finally {
+            rum.shutdown()
         }
     }
 

@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 import kotlin.time.Duration
 
+@OptIn(Incubating::class)
 internal class SessionManager(
     private val clock: Clock,
     private val sessionStorage: SessionStorage = InMemorySessionStorage(),
@@ -86,11 +87,13 @@ internal class SessionManager(
             timeoutHandler: SessionIdTimeoutHandler,
             sessionConfig: SessionConfig,
             clock: Clock,
+            sessionStorage: SessionStorage = InMemorySessionStorage(),
         ): SessionManager =
             SessionManager(
                 timeoutHandler = timeoutHandler,
                 maxSessionLifetime = sessionConfig.maxLifetime,
                 clock = clock,
+                sessionStorage = sessionStorage,
             )
     }
 }
