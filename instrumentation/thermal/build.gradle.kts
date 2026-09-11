@@ -20,6 +20,8 @@ android {
 dependencies {
     implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":agent-api"))
+    implementation(project(":agent-api-ktx"))
     implementation(project(":semconv"))
+    testImplementation(project(":test-common"))
     testImplementation(libs.robolectric)
 }

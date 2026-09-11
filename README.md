@@ -50,6 +50,18 @@ dependencies {
 }
 ```
 
+### Kotlin API extensions
+
+If you want to use
+[opentelemetry-kotlin](https://github.com/open-telemetry/opentelemetry-kotlin)'s API alongside or instead of
+the OpenTelemetry Java API, add the optional `agent-api-ktx` module:
+
+```kotlin
+dependencies {
+    implementation("io.opentelemetry.android:agent-api-ktx")
+}
+```
+
 ## Snapshot Builds
 
 A snapshot is published for every commit to the `main` branch. Snapshots are intended for testing
@@ -126,7 +138,13 @@ private fun initOTel(context: Context): OpenTelemetryRum? =
     }.getOrNull()
 ```
 
-This call will return an `OpenTelemetryRum` instance with which you can use the Agent and OTel APIs.
+This call will return an `OpenTelemetryRum` instance. You can these use the Agent APIs, and additionally
+retrieve the opentelemetry-kotlin and opentelemetry-java APIs for more fine-grained control:
+
+```kotlin
+val otelJavaApi = otelRum.openTelemetry
+val otelKotlinApi = otelRum.openTelemetryKotlin
+```
 
 # Features
 
