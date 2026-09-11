@@ -12,7 +12,6 @@ import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.android.session.SessionPublisher
 import io.opentelemetry.sdk.common.Clock
 import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 import kotlin.time.Duration
 
@@ -25,45 +24,35 @@ internal class SessionManager(
     private val maxSessionLifetime: Duration,
 ) : SessionProvider,
     SessionPublisher {
-    private val session: AtomicReference<Session> = AtomicReference(invalidSession)
+    private val lock = Any()
+    private var session: Session = invalidSession
     private val observers = CopyOnWriteArrayList<SessionObserver>()
 
     init {
-        sessionStorage.save(session.get())
+        sessionStorage.save(session)
     }
 
     override fun addObserver(observer: SessionObserver) {
         observers.add(observer)
     }
 
-    override fun getSessionId(): String {
-        val currentSession = session.get()
-
-        // Check if we need to create a new session.
-        return if (sessionHasExpired(currentSession) || timeoutHandler.hasTimedOut()) {
-            val newId = idGenerator.generateSessionId()
-            val newSession = SessionImpl(newId, clock.now())
-
-            // Atomically update the session only if it hasn't been changed by another thread.
-            if (session.compareAndSet(currentSession, newSession)) {
-                sessionStorage.save(newSession)
+    override fun getSessionId(): String =
+        synchronized(lock) {
+            val currentSession = session
+            if (sessionHasExpired(currentSession) || timeoutHandler.hasTimedOut()) {
+                val newId = idGenerator.generateSessionId()
+                val newSession = SessionImpl(newId, clock.now())
+                session = newSession
+                // Storage and observers may record telemetry that reads the session again.
                 timeoutHandler.bump()
-                // Observers need to be called after bumping the timer because it may create a new
-                // span.
+                sessionStorage.save(newSession)
                 notifyObserversOfSessionUpdate(currentSession, newSession)
                 newSession.id
             } else {
-                // Another thread accessed this function prior to creating a new session. Use the
-                // current session.
                 timeoutHandler.bump()
-                session.get().id
+                currentSession.id
             }
-        } else {
-            // No new session needed, just bump the timeout and return current session ID
-            timeoutHandler.bump()
-            currentSession.id
         }
-    }
 
     private fun notifyObserversOfSessionUpdate(
         currentSession: Session,

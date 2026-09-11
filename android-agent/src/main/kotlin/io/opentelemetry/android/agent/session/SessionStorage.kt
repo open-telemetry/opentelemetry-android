@@ -17,8 +17,9 @@ import io.opentelemetry.android.session.Session
  *
  * Calls run synchronously on the calling thread, including during SDK initialization and
  * telemetry recording. Implementations must be thread-safe, return promptly, and handle their
- * own failures without throwing. Concurrent saves are not guaranteed to arrive in session
- * creation order. The manager does not provide a storage fallback or manage storage cleanup.
+ * own failures without throwing. Each manager serializes session access, saves, and observer
+ * notifications. A save must not wait for another thread to access that manager's session.
+ * The manager does not provide a storage fallback or manage storage cleanup.
  */
 @Incubating
 interface SessionStorage {
