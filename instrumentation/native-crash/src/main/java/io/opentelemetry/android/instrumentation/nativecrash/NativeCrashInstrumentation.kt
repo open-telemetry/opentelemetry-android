@@ -9,6 +9,8 @@ package io.opentelemetry.android.instrumentation.nativecrash
 
 import android.content.Context
 import android.os.Build
+import android.os.ParcelFileDescriptor
+import android.system.Os
 import android.util.Log
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
@@ -246,9 +248,9 @@ internal class FileNativeCrashStore(
     }
 
     override fun readCrashRecordForRecovery(): NativeCrashRead<NativeCrashRecord> {
-        if (!crashRecordPath.isFile) return NativeCrashRead.Missing
         val properties =
             try {
+                if (!crashRecordPath.isFile) return if (crashRecordPath.exists()) NativeCrashRead.Malformed else NativeCrashRead.Missing
                 crashRecordPath.readProperties()
             } catch (error: IllegalArgumentException) {
                 return NativeCrashRead.Malformed
@@ -280,9 +282,9 @@ internal class FileNativeCrashStore(
     }
 
     override fun readCrashSnapshotForRecovery(record: NativeCrashRecord): NativeCrashRead<NativeCrashSnapshot> {
-        if (!crashSnapshotPath.isFile) return NativeCrashRead.Missing
         val bytes =
             try {
+                if (!crashSnapshotPath.isFile) return if (crashSnapshotPath.exists()) NativeCrashRead.Malformed else NativeCrashRead.Missing
                 DataInputStream(FileInputStream(crashSnapshotPath)).use { input ->
                     val bytes = ByteArray(NativeCrashSnapshotLayout.RECORD_SIZE)
                     input.readFully(bytes)
@@ -311,9 +313,9 @@ internal class FileNativeCrashStore(
     }
 
     override fun readRecoveryState(): NativeCrashRead<NativeCrashRecoveryState> {
-        if (!recoveryStatePath.isFile) return NativeCrashRead.Missing
         val properties =
             try {
+                if (!recoveryStatePath.isFile) return if (recoveryStatePath.exists()) NativeCrashRead.Malformed else NativeCrashRead.Missing
                 recoveryStatePath.readProperties()
             } catch (error: IllegalArgumentException) {
                 return NativeCrashRead.Malformed
@@ -455,7 +457,10 @@ internal class FileNativeCrashStore(
         val signalNumber = getProperty(SIGNAL_NUMBER_KEY)?.toIntOrNull()?.takeIf { it > 0 }
         val timestampSecond = getProperty(RECOVERY_TIMESTAMP_SECOND_KEY)?.toLongOrNull()?.takeIf { it >= 0 }
         val timestampNano = getProperty(RECOVERY_TIMESTAMP_NANO_KEY)?.toIntOrNull()?.takeIf { it in 0..999_999_999 }
+        val presentIdentityFields =
+            listOf(SIGNAL_NUMBER_KEY, RECOVERY_TIMESTAMP_SECOND_KEY, RECOVERY_TIMESTAMP_NANO_KEY).count { containsKey(it) }
         val identityFields = listOf(signalNumber, timestampSecond, timestampNano).count { it != null }
+        if (presentIdentityFields != identityFields) return null
         if (identityFields != 0 && identityFields != 3) return null
         if (phase == NativeCrashRecoveryPhase.MARKER_READ && identityFields != 0) return null
         if (phase in IDENTITY_REQUIRED_PHASES && identityFields != 3) return null
@@ -493,6 +498,10 @@ internal class FileNativeCrashStore(
                 }
                 val replaced = temporaryPath.renameTo(recoveryStatePath)
                 if (!replaced) throw IOException("Failed to replace ${recoveryStatePath.name}")
+                // Sync the rename as well as the file contents before acknowledging the claim.
+                ParcelFileDescriptor.open(directory, ParcelFileDescriptor.MODE_READ_ONLY).use {
+                    Os.fsync(it.fileDescriptor)
+                }
             } finally {
                 temporaryPath.delete()
             }
