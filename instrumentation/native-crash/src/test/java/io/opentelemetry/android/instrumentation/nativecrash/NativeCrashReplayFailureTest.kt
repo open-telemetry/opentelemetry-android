@@ -7,8 +7,13 @@
 
 package io.opentelemetry.android.instrumentation.nativecrash
 
+import android.os.ParcelFileDescriptor
+import android.system.ErrnoException
+import android.system.Os
+import android.system.OsConstants
 import android.util.Log
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.mockkStatic
@@ -29,6 +34,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.io.FileDescriptor
 import java.io.IOException
 import java.io.RandomAccessFile
 import java.nio.file.Files
@@ -44,12 +50,46 @@ class NativeCrashReplayFailureTest {
         mockkStatic(Log::class)
         every { Log.w(any<String>(), any<String>()) } returns 0
         every { Log.w(any<String>(), any<String>(), any<Throwable>()) } returns 0
+        mockkStatic(ParcelFileDescriptor::class)
+        mockkStatic(Os::class)
+        val directoryHandle = mockk<ParcelFileDescriptor>(relaxed = true)
+        every { directoryHandle.fileDescriptor } returns mockk<FileDescriptor>()
+        every { ParcelFileDescriptor.open(any(), ParcelFileDescriptor.MODE_READ_ONLY) } returns directoryHandle
+        justRun { Os.fsync(any()) }
     }
 
     @AfterEach
     fun cleanup() {
         otelTesting.clearLogRecords()
         unmockkStatic(Log::class)
+        unmockkStatic(ParcelFileDescriptor::class)
+        unmockkStatic(Os::class)
+    }
+
+    @Test
+    fun `failed directory sync does not emit and a retained claim stays suppressed after restart`() {
+        val fileStore = fileStoreWithCrashFiles()
+        val store =
+            object : NativeCrashStore by fileStore {
+                override fun deleteCrashFiles(): Boolean = false
+            }
+        every { Os.fsync(any()) } throws ErrnoException("fsync", OsConstants.EIO)
+
+        assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(otelTesting.logRecords).isEmpty()
+        assertThat(fileStore.crashRecordPath).exists()
+        val state = (fileStore.readRecoveryState() as NativeCrashRead.Success).value
+        assertThat(state.phase).isEqualTo(NativeCrashRecoveryPhase.ABANDONED)
+        assertThat(state.matches(crashRecord)).isTrue()
+
+        justRun { Os.fsync(any()) }
+        val restartedStore = FileNativeCrashStore(tempDir)
+        assertThat(reporter(restartedStore).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(otelTesting.logRecords).isEmpty()
+        assertCrashFilesRemoved(restartedStore)
+        assertThat(restartedStore.readRecoveryState()).isEqualTo(NativeCrashRead.Missing)
+        assertThat(reporter(restartedStore).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(otelTesting.logRecords).isEmpty()
     }
 
     @Test

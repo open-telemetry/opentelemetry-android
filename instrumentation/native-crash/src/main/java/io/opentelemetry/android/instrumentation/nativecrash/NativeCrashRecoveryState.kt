@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.instrumentation.nativecrash
 
+import java.time.Instant
+
 internal enum class NativeCrashRecoveryResult {
     COMPLETE,
     RETRY_PENDING,
@@ -46,7 +48,7 @@ internal data class NativeCrashRecoveryState(
             timestampNano == record.timestamp.nano
 
     fun appliesTo(record: NativeCrashRecord): Boolean =
-        if (hasIdentity()) matches(record) else record.timestamp.toEpochMilli() <= firstAttemptEpochMillis
+        if (hasIdentity()) matches(record) else record.timestamp <= Instant.ofEpochMilli(firstAttemptEpochMillis)
 
     companion object {
         fun create(

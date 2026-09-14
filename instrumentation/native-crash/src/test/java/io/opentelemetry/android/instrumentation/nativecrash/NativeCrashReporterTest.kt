@@ -11,8 +11,11 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.ParcelFileDescriptor
+import android.system.Os
 import android.util.Log
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
@@ -43,6 +46,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.io.FileDescriptor
 import java.io.FileOutputStream
 import java.time.Instant
 import java.util.Properties
@@ -56,12 +60,20 @@ class NativeCrashReporterTest {
         mockkStatic(Log::class)
         every { Log.w(any<String>(), any<String>()) } returns 0
         every { Log.w(any<String>(), any<String>(), any<Throwable>()) } returns 0
+        mockkStatic(ParcelFileDescriptor::class)
+        mockkStatic(Os::class)
+        val directoryHandle = mockk<ParcelFileDescriptor>(relaxed = true)
+        every { directoryHandle.fileDescriptor } returns mockk<FileDescriptor>()
+        every { ParcelFileDescriptor.open(any(), ParcelFileDescriptor.MODE_READ_ONLY) } returns directoryHandle
+        justRun { Os.fsync(any()) }
     }
 
     @AfterEach
     fun cleanup() {
         otelTesting.clearLogRecords()
         unmockkStatic(Log::class)
+        unmockkStatic(ParcelFileDescriptor::class)
+        unmockkStatic(Os::class)
     }
 
     @Test
@@ -888,6 +900,23 @@ class NativeCrashRecoveryTest {
         instrumentation.install(contextForInstallation(), fakeRum())
         assertThat(handlerInstalled).isFalse()
         assertThat(store.contextWriteCount).isZero()
+    }
+
+    @Test
+    fun `identity-free cleanup does not discard a newer crash in the same millisecond`() {
+        for (phase in listOf(NativeCrashRecoveryPhase.CLEANUP, NativeCrashRecoveryPhase.ABANDONED)) {
+            otelTesting.clearLogRecords()
+            val newerRecord = record.copy(timestamp = record.timestamp.plusNanos(1))
+            val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(newerRecord))
+            store.recoveryState =
+                recoveryState(phase, firstAttemptEpochMillis = record.timestamp.toEpochMilli(), crashRecord = null)
+
+            assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+            assertThat(otelTesting.logRecords.single().timestampEpochNanos).isEqualTo(1_783_598_400_000_000_001L)
+            assertThat(store.marker).isEqualTo(NativeCrashRead.Missing)
+            assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+            assertThat(otelTesting.logRecords).hasSize(1)
+        }
     }
 
     private fun reporter(
