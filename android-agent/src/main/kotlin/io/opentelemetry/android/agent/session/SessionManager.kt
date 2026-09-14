@@ -25,34 +25,48 @@ internal class SessionManager(
 ) : SessionProvider,
     SessionPublisher {
     private val lock = Any()
-    private var session: Session = invalidSession
-    private val observers = CopyOnWriteArrayList<SessionObserver>()
 
-    init {
-        sessionStorage.save(session)
-    }
+    @Volatile
+    private var session: Session = invalidSession
+
+    @Volatile
+    private var transitionInProgress = false
+
+    private val observers = CopyOnWriteArrayList<SessionObserver>()
 
     override fun addObserver(observer: SessionObserver) {
         observers.add(observer)
     }
 
-    override fun getSessionId(): String =
-        synchronized(lock) {
-            val currentSession = session
-            if (sessionHasExpired(currentSession) || timeoutHandler.hasTimedOut()) {
+    override fun getSessionId(): String {
+        val currentSession = session
+        if (!transitionInProgress && !sessionHasExpired(currentSession) && !timeoutHandler.hasTimedOut()) {
+            timeoutHandler.bump()
+            return currentSession.id
+        }
+        return synchronized(lock) {
+            val latestSession = session
+            if (sessionHasExpired(latestSession) || timeoutHandler.hasTimedOut()) {
                 val newId = idGenerator.generateSessionId()
                 val newSession = SessionImpl(newId, clock.now())
-                session = newSession
-                // Storage and observers may record telemetry that reads the session again.
-                timeoutHandler.bump()
-                sessionStorage.save(newSession)
-                notifyObserversOfSessionUpdate(currentSession, newSession)
+                // Readers must wait until storage and observers finish the transition.
+                transitionInProgress = true
+                try {
+                    session = newSession
+                    // Storage and observers may record telemetry that reads the session again.
+                    timeoutHandler.bump()
+                    sessionStorage.save(newSession)
+                    notifyObserversOfSessionUpdate(latestSession, newSession)
+                } finally {
+                    transitionInProgress = false
+                }
                 newSession.id
             } else {
                 timeoutHandler.bump()
-                currentSession.id
+                latestSession.id
             }
         }
+    }
 
     private fun notifyObserversOfSessionUpdate(
         currentSession: Session,

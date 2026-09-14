@@ -23,6 +23,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
@@ -33,7 +34,7 @@ internal class SessionStorageTest {
     private val timeoutHandler = SessionIdTimeoutHandler(config, clock)
 
     @Test
-    fun `startup saves an empty session without reading stored state`() {
+    fun `startup leaves storage untouched and first access saves a new session`() {
         val storage = mockk<SessionStorage>()
         val saved = mutableListOf<Session>()
         val previousId = "a".repeat(32)
@@ -41,11 +42,11 @@ internal class SessionStorageTest {
         every { storage.save(capture(saved)) } returns Unit
 
         val manager = createManager(storage)
-        assertThat(saved).containsExactly(invalidSession)
+        assertThat(saved).isEmpty()
 
         val id = manager.getSessionId()
         assertThat(id).isNotEmpty().isNotEqualTo(previousId)
-        assertThat(saved).hasSize(2)
+        assertThat(saved).hasSize(1)
         assertThat(saved.last().id).isEqualTo(id)
         assertThat(saved.last().startTimestamp).isEqualTo(clock.now())
         verify(exactly = 0) { storage.get() }
@@ -64,7 +65,7 @@ internal class SessionStorageTest {
         timeoutHandler.onApplicationBackgrounded()
         clock.advance(59, TimeUnit.SECONDS)
         assertThat(manager.getSessionId()).isEqualTo(first)
-        assertThat(saved).hasSize(2)
+        assertThat(saved).hasSize(1)
 
         // Reading the current session remains activity and extends the inactivity timeout.
         clock.advance(59, TimeUnit.SECONDS)
@@ -78,17 +79,17 @@ internal class SessionStorageTest {
         clock.advance(1, TimeUnit.HOURS)
         val third = manager.getSessionId()
         assertThat(third).isNotEqualTo(second)
-        assertThat(saved.map { it.id }).containsExactly("", first, second, third)
+        assertThat(saved.map { it.id }).containsExactly(first, second, third)
         verifyOrder {
-            storage.save(saved[1])
+            storage.save(saved[0])
             observer.onSessionEnded(invalidSession)
-            observer.onSessionStarted(saved[1], invalidSession)
+            observer.onSessionStarted(saved[0], invalidSession)
+            storage.save(saved[1])
+            observer.onSessionEnded(saved[0])
+            observer.onSessionStarted(saved[1], saved[0])
             storage.save(saved[2])
             observer.onSessionEnded(saved[1])
             observer.onSessionStarted(saved[2], saved[1])
-            storage.save(saved[3])
-            observer.onSessionEnded(saved[2])
-            observer.onSessionStarted(saved[3], saved[2])
         }
         verify(exactly = 3) { observer.onSessionStarted(any(), any()) }
         verify(exactly = 3) { observer.onSessionEnded(any()) }
@@ -122,19 +123,20 @@ internal class SessionStorageTest {
 
         assertThat(second).isNotEqualTo(first)
         assertThat(storage.get().id).isEqualTo(second)
-        verify(exactly = 3) { backingStorage.save(any()) }
+        verify(exactly = 2) { backingStorage.save(any()) }
         verify(exactly = 2) { observer.onSessionStarted(any(), any()) }
         verify { observer.onSessionEnded(match { it.id == first }) }
     }
 
     @Test
-    fun `unhandled storage failures propagate during initialization`() {
+    fun `unhandled storage failures propagate when a session is first saved`() {
         val storage = mockk<SessionStorage>()
         val failure = IOException("unhandled")
         every { storage.save(any()) } throws failure
 
-        assertThatThrownBy { createManager(storage) }.isSameAs(failure)
-        verify(exactly = 1) { storage.save(invalidSession) }
+        val manager = createManager(storage)
+        assertThatThrownBy { manager.getSessionId() }.isSameAs(failure)
+        verify(exactly = 1) { storage.save(match { it.id.isNotEmpty() }) }
         verify(exactly = 0) { storage.get() }
     }
 
@@ -144,7 +146,7 @@ internal class SessionStorageTest {
         val first = createManager(storage).getSessionId()
         val nextManager = createManager(storage)
 
-        assertThat(storage.get()).isSameAs(invalidSession)
+        assertThat(storage.get().id).isEqualTo(first)
         assertThat(nextManager.getSessionId()).isNotEqualTo(first)
     }
 
@@ -159,10 +161,39 @@ internal class SessionStorageTest {
                     .invokeAll(List(20) { Callable { manager.getSessionId() } }, 5, TimeUnit.SECONDS)
                     .map { it.get() }
             assertThat(ids.toSet()).hasSize(1)
-            verify(exactly = 1) { storage.save(invalidSession) }
+            verify(exactly = 0) { storage.save(invalidSession) }
             verify(exactly = 1) { storage.save(match { it.id == ids.first() }) }
             verify(exactly = 0) { storage.get() }
         } finally {
+            executor.shutdownNow()
+            assertThat(executor.awaitTermination(5, TimeUnit.SECONDS)).isTrue()
+        }
+    }
+
+    @Test
+    fun `active session reads do not wait for another reader`() {
+        val handler = mockk<SessionIdTimeoutHandler>(relaxed = true)
+        val manager = SessionManager(clock, timeoutHandler = handler, maxSessionLifetime = config.maxLifetime)
+        val id = manager.getSessionId()
+        val paused = CountDownLatch(1)
+        val resume = CountDownLatch(1)
+        val pauseNext = AtomicBoolean(true)
+        every { handler.bump() } answers {
+            if (pauseNext.compareAndSet(true, false)) {
+                paused.countDown()
+                check(resume.await(5, TimeUnit.SECONDS))
+            }
+        }
+        val executor = Executors.newFixedThreadPool(2)
+        try {
+            val first = executor.submit(Callable { manager.getSessionId() })
+            assertThat(paused.await(5, TimeUnit.SECONDS)).isTrue()
+            val second = executor.submit(Callable { manager.getSessionId() })
+            assertThat(second.get(1, TimeUnit.SECONDS)).isEqualTo(id)
+            resume.countDown()
+            assertThat(first.get(5, TimeUnit.SECONDS)).isEqualTo(id)
+        } finally {
+            resume.countDown()
             executor.shutdownNow()
             assertThat(executor.awaitTermination(5, TimeUnit.SECONDS)).isTrue()
         }

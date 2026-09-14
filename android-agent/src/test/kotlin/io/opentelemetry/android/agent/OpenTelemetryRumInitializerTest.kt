@@ -14,7 +14,6 @@ import io.mockk.verify
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.agent.session.SessionStorage
-import io.opentelemetry.android.agent.session.invalidSession
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.session.Session
@@ -114,12 +113,12 @@ class OpenTelemetryRumInitializerTest {
             }
         try {
             val first = rum.sessionProvider.getSessionId()
-            assertThat(saved.first()).isSameAs(invalidSession)
+            assertThat(saved.first().id).isEqualTo(first)
             assertThat(saved.last().id).isEqualTo(first)
             testClock.advance(1, TimeUnit.HOURS)
             val second = rum.sessionProvider.getSessionId()
             assertThat(second).isNotEqualTo(first)
-            assertThat(saved.map { it.id }).containsExactly("", first, second)
+            assertThat(saved.map { it.id }).containsExactly(first, second)
             verify { observer.onSessionStarted(match { it.id == second }, match { it.id == first }) }
             verify { appLifecycle.registerListener(any<SessionIdTimeoutHandler>()) }
             verify(exactly = 0) { storage.get() }
