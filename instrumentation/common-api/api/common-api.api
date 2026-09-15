@@ -29,6 +29,20 @@ public abstract interface class io/opentelemetry/android/instrumentation/common/
 	public abstract fun extract (Ljava/lang/Object;)Ljava/lang/String;
 }
 
+public abstract interface class io/opentelemetry/android/instrumentation/common/http/HttpUrlFilter {
+	public static final field Companion Lio/opentelemetry/android/instrumentation/common/http/HttpUrlFilter$Companion;
+	public static fun exceptHosts ([Ljava/lang/String;)Lio/opentelemetry/android/instrumentation/common/http/HttpUrlFilter;
+	public static fun instrumentAll ()Lio/opentelemetry/android/instrumentation/common/http/HttpUrlFilter;
+	public static fun onlyHosts ([Ljava/lang/String;)Lio/opentelemetry/android/instrumentation/common/http/HttpUrlFilter;
+	public abstract fun shouldInstrument (Ljava/lang/String;)Z
+}
+
+public final class io/opentelemetry/android/instrumentation/common/http/HttpUrlFilter$Companion {
+	public final fun exceptHosts ([Ljava/lang/String;)Lio/opentelemetry/android/instrumentation/common/http/HttpUrlFilter;
+	public final fun instrumentAll ()Lio/opentelemetry/android/instrumentation/common/http/HttpUrlFilter;
+	public final fun onlyHosts ([Ljava/lang/String;)Lio/opentelemetry/android/instrumentation/common/http/HttpUrlFilter;
+}
+
 public final class io/opentelemetry/android/instrumentation/utils/AndroidUtilsKt {
 	public static final fun getThreadIdCompat (Ljava/lang/Thread;)J
 }

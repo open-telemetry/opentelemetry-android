@@ -20,4 +20,5 @@ dependencies {
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.instrumentation.api)
     testImplementation(libs.androidx.fragment)
+    testImplementation(libs.robolectric)
 }
