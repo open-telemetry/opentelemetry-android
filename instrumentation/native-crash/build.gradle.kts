@@ -10,6 +10,24 @@ android {
 
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        getByName("debug") {
+            externalNativeBuild {
+                cmake {
+                    arguments += "-DOTEL_NATIVE_CRASH_TESTING=ON"
+                }
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
 }
 
@@ -17,10 +35,15 @@ dependencies {
     api(platform(libs.opentelemetry.platform.alpha)) // Required for sonatype publishing
     implementation(project(":agent-api"))
     implementation(project(":common"))
+    implementation(project(":semconv"))
     implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":session"))
     implementation(libs.androidx.core)
     implementation(libs.opentelemetry.semconv.kotlin)
 
     testImplementation(project(":test-common"))
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.assertj.core)
 }

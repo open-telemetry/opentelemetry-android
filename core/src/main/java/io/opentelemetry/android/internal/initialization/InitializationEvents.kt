@@ -7,7 +7,7 @@ package io.opentelemetry.android.internal.initialization
 
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.sdk.trace.export.SpanExporter
-import java.util.ServiceLoader.load
+import java.util.ServiceLoader
 
 /**
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
@@ -35,7 +35,7 @@ interface InitializationEvents {
         @JvmStatic
         fun get(): InitializationEvents {
             if (instance == null) {
-                val initializationEvents = load(InitializationEvents::class.java).firstOrNull()
+                val initializationEvents = loadInitializationEvents().firstOrNull()
                 if (initializationEvents != null) {
                     set(initializationEvents)
                 } else {
@@ -77,4 +77,17 @@ interface InitializationEvents {
                 override fun spanExporterInitialized(spanExporter: SpanExporter) {}
             }
     }
+}
+
+/**
+ * Loads the [InitializationEvents] implementations declared via SPI. See the R8 note on
+ * `AndroidInstrumentationLoaderImpl.loadInstrumentations` before changing the shape of this
+ * function.
+ */
+private fun loadInitializationEvents(): List<InitializationEvents> {
+    val events = mutableListOf<InitializationEvents>()
+    for (event in ServiceLoader.load(InitializationEvents::class.java, InitializationEvents::class.java.classLoader)) {
+        events.add(event)
+    }
+    return events
 }

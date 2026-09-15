@@ -10,12 +10,12 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
-import io.opentelemetry.android.instrumentation.view.click.internal.APP_SCREEN_CLICK_EVENT_NAME
 import io.opentelemetry.android.instrumentation.view.click.internal.Gesture
-import io.opentelemetry.android.instrumentation.view.click.internal.VIEW_CLICK_EVENT_NAME
+import io.opentelemetry.android.semconv.events.AppScreenClickEvent.Companion.APP_SCREEN_CLICK_EVENT_NAME
 import io.opentelemetry.android.semconv.events.AppScreenFlingEvent
 import io.opentelemetry.android.semconv.events.AppScreenLongpressEvent
 import io.opentelemetry.android.semconv.events.AppScreenScrollEvent
+import io.opentelemetry.android.semconv.events.AppWidgetClickEvent.Companion.APP_WIDGET_CLICK_EVENT_NAME
 import io.opentelemetry.android.semconv.events.AppWidgetFlingEvent
 import io.opentelemetry.android.semconv.events.AppWidgetLongpressEvent
 import io.opentelemetry.android.semconv.events.AppWidgetScrollEvent
@@ -50,7 +50,7 @@ internal class ViewClickEventGenerator(
                         .emit()
 
                     findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
-                        createEvent(VIEW_CLICK_EVENT_NAME, gesture)
+                        createEvent(APP_WIDGET_CLICK_EVENT_NAME, gesture)
                             .setAllAttributes(createViewAttributes(view))
                             .emit()
                     }
@@ -72,7 +72,7 @@ internal class ViewClickEventGenerator(
                         .emit()
 
                     findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
-                        createEvent(VIEW_CLICK_EVENT_NAME, gesture)
+                        createEvent(APP_WIDGET_CLICK_EVENT_NAME, gesture)
                             .setAllAttributes(createViewAttributes(view))
                             .emit()
                     }

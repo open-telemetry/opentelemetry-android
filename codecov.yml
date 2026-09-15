@@ -4,3 +4,7 @@ coverage:
       default:
         target: auto
         threshold: 1%
+
+# This harness is exercised by Android instrumented tests, which Kover cannot collect.
+ignore:
+  - "smoke-test-app/**/*"

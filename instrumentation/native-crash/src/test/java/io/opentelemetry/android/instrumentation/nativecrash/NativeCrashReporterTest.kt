@@ -16,6 +16,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
+import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
@@ -25,6 +26,7 @@ import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_MESSAGE
+import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE
 import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_TYPE
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_NAME
@@ -67,8 +69,168 @@ class NativeCrashReporterTest {
     }
 
     @Test
+    fun `installs the signal handler after replay and current context persistence`() {
+        val store = FileNativeCrashStore(tempDir)
+        writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L)
+        writeContext(crashContext("crashed"))
+        val packageManager = mockk<PackageManager>()
+        val applicationContext = mockk<Context>()
+        val context = mockk<Context>()
+        every { context.applicationContext } returns applicationContext
+        every { applicationContext.packageManager } returns packageManager
+        every { applicationContext.packageName } returns "test.app"
+        every { packageManager.getPackageInfo("test.app", 0) } throws
+            PackageManager.NameNotFoundException()
+        var queuedTask: Runnable? = null
+        var storeCreated = false
+        var signalHandlerInstalled = false
+        val instrumentation =
+            NativeCrashInstrumentation(
+                storeFactory = {
+                    storeCreated = true
+                    store
+                },
+                executor = { task -> queuedTask = task },
+                signalHandlerInstaller = {
+                    assertThat(store.readCrashRecord()).isNull()
+                    assertThat(store.readContext()?.sessionId).isEqualTo("current-session")
+                    assertThat(
+                        otelTesting.logRecords
+                            .single()
+                            .attributes
+                            .get(stringKey(SESSION_ID)),
+                    ).isEqualTo("crashed-session")
+                    signalHandlerInstalled = true
+                    true
+                },
+            )
+
+        instrumentation.install(context, fakeRum())
+
+        assertThat(storeCreated).isFalse()
+        assertThat(signalHandlerInstalled).isFalse()
+        assertThat(store.readCrashRecord()).isNotNull()
+        assertThat(queuedTask).isNotNull()
+
+        queuedTask!!.run()
+
+        assertThat(storeCreated).isTrue()
+        assertThat(signalHandlerInstalled).isTrue()
+    }
+
+    @Test
+    fun `does not install the signal handler when current context cannot be persisted`() {
+        val marker = File(tempDir, "native-crash-record.properties")
+        val store = mockk<NativeCrashStore>(relaxed = true)
+        every { store.crashRecordPath } returns marker
+        every { store.readCrashRecord() } returns null
+        every { store.readContext() } returns null
+        every { store.writeContext(any()) } returns false
+        val packageManager = mockk<PackageManager>()
+        val applicationContext = mockk<Context>()
+        val context = mockk<Context>()
+        every { context.applicationContext } returns applicationContext
+        every { applicationContext.packageManager } returns packageManager
+        every { applicationContext.packageName } returns "test.app"
+        every { packageManager.getPackageInfo("test.app", 0) } throws
+            PackageManager.NameNotFoundException()
+        var signalHandlerInstalled = false
+        val instrumentation =
+            NativeCrashInstrumentation(
+                storeFactory = { store },
+                executor = directExecutor,
+                signalHandlerInstaller = {
+                    signalHandlerInstalled = true
+                    true
+                },
+            )
+
+        instrumentation.install(context, fakeRum())
+
+        assertThat(signalHandlerInstalled).isFalse()
+        verify {
+            Log.w(
+                any<String>(),
+                "Native crash signal handler disabled because crash context could not be persisted",
+            )
+        }
+    }
+
+    @Test
+    fun `prepares the marker directory before native installation`() {
+        val marker = File(tempDir, "missing/native-crash-record.properties")
+
+        assertThat(prepareCrashRecordDirectory(marker)).isTrue()
+        assertThat(marker.parentFile).isDirectory()
+    }
+
+    @Test
+    fun `rejects an unusable marker directory`() {
+        val fileInsteadOfDirectory = File(tempDir, "not-a-directory").apply { writeText("occupied") }
+        val marker = File(fileInsteadOfDirectory, "native-crash-record.properties")
+
+        assertThat(prepareCrashRecordDirectory(marker)).isFalse()
+        assertThat(marker.parentFile).isFile()
+    }
+
+    @Test
+    fun `loads the native library and installs the handler`() {
+        val marker = File(tempDir, "missing/native-crash-record.properties")
+        var loadedLibrary: String? = null
+        var installedPath: String? = null
+        val installer =
+            JniNativeSignalHandlerInstaller(
+                loadLibrary = { loadedLibrary = it },
+                nativeInstall = { path ->
+                    installedPath = path
+                    true
+                },
+            )
+
+        assertThat(installer.install(marker)).isTrue()
+        assertThat(loadedLibrary).isEqualTo("otel_android_native_crash")
+        assertThat(installedPath).isEqualTo(marker.absolutePath)
+    }
+
+    @Test
+    fun `does not load the native library when the marker directory is unusable`() {
+        val fileInsteadOfDirectory = File(tempDir, "not-a-directory").apply { writeText("occupied") }
+        val marker = File(fileInsteadOfDirectory, "native-crash-record.properties")
+        var libraryLoaded = false
+        val installer =
+            JniNativeSignalHandlerInstaller(
+                loadLibrary = { libraryLoaded = true },
+                nativeInstall = { true },
+            )
+
+        assertThat(installer.install(marker)).isFalse()
+        assertThat(libraryLoaded).isFalse()
+    }
+
+    @Test
+    fun `returns false when the native library cannot be loaded`() {
+        val marker = File(tempDir, "native-crash-record.properties")
+        val failure = UnsatisfiedLinkError("missing library")
+        val installer =
+            JniNativeSignalHandlerInstaller(
+                loadLibrary = { throw failure },
+                nativeInstall = { true },
+            )
+
+        assertThat(installer.install(marker)).isFalse()
+        verify {
+            Log.w(
+                any<String>(),
+                "Failed to load native crash signal handler",
+                failure,
+            )
+        }
+    }
+
+    @Test
     fun `installs replay and session observer using the application context`() {
         val store = FileNativeCrashStore(tempDir)
+        var installedMarkerPath: File? = null
         writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L)
         val packageInfo =
             PackageInfo().apply {
@@ -93,6 +255,10 @@ class NativeCrashReporterTest {
                     store
                 },
                 executor = directExecutor,
+                signalHandlerInstaller = { markerPath ->
+                    installedMarkerPath = markerPath
+                    true
+                },
             )
 
         instrumentation.install(context, fakeRum(sessionProvider))
@@ -108,6 +274,38 @@ class NativeCrashReporterTest {
                 ),
             )
         assertThat(sessionProvider.observer).isNotNull()
+        assertThat(installedMarkerPath).isEqualTo(store.crashRecordPath)
+    }
+
+    @Test
+    fun `continues installation when the native handler is unavailable`() {
+        val store = FileNativeCrashStore(tempDir)
+        val packageManager = mockk<PackageManager>()
+        val applicationContext = mockk<Context>()
+        val context = mockk<Context>()
+        every { context.applicationContext } returns applicationContext
+        every { applicationContext.packageManager } returns packageManager
+        every { applicationContext.packageName } returns "test.app"
+        every { packageManager.getPackageInfo("test.app", 0) } throws
+            PackageManager.NameNotFoundException()
+        val sessionProvider = RecordingSessionProvider(sessionId = "install-session")
+        val instrumentation =
+            NativeCrashInstrumentation(
+                storeFactory = { store },
+                executor = directExecutor,
+                signalHandlerInstaller = { false },
+            )
+
+        instrumentation.install(context, fakeRum(sessionProvider))
+
+        assertThat(store.readContext()?.sessionId).isEqualTo("install-session")
+        assertThat(sessionProvider.observer).isNotNull()
+        verify {
+            Log.w(
+                any<String>(),
+                "Failed to install native crash signal handler",
+            )
+        }
     }
 
     @Test
@@ -135,6 +333,75 @@ class NativeCrashReporterTest {
         assertThat(log.attributes.get(stringKey(OS_VERSION))).isEqualTo("crashed-os-version")
         assertThat(store.readCrashRecord()).isNull()
         assertThat(store.readContext()).isEqualTo(crashContext("current"))
+    }
+
+    @Test
+    fun `attaches recovered native frames from a matching snapshot`() {
+        val record = NativeCrashRecord(11, Instant.ofEpochSecond(1_783_598_400))
+        val store = mockk<NativeCrashStore>(relaxed = true)
+        every { store.readContext() } returns crashContext("crashed")
+        every { store.readCrashRecord() } returns record
+        every { store.readCrashSnapshot(record) } returns snapshot()
+        every { store.deleteCrashFiles() } returns true
+
+        reporter(store).replayPreviousCrash()
+
+        assertThat(
+            otelTesting.logRecords
+                .single()
+                .attributes
+                .get(stringKey(EXCEPTION_STACKTRACE)),
+        ).isEqualTo("#00 pc 0000000000000120  libapp.so (BuildId: 1234abcd)")
+        verify(exactly = 1) { store.deleteCrashFiles() }
+    }
+
+    @Test
+    fun `replays marker only and removes a malformed snapshot`() {
+        val store = FileNativeCrashStore(tempDir)
+        writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L)
+        store.crashSnapshotPath.writeText("not a snapshot")
+
+        reporter(store).replayPreviousCrash()
+
+        assertThat(otelTesting.logRecords).hasSize(1)
+        assertThat(
+            otelTesting.logRecords
+                .single()
+                .attributes
+                .get(stringKey(EXCEPTION_STACKTRACE)),
+        ).isNull()
+        assertThat(store.crashSnapshotPath).doesNotExist()
+    }
+
+    @Test
+    fun `removes an orphan snapshot without emitting`() {
+        val store = FileNativeCrashStore(tempDir)
+        store.crashSnapshotPath.writeText("orphan")
+
+        reporter(store).replayPreviousCrash()
+
+        assertThat(otelTesting.logRecords).isEmpty()
+        assertThat(store.crashSnapshotPath).doesNotExist()
+    }
+
+    @Test
+    fun `reads the native marker format with nanosecond precision`() {
+        val store = FileNativeCrashStore(tempDir)
+        markerFile().apply {
+            parentFile?.mkdirs()
+            writeText(
+                "signal.number=11\n" +
+                    "timestamp.epoch_nanos=1783598400123456789\n",
+            )
+        }
+
+        assertThat(store.readCrashRecord())
+            .isEqualTo(
+                NativeCrashRecord(
+                    signalNumber = 11,
+                    timestamp = Instant.ofEpochSecond(1_783_598_400, 123_456_789),
+                ),
+            )
     }
 
     @Test
@@ -174,7 +441,7 @@ class NativeCrashReporterTest {
 
     @Test
     fun `maps native signal numbers to names`() {
-        val signalNumbers = listOf(4, 5, 6, 7, 8, 11, 13, 31, 15)
+        val signalNumbers = listOf(4, 5, 6, 7, 8, 11, 31, 15)
 
         val signalNames = signalNumbers.map { NativeCrashRecord(it, Instant.EPOCH).signalName }
 
@@ -186,7 +453,6 @@ class NativeCrashReporterTest {
                 "SIGBUS",
                 "SIGFPE",
                 "SIGSEGV",
-                "SIGPIPE",
                 "SIGSYS",
                 "SIG15",
             )
@@ -268,6 +534,16 @@ class NativeCrashReporterTest {
         assertThat(store.readContext()).isEqualTo(crashContext("original").copy(sessionId = "new-session"))
     }
 
+    @Test
+    fun `replaces an existing persisted context`() {
+        val store = FileNativeCrashStore(tempDir)
+
+        assertThat(store.writeContext(crashContext("first"))).isTrue()
+        assertThat(store.writeContext(crashContext("second"))).isTrue()
+
+        assertThat(store.readContext()).isEqualTo(crashContext("second"))
+    }
+
     private fun reporter(store: NativeCrashStore): NativeCrashReporter = NativeCrashReporter(store, fakeRum())
 
     private fun writeMarker(
@@ -306,6 +582,27 @@ class NativeCrashReporterTest {
             serviceVersion = "$prefix-version",
             osName = "$prefix-os",
             osVersion = "$prefix-os-version",
+        )
+
+    private fun snapshot(): NativeCrashSnapshot =
+        NativeCrashSnapshot(
+            architecture = NativeCrashArchitecture.ARM64,
+            programCounter = 0x1120UL,
+            stackPointer = 0x8000UL,
+            framePointer = 0UL,
+            linkRegister = 0UL,
+            modules =
+                listOf(
+                    NativeCrashModule(
+                        loadBias = 0x1000UL,
+                        executableStart = 0x1100UL,
+                        executableEnd = 0x2000UL,
+                        name = "libapp.so",
+                        buildId = "1234abcd",
+                    ),
+                ),
+            stackStart = 0x8000UL,
+            stack = byteArrayOf(),
         )
 
     private fun fakeRum(sessionProvider: SessionProvider = SessionProvider { "current-session" }): OpenTelemetryRum =

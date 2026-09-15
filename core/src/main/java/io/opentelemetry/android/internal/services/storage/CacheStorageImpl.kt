@@ -18,6 +18,5 @@ import java.io.File
 internal class CacheStorageImpl(
     private val appContext: Context,
 ) : CacheStorage {
-    override val cacheDir: File
-        get() = appContext.cacheDir
+    override val cacheDir: File by lazy { appContext.cacheDir }
 }

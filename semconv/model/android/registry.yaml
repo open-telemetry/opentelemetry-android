@@ -1,3 +1,12 @@
+# Imports events defined in dependency registries, by event name, so event classes are
+# generated for them in this module.
+imports:
+  events:
+    - app.jank
+    - app.screen.click
+    - app.widget.click
+    - session.end
+    - session.start
 groups:
   - id: registry.android.semconv
     type: attribute_group
@@ -30,6 +39,15 @@ groups:
         brief: >
           The Android thermal throttling status.
         examples: ["none", "light", "moderate", "severe", "critical", "emergency", "shutdown", "unknown"]
+      - id: app.navigation.destination.name
+        type: string
+        stability: development
+        brief: >
+          The name of the navigation destination reached by a completed navigation.
+        note: >
+          By default, for route-based navigation this is the route pattern rather than the filled-in
+          arguments, so that argument values are not recorded.
+        examples: ["home", "user/{id}"]
       - id: battery.percent
         type: double
         stability: development
@@ -93,20 +111,37 @@ groups:
       - id: last.screen.name
         type: string
         stability: development
+        deprecated:
+          reason: renamed
+          renamed_to: app.screen.previous.name
+        brief: >
+          Deprecated, use `app.screen.previous.name` instead.
+        examples: ["MainActivity"]
+      - id: app.screen.previous.name
+        type: string
+        stability: development
         brief: >
           The previously visible screen name.
         examples: ["MainActivity"]
       - id: network.status
         type: string
         stability: development
+        deprecated:
+          reason: obsoleted
+          note: >
+            Use `network.connection.type` instead. A value of `unavailable` indicates that no
+            network connection is available.
         brief: >
-          The Android network status after a network change.
-        examples: ["TRANSPORT_WIFI", "TRANSPORT_CELLULAR", "NO_NETWORK_AVAILABLE"]
+          Deprecated. Use `network.connection.type` instead.
+        examples: ["available", "lost"]
       - id: screen.name
         type: string
         stability: development
+        deprecated:
+          reason: renamed
+          renamed_to: app.screen.name
         brief: >
-          The current application screen name used by the Android SDK.
+          Deprecated, use `app.screen.name` instead.
         examples: ["user.login", "Cart"]
       - id: screen.orientation
         type:

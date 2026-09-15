@@ -22,8 +22,10 @@ This instrumentation produces the following telemetry:
 * Name: `network.change`
 * Description: This event is emitted when a network change is detected.
 * Attributes:
-    * `network.status`: One of `lost` or `available`.
     * `network.connection.type` (semconv) one of `cell`, `wifi`, `wired`, `unavailable`, `unknown`, `vpn`.
+    * `network.status`: Deprecated. It is emitted only when
+      `semanticConventions { useLatestExperimental = false }` is configured, with a value of
+      `lost` or `available`.
 
 Note: This instrumentation supports additional user-configurable `AttributeExtractors` that
 may set additional attributes when given a `CurrentNetwork` instance.
@@ -46,5 +48,5 @@ manually install this instrumentation by following the steps below.
 ### Adding dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:network:1.5.0-alpha")
+implementation("io.opentelemetry.android.instrumentation:network:1.7.0-alpha")
 ```

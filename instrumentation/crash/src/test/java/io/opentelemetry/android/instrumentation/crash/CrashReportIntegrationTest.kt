@@ -11,8 +11,8 @@ import android.app.Application
 import io.mockk.every
 import io.mockk.mockk
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.common.internal.utils.threadIdCompat
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
+import io.opentelemetry.android.instrumentation.utils.threadIdCompat
 import io.opentelemetry.android.semconv.HeapAttributes.HEAP_FREE_KEY
 import io.opentelemetry.android.semconv.StorageAttributes.STORAGE_FREE_KEY
 import io.opentelemetry.api.common.AttributeKey

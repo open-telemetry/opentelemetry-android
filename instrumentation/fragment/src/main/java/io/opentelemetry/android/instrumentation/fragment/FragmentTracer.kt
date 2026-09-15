@@ -6,9 +6,9 @@
 package io.opentelemetry.android.instrumentation.fragment
 
 import androidx.fragment.app.Fragment
-import io.opentelemetry.android.common.internal.SemconvCompat.Companion.map
 import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.android.semconv.FragmentAttributes.FRAGMENT_NAME_KEY
+import io.opentelemetry.android.semconv.internal.SemconvCompat.Companion.map
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME
@@ -42,7 +42,7 @@ internal class FragmentTracer(
                 .spanBuilder(spanName)
                 .setAttribute(FRAGMENT_NAME_KEY, fragmentName)
                 .startSpan()
-        // do this after the span is started, so we can override the default screen.name set by the
+        // do this after the span is started, so we can override the default app.screen.name set by the
         // RumAttributeAppender.
         span.setAttribute(map(APP_SCREEN_NAME), screenName)
         return span

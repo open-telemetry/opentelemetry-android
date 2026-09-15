@@ -15,9 +15,6 @@ import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_VELOCITY_X_KEY
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_VELOCITY_Y_KEY
 import io.opentelemetry.api.common.Attributes
 
-internal const val APP_SCREEN_CLICK_EVENT_NAME = "app.screen.click"
-internal const val VIEW_CLICK_EVENT_NAME = "app.widget.click"
-
 internal fun buttonStateToString(buttonStateInt: Int): String? =
     when (buttonStateInt) {
         MotionEvent.BUTTON_PRIMARY, MotionEvent.BUTTON_STYLUS_PRIMARY -> "primary"

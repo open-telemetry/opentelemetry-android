@@ -64,6 +64,12 @@ reviewable PRs that each make one clear, incremental change.
 Each PR should have a single purpose. Do not combine unrelated changes (e.g., a bug fix and a
 refactor, or a new feature and code cleanup). Keep the PR focused on one thing.
 
+### Changelog Release Automation
+
+Changelog entries being prepared for a release intentionally remain under `## Unreleased`.
+The release workflow replaces that heading with the version and release date. Do not flag the
+absence of a version heading or suggest manually moving those entries to a versioned section.
+
 ### Accuracy: Verify That The Change Is Actually Needed
 
 Before writing code, confirm that:

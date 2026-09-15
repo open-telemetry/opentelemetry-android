@@ -23,6 +23,8 @@ import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_TYPE_KEY
+import io.opentelemetry.android.semconv.events.AppScreenLongpressEvent.Companion.APP_SCREEN_LONGPRESS_EVENT_NAME
+import io.opentelemetry.android.semconv.events.AppWidgetLongpressEvent.Companion.APP_WIDGET_LONGPRESS_EVENT_NAME
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.longKey
 import io.opentelemetry.api.common.AttributeKey.stringKey
@@ -41,9 +43,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
-
-private const val APP_SCREEN_LONG_PRESS_EVENT_NAME = "app.screen.longpress"
-private const val VIEW_LONG_PRESS_EVENT_NAME = "app.widget.longpress"
 
 @OptIn(IncubatingApi::class)
 @RunWith(AndroidJUnit4::class)
@@ -121,7 +120,7 @@ class ViewLongPressInstrumentationTest {
 
         var event = events[0]
         assertThat(event)
-            .hasEventName(APP_SCREEN_LONG_PRESS_EVENT_NAME)
+            .hasEventName(APP_SCREEN_LONGPRESS_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), motionEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), motionEvent.y.toLong()),
@@ -130,7 +129,7 @@ class ViewLongPressInstrumentationTest {
 
         event = events[1]
         assertThat(event)
-            .hasEventName(VIEW_LONG_PRESS_EVENT_NAME)
+            .hasEventName(APP_WIDGET_LONGPRESS_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
@@ -187,7 +186,7 @@ class ViewLongPressInstrumentationTest {
 
         var event = events[0]
         assertThat(event)
-            .hasEventName(APP_SCREEN_LONG_PRESS_EVENT_NAME)
+            .hasEventName(APP_SCREEN_LONGPRESS_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), initialDownEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), initialDownEvent.y.toLong()),
@@ -196,7 +195,7 @@ class ViewLongPressInstrumentationTest {
 
         event = events[1]
         assertThat(event)
-            .hasEventName(VIEW_LONG_PRESS_EVENT_NAME)
+            .hasEventName(APP_WIDGET_LONGPRESS_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),
@@ -258,7 +257,7 @@ class ViewLongPressInstrumentationTest {
         var event = events[0]
         OpenTelemetryAssertions
             .assertThat(event)
-            .hasEventName(APP_SCREEN_LONG_PRESS_EVENT_NAME)
+            .hasEventName(APP_SCREEN_LONGPRESS_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), initialDownEvent.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), initialDownEvent.y.toLong()),
@@ -268,7 +267,7 @@ class ViewLongPressInstrumentationTest {
         event = events[1]
         OpenTelemetryAssertions
             .assertThat(event)
-            .hasEventName(VIEW_LONG_PRESS_EVENT_NAME)
+            .hasEventName(APP_WIDGET_LONGPRESS_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
                 equalTo(longKey(APP_SCREEN_COORDINATE_X), mockView.x.toLong()),
                 equalTo(longKey(APP_SCREEN_COORDINATE_Y), mockView.y.toLong()),

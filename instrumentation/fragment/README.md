@@ -20,8 +20,9 @@ This instrumentation produces the following telemetry:
   `fragmentViewDestroyed` | `fragmentDestroyed` | `fragmentDetached` }
 * Attributes:
     * `fragment.name`:  name of fragment
-    * `screen.name`:  name of screen
-    * `last.screen.name`:  name of screen, when span contains the `fragmentResumed` event.
+    * `app.screen.name`: name of screen
+    * `app.screen.previous.name`: name of the previously visible screen, when the span contains the
+      `fragmentResumed` event.
 
 ## Installation
 
@@ -33,5 +34,5 @@ manually install this instrumentation by following the steps below.
 ### Adding dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:fragment:1.5.0-alpha")
+implementation("io.opentelemetry.android.instrumentation:fragment:1.7.0-alpha")
 ```

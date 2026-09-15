@@ -33,6 +33,7 @@ class SessionIdLogRecordAppenderTest {
     fun setUp() {
         MockKAnnotations.init(this)
         every { sessionProvider.getSessionId() }.returns(SESSION_ID_VALUE)
+        every { log.getAttribute(any<AttributeKey<String>>()) } returns null
         every { log.setAttribute(any<AttributeKey<String>>(), any<String>()) } returns log
     }
 
@@ -43,5 +44,15 @@ class SessionIdLogRecordAppenderTest {
         underTest.onEmit(Context.root(), log)
 
         verify { log.setAttribute(stringKey(SESSION_ID), SESSION_ID_VALUE) }
+    }
+
+    @Test
+    fun `should preserve an existing sessionId attribute`() {
+        every { log.getAttribute(stringKey(SESSION_ID)) } returns "persisted-session"
+        val underTest = SessionIdLogRecordAppender(sessionProvider)
+
+        underTest.onEmit(Context.root(), log)
+
+        verify(exactly = 0) { log.setAttribute(any<AttributeKey<String>>(), any<String>()) }
     }
 }

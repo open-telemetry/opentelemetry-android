@@ -5,14 +5,12 @@
 
 package io.opentelemetry.android.instrumentation.sessions
 
-import io.opentelemetry.android.instrumentation.sessions.SessionIdEventSender.Companion.EVENT_SESSION_END
-import io.opentelemetry.android.instrumentation.sessions.SessionIdEventSender.Companion.EVENT_SESSION_START
+import io.opentelemetry.android.semconv.SessionAttributes.SESSION_ID_KEY
+import io.opentelemetry.android.semconv.SessionAttributes.SESSION_PREVIOUS_ID_KEY
+import io.opentelemetry.android.semconv.events.SessionEndEvent.Companion.SESSION_END_EVENT_NAME
+import io.opentelemetry.android.semconv.events.SessionStartEvent.Companion.SESSION_START_EVENT_NAME
 import io.opentelemetry.android.session.Session
-import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.logs.Logger
-import io.opentelemetry.kotlin.semconv.IncubatingApi
-import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_ID
-import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_PREVIOUS_ID
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -20,7 +18,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 
-@OptIn(IncubatingApi::class)
 class SessionIdEventSenderTest {
     private lateinit var logger: Logger
 
@@ -47,9 +44,9 @@ class SessionIdEventSenderTest {
         sender.onSessionStarted(newSession, previousSession)
         assertThat(otelTesting.logRecords).hasSize(1)
         val event = otelTesting.logRecords[0]
-        assertThat(event.eventName).isEqualTo(EVENT_SESSION_START)
-        assertThat(event.attributes.get(stringKey(SESSION_ID))).isEqualTo(newSession.id)
-        assertThat(event.attributes.get(stringKey(SESSION_PREVIOUS_ID))).isNull()
+        assertThat(event.eventName).isEqualTo(SESSION_START_EVENT_NAME)
+        assertThat(event.attributes.get(SESSION_ID_KEY)).isEqualTo(newSession.id)
+        assertThat(event.attributes.get(SESSION_PREVIOUS_ID_KEY)).isNull()
     }
 
     @Test
@@ -60,9 +57,9 @@ class SessionIdEventSenderTest {
         sender.onSessionStarted(newSession, previousSession)
         assertThat(otelTesting.logRecords).hasSize(1)
         val event = otelTesting.logRecords[0]
-        assertThat(event.eventName).isEqualTo(EVENT_SESSION_START)
-        assertThat(event.attributes.get(stringKey(SESSION_ID))).isEqualTo(newSession.id)
-        assertThat(event.attributes.get(stringKey(SESSION_PREVIOUS_ID))).isEqualTo(previousSession.id)
+        assertThat(event.eventName).isEqualTo(SESSION_START_EVENT_NAME)
+        assertThat(event.attributes.get(SESSION_ID_KEY)).isEqualTo(newSession.id)
+        assertThat(event.attributes.get(SESSION_PREVIOUS_ID_KEY)).isEqualTo(previousSession.id)
     }
 
     @Test
@@ -72,9 +69,9 @@ class SessionIdEventSenderTest {
         sender.onSessionEnded(session)
         assertThat(otelTesting.logRecords).hasSize(1)
         val event = otelTesting.logRecords[0]
-        assertThat(event.eventName).isEqualTo(EVENT_SESSION_END)
-        assertThat(event.attributes.get(stringKey(SESSION_ID))).isEqualTo(session.id)
-        assertThat(event.attributes.get(stringKey(SESSION_PREVIOUS_ID))).isNull()
+        assertThat(event.eventName).isEqualTo(SESSION_END_EVENT_NAME)
+        assertThat(event.attributes.get(SESSION_ID_KEY)).isEqualTo(session.id)
+        assertThat(event.attributes.get(SESSION_PREVIOUS_ID_KEY)).isNull()
     }
 
     @Test
