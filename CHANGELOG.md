@@ -8,7 +8,7 @@
   property. This allows you to use opentelemetry-kotlin's APIs within opentelemetry-android,
   backed by the agent's existing Java SDK instance. This module and opentelemetry-kotlin are not
   stable yet and may change their APIs in future.
-  ([#XXXX](https://github.com/open-telemetry/opentelemetry-android/pull/XXXX))
+  ([#2062](https://github.com/open-telemetry/opentelemetry-android/pull/2062))
 
 ## Version 1.7.0 (2026-09-04)
 

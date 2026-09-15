@@ -28,7 +28,7 @@ fun example(rum: OpenTelemetryRum) {
     val otel = rum.openTelemetryKotlin
 
     val logger = otel.loggerProvider.getLogger("my_logger")
-    logger.log("Hello, World!")
+    logger.emit(body = "Hello, World!")
 
     val tracer = otel.tracerProvider.getTracer("my_tracer")
     tracer.startSpan("my_span").end()
@@ -47,3 +47,4 @@ logs and metrics recorded through it flow through the same processors and export
 recorded through `OpenTelemetryRum.openTelemetry`, and the two APIs can be used side by side.
 
 The same instance is returned on every access.
+
