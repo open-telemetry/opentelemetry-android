@@ -12,10 +12,10 @@ import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.android.session.SessionPublisher
 import io.opentelemetry.sdk.common.Clock
 import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 import kotlin.time.Duration
 
+@OptIn(Incubating::class)
 internal class SessionManager(
     private val clock: Clock,
     private val sessionStorage: SessionStorage = InMemorySessionStorage(),
@@ -24,43 +24,47 @@ internal class SessionManager(
     private val maxSessionLifetime: Duration,
 ) : SessionProvider,
     SessionPublisher {
-    private val session: AtomicReference<Session> = AtomicReference(invalidSession)
-    private val observers = CopyOnWriteArrayList<SessionObserver>()
+    private val lock = Any()
 
-    init {
-        sessionStorage.save(session.get())
-    }
+    @Volatile
+    private var session: Session = invalidSession
+
+    @Volatile
+    private var transitionInProgress = false
+
+    private val observers = CopyOnWriteArrayList<SessionObserver>()
 
     override fun addObserver(observer: SessionObserver) {
         observers.add(observer)
     }
 
     override fun getSessionId(): String {
-        val currentSession = session.get()
-
-        // Check if we need to create a new session.
-        return if (sessionHasExpired(currentSession) || timeoutHandler.hasTimedOut()) {
-            val newId = idGenerator.generateSessionId()
-            val newSession = SessionImpl(newId, clock.now())
-
-            // Atomically update the session only if it hasn't been changed by another thread.
-            if (session.compareAndSet(currentSession, newSession)) {
-                sessionStorage.save(newSession)
-                timeoutHandler.bump()
-                // Observers need to be called after bumping the timer because it may create a new
-                // span.
-                notifyObserversOfSessionUpdate(currentSession, newSession)
+        val currentSession = session
+        if (!transitionInProgress && !sessionHasExpired(currentSession) && !timeoutHandler.hasTimedOut()) {
+            timeoutHandler.bump()
+            return currentSession.id
+        }
+        return synchronized(lock) {
+            val latestSession = session
+            if (sessionHasExpired(latestSession) || timeoutHandler.hasTimedOut()) {
+                val newId = idGenerator.generateSessionId()
+                val newSession = SessionImpl(newId, clock.now())
+                // Readers must wait until storage and observers finish the transition.
+                transitionInProgress = true
+                try {
+                    session = newSession
+                    // Storage and observers may record telemetry that reads the session again.
+                    timeoutHandler.bump()
+                    sessionStorage.save(newSession)
+                    notifyObserversOfSessionUpdate(latestSession, newSession)
+                } finally {
+                    transitionInProgress = false
+                }
                 newSession.id
             } else {
-                // Another thread accessed this function prior to creating a new session. Use the
-                // current session.
                 timeoutHandler.bump()
-                session.get().id
+                latestSession.id
             }
-        } else {
-            // No new session needed, just bump the timeout and return current session ID
-            timeoutHandler.bump()
-            currentSession.id
         }
     }
 
@@ -86,11 +90,13 @@ internal class SessionManager(
             timeoutHandler: SessionIdTimeoutHandler,
             sessionConfig: SessionConfig,
             clock: Clock,
+            sessionStorage: SessionStorage = InMemorySessionStorage(),
         ): SessionManager =
             SessionManager(
                 timeoutHandler = timeoutHandler,
                 maxSessionLifetime = sessionConfig.maxLifetime,
                 clock = clock,
+                sessionStorage = sessionStorage,
             )
     }
 }
