@@ -3,10 +3,6 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-{%- if ctx.kotlin_logger_emit %}
-
-@file:OptIn(ExperimentalApi::class)
-{%- endif %}
 
 package io.opentelemetry.android.semconv.events
 
@@ -65,7 +61,13 @@ class {{ my_class_name }}(
     }
 {%- if ctx.kotlin_logger_emit %}
 
-    /** Emits this event through the opentelemetry-kotlin [logger], including any [additionalAttributes]. */
+    /**
+     * Emits this event through the opentelemetry-kotlin [logger], including any [additionalAttributes].
+     *
+     * The opentelemetry-kotlin API is pre-1.0, so this overload is [ExperimentalApi] and may change
+     * or be removed in any release, with no deprecation cycle.
+     */
+    @ExperimentalApi
     fun emit(
         logger: OtelKotlinLogger,
         additionalAttributes: (AttributesMutator.() -> Unit)? = null,

@@ -28,7 +28,7 @@ fun example(rum: OpenTelemetryRum) {
     val otel = rum.openTelemetryKotlin
 
     val logger = otel.loggerProvider.getLogger("my_logger")
-    logger.log("Hello, World!")
+    logger.emit(body = "Hello, World!")
 
     val tracer = otel.tracerProvider.getTracer("my_tracer")
     tracer.startSpan("my_span").end()
