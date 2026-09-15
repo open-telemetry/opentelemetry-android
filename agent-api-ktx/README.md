@@ -47,4 +47,3 @@ logs and metrics recorded through it flow through the same processors and export
 recorded through `OpenTelemetryRum.openTelemetry`, and the two APIs can be used side by side.
 
 The same instance is returned on every access.
-
