@@ -26,6 +26,7 @@ data class DiskBufferingConfig
         val minFileAgeForReadMillis: Long = TimeUnit.SECONDS.toMillis(DEFAULT_MIN_FILE_AGE_FOR_READ_MS),
         val maxFileAgeForReadMillis: Long = TimeUnit.HOURS.toMillis(DEFAULT_MAX_FILE_AGE_FOR_READ_MS),
         val maxCacheFileSize: Int = MAX_CACHE_FILE_SIZE,
+        @Deprecated("This option has no effect and will be removed in a future release.")
         val debugEnabled: Boolean = false,
         /**
          * The directory where the SDK stores the buffered signals before they are exported. If
