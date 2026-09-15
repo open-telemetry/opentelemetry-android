@@ -72,7 +72,7 @@ jobs:
   markdown-link-check:
     # release branches are excluded to avoid unnecessary maintenance
     if: ${{ !startsWith(github.ref_name, 'release/') }}
-    uses: ./.github/workflows/reusable-link-check.yml
+    uses: $/.github/workflows/reusable-link-check.yml
 
   workflow-notification:
     permissions: # required by the reusable workflow
@@ -82,7 +82,7 @@ jobs:
       - build
       - publish-snapshot
     if: failure() && github.run_attempt == 1
-    uses: ./.github/workflows/reusable-workflow-notification.yml
+    uses: $/.github/workflows/reusable-workflow-notification.yml
     with:
       success: ${{ needs.build.result == 'success' && needs.publish-snapshot.result == 'success' }}
 
