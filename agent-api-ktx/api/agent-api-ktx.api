@@ -1,0 +1,4 @@
+public final class io/opentelemetry/android/OpenTelemetryRumKtxKt {
+	public static final fun getOpenTelemetryKotlin (Lio/opentelemetry/android/OpenTelemetryRum;)Lio/opentelemetry/kotlin/OpenTelemetry;
+}
+
