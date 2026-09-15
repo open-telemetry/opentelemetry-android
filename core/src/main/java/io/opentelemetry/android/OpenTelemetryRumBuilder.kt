@@ -16,6 +16,7 @@ import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.export.BufferDelegatingLogExporter
 import io.opentelemetry.android.export.BufferDelegatingMetricExporter
 import io.opentelemetry.android.export.BufferDelegatingSpanExporter
+import io.opentelemetry.android.extensions.ApiExtension
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter.Companion.set
 import io.opentelemetry.android.features.diskbuffering.scheduler.DiskBufferingEnablement
@@ -109,6 +110,7 @@ class OpenTelemetryRumBuilder internal constructor(
         mutableListOf()
     private val instrumentations: MutableList<AndroidInstrumentation> =
         mutableListOf()
+    private val apiExtensions: MutableList<ApiExtension> = mutableListOf()
 
     val instrumentationLoader: AndroidInstrumentationLoader = AndroidInstrumentationLoaderImpl()
 
@@ -203,6 +205,15 @@ class OpenTelemetryRumBuilder internal constructor(
      */
     fun addInstrumentation(instrumentation: AndroidInstrumentation): OpenTelemetryRumBuilder {
         instrumentations.add(instrumentation)
+        return this
+    }
+
+    /**
+     * Registers an [ApiExtension] to be exposed through [OpenTelemetryRum.getExtension].
+     * See [SdkPreconfiguredRumBuilder.addApiExtension].
+     */
+    fun addApiExtension(extension: ApiExtension): OpenTelemetryRumBuilder {
+        apiExtensions.add(extension)
         return this
     }
 
@@ -409,6 +420,7 @@ class OpenTelemetryRumBuilder internal constructor(
             )
         }
         instrumentations.forEach(Consumer(delegate::addInstrumentation))
+        apiExtensions.forEach(Consumer(delegate::addApiExtension))
         return delegate.build()
     }
 
