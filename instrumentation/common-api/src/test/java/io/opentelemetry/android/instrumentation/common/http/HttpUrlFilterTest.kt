@@ -104,11 +104,25 @@ class HttpUrlFilterTest {
     }
 
     @Test
-    fun ipv6LiteralHostsMatchExactly() {
-        val filter = HttpUrlFilter.onlyHosts("[::1]")
+    fun ipv4LiteralHostsMatchAndIgnoreThePort() {
+        val filter = HttpUrlFilter.onlyHosts("127.0.0.1")
 
-        assertThat(filter.shouldInstrument("http://[::1]:8080/v1")).isTrue()
-        assertThat(filter.shouldInstrument("http://127.0.0.1:8080/v1")).isFalse()
+        assertThat(filter.shouldInstrument("http://127.0.0.1:8080/v1")).isTrue()
+        assertThat(filter.shouldInstrument("http://10.0.2.2:8080/v1")).isFalse()
+    }
+
+    @Test
+    fun ipv6RequestUrlFallsBackToEachFiltersNoMatchAnswer() {
+        val urls = listOf("http://[::1]:8080/v1", "http://[2001:db8::1]/v1", "http://[::ffff:127.0.0.1]/v1")
+
+        for (url in urls) {
+            assertThat(HttpUrlFilter.onlyHosts("api.example.com").shouldInstrument(url))
+                .describedAs("onlyHosts should not instrument '%s'", url)
+                .isFalse()
+            assertThat(HttpUrlFilter.exceptHosts("api.example.com").shouldInstrument(url))
+                .describedAs("exceptHosts should instrument '%s'", url)
+                .isTrue()
+        }
     }
 
     @Test
@@ -129,6 +143,11 @@ class HttpUrlFilterTest {
                 "api.example.com/v1" to "must be a host, not a URL",
                 "api.example.com?q=1" to "must be a host, not a URL",
                 "api.example.com:8443" to "must not include a port",
+                "user@api.example.com" to "must not include user info",
+                "[::1]" to "IPv6 hosts are not supported",
+                "[::1]:8080" to "IPv6 hosts are not supported",
+                "[fe80]" to "IPv6 hosts are not supported",
+                "::1" to "IPv6 hosts are not supported",
                 "exa*ple.com" to "leading '*.' label",
                 "*" to "leading '*.' label",
                 "*." to "must name a domain after",

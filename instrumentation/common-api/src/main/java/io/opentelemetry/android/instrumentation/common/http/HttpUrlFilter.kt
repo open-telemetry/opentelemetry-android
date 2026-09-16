@@ -41,6 +41,10 @@ fun interface HttpUrlFilter {
          * `a.b.example.com`, but not `example.com` itself. Pass both to cover the apex.
          * Matching is case-insensitive and ignores the port, path and query of the request.
          *
+         * IPv6 literal hosts are not supported and are rejected as patterns, because the same
+         * address has several textual spellings and a request could use a different one from
+         * the pattern. A request to an IPv6 literal is treated as having no determinable host.
+         *
          * A URL whose host cannot be determined is not instrumented.
          *
          * @throws IllegalArgumentException if [hosts] is empty or contains a malformed pattern.
@@ -108,16 +112,10 @@ private class HostFilter(
         private const val WILDCARD_PREFIX = "*."
 
         fun hostOf(url: String): String? {
-            val uri = Uri.parse(url)
-            val host = uri.host?.lowercase() ?: return null
-            if (!host.startsWith('[')) {
-                return host
-            }
-            // Uri.getHost() truncates an IPv6 literal at the first ':' inside the brackets,
-            // so the bracketed literal is recovered from the authority instead.
-            val literal = uri.encodedAuthority?.substringAfterLast('@') ?: return null
-            val closingBracket = literal.indexOf(']')
-            return if (closingBracket > 0) literal.substring(0, closingBracket + 1).lowercase() else null
+            val host = Uri.parse(url).host?.lowercase() ?: return null
+            // Uri.getHost() truncates an IPv6 literal at the first ':' inside the brackets, and
+            // IPv6 literals are rejected as patterns, so such a URL has no host worth matching.
+            return if (host.startsWith('[')) null else host
         }
 
         /**
@@ -131,8 +129,12 @@ private class HostFilter(
             require(!host.contains('/') && !host.contains('?') && !host.contains('#')) {
                 "Host pattern '$pattern' must be a host, not a URL"
             }
-            require(!host.contains(':') || host.startsWith('[')) {
-                "Host pattern '$pattern' must not include a port"
+            require(!host.contains('@')) { "Host pattern '$pattern' must not include user info" }
+            require(!host.startsWith('[')) {
+                "Host pattern '$pattern' must not be an IPv6 literal; IPv6 hosts are not supported"
+            }
+            require(!host.contains(':')) {
+                "Host pattern '$pattern' must not include a port; IPv6 hosts are not supported"
             }
             val withoutWildcard = host.removePrefix(WILDCARD_PREFIX)
             require(!withoutWildcard.contains('*')) {
