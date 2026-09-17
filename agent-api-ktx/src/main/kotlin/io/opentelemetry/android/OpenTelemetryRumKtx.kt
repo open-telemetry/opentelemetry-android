@@ -40,7 +40,7 @@ val OpenTelemetryRum.openTelemetryKotlin: OpenTelemetry
         synchronized(compatLock) {
             compatInstances.getOrPut(this) {
                 openTelemetry.toOtelKotlinApi(
-                    clock = Clock(clock::now)
+                    clock = Clock(clock::now),
                 )
             }
         }
