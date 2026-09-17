@@ -7,6 +7,7 @@
 
 package io.opentelemetry.android
 
+import io.opentelemetry.kotlin.Clock
 import io.opentelemetry.kotlin.ExperimentalApi
 import io.opentelemetry.kotlin.OpenTelemetry
 import io.opentelemetry.kotlin.toOtelKotlinApi
@@ -37,5 +38,9 @@ private val compatInstances = WeakHashMap<OpenTelemetryRum, OpenTelemetry>()
 val OpenTelemetryRum.openTelemetryKotlin: OpenTelemetry
     get() =
         synchronized(compatLock) {
-            compatInstances.getOrPut(this) { openTelemetry.toOtelKotlinApi() }
+            compatInstances.getOrPut(this) {
+                openTelemetry.toOtelKotlinApi(
+                    clock = Clock(clock::now)
+                )
+            }
         }
