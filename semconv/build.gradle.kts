@@ -23,6 +23,7 @@ android {
 dependencies {
     api(platform(libs.opentelemetry.platform.alpha))
     api(libs.opentelemetry.api)
+    api(libs.opentelemetry.kotlin.api)
     implementation(libs.opentelemetry.semconv.kotlin)
 }
 
