@@ -62,7 +62,16 @@ future signal handler. Symbol upload and symbolication are downstream concerns.
 
 Crashes that happen before native crash instrumentation finishes initialization are not recorded.
 
-The current marker-only implementation deletes the persisted marker immediately after its event is
-emitted. Replay is therefore at most once: if the application exits before the telemetry is
-exported, that crash event may be lost. A later change may add support for preserving multiple
-consecutive startup crashes. Unreadable or malformed markers are discarded rather than retried.
+Recovery records a process-durable delivery claim before handing the event to OpenTelemetry. A
+claimed crash is never emitted again, so replay is at most once and the event may be lost if the
+process exits before export. Marker, snapshot, and cleanup failures are retried on later launches,
+up to three attempts per phase and 24 hours from the first attempt. The signal handler stays
+disabled while a retry is pending so it cannot overwrite the files being recovered.
+
+Recovery waits for the fixed marker and snapshot paths when another app process is using them. If
+the process lock cannot be acquired, or the recovery state cannot be read while a crash may be
+pending, the handler remains disabled rather than guessing whether the crash was already claimed.
+Malformed recovery state is discarded with the pending crash because ownership cannot be proven.
+
+Only one crash can be pending. Supporting multiple consecutive startup crashes requires per-crash
+paths and remains follow-up work.
