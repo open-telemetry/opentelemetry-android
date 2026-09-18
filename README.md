@@ -198,7 +198,7 @@ For more information about the maintainer role, see the [community repository](h
 
 ## Approvers
 
-- [Ben Joseph](https://github.com/benjoseph-grafana)
+- [Ben Joseph](https://github.com/benjoseph-grafana), Grafana
 - [DavidGrath](https://github.com/DavidGrath)
 - [Hanson Ho](https://github.com/bidetofevil), Embrace
 - [Manoel Aranda Neto](https://github.com/marandaneto), PostHog
