@@ -216,8 +216,17 @@ internal interface NativeCrashStore {
 
     fun readRecoveryState(): NativeCrashRead<NativeCrashRecoveryState>
 
+    /**
+     * Returns true only after a valid state is replaced, synced and closed successfully.
+     * Invalid states leave the stored state unchanged. An I/O failure can return false after
+     * replacement, so false does not mean the new state is absent or the previous state is intact.
+     */
     fun writeRecoveryState(state: NativeCrashRecoveryState): Boolean
 
+    /**
+     * Waits for another process to release the lock. Returns null for a same-process overlap or
+     * an open/acquisition failure. A null result never grants ownership; callers must defer recovery.
+     */
     fun acquireRecoveryLock(): NativeCrashRecoveryLock?
 
     fun deleteCrashSnapshot(): Boolean
@@ -331,7 +340,8 @@ internal class FileNativeCrashStore(
     }
 
     @Synchronized
-    override fun writeRecoveryState(state: NativeCrashRecoveryState): Boolean = writeRecoveryStateFile(state.toProperties())
+    override fun writeRecoveryState(state: NativeCrashRecoveryState): Boolean =
+        state.isValid() && writeRecoveryStateFile(state.toProperties())
 
     override fun acquireRecoveryLock(): NativeCrashRecoveryLock? {
         val channel =
@@ -450,20 +460,15 @@ internal class FileNativeCrashStore(
             getProperty(RECOVERY_PHASE_KEY)
                 ?.let { value -> NativeCrashRecoveryPhase.entries.firstOrNull { it.name == value } }
                 ?: return null
-        val attempts = getProperty(RECOVERY_ATTEMPTS_KEY)?.toIntOrNull()?.takeIf { it >= 0 } ?: return null
-        val firstAttempt =
-            getProperty(RECOVERY_FIRST_ATTEMPT_KEY)?.toLongOrNull()?.takeIf { it > 0 }
-                ?: return null
-        val signalNumber = getProperty(SIGNAL_NUMBER_KEY)?.toIntOrNull()?.takeIf { it > 0 }
-        val timestampSecond = getProperty(RECOVERY_TIMESTAMP_SECOND_KEY)?.toLongOrNull()?.takeIf { it >= 0 }
-        val timestampNano = getProperty(RECOVERY_TIMESTAMP_NANO_KEY)?.toIntOrNull()?.takeIf { it in 0..999_999_999 }
+        val attempts = getProperty(RECOVERY_ATTEMPTS_KEY)?.toIntOrNull() ?: return null
+        val firstAttempt = getProperty(RECOVERY_FIRST_ATTEMPT_KEY)?.toLongOrNull() ?: return null
+        val signalNumber = getProperty(SIGNAL_NUMBER_KEY)?.toIntOrNull()
+        val timestampSecond = getProperty(RECOVERY_TIMESTAMP_SECOND_KEY)?.toLongOrNull()
+        val timestampNano = getProperty(RECOVERY_TIMESTAMP_NANO_KEY)?.toIntOrNull()
         val presentIdentityFields =
             listOf(SIGNAL_NUMBER_KEY, RECOVERY_TIMESTAMP_SECOND_KEY, RECOVERY_TIMESTAMP_NANO_KEY).count { containsKey(it) }
         val identityFields = listOf(signalNumber, timestampSecond, timestampNano).count { it != null }
         if (presentIdentityFields != identityFields) return null
-        if (identityFields != 0 && identityFields != 3) return null
-        if (phase == NativeCrashRecoveryPhase.MARKER_READ && identityFields != 0) return null
-        if (phase in IDENTITY_REQUIRED_PHASES && identityFields != 3) return null
         return NativeCrashRecoveryState(
             phase = phase,
             attempts = attempts,
@@ -471,7 +476,7 @@ internal class FileNativeCrashStore(
             signalNumber = signalNumber,
             timestampEpochSecond = timestampSecond,
             timestampNano = timestampNano,
-        )
+        ).takeIf { it.isValid() }
     }
 
     private fun NativeCrashRecoveryState.toProperties(): Properties =
@@ -549,11 +554,6 @@ internal class FileNativeCrashStore(
         const val RECOVERY_FIRST_ATTEMPT_KEY = "recovery.first_attempt_epoch_millis"
         const val RECOVERY_TIMESTAMP_SECOND_KEY = "recovery.timestamp_epoch_second"
         const val RECOVERY_TIMESTAMP_NANO_KEY = "recovery.timestamp_nano"
-        val IDENTITY_REQUIRED_PHASES =
-            setOf(
-                NativeCrashRecoveryPhase.SNAPSHOT_READ,
-                NativeCrashRecoveryPhase.DELIVERY_CLAIMED,
-            )
     }
 }
 

@@ -39,6 +39,8 @@ class NativeCrashRecoveryStateCompatibilityTest {
                         )
                     assertThat(store.writeRecoveryState(state)).isTrue()
                     assertThat(FileNativeCrashStore(directory).readRecoveryState()).isEqualTo(NativeCrashRead.Success(state))
+                    assertThat(store.writeRecoveryState(state.copy(attempts = -1))).isFalse()
+                    assertThat(FileNativeCrashStore(directory).readRecoveryState()).isEqualTo(NativeCrashRead.Success(state))
                     assertThat(File(directory, "native-crash-recovery.properties.tmp")).doesNotExist()
                 }
                 assertThat(store.deleteRecoveryState()).isTrue()
