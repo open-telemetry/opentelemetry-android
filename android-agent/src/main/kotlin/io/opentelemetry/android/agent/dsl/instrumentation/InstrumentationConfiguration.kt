@@ -36,6 +36,8 @@ class InstrumentationConfiguration internal constructor(
         ScreenOrientationConfiguration(config, instrumentationLoader)
     }
 
+    internal val httpTelemetry = HttpTelemetryConfiguration()
+
     /**
      * Configures activity lifecycle instrumentation.
      */
@@ -83,6 +85,13 @@ class InstrumentationConfiguration internal constructor(
      */
     fun screenOrientation(configure: ScreenOrientationConfiguration.() -> Unit) {
         screenOrientation.configure()
+    }
+
+    /**
+     * Configures which hosts produce HTTP telemetry.
+     */
+    fun httpTelemetry(configure: HttpTelemetryConfiguration.() -> Unit) {
+        httpTelemetry.configure()
     }
 
     /**
