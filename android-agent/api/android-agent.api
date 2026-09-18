@@ -116,12 +116,17 @@ public final class io/opentelemetry/android/agent/dsl/instrumentation/FragmentLi
 	public fun tracerCustomizer (Lkotlin/jvm/functions/Function1;)V
 }
 
+public final class io/opentelemetry/android/agent/dsl/instrumentation/HttpTelemetryConfiguration {
+	public final fun onlyHosts ([Ljava/lang/String;)V
+}
+
 public final class io/opentelemetry/android/agent/dsl/instrumentation/InstrumentationConfiguration {
 	public final fun activity (Lkotlin/jvm/functions/Function1;)V
 	public final fun anrReporter (Lkotlin/jvm/functions/Function1;)V
 	public final fun crashReporter (Lkotlin/jvm/functions/Function1;)V
 	public final fun disableInstrumentationAutoDiscovery ()V
 	public final fun fragment (Lkotlin/jvm/functions/Function1;)V
+	public final fun httpTelemetry (Lkotlin/jvm/functions/Function1;)V
 	public final fun networkMonitoring (Lkotlin/jvm/functions/Function1;)V
 	public final fun screenOrientation (Lkotlin/jvm/functions/Function1;)V
 	public final fun slowRenderingReporter (Lkotlin/jvm/functions/Function1;)V
