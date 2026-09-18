@@ -22,7 +22,6 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
@@ -129,15 +128,29 @@ internal class SessionStorageTest {
     }
 
     @Test
-    fun `unhandled storage failures propagate when a session is first saved`() {
-        val storage = mockk<SessionStorage>()
-        val failure = IOException("unhandled")
-        every { storage.save(any()) } throws failure
-
-        val manager = createManager(storage)
-        assertThatThrownBy { manager.getSessionId() }.isSameAs(failure)
-        verify(exactly = 1) { storage.save(match { it.id.isNotEmpty() }) }
-        verify(exactly = 0) { storage.get() }
+    fun `unhandled storage and observer failures do not prevent later transitions`() {
+        for (failDuringSave in listOf(true, false)) {
+            val storage = mockk<SessionStorage>(relaxed = true)
+            val observer = mockk<SessionObserver>(relaxed = true)
+            val failure = IOException("unhandled")
+            if (failDuringSave) {
+                every { storage.save(any()) } throws failure
+            } else {
+                every { observer.onSessionStarted(any(), any()) } throws failure
+            }
+            val manager = createManager(storage)
+            manager.addObserver(observer)
+            assertThatThrownBy { manager.getSessionId() }.isSameAs(failure)
+            val first = manager.getSessionId()
+            every { storage.save(any()) } returns Unit
+            every { observer.onSessionStarted(any(), any()) } returns Unit
+            clock.advance(1, TimeUnit.HOURS)
+            val second = manager.getSessionId()
+            assertThat(second).isNotEqualTo(first)
+            verify(exactly = 2) { storage.save(any()) }
+            verify { observer.onSessionStarted(match { it.id == second }, match { it.id == first }) }
+            verify(exactly = 0) { storage.get() }
+        }
     }
 
     @Test
@@ -200,19 +213,23 @@ internal class SessionStorageTest {
     }
 
     @Test
-    fun `slow storage cannot cause overlapping inactivity transitions`() {
-        verifySerializedTransition(pauseDuringSave = true)
+    fun `session reads do not wait for storage or observers`() {
+        for (pauseDuringSave in listOf(true, false)) verifyNonblockingTransition(pauseDuringSave, advanceWhilePaused = null)
     }
 
     @Test
-    fun `a later expiry waits until observer notification completes`() {
-        verifySerializedTransition(pauseDuringSave = false)
+    fun `later expiry cannot overtake storage or observer notifications`() {
+        for (pauseDuringSave in listOf(true, false)) {
+            for (expiry in listOf(TimeUnit.MINUTES, TimeUnit.HOURS)) verifyNonblockingTransition(pauseDuringSave, expiry)
+        }
     }
 
-    private fun verifySerializedTransition(pauseDuringSave: Boolean) {
+    private fun verifyNonblockingTransition(
+        pauseDuringSave: Boolean,
+        advanceWhilePaused: TimeUnit?,
+    ) {
         val paused = CountDownLatch(1)
         val resume = CountDownLatch(1)
-        val contenderStarted = CountDownLatch(1)
         val events = CopyOnWriteArrayList<String>()
         var shouldPause = false
 
@@ -257,28 +274,19 @@ internal class SessionStorageTest {
         try {
             val first = executor.submit(Callable { manager.getSessionId() })
             assertThat(paused.await(5, TimeUnit.SECONDS)).isTrue()
-            // A later expiry must not overtake the previous transition's notifications.
-            if (!pauseDuringSave) clock.advance(1, TimeUnit.HOURS)
-            val second =
-                executor.submit(
-                    Callable {
-                        contenderStarted.countDown()
-                        manager.getSessionId()
-                    },
-                )
-            assertThat(contenderStarted.await(5, TimeUnit.SECONDS)).isTrue()
-            assertThatThrownBy { second.get(200, TimeUnit.MILLISECONDS) }
-                .isInstanceOf(TimeoutException::class.java)
+            advanceWhilePaused?.let { clock.advance(1, it) }
+            val second = executor.submit(Callable { manager.getSessionId() })
+            val secondId = second.get(1, TimeUnit.SECONDS)
+            assertThat(secondId).isNotEqualTo(initial)
             resume.countDown()
             val firstId = first.get(5, TimeUnit.SECONDS)
-            val secondId = second.get(5, TimeUnit.SECONDS)
-            assertThat(firstId).isNotEqualTo(initial)
+            assertThat(firstId).isEqualTo(secondId)
             val expected = mutableListOf("save:$firstId", "end:$initial", "start:$firstId")
-            if (pauseDuringSave) {
-                assertThat(secondId).isEqualTo(firstId)
-            } else {
-                assertThat(secondId).isNotEqualTo(firstId)
-                expected.addAll(listOf("save:$secondId", "end:$firstId", "start:$secondId"))
+            assertThat(events).containsExactlyElementsOf(expected)
+            if (advanceWhilePaused != null) {
+                val nextId = manager.getSessionId()
+                assertThat(nextId).isNotEqualTo(firstId)
+                expected.addAll(listOf("save:$nextId", "end:$firstId", "start:$nextId"))
             }
             assertThat(events).containsExactlyElementsOf(expected)
         } finally {
@@ -291,37 +299,49 @@ internal class SessionStorageTest {
     @Test
     fun `storage and observers can read the new session during an inactivity transition`() {
         val observedIds = mutableListOf<String>()
+        val executor = Executors.newSingleThreadExecutor()
         lateinit var manager: SessionManager
+
+        fun readSession() {
+            val id = manager.getSessionId()
+            assertThat(executor.submit(Callable { manager.getSessionId() }).get(1, TimeUnit.SECONDS)).isEqualTo(id)
+            observedIds.add(id)
+        }
         val storage =
             object : SessionStorage {
                 override fun get(): Session = error("The manager must not read storage")
 
                 override fun save(newSession: Session) {
-                    if (newSession.id.isNotEmpty()) observedIds.add(manager.getSessionId())
+                    if (newSession.id.isNotEmpty()) readSession()
                 }
             }
         manager = createManager(storage)
         manager.addObserver(
             object : SessionObserver {
                 override fun onSessionEnded(session: Session) {
-                    observedIds.add(manager.getSessionId())
+                    readSession()
                 }
 
                 override fun onSessionStarted(
                     newSession: Session,
                     previousSession: Session,
                 ) {
-                    observedIds.add(manager.getSessionId())
+                    readSession()
                 }
             },
         )
-        val first = manager.getSessionId()
-        timeoutHandler.onApplicationBackgrounded()
-        clock.advance(1, TimeUnit.MINUTES)
-        val second = manager.getSessionId()
+        try {
+            val first = manager.getSessionId()
+            timeoutHandler.onApplicationBackgrounded()
+            clock.advance(1, TimeUnit.MINUTES)
+            val second = manager.getSessionId()
 
-        assertThat(second).isNotEqualTo(first)
-        assertThat(observedIds).containsExactly(first, first, first, second, second, second)
+            assertThat(second).isNotEqualTo(first)
+            assertThat(observedIds).containsExactly(first, first, first, second, second, second)
+        } finally {
+            executor.shutdownNow()
+            assertThat(executor.awaitTermination(5, TimeUnit.SECONDS)).isTrue()
+        }
     }
 
     private fun createManager(storage: SessionStorage): SessionManager = SessionManager.create(timeoutHandler, config, clock, storage)

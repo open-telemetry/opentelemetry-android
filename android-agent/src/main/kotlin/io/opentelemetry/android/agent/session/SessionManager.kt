@@ -29,7 +29,6 @@ internal class SessionManager(
     @Volatile
     private var session: Session = invalidSession
 
-    @Volatile
     private var transitionInProgress = false
 
     private val observers = CopyOnWriteArrayList<SessionObserver>()
@@ -40,32 +39,33 @@ internal class SessionManager(
 
     override fun getSessionId(): String {
         val currentSession = session
-        if (!transitionInProgress && !sessionHasExpired(currentSession) && !timeoutHandler.hasTimedOut()) {
+        if (!sessionHasExpired(currentSession) && !timeoutHandler.hasTimedOut()) {
             timeoutHandler.bump()
             return currentSession.id
         }
-        return synchronized(lock) {
-            val latestSession = session
-            if (sessionHasExpired(latestSession) || timeoutHandler.hasTimedOut()) {
-                val newId = idGenerator.generateSessionId()
-                val newSession = SessionImpl(newId, clock.now())
-                // Readers must wait until storage and observers finish the transition.
-                transitionInProgress = true
-                try {
-                    session = newSession
-                    // Storage and observers may record telemetry that reads the session again.
-                    timeoutHandler.bump()
-                    sessionStorage.save(newSession)
-                    notifyObserversOfSessionUpdate(latestSession, newSession)
-                } finally {
-                    transitionInProgress = false
-                }
-                newSession.id
-            } else {
+        val previousSession: Session
+        val newSession: Session
+        synchronized(lock) {
+            previousSession = session
+            // Do not clear an expired inactivity timer while its transition is deferred.
+            if (transitionInProgress) return previousSession.id
+            if (!sessionHasExpired(previousSession) && !timeoutHandler.hasTimedOut()) {
                 timeoutHandler.bump()
-                latestSession.id
+                return previousSession.id
             }
+            newSession = SessionImpl(idGenerator.generateSessionId(), clock.now())
+            timeoutHandler.bump()
+            session = newSession
+            transitionInProgress = true
         }
+        try {
+            // Keep saves and notifications ordered without making readers wait for those calls.
+            sessionStorage.save(newSession)
+            notifyObserversOfSessionUpdate(previousSession, newSession)
+        } finally {
+            synchronized(lock) { transitionInProgress = false }
+        }
+        return newSession.id
     }
 
     private fun notifyObserversOfSessionUpdate(
