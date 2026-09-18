@@ -12,10 +12,10 @@ import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.android.session.SessionPublisher
 import io.opentelemetry.sdk.common.Clock
 import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 import kotlin.time.Duration
 
+@OptIn(Incubating::class)
 internal class SessionManager(
     private val clock: Clock,
     private val sessionStorage: SessionStorage = InMemorySessionStorage(),
@@ -24,44 +24,48 @@ internal class SessionManager(
     private val maxSessionLifetime: Duration,
 ) : SessionProvider,
     SessionPublisher {
-    private val session: AtomicReference<Session> = AtomicReference(invalidSession)
-    private val observers = CopyOnWriteArrayList<SessionObserver>()
+    private val lock = Any()
 
-    init {
-        sessionStorage.save(session.get())
-    }
+    @Volatile
+    private var session: Session = invalidSession
+
+    private var transitionInProgress = false
+
+    private val observers = CopyOnWriteArrayList<SessionObserver>()
 
     override fun addObserver(observer: SessionObserver) {
         observers.add(observer)
     }
 
     override fun getSessionId(): String {
-        val currentSession = session.get()
-
-        // Check if we need to create a new session.
-        return if (sessionHasExpired(currentSession) || timeoutHandler.hasTimedOut()) {
-            val newId = idGenerator.generateSessionId()
-            val newSession = SessionImpl(newId, clock.now())
-
-            // Atomically update the session only if it hasn't been changed by another thread.
-            if (session.compareAndSet(currentSession, newSession)) {
-                sessionStorage.save(newSession)
-                timeoutHandler.bump()
-                // Observers need to be called after bumping the timer because it may create a new
-                // span.
-                notifyObserversOfSessionUpdate(currentSession, newSession)
-                newSession.id
-            } else {
-                // Another thread accessed this function prior to creating a new session. Use the
-                // current session.
-                timeoutHandler.bump()
-                session.get().id
-            }
-        } else {
-            // No new session needed, just bump the timeout and return current session ID
+        val currentSession = session
+        if (!sessionHasExpired(currentSession) && !timeoutHandler.hasTimedOut()) {
             timeoutHandler.bump()
-            currentSession.id
+            return currentSession.id
         }
+        val previousSession: Session
+        val newSession: Session
+        synchronized(lock) {
+            previousSession = session
+            // Do not clear an expired inactivity timer while its transition is deferred.
+            if (transitionInProgress) return previousSession.id
+            if (!sessionHasExpired(previousSession) && !timeoutHandler.hasTimedOut()) {
+                timeoutHandler.bump()
+                return previousSession.id
+            }
+            newSession = SessionImpl(idGenerator.generateSessionId(), clock.now())
+            timeoutHandler.bump()
+            session = newSession
+            transitionInProgress = true
+        }
+        try {
+            // Keep saves and notifications ordered without making readers wait for those calls.
+            sessionStorage.save(newSession)
+            notifyObserversOfSessionUpdate(previousSession, newSession)
+        } finally {
+            synchronized(lock) { transitionInProgress = false }
+        }
+        return newSession.id
     }
 
     private fun notifyObserversOfSessionUpdate(
@@ -86,11 +90,13 @@ internal class SessionManager(
             timeoutHandler: SessionIdTimeoutHandler,
             sessionConfig: SessionConfig,
             clock: Clock,
+            sessionStorage: SessionStorage = InMemorySessionStorage(),
         ): SessionManager =
             SessionManager(
                 timeoutHandler = timeoutHandler,
                 maxSessionLifetime = sessionConfig.maxLifetime,
                 clock = clock,
+                sessionStorage = sessionStorage,
             )
     }
 }
