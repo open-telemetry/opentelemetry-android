@@ -12,8 +12,8 @@ import kotlin.time.Duration
 
 /**
  * Tracks background inactivity independently of telemetry reads. Entering the background starts
- * the timeout; a new session or an explicit call to the internal activity recorder restarts it.
- * Activity sources are not wired to that recorder yet. Returning to the foreground stops the
+ * the timeout; a new session or an explicit call to the internal user activity recorder restarts it.
+ * User activity sources are not wired to that recorder yet. Returning to the foreground stops the
  * timer, but preserves an expiry until the manager rotates the session.
  */
 internal class SessionIdTimeoutHandler(

@@ -64,23 +64,23 @@ class SessionActivityTest {
     }
 
     @Test
-    fun `activity extends a valid session but rotates an expired one`() {
-        val recorder: SessionActivityRecorder = manager
-        recorder.recordActivity()
+    fun `user activity extends a valid session but rotates an expired one`() {
+        val recorder: SessionUserActivityRecorder = manager
+        recorder.recordUserActivity()
         val first = manager.getSessionId()
         timeout.onApplicationBackgrounded()
         clock.advance(14, MINUTES)
-        recorder.recordActivity()
+        recorder.recordUserActivity()
         clock.advance(14, MINUTES)
         assertThat(manager.getSessionId()).isEqualTo(first)
         clock.advance(1, MINUTES)
-        recorder.recordActivity()
+        recorder.recordUserActivity()
         val second = manager.getSessionId()
         assertThat(second).isNotEqualTo(first)
         assertThat(timeout.hasTimedOut()).isFalse()
         timeout.onApplicationForegrounded()
         clock.advance(240, MINUTES)
-        manager.recordActivity()
+        manager.recordUserActivity()
         assertThat(manager.getSessionId()).isNotEqualTo(second)
     }
 
@@ -204,8 +204,8 @@ class SessionActivityTest {
             val ids = readers.map { it.get(5, SECONDS) }
             assertThat(ids.toSet()).hasSize(1).doesNotContain(first)
             clock.advance(15, MINUTES)
-            // Neither reads nor activity may interrupt the notification sequence or revive expiry.
-            val activity = executor.submit { manager.recordActivity() }
+            // Neither reads nor user activity may interrupt the notification sequence or revive expiry.
+            val activity = executor.submit { manager.recordUserActivity() }
             activity.get(5, SECONDS)
             assertThat(manager.getSessionId()).isEqualTo(ids.first())
             assertThat(timeout.hasTimedOut()).isTrue()
