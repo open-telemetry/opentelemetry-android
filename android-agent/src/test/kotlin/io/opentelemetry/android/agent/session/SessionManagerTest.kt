@@ -129,7 +129,7 @@ internal class SessionManagerTest {
 
         // Then
         assertThat(firstSessionId).isEqualTo(secondSessionId)
-        verify(exactly = 2) { timeoutHandler.bump() }
+        verify(exactly = 1) { timeoutHandler.bump() }
         verify(exactly = 1) { timeoutHandler.hasTimedOut() }
         verify(exactly = 1) { observer.onSessionStarted(any<Session>(), any<Session>()) }
         verify(exactly = 1) { observer.onSessionEnded(any<Session>()) }
@@ -139,7 +139,7 @@ internal class SessionManagerTest {
         val thirdSessionId = sessionManager.getSessionId()
 
         // Then
-        verify(exactly = 3) { timeoutHandler.bump() }
+        verify(exactly = 2) { timeoutHandler.bump() }
         verify(exactly = 1) { timeoutHandler.hasTimedOut() }
         assertThat(thirdSessionId).isNotEqualTo(secondSessionId)
         verifyOrder {
@@ -222,14 +222,14 @@ internal class SessionManagerTest {
 
         // Then
         assertThat(value).isEqualTo(sessionId.getSessionId())
-        verify(exactly = 2) { timeoutHandler.bump() }
+        verify(exactly = 1) { timeoutHandler.bump() }
 
         // When - timeout handler indicates timeout
         every { timeoutHandler.hasTimedOut() } returns true
 
         // Then - should create new session
         assertThat(value).isNotEqualTo(sessionId.getSessionId())
-        verify(exactly = 3) { timeoutHandler.bump() }
+        verify(exactly = 2) { timeoutHandler.bump() }
     }
 
     @Test

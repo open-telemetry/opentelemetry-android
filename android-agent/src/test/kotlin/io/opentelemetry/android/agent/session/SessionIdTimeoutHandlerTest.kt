@@ -26,6 +26,12 @@ class SessionIdTimeoutHandlerTest {
         // never time out in foreground
         clock.advance(Duration.ofHours(4))
         assertFalse(timeoutHandler.hasTimedOut())
+
+        timeoutHandler.onApplicationBackgrounded()
+        clock.advance(14, TimeUnit.MINUTES)
+        timeoutHandler.onApplicationForegrounded()
+        clock.advance(Duration.ofHours(4))
+        assertFalse(timeoutHandler.hasTimedOut())
     }
 
     @Test
@@ -61,7 +67,7 @@ class SessionIdTimeoutHandlerTest {
     }
 
     @Test
-    fun shouldApplyTimeoutToFirstSpanAfterAppBeingMovedToForeground() {
+    fun shouldPreserveBackgroundExpiryOnForegroundReturn() {
         val clock: TestClock = TestClock.create()
         val timeoutHandler =
             SessionIdTimeoutHandler(clock, SessionConfig.withDefaults().backgroundInactivityTimeout)
@@ -69,19 +75,19 @@ class SessionIdTimeoutHandlerTest {
         timeoutHandler.onApplicationBackgrounded()
         timeoutHandler.bump()
 
-        // the first span after app is moved to the foreground gets timed out
-        timeoutHandler.onApplicationForegrounded()
+        // Expiry while backgrounded survives the return to foreground.
         clock.advance(20, TimeUnit.MINUTES)
+        timeoutHandler.onApplicationForegrounded()
         assertTrue(timeoutHandler.hasTimedOut())
         timeoutHandler.bump()
 
-        // after the initial span it's the same as the usual foreground scenario
+        // Creating a new session clears the pending expiry.
         clock.advance(Duration.ofHours(4))
         assertFalse(timeoutHandler.hasTimedOut())
     }
 
     @Test
-    fun shouldApplyCustomTimeoutToFirstSpanAfterAppBeingMovedToForeground() {
+    fun shouldPreserveCustomBackgroundExpiryOnForegroundReturn() {
         val clock: TestClock = TestClock.create()
         val timeoutHandler =
             SessionIdTimeoutHandler(clock, 5.nanoseconds)
@@ -89,13 +95,13 @@ class SessionIdTimeoutHandlerTest {
         timeoutHandler.onApplicationBackgrounded()
         timeoutHandler.bump()
 
-        // the first span after app is moved to the foreground gets timed out
-        timeoutHandler.onApplicationForegrounded()
+        // Expiry while backgrounded survives the return to foreground.
         clock.advance(6, TimeUnit.MINUTES)
+        timeoutHandler.onApplicationForegrounded()
         assertTrue(timeoutHandler.hasTimedOut())
         timeoutHandler.bump()
 
-        // after the initial span it's the same as the usual foreground scenario
+        // Creating a new session clears the pending expiry.
         clock.advance(Duration.ofHours(4))
         assertFalse(timeoutHandler.hasTimedOut())
     }

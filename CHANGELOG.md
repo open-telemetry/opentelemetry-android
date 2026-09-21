@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Bug fixes
+
+- Session ID lookups no longer refresh background inactivity, so background telemetry no longer
+  keeps a session alive. First lookup and expiry still create a session. Activity recording is
+  internal and is not yet connected to activity sources.
+  ([#2049](https://github.com/open-telemetry/opentelemetry-android/issues/2049))
+
 ## Version 1.7.0 (2026-09-04)
 
 ### 📣 Migration notes

@@ -10,17 +10,21 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.sdk.testing.time.TestClock
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RuntimeEnvironment
+import java.util.concurrent.TimeUnit.MINUTES
 
 @OptIn(Incubating::class)
 @RunWith(AndroidJUnit4::class)
@@ -82,6 +86,43 @@ class OpenTelemetryRumInitializerTest {
         verify {
             o1.onSessionStarted(any(), any())
             o2.onSessionStarted(any(), any())
+        }
+    }
+
+    @Test
+    fun `span and log attribution do not extend background inactivity`() {
+        val listener = slot<SessionIdTimeoutHandler>()
+        every { appLifecycle.registerListener(capture(listener)) } just Runs
+        val clock = TestClock.create()
+        val rum =
+            OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
+                this.clock = clock
+                diskBuffering { enabled(false) }
+                httpExport { baseUrl = "http://127.0.0.1:4318" }
+            }
+        try {
+            val first = rum.sessionProvider.getSessionId()
+            listener.captured.onApplicationBackgrounded()
+            repeat(2) {
+                clock.advance(7, MINUTES)
+                val span =
+                    rum.openTelemetry
+                        .getTracer("test")
+                        .spanBuilder("background")
+                        .startSpan()
+                assertThat(span.isRecording).isTrue()
+                span.end()
+                rum.openTelemetry.logsBridge
+                    .get("test")
+                    .logRecordBuilder()
+                    .setBody("background")
+                    .emit()
+                assertThat(rum.sessionProvider.getSessionId()).isEqualTo(first)
+            }
+            clock.advance(1, MINUTES)
+            assertThat(rum.sessionProvider.getSessionId()).isNotEqualTo(first)
+        } finally {
+            rum.shutdown()
         }
     }
 
