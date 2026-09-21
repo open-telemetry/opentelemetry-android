@@ -25,6 +25,7 @@ include(":opentelemetry-android-bom")
 include(":smoke-test")
 include(":smoke-test-app")
 includeFromDir("instrumentation")
+project(":instrumentation:view:click").name = "view-click"
 
 fun includeFromDir(
     dirName: String,
