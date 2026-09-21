@@ -7,15 +7,20 @@ package io.opentelemetry.android.agent.dsl.instrumentation
 
 import io.opentelemetry.android.agent.dsl.OpenTelemetryDslMarker
 import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.kotlin.semconv.HttpAttributes
 import io.opentelemetry.kotlin.semconv.ServerAttributes
 import io.opentelemetry.sdk.trace.data.SpanData
 import java.net.IDN
 
 /**
- * Type-safe config DSL that limits which hosts produce HTTP telemetry.
+ * Type-safe config DSL that limits which hosts produce HTTP client spans.
  *
- * Every host produces telemetry by default. Naming a host turns this into an allowlist:
- * telemetry that records any other host is dropped.
+ * Every host is kept by default. Naming a host turns this into an allowlist: HTTP client
+ * spans recording any other host are dropped before export.
+ *
+ * Only spans are filtered. HTTP client metrics, websocket events and trace context
+ * propagation are unaffected.
  *
  * ```kotlin
  * instrumentations {
@@ -30,13 +35,15 @@ class HttpTelemetryConfiguration internal constructor() {
     private val allowedHosts = mutableSetOf<String>()
 
     /**
-     * Keeps HTTP telemetry only for these hosts.
+     * Keeps HTTP client spans only for these hosts.
      *
-     * Host names are compared in full, ignoring case. Pass a bare host name: a scheme,
-     * port, path or user info is rejected. An internationalized host is converted to
-     * its punycode form, because that is the form the HTTP clients record.
+     * Host names are compared in full, ignoring case. Pass a bare ASCII host name: a
+     * scheme, port, path or user info is rejected.
      *
-     * @throws IllegalArgumentException if a host is not a bare host name.
+     * An internationalized host must be given in its punycode form, because HTTP clients
+     * disagree about how to derive it.
+     *
+     * @throws IllegalArgumentException if a host is not a bare ASCII host name.
      */
     fun onlyHosts(vararg hosts: String) {
         hosts.forEach { allowedHosts.add(validatedHost(it)) }
@@ -46,14 +53,20 @@ class HttpTelemetryConfiguration internal constructor() {
     internal fun keepsEveryHost(): Boolean = allowedHosts.isEmpty()
 
     /**
-     * Telemetry that records no host is always kept, so the allowlist only decides about
-     * spans carrying `server.address`.
+     * Only HTTP client spans are considered. gRPC and database spans also record
+     * `server.address`, and a span that records no host at all is always kept.
      */
     internal fun rejects(span: SpanData): Boolean {
-        if (keepsEveryHost()) {
+        if (keepsEveryHost() || span.kind != SpanKind.CLIENT) {
             return false
         }
-        val host = span.attributes.get(SERVER_ADDRESS) ?: return false
+        val attributes = span.attributes
+        if (attributes.get(HTTP_REQUEST_METHOD) == null) {
+            return false
+        }
+        val host = attributes.get(SERVER_ADDRESS) ?: return false
+        // A host with no punycode form cannot be one that was configured, since
+        // configuration rejects those, so it is not on the allowlist.
         val candidate = punycode(host.lowercase()) ?: return true
         return candidate !in allowedHosts
     }
@@ -64,6 +77,9 @@ class HttpTelemetryConfiguration internal constructor() {
         /** Set by the HTTP client instrumentations. */
         private val SERVER_ADDRESS = AttributeKey.stringKey(ServerAttributes.SERVER_ADDRESS)
 
+        /** Required on every HTTP span, so its absence means the span is not HTTP. */
+        private val HTTP_REQUEST_METHOD = AttributeKey.stringKey(HttpAttributes.HTTP_REQUEST_METHOD)
+
         /** Characters that cannot appear in a recorded host, so a pattern using one never matches. */
         private const val ILLEGAL_HOST_CHARS = "/?#@:*"
 
@@ -72,23 +88,25 @@ class HttpTelemetryConfiguration internal constructor() {
          */
         fun validatedHost(value: String): String {
             val host = value.trim().lowercase()
-            val bare = host.isNotEmpty() && host.none { it.isWhitespace() || it in ILLEGAL_HOST_CHARS }
-            return requireNotNull(if (bare) punycode(host) else null) {
-                "Invalid host name '$value'; expected a bare host name such as api.example.com"
+            val bare =
+                host.isNotEmpty() &&
+                    host.all { it.code <= MAX_ASCII } &&
+                    host.none { it.isWhitespace() || it in ILLEGAL_HOST_CHARS }
+            require(bare) {
+                "Invalid host name '$value'; expected a bare ASCII host name such as " +
+                    "api.example.com, or the punycode form of an internationalized host, " +
+                    "such as xn--bcher-kva.example"
             }
+            return host
         }
 
         /**
-         * Converts a host to the punycode spelling the HTTP clients compare against.
-         *
-         * OkHttp canonicalizes with `IDN.toASCII`, so it always records punycode, while
-         * `HttpURLConnection` records whatever host the caller wrote. Both sides of the
-         * comparison are converted so that the two agree.
+         * Converts a recorded host to punycode, because `HttpURLConnection` reports whatever
+         * host the caller wrote while configured hosts are always ASCII.
          *
          * A host that is already ASCII is returned unchanged rather than round-tripped, so
-         * this normalizes spelling without also imposing IDN label rules on it. Returns null
-         * for a host with no punycode form, which callers treat according to whether the
-         * host came from configuration or from recorded telemetry.
+         * this normalizes spelling without imposing IDN label rules on it. Returns null for a
+         * host with no punycode form.
          */
         fun punycode(host: String): String? =
             if (host.all { it.code <= MAX_ASCII }) {

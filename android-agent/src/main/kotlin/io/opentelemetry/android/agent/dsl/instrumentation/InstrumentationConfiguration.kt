@@ -88,7 +88,7 @@ class InstrumentationConfiguration internal constructor(
     }
 
     /**
-     * Configures which hosts produce HTTP telemetry.
+     * Configures which hosts produce HTTP client spans.
      */
     fun httpTelemetry(configure: HttpTelemetryConfiguration.() -> Unit) {
         httpTelemetry.configure()
