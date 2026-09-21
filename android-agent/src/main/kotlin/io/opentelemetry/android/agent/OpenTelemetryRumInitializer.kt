@@ -63,6 +63,7 @@ object OpenTelemetryRumInitializer {
                         rumConfig = rumConfig,
                         instrumentationLoader = instrumentationLoader,
                     ).also(configuration)
+                cfg.diskBufferingConfig.applyToRumConfig()
 
                 setSessionProvider(createSessionProvider(Services.get(ctx).appLifecycle, cfg))
                 setResource(

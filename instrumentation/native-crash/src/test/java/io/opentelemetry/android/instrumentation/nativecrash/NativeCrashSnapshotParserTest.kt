@@ -124,6 +124,25 @@ class NativeCrashSnapshotParserTest {
     }
 
     @Test
+    fun `parsed build id length is preserved during unwind`() {
+        assertThat(NativeCrashSnapshotUnwinder.unwind(requireNotNull(parse())))
+            .containsExactly(
+                NativeCrashFrame(
+                    moduleName = "libapp.so",
+                    moduleRelativeAddress = 0x120UL,
+                    buildId = "0123fe",
+                    origin = NativeCrashFrameOrigin.PROGRAM_COUNTER,
+                ),
+                NativeCrashFrame(
+                    moduleName = "libapp.so",
+                    moduleRelativeAddress = 0x12cUL,
+                    buildId = "0123fe",
+                    origin = NativeCrashFrameOrigin.LINK_REGISTER,
+                ),
+            )
+    }
+
+    @Test
     fun `rejects size checksum signal and timestamp mismatches`() {
         val valid = SnapshotBuilder().build()
         val corrupt = valid.copyOf().apply { this[NativeCrashSnapshotLayout.STACK_OFFSET] = 9 }
