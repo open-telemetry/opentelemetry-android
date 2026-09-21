@@ -19,7 +19,7 @@ dependencies {
     implementation(project(":agent-api"))
     implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":semconv"))
-    implementation(project(":instrumentation:view-common"))
+    implementation(project(":instrumentation:view:view-common"))
 
     implementation(libs.opentelemetry.instrumentation.apiSemconv)
     implementation(libs.opentelemetry.semconv.kotlin)

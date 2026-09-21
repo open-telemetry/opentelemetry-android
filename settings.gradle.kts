@@ -26,6 +26,7 @@ include(":smoke-test")
 include(":smoke-test-app")
 includeFromDir("instrumentation")
 project(":instrumentation:view:click").name = "view-click"
+project(":instrumentation:view:common").name = "view-common"
 
 fun includeFromDir(
     dirName: String,
