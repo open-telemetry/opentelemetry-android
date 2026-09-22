@@ -46,7 +46,7 @@ class HttpTelemetryConfiguration internal constructor() {
             } else {
                 Log.w(
                     RumConstants.OTEL_RUM_LOG_TAG,
-                    "Ignoring host name '$value'; expected a bare ASCII host name"
+                    "Ignoring host name '$value'; expected a bare ASCII host name",
                 )
             }
         }
