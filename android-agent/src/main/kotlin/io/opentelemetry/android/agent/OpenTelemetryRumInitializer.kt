@@ -81,15 +81,16 @@ object OpenTelemetryRumInitializer {
                     addSpanExporterCustomizer {
                         createSpanExporter(cfg.exportConfig.spansEndpoint())
                     }
-                    val httpTelemetry = cfg.instrumentations.httpTelemetry
-                    if (!httpTelemetry.keepsEveryHost()) {
-                        addSpanExporterCustomizer { exporter ->
-                            FilteringSpanExporter
-                                .builder(exporter)
-                                .rejecting { span -> httpTelemetry.rejects(span) }
-                                .build()
+                    HttpSpanHostFilter
+                        .create(cfg.instrumentations.httpTelemetry.allowedHosts())
+                        ?.let { hostFilter ->
+                            addSpanExporterCustomizer { exporter ->
+                                FilteringSpanExporter
+                                    .builder(exporter)
+                                    .rejecting { span -> hostFilter.rejects(span) }
+                                    .build()
+                            }
                         }
-                    }
                 }
                 if (rumConfig.loggingEnabled) {
                     addLogRecordExporterCustomizer {

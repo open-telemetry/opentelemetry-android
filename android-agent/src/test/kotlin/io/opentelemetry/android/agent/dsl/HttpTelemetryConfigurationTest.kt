@@ -6,53 +6,20 @@
 package io.opentelemetry.android.agent.dsl
 
 import io.opentelemetry.android.agent.dsl.instrumentation.HttpTelemetryConfiguration
-import io.opentelemetry.api.common.AttributeKey.stringKey
-import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.trace.SpanKind
-import io.opentelemetry.sdk.testing.trace.TestSpanData
-import io.opentelemetry.sdk.trace.data.SpanData
-import io.opentelemetry.sdk.trace.data.StatusData
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 
 class HttpTelemetryConfigurationTest {
     @Test
-    fun keepsEveryHostUntilOneIsNamed() {
-        val config = HttpTelemetryConfiguration()
-
-        assertThat(config.keepsEveryHost()).isTrue()
-        assertThat(config.rejects(httpSpan("anything.example.com"))).isFalse()
-
-        config.onlyHosts("api.example.com")
-
-        assertThat(config.keepsEveryHost()).isFalse()
+    fun noHostIsAllowedUntilOneIsNamed() {
+        assertThat(HttpTelemetryConfiguration().allowedHosts()).isEmpty()
     }
 
     @Test
-    fun onlyHostsKeepsNamedHostsAndRejectsTheRest() {
-        val config = HttpTelemetryConfiguration().apply { onlyHosts("api.example.com", "cdn.example.com") }
+    fun namedHostsAreLowercased() {
+        val config = HttpTelemetryConfiguration().apply { onlyHosts("API.Example.COM", "cdn.example.com") }
 
-        assertThat(config.rejects(httpSpan("api.example.com"))).isFalse()
-        assertThat(config.rejects(httpSpan("cdn.example.com"))).isFalse()
-        assertThat(config.rejects(httpSpan("analytics.thirdparty.net"))).isTrue()
-    }
-
-    @Test
-    fun hostComparisonIgnoresCase() {
-        val config = HttpTelemetryConfiguration().apply { onlyHosts("API.Example.COM") }
-
-        assertThat(config.rejects(httpSpan("api.example.com"))).isFalse()
-        assertThat(config.rejects(httpSpan("API.EXAMPLE.COM"))).isFalse()
-    }
-
-    @Test
-    fun hostComparisonIsExactSoNeighbouringNamesDoNotMatch() {
-        val config = HttpTelemetryConfiguration().apply { onlyHosts("example.com") }
-
-        assertThat(config.rejects(httpSpan("api.example.com"))).isTrue()
-        assertThat(config.rejects(httpSpan("notexample.com"))).isTrue()
-        assertThat(config.rejects(httpSpan("example.com.attacker.net"))).isTrue()
+        assertThat(config.allowedHosts()).containsExactlyInAnyOrder("api.example.com", "cdn.example.com")
     }
 
     @Test
@@ -63,86 +30,27 @@ class HttpTelemetryConfigurationTest {
                 onlyHosts("cdn.example.com")
             }
 
-        assertThat(config.rejects(httpSpan("api.example.com"))).isFalse()
-        assertThat(config.rejects(httpSpan("cdn.example.com"))).isFalse()
+        assertThat(config.allowedHosts()).containsExactlyInAnyOrder("api.example.com", "cdn.example.com")
     }
 
     @Test
-    fun punycodeConfigMatchesBothSpellingsOfTheRecordedHost() {
-        // OkHttp records punycode; HttpURLConnection records whatever the caller wrote.
-        val config = HttpTelemetryConfiguration().apply { onlyHosts("xn--bcher-kva.example") }
+    fun surroundingWhitespaceIsTrimmed() {
+        val config = HttpTelemetryConfiguration().apply { onlyHosts("  api.example.com  ") }
 
-        assertThat(config.rejects(httpSpan("xn--bcher-kva.example"))).isFalse()
-        assertThat(config.rejects(httpSpan("b\u00fccher.example"))).isFalse()
-        assertThat(config.rejects(httpSpan("other.example"))).isTrue()
+        assertThat(config.allowedHosts()).containsExactly("api.example.com")
     }
 
     @Test
-    fun internationalizedHostMustBeConfiguredAsPunycode() {
-        // IDN.toASCII applies IDNA2003 and yields fass.de, while OkHttp applies UTS-46 and
-        // yields xn--fa-hia.de, so converting here would silently never match.
-        for (host in listOf("b\u00fccher.example", "fa\u00df.de")) {
-            assertThatThrownBy { HttpTelemetryConfiguration().onlyHosts(host) }
-                .describedAs("host '%s'", host)
-                .isInstanceOf(IllegalArgumentException::class.java)
-                .hasMessageContaining("punycode")
-        }
+    fun punycodeHostsAreAccepted() {
+        // Punycode is the documented way to allow an internationalized host. xn--fa-hia.de is
+        // the UTS-46 spelling of fa\u00df.de, which IDN.toASCII would instead render as fass.de.
+        val config = HttpTelemetryConfiguration().apply { onlyHosts("xn--bcher-kva.example", "xn--fa-hia.de") }
+
+        assertThat(config.allowedHosts()).containsExactlyInAnyOrder("xn--bcher-kva.example", "xn--fa-hia.de")
     }
 
     @Test
-    fun onlyHttpClientSpansAreFiltered() {
-        val config = HttpTelemetryConfiguration().apply { onlyHosts("api.example.com") }
-
-        // gRPC and database client spans also record server.address.
-        assertThat(
-            config.rejects(clientSpan(Attributes.of(stringKey("server.address"), "grpc.thirdparty.net", stringKey("rpc.system"), "grpc"))),
-        ).isFalse()
-        assertThat(
-            config.rejects(
-                clientSpan(Attributes.of(stringKey("server.address"), "db.thirdparty.net", stringKey("db.system.name"), "postgresql")),
-            ),
-        ).isFalse()
-    }
-
-    @Test
-    fun nonClientHttpSpansAreKept() {
-        val config = HttpTelemetryConfiguration().apply { onlyHosts("api.example.com") }
-
-        val serverSpan =
-            TestSpanData
-                .builder()
-                .setName("GET")
-                .setKind(SpanKind.SERVER)
-                .setStatus(StatusData.unset())
-                .setHasEnded(true)
-                .setStartEpochNanos(0)
-                .setEndEpochNanos(123)
-                .setAttributes(
-                    Attributes.of(stringKey("server.address"), "other.example.com", stringKey("http.request.method"), "GET"),
-                ).build()
-
-        assertThat(config.rejects(serverSpan)).isFalse()
-    }
-
-    @Test
-    fun recordedHostWithNoPunycodeFormIsRejectedRatherThanThrowing() {
-        val config = HttpTelemetryConfiguration().apply { onlyHosts("api.example.com") }
-
-        assertThat(config.rejects(httpSpan("b\u00fccher..example"))).isTrue()
-    }
-
-    @Test
-    fun spansWithoutAHostAreAlwaysKept() {
-        val config = HttpTelemetryConfiguration().apply { onlyHosts("api.example.com") }
-
-        val spanWithNoHost =
-            span(Attributes.of(stringKey("app.screen.name"), "Checkout"))
-
-        assertThat(config.rejects(spanWithNoHost)).isFalse()
-    }
-
-    @Test
-    fun hostsThatCouldNeverMatchAreRejectedAtConfigurationTime() {
+    fun hostsThatCouldNeverMatchAreIgnoredWithoutFailingInitialization() {
         val rejected =
             listOf(
                 "",
@@ -155,34 +63,32 @@ class HttpTelemetryConfigurationTest {
                 "api.example.com:8443",
                 "[::1]",
                 "*.example.com",
-                "fa\u00df.de",
-                // IDN.toASCII rejects empty labels.
-                "b\u00fccher..example",
-                ".b\u00fccher.example",
+                // An internationalized host must be given as punycode; see the KDoc.
+                "bücher.example",
+                "faß.de",
             )
 
         for (host in rejected) {
-            assertThatThrownBy { HttpTelemetryConfiguration().onlyHosts(host) }
+            assertThat(HttpTelemetryConfiguration().apply { onlyHosts(host) }.allowedHosts())
                 .describedAs("host '%s'", host)
-                .isInstanceOf(IllegalArgumentException::class.java)
-                .hasMessageContaining("Invalid host name")
+                .isEmpty()
         }
     }
 
-    private fun httpSpan(serverAddress: String): SpanData =
-        clientSpan(Attributes.of(stringKey("server.address"), serverAddress, stringKey("http.request.method"), "GET"))
+    @Test
+    fun anIgnoredHostDoesNotDiscardTheValidOnesBesideIt() {
+        val config = HttpTelemetryConfiguration().apply { onlyHosts("api.example.com", "https://bad", "cdn.example.com") }
 
-    private fun clientSpan(attributes: Attributes): SpanData = span(attributes)
+        assertThat(config.allowedHosts()).containsExactlyInAnyOrder("api.example.com", "cdn.example.com")
+    }
 
-    private fun span(attributes: Attributes): SpanData =
-        TestSpanData
-            .builder()
-            .setName("GET")
-            .setKind(SpanKind.CLIENT)
-            .setStatus(StatusData.unset())
-            .setHasEnded(true)
-            .setStartEpochNanos(0)
-            .setEndEpochNanos(123)
-            .setAttributes(attributes)
-            .build()
+    @Test
+    fun allowedHostsIsASnapshot() {
+        val config = HttpTelemetryConfiguration().apply { onlyHosts("api.example.com") }
+
+        val snapshot = config.allowedHosts()
+        config.onlyHosts("cdn.example.com")
+
+        assertThat(snapshot).containsExactly("api.example.com")
+    }
 }
