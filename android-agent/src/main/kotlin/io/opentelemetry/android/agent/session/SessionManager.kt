@@ -46,17 +46,15 @@ internal class SessionManager(
     }
 
     private fun getSessionId(recordUserInteraction: Boolean): String {
-        val currentSession = session
-        if (!recordUserInteraction && !sessionHasExpired(currentSession) && session === currentSession) {
-            return currentSession.id
-        }
-
         val previousSession: Session
         val newSession: Session
         var startedTransition = false
         try {
             synchronized(lock) {
                 previousSession = session
+                if (!recordUserInteraction && !sessionHasExpired(previousSession)) {
+                    return previousSession.id
+                }
                 if (!sessionHasExpired(previousSession)) {
                     if (recordUserInteraction) {
                         timeoutHandler.bump()
