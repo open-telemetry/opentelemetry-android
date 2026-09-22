@@ -6,14 +6,36 @@
 package io.opentelemetry.android.agent.session
 
 import io.opentelemetry.sdk.testing.time.TestClock
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.Duration
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.nanoseconds
 
 class SessionIdTimeoutHandlerTest {
+    @Test
+    fun `synchronizing on the handler does not block timeout updates`() {
+        val timeoutHandler = SessionIdTimeoutHandler(TestClock.create(), 5.nanoseconds)
+        val executor = Executors.newSingleThreadExecutor()
+        try {
+            synchronized(timeoutHandler) {
+                val update =
+                    executor.submit<Boolean> {
+                        timeoutHandler.onApplicationBackgrounded()
+                        timeoutHandler.bump()
+                        timeoutHandler.onApplicationForegrounded()
+                        timeoutHandler.hasTimedOut()
+                    }
+                assertThat(update.get(5, TimeUnit.SECONDS)).isFalse()
+            }
+        } finally {
+            executor.shutdownNow()
+        }
+    }
+
     @Test
     fun shouldNeverTimeOutInForeground() {
         val clock: TestClock = TestClock.create()

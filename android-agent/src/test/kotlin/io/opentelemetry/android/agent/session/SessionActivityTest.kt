@@ -64,23 +64,23 @@ class SessionActivityTest {
     }
 
     @Test
-    fun `user activity extends a valid session but rotates an expired one`() {
-        val recorder: SessionUserActivityRecorder = manager
-        recorder.recordUserActivity()
+    fun `user interaction extends a valid session but rotates an expired one`() {
+        val recorder: SessionUserInteractionRecorder = manager
+        recorder.recordUserInteraction()
         val first = manager.getSessionId()
         timeout.onApplicationBackgrounded()
         clock.advance(14, MINUTES)
-        recorder.recordUserActivity()
+        recorder.recordUserInteraction()
         clock.advance(14, MINUTES)
         assertThat(manager.getSessionId()).isEqualTo(first)
         clock.advance(1, MINUTES)
-        recorder.recordUserActivity()
+        recorder.recordUserInteraction()
         val second = manager.getSessionId()
         assertThat(second).isNotEqualTo(first)
         assertThat(timeout.hasTimedOut()).isFalse()
         timeout.onApplicationForegrounded()
         clock.advance(240, MINUTES)
-        manager.recordUserActivity()
+        manager.recordUserInteraction()
         assertThat(manager.getSessionId()).isNotEqualTo(second)
     }
 
@@ -204,9 +204,9 @@ class SessionActivityTest {
             val ids = readers.map { it.get(5, SECONDS) }
             assertThat(ids.toSet()).hasSize(1).doesNotContain(first)
             clock.advance(15, MINUTES)
-            // Neither reads nor user activity may interrupt the notification sequence or revive expiry.
-            val activity = executor.submit { manager.recordUserActivity() }
-            activity.get(5, SECONDS)
+            // Neither reads nor user interaction may interrupt the notification sequence or revive expiry.
+            val interaction = executor.submit { manager.recordUserInteraction() }
+            interaction.get(5, SECONDS)
             assertThat(manager.getSessionId()).isEqualTo(ids.first())
             assertThat(timeout.hasTimedOut()).isTrue()
             release.countDown()

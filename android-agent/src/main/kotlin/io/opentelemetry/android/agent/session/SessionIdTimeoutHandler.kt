@@ -12,14 +12,17 @@ import kotlin.time.Duration
 
 /**
  * Tracks background inactivity independently of telemetry reads. Entering the background starts
- * the timeout; a new session or an explicit call to the internal user activity recorder restarts it.
- * User activity sources are not wired to that recorder yet. Returning to the foreground stops the
+ * the timeout; a new session or an explicit call to the internal user interaction recorder restarts it.
+ * User interaction sources are not wired to that recorder yet. Returning to the foreground stops the
  * timer, but preserves an expiry until the manager rotates the session.
+ * The configured clock must provide monotonic nanoseconds that include device sleep.
  */
 internal class SessionIdTimeoutHandler(
     private val clock: Clock,
     private val sessionBackgroundInactivityTimeout: Duration,
 ) : ApplicationStateListener {
+    private val lock = Any()
+
     @Volatile
     private var state = TimeoutState()
 
@@ -30,18 +33,20 @@ internal class SessionIdTimeoutHandler(
         sessionConfig.backgroundInactivityTimeout,
     )
 
-    @Synchronized
     override fun onApplicationForegrounded() {
-        state = state.copy(foreground = true, expiredOnForeground = hasTimedOut())
+        synchronized(lock) {
+            state = state.copy(foreground = true, expiredOnForeground = hasTimedOut())
+        }
     }
 
-    @Synchronized
     override fun onApplicationBackgrounded() {
-        state =
-            state.copy(
-                foreground = false,
-                timeoutStartNanos = if (state.foreground) clock.nanoTime() else state.timeoutStartNanos,
-            )
+        synchronized(lock) {
+            state =
+                state.copy(
+                    foreground = false,
+                    timeoutStartNanos = if (state.foreground) clock.nanoTime() else state.timeoutStartNanos,
+                )
+        }
     }
 
     fun hasTimedOut(): Boolean {
@@ -53,9 +58,10 @@ internal class SessionIdTimeoutHandler(
             clock.nanoTime() - current.timeoutStartNanos >= sessionBackgroundInactivityTimeout.inWholeNanoseconds
     }
 
-    @Synchronized
     fun bump() {
-        state = state.copy(timeoutStartNanos = clock.nanoTime(), expiredOnForeground = false)
+        synchronized(lock) {
+            state = state.copy(timeoutStartNanos = clock.nanoTime(), expiredOnForeground = false)
+        }
     }
 
     private data class TimeoutState(

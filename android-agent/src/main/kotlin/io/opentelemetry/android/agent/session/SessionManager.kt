@@ -23,7 +23,7 @@ internal class SessionManager(
     private val maxSessionLifetime: Duration,
 ) : SessionProvider,
     SessionPublisher,
-    SessionUserActivityRecorder {
+    SessionUserInteractionRecorder {
     @Volatile
     private var session: Session = invalidSession
     private val lock = Any()
@@ -39,15 +39,15 @@ internal class SessionManager(
     }
 
     // Lookup still creates or rotates a session, but never extends an existing session's inactivity.
-    override fun getSessionId(): String = getSessionId(recordUserActivity = false)
+    override fun getSessionId(): String = getSessionId(recordUserInteraction = false)
 
-    override fun recordUserActivity() {
-        getSessionId(recordUserActivity = true)
+    override fun recordUserInteraction() {
+        getSessionId(recordUserInteraction = true)
     }
 
-    private fun getSessionId(recordUserActivity: Boolean): String {
+    private fun getSessionId(recordUserInteraction: Boolean): String {
         val currentSession = session
-        if (!recordUserActivity && !sessionHasExpired(currentSession) && session === currentSession) {
+        if (!recordUserInteraction && !sessionHasExpired(currentSession) && session === currentSession) {
             return currentSession.id
         }
 
@@ -58,7 +58,7 @@ internal class SessionManager(
             synchronized(lock) {
                 previousSession = session
                 if (!sessionHasExpired(previousSession)) {
-                    if (recordUserActivity) {
+                    if (recordUserInteraction) {
                         timeoutHandler.bump()
                     }
                     return previousSession.id

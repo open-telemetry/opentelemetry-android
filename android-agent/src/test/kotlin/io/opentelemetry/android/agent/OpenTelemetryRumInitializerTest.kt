@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.agent
 
+import android.os.SystemClock
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.Runs
 import io.mockk.every
@@ -24,6 +25,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.LooperMode
+import org.robolectric.shadows.ShadowSystemClock
+import java.time.Duration
 import java.util.concurrent.TimeUnit.MINUTES
 
 @OptIn(Incubating::class)
@@ -86,6 +90,33 @@ class OpenTelemetryRumInitializerTest {
         verify {
             o1.onSessionStarted(any(), any())
             o2.onSessionStarted(any(), any())
+        }
+    }
+
+    @Test
+    @LooperMode(LooperMode.Mode.PAUSED)
+    fun `default clock includes deep sleep in background inactivity`() {
+        val listener = slot<SessionIdTimeoutHandler>()
+        every { appLifecycle.registerListener(capture(listener)) } just Runs
+        val rum =
+            OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
+                diskBuffering { enabled(false) }
+                httpExport { baseUrl = "http://127.0.0.1:4318" }
+            }
+        try {
+            val first = rum.sessionProvider.getSessionId()
+            listener.captured.onApplicationBackgrounded()
+            val uptime = SystemClock.uptimeMillis()
+            ShadowSystemClock.simulateDeepSleep(Duration.ofMinutes(14))
+            assertThat(rum.sessionProvider.getSessionId()).isEqualTo(first)
+            ShadowSystemClock.simulateDeepSleep(Duration.ofMinutes(1))
+            assertThat(SystemClock.uptimeMillis()).isEqualTo(uptime)
+            listener.captured.onApplicationForegrounded()
+            val next = rum.sessionProvider.getSessionId()
+            assertThat(next).isNotEqualTo(first)
+            assertThat(rum.sessionProvider.getSessionId()).isEqualTo(next)
+        } finally {
+            rum.shutdown()
         }
     }
 
