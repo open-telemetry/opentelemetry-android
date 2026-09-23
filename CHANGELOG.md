@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### 📣 Migration notes
+
+- The documented minimum supported versions did not build and have been corrected: Kotlin 2.2,
+  AGP 8.13.2, Gradle 8.13, `compileSdk` 37 and JDK 17 at build time. They are now verified on every
+  pull request. `androidx.core` goes back to 1.18.0, so AGP 8 works again; 1.7.0 required AGP 9.1.
+  ([#2077](https://github.com/open-telemetry/opentelemetry-android/pull/2077),
+  [#1526](https://github.com/open-telemetry/opentelemetry-android/issues/1526))
+
 ## Version 1.7.0 (2026-09-04)
 
 ### 📣 Migration notes

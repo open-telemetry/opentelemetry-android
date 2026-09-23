@@ -34,6 +34,31 @@ jobs:
         working-directory: ./demo-app
         run: ./gradlew assembleRelease --stacktrace
 
+  min-supported-versions:
+    name: "min-supported-versions"
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up JDK for running Gradle
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: | # 17 is the min required build-time JDK
+            17
+            21
+      - name: Setup Gradle build action
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - name: publish snapshot artifacts to maven local
+        # Without CI set, otel.publish-conventions skips signing, which needs a GPG key.
+        run: env -u CI ./gradlew publishToMavenLocal --stacktrace
+      - name: verify minimum supported versions
+        run: >
+          ./gradlew :gradle-integration-test:minSupportedVersionsTest --stacktrace
+          -Dorg.gradle.java.installations.fromEnv=JAVA_HOME_17_X64
+
   android-instrumented-tests:
     name: "android-instrumented-tests"
     runs-on: ubuntu-latest
@@ -65,11 +90,13 @@ jobs:
   required-status-check:
     needs:
       - pr-checks
+      - min-supported-versions
       - android-instrumented-tests
     runs-on: ubuntu-latest
     if: always()
     steps:
       - if: |
           needs.pr-checks.result != 'success' ||
+          needs.min-supported-versions.result != 'success' ||
           needs.android-instrumented-tests.result != 'success'
         run: exit 1

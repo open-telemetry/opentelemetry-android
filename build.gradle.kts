@@ -45,7 +45,7 @@ nexusPublishing {
 kover {
     merge {
         subprojects { project ->
-            true
+            project.path != ":gradle-integration-test"
         }
     }
     reports {
