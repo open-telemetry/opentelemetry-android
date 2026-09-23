@@ -88,6 +88,8 @@ class NativeCrashRecoveryLockTest {
 
         assertThat(store.acquireRecoveryLock()).isNull()
         assertThat(store.crashRecordPath).exists()
+        assertThat(File(tempDir, "native-crash-recovery.lock").delete()).isTrue()
+        checkNotNull(store.acquireRecoveryLock()).close()
     }
 
     @Test
@@ -110,5 +112,25 @@ class NativeCrashRecoveryLockTest {
         val next = FileNativeCrashStore(tempDir).acquireRecoveryLock()
         assertThat(next).isNotNull()
         next!!.close()
+    }
+
+    @Test
+    fun `closing an old lock again does not release the next owner`() {
+        val store = FileNativeCrashStore(tempDir)
+        val first = checkNotNull(store.acquireRecoveryLock())
+        first.close()
+        checkNotNull(store.acquireRecoveryLock()).use {
+            first.close()
+            assertThat(store.acquireRecoveryLock()).isNull()
+        }
+        checkNotNull(store.acquireRecoveryLock()).close()
+    }
+
+    @Test
+    fun `directory aliases share the same process owner`() {
+        File(tempDir, "child").mkdir()
+        checkNotNull(FileNativeCrashStore(tempDir).acquireRecoveryLock()).use {
+            assertThat(FileNativeCrashStore(File(tempDir, "child/..")).acquireRecoveryLock()).isNull()
+        }
     }
 }

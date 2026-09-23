@@ -37,6 +37,7 @@ import java.io.IOException
 import java.nio.channels.FileChannel
 import java.time.Instant
 import java.util.Properties
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -277,6 +278,16 @@ internal class FileNativeCrashStore(
     }
 
     override fun acquireRecoveryLock(): NativeCrashRecoveryLock? {
+        val lockPath =
+            try {
+                recoveryLockPath.canonicalPath
+            } catch (error: Exception) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to resolve native crash recovery lock", error)
+                return null
+            }
+        // Older Android runtimes do not reject overlapping locks on separate channels in this process.
+        val owner = Any()
+        if (processRecoveryLocks.putIfAbsent(lockPath, owner) != null) return null
         val channel =
             try {
                 if (!directory.isDirectory && !directory.mkdirs() && !directory.isDirectory) {
@@ -284,9 +295,11 @@ internal class FileNativeCrashStore(
                 }
                 FileOutputStream(recoveryLockPath, true).channel
             } catch (error: Exception) {
+                processRecoveryLocks.remove(lockPath, owner)
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to open native crash recovery lock", error)
                 return null
             } catch (error: LinkageError) {
+                processRecoveryLocks.remove(lockPath, owner)
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to open native crash recovery lock", error)
                 return null
             }
@@ -302,15 +315,15 @@ internal class FileNativeCrashStore(
                 } catch (error: LinkageError) {
                     Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to release native crash recovery lock", error)
                 } finally {
-                    closeRecoveryChannel(channel)
+                    closeRecoveryChannel(channel, lockPath, owner)
                 }
             }
         } catch (error: Exception) {
-            closeRecoveryChannel(channel)
+            closeRecoveryChannel(channel, lockPath, owner)
             Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to acquire native crash recovery lock", error)
             null
         } catch (error: LinkageError) {
-            closeRecoveryChannel(channel)
+            closeRecoveryChannel(channel, lockPath, owner)
             Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to acquire native crash recovery lock", error)
             null
         }
@@ -400,17 +413,24 @@ internal class FileNativeCrashStore(
             false
         }
 
-    private fun closeRecoveryChannel(channel: FileChannel) {
+    private fun closeRecoveryChannel(
+        channel: FileChannel,
+        lockPath: String,
+        owner: Any,
+    ) {
         try {
             channel.close()
         } catch (error: Exception) {
             Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to close native crash recovery lock", error)
         } catch (error: LinkageError) {
             Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to close native crash recovery lock", error)
+        } finally {
+            if (!channel.isOpen) processRecoveryLocks.remove(lockPath, owner)
         }
     }
 
     private companion object {
+        val processRecoveryLocks = ConcurrentHashMap<String, Any>()
         const val SIGNAL_NUMBER_KEY = "signal.number"
         const val TIMESTAMP_EPOCH_NANOS_KEY = "timestamp.epoch_nanos"
     }
