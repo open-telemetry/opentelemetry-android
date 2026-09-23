@@ -18,12 +18,15 @@ import io.opentelemetry.sdk.testing.time.TestClock
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.lang.management.ManagementFactory
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.TimeUnit.MINUTES
 import java.util.concurrent.TimeUnit.SECONDS
 import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.locks.LockSupport
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
@@ -224,18 +227,20 @@ class SessionActivityTest {
     fun `resetting the timeout cannot expose the previous expired session`() = assertConcurrentRotation(pauseAfterTimeoutReset = true)
 
     @Test
-    fun `lookup rechecks its session snapshot after a concurrent rotation`() = assertConcurrentRotation(pauseAfterTimeoutReset = false)
+    fun `concurrent lookup waits for the expiry check before reading the session`() =
+        assertConcurrentRotation(pauseAfterTimeoutReset = false)
 
     private fun assertConcurrentRotation(pauseAfterTimeoutReset: Boolean) {
         val paused = CountDownLatch(1)
         val resume = CountDownLatch(1)
         val readerThread = AtomicReference<Thread?>()
+        val lockOwner = AtomicReference<Thread>()
         val testClock =
             object : Clock by clock {
                 override fun now(): Long {
                     if (!pauseAfterTimeoutReset && readerThread.compareAndSet(Thread.currentThread(), null)) {
                         paused.countDown()
-                        check(resume.await(5, SECONDS))
+                        check(resume.await(10, SECONDS))
                     }
                     return clock.now()
                 }
@@ -249,21 +254,40 @@ class SessionActivityTest {
             every { handler.bump() } answers {
                 callOriginal()
                 paused.countDown()
-                check(resume.await(5, SECONDS))
+                check(resume.await(10, SECONDS))
             }
         }
         val executor = Executors.newFixedThreadPool(2)
         try {
             val pausedLookup =
                 executor.submit<String> {
+                    lockOwner.set(Thread.currentThread())
                     readerThread.set(Thread.currentThread())
                     manager.getSessionId()
                 }
             assertThat(paused.await(5, SECONDS)).isTrue()
-            val read = executor.submit<String> { manager.getSessionId() }
+            val readerStarted = CountDownLatch(1)
+            val concurrentReader = AtomicReference<Thread>()
+            val read =
+                executor.submit<String> {
+                    concurrentReader.set(Thread.currentThread())
+                    readerStarted.countDown()
+                    manager.getSessionId()
+                }
+            assertThat(readerStarted.await(5, SECONDS)).isTrue()
+            val threads = ManagementFactory.getThreadMXBean()
+            val deadline = System.nanoTime() + SECONDS.toNanos(5)
+            // Confirm lock contention, rather than assuming the reader has run after a fixed delay.
+            while (threads.getThreadInfo(concurrentReader.get().id)?.lockOwnerId != lockOwner.get().id &&
+                !read.isDone && System.nanoTime() < deadline
+            ) {
+                LockSupport.parkNanos(MILLISECONDS.toNanos(1))
+            }
+            assertThat(threads.getThreadInfo(concurrentReader.get().id)?.lockOwnerId).isEqualTo(lockOwner.get().id)
+            assertThat(read.isDone).isFalse()
+            resume.countDown()
             val id = read.get(5, SECONDS)
             assertThat(id).isNotEqualTo(first)
-            resume.countDown()
             assertThat(pausedLookup.get(5, SECONDS)).isEqualTo(id)
         } finally {
             resume.countDown()
