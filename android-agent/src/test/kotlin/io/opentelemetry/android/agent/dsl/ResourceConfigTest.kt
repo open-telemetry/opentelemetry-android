@@ -161,6 +161,20 @@ class ResourceConfigTest {
         assertNull(resource.attributes.get(stringKey(ANDROID_OS_API_LEVEL)))
     }
 
+    @Test
+    fun testResourceActionExecutedOnce() {
+        var count = 0
+        val ctx = ApplicationProvider.getApplicationContext<Context>()
+        val cfg = OpenTelemetryConfiguration(instrumentationLoader = mockk(relaxed = true))
+
+        cfg.resource {
+            count++
+        }
+        cfg.resourceProvider(ctx)
+
+        assertEquals(1, count)
+    }
+
     private fun assertCommonResources(attrs: Map<AttributeKey<*>, Any>) {
         assertEquals("23", attrs[stringKey(ANDROID_OS_API_LEVEL)])
         assertEquals("unknown", attrs[stringKey(DEVICE_MANUFACTURER)])
