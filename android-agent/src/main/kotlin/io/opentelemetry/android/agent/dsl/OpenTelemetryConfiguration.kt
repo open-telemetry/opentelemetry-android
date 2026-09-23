@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.agent.dsl
 
+import android.content.Context
+import io.opentelemetry.android.AndroidResource
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OtelAndroidClock
 import io.opentelemetry.android.agent.dsl.instrumentation.InstrumentationConfiguration
@@ -12,6 +14,7 @@ import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.sdk.common.Clock
+import io.opentelemetry.sdk.resources.Resource
 import io.opentelemetry.sdk.resources.ResourceBuilder
 
 /**
@@ -34,6 +37,13 @@ class OpenTelemetryConfiguration internal constructor(
 
     internal val semanticConventions = SemanticConventionsConfiguration()
     internal var resourceAction: ResourceBuilder.() -> Unit = {}
+    internal var resourceProvider: (Context) -> Resource = { ctx ->
+        AndroidResource
+            .createDefault(ctx)
+            .toBuilder()
+            .apply(resourceAction)
+            .build()
+    }
 
     /**
      * Disable tracing in the SDK by providing no-op implementations that don't incur overhead even if instrumentation creates spans
@@ -112,6 +122,37 @@ class OpenTelemetryConfiguration internal constructor(
      * Configures the resource attributes that are used globally by acting on a [ResourceBuilder].
      */
     fun resource(action: ResourceBuilder.() -> Unit) {
+        val currentProvider = resourceProvider
         resourceAction = action
+        resourceProvider = { ctx ->
+            currentProvider(ctx).toBuilder().apply(action).build()
+        }
+    }
+
+    /**
+     * Configures the resource that is used globally. This replaces any default resource.
+     */
+    fun resource(resource: Resource) {
+        resourceProvider = { resource }
+    }
+
+    /**
+     * Configures the resource attributes that are used globally by acting on a [ResourceBuilder]
+     * initialized with the given [resource]. This replaces any default resource.
+     */
+    fun resource(
+        resource: Resource,
+        action: ResourceBuilder.() -> Unit,
+    ) {
+        resourceProvider = {
+            resource.toBuilder().apply(action).build()
+        }
+    }
+
+    /**
+     * Assigns a [Resource] to be attached to all telemetry. This replaces any default resource.
+     */
+    fun setResource(resource: Resource) {
+        resource(resource)
     }
 }
