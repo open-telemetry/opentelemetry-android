@@ -34,6 +34,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
+import java.nio.channels.FileChannel
 import java.time.Instant
 import java.util.Properties
 import java.util.concurrent.Executor
@@ -206,6 +207,12 @@ internal interface NativeCrashStore {
 
     fun readCrashSnapshot(record: NativeCrashRecord): NativeCrashSnapshot?
 
+    /**
+     * Waits for another process to release the lock. Returns null for a same-process overlap or
+     * an open/acquisition failure. A null result never grants ownership; callers must defer recovery.
+     */
+    fun acquireRecoveryLock(): NativeCrashRecoveryLock?
+
     fun deleteCrashSnapshot(): Boolean
 
     fun deleteCrashFiles(): Boolean
@@ -219,6 +226,7 @@ internal class FileNativeCrashStore(
     private val directory: File,
 ) : NativeCrashStore {
     private val contextPath = File(directory, "native-crash-context.properties")
+    private val recoveryLockPath = File(directory, "native-crash-recovery.lock")
     override val crashRecordPath = File(directory, "native-crash-record.properties")
     override val crashSnapshotPath = File(directory, "native-crash-snapshot.bin")
 
@@ -266,6 +274,46 @@ internal class FileNativeCrashStore(
             }
         if (snapshot == null) deleteCrashSnapshot()
         return snapshot
+    }
+
+    override fun acquireRecoveryLock(): NativeCrashRecoveryLock? {
+        val channel =
+            try {
+                if (!directory.isDirectory && !directory.mkdirs() && !directory.isDirectory) {
+                    throw IOException("Failed to create native crash directory")
+                }
+                FileOutputStream(recoveryLockPath, true).channel
+            } catch (error: Exception) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to open native crash recovery lock", error)
+                return null
+            } catch (error: LinkageError) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to open native crash recovery lock", error)
+                return null
+            }
+        return try {
+            // Recovery owns fixed marker and snapshot paths until cleanup completes. Wait on this
+            // background executor so another process cannot install a handler and overwrite them.
+            val lock = channel.lock()
+            NativeCrashRecoveryLock {
+                try {
+                    lock.release()
+                } catch (error: Exception) {
+                    Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to release native crash recovery lock", error)
+                } catch (error: LinkageError) {
+                    Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to release native crash recovery lock", error)
+                } finally {
+                    closeRecoveryChannel(channel)
+                }
+            }
+        } catch (error: Exception) {
+            closeRecoveryChannel(channel)
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to acquire native crash recovery lock", error)
+            null
+        } catch (error: LinkageError) {
+            closeRecoveryChannel(channel)
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to acquire native crash recovery lock", error)
+            null
+        }
     }
 
     override fun deleteCrashSnapshot(): Boolean = deleteFile(crashSnapshotPath, "native crash snapshot")
@@ -351,6 +399,16 @@ internal class FileNativeCrashStore(
             Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to delete $description", error)
             false
         }
+
+    private fun closeRecoveryChannel(channel: FileChannel) {
+        try {
+            channel.close()
+        } catch (error: Exception) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to close native crash recovery lock", error)
+        } catch (error: LinkageError) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to close native crash recovery lock", error)
+        }
+    }
 
     private companion object {
         const val SIGNAL_NUMBER_KEY = "signal.number"
