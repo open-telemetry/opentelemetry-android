@@ -1,0 +1,341 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.android.instrumentation.nativecrash
+
+import android.os.ParcelFileDescriptor
+import android.system.Os
+import android.util.Log
+import io.mockk.every
+import io.mockk.justRun
+import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
+import io.mockk.verify
+import io.mockk.verifyOrder
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.io.FileDescriptor
+import java.io.IOException
+import java.time.Instant
+import java.util.Properties
+
+class NativeCrashRecoveryStoreTest {
+    private val directoryDescriptor = mockk<FileDescriptor>()
+    private val directoryHandle = mockk<ParcelFileDescriptor>()
+
+    @TempDir
+    lateinit var tempDir: File
+
+    @BeforeEach
+    fun setUp() {
+        mockkStatic(Log::class)
+        every { Log.w(any<String>(), any<String>(), any<Throwable>()) } returns 0
+        mockkStatic(Os::class)
+        mockkStatic(ParcelFileDescriptor::class)
+        every { ParcelFileDescriptor.open(any(), ParcelFileDescriptor.MODE_READ_ONLY) } returns directoryHandle
+        every { directoryHandle.fileDescriptor } returns directoryDescriptor
+        justRun { Os.fsync(directoryDescriptor) }
+        justRun { directoryHandle.close() }
+    }
+
+    @AfterEach
+    fun cleanup() {
+        unmockkStatic(Log::class)
+        unmockkStatic(Os::class)
+        unmockkStatic(ParcelFileDescriptor::class)
+    }
+
+    @Test
+    fun `persists a versioned delivery claim`() {
+        val store = FileNativeCrashStore(tempDir)
+        val state =
+            NativeCrashRecoveryState.create(
+                NativeCrashRecoveryPhase.DELIVERY_CLAIMED,
+                nowMillis = 2_000,
+                record = record,
+            )
+
+        assertThat(store.writeRecoveryState(state)).isTrue()
+        assertThat(store.readRecoveryState()).isEqualTo(NativeCrashRead.Success(state))
+        assertThat(store.deleteRecoveryState()).isTrue()
+        assertThat(store.readRecoveryState()).isEqualTo(NativeCrashRead.Missing)
+    }
+
+    @Test
+    fun `all valid phases round trip`() {
+        for (phase in NativeCrashRecoveryPhase.entries) {
+            for (identity in listOf(null, record)) {
+                val valid =
+                    when (phase) {
+                        NativeCrashRecoveryPhase.MARKER_READ -> identity == null
+                        NativeCrashRecoveryPhase.SNAPSHOT_READ, NativeCrashRecoveryPhase.DELIVERY_CLAIMED -> identity != null
+                        NativeCrashRecoveryPhase.CLEANUP, NativeCrashRecoveryPhase.ABANDONED -> true
+                    }
+                if (!valid) continue
+                val state = NativeCrashRecoveryState.create(phase, 2_000, identity)
+                assertThat(FileNativeCrashStore(tempDir).writeRecoveryState(state)).isTrue()
+                assertThat(FileNativeCrashStore(tempDir).readRecoveryState()).isEqualTo(NativeCrashRead.Success(state))
+            }
+        }
+    }
+
+    @Test
+    fun `invalid writes preserve the previous claim without touching disk`() {
+        val store = FileNativeCrashStore(tempDir)
+        val claim = NativeCrashRecoveryState.create(NativeCrashRecoveryPhase.DELIVERY_CLAIMED, 2_000, record)
+        assertThat(store.writeRecoveryState(claim)).isTrue()
+        val path = File(tempDir, "native-crash-recovery.properties")
+        val bytes = path.readBytes()
+        val invalidStates =
+            listOf(
+                claim.copy(attempts = -1),
+                claim.copy(firstAttemptEpochMillis = 0),
+                claim.copy(firstAttemptEpochMillis = -1),
+                claim.copy(signalNumber = 0),
+                claim.copy(signalNumber = -1),
+                claim.copy(timestampEpochSecond = -1),
+                claim.copy(timestampNano = -1),
+                claim.copy(timestampNano = 1_000_000_000),
+                claim.copy(phase = NativeCrashRecoveryPhase.MARKER_READ),
+                claim.copy(signalNumber = null, timestampEpochSecond = null, timestampNano = null),
+                claim.copy(
+                    phase = NativeCrashRecoveryPhase.SNAPSHOT_READ,
+                    signalNumber = null,
+                    timestampEpochSecond = null,
+                    timestampNano = null,
+                ),
+            ) +
+                NativeCrashRecoveryPhase.entries.flatMap { phase ->
+                    (1..6).map { mask ->
+                        claim.copy(
+                            phase = phase,
+                            signalNumber = claim.signalNumber.takeIf { mask and 1 != 0 },
+                            timestampEpochSecond = claim.timestampEpochSecond.takeIf { mask and 2 != 0 },
+                            timestampNano = claim.timestampNano.takeIf { mask and 4 != 0 },
+                        )
+                    }
+                }
+
+        for (state in invalidStates) {
+            assertThat(store.writeRecoveryState(state)).describedAs("%s", state).isFalse()
+            assertThat(path.readBytes()).isEqualTo(bytes)
+            assertThat(FileNativeCrashStore(tempDir).readRecoveryState()).isEqualTo(NativeCrashRead.Success(claim))
+            assertThat(File(tempDir, "native-crash-recovery.properties.tmp")).doesNotExist()
+        }
+        verify(exactly = 1) { Os.fsync(directoryDescriptor) }
+    }
+
+    @Test
+    fun `valid numeric boundaries round trip`() {
+        val state = NativeCrashRecoveryState.create(NativeCrashRecoveryPhase.DELIVERY_CLAIMED, 1, record)
+        for (boundary in listOf(
+            state.copy(signalNumber = 1, timestampEpochSecond = 0, timestampNano = 0),
+            state.copy(
+                attempts = Int.MAX_VALUE,
+                firstAttemptEpochMillis = Long.MAX_VALUE,
+                signalNumber = Int.MAX_VALUE,
+                timestampEpochSecond = Long.MAX_VALUE,
+                timestampNano = 999_999_999,
+            ),
+        )) {
+            assertThat(FileNativeCrashStore(tempDir).writeRecoveryState(boundary)).isTrue()
+            assertThat(FileNativeCrashStore(tempDir).readRecoveryState()).isEqualTo(NativeCrashRead.Success(boundary))
+        }
+    }
+
+    @Test
+    fun `syncs the directory after replacing recovery state`() {
+        val store = FileNativeCrashStore(tempDir)
+        val state = NativeCrashRecoveryState.create(NativeCrashRecoveryPhase.DELIVERY_CLAIMED, 2_000, record)
+        every { Os.fsync(directoryDescriptor) } answers {
+            assertThat(FileNativeCrashStore(tempDir).readRecoveryState()).isEqualTo(NativeCrashRead.Success(state))
+            assertThat(File(tempDir, "native-crash-recovery.properties.tmp")).doesNotExist()
+        }
+
+        assertThat(store.writeRecoveryState(state)).isTrue()
+
+        verifyOrder {
+            ParcelFileDescriptor.open(tempDir, ParcelFileDescriptor.MODE_READ_ONLY)
+            Os.fsync(directoryDescriptor)
+            directoryHandle.close()
+        }
+    }
+
+    @Test
+    fun `directory sync failure reports failure closes the descriptor and allows retry`() {
+        val store = FileNativeCrashStore(tempDir)
+        val state = NativeCrashRecoveryState.create(NativeCrashRecoveryPhase.DELIVERY_CLAIMED, 2_000, record)
+        every { Os.fsync(directoryDescriptor) } throws IOException("sync failed")
+
+        assertThat(store.writeRecoveryState(state)).isFalse()
+        assertThat(FileNativeCrashStore(tempDir).readRecoveryState()).isEqualTo(NativeCrashRead.Success(state))
+        verify(exactly = 1) { directoryHandle.close() }
+        assertThat(File(tempDir, "native-crash-recovery.properties.tmp")).doesNotExist()
+
+        justRun { Os.fsync(directoryDescriptor) }
+        assertThat(store.writeRecoveryState(state)).isTrue()
+        assertThat(FileNativeCrashStore(tempDir).readRecoveryState()).isEqualTo(NativeCrashRead.Success(state))
+    }
+
+    @Test
+    fun `directory open and close errors fail the write`() {
+        val store = FileNativeCrashStore(tempDir)
+        val state = NativeCrashRecoveryState.create(NativeCrashRecoveryPhase.MARKER_READ, 2_000)
+        every { ParcelFileDescriptor.open(any(), any()) } throws IOException("open failed")
+        assertThat(store.writeRecoveryState(state)).isFalse()
+        assertThat(FileNativeCrashStore(tempDir).readRecoveryState()).isEqualTo(NativeCrashRead.Success(state))
+        verify(exactly = 0) { Os.fsync(any()) }
+        verify(exactly = 0) { directoryHandle.close() }
+
+        every { ParcelFileDescriptor.open(any(), any()) } returns directoryHandle
+        every { directoryHandle.close() } throws IOException("close failed")
+        assertThat(store.writeRecoveryState(state)).isFalse()
+        assertThat(FileNativeCrashStore(tempDir).readRecoveryState()).isEqualTo(NativeCrashRead.Success(state))
+        assertThat(File(tempDir, "native-crash-recovery.properties.tmp")).doesNotExist()
+        verify(exactly = 1) { Os.fsync(directoryDescriptor) }
+        verify(exactly = 1) { directoryHandle.close() }
+    }
+
+    @Test
+    fun `marker read state survives restart`() {
+        val state = NativeCrashRecoveryState.create(NativeCrashRecoveryPhase.MARKER_READ, record.timestamp.toEpochMilli())
+        assertThat(FileNativeCrashStore(tempDir).writeRecoveryState(state)).isTrue()
+        assertThat(FileNativeCrashStore(tempDir).readRecoveryState()).isEqualTo(NativeCrashRead.Success(state))
+    }
+
+    @Test
+    fun `optional identity rejects invalid present fields`() {
+        val store = FileNativeCrashStore(tempDir)
+        val path = File(tempDir, "native-crash-recovery.properties")
+        val invalidFields =
+            mapOf(
+                "signal.number" to listOf("", "0", "-1", "not-a-number", "2147483648"),
+                "recovery.timestamp_epoch_second" to listOf("", "-1", "not-a-number", "9223372036854775808"),
+                "recovery.timestamp_nano" to listOf("", "-1", "1000000000", "not-a-number"),
+            )
+        for (phase in listOf(NativeCrashRecoveryPhase.MARKER_READ, NativeCrashRecoveryPhase.CLEANUP, NativeCrashRecoveryPhase.ABANDONED)) {
+            val state = NativeCrashRecoveryState.create(phase, 2_000)
+            assertThat(store.writeRecoveryState(state)).isTrue()
+            assertThat(store.readRecoveryState()).isEqualTo(NativeCrashRead.Success(state))
+            for ((key, values) in invalidFields) {
+                for (value in values) {
+                    assertThat(store.writeRecoveryState(state)).isTrue()
+                    val properties = Properties().apply { path.inputStream().use { load(it) } }
+                    properties.setProperty(key, value)
+                    path.outputStream().use { properties.store(it, null) }
+                    val bytes = path.readBytes()
+
+                    assertThat(store.readRecoveryState()).describedAs("%s: %s=%s", phase, key, value).isEqualTo(NativeCrashRead.Malformed)
+                    assertThat(path.readBytes()).isEqualTo(bytes)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `a directory at the state path is malformed rather than missing`() {
+        val store = FileNativeCrashStore(tempDir)
+        val path = File(tempDir, "native-crash-recovery.properties")
+        assertThat(store.readRecoveryState()).isEqualTo(NativeCrashRead.Missing)
+        assertThat(path.mkdir()).isTrue()
+        assertThat(store.readRecoveryState()).isEqualTo(NativeCrashRead.Malformed)
+        assertThat(path).isDirectory()
+        val child = File(path, "keep").apply { writeText("keep") }
+        assertThat(store.readRecoveryState()).isEqualTo(NativeCrashRead.Malformed)
+        assertThat(child).hasContent("keep")
+    }
+
+    @Test
+    fun `rejects unknown and incomplete recovery state`() {
+        val store = FileNativeCrashStore(tempDir)
+        val path = File(tempDir, "native-crash-recovery.properties")
+
+        path.writeText("recovery.version=2\n")
+        assertThat(store.readRecoveryState()).isEqualTo(NativeCrashRead.Malformed)
+
+        path.writeText("recovery.phase=\\uZZZZ\n")
+        assertThat(store.readRecoveryState()).isEqualTo(NativeCrashRead.Malformed)
+        assertThat(path).hasContent("recovery.phase=\\uZZZZ\n")
+
+        path.writeText(
+            """
+            recovery.version=1
+            recovery.phase=DELIVERY_CLAIMED
+            recovery.attempts=0
+            recovery.first_attempt_epoch_millis=2000
+            signal.number=11
+            """.trimIndent(),
+        )
+        assertThat(store.readRecoveryState()).isEqualTo(NativeCrashRead.Malformed)
+    }
+
+    @Test
+    fun `invalid recovery fields are rejected without changing the stored record`() {
+        val store = FileNativeCrashStore(tempDir)
+        val path = File(tempDir, "native-crash-recovery.properties")
+        val state = NativeCrashRecoveryState.create(NativeCrashRecoveryPhase.SNAPSHOT_READ, 2_000, record)
+        val invalidFields =
+            listOf(
+                "recovery.phase" to "unknown",
+                "recovery.phase" to "MARKER_READ",
+                "recovery.attempts" to "-1",
+                "recovery.attempts" to "not-a-number",
+                "recovery.first_attempt_epoch_millis" to "0",
+                "recovery.first_attempt_epoch_millis" to "not-a-number",
+                "signal.number" to "0",
+                "recovery.timestamp_epoch_second" to "-1",
+                "recovery.timestamp_nano" to "-1",
+                "recovery.timestamp_nano" to "1000000000",
+            )
+        for ((key, value) in invalidFields) {
+            assertThat(store.writeRecoveryState(state)).isTrue()
+            val properties = Properties().apply { path.inputStream().use { load(it) } }
+            properties.setProperty(key, value)
+            path.outputStream().use { properties.store(it, null) }
+            val bytes = path.readBytes()
+
+            assertThat(store.readRecoveryState()).describedAs("%s=%s", key, value).isEqualTo(NativeCrashRead.Malformed)
+            assertThat(path.readBytes()).isEqualTo(bytes)
+        }
+    }
+
+    @Test
+    fun `failed replacement preserves the previous claim and can be retried`() {
+        val store = FileNativeCrashStore(tempDir)
+        val claim = NativeCrashRecoveryState.create(NativeCrashRecoveryPhase.DELIVERY_CLAIMED, 2_000, record)
+        assertThat(store.writeRecoveryState(claim)).isTrue()
+        val temporaryPath = File(tempDir, "native-crash-recovery.properties.tmp")
+        assertThat(temporaryPath.mkdir()).isTrue()
+        val child = File(temporaryPath, "child").apply { writeText("prevents replacement") }
+        val cleanup = claim.copy(phase = NativeCrashRecoveryPhase.CLEANUP, attempts = 1)
+
+        assertThat(store.writeRecoveryState(cleanup)).isFalse()
+        assertThat(FileNativeCrashStore(tempDir).readRecoveryState()).isEqualTo(NativeCrashRead.Success(claim))
+
+        assertThat(child.delete()).isTrue()
+        assertThat(temporaryPath.delete()).isTrue()
+        assertThat(store.writeRecoveryState(cleanup)).isTrue()
+        assertThat(FileNativeCrashStore(tempDir).readRecoveryState()).isEqualTo(NativeCrashRead.Success(cleanup))
+        assertThat(temporaryPath).doesNotExist()
+    }
+
+    @Test
+    fun `uncreatable recovery directory fails without altering the blocking file`() {
+        val blocker = File(tempDir, "blocked").apply { writeText("keep") }
+        val store = FileNativeCrashStore(File(blocker, "native-crash"))
+
+        assertThat(store.writeRecoveryState(NativeCrashRecoveryState.create(NativeCrashRecoveryPhase.MARKER_READ, 2_000))).isFalse()
+        assertThat(blocker).hasContent("keep")
+    }
+
+    private companion object {
+        val record = NativeCrashRecord(11, Instant.ofEpochSecond(1_783_598_400))
+    }
+}
