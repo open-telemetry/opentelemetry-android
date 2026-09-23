@@ -14,6 +14,7 @@ import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.system.Os
 import android.util.Log
+import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
@@ -916,6 +917,85 @@ class NativeCrashRecoveryTest {
             assertThat(store.marker).isEqualTo(NativeCrashRead.Missing)
             assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
             assertThat(otelTesting.logRecords).hasSize(1)
+        }
+    }
+
+    @Test
+    fun `unavailable lock never permits unowned reads or cleanup`() {
+        val store = mockk<NativeCrashStore>()
+        every { store.acquireRecoveryLock() } returns null
+        val recovery = reporter(store, nowMillis = { Long.MAX_VALUE })
+
+        repeat(4) {
+            assertThat(recovery.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+        }
+        verify(exactly = 4) { store.acquireRecoveryLock() }
+        confirmVerified(store)
+        assertThat(otelTesting.logRecords).isEmpty()
+    }
+
+    @Test
+    fun `unreadable delivery state is never overwritten to force progress`() {
+        val lock = mockk<NativeCrashRecoveryLock>(relaxed = true)
+        val store = mockk<NativeCrashStore>()
+        every { store.acquireRecoveryLock() } returns lock
+        every { store.readRecoveryState() } returns NativeCrashRead.Failed
+        every { store.readCrashRecordForRecovery() } returns NativeCrashRead.Success(record)
+        val recovery = reporter(store, nowMillis = { Long.MAX_VALUE })
+
+        repeat(4) {
+            assertThat(recovery.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+        }
+        verify(exactly = 4) { store.acquireRecoveryLock() }
+        verify(exactly = 4) { store.readRecoveryState() }
+        verify(exactly = 4) { store.readCrashRecordForRecovery() }
+        verify(exactly = 4) { lock.close() }
+        confirmVerified(store, lock)
+        assertThat(otelTesting.logRecords).isEmpty()
+    }
+
+    @Test
+    fun `non-positive clocks do not escape recovery or its error handler`() {
+        for (now in listOf(0L, -1L, Long.MIN_VALUE)) {
+            val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Missing)
+            assertThat(reporter(store, nowMillis = { now }).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+            val failedStore =
+                object : NativeCrashStore by store {
+                    override fun readRecoveryState(): NativeCrashRead<NativeCrashRecoveryState> = error("state read failed")
+                }
+            assertThat(reporter(failedStore, nowMillis = { now }).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+
+            val retryStore = FakeNativeCrashStore(tempDir, NativeCrashRead.Failed)
+            val recovery = reporter(retryStore, nowMillis = { now })
+            repeat(2) { assertThat(recovery.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING) }
+            val state = (retryStore.recoveryState as NativeCrashRead.Success).value
+            assertThat(state.firstAttemptEpochMillis).isEqualTo(1)
+            assertThat(state.isValid()).isTrue()
+            assertThat(recovery.replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        }
+        assertThat(otelTesting.logRecords).isEmpty()
+    }
+
+    @Test
+    fun `large stored attempt counts cannot wrap into another retry`() {
+        for (phase in listOf(NativeCrashRecoveryPhase.SNAPSHOT_READ, NativeCrashRecoveryPhase.CLEANUP)) {
+            otelTesting.clearLogRecords()
+            val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
+            store.snapshot = NativeCrashRead.Failed
+            store.crashFilesDeleteSucceeds = false
+            store.recoveryState = recoveryState(phase, attempts = Int.MAX_VALUE)
+
+            val snapshotPhase = phase == NativeCrashRecoveryPhase.SNAPSHOT_READ
+            assertThat(reporter(store).replayPreviousCrash()).isEqualTo(
+                if (snapshotPhase) NativeCrashRecoveryResult.RETRY_PENDING else NativeCrashRecoveryResult.COMPLETE,
+            )
+            val state = (store.recoveryState as NativeCrashRead.Success).value
+            assertThat(state.phase).isEqualTo(
+                if (snapshotPhase) NativeCrashRecoveryPhase.CLEANUP else NativeCrashRecoveryPhase.ABANDONED,
+            )
+            assertThat(state.attempts).isBetween(0, 3)
+            assertThat(state.isValid()).isTrue()
+            assertThat(otelTesting.logRecords).hasSize(if (snapshotPhase) 1 else 0)
         }
     }
 

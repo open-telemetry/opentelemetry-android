@@ -7,23 +7,6 @@ package io.opentelemetry.android.instrumentation.nativecrash
 
 import java.time.Instant
 
-internal enum class NativeCrashRecoveryResult {
-    COMPLETE,
-    RETRY_PENDING,
-}
-
-internal sealed interface NativeCrashRead<out T> {
-    data class Success<T>(
-        val value: T,
-    ) : NativeCrashRead<T>
-
-    data object Missing : NativeCrashRead<Nothing>
-
-    data object Malformed : NativeCrashRead<Nothing>
-
-    data object Failed : NativeCrashRead<Nothing>
-}
-
 internal enum class NativeCrashRecoveryPhase {
     MARKER_READ,
     SNAPSHOT_READ,
@@ -40,6 +23,20 @@ internal data class NativeCrashRecoveryState(
     val timestampEpochSecond: Long? = null,
     val timestampNano: Int? = null,
 ) {
+    fun isValid(): Boolean {
+        if (attempts < 0 || firstAttemptEpochMillis <= 0) return false
+        val noIdentity = signalNumber == null && timestampEpochSecond == null && timestampNano == null
+        val validIdentity =
+            signalNumber != null && signalNumber > 0 &&
+                timestampEpochSecond != null && timestampEpochSecond >= 0 &&
+                timestampNano != null && timestampNano in 0..999_999_999
+        return when (phase) {
+            NativeCrashRecoveryPhase.MARKER_READ -> noIdentity
+            NativeCrashRecoveryPhase.SNAPSHOT_READ, NativeCrashRecoveryPhase.DELIVERY_CLAIMED -> validIdentity
+            NativeCrashRecoveryPhase.CLEANUP, NativeCrashRecoveryPhase.ABANDONED -> noIdentity || validIdentity
+        }
+    }
+
     fun hasIdentity(): Boolean = signalNumber != null && timestampEpochSecond != null && timestampNano != null
 
     fun matches(record: NativeCrashRecord): Boolean =
@@ -63,10 +60,6 @@ internal data class NativeCrashRecoveryState(
                 signalNumber = record?.signalNumber,
                 timestampEpochSecond = record?.timestamp?.epochSecond,
                 timestampNano = record?.timestamp?.nano,
-            )
+            ).also { require(it.isValid()) { "Invalid native crash recovery state" } }
     }
-}
-
-internal fun interface NativeCrashRecoveryLock : AutoCloseable {
-    override fun close()
 }
