@@ -16,6 +16,9 @@ import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.android.session.SessionPublisher
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -82,6 +85,86 @@ class OpenTelemetryRumInitializerTest {
         verify {
             o1.onSessionStarted(any(), any())
             o2.onSessionStarted(any(), any())
+        }
+    }
+
+    @Test
+    fun `Verify a custom session provider is used`() {
+        val rum =
+            OpenTelemetryRumInitializer.initialize(
+                context = RuntimeEnvironment.getApplication(),
+                configuration = {
+                    httpExport {
+                        baseUrl = "http://127.0.0.1:4318"
+                    }
+                    session {
+                        provider = SessionProvider { "custom-session-id" }
+                    }
+                },
+            )
+        rum.shutdown()
+
+        assertThat(rum.sessionProvider.getSessionId()).isEqualTo("custom-session-id")
+        verify(exactly = 0) {
+            appLifecycle.registerListener(any<SessionIdTimeoutHandler>())
+        }
+    }
+
+    @Test
+    fun `Verify session observers are applied to a custom session publisher`() {
+        val observer: SessionObserver = mockk()
+        val provider = FakeSessionPublisher()
+
+        OpenTelemetryRumInitializer
+            .initialize(
+                context = RuntimeEnvironment.getApplication(),
+                configuration = {
+                    httpExport {
+                        baseUrl = "http://127.0.0.1:4318"
+                    }
+                    session {
+                        this.provider = provider
+                        observers(observer)
+                    }
+                },
+            ).shutdown()
+        assertThat(provider.observers).contains(observer)
+    }
+
+    @Test
+    fun `Verify session observers are ignored by a custom session provider that cannot publish`() {
+        val observer: SessionObserver = mockk()
+
+        val rum =
+            OpenTelemetryRumInitializer.initialize(
+                context = RuntimeEnvironment.getApplication(),
+                configuration = {
+                    httpExport {
+                        baseUrl = "http://127.0.0.1:4318"
+                    }
+                    session {
+                        provider = SessionProvider { "custom-session-id" }
+                        observers(observer)
+                    }
+                },
+            )
+        rum.shutdown()
+
+        assertThat(rum.sessionProvider.getSessionId()).isEqualTo("custom-session-id")
+        verify(exactly = 0) {
+            observer.onSessionStarted(any(), any())
+        }
+    }
+
+    private class FakeSessionPublisher :
+        SessionProvider,
+        SessionPublisher {
+        val observers = mutableListOf<SessionObserver>()
+
+        override fun getSessionId(): String = "custom-session-id"
+
+        override fun addObserver(observer: SessionObserver) {
+            observers.add(observer)
         }
     }
 
