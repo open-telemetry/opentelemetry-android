@@ -11,6 +11,7 @@ import io.opentelemetry.android.agent.dsl.instrumentation.InstrumentationConfigu
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.resources.ResourceBuilder
 
@@ -34,6 +35,7 @@ class OpenTelemetryConfiguration internal constructor(
 
     internal val semanticConventions = SemanticConventionsConfiguration()
     internal var resourceAction: ResourceBuilder.() -> Unit = {}
+    internal val propagatorCustomizers = mutableListOf<(TextMapPropagator) -> TextMapPropagator>()
 
     /**
      * Disable tracing in the SDK by providing no-op implementations that don't incur overhead even if instrumentation creates spans
@@ -113,5 +115,14 @@ class OpenTelemetryConfiguration internal constructor(
      */
     fun resource(action: ResourceBuilder.() -> Unit) {
         resourceAction = action
+    }
+
+    /**
+     * Adds a customizer to alter or replace the [TextMapPropagator].
+     *
+     * Multiple calls will execute the customizers in order.
+     */
+    fun addPropagatorCustomizer(customizer: (TextMapPropagator) -> TextMapPropagator) {
+        propagatorCustomizers.add(customizer)
     }
 }

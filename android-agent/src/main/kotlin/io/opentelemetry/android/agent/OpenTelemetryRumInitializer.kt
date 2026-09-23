@@ -76,6 +76,10 @@ object OpenTelemetryRumInitializer {
                 )
                 setClock(cfg.clock)
 
+                cfg.propagatorCustomizers.forEach { customizer ->
+                    addPropagatorCustomizer { customizer(it) }
+                }
+
                 if (rumConfig.tracingEnabled) {
                     addSpanExporterCustomizer {
                         createSpanExporter(cfg.exportConfig.spansEndpoint())
