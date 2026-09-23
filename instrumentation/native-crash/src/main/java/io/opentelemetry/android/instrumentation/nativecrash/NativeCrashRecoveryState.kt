@@ -7,23 +7,6 @@ package io.opentelemetry.android.instrumentation.nativecrash
 
 import java.time.Instant
 
-internal enum class NativeCrashRecoveryResult {
-    COMPLETE,
-    RETRY_PENDING,
-}
-
-internal sealed interface NativeCrashRead<out T> {
-    data class Success<T>(
-        val value: T,
-    ) : NativeCrashRead<T>
-
-    data object Missing : NativeCrashRead<Nothing>
-
-    data object Malformed : NativeCrashRead<Nothing>
-
-    data object Failed : NativeCrashRead<Nothing>
-}
-
 internal enum class NativeCrashRecoveryPhase {
     MARKER_READ,
     SNAPSHOT_READ,
@@ -79,8 +62,4 @@ internal data class NativeCrashRecoveryState(
                 timestampNano = record?.timestamp?.nano,
             ).also { require(it.isValid()) { "Invalid native crash recovery state" } }
     }
-}
-
-internal fun interface NativeCrashRecoveryLock : AutoCloseable {
-    override fun close()
 }
