@@ -128,20 +128,21 @@ class ResourceConfigTest {
     }
 
     @Test
-    fun testSetResource() {
+    fun testMultipleResourceBlocksPreservesLastOnly() {
         val ctx = ApplicationProvider.getApplicationContext<Context>()
-        val customResource =
-            Resource
-                .builder()
-                .put("service.name", "my-service")
-                .build()
         val cfg = OpenTelemetryConfiguration(instrumentationLoader = mockk(relaxed = true))
 
-        cfg.setResource(customResource)
+        cfg.resource {
+            put("first.key", "first.value")
+        }
+        cfg.resource {
+            put("second.key", "second.value")
+        }
         val resource = cfg.resourceProvider(ctx)
+        val attrs = resource.attributes.asMap()
 
-        assertEquals(customResource, resource)
-        assertNull(resource.attributes.get(stringKey(ANDROID_OS_API_LEVEL)))
+        assertEquals("second.value", attrs[stringKey("second.key")])
+        assertNull(attrs[stringKey("first.key")])
     }
 
     @Test

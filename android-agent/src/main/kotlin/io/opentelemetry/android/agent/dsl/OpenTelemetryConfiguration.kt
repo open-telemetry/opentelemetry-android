@@ -36,8 +36,15 @@ class OpenTelemetryConfiguration internal constructor(
     internal val instrumentations = InstrumentationConfiguration(rumConfig, instrumentationLoader)
 
     internal val semanticConventions = SemanticConventionsConfiguration()
-    internal var resourceProvider: (Context) -> Resource = { ctx ->
+    internal var baseResourceProvider: (Context) -> Resource = { ctx ->
         AndroidResource.createDefault(ctx)
+    }
+    internal var resourceAction: ResourceBuilder.() -> Unit = {}
+    internal var resourceProvider: (Context) -> Resource = { ctx ->
+        baseResourceProvider(ctx)
+            .toBuilder()
+            .apply(resourceAction)
+            .build()
     }
 
     /**
@@ -117,17 +124,15 @@ class OpenTelemetryConfiguration internal constructor(
      * Configures the resource attributes that are used globally by acting on a [ResourceBuilder].
      */
     fun resource(action: ResourceBuilder.() -> Unit) {
-        val currentProvider = resourceProvider
-        resourceProvider = { ctx ->
-            currentProvider(ctx).toBuilder().apply(action).build()
-        }
+        resourceAction = action
     }
 
     /**
      * Configures the resource that is used globally. This replaces any default resource.
      */
     fun resource(resource: Resource) {
-        resourceProvider = { resource }
+        baseResourceProvider = { resource }
+        resourceAction = {}
     }
 
     /**
@@ -138,15 +143,7 @@ class OpenTelemetryConfiguration internal constructor(
         resource: Resource,
         action: ResourceBuilder.() -> Unit,
     ) {
-        resourceProvider = {
-            resource.toBuilder().apply(action).build()
-        }
-    }
-
-    /**
-     * Assigns a [Resource] to be attached to all telemetry. This replaces any default resource.
-     */
-    fun setResource(resource: Resource) {
-        resource(resource)
+        baseResourceProvider = { resource }
+        resourceAction = action
     }
 }
