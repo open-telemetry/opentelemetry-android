@@ -7,14 +7,18 @@ package io.opentelemetry.android.instrumentation.nativecrash
 
 import android.util.Log
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.nio.channels.FileChannel
 import java.util.concurrent.TimeUnit
 
 class NativeCrashRecoveryLockTest {
@@ -132,5 +136,29 @@ class NativeCrashRecoveryLockTest {
         checkNotNull(FileNativeCrashStore(tempDir).acquireRecoveryLock()).use {
             assertThat(FileNativeCrashStore(File(tempDir, "child/..")).acquireRecoveryLock()).isNull()
         }
+    }
+
+    @Test
+    fun `an error while opening the channel releases the process owner`() {
+        val failure = AssertionError("injected channel open error")
+        val store = FileNativeCrashStore(tempDir, openRecoveryChannel = { throw failure })
+
+        assertThatThrownBy { store.acquireRecoveryLock() }.isSameAs(failure)
+        checkNotNull(FileNativeCrashStore(tempDir).acquireRecoveryLock()).close()
+    }
+
+    @Test
+    fun `an error while locking closes the channel and releases the process owner`() {
+        val failure = AssertionError("injected lock error")
+        val channel = mockk<FileChannel>()
+        var open = true
+        every { channel.lock() } throws failure
+        every { channel.isOpen } answers { open }
+        every { channel.close() } answers { open = false }
+        val store = FileNativeCrashStore(tempDir, openRecoveryChannel = { channel })
+
+        assertThatThrownBy { store.acquireRecoveryLock() }.isSameAs(failure)
+        verify(exactly = 1) { channel.close() }
+        checkNotNull(FileNativeCrashStore(tempDir).acquireRecoveryLock()).close()
     }
 }
