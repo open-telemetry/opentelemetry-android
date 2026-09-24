@@ -19,9 +19,12 @@ include(":test-common")
 include(":animal-sniffer-signature")
 include(":common")
 include(":services")
+include(":services-network")
 include(":session")
 include(":semconv")
 include(":opentelemetry-android-bom")
+include(":smoke-test")
+include(":smoke-test-app")
 includeFromDir("instrumentation")
 
 fun includeFromDir(

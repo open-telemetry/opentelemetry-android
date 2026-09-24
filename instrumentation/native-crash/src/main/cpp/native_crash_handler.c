@@ -18,6 +18,9 @@
 #include <time.h>
 #include <unistd.h>
 
+// Compile the snapshot format's layout assertions before capture uses the record.
+#include "native_crash_snapshot.h"
+
 #define SIGNAL_COUNT 7
 #define TEMPORARY_SUFFIX ".tmp"
 #define MARKER_BUFFER_SIZE 128
@@ -149,6 +152,7 @@ static bool write_crash_marker_at(
 }
 
 static void write_crash_marker(int signal_number) {
+    // Snapshot capture must reuse this timestamp; see SNAPSHOT_FORMAT.md.
     struct timespec crash_time;
     if (clock_gettime(CLOCK_REALTIME, &crash_time) != 0 || crash_time.tv_sec < 0 ||
         crash_time.tv_nsec < 0) {

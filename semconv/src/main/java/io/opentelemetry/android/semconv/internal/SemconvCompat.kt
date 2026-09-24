@@ -5,8 +5,10 @@
 
 package io.opentelemetry.android.semconv.internal
 
+import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_PREVIOUS_NAME
+import io.opentelemetry.android.semconv.LastAttributes.LAST_SCREEN_NAME
 import io.opentelemetry.android.semconv.ScreenAttributes.SCREEN_NAME
-import io.opentelemetry.kotlin.semconv.AppAttributes
+import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 
 /**
@@ -19,6 +21,7 @@ class SemconvCompat internal constructor() {
     companion object {
         var useLatestExperimental = true
 
+        @Suppress("DEPRECATION")
         fun map(key: String): String {
             if (useLatestExperimental) {
                 return key
@@ -27,7 +30,9 @@ class SemconvCompat internal constructor() {
                 // new -> old
                 "app.crash" -> "device.crash"
 
-                AppAttributes.APP_SCREEN_NAME -> SCREEN_NAME
+                APP_SCREEN_NAME -> SCREEN_NAME
+
+                APP_SCREEN_PREVIOUS_NAME -> LAST_SCREEN_NAME
 
                 else -> key
             }

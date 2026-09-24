@@ -5,8 +5,8 @@
 
 package io.opentelemetry.android.instrumentation.crash
 
-import io.opentelemetry.android.common.internal.utils.threadIdCompat
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
+import io.opentelemetry.android.instrumentation.utils.threadIdCompat
 import io.opentelemetry.android.semconv.internal.SemconvCompat.Companion.map
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.Attributes

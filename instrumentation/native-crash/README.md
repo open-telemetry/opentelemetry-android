@@ -23,12 +23,16 @@ timestamp.epoch_nanos=<positive integer>
 
 The native writer and Kotlin reader must keep these keys and value formats in sync.
 
+The versioned binary format used for native frame recovery is documented in
+[`SNAPSHOT_FORMAT.md`](SNAPSHOT_FORMAT.md). Runtime snapshot capture remains follow-up work.
+
 ## Telemetry
 
 The replayed event uses the original crash timestamp and includes:
 
 * `exception.type`
 * `exception.message`
+* `exception.stacktrace`, when a matching snapshot contains recoverable frames
 * `session.id`, when available
 * `service.version`, when available
 * `os.name`
@@ -44,7 +48,7 @@ Building the native library requires CMake 3.22.1 or newer.
 Add the instrumentation dependency:
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:native-crash:1.6.0-alpha")
+implementation("io.opentelemetry.android.instrumentation:native-crash:1.7.0-alpha")
 ```
 
 The module is discovered and installed automatically when it is present on the runtime classpath.
@@ -53,13 +57,12 @@ enabling the native signal handler.
 
 ## Limitations
 
-Native stack capture is not included. This module does not create or attach a binary crash dump.
-Symbol upload and symbolication are downstream concerns and require a separate design once native
-stack frames are available.
+Native stack capture is not included. Recovery only consumes a snapshot written by a compatible
+future signal handler. Symbol upload and symbolication are downstream concerns.
 
 Crashes that happen before native crash instrumentation finishes initialization are not recorded.
 
-The persisted crash marker is deleted immediately after its event is emitted. Replay is therefore
-at most once: if the application exits before the telemetry is exported, that crash event may be
-lost. A later change may add support for preserving multiple consecutive startup crashes.
-Unreadable or malformed markers are discarded rather than retried.
+The current marker-only implementation deletes the persisted marker immediately after its event is
+emitted. Replay is therefore at most once: if the application exits before the telemetry is
+exported, that crash event may be lost. A later change may add support for preserving multiple
+consecutive startup crashes. Unreadable or malformed markers are discarded rather than retried.

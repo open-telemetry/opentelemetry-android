@@ -16,6 +16,7 @@ import io.opentelemetry.kotlin.semconv.DeviceAttributes.DEVICE_MANUFACTURER
 import io.opentelemetry.kotlin.semconv.DeviceAttributes.DEVICE_MODEL_IDENTIFIER
 import io.opentelemetry.kotlin.semconv.DeviceAttributes.DEVICE_MODEL_NAME
 import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.semconv.OsAttributes.OS_BUILD_ID
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_DESCRIPTION
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_NAME
 import io.opentelemetry.kotlin.semconv.OsAttributes.OS_TYPE
@@ -80,6 +81,7 @@ class ResourceConfigTest {
         assertEquals("Android", attrs[stringKey(OS_NAME)])
         assertEquals("linux", attrs[stringKey(OS_TYPE)])
         assertEquals("6.0.1", attrs[stringKey(OS_VERSION)])
+        assertEquals("MMB29M", attrs[stringKey(OS_BUILD_ID)])
         assertEquals("Android Version 6.0.1 (Build MMB29M API level 23)", attrs[stringKey(OS_DESCRIPTION)])
         assertEquals("java", attrs[stringKey(TELEMETRY_SDK_LANGUAGE)])
         assertEquals("opentelemetry", attrs[stringKey(TELEMETRY_SDK_NAME)])

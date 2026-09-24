@@ -44,7 +44,7 @@ from all other opentelemetry dependencies:
 ```kotlin
 dependencies {
     //...
-    api(platform("io.opentelemetry.android:opentelemetry-android-bom:1.6.0-alpha"))
+    api(platform("io.opentelemetry.android:opentelemetry-android-bom:1.7.0-alpha"))
     implementation("io.opentelemetry.android:android-agent") // Version is resolved through the BOM
     //...
 }
@@ -72,7 +72,7 @@ Then use the latest snapshot version with the BOM in your app's `build.gradle.kt
 
 ```kotlin
 dependencies {
-    implementation(platform("io.opentelemetry.android:opentelemetry-android-bom:1.7.0-alpha-SNAPSHOT"))
+    implementation(platform("io.opentelemetry.android:opentelemetry-android-bom:1.8.0-alpha-SNAPSHOT"))
     implementation("io.opentelemetry.android:android-agent")
 }
 ```
@@ -114,6 +114,11 @@ private fun initOTel(context: Context): OpenTelemetryRum? =
                 session {
                     backgroundInactivityTimeout = 5.minutes
                     maxLifetime = 1.days
+                }
+                diskBuffering {
+                    enabled(true)
+                    maxCacheSize = 5 * 1024 * 1024
+                    exportPeriod = 30.seconds
                 }
                 globalAttributes {
                     Attributes.of(stringKey("demo-version"), "test")
@@ -193,9 +198,11 @@ For more information about the maintainer role, see the [community repository](h
 
 ## Approvers
 
+- [Ben Joseph](https://github.com/benjoseph-grafana), Grafana
 - [DavidGrath](https://github.com/DavidGrath)
 - [Hanson Ho](https://github.com/bidetofevil), Embrace
 - [Manoel Aranda Neto](https://github.com/marandaneto), PostHog
+- [Vishwan Aranha](https://github.com/aranhave), Grafana
 
 For more information about the Approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
 

@@ -18,17 +18,18 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.common.internal.features.networkattributes.data.Carrier
-import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
-import io.opentelemetry.android.common.internal.features.networkattributes.data.NetworkState
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener
+import io.opentelemetry.android.internal.services.network.Carrier
+import io.opentelemetry.android.internal.services.network.CurrentNetwork
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
 import io.opentelemetry.android.internal.services.network.NetworkChangeListener
 import io.opentelemetry.android.internal.services.network.NetworkProviderHolder
+import io.opentelemetry.android.internal.services.network.NetworkState
 import io.opentelemetry.android.semconv.NetworkAttributes.NETWORK_STATUS_KEY
 import io.opentelemetry.android.semconv.events.NetworkChangeEvent.Companion.NETWORK_CHANGE_EVENT_NAME
+import io.opentelemetry.android.semconv.internal.SemconvCompat
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.kotlin.semconv.IncubatingApi
@@ -71,6 +72,7 @@ class NetworkChangeInstrumentationTest {
     fun tearDown() {
         NetworkProviderHolder.set(null)
         Services.set(null)
+        SemconvCompat.useLatestExperimental = true
     }
 
     @Test
@@ -92,7 +94,6 @@ class NetworkChangeInstrumentationTest {
         assertThat(event)
             .hasEventName(NETWORK_CHANGE_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(NETWORK_STATUS_KEY, "available"),
                 equalTo(stringKey(NETWORK_CONNECTION_TYPE), "wifi"),
             )
     }
@@ -123,7 +124,6 @@ class NetworkChangeInstrumentationTest {
         assertThat(event)
             .hasEventName(NETWORK_CHANGE_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(NETWORK_STATUS_KEY, "available"),
                 equalTo(stringKey(NETWORK_CONNECTION_TYPE), "cell"),
                 equalTo(stringKey(NETWORK_CONNECTION_SUBTYPE), "LTE"),
                 equalTo(stringKey(NETWORK_CARRIER_NAME), "ShadyTel"),
@@ -152,7 +152,6 @@ class NetworkChangeInstrumentationTest {
         assertThat(event)
             .hasEventName(NETWORK_CHANGE_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
-                equalTo(NETWORK_STATUS_KEY, "lost"),
                 equalTo(stringKey(NETWORK_CONNECTION_TYPE), "unavailable"),
             )
     }
@@ -192,8 +191,55 @@ class NetworkChangeInstrumentationTest {
         assertThat(event)
             .hasEventName(NETWORK_CHANGE_EVENT_NAME)
             .hasAttributesSatisfyingExactly(
+                equalTo(stringKey(NETWORK_CONNECTION_TYPE), "unavailable"),
+            )
+    }
+
+    @Test
+    @Suppress("DEPRECATION")
+    fun legacySemconv_networkLost() {
+        SemconvCompat.useLatestExperimental = false
+        val networkChangeListenerSlot = slot<NetworkChangeListener>()
+        val (context, openTelemetryRum) = createTestDependencies()
+        NetworkChangeInstrumentation().install(context, openTelemetryRum)
+
+        verify {
+            currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
+        }
+
+        networkChangeListenerSlot.captured.onNetworkChange(
+            CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE),
+        )
+
+        assertThat(otelTesting.logRecords.single())
+            .hasEventName(NETWORK_CHANGE_EVENT_NAME)
+            .hasAttributesSatisfyingExactly(
                 equalTo(NETWORK_STATUS_KEY, "lost"),
                 equalTo(stringKey(NETWORK_CONNECTION_TYPE), "unavailable"),
+            )
+    }
+
+    @Test
+    @Suppress("DEPRECATION")
+    fun legacySemconv_networkAvailable() {
+        SemconvCompat.useLatestExperimental = false
+        val networkChangeListenerSlot = slot<NetworkChangeListener>()
+        val (context, openTelemetryRum) = createTestDependencies()
+        NetworkChangeInstrumentation().install(context, openTelemetryRum)
+
+        verify {
+            currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
+        }
+
+        networkChangeListenerSlot.captured.onNetworkChange(
+            CurrentNetwork(NetworkState.TRANSPORT_WIFI),
+        )
+
+        assertThat(otelTesting.logRecords.single())
+            .hasEventName(NETWORK_CHANGE_EVENT_NAME)
+            .hasAttributesSatisfyingExactly(
+                equalTo(NETWORK_STATUS_KEY, "available"),
+                equalTo(stringKey(NETWORK_CONNECTION_TYPE), "wifi"),
             )
     }
 

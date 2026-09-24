@@ -6,8 +6,8 @@
 package io.opentelemetry.android.instrumentation.anr
 
 import android.os.Handler
-import io.opentelemetry.android.common.internal.utils.threadIdCompat
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
+import io.opentelemetry.android.instrumentation.utils.threadIdCompat
 import io.opentelemetry.android.semconv.events.DeviceAnrEvent
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger

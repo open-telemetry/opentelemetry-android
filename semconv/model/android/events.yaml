@@ -192,6 +192,8 @@ groups:
     attributes:
       - ref: network.status
         requirement_level: recommended
+      - ref: network.connection.type
+        requirement_level: recommended
   - id: event.rum.sdk.init.started
     type: event
     name: rum.sdk.init.started
