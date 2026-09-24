@@ -34,8 +34,10 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
+import java.nio.channels.FileChannel
 import java.time.Instant
 import java.util.Properties
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -206,6 +208,12 @@ internal interface NativeCrashStore {
 
     fun readCrashSnapshot(record: NativeCrashRecord): NativeCrashSnapshot?
 
+    /**
+     * Waits for another process to release the lock. Returns null for a same-process overlap or
+     * an open/acquisition failure. A null result never grants ownership; callers must defer recovery.
+     */
+    fun acquireRecoveryLock(): NativeCrashRecoveryLock?
+
     fun deleteCrashSnapshot(): Boolean
 
     fun deleteCrashFiles(): Boolean
@@ -217,8 +225,10 @@ internal interface NativeCrashStore {
 
 internal class FileNativeCrashStore(
     private val directory: File,
+    private val openRecoveryChannel: (File) -> FileChannel = { FileOutputStream(it, true).channel },
 ) : NativeCrashStore {
     private val contextPath = File(directory, "native-crash-context.properties")
+    private val recoveryLockPath = File(directory, "native-crash-recovery.lock")
     override val crashRecordPath = File(directory, "native-crash-record.properties")
     override val crashSnapshotPath = File(directory, "native-crash-snapshot.bin")
 
@@ -266,6 +276,57 @@ internal class FileNativeCrashStore(
             }
         if (snapshot == null) deleteCrashSnapshot()
         return snapshot
+    }
+
+    override fun acquireRecoveryLock(): NativeCrashRecoveryLock? {
+        val lockPath =
+            try {
+                recoveryLockPath.canonicalPath
+            } catch (error: Exception) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to resolve native crash recovery lock", error)
+                return null
+            }
+        // Older Android runtimes do not reject overlapping locks on separate channels in this process.
+        val owner = Any()
+        if (processRecoveryLocks.putIfAbsent(lockPath, owner) != null) return null
+        var channel: FileChannel? = null
+        var ownershipTransferred = false
+        return try {
+            if (!directory.isDirectory && !directory.mkdirs() && !directory.isDirectory) {
+                throw IOException("Failed to create native crash directory")
+            }
+            val openedChannel = openRecoveryChannel(recoveryLockPath)
+            channel = openedChannel
+            // Recovery owns fixed marker and snapshot paths until cleanup completes. Wait on this
+            // background executor so another process cannot install a handler and overwrite them.
+            val lock = openedChannel.lock()
+            NativeCrashRecoveryLock {
+                try {
+                    lock.release()
+                } catch (error: Exception) {
+                    Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to release native crash recovery lock", error)
+                } catch (error: LinkageError) {
+                    Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to release native crash recovery lock", error)
+                } finally {
+                    closeRecoveryChannel(openedChannel, lockPath, owner)
+                }
+            }.also { ownershipTransferred = true }
+        } catch (error: Exception) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to acquire native crash recovery lock", error)
+            null
+        } catch (error: LinkageError) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to acquire native crash recovery lock", error)
+            null
+        } finally {
+            if (!ownershipTransferred) {
+                val openedChannel = channel
+                if (openedChannel == null) {
+                    processRecoveryLocks.remove(lockPath, owner)
+                } else {
+                    closeRecoveryChannel(openedChannel, lockPath, owner)
+                }
+            }
+        }
     }
 
     override fun deleteCrashSnapshot(): Boolean = deleteFile(crashSnapshotPath, "native crash snapshot")
@@ -352,7 +413,24 @@ internal class FileNativeCrashStore(
             false
         }
 
+    private fun closeRecoveryChannel(
+        channel: FileChannel,
+        lockPath: String,
+        owner: Any,
+    ) {
+        try {
+            channel.close()
+        } catch (error: Exception) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to close native crash recovery lock", error)
+        } catch (error: LinkageError) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to close native crash recovery lock", error)
+        } finally {
+            if (!channel.isOpen) processRecoveryLocks.remove(lockPath, owner)
+        }
+    }
+
     private companion object {
+        val processRecoveryLocks = ConcurrentHashMap<String, Any>()
         const val SIGNAL_NUMBER_KEY = "signal.number"
         const val TIMESTAMP_EPOCH_NANOS_KEY = "timestamp.epoch_nanos"
     }
