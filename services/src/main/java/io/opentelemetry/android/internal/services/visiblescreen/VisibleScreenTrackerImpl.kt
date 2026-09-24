@@ -22,10 +22,17 @@ import java.util.concurrent.atomic.AtomicReference
  * Wherein we do our best to figure out what "screen" is visible and what was the previously visible
  * "screen".
  *
- * In general, we favor using the last fragment that was resumed, but fall back to the last
- * resumed activity in case we don't have a fragment.
+ * In general, we favor the most recently reported navigation destination, then the last fragment
+ * that was resumed, and fall back to the last resumed activity in case we have neither. A
+ * destination is scoped to the activity that was resumed when it was reported: it only outranks
+ * fragments and activities while that activity is still the resumed one. While it applies it
+ * outranks both, including a DialogFragment shown over it.
  *
- * We always ignore NavHostFragment instances since they aren't ever visible to the user.
+ * Navigation destinations contribute only to the currently visible screen. The previously visible
+ * screen is still derived from fragments and activities alone.
+ *
+ * We always ignore NavHostFragment instances since they aren't ever visible to the user. That
+ * concerns the host fragment itself, not the destinations a navigation library reports to us.
  *
  * We have to treat DialogFragments slightly differently since they don't replace the launching
  * screen, and the launching screen never leaves visibility.
@@ -37,6 +44,7 @@ internal class VisibleScreenTrackerImpl internal constructor(
     private val previouslyLastResumedActivity = AtomicReference<String>()
     private val lastResumedFragment = AtomicReference<String>()
     private val previouslyLastResumedFragment = AtomicReference<String?>()
+    private val currentNavigationDestination = AtomicReference<NavigationDestination?>()
     private val activityLifecycleTracker by lazy { buildActivitiesTracker() }
     private val fragmentLifecycleTrackerRegisterer by lazy { buildFragmentsTrackerRegisterer() }
 
@@ -76,11 +84,15 @@ internal class VisibleScreenTrackerImpl internal constructor(
 
     override val currentlyVisibleScreen: String
         get() {
+            val lastActivity = lastResumedActivity.get()
+            val destination = currentNavigationDestination.get()
+            if (destination != null && destination.hostActivity == lastActivity) {
+                return destination.name
+            }
             val lastFragment = lastResumedFragment.get()
             if (lastFragment != null) {
                 return lastFragment
             }
-            val lastActivity = lastResumedActivity.get()
             if (lastActivity != null) {
                 return lastActivity
             }
@@ -121,6 +133,22 @@ internal class VisibleScreenTrackerImpl internal constructor(
         previouslyLastResumedFragment.set(fragment.javaClass.simpleName)
     }
 
+    override fun navigationDestinationChanged(
+        owner: Any,
+        destinationName: String,
+    ) {
+        currentNavigationDestination.set(
+            NavigationDestination(owner, lastResumedActivity.get(), destinationName),
+        )
+    }
+
+    override fun navigationDestinationCleared(owner: Any) {
+        val current = currentNavigationDestination.get() ?: return
+        if (current.owner === owner) {
+            currentNavigationDestination.compareAndSet(current, null)
+        }
+    }
+
     override fun close() {
         application?.let {
             it.unregisterActivityLifecycleCallbacks(activityLifecycleTracker)
@@ -128,3 +156,13 @@ internal class VisibleScreenTrackerImpl internal constructor(
         }
     }
 }
+
+/**
+ * A navigation destination together with the source that reported it and the activity that was
+ * resumed at the time. The [owner] governs clears; the [hostActivity] governs reads.
+ */
+private class NavigationDestination(
+    val owner: Any,
+    val hostActivity: String?,
+    val name: String,
+)

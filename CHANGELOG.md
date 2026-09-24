@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### 📈 Enhancements
+
+- `VisibleScreenTracker` can now be told about a screen that is neither an Activity nor a Fragment,
+  and the Compose Navigation instrumentation reports its resolved destination name through it. For
+  apps that attach that instrumentation, the destination takes precedence over the last resumed
+  fragment and activity while its host Activity is resumed and the controller remains in the
+  composition.
+  ([#2011](https://github.com/open-telemetry/opentelemetry-android/pull/2011),
+  [#1909](https://github.com/open-telemetry/opentelemetry-android/issues/1909))
+
 ## Version 1.7.0 (2026-09-04)
 
 ### 📣 Migration notes
