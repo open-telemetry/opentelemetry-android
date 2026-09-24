@@ -5,6 +5,9 @@
 
 package io.opentelemetry.android.agent.dsl
 
+import io.opentelemetry.android.Incubating
+import io.opentelemetry.android.agent.session.InMemorySessionStorage
+import io.opentelemetry.android.agent.session.SessionStorage
 import io.opentelemetry.android.session.SessionObserver
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
@@ -14,6 +17,7 @@ import kotlin.time.Duration.Companion.minutes
  * Type-safe config DSL that controls how sessions should behave.
  */
 @OpenTelemetryDslMarker
+@OptIn(Incubating::class)
 class SessionConfiguration internal constructor() {
     /**
      * The maximum duration which a session can remain open in the background before it
@@ -25,6 +29,19 @@ class SessionConfiguration internal constructor() {
      * The maximum duration which a session can remain open before it automatically expires.
      */
     var maxLifetime: Duration = 4.hours
+
+    internal var sessionStorage: SessionStorage = InMemorySessionStorage()
+        private set
+
+    /**
+     * Replaces the default in-memory storage without changing session generation, expiry, or
+     * observers. This does not restore sessions across launches; see [SessionStorage] for the
+     * startup and failure contract. If called more than once, the last storage supplied is used.
+     */
+    @Incubating
+    fun storage(storage: SessionStorage) {
+        sessionStorage = storage
+    }
 
     private var observersList: MutableList<SessionObserver> = mutableListOf()
 

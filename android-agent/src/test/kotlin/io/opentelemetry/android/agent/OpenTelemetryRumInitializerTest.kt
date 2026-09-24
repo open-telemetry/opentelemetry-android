@@ -15,8 +15,10 @@ import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
+import io.opentelemetry.android.agent.session.SessionStorage
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
+import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.sdk.testing.time.TestClock
 import org.assertj.core.api.Assertions.assertThat
@@ -28,7 +30,10 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.LooperMode
 import org.robolectric.shadows.ShadowSystemClock
 import java.time.Duration
+import java.util.Collections
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MINUTES
+import kotlin.time.Duration.Companion.hours
 
 @OptIn(Incubating::class)
 @RunWith(AndroidJUnit4::class)
@@ -121,13 +126,17 @@ class OpenTelemetryRumInitializerTest {
     }
 
     @Test
-    fun `span and log attribution do not extend background inactivity`() {
+    fun `span and log attribution with custom storage do not extend background inactivity`() {
         val listener = slot<SessionIdTimeoutHandler>()
         every { appLifecycle.registerListener(capture(listener)) } just Runs
         val clock = TestClock.create()
+        val storage = mockk<SessionStorage>()
+        val saved = Collections.synchronizedList(mutableListOf<Session>())
+        every { storage.save(capture(saved)) } returns Unit
         val rum =
             OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
                 this.clock = clock
+                session { storage(storage) }
                 diskBuffering { enabled(false) }
                 httpExport { baseUrl = "http://127.0.0.1:4318" }
             }
@@ -151,7 +160,45 @@ class OpenTelemetryRumInitializerTest {
                 assertThat(rum.sessionProvider.getSessionId()).isEqualTo(first)
             }
             clock.advance(1, MINUTES)
-            assertThat(rum.sessionProvider.getSessionId()).isNotEqualTo(first)
+            val next = rum.sessionProvider.getSessionId()
+            assertThat(next).isNotEqualTo(first)
+            assertThat(saved.map { it.id }).containsExactly(first, next)
+            verify(exactly = 0) { storage.get() }
+        } finally {
+            rum.shutdown()
+        }
+    }
+
+    @Test
+    fun `custom storage is used by the configured manager`() {
+        val storage = mockk<SessionStorage>()
+        val saved = Collections.synchronizedList(mutableListOf<Session>())
+        every { storage.save(capture(saved)) } returns Unit
+        val testClock = TestClock.create()
+        val observer = mockk<SessionObserver>(relaxed = true)
+        val rum =
+            OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
+                clock = testClock
+                disableLogging()
+                disableTracing()
+                disableMetrics()
+                session {
+                    storage(storage)
+                    maxLifetime = 1.hours
+                    observers(observer)
+                }
+            }
+        try {
+            val first = rum.sessionProvider.getSessionId()
+            assertThat(saved.first().id).isEqualTo(first)
+            assertThat(saved.last().id).isEqualTo(first)
+            testClock.advance(1, TimeUnit.HOURS)
+            val second = rum.sessionProvider.getSessionId()
+            assertThat(second).isNotEqualTo(first)
+            assertThat(saved.map { it.id }).containsExactly(first, second)
+            verify { observer.onSessionStarted(match { it.id == second }, match { it.id == first }) }
+            verify { appLifecycle.registerListener(any<SessionIdTimeoutHandler>()) }
+            verify(exactly = 0) { storage.get() }
         } finally {
             rum.shutdown()
         }

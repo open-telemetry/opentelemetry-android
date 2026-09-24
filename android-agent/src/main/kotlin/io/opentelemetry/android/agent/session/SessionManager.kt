@@ -15,6 +15,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.random.Random
 import kotlin.time.Duration
 
+@OptIn(Incubating::class)
 internal class SessionManager(
     private val clock: Clock,
     private val sessionStorage: SessionStorage = InMemorySessionStorage(),
@@ -24,15 +25,14 @@ internal class SessionManager(
 ) : SessionProvider,
     SessionPublisher,
     SessionUserInteractionRecorder {
+    private val lock = Any()
+
     @Volatile
     private var session: Session = invalidSession
-    private val lock = Any()
-    private var transitionInProgress = false
-    private val observers = CopyOnWriteArrayList<SessionObserver>()
 
-    init {
-        sessionStorage.save(session)
-    }
+    private var transitionInProgress = false
+
+    private val observers = CopyOnWriteArrayList<SessionObserver>()
 
     override fun addObserver(observer: SessionObserver) {
         observers.add(observer)
@@ -108,11 +108,13 @@ internal class SessionManager(
             timeoutHandler: SessionIdTimeoutHandler,
             sessionConfig: SessionConfig,
             clock: Clock,
+            sessionStorage: SessionStorage = InMemorySessionStorage(),
         ): SessionManager =
             SessionManager(
                 timeoutHandler = timeoutHandler,
                 maxSessionLifetime = sessionConfig.maxLifetime,
                 clock = clock,
+                sessionStorage = sessionStorage,
             )
     }
 }
