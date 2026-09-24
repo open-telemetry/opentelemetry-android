@@ -88,9 +88,11 @@ public final class io/opentelemetry/android/agent/dsl/SemanticConventionsConfigu
 
 public final class io/opentelemetry/android/agent/dsl/SessionConfiguration {
 	public final fun getBackgroundInactivityTimeout-UwyO8pc ()J
+	public final fun getLinkPreviousSessionOnRestart ()Z
 	public final fun getMaxLifetime-UwyO8pc ()J
 	public final fun observers ([Lio/opentelemetry/android/session/SessionObserver;)V
 	public final fun setBackgroundInactivityTimeout-LRDsOJo (J)V
+	public final fun setLinkPreviousSessionOnRestart (Z)V
 	public final fun setMaxLifetime-LRDsOJo (J)V
 	public final fun storage (Lio/opentelemetry/android/agent/session/SessionStorage;)V
 }
@@ -145,7 +147,13 @@ public final class io/opentelemetry/android/agent/dsl/instrumentation/SlowRender
 }
 
 public abstract interface class io/opentelemetry/android/agent/session/SessionStorage {
+	public static final field Companion Lio/opentelemetry/android/agent/session/SessionStorage$Companion;
+	public static fun file (Ljava/io/File;)Lio/opentelemetry/android/agent/session/SessionStorage;
 	public abstract fun get ()Lio/opentelemetry/android/session/Session;
 	public abstract fun save (Lio/opentelemetry/android/session/Session;)V
+}
+
+public final class io/opentelemetry/android/agent/session/SessionStorage$Companion {
+	public final fun file (Ljava/io/File;)Lio/opentelemetry/android/agent/session/SessionStorage;
 }
 
