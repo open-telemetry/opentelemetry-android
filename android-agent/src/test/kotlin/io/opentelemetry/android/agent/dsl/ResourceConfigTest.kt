@@ -8,6 +8,7 @@ package io.opentelemetry.android.agent.dsl
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.mockk.mockk
 import io.opentelemetry.android.agent.OpenTelemetryRumInitializer
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.AttributeKey.stringKey
@@ -25,9 +26,11 @@ import io.opentelemetry.kotlin.semconv.ServiceAttributes.SERVICE_NAME
 import io.opentelemetry.kotlin.semconv.TelemetryAttributes.TELEMETRY_SDK_LANGUAGE
 import io.opentelemetry.kotlin.semconv.TelemetryAttributes.TELEMETRY_SDK_NAME
 import io.opentelemetry.kotlin.semconv.TelemetryAttributes.TELEMETRY_SDK_VERSION
+import io.opentelemetry.sdk.resources.Resource
 import io.opentelemetry.sdk.resources.ResourceBuilder
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -71,6 +74,106 @@ class ResourceConfigTest {
         assertCommonResources(attrs)
         assertEquals(customServiceName, attrs[stringKey(SERVICE_NAME)])
         assertEquals("bar", attrs[stringKey(customKey)])
+    }
+
+    @Test
+    fun testResourceReplacement() {
+        val ctx = ApplicationProvider.getApplicationContext<Context>()
+        val customResource =
+            Resource
+                .builder()
+                .put("custom.key", "custom.value")
+                .build()
+        lateinit var builder: ResourceBuilder
+
+        OpenTelemetryRumInitializer.initialize(ctx) {
+            resource(customResource)
+            resource {
+                builder = this
+            }
+        }
+
+        val resource = builder.build()
+        val attrs = resource.attributes.asMap()
+        assertEquals("custom.value", attrs[stringKey("custom.key")])
+        assertNull(attrs[stringKey(ANDROID_OS_API_LEVEL)])
+        assertNull(attrs[stringKey(DEVICE_MANUFACTURER)])
+        assertNull(attrs[stringKey(DEVICE_MODEL_NAME)])
+        assertNull(attrs[stringKey(OS_NAME)])
+    }
+
+    @Test
+    fun testResourceReplacementWithAction() {
+        val ctx = ApplicationProvider.getApplicationContext<Context>()
+        val customResource =
+            Resource
+                .builder()
+                .put("custom.key", "custom.value")
+                .build()
+        lateinit var builder: ResourceBuilder
+
+        OpenTelemetryRumInitializer.initialize(ctx) {
+            resource(customResource) {
+                builder = this
+                put("extra.key", "extra.value")
+            }
+        }
+
+        val resource = builder.build()
+        val attrs = resource.attributes.asMap()
+        assertEquals("custom.value", attrs[stringKey("custom.key")])
+        assertEquals("extra.value", attrs[stringKey("extra.key")])
+        assertNull(attrs[stringKey(ANDROID_OS_API_LEVEL)])
+        assertNull(attrs[stringKey(DEVICE_MANUFACTURER)])
+    }
+
+    @Test
+    fun testMultipleResourceBlocksPreservesLastOnly() {
+        val ctx = ApplicationProvider.getApplicationContext<Context>()
+        val cfg = OpenTelemetryConfiguration(instrumentationLoader = mockk(relaxed = true))
+
+        cfg.resource {
+            put("first.key", "first.value")
+        }
+        cfg.resource {
+            put("second.key", "second.value")
+        }
+        val resource = cfg.resourceProvider(ctx)
+        val attrs = resource.attributes.asMap()
+
+        assertEquals("second.value", attrs[stringKey("second.key")])
+        assertNull(attrs[stringKey("first.key")])
+    }
+
+    @Test
+    fun testResourceDirect() {
+        val ctx = ApplicationProvider.getApplicationContext<Context>()
+        val customResource =
+            Resource
+                .builder()
+                .put("service.name", "my-service")
+                .build()
+        val cfg = OpenTelemetryConfiguration(instrumentationLoader = mockk(relaxed = true))
+
+        cfg.resource(customResource)
+        val resource = cfg.resourceProvider(ctx)
+
+        assertEquals(customResource, resource)
+        assertNull(resource.attributes.get(stringKey(ANDROID_OS_API_LEVEL)))
+    }
+
+    @Test
+    fun testResourceActionExecutedOnce() {
+        var count = 0
+        val ctx = ApplicationProvider.getApplicationContext<Context>()
+        val cfg = OpenTelemetryConfiguration(instrumentationLoader = mockk(relaxed = true))
+
+        cfg.resource {
+            count++
+        }
+        cfg.resourceProvider(ctx)
+
+        assertEquals(1, count)
     }
 
     private fun assertCommonResources(attrs: Map<AttributeKey<*>, Any>) {

@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.agent.dsl
 
+import android.content.Context
+import io.opentelemetry.android.AndroidResource
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OtelAndroidClock
 import io.opentelemetry.android.agent.dsl.instrumentation.InstrumentationConfiguration
@@ -12,6 +14,7 @@ import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.sdk.common.Clock
+import io.opentelemetry.sdk.resources.Resource
 import io.opentelemetry.sdk.resources.ResourceBuilder
 
 /**
@@ -33,7 +36,16 @@ class OpenTelemetryConfiguration internal constructor(
     internal val instrumentations = InstrumentationConfiguration(rumConfig, instrumentationLoader)
 
     internal val semanticConventions = SemanticConventionsConfiguration()
+    internal var baseResourceProvider: (Context) -> Resource = { ctx ->
+        AndroidResource.createDefault(ctx)
+    }
     internal var resourceAction: ResourceBuilder.() -> Unit = {}
+    internal var resourceProvider: (Context) -> Resource = { ctx ->
+        baseResourceProvider(ctx)
+            .toBuilder()
+            .apply(resourceAction)
+            .build()
+    }
 
     /**
      * Disable tracing in the SDK by providing no-op implementations that don't incur overhead even if instrumentation creates spans
@@ -112,6 +124,26 @@ class OpenTelemetryConfiguration internal constructor(
      * Configures the resource attributes that are used globally by acting on a [ResourceBuilder].
      */
     fun resource(action: ResourceBuilder.() -> Unit) {
+        resourceAction = action
+    }
+
+    /**
+     * Configures the resource that is used globally. This replaces any default resource.
+     */
+    fun resource(resource: Resource) {
+        baseResourceProvider = { resource }
+        resourceAction = {}
+    }
+
+    /**
+     * Configures the resource attributes that are used globally by acting on a [ResourceBuilder]
+     * initialized with the given [resource]. This replaces any default resource.
+     */
+    fun resource(
+        resource: Resource,
+        action: ResourceBuilder.() -> Unit,
+    ) {
+        baseResourceProvider = { resource }
         resourceAction = action
     }
 }
