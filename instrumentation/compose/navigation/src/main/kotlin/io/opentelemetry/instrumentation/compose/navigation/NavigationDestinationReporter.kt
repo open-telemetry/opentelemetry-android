@@ -6,27 +6,30 @@
 package io.opentelemetry.instrumentation.compose.navigation
 
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Reports resolved screen names to the [VisibleScreenTracker] on behalf of a single attached
- * controller, remembering the last name it reported so that [clear] can name it.
+ * controller, identifying itself as the owner of each report.
  *
  * Each attached controller owns its own reporter. A nested or sibling controller that has since
  * recorded a newer destination therefore keeps it when an older controller leaves the composition,
- * because the tracker only honours a clear for the destination it still holds.
+ * because the tracker only honours a clear from the owner of the destination it still holds, even
+ * when both controllers reported the same name.
  */
 internal class NavigationDestinationReporter(
     private val visibleScreenTracker: VisibleScreenTracker,
 ) {
-    private val lastReportedName = AtomicReference<String?>()
+    private val hasReported = AtomicBoolean(false)
 
     fun report(destinationName: String) {
-        lastReportedName.set(destinationName)
-        visibleScreenTracker.navigationDestinationChanged(destinationName)
+        hasReported.set(true)
+        visibleScreenTracker.navigationDestinationChanged(this, destinationName)
     }
 
     fun clear() {
-        lastReportedName.getAndSet(null)?.let(visibleScreenTracker::navigationDestinationCleared)
+        if (hasReported.getAndSet(false)) {
+            visibleScreenTracker.navigationDestinationCleared(this)
+        }
     }
 }

@@ -39,15 +39,17 @@ class NavigationVisibleScreenComposeTest {
     @get:Rule
     val composeRule = createComposeRule()
 
+    @get:Rule
+    val otelTesting: OpenTelemetryRule = OpenTelemetryRule.create()
+
     private lateinit var rum: OpenTelemetryRum
     private lateinit var visibleScreenTracker: VisibleScreenTracker
 
     @Before
     fun setup() {
-        val otel = OpenTelemetryRule.create()
         rum =
             mockk<OpenTelemetryRum> {
-                every { openTelemetry } returns otel.openTelemetry
+                every { openTelemetry } returns otelTesting.openTelemetry
             }
         visibleScreenTracker = mockk(relaxed = true)
         Services.set(
@@ -77,8 +79,8 @@ class NavigationVisibleScreenComposeTest {
         composeRule.waitForIdle()
 
         verifyOrder {
-            visibleScreenTracker.navigationDestinationChanged("a")
-            visibleScreenTracker.navigationDestinationChanged("b")
+            visibleScreenTracker.navigationDestinationChanged(any(), "a")
+            visibleScreenTracker.navigationDestinationChanged(any(), "b")
         }
     }
 
@@ -95,8 +97,8 @@ class NavigationVisibleScreenComposeTest {
         composeRule.runOnIdle { navController.navigate("user/2") }
         composeRule.waitForIdle()
 
-        verify(exactly = 2) { visibleScreenTracker.navigationDestinationChanged("user/{id}") }
-        verify(exactly = 0) { visibleScreenTracker.navigationDestinationChanged("user/2") }
+        verify(exactly = 2) { visibleScreenTracker.navigationDestinationChanged(any(), "user/{id}") }
+        verify(exactly = 0) { visibleScreenTracker.navigationDestinationChanged(any(), "user/2") }
     }
 
     @Test
@@ -116,7 +118,7 @@ class NavigationVisibleScreenComposeTest {
         composeRule.runOnIdle { instrumented = false }
         composeRule.waitForIdle()
 
-        verify(exactly = 1) { visibleScreenTracker.navigationDestinationCleared("a") }
+        verify(exactly = 1) { visibleScreenTracker.navigationDestinationCleared(any()) }
     }
 
     @Test
@@ -141,9 +143,9 @@ class NavigationVisibleScreenComposeTest {
         composeRule.waitForIdle()
 
         verifyOrder {
-            visibleScreenTracker.navigationDestinationChanged("a")
-            visibleScreenTracker.navigationDestinationCleared("a")
-            visibleScreenTracker.navigationDestinationChanged("a")
+            visibleScreenTracker.navigationDestinationChanged(any(), "a")
+            visibleScreenTracker.navigationDestinationCleared(any())
+            visibleScreenTracker.navigationDestinationChanged(any(), "a")
         }
     }
 }

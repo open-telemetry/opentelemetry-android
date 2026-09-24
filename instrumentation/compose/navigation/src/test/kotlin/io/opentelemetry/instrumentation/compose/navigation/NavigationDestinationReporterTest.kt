@@ -5,26 +5,24 @@
 
 package io.opentelemetry.instrumentation.compose.navigation
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import org.junit.Test
-import org.junit.runner.RunWith
 
-@RunWith(AndroidJUnit4::class)
 class NavigationDestinationReporterTest {
     private val visibleScreenTracker = mockk<VisibleScreenTracker>(relaxed = true)
     private val reporter = NavigationDestinationReporter(visibleScreenTracker)
 
     @Test
-    fun `clears using the last name it reported`() {
+    fun `reports and clears as its own owner`() {
         reporter.report("a")
         reporter.report("b")
         reporter.clear()
 
-        verify(exactly = 1) { visibleScreenTracker.navigationDestinationCleared("b") }
-        verify(exactly = 0) { visibleScreenTracker.navigationDestinationCleared("a") }
+        verify(exactly = 1) { visibleScreenTracker.navigationDestinationChanged(reporter, "a") }
+        verify(exactly = 1) { visibleScreenTracker.navigationDestinationChanged(reporter, "b") }
+        verify(exactly = 1) { visibleScreenTracker.navigationDestinationCleared(reporter) }
     }
 
     @Test
@@ -40,6 +38,6 @@ class NavigationDestinationReporterTest {
         reporter.clear()
         reporter.clear()
 
-        verify(exactly = 1) { visibleScreenTracker.navigationDestinationCleared("a") }
+        verify(exactly = 1) { visibleScreenTracker.navigationDestinationCleared(reporter) }
     }
 }

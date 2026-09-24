@@ -204,7 +204,7 @@ internal class VisibleScreenTrackerTest {
 
         visibleScreenTracker.activityResumed(activity)
         visibleScreenTracker.fragmentResumed(fragment)
-        visibleScreenTracker.navigationDestinationChanged("user/{id}")
+        visibleScreenTracker.navigationDestinationChanged(Any(), "user/{id}")
 
         assertEquals("user/{id}", visibleScreenTracker.currentlyVisibleScreen)
     }
@@ -214,11 +214,12 @@ internal class VisibleScreenTrackerTest {
         val visibleScreenTracker = this.visibleScreenService
         val activity = mockk<Activity>()
         val fragment = mockk<Fragment>()
+        val owner = Any()
 
         visibleScreenTracker.activityResumed(activity)
         visibleScreenTracker.fragmentResumed(fragment)
-        visibleScreenTracker.navigationDestinationChanged("user/{id}")
-        visibleScreenTracker.navigationDestinationCleared("user/{id}")
+        visibleScreenTracker.navigationDestinationChanged(owner, "user/{id}")
+        visibleScreenTracker.navigationDestinationCleared(owner)
 
         assertEquals(
             fragment.javaClass.simpleName,
@@ -230,10 +231,11 @@ internal class VisibleScreenTrackerTest {
     fun navigationDestinationClearedFallsBackToActivity() {
         val visibleScreenTracker = this.visibleScreenService
         val activity = mockk<Activity>()
+        val owner = Any()
 
         visibleScreenTracker.activityResumed(activity)
-        visibleScreenTracker.navigationDestinationChanged("user/{id}")
-        visibleScreenTracker.navigationDestinationCleared("user/{id}")
+        visibleScreenTracker.navigationDestinationChanged(owner, "user/{id}")
+        visibleScreenTracker.navigationDestinationCleared(owner)
 
         assertEquals(
             activity.javaClass.simpleName,
@@ -244,9 +246,10 @@ internal class VisibleScreenTrackerTest {
     @Test
     fun navigationDestinationClearedWithNoOtherScreenIsUnknown() {
         val visibleScreenTracker = this.visibleScreenService
+        val owner = Any()
 
-        visibleScreenTracker.navigationDestinationChanged("user/{id}")
-        visibleScreenTracker.navigationDestinationCleared("user/{id}")
+        visibleScreenTracker.navigationDestinationChanged(owner, "user/{id}")
+        visibleScreenTracker.navigationDestinationCleared(owner)
 
         assertEquals("unknown", visibleScreenTracker.currentlyVisibleScreen)
     }
@@ -255,13 +258,15 @@ internal class VisibleScreenTrackerTest {
     fun navigationDestinationReplayedWithTheSameNameIsIdempotent() {
         val visibleScreenTracker = this.visibleScreenService
         val activity = mockk<Activity>()
+        val owner = Any()
+        val replayedOwner = Any()
 
         visibleScreenTracker.activityResumed(activity)
-        visibleScreenTracker.navigationDestinationChanged("home")
+        visibleScreenTracker.navigationDestinationChanged(owner, "home")
         // A configuration change disposes the controller and re-registers the listener, which
         // replays the destination that is already showing.
-        visibleScreenTracker.navigationDestinationCleared("home")
-        visibleScreenTracker.navigationDestinationChanged("home")
+        visibleScreenTracker.navigationDestinationCleared(owner)
+        visibleScreenTracker.navigationDestinationChanged(replayedOwner, "home")
 
         assertEquals("home", visibleScreenTracker.currentlyVisibleScreen)
     }
@@ -273,7 +278,7 @@ internal class VisibleScreenTrackerTest {
 
         visibleScreenTracker.fragmentResumed(fragment)
         visibleScreenTracker.fragmentPaused(fragment)
-        visibleScreenTracker.navigationDestinationChanged("cart")
+        visibleScreenTracker.navigationDestinationChanged(Any(), "cart")
 
         assertEquals(
             fragment.javaClass.simpleName,
@@ -284,18 +289,68 @@ internal class VisibleScreenTrackerTest {
     @Test
     fun navigationDestinationClearedByASupersededSourceIsIgnored() {
         val visibleScreenTracker = this.visibleScreenService
+        val parent = Any()
+        val nested = Any()
 
         // A parent controller records "a", then a nested controller records "b". The parent
         // leaving the composition must not discard the nested controller's destination.
-        visibleScreenTracker.navigationDestinationChanged("a")
-        visibleScreenTracker.navigationDestinationChanged("b")
-        visibleScreenTracker.navigationDestinationCleared("a")
+        visibleScreenTracker.navigationDestinationChanged(parent, "a")
+        visibleScreenTracker.navigationDestinationChanged(nested, "b")
+        visibleScreenTracker.navigationDestinationCleared(parent)
 
         assertEquals("b", visibleScreenTracker.currentlyVisibleScreen)
     }
 
+    @Test
+    fun navigationDestinationClearedByASupersededSourceWithTheSameNameIsIgnored() {
+        val visibleScreenTracker = this.visibleScreenService
+        val older = Any()
+        val newer = Any()
+
+        // Two controllers can resolve the same route. Only the owner of the recorded destination
+        // may clear it, regardless of the name.
+        visibleScreenTracker.navigationDestinationChanged(older, "home")
+        visibleScreenTracker.navigationDestinationChanged(newer, "home")
+        visibleScreenTracker.navigationDestinationCleared(older)
+
+        assertEquals("home", visibleScreenTracker.currentlyVisibleScreen)
+
+        visibleScreenTracker.navigationDestinationCleared(newer)
+
+        assertEquals("unknown", visibleScreenTracker.currentlyVisibleScreen)
+    }
+
+    @Test
+    fun navigationDestinationOnlyAppliesWhileItsHostActivityIsResumed() {
+        val visibleScreenTracker = this.visibleScreenService
+        val activityA = mockk<FirstActivity>()
+        val activityB = mockk<SecondActivity>()
+
+        visibleScreenTracker.activityResumed(activityA)
+        visibleScreenTracker.navigationDestinationChanged(Any(), "home")
+        assertEquals("home", visibleScreenTracker.currentlyVisibleScreen)
+
+        // Activity A is stopped rather than destroyed, so its composition stays alive and never
+        // clears the destination. Activity B must not be attributed to A's route.
+        visibleScreenTracker.activityPaused(activityA)
+        visibleScreenTracker.activityResumed(activityB)
+        assertEquals(
+            activityB.javaClass.simpleName,
+            visibleScreenTracker.currentlyVisibleScreen,
+        )
+
+        // Returning to A restores its route without the composition needing to re-report it.
+        visibleScreenTracker.activityPaused(activityB)
+        visibleScreenTracker.activityResumed(activityA)
+        assertEquals("home", visibleScreenTracker.currentlyVisibleScreen)
+    }
+
     private val visibleScreenService: VisibleScreenTracker
         get() = VisibleScreenTrackerImpl(application)
+
+    private abstract class FirstActivity : Activity()
+
+    private abstract class SecondActivity : Activity()
 
     private abstract class CustomNavHostFragment :
         Fragment(),
