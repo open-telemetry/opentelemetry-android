@@ -13,13 +13,14 @@ import kotlin.time.Duration
 /**
  * Tracks background inactivity independently of telemetry reads. Entering the background starts
  * the timeout; a new session or an explicit call to the internal user interaction recorder restarts it.
- * User interaction sources are not wired to that recorder yet. Returning to the foreground stops the
- * timer, but preserves an expiry until the manager rotates the session.
+ * By default returning to the foreground stops the timer, but preserves an expiry until the
+ * manager rotates the session. Opt-in interaction tracking also times out in the foreground.
  * The configured clock must provide monotonic nanoseconds that include device sleep.
  */
 internal class SessionIdTimeoutHandler(
     private val clock: Clock,
     private val sessionBackgroundInactivityTimeout: Duration,
+    private val trackForegroundInactivity: Boolean = false,
 ) : ApplicationStateListener {
     private val lock = Any()
 
@@ -30,7 +31,8 @@ internal class SessionIdTimeoutHandler(
     @OptIn(Incubating::class)
     internal constructor(sessionConfig: SessionConfig, clock: Clock) : this(
         clock,
-        sessionConfig.backgroundInactivityTimeout,
+        sessionConfig.userInactivityTimeout ?: sessionConfig.backgroundInactivityTimeout,
+        sessionConfig.userInactivityTimeout != null,
     )
 
     override fun onApplicationForegrounded() {
@@ -44,7 +46,7 @@ internal class SessionIdTimeoutHandler(
             state =
                 state.copy(
                     foreground = false,
-                    timeoutStartNanos = if (state.foreground) clock.nanoTime() else state.timeoutStartNanos,
+                    timeoutStartNanos = if (state.foreground && !trackForegroundInactivity) clock.nanoTime() else state.timeoutStartNanos,
                 )
         }
     }
@@ -54,7 +56,7 @@ internal class SessionIdTimeoutHandler(
         if (current.expiredOnForeground) {
             return true
         }
-        return !current.foreground &&
+        return (trackForegroundInactivity || !current.foreground) &&
             clock.nanoTime() - current.timeoutStartNanos >= sessionBackgroundInactivityTimeout.inWholeNanoseconds
     }
 
