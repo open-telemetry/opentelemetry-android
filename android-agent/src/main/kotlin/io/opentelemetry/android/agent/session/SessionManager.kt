@@ -22,6 +22,7 @@ internal class SessionManager(
     private val timeoutHandler: SessionIdTimeoutHandler,
     private val idGenerator: SessionIdGenerator = DefaultSessionIdGenerator(Random.Default),
     private val maxSessionLifetime: Duration,
+    private val previousProcessSession: Session = invalidSession,
 ) : SessionProvider,
     SessionPublisher {
     private val lock = Any()
@@ -74,7 +75,7 @@ internal class SessionManager(
     ) {
         observers.forEach {
             it.onSessionEnded(currentSession)
-            it.onSessionStarted(newSession, currentSession)
+            it.onSessionStarted(newSession, if (currentSession === invalidSession) previousProcessSession else currentSession)
         }
     }
 
@@ -97,6 +98,12 @@ internal class SessionManager(
                 maxSessionLifetime = sessionConfig.maxLifetime,
                 clock = clock,
                 sessionStorage = sessionStorage,
+                previousProcessSession =
+                    if (sessionConfig.linkPreviousSessionOnRestart) {
+                        sessionStorage.get().let { SessionImpl(it.id, it.startTimestamp) }
+                    } else {
+                        invalidSession
+                    },
             )
     }
 }
