@@ -39,23 +39,33 @@ internal class SessionManager(
     }
 
     // Lookup still creates or rotates a session, but never extends an existing session's inactivity.
-    override fun getSessionId(): String = getSessionId(recordUserInteraction = false)
+    override fun getSessionId(): String = checkNotNull(updateSession(recordUserInteraction = false))
 
     override fun recordUserInteraction() {
-        getSessionId(recordUserInteraction = true)
+        updateSession(recordUserInteraction = true)
     }
 
-    private fun getSessionId(recordUserInteraction: Boolean): String {
+    /**
+     * Starts a linked session. Returns false while another transition is being delivered, so
+     * callers can retry rather than interrupt observer ordering or block a reentrant callback.
+     * Public API placement and the caller's retry policy remain separate from this operation.
+     */
+    internal fun resetSession(): Boolean = updateSession(recordUserInteraction = false, reset = true) != null
+
+    private fun updateSession(
+        recordUserInteraction: Boolean,
+        reset: Boolean = false,
+    ): String? {
         val previousSession: Session
         val newSession: Session
         var startedTransition = false
         try {
             synchronized(lock) {
                 previousSession = session
-                if (!recordUserInteraction && !sessionHasExpired(previousSession)) {
+                if (!reset && !recordUserInteraction && !sessionHasExpired(previousSession)) {
                     return previousSession.id
                 }
-                if (!sessionHasExpired(previousSession)) {
+                if (!reset && !sessionHasExpired(previousSession)) {
                     if (recordUserInteraction) {
                         timeoutHandler.bump()
                     }
@@ -63,7 +73,7 @@ internal class SessionManager(
                 }
                 // Finish the current notification sequence before allowing another rotation.
                 if (transitionInProgress) {
-                    return previousSession.id
+                    return if (reset) null else previousSession.id
                 }
                 newSession = SessionImpl(idGenerator.generateSessionId(), clock.now())
                 startedTransition = true
