@@ -22,7 +22,6 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
@@ -66,12 +65,15 @@ internal class SessionStorageTest {
         assertThat(manager.getSessionId()).isEqualTo(first)
         assertThat(saved).hasSize(1)
 
-        // Reading the current session remains activity and extends the inactivity timeout.
-        clock.advance(59, TimeUnit.SECONDS)
-        assertThat(manager.getSessionId()).isEqualTo(first)
-        clock.advance(1, TimeUnit.MINUTES)
+        clock.advance(1, TimeUnit.SECONDS)
         val second = manager.getSessionId()
         assertThat(second).isNotEqualTo(first)
+
+        clock.advance(59, TimeUnit.SECONDS)
+        manager.recordUserInteraction()
+        clock.advance(59, TimeUnit.SECONDS)
+        assertThat(manager.getSessionId()).isEqualTo(second)
+        assertThat(saved).hasSize(2)
 
         timeoutHandler.onApplicationForegrounded()
         assertThat(manager.getSessionId()).isEqualTo(second)
@@ -184,29 +186,22 @@ internal class SessionStorageTest {
     }
 
     @Test
-    fun `active session reads do not wait for another reader`() {
+    fun `concurrent passive reads do not update the timer or storage`() {
         val handler = mockk<SessionIdTimeoutHandler>(relaxed = true)
-        val manager = SessionManager(clock, timeoutHandler = handler, maxSessionLifetime = config.maxLifetime)
+        val storage = mockk<SessionStorage>(relaxed = true)
+        val manager = SessionManager(clock, storage, handler, maxSessionLifetime = config.maxLifetime)
         val id = manager.getSessionId()
-        val paused = CountDownLatch(1)
-        val resume = CountDownLatch(1)
-        val pauseNext = AtomicBoolean(true)
-        every { handler.bump() } answers {
-            if (pauseNext.compareAndSet(true, false)) {
-                paused.countDown()
-                check(resume.await(5, TimeUnit.SECONDS))
-            }
-        }
         val executor = Executors.newFixedThreadPool(2)
         try {
-            val first = executor.submit(Callable { manager.getSessionId() })
-            assertThat(paused.await(5, TimeUnit.SECONDS)).isTrue()
-            val second = executor.submit(Callable { manager.getSessionId() })
-            assertThat(second.get(1, TimeUnit.SECONDS)).isEqualTo(id)
-            resume.countDown()
-            assertThat(first.get(5, TimeUnit.SECONDS)).isEqualTo(id)
+            val ids =
+                executor
+                    .invokeAll(List(20) { Callable { manager.getSessionId() } }, 5, TimeUnit.SECONDS)
+                    .map { it.get() }
+            assertThat(ids).containsOnly(id)
+            verify(exactly = 1) { handler.bump() }
+            verify(exactly = 1) { storage.save(match { it.id == id }) }
+            verify(exactly = 0) { storage.get() }
         } finally {
-            resume.countDown()
             executor.shutdownNow()
             assertThat(executor.awaitTermination(5, TimeUnit.SECONDS)).isTrue()
         }

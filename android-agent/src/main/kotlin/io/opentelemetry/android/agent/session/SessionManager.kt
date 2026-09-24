@@ -23,7 +23,8 @@ internal class SessionManager(
     private val idGenerator: SessionIdGenerator = DefaultSessionIdGenerator(Random.Default),
     private val maxSessionLifetime: Duration,
 ) : SessionProvider,
-    SessionPublisher {
+    SessionPublisher,
+    SessionUserInteractionRecorder {
     private val lock = Any()
 
     @Volatile
@@ -37,35 +38,49 @@ internal class SessionManager(
         observers.add(observer)
     }
 
-    override fun getSessionId(): String {
-        val currentSession = session
-        if (!sessionHasExpired(currentSession) && !timeoutHandler.hasTimedOut()) {
-            timeoutHandler.bump()
-            return currentSession.id
-        }
+    // Lookup still creates or rotates a session, but never extends an existing session's inactivity.
+    override fun getSessionId(): String = getSessionId(recordUserInteraction = false)
+
+    override fun recordUserInteraction() {
+        getSessionId(recordUserInteraction = true)
+    }
+
+    private fun getSessionId(recordUserInteraction: Boolean): String {
         val previousSession: Session
         val newSession: Session
-        synchronized(lock) {
-            previousSession = session
-            // Do not clear an expired inactivity timer while its transition is deferred.
-            if (transitionInProgress) return previousSession.id
-            if (!sessionHasExpired(previousSession) && !timeoutHandler.hasTimedOut()) {
-                timeoutHandler.bump()
-                return previousSession.id
-            }
-            newSession = SessionImpl(idGenerator.generateSessionId(), clock.now())
-            timeoutHandler.bump()
-            session = newSession
-            transitionInProgress = true
-        }
+        var startedTransition = false
         try {
-            // Keep saves and notifications ordered without making readers wait for those calls.
+            synchronized(lock) {
+                previousSession = session
+                if (!recordUserInteraction && !sessionHasExpired(previousSession)) {
+                    return previousSession.id
+                }
+                if (!sessionHasExpired(previousSession)) {
+                    if (recordUserInteraction) {
+                        timeoutHandler.bump()
+                    }
+                    return previousSession.id
+                }
+                // Finish the current notification sequence before allowing another rotation.
+                if (transitionInProgress) {
+                    return previousSession.id
+                }
+                newSession = SessionImpl(idGenerator.generateSessionId(), clock.now())
+                startedTransition = true
+                transitionInProgress = true
+                session = newSession
+                timeoutHandler.bump()
+            }
             sessionStorage.save(newSession)
             notifyObserversOfSessionUpdate(previousSession, newSession)
+            return newSession.id
         } finally {
-            synchronized(lock) { transitionInProgress = false }
+            if (startedTransition) {
+                synchronized(lock) {
+                    transitionInProgress = false
+                }
+            }
         }
-        return newSession.id
     }
 
     private fun notifyObserversOfSessionUpdate(
@@ -79,8 +94,11 @@ internal class SessionManager(
     }
 
     private fun sessionHasExpired(session: Session): Boolean {
+        if (session === invalidSession) {
+            return true
+        }
         val elapsedTime = clock.now() - session.startTimestamp
-        return elapsedTime >= maxSessionLifetime.inWholeNanoseconds
+        return elapsedTime >= maxSessionLifetime.inWholeNanoseconds || timeoutHandler.hasTimedOut()
     }
 
     companion object {
