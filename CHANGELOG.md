@@ -4,6 +4,10 @@
 
 ### 📈 Enhancements
 
+- Add the experimental `session { storage(...) }` hook for custom session storage. The default
+  remains in-memory; this does not restore sessions across app launches.
+  ([#2061](https://github.com/open-telemetry/opentelemetry-android/pull/2061))
+
 - Add HTTP span filtering to the agent DSL. `instrumentations { httpTelemetry {
   shouldRecordSpanForHost { host -> host == "api.example.com" } } }` decides per host whether
   to record an HTTP client span; return false and spans recording that `server.address` are

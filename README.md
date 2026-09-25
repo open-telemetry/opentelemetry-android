@@ -202,6 +202,7 @@ For more information about the maintainer role, see the [community repository](h
 - [DavidGrath](https://github.com/DavidGrath)
 - [Hanson Ho](https://github.com/bidetofevil), Embrace
 - [Manoel Aranda Neto](https://github.com/marandaneto), PostHog
+- [Vishwan Aranha](https://github.com/aranhave), Grafana
 
 For more information about the Approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
 
