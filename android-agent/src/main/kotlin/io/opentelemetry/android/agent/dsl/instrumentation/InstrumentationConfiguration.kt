@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.agent.dsl.instrumentation
 
+import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.dsl.OpenTelemetryDslMarker
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
@@ -90,6 +91,7 @@ class InstrumentationConfiguration internal constructor(
     /**
      * Configures HTTP telemetry.
      */
+    @Incubating
     fun httpTelemetry(configure: HttpTelemetryConfiguration.() -> Unit) {
         httpTelemetry.configure()
     }

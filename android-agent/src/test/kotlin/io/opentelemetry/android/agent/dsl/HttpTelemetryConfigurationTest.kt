@@ -5,11 +5,13 @@
 
 package io.opentelemetry.android.agent.dsl
 
+import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.dsl.instrumentation.HttpTelemetryConfiguration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.util.function.Predicate
 
+@OptIn(Incubating::class)
 class HttpTelemetryConfigurationTest {
     @Test
     fun noPredicateIsSetUntilOneIsConfigured() {

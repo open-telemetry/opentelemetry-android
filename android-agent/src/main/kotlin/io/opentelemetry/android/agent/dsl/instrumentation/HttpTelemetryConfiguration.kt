@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.agent.dsl.instrumentation
 
+import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.dsl.OpenTelemetryDslMarker
 import java.util.function.Predicate
 
@@ -43,6 +44,7 @@ class HttpTelemetryConfiguration internal constructor() {
      * Only spans are affected. HTTP client metrics, websocket events and trace context
      * propagation are unaffected.
      */
+    @Incubating
     fun shouldRecordSpanForHost(predicate: Predicate<String>) {
         recordSpanForHost = predicate
     }

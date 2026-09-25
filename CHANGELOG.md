@@ -8,7 +8,7 @@
   remains in-memory; this does not restore sessions across app launches.
   ([#2061](https://github.com/open-telemetry/opentelemetry-android/pull/2061))
 
-- Add HTTP span filtering to the agent DSL. `instrumentations { httpTelemetry {
+- Add the experimental HTTP span filtering hook to the agent DSL. `instrumentations { httpTelemetry {
   shouldRecordSpanForHost { host -> host == "api.example.com" } } }` decides per host whether
   to record an HTTP client span; return false and spans recording that `server.address` are
   dropped before export. The predicate receives the host lowercased, exactly as the client
