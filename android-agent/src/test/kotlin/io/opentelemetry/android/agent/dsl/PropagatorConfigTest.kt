@@ -33,33 +33,14 @@ class PropagatorConfigTest {
     }
 
     @Test
-    fun testSetCustomPropagator() {
-        val ctx = ApplicationProvider.getApplicationContext<Context>()
-        val customPropagator = mockk<TextMapPropagator>()
-
-        val rum =
-            OpenTelemetryRumInitializer.initialize(ctx) {
-                addPropagatorCustomizer { customPropagator }
-            }
-        try {
-            val result = rum.openTelemetry.propagators.textMapPropagator
-            assertThat(result).isSameAs(customPropagator)
-        } finally {
-            rum.shutdown()
-        }
-    }
-
-    @Test
-    fun testAddPropagatorComposite() {
+    fun testAddCustomPropagator() {
         val ctx = ApplicationProvider.getApplicationContext<Context>()
         val customPropagator = mockk<TextMapPropagator>()
         every { customPropagator.fields() } returns listOf("x-custom-header")
 
         val rum =
             OpenTelemetryRumInitializer.initialize(ctx) {
-                addPropagatorCustomizer { existing ->
-                    TextMapPropagator.composite(existing, customPropagator)
-                }
+                addPropagator(customPropagator)
             }
         try {
             val propagator = rum.openTelemetry.propagators.textMapPropagator
@@ -70,22 +51,22 @@ class PropagatorConfigTest {
     }
 
     @Test
-    fun testMultiplePropagatorCustomizersExecutedInOrder() {
+    fun testMultiplePropagatorsAddedInOrder() {
         val ctx = ApplicationProvider.getApplicationContext<Context>()
         val p1 = mockk<TextMapPropagator>()
         val p2 = mockk<TextMapPropagator>()
+        every { p1.fields() } returns listOf("x-header-1")
+        every { p2.fields() } returns listOf("x-header-2")
 
         val rum =
             OpenTelemetryRumInitializer.initialize(ctx) {
-                addPropagatorCustomizer { _ -> p1 }
-                addPropagatorCustomizer { existing ->
-                    assertThat(existing).isSameAs(p1)
-                    p2
-                }
+                addPropagator(p1)
+                addPropagator(p2)
             }
         try {
-            val result = rum.openTelemetry.propagators.textMapPropagator
-            assertThat(result).isSameAs(p2)
+            val propagator = rum.openTelemetry.propagators.textMapPropagator
+            assertThat(propagator.fields()).contains("traceparent", "baggage", "x-header-1", "x-header-2")
+            assertThat(propagator.fields()).containsSubsequence("x-header-1", "x-header-2")
         } finally {
             rum.shutdown()
         }
@@ -98,15 +79,16 @@ class PropagatorConfigTest {
         val carrier = Any()
         val expectedContext = mockk<OtelContext>()
         val customPropagator = mockk<TextMapPropagator>()
-        val getter = mockk<TextMapGetter<Any>>()
+        val getter = mockk<TextMapGetter<Any>>(relaxed = true)
+        every { customPropagator.fields() } returns listOf("x-custom-header")
 
         every {
-            customPropagator.extract(otelContext, carrier, getter)
+            customPropagator.extract(any(), carrier, getter)
         } returns expectedContext
 
         val rum =
             OpenTelemetryRumInitializer.initialize(ctx) {
-                addPropagatorCustomizer { customPropagator }
+                addPropagator(customPropagator)
             }
         try {
             val result =

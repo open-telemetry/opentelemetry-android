@@ -65,7 +65,7 @@ public final class io/opentelemetry/android/agent/dsl/HttpExportConfiguration {
 }
 
 public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration {
-	public final fun addPropagatorCustomizer (Lkotlin/jvm/functions/Function1;)V
+	public final fun addPropagator (Lio/opentelemetry/context/propagation/TextMapPropagator;)V
 	public final fun disableLogging ()V
 	public final fun disableMetrics ()V
 	public final fun disableTracing ()V

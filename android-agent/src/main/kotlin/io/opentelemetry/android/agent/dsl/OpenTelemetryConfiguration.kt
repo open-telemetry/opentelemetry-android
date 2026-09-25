@@ -35,7 +35,7 @@ class OpenTelemetryConfiguration internal constructor(
 
     internal val semanticConventions = SemanticConventionsConfiguration()
     internal var resourceAction: ResourceBuilder.() -> Unit = {}
-    internal val propagatorCustomizers = mutableListOf<(TextMapPropagator) -> TextMapPropagator>()
+    internal val propagators = mutableListOf<TextMapPropagator>()
 
     /**
      * Disable tracing in the SDK by providing no-op implementations that don't incur overhead even if instrumentation creates spans
@@ -118,11 +118,11 @@ class OpenTelemetryConfiguration internal constructor(
     }
 
     /**
-     * Adds a customizer to alter or replace the [TextMapPropagator].
+     * Adds a [TextMapPropagator] to be used in context propagation alongside default propagators.
      *
-     * Multiple calls will execute the customizers in order.
+     * Multiple calls will add additional propagators in order.
      */
-    fun addPropagatorCustomizer(customizer: (TextMapPropagator) -> TextMapPropagator) {
-        propagatorCustomizers.add(customizer)
+    fun addPropagator(propagator: TextMapPropagator) {
+        propagators.add(propagator)
     }
 }
