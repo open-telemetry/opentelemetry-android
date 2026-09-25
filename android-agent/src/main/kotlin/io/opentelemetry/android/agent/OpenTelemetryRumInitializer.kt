@@ -21,6 +21,7 @@ import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
@@ -75,6 +76,12 @@ object OpenTelemetryRumInitializer {
                         }.build(),
                 )
                 setClock(cfg.clock)
+
+                if (cfg.propagators.isNotEmpty()) {
+                    addPropagatorCustomizer { existing ->
+                        TextMapPropagator.composite(listOf(existing) + cfg.propagators)
+                    }
+                }
 
                 if (rumConfig.tracingEnabled) {
                     addSpanExporterCustomizer {
