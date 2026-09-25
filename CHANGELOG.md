@@ -4,11 +4,12 @@
 
 ### 📈 Enhancements
 
-- Add an HTTP telemetry host allowlist to the agent DSL. `instrumentations { httpTelemetry {
-  onlyHosts("api.example.com") } }` keeps HTTP client spans only for the named hosts; spans
-  recording any other `server.address` are dropped before export. Host names are matched in
-  full, and an internationalized host is matched in its punycode form. Every host is kept
-  when none is named.
+- Add HTTP span filtering to the agent DSL. `instrumentations { httpTelemetry {
+  shouldRecordSpanForHost { host -> host == "api.example.com" } } }` decides per host whether
+  to record an HTTP client span; return false and spans recording that `server.address` are
+  dropped before export. The predicate receives the host lowercased, exactly as the client
+  recorded it, and can express either an allowlist or a denylist. Every host is recorded when
+  no predicate is set.
   ([#1686](https://github.com/open-telemetry/opentelemetry-android/issues/1686))
 
 ## Version 1.7.0 (2026-09-04)

@@ -82,7 +82,7 @@ object OpenTelemetryRumInitializer {
                         createSpanExporter(cfg.exportConfig.spansEndpoint())
                     }
                     HttpSpanHostFilter
-                        .create(cfg.instrumentations.httpTelemetry.allowedHosts())
+                        .create(cfg.instrumentations.httpTelemetry.recordSpanForHost())
                         ?.let { hostFilter ->
                             addSpanExporterCustomizer { exporter ->
                                 FilteringSpanExporter

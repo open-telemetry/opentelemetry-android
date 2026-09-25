@@ -117,7 +117,7 @@ public final class io/opentelemetry/android/agent/dsl/instrumentation/FragmentLi
 }
 
 public final class io/opentelemetry/android/agent/dsl/instrumentation/HttpTelemetryConfiguration {
-	public final fun onlyHosts ([Ljava/lang/String;)V
+	public final fun shouldRecordSpanForHost (Ljava/util/function/Predicate;)V
 }
 
 public final class io/opentelemetry/android/agent/dsl/instrumentation/InstrumentationConfiguration {

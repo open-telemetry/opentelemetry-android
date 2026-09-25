@@ -5,17 +5,12 @@ plugins {
 
 android {
     namespace = "io.opentelemetry.android.agent"
-
-    testOptions {
-        unitTests.isReturnDefaultValues = true
-    }
 }
 
 dependencies {
     api(project(":agent-api"))
     api(platform(libs.opentelemetry.platform.alpha)) // Required for sonatype publishing
 
-    implementation(project(":common"))
     implementation(project(":core"))
     implementation(project(":semconv"))
     implementation(project(":session"))
