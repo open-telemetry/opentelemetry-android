@@ -7,7 +7,6 @@ package io.opentelemetry.android.agent
 
 import android.app.Application
 import android.content.Context
-import io.opentelemetry.android.AndroidResource
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.RumBuilder
@@ -66,14 +65,7 @@ object OpenTelemetryRumInitializer {
                 cfg.diskBufferingConfig.applyToRumConfig()
 
                 setSessionProvider(createSessionProvider(Services.get(ctx).appLifecycle, cfg))
-                setResource(
-                    AndroidResource
-                        .createDefault(ctx)
-                        .toBuilder()
-                        .apply {
-                            cfg.resourceAction(this)
-                        }.build(),
-                )
+                setResource(cfg.resourceProvider(ctx))
                 setClock(cfg.clock)
 
                 if (rumConfig.tracingEnabled) {
