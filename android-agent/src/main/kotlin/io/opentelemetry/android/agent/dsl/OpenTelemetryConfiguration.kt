@@ -41,16 +41,13 @@ class OpenTelemetryConfiguration internal constructor(
         AndroidResource.createDefault(ctx)
     }
     internal var resourceAction: ResourceBuilder.() -> Unit = {}
-<<<<<<< HEAD
     internal val propagators = mutableListOf<TextMapPropagator>()
-=======
     internal var resourceProvider: (Context) -> Resource = { ctx ->
         baseResourceProvider(ctx)
             .toBuilder()
             .apply(resourceAction)
             .build()
     }
->>>>>>> upstream/main
 
     /**
      * Disable tracing in the SDK by providing no-op implementations that don't incur overhead even if instrumentation creates spans
