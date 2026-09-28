@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.sdk.trace.data.StatusData
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.util.function.Predicate
 
 class HttpSpanHostFilterTest {
     @Test
@@ -98,7 +97,7 @@ class HttpSpanHostFilterTest {
         assertThat(filter.rejects(serverSpan)).isFalse()
     }
 
-    private fun filterFor(predicate: Predicate<String>): HttpSpanHostFilter = checkNotNull(HttpSpanHostFilter.create(predicate))
+    private fun filterFor(predicate: (String) -> Boolean): HttpSpanHostFilter = checkNotNull(HttpSpanHostFilter.create(predicate))
 
     private fun httpSpan(serverAddress: String): SpanData = clientSpan(serverAddress, stringKey("http.request.method"), "GET")
 

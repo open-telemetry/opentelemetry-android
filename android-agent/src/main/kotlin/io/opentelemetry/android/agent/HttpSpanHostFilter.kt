@@ -10,13 +10,12 @@ import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.kotlin.semconv.HttpAttributes
 import io.opentelemetry.kotlin.semconv.ServerAttributes
 import io.opentelemetry.sdk.trace.data.SpanData
-import java.util.function.Predicate
 
 /**
  * Drops HTTP client spans whose host is rejected by a predicate.
  */
 internal class HttpSpanHostFilter private constructor(
-    private val recordSpanForHost: Predicate<String>,
+    private val recordSpanForHost: (String) -> Boolean,
 ) {
     /**
      * Only HTTP client spans are considered. gRPC and database spans also record
@@ -31,7 +30,7 @@ internal class HttpSpanHostFilter private constructor(
             return false
         }
         val host = attributes.get(SERVER_ADDRESS) ?: return false
-        return !recordSpanForHost.test(host.lowercase())
+        return !recordSpanForHost(host.lowercase())
     }
 
     companion object {
@@ -42,6 +41,6 @@ internal class HttpSpanHostFilter private constructor(
         private val HTTP_REQUEST_METHOD = AttributeKey.stringKey(HttpAttributes.HTTP_REQUEST_METHOD)
 
         /** Returns null when no predicate was configured, so that no filtering is installed. */
-        fun create(recordSpanForHost: Predicate<String>?): HttpSpanHostFilter? = recordSpanForHost?.let { HttpSpanHostFilter(it) }
+        fun create(recordSpanForHost: ((String) -> Boolean)?): HttpSpanHostFilter? = recordSpanForHost?.let { HttpSpanHostFilter(it) }
     }
 }

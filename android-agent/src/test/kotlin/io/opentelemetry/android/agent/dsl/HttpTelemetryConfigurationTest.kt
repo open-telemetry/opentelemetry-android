@@ -9,7 +9,6 @@ import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.dsl.instrumentation.HttpTelemetryConfiguration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.util.function.Predicate
 
 @OptIn(Incubating::class)
 class HttpTelemetryConfigurationTest {
@@ -19,11 +18,12 @@ class HttpTelemetryConfigurationTest {
     }
 
     @Test
-    fun theConfiguredPredicateIsHandedOnAsIs() {
-        val predicate = Predicate<String> { it == "api.example.com" }
-        val config = HttpTelemetryConfiguration().apply { shouldRecordSpanForHost(predicate) }
+    fun theConfiguredPredicateIsWhatGetsHandedOn() {
+        val config = HttpTelemetryConfiguration().apply { shouldRecordSpanForHost { it == "api.example.com" } }
 
-        assertThat(config.recordSpanForHost()).isSameAs(predicate)
+        val predicate = checkNotNull(config.recordSpanForHost())
+        assertThat(predicate("api.example.com")).isTrue()
+        assertThat(predicate("other.example.com")).isFalse()
     }
 
     @Test
@@ -35,7 +35,7 @@ class HttpTelemetryConfigurationTest {
             }
 
         val predicate = checkNotNull(config.recordSpanForHost())
-        assertThat(predicate.test("first.example.com")).isFalse()
-        assertThat(predicate.test("second.example.com")).isTrue()
+        assertThat(predicate("first.example.com")).isFalse()
+        assertThat(predicate("second.example.com")).isTrue()
     }
 }

@@ -7,7 +7,6 @@ package io.opentelemetry.android.agent.dsl.instrumentation
 
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.dsl.OpenTelemetryDslMarker
-import java.util.function.Predicate
 
 /**
  * Type-safe config DSL that controls which HTTP telemetry is reported.
@@ -22,7 +21,7 @@ import java.util.function.Predicate
  */
 @OpenTelemetryDslMarker
 class HttpTelemetryConfiguration internal constructor() {
-    private var recordSpanForHost: Predicate<String>? = null
+    private var recordSpanForHost: ((String) -> Boolean)? = null
 
     /**
      * Decides, per host, whether to record an HTTP client span. Return true to keep the
@@ -45,9 +44,9 @@ class HttpTelemetryConfiguration internal constructor() {
      * propagation are unaffected.
      */
     @Incubating
-    fun shouldRecordSpanForHost(predicate: Predicate<String>) {
+    fun shouldRecordSpanForHost(predicate: (String) -> Boolean) {
         recordSpanForHost = predicate
     }
 
-    internal fun recordSpanForHost(): Predicate<String>? = recordSpanForHost
+    internal fun recordSpanForHost(): ((String) -> Boolean)? = recordSpanForHost
 }
