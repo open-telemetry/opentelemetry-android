@@ -103,31 +103,6 @@ class ResourceConfigTest {
     }
 
     @Test
-    fun testResourceReplacementWithAction() {
-        val ctx = ApplicationProvider.getApplicationContext<Context>()
-        val customResource =
-            Resource
-                .builder()
-                .put("custom.key", "custom.value")
-                .build()
-        lateinit var builder: ResourceBuilder
-
-        OpenTelemetryRumInitializer.initialize(ctx) {
-            resource(customResource) {
-                builder = this
-                put("extra.key", "extra.value")
-            }
-        }
-
-        val resource = builder.build()
-        val attrs = resource.attributes.asMap()
-        assertEquals("custom.value", attrs[stringKey("custom.key")])
-        assertEquals("extra.value", attrs[stringKey("extra.key")])
-        assertNull(attrs[stringKey(ANDROID_OS_API_LEVEL)])
-        assertNull(attrs[stringKey(DEVICE_MANUFACTURER)])
-    }
-
-    @Test
     fun testMultipleResourceBlocksPreservesLastOnly() {
         val ctx = ApplicationProvider.getApplicationContext<Context>()
         val cfg = OpenTelemetryConfiguration(instrumentationLoader = mockk(relaxed = true))

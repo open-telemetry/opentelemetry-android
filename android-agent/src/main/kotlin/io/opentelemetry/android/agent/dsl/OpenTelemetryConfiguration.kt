@@ -134,16 +134,4 @@ class OpenTelemetryConfiguration internal constructor(
         baseResourceProvider = { resource }
         resourceAction = {}
     }
-
-    /**
-     * Configures the resource attributes that are used globally by acting on a [ResourceBuilder]
-     * initialized with the given [resource]. This replaces any default resource.
-     */
-    fun resource(
-        resource: Resource,
-        action: ResourceBuilder.() -> Unit,
-    ) {
-        baseResourceProvider = { resource }
-        resourceAction = action
-    }
 }
