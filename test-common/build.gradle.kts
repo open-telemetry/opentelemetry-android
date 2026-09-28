@@ -20,6 +20,7 @@ dependencies {
     api(libs.assertj.core)
     implementation(libs.androidx.core)
     implementation(libs.androidx.junit)
+    implementation(libs.bundles.mocking)
     // Needed to compile OtelGlobalConfigProvider; consumers already provide Robolectric at test runtime.
     compileOnly(libs.robolectric)
 }
