@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 📈 Enhancements
+
+- Add the experimental `session { storage(...) }` hook for custom session storage. The default
+  remains in-memory; this does not restore sessions across app launches.
+  ([#2061](https://github.com/open-telemetry/opentelemetry-android/pull/2061))
+
 ## Version 1.7.0 (2026-09-04)
 
 ### 📣 Migration notes
