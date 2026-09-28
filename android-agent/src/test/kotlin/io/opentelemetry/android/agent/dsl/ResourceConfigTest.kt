@@ -138,6 +138,28 @@ class ResourceConfigTest {
     }
 
     @Test
+    fun testResourceActionBeforeResourceReplacement() {
+        val ctx = ApplicationProvider.getApplicationContext<Context>()
+        val customResource =
+            Resource
+                .builder()
+                .put("custom.key", "custom.value")
+                .build()
+        val cfg = OpenTelemetryConfiguration(instrumentationLoader = mockk(relaxed = true))
+
+        cfg.resource {
+            put("extra.key", "extra.value")
+        }
+        cfg.resource(customResource)
+        val resource = cfg.resourceProvider(ctx)
+        val attrs = resource.attributes.asMap()
+
+        assertEquals("custom.value", attrs[stringKey("custom.key")])
+        assertEquals("extra.value", attrs[stringKey("extra.key")])
+        assertNull(attrs[stringKey(ANDROID_OS_API_LEVEL)])
+    }
+
+    @Test
     fun testResourceActionExecutedOnce() {
         var count = 0
         val ctx = ApplicationProvider.getApplicationContext<Context>()

@@ -132,6 +132,5 @@ class OpenTelemetryConfiguration internal constructor(
      */
     fun resource(resource: Resource) {
         baseResourceProvider = { resource }
-        resourceAction = {}
     }
 }
