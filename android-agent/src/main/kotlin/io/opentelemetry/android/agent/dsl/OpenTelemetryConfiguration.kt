@@ -5,6 +5,8 @@
 
 package io.opentelemetry.android.agent.dsl
 
+import android.content.Context
+import io.opentelemetry.android.AndroidResource
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OtelAndroidClock
 import io.opentelemetry.android.agent.dsl.instrumentation.InstrumentationConfiguration
@@ -13,6 +15,7 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.sdk.common.Clock
+import io.opentelemetry.sdk.resources.Resource
 import io.opentelemetry.sdk.resources.ResourceBuilder
 
 /**
@@ -34,8 +37,20 @@ class OpenTelemetryConfiguration internal constructor(
     internal val instrumentations = InstrumentationConfiguration(rumConfig, instrumentationLoader)
 
     internal val semanticConventions = SemanticConventionsConfiguration()
+    internal var baseResourceProvider: (Context) -> Resource = { ctx ->
+        AndroidResource.createDefault(ctx)
+    }
     internal var resourceAction: ResourceBuilder.() -> Unit = {}
+<<<<<<< HEAD
     internal val propagators = mutableListOf<TextMapPropagator>()
+=======
+    internal var resourceProvider: (Context) -> Resource = { ctx ->
+        baseResourceProvider(ctx)
+            .toBuilder()
+            .apply(resourceAction)
+            .build()
+    }
+>>>>>>> upstream/main
 
     /**
      * Disable tracing in the SDK by providing no-op implementations that don't incur overhead even if instrumentation creates spans
@@ -115,6 +130,13 @@ class OpenTelemetryConfiguration internal constructor(
      */
     fun resource(action: ResourceBuilder.() -> Unit) {
         resourceAction = action
+    }
+
+    /**
+     * Configures the resource that is used globally. This replaces any default resource.
+     */
+    fun resource(resource: Resource) {
+        baseResourceProvider = { resource }
     }
 
     /**
