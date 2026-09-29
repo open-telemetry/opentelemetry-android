@@ -17,6 +17,7 @@ import io.opentelemetry.android.agent.session.SessionConfig
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.agent.session.SessionManager
 import io.opentelemetry.android.config.OtelRumConfig
+import io.opentelemetry.android.export.FilteringSpanExporter
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.session.SessionProvider
@@ -79,6 +80,16 @@ object OpenTelemetryRumInitializer {
                     addSpanExporterCustomizer {
                         createSpanExporter(cfg.exportConfig.spansEndpoint())
                     }
+                    HttpSpanHostFilter
+                        .create(cfg.instrumentations.httpTelemetry.recordSpanForHost())
+                        ?.let { hostFilter ->
+                            addSpanExporterCustomizer { exporter ->
+                                FilteringSpanExporter
+                                    .builder(exporter)
+                                    .rejecting { span -> hostFilter.rejects(span) }
+                                    .build()
+                            }
+                        }
                 }
                 if (rumConfig.loggingEnabled) {
                     addLogRecordExporterCustomizer {
