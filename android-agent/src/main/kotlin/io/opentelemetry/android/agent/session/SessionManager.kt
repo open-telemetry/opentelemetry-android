@@ -47,7 +47,8 @@ internal class SessionManager(
 
     /**
      * Starts a linked session. Returns false while another transition is being delivered, so
-     * callers can retry rather than interrupt observer ordering or block a reentrant callback.
+     * callers can retry after it finishes, not from within the callback that is still running.
+     * A storage or observer exception propagates after the in-memory session has changed.
      * Public API placement and the caller's retry policy remain separate from this operation.
      */
     internal fun resetSession(): Boolean = updateSession(recordUserInteraction = false, reset = true) != null

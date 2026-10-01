@@ -144,6 +144,7 @@ class SessionResetTest {
 
     @Test
     fun `failed save releases the transition so a later reset can proceed`() {
+        // Storage must handle its own failures; this checks cleanup if it violates that contract.
         var failSave = false
         val failingStorage =
             object : SessionStorage {
