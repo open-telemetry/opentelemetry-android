@@ -17,9 +17,11 @@ import io.opentelemetry.android.agent.session.SessionConfig
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.agent.session.SessionManager
 import io.opentelemetry.android.config.OtelRumConfig
+import io.opentelemetry.android.export.FilteringSpanExporter
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
@@ -68,10 +70,26 @@ object OpenTelemetryRumInitializer {
                 setResource(cfg.resourceProvider(ctx))
                 setClock(cfg.clock)
 
+                if (cfg.propagators.isNotEmpty()) {
+                    addPropagatorCustomizer { existing ->
+                        TextMapPropagator.composite(listOf(existing) + cfg.propagators)
+                    }
+                }
+
                 if (rumConfig.tracingEnabled) {
                     addSpanExporterCustomizer {
                         createSpanExporter(cfg.exportConfig.spansEndpoint())
                     }
+                    HttpSpanHostFilter
+                        .create(cfg.instrumentations.httpTelemetry.recordSpanForHost())
+                        ?.let { hostFilter ->
+                            addSpanExporterCustomizer { exporter ->
+                                FilteringSpanExporter
+                                    .builder(exporter)
+                                    .rejecting { span -> hostFilter.rejects(span) }
+                                    .build()
+                            }
+                        }
                 }
                 if (rumConfig.loggingEnabled) {
                     addLogRecordExporterCustomizer {
