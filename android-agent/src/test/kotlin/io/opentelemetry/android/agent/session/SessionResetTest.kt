@@ -10,6 +10,7 @@ import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.sdk.testing.time.TestClock
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
@@ -139,5 +140,32 @@ class SessionResetTest {
             executor.shutdownNow()
             assertThat(executor.awaitTermination(5, SECONDS)).isTrue()
         }
+    }
+
+    @Test
+    fun `failed save releases the transition so a later reset can proceed`() {
+        var failSave = false
+        val failingStorage =
+            object : SessionStorage {
+                override fun get(): Session = storage.get()
+
+                override fun save(newSession: Session) {
+                    check(!failSave) { "save failed" }
+                    storage.save(newSession)
+                }
+            }
+        val manager = SessionManager(clock, failingStorage, timeout, maxSessionLifetime = 4.hours)
+        manager.addObserver(observer)
+        manager.getSessionId()
+        events.clear()
+        failSave = true
+        assertThatThrownBy { manager.resetSession() }.isInstanceOf(IllegalStateException::class.java)
+        val failedSession = manager.getSessionId()
+        assertThat(events).isEmpty()
+        failSave = false
+        assertThat(manager.resetSession()).isTrue()
+        val next = manager.getSessionId()
+        assertThat(events).containsExactly("end:$failedSession", "start:$next:$failedSession")
+        assertThat(storage.get().id).isEqualTo(next)
     }
 }
