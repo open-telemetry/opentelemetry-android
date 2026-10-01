@@ -37,6 +37,7 @@ class SessionConfiguration internal constructor() {
      * interaction sources, dialogs, and popups are not tracked by this option.
      * Without a usable Application context, or when `session.interaction` is suppressed,
      * this timeout is disabled.
+     * Initialize before Activities resume; already-resumed windows are not tracked until their next resume.
      * Storage and observer callbacks can run during input dispatch and must return promptly.
      * The background timeout still applies; whichever deadline is reached first expires the session.
      */

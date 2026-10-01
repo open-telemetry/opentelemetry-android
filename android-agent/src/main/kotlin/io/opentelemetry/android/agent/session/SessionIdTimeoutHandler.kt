@@ -11,10 +11,10 @@ import io.opentelemetry.sdk.common.Clock
 import kotlin.time.Duration
 
 /**
- * Tracks background inactivity independently of telemetry reads. Entering the background starts
- * the timeout; a new session or an explicit call to the internal user interaction recorder restarts it.
- * By default returning to the foreground stops the timer, but preserves an expiry until the
- * manager rotates the session. Opt-in interaction tracking also times out in the foreground.
+ * Tracks inactivity independently of telemetry reads. Entering the background starts its timeout.
+ * The optional user-inactivity deadline runs in either state from the last recorded interaction;
+ * a new session or explicit interaction restarts both deadlines. Whichever expires first wins.
+ * Returning to the foreground stops only the background timer and preserves any pending expiry.
  * The configured clock must provide monotonic nanoseconds that include device sleep.
  */
 internal class SessionIdTimeoutHandler(

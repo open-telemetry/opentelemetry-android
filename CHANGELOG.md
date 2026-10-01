@@ -11,7 +11,8 @@
 ### 📈 Enhancements
 
 - Add opt-in Activity window input tracking with `session { userInactivityTimeout = ... }`.
-  Passive telemetry does not extend inactivity. Background-only behavior remains the default.
+  The user-inactivity deadline also runs in the background, alongside the background timeout.
+  Passive telemetry does not extend either deadline. Background-only behavior remains the default.
   ([#2088](https://github.com/open-telemetry/opentelemetry-android/pull/2088))
 
 - Add the experimental `session { storage(...) }` hook for custom session storage. The default
