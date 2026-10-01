@@ -7,7 +7,6 @@ package io.opentelemetry.android.agent
 
 import android.app.Application
 import android.content.Context
-import io.opentelemetry.android.AndroidResource
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.RumBuilder
@@ -19,8 +18,10 @@ import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.agent.session.SessionInteractionInstrumentation
 import io.opentelemetry.android.agent.session.SessionManager
 import io.opentelemetry.android.config.OtelRumConfig
+import io.opentelemetry.android.export.FilteringSpanExporter
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
+import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
@@ -70,20 +71,29 @@ object OpenTelemetryRumInitializer {
                 if (cfg.sessionConfig.userInactivityTimeout != null) {
                     addInstrumentation(SessionInteractionInstrumentation(sessionManager, Services.get(ctx).appLifecycle))
                 }
-                setResource(
-                    AndroidResource
-                        .createDefault(ctx)
-                        .toBuilder()
-                        .apply {
-                            cfg.resourceAction(this)
-                        }.build(),
-                )
+                setResource(cfg.resourceProvider(ctx))
                 setClock(cfg.clock)
+
+                if (cfg.propagators.isNotEmpty()) {
+                    addPropagatorCustomizer { existing ->
+                        TextMapPropagator.composite(listOf(existing) + cfg.propagators)
+                    }
+                }
 
                 if (rumConfig.tracingEnabled) {
                     addSpanExporterCustomizer {
                         createSpanExporter(cfg.exportConfig.spansEndpoint())
                     }
+                    HttpSpanHostFilter
+                        .create(cfg.instrumentations.httpTelemetry.recordSpanForHost())
+                        ?.let { hostFilter ->
+                            addSpanExporterCustomizer { exporter ->
+                                FilteringSpanExporter
+                                    .builder(exporter)
+                                    .rejecting { span -> hostFilter.rejects(span) }
+                                    .build()
+                            }
+                        }
                 }
                 if (rumConfig.loggingEnabled) {
                     addLogRecordExporterCustomizer {

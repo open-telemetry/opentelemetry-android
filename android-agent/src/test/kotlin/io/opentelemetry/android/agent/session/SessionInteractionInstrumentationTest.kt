@@ -13,6 +13,7 @@ import android.view.Window
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.mockk
 import io.mockk.verify
+import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.sdk.testing.time.TestClock
@@ -23,10 +24,12 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit.SECONDS
 import kotlin.time.Duration.Companion.minutes
 
 @RunWith(AndroidJUnit4::class)
+@OptIn(Incubating::class)
 class SessionInteractionInstrumentationTest {
     private val clock = TestClock.create()
     private val config = SessionConfig(userInactivityTimeout = 1.minutes)
@@ -176,6 +179,58 @@ class SessionInteractionInstrumentationTest {
         assertThat(activity.window.callback).isSameAs(firstWrapper)
         instrumentation.uninstall(app, rum)
         assertThat(activity.window.callback).isSameAs(original)
+    }
+
+    @Test
+    fun `move and scroll record activity but release and hover only delegate`() {
+        val recorder = mockk<SessionUserInteractionRecorder>(relaxed = true)
+        val tracking = SessionInteractionInstrumentation(recorder, lifecycle)
+        val delegate = mockk<Window.Callback>(relaxed = true)
+        activity.window.callback = delegate
+        tracking.install(app, rum)
+        try {
+            tracking.onActivityResumed(activity)
+            val actions = listOf(MotionEvent.ACTION_MOVE, MotionEvent.ACTION_UP, MotionEvent.ACTION_SCROLL, MotionEvent.ACTION_HOVER_MOVE)
+            actions.forEach { action ->
+                val event = MotionEvent.obtain(0, 0, action, 1f, 1f, 0)
+                try {
+                    if (action == MotionEvent.ACTION_MOVE || action == MotionEvent.ACTION_UP) {
+                        activity.window.callback.dispatchTouchEvent(event)
+                    } else {
+                        activity.window.callback.dispatchGenericMotionEvent(event)
+                    }
+                } finally {
+                    event.recycle()
+                }
+            }
+            verify(exactly = 2) { recorder.recordUserInteraction() }
+            verify(exactly = 2) { delegate.dispatchTouchEvent(any()) }
+            verify(exactly = 2) { delegate.dispatchGenericMotionEvent(any()) }
+        } finally {
+            tracking.uninstall(app, rum)
+        }
+    }
+
+    @Test
+    fun `background-thread shutdown disables input before main-thread cleanup`() {
+        val delegate = mockk<Window.Callback>(relaxed = true)
+        activity.window.callback = delegate
+        instrumentation.install(app, rum)
+        instrumentation.onActivityResumed(activity)
+        manager.getSessionId()
+        val executor = Executors.newSingleThreadExecutor()
+        try {
+            executor.submit { instrumentation.uninstall(app, rum) }.get(5, SECONDS)
+            clock.advance(60, SECONDS)
+            touch()
+            assertThat(timeout.hasTimedOut()).isTrue()
+            verify(exactly = 1) { delegate.dispatchTouchEvent(any()) }
+            shadowOf(Looper.getMainLooper()).idle()
+            assertThat(activity.window.callback).isSameAs(delegate)
+        } finally {
+            executor.shutdownNow()
+            assertThat(executor.awaitTermination(5, SECONDS)).isTrue()
+        }
     }
 
     private fun touch() {
