@@ -15,6 +15,7 @@ import java.util.UUID
 internal class NativeCrashStorage(
     directory: File,
     launchName: String = processLaunchName,
+    private val deleteFile: (File) -> Boolean = File::delete,
 ) {
     private val directory = directory.canonicalFile
     private val currentDirectory = File(this.directory, launchName)
@@ -69,7 +70,11 @@ internal class NativeCrashStorage(
             val files = launch.listFiles() ?: return
             // Never traverse a nested directory or follow a link while pruning old launches.
             if (files.any { it.name !in launchFiles || !it.isFile || it.canonicalFile != it }) return
-            if (!files.map { it.delete() }.all { it } || !launch.delete()) {
+            val (crashFiles, otherFiles) = files.partition { it.name in crashFileNames }
+            // Keep the delivery claim if a crash file survives a partial cleanup failure.
+            if (!crashFiles.map(deleteFile).all { it } ||
+                !otherFiles.map(deleteFile).all { it } || !deleteFile(launch)
+            ) {
                 throw IOException("Failed to remove native crash directory")
             }
         } catch (error: Exception) {
@@ -82,7 +87,8 @@ internal class NativeCrashStorage(
         val processLaunchName = "launch-${System.currentTimeMillis().coerceAtLeast(0).toString().padStart(19, '0')}-${UUID.randomUUID()}"
         val launchPattern = Regex("launch-[0-9]{19}-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
         val replayLock = Any()
-        val reportFiles = setOf("native-crash-record.properties", "native-crash-snapshot.bin", "native-crash-recovery.properties")
+        val crashFileNames = setOf("native-crash-record.properties", "native-crash-snapshot.bin")
+        val reportFiles = crashFileNames + "native-crash-recovery.properties"
         val launchFiles =
             reportFiles +
                 setOf(
