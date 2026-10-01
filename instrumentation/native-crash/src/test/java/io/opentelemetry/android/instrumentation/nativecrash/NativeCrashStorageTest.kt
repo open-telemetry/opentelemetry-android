@@ -116,6 +116,17 @@ class NativeCrashStorageTest {
     }
 
     @Test
+    fun `pruning retains the claim when a crash marker cannot be deleted`() {
+        val launches = (1..9).map { storage(it).also { storage -> crash(storage.currentStore, "session-$it") } }
+        val oldest = launches.first().currentStore
+        val claim = File(oldest.crashRecordPath.parentFile, "native-crash-recovery.properties").apply { writeText("claimed") }
+        val current = NativeCrashStorage(root, launchName(10)) { file -> file != oldest.crashRecordPath && file.delete() }
+        current.replayPreviousCrashes { }
+        assertThat(oldest.crashRecordPath).exists()
+        assertThat(claim.readText()).isEqualTo("claimed")
+    }
+
+    @Test
     fun `removes context-only launches but retains pending recovery state`() {
         val empty = storage(1)
         empty.currentStore.writeContext(context("empty"))
