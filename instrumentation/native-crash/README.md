@@ -67,9 +67,17 @@ future signal handler. Symbol upload and symbolication are downstream concerns.
 
 Crashes that happen before native crash instrumentation finishes initialization are not recorded.
 
-The marker is deleted after its event is emitted, not after backend delivery. Exiting before export
-can lose the event; exiting between emission and cleanup can replay it again. Durable delivery claims
-and bounded retries remain separate recovery work. Unreadable or malformed markers are discarded.
+Recovery records a process-durable delivery claim before handing the event to OpenTelemetry. A
+claimed crash is never emitted again, so replay is at most once and the event may be lost if the
+process exits before export. Marker, snapshot, and cleanup failures are retried on later launches,
+up to three attempts per phase and 24 hours from the first attempt. Pending recovery uses the old
+launch's directory and does not disable capture for the current launch.
+
+Unreadable recovery state is left untouched rather than guessing whether the crash was already
+claimed. This does not use the attempt or age limits, but old directories are still subject to the
+launch retention limit. Other reports can replay and new crashes can be captured independently.
+Malformed recovery state, including an unknown format version, is discarded with the pending crash
+because its delivery status cannot be proven.
 
 This layout supports one instrumented app process. Separate directories do not provide coordination
 between concurrently running app processes.
