@@ -10,6 +10,7 @@ import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -18,6 +19,12 @@ import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.util.UUID
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit.MILLISECONDS
+import java.util.concurrent.TimeUnit.SECONDS
+import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicInteger
 
 class NativeCrashStorageTest {
     @TempDir
@@ -133,6 +140,43 @@ class NativeCrashStorageTest {
         val nested = File(unexpected, "preserve").apply { writeText("keep") }
         current.replayPreviousCrashes { }
         assertThat(nested.readText()).isEqualTo("keep")
+    }
+
+    @Test
+    fun `repeated installations cannot replay the same report concurrently`() {
+        crash(storage(1).currentStore, "previous")
+        val executor = Executors.newFixedThreadPool(2)
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val calls = AtomicInteger()
+        try {
+            val first =
+                executor.submit {
+                    NativeCrashStorage(root).replayPreviousCrashes {
+                        calls.incrementAndGet()
+                        entered.countDown()
+                        check(release.await(5, SECONDS))
+                        it.deleteCrashFiles()
+                    }
+                }
+            assertThat(entered.await(5, SECONDS)).isTrue()
+            val secondStarted = CountDownLatch(1)
+            val second =
+                executor.submit {
+                    secondStarted.countDown()
+                    NativeCrashStorage(root).replayPreviousCrashes { calls.incrementAndGet() }
+                }
+            assertThat(secondStarted.await(5, SECONDS)).isTrue()
+            assertThatThrownBy { second.get(100, MILLISECONDS) }.isInstanceOf(TimeoutException::class.java)
+            release.countDown()
+            first.get(5, SECONDS)
+            second.get(5, SECONDS)
+            assertThat(calls.get()).isEqualTo(1)
+        } finally {
+            release.countDown()
+            executor.shutdownNow()
+            assertThat(executor.awaitTermination(5, SECONDS)).isTrue()
+        }
     }
 
     @Test
