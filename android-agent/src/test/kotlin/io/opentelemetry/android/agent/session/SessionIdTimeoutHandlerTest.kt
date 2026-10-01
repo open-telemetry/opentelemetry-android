@@ -13,9 +13,31 @@ import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.nanoseconds
 
 class SessionIdTimeoutHandlerTest {
+    @Test
+    fun `user inactivity does not replace the background timeout`() {
+        for (userTimeout in listOf(10.minutes, 60.minutes)) {
+            val clock = TestClock.create()
+            val handler = SessionIdTimeoutHandler(SessionConfig(userInactivityTimeout = userTimeout), clock)
+            handler.bump()
+            clock.advance(5, TimeUnit.MINUTES)
+            handler.onApplicationBackgrounded()
+            val remainingMinutes = if (userTimeout == 10.minutes) 5L else 15L
+            clock.advance(remainingMinutes - 1, TimeUnit.MINUTES)
+            handler.onApplicationBackgrounded()
+            assertFalse(handler.hasTimedOut())
+            clock.advance(1, TimeUnit.MINUTES)
+            assertTrue(handler.hasTimedOut())
+            handler.onApplicationForegrounded()
+            assertTrue(handler.hasTimedOut())
+            handler.bump()
+            assertFalse(handler.hasTimedOut())
+        }
+    }
+
     @Test
     fun `synchronizing on the handler does not block timeout updates`() {
         val timeoutHandler = SessionIdTimeoutHandler(TestClock.create(), 5.nanoseconds)

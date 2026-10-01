@@ -20,7 +20,7 @@ import kotlin.time.Duration
 internal class SessionIdTimeoutHandler(
     private val clock: Clock,
     private val sessionBackgroundInactivityTimeout: Duration,
-    private val trackForegroundInactivity: Boolean = false,
+    private val userInactivityTimeout: Duration? = null,
 ) : ApplicationStateListener {
     private val lock = Any()
 
@@ -31,8 +31,8 @@ internal class SessionIdTimeoutHandler(
     @OptIn(Incubating::class)
     internal constructor(sessionConfig: SessionConfig, clock: Clock) : this(
         clock,
-        sessionConfig.userInactivityTimeout ?: sessionConfig.backgroundInactivityTimeout,
-        sessionConfig.userInactivityTimeout != null,
+        sessionConfig.backgroundInactivityTimeout,
+        sessionConfig.userInactivityTimeout,
     )
 
     override fun onApplicationForegrounded() {
@@ -46,7 +46,7 @@ internal class SessionIdTimeoutHandler(
             state =
                 state.copy(
                     foreground = false,
-                    timeoutStartNanos = if (state.foreground && !trackForegroundInactivity) clock.nanoTime() else state.timeoutStartNanos,
+                    backgroundStartNanos = if (state.foreground) clock.nanoTime() else state.backgroundStartNanos,
                 )
         }
     }
@@ -56,19 +56,24 @@ internal class SessionIdTimeoutHandler(
         if (current.expiredOnForeground) {
             return true
         }
-        return (trackForegroundInactivity || !current.foreground) &&
-            clock.nanoTime() - current.timeoutStartNanos >= sessionBackgroundInactivityTimeout.inWholeNanoseconds
+        val now = clock.nanoTime()
+        val userExpired = userInactivityTimeout?.let { now - current.timeoutStartNanos >= it.inWholeNanoseconds } ?: false
+        val backgroundExpired =
+            !current.foreground && now - current.backgroundStartNanos >= sessionBackgroundInactivityTimeout.inWholeNanoseconds
+        return userExpired || backgroundExpired
     }
 
     fun bump() {
         synchronized(lock) {
-            state = state.copy(timeoutStartNanos = clock.nanoTime(), expiredOnForeground = false)
+            val now = clock.nanoTime()
+            state = state.copy(timeoutStartNanos = now, backgroundStartNanos = now, expiredOnForeground = false)
         }
     }
 
     private data class TimeoutState(
         val foreground: Boolean = true,
         val timeoutStartNanos: Long = 0,
+        val backgroundStartNanos: Long = 0,
         val expiredOnForeground: Boolean = false,
     )
 }

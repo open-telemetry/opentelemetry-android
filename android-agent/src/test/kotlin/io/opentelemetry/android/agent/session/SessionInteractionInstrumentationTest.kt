@@ -62,7 +62,7 @@ class SessionInteractionInstrumentationTest {
         instrumentation.onActivityResumed(activity)
         val first = manager.getSessionId()
         clock.advance(50, SECONDS)
-        touch()
+        touch(MotionEvent.ACTION_MOVE)
         clock.advance(50, SECONDS)
         assertThat(manager.getSessionId()).isEqualTo(first)
         clock.advance(10, SECONDS)
@@ -107,7 +107,7 @@ class SessionInteractionInstrumentationTest {
     }
 
     @Test
-    fun `session callback failure never prevents delivery to the application`() {
+    fun `session callback exception does not prevent delivery to the application`() {
         val delegate = mockk<Window.Callback>(relaxed = true)
         activity.window.callback = delegate
         val failing = SessionInteractionInstrumentation(SessionUserInteractionRecorder { error("observer failed") }, lifecycle)
@@ -120,6 +120,18 @@ class SessionInteractionInstrumentationTest {
             failing.uninstall(app, rum)
         }
         assertThat(activity.window.callback).isSameAs(delegate)
+    }
+
+    @Test
+    fun `resume skips a missing callback and can track its replacement`() {
+        instrumentation.install(app, rum)
+        val original = activity.window.callback
+        activity.window.callback = null
+        instrumentation.onActivityResumed(activity)
+        assertThat(activity.window.callback).isNull()
+        activity.window.callback = original
+        instrumentation.onActivityResumed(activity)
+        assertThat(activity.window.callback).isNotSameAs(original)
     }
 
     @Test
@@ -233,8 +245,8 @@ class SessionInteractionInstrumentationTest {
         }
     }
 
-    private fun touch() {
-        val event = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 1f, 1f, 0)
+    private fun touch(action: Int = MotionEvent.ACTION_DOWN) {
+        val event = MotionEvent.obtain(0, 0, action, 1f, 1f, 0)
         try {
             activity.window.callback.dispatchTouchEvent(event)
         } finally {

@@ -29,7 +29,7 @@ internal class SessionInteractionInstrumentation(
 ) : AndroidInstrumentation,
     DefaultingActivityLifecycleCallbacks,
     ApplicationStateListener {
-    override val name: String = "session.interaction"
+    override val name: String = INSTRUMENTATION_NAME
     private val callbacks = WeakHashMap<Window, WeakReference<InteractionCallback>>()
 
     @Volatile
@@ -69,12 +69,17 @@ internal class SessionInteractionInstrumentation(
         if (!installed) return
         val window = activity.window
         val previous = callbacks[window]?.get()
+        val current = window.callback
+        if (current == null) {
+            previous?.active = false
+            return
+        }
         val callback =
-            if (window.callback === previous) {
-                checkNotNull(previous)
+            if (previous != null && current === previous) {
+                previous
             } else {
                 previous?.active = false
-                InteractionCallback(window.callback).also {
+                InteractionCallback(current).also {
                     window.callback = it
                     callbacks[window] = WeakReference(it)
                 }
@@ -128,7 +133,8 @@ internal class SessionInteractionInstrumentation(
         }
     }
 
-    private companion object {
-        val logger: Logger = Logger.getLogger(SessionInteractionInstrumentation::class.java.name)
+    companion object {
+        const val INSTRUMENTATION_NAME = "session.interaction"
+        private val logger: Logger = Logger.getLogger(SessionInteractionInstrumentation::class.java.name)
     }
 }
