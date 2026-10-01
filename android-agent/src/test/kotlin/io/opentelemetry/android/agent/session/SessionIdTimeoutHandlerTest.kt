@@ -7,8 +7,6 @@ package io.opentelemetry.android.agent.session
 
 import io.opentelemetry.sdk.testing.time.TestClock
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.util.concurrent.Executors
@@ -28,14 +26,14 @@ class SessionIdTimeoutHandlerTest {
             val remainingMinutes = if (userTimeout == 10.minutes) 5L else 15L
             clock.advance(remainingMinutes - 1, TimeUnit.MINUTES)
             handler.onApplicationBackgrounded()
-            assertFalse(handler.hasTimedOut())
+            assertThat(handler.hasTimedOut()).isFalse()
             clock.advance(1, TimeUnit.MINUTES)
-            assertTrue(handler.hasTimedOut())
+            assertThat(handler.hasTimedOut()).isTrue()
             handler.onApplicationForegrounded()
-            assertTrue(handler.hasTimedOut())
-            assertFalse(handler.bumpIfActive())
+            assertThat(handler.hasTimedOut()).isTrue()
+            assertThat(handler.bumpIfActive()).isFalse()
             handler.bump()
-            assertFalse(handler.hasTimedOut())
+            assertThat(handler.hasTimedOut()).isFalse()
         }
     }
 
@@ -46,15 +44,15 @@ class SessionIdTimeoutHandlerTest {
         handler.bump()
         repeat(120) {
             clock.advance(16, TimeUnit.MILLISECONDS)
-            assertTrue(handler.bumpIfActive())
+            assertThat(handler.bumpIfActive()).isTrue()
         }
         clock.advance(59999, TimeUnit.MILLISECONDS)
-        assertFalse(handler.hasTimedOut())
+        assertThat(handler.hasTimedOut()).isFalse()
         clock.advance(1, TimeUnit.MILLISECONDS)
-        assertFalse(handler.bumpIfActive())
-        assertTrue(handler.hasTimedOut())
+        assertThat(handler.bumpIfActive()).isFalse()
+        assertThat(handler.hasTimedOut()).isTrue()
         handler.onApplicationForegrounded()
-        assertFalse(handler.bumpIfActive())
+        assertThat(handler.bumpIfActive()).isFalse()
     }
 
     @Test
@@ -65,9 +63,9 @@ class SessionIdTimeoutHandlerTest {
         clock.advance(10, TimeUnit.MINUTES)
         handler.onApplicationBackgrounded()
         clock.advance(14, TimeUnit.MINUTES)
-        assertFalse(handler.hasTimedOut())
+        assertThat(handler.hasTimedOut()).isFalse()
         clock.advance(1, TimeUnit.MINUTES)
-        assertTrue(handler.hasTimedOut())
+        assertThat(handler.hasTimedOut()).isTrue()
     }
 
     @Test
@@ -96,18 +94,18 @@ class SessionIdTimeoutHandlerTest {
         val timeoutHandler =
             SessionIdTimeoutHandler(clock, SessionConfig.withDefaults().backgroundInactivityTimeout)
 
-        assertFalse(timeoutHandler.hasTimedOut())
+        assertThat(timeoutHandler.hasTimedOut()).isFalse()
         timeoutHandler.bump()
 
         // never time out in foreground
         clock.advance(Duration.ofHours(4))
-        assertFalse(timeoutHandler.hasTimedOut())
+        assertThat(timeoutHandler.hasTimedOut()).isFalse()
 
         timeoutHandler.onApplicationBackgrounded()
         clock.advance(14, TimeUnit.MINUTES)
         timeoutHandler.onApplicationForegrounded()
         clock.advance(Duration.ofHours(4))
-        assertFalse(timeoutHandler.hasTimedOut())
+        assertThat(timeoutHandler.hasTimedOut()).isFalse()
     }
 
     @Test
@@ -119,27 +117,27 @@ class SessionIdTimeoutHandlerTest {
         timeoutHandler.onApplicationBackgrounded()
         timeoutHandler.bump()
 
-        assertFalse(timeoutHandler.hasTimedOut())
+        assertThat(timeoutHandler.hasTimedOut()).isFalse()
         timeoutHandler.bump()
 
         // do not timeout if <15 minutes have passed
         clock.advance(14, TimeUnit.MINUTES)
         clock.advance(59, TimeUnit.SECONDS)
-        assertFalse(timeoutHandler.hasTimedOut())
+        assertThat(timeoutHandler.hasTimedOut()).isFalse()
         timeoutHandler.bump()
 
         // restart the timeout counter after bump()
         clock.advance(1, TimeUnit.MINUTES)
-        assertFalse(timeoutHandler.hasTimedOut())
+        assertThat(timeoutHandler.hasTimedOut()).isFalse()
         timeoutHandler.bump()
 
         // timeout after 15 minutes
         clock.advance(15, TimeUnit.MINUTES)
-        assertTrue(timeoutHandler.hasTimedOut())
+        assertThat(timeoutHandler.hasTimedOut()).isTrue()
 
         // bump() resets the counter
         timeoutHandler.bump()
-        assertFalse(timeoutHandler.hasTimedOut())
+        assertThat(timeoutHandler.hasTimedOut()).isFalse()
     }
 
     @Test
@@ -154,12 +152,12 @@ class SessionIdTimeoutHandlerTest {
         // Expiry while backgrounded survives the return to foreground.
         clock.advance(20, TimeUnit.MINUTES)
         timeoutHandler.onApplicationForegrounded()
-        assertTrue(timeoutHandler.hasTimedOut())
+        assertThat(timeoutHandler.hasTimedOut()).isTrue()
         timeoutHandler.bump()
 
         // Creating a new session clears the pending expiry.
         clock.advance(Duration.ofHours(4))
-        assertFalse(timeoutHandler.hasTimedOut())
+        assertThat(timeoutHandler.hasTimedOut()).isFalse()
     }
 
     @Test
@@ -174,11 +172,11 @@ class SessionIdTimeoutHandlerTest {
         // Expiry while backgrounded survives the return to foreground.
         clock.advance(6, TimeUnit.MINUTES)
         timeoutHandler.onApplicationForegrounded()
-        assertTrue(timeoutHandler.hasTimedOut())
+        assertThat(timeoutHandler.hasTimedOut()).isTrue()
         timeoutHandler.bump()
 
         // Creating a new session clears the pending expiry.
         clock.advance(Duration.ofHours(4))
-        assertFalse(timeoutHandler.hasTimedOut())
+        assertThat(timeoutHandler.hasTimedOut()).isFalse()
     }
 }
