@@ -35,21 +35,20 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
-import java.nio.channels.FileChannel
 import java.time.Instant
 import java.util.Properties
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
 /** Entry point for replaying native crashes captured by a previous app process. */
 @AutoService(AndroidInstrumentation::class)
 class NativeCrashInstrumentation internal constructor(
-    private val storeFactory: (Context) -> NativeCrashStore = { context ->
-        FileNativeCrashStore(File(context.filesDir, "opentelemetry/native-crash"))
+    private val storageFactory: (Context) -> NativeCrashStorage = { context ->
+        NativeCrashStorage(File(context.filesDir, "opentelemetry/native-crash"))
     },
     private val executor: Executor = Executors.newSingleThreadExecutor(),
     private val signalHandlerInstaller: NativeSignalHandlerInstaller = JniNativeSignalHandlerInstaller(),
+    private val replayExecutor: Executor = Executors.newSingleThreadExecutor(),
 ) : AndroidInstrumentation {
     override val name: String = "native-crash"
 
@@ -59,28 +58,43 @@ class NativeCrashInstrumentation internal constructor(
     ) {
         val applicationContext = context.applicationContext
         executor.execute {
-            val store = storeFactory(applicationContext)
-            val crashContext = applicationContext.currentCrashContext(openTelemetryRum)
-            NativeCrashReporter(
-                store = store,
-                openTelemetryRum = openTelemetryRum,
-            ).replayPreviousCrash()
-            if (!store.writeContext(crashContext)) {
-                Log.w(
-                    RumConstants.OTEL_RUM_LOG_TAG,
-                    "Native crash signal handler disabled because crash context could not be persisted",
-                )
-                return@execute
+            val storage =
+                try {
+                    storageFactory(applicationContext)
+                } catch (error: Exception) {
+                    Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to prepare native crash storage", error)
+                    return@execute
+                }
+            installCapture(storage.currentStore, applicationContext, openTelemetryRum)
+            replayExecutor.execute {
+                storage.replayPreviousCrashes { store ->
+                    NativeCrashReporter(store, openTelemetryRum).replayPreviousCrash()
+                }
             }
+        }
+    }
 
-            val sessionProvider = openTelemetryRum.sessionProvider
-            if (sessionProvider is SessionPublisher) {
-                sessionProvider.addObserver(NativeCrashSessionObserver(store, crashContext, executor))
-            }
+    private fun installCapture(
+        store: NativeCrashStore,
+        applicationContext: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
+        val crashContext = applicationContext.currentCrashContext(openTelemetryRum)
+        if (!store.writeContext(crashContext)) {
+            Log.w(
+                RumConstants.OTEL_RUM_LOG_TAG,
+                "Native crash signal handler disabled because crash context could not be persisted",
+            )
+            return
+        }
 
-            if (!signalHandlerInstaller.install(store.crashRecordPath)) {
-                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to install native crash signal handler")
-            }
+        val sessionProvider = openTelemetryRum.sessionProvider
+        if (sessionProvider is SessionPublisher) {
+            sessionProvider.addObserver(NativeCrashSessionObserver(store, crashContext, executor))
+        }
+
+        if (!signalHandlerInstaller.install(store.crashRecordPath)) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to install native crash signal handler")
         }
     }
 }
@@ -213,12 +227,6 @@ internal interface NativeCrashStore {
 
     fun readCrashSnapshotForRecovery(record: NativeCrashRecord): NativeCrashRead<NativeCrashSnapshot>
 
-    /**
-     * Waits for another process to release the lock. Returns null for a same-process overlap or
-     * an open/acquisition failure. A null result never grants ownership; callers must defer recovery.
-     */
-    fun acquireRecoveryLock(): NativeCrashRecoveryLock?
-
     fun deleteCrashSnapshot(): Boolean
 
     fun deleteCrashFiles(): Boolean
@@ -230,10 +238,8 @@ internal interface NativeCrashStore {
 
 internal class FileNativeCrashStore(
     private val directory: File,
-    private val openRecoveryChannel: (File) -> FileChannel = { FileOutputStream(it, true).channel },
 ) : NativeCrashStore {
     private val contextPath = File(directory, "native-crash-context.properties")
-    private val recoveryLockPath = File(directory, "native-crash-recovery.lock")
     override val crashRecordPath = File(directory, "native-crash-record.properties")
     override val crashSnapshotPath = File(directory, "native-crash-snapshot.bin")
 
@@ -308,57 +314,6 @@ internal class FileNativeCrashStore(
         } catch (error: LinkageError) {
             Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to parse native crash snapshot", error)
             NativeCrashRead.Malformed
-        }
-    }
-
-    override fun acquireRecoveryLock(): NativeCrashRecoveryLock? {
-        val lockPath =
-            try {
-                recoveryLockPath.canonicalPath
-            } catch (error: Exception) {
-                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to resolve native crash recovery lock", error)
-                return null
-            }
-        // Older Android runtimes do not reject overlapping locks on separate channels in this process.
-        val owner = Any()
-        if (processRecoveryLocks.putIfAbsent(lockPath, owner) != null) return null
-        var channel: FileChannel? = null
-        var ownershipTransferred = false
-        return try {
-            if (!directory.isDirectory && !directory.mkdirs() && !directory.isDirectory) {
-                throw IOException("Failed to create native crash directory")
-            }
-            val openedChannel = openRecoveryChannel(recoveryLockPath)
-            channel = openedChannel
-            // Recovery owns fixed marker and snapshot paths until cleanup completes. Wait on this
-            // background executor so another process cannot install a handler and overwrite them.
-            val lock = openedChannel.lock()
-            NativeCrashRecoveryLock {
-                try {
-                    lock.release()
-                } catch (error: Exception) {
-                    Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to release native crash recovery lock", error)
-                } catch (error: LinkageError) {
-                    Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to release native crash recovery lock", error)
-                } finally {
-                    closeRecoveryChannel(openedChannel, lockPath, owner)
-                }
-            }.also { ownershipTransferred = true }
-        } catch (error: Exception) {
-            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to acquire native crash recovery lock", error)
-            null
-        } catch (error: LinkageError) {
-            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to acquire native crash recovery lock", error)
-            null
-        } finally {
-            if (!ownershipTransferred) {
-                val openedChannel = channel
-                if (openedChannel == null) {
-                    processRecoveryLocks.remove(lockPath, owner)
-                } else {
-                    closeRecoveryChannel(openedChannel, lockPath, owner)
-                }
-            }
         }
     }
 
@@ -446,24 +401,7 @@ internal class FileNativeCrashStore(
             false
         }
 
-    private fun closeRecoveryChannel(
-        channel: FileChannel,
-        lockPath: String,
-        owner: Any,
-    ) {
-        try {
-            channel.close()
-        } catch (error: Exception) {
-            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to close native crash recovery lock", error)
-        } catch (error: LinkageError) {
-            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to close native crash recovery lock", error)
-        } finally {
-            if (!channel.isOpen) processRecoveryLocks.remove(lockPath, owner)
-        }
-    }
-
     private companion object {
-        val processRecoveryLocks = ConcurrentHashMap<String, Any>()
         const val SIGNAL_NUMBER_KEY = "signal.number"
         const val TIMESTAMP_EPOCH_NANOS_KEY = "timestamp.epoch_nanos"
     }
