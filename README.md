@@ -201,7 +201,6 @@ For more information about the maintainer role, see the [community repository](h
 - [Ben Joseph](https://github.com/benjoseph-grafana), Grafana
 - [DavidGrath](https://github.com/DavidGrath)
 - [Hanson Ho](https://github.com/bidetofevil), Embrace
-- [Manoel Aranda Neto](https://github.com/marandaneto), PostHog
 - [Vishwan Aranha](https://github.com/aranhave), Grafana
 
 For more information about the Approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
@@ -213,3 +212,10 @@ For more information about the Approver role, see the [community repository](htt
 [maven-image]: https://img.shields.io/maven-central/v/io.opentelemetry.android/android-agent.svg
 
 [maven-url]: https://central.sonatype.com/artifact/io.opentelemetry.android/android-agent
+
+## Emeritus
+
+- [Manoel Aranda Neto](https://github.com/marandaneto), Approver
+
+For more information about the emeritus role, see the
+[community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
