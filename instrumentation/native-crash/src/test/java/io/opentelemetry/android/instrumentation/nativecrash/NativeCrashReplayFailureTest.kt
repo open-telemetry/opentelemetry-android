@@ -24,6 +24,7 @@ import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE
 import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_ID
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -65,6 +66,68 @@ class NativeCrashReplayFailureTest {
         unmockkStatic(ParcelFileDescriptor::class)
         unmockkStatic(Os::class)
     }
+
+    @Test
+    fun `consecutive crashes retain their own context and skip a legacy delivery claim`() {
+        val legacy = fileStoreWithCrashFiles()
+        assertThat(legacy.writeRecoveryState(NativeCrashRecoveryState.create(NativeCrashRecoveryPhase.DELIVERY_CLAIMED, 1, crashRecord)))
+            .isTrue()
+        val first = launch(1)
+        val second = launch(2)
+        val current = launch(3)
+        listOf(first, second, current).forEachIndexed { index, storage ->
+            val store = storage.currentStore
+            assertThat(store.writeContext(NativeCrashContext("session-$index", "1", "Android", "29"))).isTrue()
+            store.crashRecordPath.writeText("signal.number=11\ntimestamp.epoch_nanos=1783598400000000000\n")
+        }
+
+        current.replayPreviousCrashes { reporter(it).replayPreviousCrash() }
+
+        assertThat(otelTesting.logRecords.map { it.attributes.get(stringKey(SESSION_ID)) })
+            .containsExactly("session-1", "session-0")
+        assertCrashFilesRemoved(legacy)
+        assertThat(legacy.readRecoveryState()).isEqualTo(NativeCrashRead.Missing)
+        assertThat(first.currentStore.crashRecordPath.parentFile).doesNotExist()
+        assertThat(second.currentStore.crashRecordPath.parentFile).doesNotExist()
+        assertThat(current.currentStore.readContext()?.sessionId).isEqualTo("session-2")
+        assertThat(current.currentStore.readCrashRecord()).isEqualTo(crashRecord)
+        current.replayPreviousCrashes { error("Completed reports must not replay") }
+
+        launch(4).replayPreviousCrashes { reporter(it).replayPreviousCrash() }
+        assertThat(otelTesting.logRecords.map { it.attributes.get(stringKey(SESSION_ID)) })
+            .containsExactly("session-1", "session-0", "session-2")
+    }
+
+    @Test
+    fun `unreadable old state leaves new capture and other reports independent`() {
+        val previous = launch(1).currentStore
+        assertThat(previous.writeContext(NativeCrashContext("old", "1", "Android", "29"))).isTrue()
+        previous.crashRecordPath.writeText("signal.number=11\ntimestamp.epoch_nanos=1783598400000000000\n")
+        assertThat(previous.writeRecoveryState(NativeCrashRecoveryState.create(NativeCrashRecoveryPhase.DELIVERY_CLAIMED, 1, crashRecord)))
+            .isTrue()
+        val state = File(previous.crashRecordPath.parentFile, "native-crash-recovery.properties")
+        val stateBytes = state.readBytes()
+        val current = launch(2)
+        assertThat(current.currentStore.writeContext(NativeCrashContext("current", "1", "Android", "29"))).isTrue()
+        current.currentStore.crashRecordPath.writeText("signal.number=11\ntimestamp.epoch_nanos=1783598400000000000\n")
+
+        withUnreadableFile(state) {
+            current.replayPreviousCrashes {
+                assertThat(reporter(it).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+            }
+            assertThat(otelTesting.logRecords).isEmpty()
+            launch(3).replayPreviousCrashes { reporter(it).replayPreviousCrash() }
+            assertThat(otelTesting.logRecords.single().attributes.get(stringKey(SESSION_ID))).isEqualTo("current")
+            assertThat(previous.crashRecordPath).exists()
+        }
+        assertThat(state.readBytes()).isEqualTo(stateBytes)
+        launch(4).replayPreviousCrashes { reporter(it).replayPreviousCrash() }
+        assertThat(otelTesting.logRecords).hasSize(1)
+        assertThat(previous.crashRecordPath.parentFile).doesNotExist()
+    }
+
+    private fun launch(number: Int): NativeCrashStorage =
+        NativeCrashStorage(tempDir, "launch-${number.toString().padStart(19, '0')}-00000000-0000-0000-0000-000000000001")
 
     @Test
     fun `failed directory sync does not emit and a retained claim stays suppressed after restart`() {
@@ -333,7 +396,6 @@ class NativeCrashReplayFailureTest {
             every { store.readCrashSnapshotForRecovery(crashRecord) } returns NativeCrashRead.Success(snapshot)
             every { store.readRecoveryState() } returns NativeCrashRead.Missing
             every { store.writeRecoveryState(any()) } returns true
-            every { store.acquireRecoveryLock() } answers { NativeCrashRecoveryLock {} }
             every { store.deleteCrashFiles() } returns true
             every { store.deleteRecoveryState() } returns true
         }

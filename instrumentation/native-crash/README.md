@@ -5,8 +5,8 @@ Status: development
 The native crash instrumentation records fatal native signals and replays the persisted crash as an
 `app.crash` event when the application next starts.
 
-It uses one marker for the most recent crash and a separate context snapshot maintained while the
-app is running. The signal handler records `SIGILL`, `SIGTRAP`, `SIGABRT`, `SIGBUS`, `SIGFPE`,
+Each process launch has its own directory containing a crash marker and a context snapshot maintained
+while the app is running. The signal handler records `SIGILL`, `SIGTRAP`, `SIGABRT`, `SIGBUS`, `SIGFPE`,
 `SIGSEGV`, and `SIGSYS`, then restores the previous action for that signal and re-delivers it
 through the kernel. This preserves the previous handler's signal mask, flags, and available fault
 details without changing registrations for the other signals. Signals that were already ignored
@@ -38,8 +38,8 @@ The replayed event uses the original crash timestamp and includes:
 * `os.name`
 * `os.version`
 
-The app and OS fields are read from the persisted crash-time context before it is replaced with the
-new process context, so the replayed event describes the process that crashed.
+The app and OS fields are read from that launch's persisted crash-time context, so the replayed event
+describes the process that crashed. The current launch writes to a separate directory.
 
 ## Installation
 
@@ -52,8 +52,13 @@ implementation("io.opentelemetry.android.instrumentation:native-crash:1.7.0-alph
 ```
 
 The module is discovered and installed automatically when it is present on the runtime classpath.
-It replays any marker from the previous process and persists the current process context before
-enabling the native signal handler.
+It persists the current process context and enables capture before replaying older launches on a
+separate background executor. Session-context updates do not wait for replay. The legacy flat files
+are replayed in place; they are never moved or overwritten by new capture.
+
+At most eight previous launch directories are replayed per startup, newest first. Older directories
+are pruned, so prolonged crash loops can discard the oldest pending reports. An I/O failure can leave
+files for a later cleanup attempt. The active directory is never replayed or pruned.
 
 ## Limitations
 
@@ -65,17 +70,14 @@ Crashes that happen before native crash instrumentation finishes initialization 
 Recovery records a process-durable delivery claim before handing the event to OpenTelemetry. A
 claimed crash is never emitted again, so replay is at most once and the event may be lost if the
 process exits before export. Marker, snapshot, and cleanup failures are retried on later launches,
-up to three attempts per phase and 24 hours from the first attempt. The signal handler stays
-disabled while a retry is pending so it cannot overwrite the files being recovered.
+up to three attempts per phase and 24 hours from the first attempt. Pending recovery uses the old
+launch's directory and does not disable capture for the current launch.
 
-Recovery waits for the fixed marker and snapshot paths when another app process is using them. If
-the process lock cannot be acquired, or the recovery state cannot be read while a crash may be
-pending, the handler remains disabled rather than guessing whether the crash was already claimed.
-These conditions do not use the attempt or age limits: recovery must regain ownership and read the
-saved state before it can safely continue. Persistent lock or state-read failures therefore keep
-capture disabled until the underlying problem is resolved.
+Unreadable recovery state is left untouched rather than guessing whether the crash was already
+claimed. This does not use the attempt or age limits, but old directories are still subject to the
+launch retention limit. Other reports can replay and new crashes can be captured independently.
 Malformed recovery state, including an unknown format version, is discarded with the pending crash
 because its delivery status cannot be proven.
 
-Only one crash can be pending. Supporting multiple consecutive startup crashes requires per-crash
-paths and remains follow-up work.
+This layout supports one instrumented app process. Separate directories do not provide coordination
+between concurrently running app processes.
