@@ -69,8 +69,10 @@ class NativeCrashReporterTest {
     }
 
     @Test
-    fun `installs the signal handler after replay and current context persistence`() {
-        val store = FileNativeCrashStore(tempDir)
+    fun `installs capture before replay without replacing the previous context`() {
+        val storage = NativeCrashStorage(tempDir)
+        val store = storage.currentStore
+        val previousStore = FileNativeCrashStore(tempDir)
         writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L)
         writeContext(crashContext("crashed"))
         val packageManager = mockk<PackageManager>()
@@ -82,24 +84,22 @@ class NativeCrashReporterTest {
         every { packageManager.getPackageInfo("test.app", 0) } throws
             PackageManager.NameNotFoundException()
         var queuedTask: Runnable? = null
+        var queuedReplay: Runnable? = null
         var storeCreated = false
         var signalHandlerInstalled = false
         val instrumentation =
             NativeCrashInstrumentation(
-                storeFactory = {
+                storageFactory = {
                     storeCreated = true
-                    store
+                    storage
                 },
                 executor = { task -> queuedTask = task },
+                replayExecutor = { task -> queuedReplay = task },
                 signalHandlerInstaller = {
                     assertThat(store.readCrashRecord()).isNull()
                     assertThat(store.readContext()?.sessionId).isEqualTo("current-session")
-                    assertThat(
-                        otelTesting.logRecords
-                            .single()
-                            .attributes
-                            .get(stringKey(SESSION_ID)),
-                    ).isEqualTo("crashed-session")
+                    assertThat(previousStore.readContext()?.sessionId).isEqualTo("crashed-session")
+                    assertThat(otelTesting.logRecords).isEmpty()
                     signalHandlerInstalled = true
                     true
                 },
@@ -109,13 +109,22 @@ class NativeCrashReporterTest {
 
         assertThat(storeCreated).isFalse()
         assertThat(signalHandlerInstalled).isFalse()
-        assertThat(store.readCrashRecord()).isNotNull()
+        assertThat(previousStore.readCrashRecord()).isNotNull()
         assertThat(queuedTask).isNotNull()
 
         queuedTask!!.run()
 
         assertThat(storeCreated).isTrue()
         assertThat(signalHandlerInstalled).isTrue()
+        queuedReplay!!.run()
+        assertThat(
+            otelTesting.logRecords
+                .single()
+                .attributes
+                .get(stringKey(SESSION_ID)),
+        ).isEqualTo("crashed-session")
+        assertThat(store.readContext()?.sessionId).isEqualTo("current-session")
+        assertThat(previousStore.readCrashRecord()).isNull()
     }
 
     @Test
@@ -137,8 +146,9 @@ class NativeCrashReporterTest {
         var signalHandlerInstalled = false
         val instrumentation =
             NativeCrashInstrumentation(
-                storeFactory = { store },
+                storageFactory = { storageFor(store) },
                 executor = directExecutor,
+                replayExecutor = directExecutor,
                 signalHandlerInstaller = {
                     signalHandlerInstalled = true
                     true
@@ -228,9 +238,11 @@ class NativeCrashReporterTest {
     }
 
     @Test
-    fun `installs replay and session observer using the application context`() {
-        val store = FileNativeCrashStore(tempDir)
+    fun `pending replay does not delay capture or session context updates`() {
+        val storage = NativeCrashStorage(tempDir)
+        val store = storage.currentStore
         var installedMarkerPath: File? = null
+        var replay: Runnable? = null
         writeMarker(signalNumber = 11, timestampNanos = 1_783_598_400_000_000_000L)
         val packageInfo =
             PackageInfo().apply {
@@ -250,11 +262,12 @@ class NativeCrashReporterTest {
             )
         val instrumentation =
             NativeCrashInstrumentation(
-                storeFactory = { actualContext ->
+                storageFactory = { actualContext ->
                     assertThat(actualContext).isSameAs(applicationContext)
-                    store
+                    storage
                 },
                 executor = directExecutor,
+                replayExecutor = { replay = it },
                 signalHandlerInstaller = { markerPath ->
                     installedMarkerPath = markerPath
                     true
@@ -263,11 +276,13 @@ class NativeCrashReporterTest {
 
         instrumentation.install(context, fakeRum(sessionProvider))
 
-        assertThat(otelTesting.logRecords).hasSize(1)
+        assertThat(otelTesting.logRecords).isEmpty()
+        assertThat(installedMarkerPath).isEqualTo(store.crashRecordPath)
+        sessionProvider.observer!!.onSessionStarted(session("updated-session"), session("started-session"))
         assertThat(store.readContext())
             .isEqualTo(
                 NativeCrashContext(
-                    sessionId = "started-session",
+                    sessionId = "updated-session",
                     serviceVersion = "1.2.3",
                     osName = "Android",
                     osVersion = Build.VERSION.RELEASE,
@@ -275,6 +290,23 @@ class NativeCrashReporterTest {
             )
         assertThat(sessionProvider.observer).isNotNull()
         assertThat(installedMarkerPath).isEqualTo(store.crashRecordPath)
+        replay!!.run()
+        assertThat(otelTesting.logRecords).hasSize(1)
+        assertThat(store.readContext()?.sessionId).isEqualTo("updated-session")
+    }
+
+    @Test
+    fun `storage initialization failure does not crash the app`() {
+        val context = mockk<Context>()
+        every { context.applicationContext } returns context
+        val failure = java.io.IOException("unavailable directory")
+        NativeCrashInstrumentation(
+            storageFactory = { throw failure },
+            executor = directExecutor,
+            replayExecutor = { error("Replay must not run") },
+            signalHandlerInstaller = { error("Capture must not run") },
+        ).install(context, fakeRum())
+        verify { Log.w(any<String>(), "Failed to prepare native crash storage", failure) }
     }
 
     @Test
@@ -291,8 +323,9 @@ class NativeCrashReporterTest {
         val sessionProvider = RecordingSessionProvider(sessionId = "install-session")
         val instrumentation =
             NativeCrashInstrumentation(
-                storeFactory = { store },
+                storageFactory = { storageFor(store) },
                 executor = directExecutor,
+                replayExecutor = directExecutor,
                 signalHandlerInstaller = { false },
             )
 
@@ -543,6 +576,9 @@ class NativeCrashReporterTest {
 
         assertThat(store.readContext()).isEqualTo(crashContext("second"))
     }
+
+    private fun storageFor(store: NativeCrashStore): NativeCrashStorage =
+        mockk<NativeCrashStorage>(relaxed = true).also { every { it.currentStore } returns store }
 
     private fun reporter(store: NativeCrashStore): NativeCrashReporter = NativeCrashReporter(store, fakeRum())
 

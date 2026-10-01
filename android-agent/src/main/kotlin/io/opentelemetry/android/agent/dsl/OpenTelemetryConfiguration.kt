@@ -13,6 +13,7 @@ import io.opentelemetry.android.agent.dsl.instrumentation.InstrumentationConfigu
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.resources.Resource
 import io.opentelemetry.sdk.resources.ResourceBuilder
@@ -40,6 +41,7 @@ class OpenTelemetryConfiguration internal constructor(
         AndroidResource.createDefault(ctx)
     }
     internal var resourceAction: ResourceBuilder.() -> Unit = {}
+    internal val propagators = mutableListOf<TextMapPropagator>()
     internal var resourceProvider: (Context) -> Resource = { ctx ->
         baseResourceProvider(ctx)
             .toBuilder()
@@ -132,5 +134,14 @@ class OpenTelemetryConfiguration internal constructor(
      */
     fun resource(resource: Resource) {
         baseResourceProvider = { resource }
+    }
+
+    /**
+     * Adds a [TextMapPropagator] to be used in context propagation alongside default propagators.
+     *
+     * Multiple calls will add additional propagators in order.
+     */
+    fun addPropagator(propagator: TextMapPropagator) {
+        propagators.add(propagator)
     }
 }
