@@ -13,9 +13,63 @@ import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.nanoseconds
 
 class SessionIdTimeoutHandlerTest {
+    @Test
+    fun `user inactivity does not replace the background timeout`() {
+        for (userTimeout in listOf(10.minutes, 60.minutes)) {
+            val clock = TestClock.create()
+            val handler = SessionIdTimeoutHandler(SessionConfig(userInactivityTimeout = userTimeout), clock)
+            handler.bump()
+            clock.advance(5, TimeUnit.MINUTES)
+            handler.onApplicationBackgrounded()
+            val remainingMinutes = if (userTimeout == 10.minutes) 5L else 15L
+            clock.advance(remainingMinutes - 1, TimeUnit.MINUTES)
+            handler.onApplicationBackgrounded()
+            assertFalse(handler.hasTimedOut())
+            clock.advance(1, TimeUnit.MINUTES)
+            assertTrue(handler.hasTimedOut())
+            handler.onApplicationForegrounded()
+            assertTrue(handler.hasTimedOut())
+            assertFalse(handler.bumpIfActive())
+            handler.bump()
+            assertFalse(handler.hasTimedOut())
+        }
+    }
+
+    @Test
+    fun `active input preserves the latest timestamp without reviving expiry`() {
+        val clock = TestClock.create()
+        val handler = SessionIdTimeoutHandler(SessionConfig(userInactivityTimeout = 1.minutes), clock)
+        handler.bump()
+        repeat(120) {
+            clock.advance(16, TimeUnit.MILLISECONDS)
+            assertTrue(handler.bumpIfActive())
+        }
+        clock.advance(59999, TimeUnit.MILLISECONDS)
+        assertFalse(handler.hasTimedOut())
+        clock.advance(1, TimeUnit.MILLISECONDS)
+        assertFalse(handler.bumpIfActive())
+        assertTrue(handler.hasTimedOut())
+        handler.onApplicationForegrounded()
+        assertFalse(handler.bumpIfActive())
+    }
+
+    @Test
+    fun `background timeout begins on background entry not the last input`() {
+        val clock = TestClock.create()
+        val handler = SessionIdTimeoutHandler(SessionConfig(userInactivityTimeout = 60.minutes), clock)
+        handler.bump()
+        clock.advance(10, TimeUnit.MINUTES)
+        handler.onApplicationBackgrounded()
+        clock.advance(14, TimeUnit.MINUTES)
+        assertFalse(handler.hasTimedOut())
+        clock.advance(1, TimeUnit.MINUTES)
+        assertTrue(handler.hasTimedOut())
+    }
+
     @Test
     fun `synchronizing on the handler does not block timeout updates`() {
         val timeoutHandler = SessionIdTimeoutHandler(TestClock.create(), 5.nanoseconds)
