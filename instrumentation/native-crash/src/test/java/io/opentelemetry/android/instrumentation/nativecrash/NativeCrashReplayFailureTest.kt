@@ -117,7 +117,12 @@ class NativeCrashReplayFailureTest {
             }
             assertThat(otelTesting.logRecords).isEmpty()
             launch(3).replayPreviousCrashes { reporter(it).replayPreviousCrash() }
-            assertThat(otelTesting.logRecords.single().attributes.get(stringKey(SESSION_ID))).isEqualTo("current")
+            assertThat(
+                otelTesting.logRecords
+                    .single()
+                    .attributes
+                    .get(stringKey(SESSION_ID)),
+            ).isEqualTo("current")
             assertThat(previous.crashRecordPath).exists()
         }
         assertThat(state.readBytes()).isEqualTo(stateBytes)
