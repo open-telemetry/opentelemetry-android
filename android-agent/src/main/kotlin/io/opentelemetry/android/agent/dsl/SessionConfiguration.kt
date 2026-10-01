@@ -43,6 +43,7 @@ class SessionConfiguration internal constructor() {
      * For example, `sampler { SessionIdRatioBasedSampler(0.5, it) }`.
      * The last factory supplied is used. It is not called when tracing is disabled, and a
      * factory failure aborts initialization. Logs and metrics are not sampled by this setting.
+     * This setting preserves existing span session IDs, subject to SDK attribute limits.
      */
     @Incubating
     fun sampler(factory: (SessionProvider) -> Sampler) {

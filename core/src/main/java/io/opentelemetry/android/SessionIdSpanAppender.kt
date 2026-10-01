@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.trace.SpanProcessor
 @OptIn(IncubatingApi::class)
 internal class SessionIdSpanAppender(
     private val sessionProvider: SessionProvider,
+    private val preserveExistingSessionId: Boolean = false,
 ) : SpanProcessor {
     private val sessionId = stringKey(SESSION_ID)
 
@@ -28,7 +29,7 @@ internal class SessionIdSpanAppender(
         parentContext: Context,
         span: ReadWriteSpan,
     ) {
-        if (span.getAttribute(sessionId) == null) {
+        if (!preserveExistingSessionId || span.getAttribute(sessionId) == null) {
             span.setAttribute(sessionId, sessionProvider.getSessionId())
         }
     }

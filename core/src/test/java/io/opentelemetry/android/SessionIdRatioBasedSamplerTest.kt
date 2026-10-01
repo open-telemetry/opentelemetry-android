@@ -96,7 +96,7 @@ internal class SessionIdRatioBasedSamplerTest {
         SdkTracerProvider
             .builder()
             .setSampler(SessionIdRatioBasedSampler(0.5, sessionProvider))
-            .addSpanProcessor(SessionIdSpanAppender(sessionProvider))
+            .addSpanProcessor(SessionIdSpanAppender(sessionProvider, preserveExistingSessionId = true))
             .addSpanProcessor(SimpleSpanProcessor.create(exporter))
             .build()
             .use { provider ->

@@ -52,7 +52,7 @@ internal class SessionIdSpanAppenderTest {
     @Test
     fun `preserves identity captured by the sampler`() {
         every { span.getAttribute(stringKey(SESSION_ID)) } returns "sampled-session"
-        SessionIdSpanAppender(sessionProvider).onStart(Context.root(), span)
+        SessionIdSpanAppender(sessionProvider, preserveExistingSessionId = true).onStart(Context.root(), span)
         verify(exactly = 0) { sessionProvider.getSessionId() }
         verify(exactly = 0) { span.setAttribute(any<AttributeKey<String>>(), any<String>()) }
     }

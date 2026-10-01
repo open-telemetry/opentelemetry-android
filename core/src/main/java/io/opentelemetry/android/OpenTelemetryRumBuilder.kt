@@ -141,6 +141,8 @@ class OpenTelemetryRumBuilder internal constructor(
      * If no provider is configured, the factory receives [SessionProvider.getNoop].
      * The factory runs during build, after configuration and before instrumentations are installed.
      * Tracer-provider customizers run afterwards and may replace the sampler.
+     * Configuring a factory preserves existing span session IDs, even if a customizer replaces
+     * the sampler. Without a factory, span session IDs are overwritten with the current session.
      * The factory is not called when tracing is disabled. A factory failure aborts the build.
      * Without a factory, the OpenTelemetry SDK's default sampler is used.
      * This does not sample logs or metrics.
@@ -617,7 +619,7 @@ class OpenTelemetryRumBuilder internal constructor(
                 .builder()
                 .setResource(resource)
                 .setClock(clock)
-                .addSpanProcessor(SessionIdSpanAppender(sessionProvider))
+                .addSpanProcessor(SessionIdSpanAppender(sessionProvider, preserveExistingSessionId = sampler != null))
 
         sampler?.let { tracerProviderBuilder.setSampler(it) }
 

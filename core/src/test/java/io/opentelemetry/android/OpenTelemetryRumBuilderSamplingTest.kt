@@ -16,6 +16,7 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.internal.initialization.InitializationEvents
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanContext
 import io.opentelemetry.api.trace.TraceFlags
@@ -188,12 +189,23 @@ class OpenTelemetryRumBuilderSamplingTest {
 
     @Test
     fun defaultSamplerStillSamplesRootsAndHonorsUnsampledParents() {
-        val rum = makeBuilder().build()
+        val rum =
+            makeBuilder()
+                .setSessionProvider(SessionProvider { "current" })
+                .addTracerProviderCustomizer { builder, _ -> builder.addSpanProcessor(SimpleSpanProcessor.create(spanExporter)) }
+                .build()
         try {
             val tracer = rum.openTelemetry.getTracer("test")
-            val span = tracer.spanBuilder("root").setNoParent().startSpan()
+            val span =
+                tracer
+                    .spanBuilder("root")
+                    .setNoParent()
+                    .setAttribute("session.id", "caller")
+                    .startSpan()
             assertThat(span.spanContext.isSampled).isTrue()
             span.end()
+            val attributes = spanExporter.finishedSpanItems.single().attributes
+            assertThat(attributes.get(stringKey("session.id"))).isEqualTo("current")
             val parent =
                 Span.wrap(
                     SpanContext.createFromRemoteParent(
@@ -208,6 +220,32 @@ class OpenTelemetryRumBuilderSamplingTest {
             child.end()
         } finally {
             rum.shutdown()
+        }
+    }
+
+    @Test
+    fun customizerPreservesCallerSessionIdOnlyWithFactory() {
+        for (configureFactory in listOf(false, true)) {
+            val exporter = InMemorySpanExporter.create()
+            val builder = makeBuilder().setSessionProvider(SessionProvider { "current" })
+            if (configureFactory) builder.setSessionSampler { Sampler.alwaysOff() }
+            val rum =
+                builder
+                    .addTracerProviderCustomizer { provider, _ ->
+                        provider.setSampler(Sampler.alwaysOn()).addSpanProcessor(SimpleSpanProcessor.create(exporter))
+                    }.build()
+            try {
+                rum.openTelemetry
+                    .getTracer("test")
+                    .spanBuilder("explicit")
+                    .setAttribute("session.id", "caller")
+                    .startSpan()
+                    .end()
+                val attributes = exporter.finishedSpanItems.single().attributes
+                assertThat(attributes.get(stringKey("session.id"))).isEqualTo(if (configureFactory) "caller" else "current")
+            } finally {
+                rum.shutdown()
+            }
         }
     }
 
