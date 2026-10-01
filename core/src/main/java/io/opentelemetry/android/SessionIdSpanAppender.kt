@@ -28,7 +28,9 @@ internal class SessionIdSpanAppender(
         parentContext: Context,
         span: ReadWriteSpan,
     ) {
-        span.setAttribute(sessionId, sessionProvider.getSessionId())
+        if (span.getAttribute(sessionId) == null) {
+            span.setAttribute(sessionId, sessionProvider.getSessionId())
+        }
     }
 
     override fun isStartRequired(): Boolean = true

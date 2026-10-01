@@ -21,6 +21,7 @@ public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
 	public final fun setExportScheduleEnablement (Lio/opentelemetry/android/features/diskbuffering/scheduler/ScheduleEnablement;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun setResource (Lio/opentelemetry/sdk/resources/Resource;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun setSessionProvider (Lio/opentelemetry/android/session/SessionProvider;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun setSessionSampler (Ljava/util/function/Function;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 }
 
 public final class io/opentelemetry/android/OpenTelemetryRumBuilder$Companion {

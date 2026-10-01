@@ -34,6 +34,7 @@ internal class SessionIdSpanAppenderTest {
         MockKAnnotations.init(this)
         every { sessionProvider.getSessionId() }.returns("42")
         every { span.setAttribute(any<AttributeKey<String>>(), any<String>()) } returns span
+        every { span.getAttribute(stringKey(SESSION_ID)) } returns null
     }
 
     @Test
@@ -46,5 +47,13 @@ internal class SessionIdSpanAppenderTest {
         verify { span.setAttribute(stringKey(SESSION_ID), "42") }
 
         assertFalse(underTest.isEndRequired)
+    }
+
+    @Test
+    fun `preserves identity captured by the sampler`() {
+        every { span.getAttribute(stringKey(SESSION_ID)) } returns "sampled-session"
+        SessionIdSpanAppender(sessionProvider).onStart(Context.root(), span)
+        verify(exactly = 0) { sessionProvider.getSessionId() }
+        verify(exactly = 0) { span.setAttribute(any<AttributeKey<String>>(), any<String>()) }
     }
 }
