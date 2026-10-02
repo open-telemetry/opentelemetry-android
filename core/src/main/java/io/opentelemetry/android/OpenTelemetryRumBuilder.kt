@@ -70,6 +70,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor
 import io.opentelemetry.sdk.trace.export.SpanExporter
+import io.opentelemetry.sdk.trace.samplers.Sampler
 import java.io.File
 import java.io.IOException
 import java.util.function.BiFunction
@@ -122,6 +123,7 @@ class OpenTelemetryRumBuilder internal constructor(
     private var resource: Resource = createDefault(context)
     private var exportScheduleEnablement: ScheduleEnablement? = null
     private var sessionProvider: SessionProvider = SessionProvider.getNoop()
+    private var sessionSamplerFactory: Function<SessionProvider, Sampler>? = null
     private var cacheStorageOverride: CacheStorage? = null
     private var periodicTaskSchedulerOverride: PeriodicTaskScheduler? = null
 
@@ -131,6 +133,22 @@ class OpenTelemetryRumBuilder internal constructor(
      */
     fun setResource(resource: Resource): OpenTelemetryRumBuilder {
         this.resource = resource
+        return this
+    }
+
+    /**
+     * Creates a trace sampler with the session provider selected for this SDK instance.
+     * If no provider is configured, the factory receives [SessionProvider.getNoop].
+     * The factory runs during build, after configuration and before instrumentations are installed.
+     * Tracer-provider customizers run afterwards and may replace the sampler.
+     * Configuring a factory preserves existing span session IDs, even if a customizer replaces
+     * the sampler. Without a factory, span session IDs are overwritten with the current session.
+     * The factory is not called when tracing is disabled. A factory failure aborts the build.
+     * Without a factory, the OpenTelemetry SDK's default sampler is used.
+     * This does not sample logs or metrics.
+     */
+    fun setSessionSampler(factory: Function<SessionProvider, Sampler>): OpenTelemetryRumBuilder {
+        sessionSamplerFactory = factory
         return this
     }
 
@@ -591,12 +609,19 @@ class OpenTelemetryRumBuilder internal constructor(
         spanExporter: SpanExporter,
         clock: Clock,
     ): SdkTracerProvider {
+        // Resolve user configuration before starting the batch processor's worker.
+        val sampler =
+            sessionSamplerFactory?.let {
+                requireNotNull(it.apply(sessionProvider)) { "Session sampler factory returned null" }
+            }
         var tracerProviderBuilder =
             SdkTracerProvider
                 .builder()
                 .setResource(resource)
                 .setClock(clock)
-                .addSpanProcessor(SessionIdSpanAppender(sessionProvider))
+                .addSpanProcessor(SessionIdSpanAppender(sessionProvider, preserveExistingSessionId = sampler != null))
+
+        sampler?.let { tracerProviderBuilder.setSampler(it) }
 
         val batchSpanProcessor = BatchSpanProcessor.builder(spanExporter).build()
         tracerProviderBuilder.addSpanProcessor(batchSpanProcessor)
