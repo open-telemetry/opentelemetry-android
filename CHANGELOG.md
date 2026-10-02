@@ -2,13 +2,32 @@
 
 ## Unreleased
 
+### Bug fixes
+
+- Session ID lookups no longer refresh background inactivity, so background telemetry no longer
+  keeps a session alive. First lookup and expiry still create a session. User activity recording is
+  internal and is not yet connected to user activity sources.
+  ([#2049](https://github.com/open-telemetry/opentelemetry-android/issues/2049))
+
 ### 📈 Enhancements
+
+- Add the experimental `session { storage(...) }` hook for custom session storage. The default
+  remains in-memory; this does not restore sessions across app launches.
+  ([#2061](https://github.com/open-telemetry/opentelemetry-android/pull/2061))
+
+- Add the experimental HTTP span filtering hook to the agent DSL. `instrumentations { httpTelemetry {
+  shouldRecordSpanForHost { host -> host == "api.example.com" } } }` decides per host whether
+  to record an HTTP client span; return false and spans recording that `server.address` are
+  dropped before export. The predicate receives the host lowercased, exactly as the client
+  recorded it, and can express either an allowlist or a denylist. Every host is recorded when
+  no predicate is set.
+  ([#1686](https://github.com/open-telemetry/opentelemetry-android/issues/1686))
 
 - New optional `agent-api-ktx` module adding an `OpenTelemetryRum.openTelemetryKotlin` extension
   property. This allows you to use opentelemetry-kotlin's APIs within opentelemetry-android,
   backed by the agent's existing Java SDK instance. This module and opentelemetry-kotlin are not
   stable yet and may change their APIs in future.
-  ([#2063](https://github.com/open-telemetry/opentelemetry-android/pull/2063))
+  ([#2062](https://github.com/open-telemetry/opentelemetry-android/pull/2062))
 
 ## Version 1.7.0 (2026-09-04)
 

@@ -29,6 +29,12 @@ public final class io/opentelemetry/android/agent/connectivity/SSLContextConnect
 
 public final class io/opentelemetry/android/agent/dsl/DiskBufferingConfigurationSpec : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled {
 	public fun enabled (Z)V
+	public final fun getExportPeriod-UwyO8pc ()J
+	public final fun getMaxCacheSize ()I
+	public final fun getTelemetryStorageDir ()Ljava/io/File;
+	public final fun setExportPeriod-LRDsOJo (J)V
+	public final fun setMaxCacheSize (I)V
+	public final fun setTelemetryStorageDir (Ljava/io/File;)V
 }
 
 public final class io/opentelemetry/android/agent/dsl/EndpointConfiguration {
@@ -59,6 +65,7 @@ public final class io/opentelemetry/android/agent/dsl/HttpExportConfiguration {
 }
 
 public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration {
+	public final fun addPropagator (Lio/opentelemetry/context/propagation/TextMapPropagator;)V
 	public final fun disableLogging ()V
 	public final fun disableMetrics ()V
 	public final fun disableTracing ()V
@@ -68,6 +75,7 @@ public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration
 	public final fun globalAttributesSupplier (Lkotlin/jvm/functions/Function0;)V
 	public final fun httpExport (Lkotlin/jvm/functions/Function1;)V
 	public final fun instrumentations (Lkotlin/jvm/functions/Function1;)V
+	public final fun resource (Lio/opentelemetry/sdk/resources/Resource;)V
 	public final fun resource (Lkotlin/jvm/functions/Function1;)V
 	public final fun semanticConventions (Lkotlin/jvm/functions/Function1;)V
 	public final fun session (Lkotlin/jvm/functions/Function1;)V
@@ -86,6 +94,7 @@ public final class io/opentelemetry/android/agent/dsl/SessionConfiguration {
 	public final fun observers ([Lio/opentelemetry/android/session/SessionObserver;)V
 	public final fun setBackgroundInactivityTimeout-LRDsOJo (J)V
 	public final fun setMaxLifetime-LRDsOJo (J)V
+	public final fun storage (Lio/opentelemetry/android/agent/session/SessionStorage;)V
 }
 
 public final class io/opentelemetry/android/agent/dsl/instrumentation/ActivityLifecycleConfiguration : io/opentelemetry/android/agent/dsl/instrumentation/CanBeEnabledAndDisabled, io/opentelemetry/android/agent/dsl/instrumentation/ScreenLifecycleConfigurable {
@@ -110,12 +119,17 @@ public final class io/opentelemetry/android/agent/dsl/instrumentation/FragmentLi
 	public fun tracerCustomizer (Lkotlin/jvm/functions/Function1;)V
 }
 
+public final class io/opentelemetry/android/agent/dsl/instrumentation/HttpTelemetryConfiguration {
+	public final fun shouldRecordSpanForHost (Lkotlin/jvm/functions/Function1;)V
+}
+
 public final class io/opentelemetry/android/agent/dsl/instrumentation/InstrumentationConfiguration {
 	public final fun activity (Lkotlin/jvm/functions/Function1;)V
 	public final fun anrReporter (Lkotlin/jvm/functions/Function1;)V
 	public final fun crashReporter (Lkotlin/jvm/functions/Function1;)V
 	public final fun disableInstrumentationAutoDiscovery ()V
 	public final fun fragment (Lkotlin/jvm/functions/Function1;)V
+	public final fun httpTelemetry (Lkotlin/jvm/functions/Function1;)V
 	public final fun networkMonitoring (Lkotlin/jvm/functions/Function1;)V
 	public final fun screenOrientation (Lkotlin/jvm/functions/Function1;)V
 	public final fun slowRenderingReporter (Lkotlin/jvm/functions/Function1;)V
@@ -135,5 +149,10 @@ public final class io/opentelemetry/android/agent/dsl/instrumentation/SlowRender
 	public final fun detectionPollInterval-LRDsOJo (J)V
 	public final fun enableVerboseDebugLogging ()V
 	public fun enabled (Z)V
+}
+
+public abstract interface class io/opentelemetry/android/agent/session/SessionStorage {
+	public abstract fun get ()Lio/opentelemetry/android/session/Session;
+	public abstract fun save (Lio/opentelemetry/android/session/Session;)V
 }
 

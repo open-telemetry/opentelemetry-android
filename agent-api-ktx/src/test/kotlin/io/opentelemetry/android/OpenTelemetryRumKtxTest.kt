@@ -11,6 +11,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.opentelemetry.kotlin.ExperimentalApi
 import io.opentelemetry.sdk.OpenTelemetrySdk
+import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.SdkTracerProvider
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
@@ -36,6 +37,7 @@ class OpenTelemetryRumKtxTest {
                 ).build()
         rum = mockk<OpenTelemetryRum>()
         every { rum.openTelemetry } returns sdk
+        every { rum.clock } returns FIXED_CLOCK
     }
 
     @Test
@@ -52,7 +54,29 @@ class OpenTelemetryRumKtxTest {
     }
 
     @Test
+    fun `uses the clock from the rum instance`() {
+        rum.openTelemetryKotlin
+            .tracerProvider
+            .getTracer("test-scope")
+            .startSpan("test-span")
+            .end()
+        val span = spanExporter.finishedSpanItems.single()
+        assertThat(span.startEpochNanos).isEqualTo(FIXED_TIME_NANOS)
+    }
+
+    @Test
     fun `returns the same instance for repeated access`() {
         assertThat(rum.openTelemetryKotlin).isSameAs(rum.openTelemetryKotlin)
+    }
+
+    private companion object {
+        const val FIXED_TIME_NANOS = 1_234_567_890_000L
+
+        val FIXED_CLOCK =
+            object : Clock {
+                override fun now(): Long = FIXED_TIME_NANOS
+
+                override fun nanoTime(): Long = FIXED_TIME_NANOS
+            }
     }
 }
