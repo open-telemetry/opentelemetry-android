@@ -5,7 +5,11 @@
 
 package io.opentelemetry.android.agent
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.os.SystemClock
+import android.view.MotionEvent
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.Runs
 import io.mockk.every
@@ -26,6 +30,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.LooperMode
 import org.robolectric.shadows.ShadowSystemClock
@@ -33,7 +38,9 @@ import java.time.Duration
 import java.util.Collections
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MINUTES
+import java.util.concurrent.TimeUnit.SECONDS
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 
 @OptIn(Incubating::class)
 @RunWith(AndroidJUnit4::class)
@@ -201,6 +208,63 @@ class OpenTelemetryRumInitializerTest {
             verify(exactly = 0) { storage.get() }
         } finally {
             rum.shutdown()
+        }
+    }
+
+    @Test
+    fun `input tracking requires opt-in and an available source and cleans up on shutdown`() {
+        for (mode in listOf("default", "enabled", "suppressed", "non-application")) {
+            val enabled = mode == "enabled"
+            val app = RuntimeEnvironment.getApplication()
+            val context =
+                if (mode == "non-application") {
+                    object : ContextWrapper(app) {
+                        override fun getApplicationContext(): Context? = null
+                    }
+                } else {
+                    app
+                }
+            val controller = Robolectric.buildActivity(Activity::class.java).create()
+            val activity = controller.get()
+            activity.window.decorView
+            val original = activity.window.callback
+            val testClock = TestClock.create()
+            val rum =
+                OpenTelemetryRumInitializer.initialize(context) {
+                    clock = testClock
+                    disableLogging()
+                    disableTracing()
+                    disableMetrics()
+                    diskBuffering { enabled(false) }
+                    session { userInactivityTimeout = if (mode == "default") null else 1.minutes }
+                    if (mode == "suppressed") instrumentations { suppressing("session.interaction") }
+                    if (mode == "non-application") instrumentations { disableInstrumentationAutoDiscovery() }
+                }
+            try {
+                controller.start().resume()
+                if (enabled) {
+                    assertThat(activity.window.callback).isNotSameAs(original)
+                } else {
+                    assertThat(activity.window.callback).isSameAs(original)
+                }
+                val first = rum.sessionProvider.getSessionId()
+                testClock.advance(50, SECONDS)
+                val event = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 1f, 1f, 0)
+                try {
+                    activity.window.callback.dispatchTouchEvent(event)
+                } finally {
+                    event.recycle()
+                }
+                testClock.advance(50, SECONDS)
+                assertThat(rum.sessionProvider.getSessionId()).isEqualTo(first)
+                testClock.advance(10, SECONDS)
+                val next = rum.sessionProvider.getSessionId()
+                if (enabled) assertThat(next).isNotEqualTo(first) else assertThat(next).isEqualTo(first)
+            } finally {
+                rum.shutdown()
+                assertThat(activity.window.callback).isSameAs(original)
+                controller.pause().stop().destroy()
+            }
         }
     }
 
