@@ -8,7 +8,8 @@ package io.opentelemetry.android.instrumentation.thermal
 import android.os.PowerManager
 import androidx.annotation.RequiresApi
 import io.opentelemetry.android.semconv.events.DeviceThermalStatusChangeEvent
-import io.opentelemetry.api.logs.Logger
+import io.opentelemetry.kotlin.ExperimentalApi
+import io.opentelemetry.kotlin.logging.Logger
 
 /**
  * Detects and logs thermal status changes in the Android application.
@@ -21,6 +22,7 @@ import io.opentelemetry.api.logs.Logger
  *
  * @param logger The [Logger] instance used to record thermal status change events.
  */
+@OptIn(ExperimentalApi::class)
 @RequiresApi(29)
 internal class ThermalDetector(
     private val logger: Logger,

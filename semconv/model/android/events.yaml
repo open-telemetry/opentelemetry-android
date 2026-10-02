@@ -178,6 +178,9 @@ groups:
     type: event
     name: device.thermal_status.change
     stability: development
+    annotations:
+      opentelemetry_android:
+        kotlin_logger_emit: true
     brief: >
       This event indicates that the Android thermal throttling status changed.
     attributes:
