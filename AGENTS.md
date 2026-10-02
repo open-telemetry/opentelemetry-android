@@ -29,8 +29,9 @@ android-agent          (opinionated setup: core + default instrumentations + Kot
     +-- core           (OTel Java SDK setup, builders, exporters, processors)
     |     |
     |     +-- instrumentation/android-instrumentation  (base instrumentation API)
-    |     +-- common        (shared internal utils, RumConstants, network data types)
+    |     +-- common        (shared internal utils, RumConstants)
     |     +-- services      (singleton wrappers around Android SDK APIs)
+    |     +-- services-network (network detection, data types, attribute processors)
     |     +-- session       (session API: Session, SessionProvider, SessionObserver)
     |     +-- agent-api     (public API: OpenTelemetryRum interface)
     |
