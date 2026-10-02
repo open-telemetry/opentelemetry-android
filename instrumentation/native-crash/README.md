@@ -5,8 +5,8 @@ Status: development
 The native crash instrumentation records fatal native signals and replays the persisted crash as an
 `app.crash` event when the application next starts.
 
-It uses one marker for the most recent crash and a separate context snapshot maintained while the
-app is running. The signal handler records `SIGILL`, `SIGTRAP`, `SIGABRT`, `SIGBUS`, `SIGFPE`,
+Each process launch has its own directory containing a crash marker and a context snapshot maintained
+while the app is running. The signal handler records `SIGILL`, `SIGTRAP`, `SIGABRT`, `SIGBUS`, `SIGFPE`,
 `SIGSEGV`, and `SIGSYS`, then restores the previous action for that signal and re-delivers it
 through the kernel. This preserves the previous handler's signal mask, flags, and available fault
 details without changing registrations for the other signals. Signals that were already ignored
@@ -38,8 +38,8 @@ The replayed event uses the original crash timestamp and includes:
 * `os.name`
 * `os.version`
 
-The app and OS fields are read from the persisted crash-time context before it is replaced with the
-new process context, so the replayed event describes the process that crashed.
+The app and OS fields are read from that launch's persisted crash-time context, so the replayed event
+describes the process that crashed. The current launch writes to a separate directory.
 
 ## Installation
 
@@ -52,8 +52,13 @@ implementation("io.opentelemetry.android.instrumentation:native-crash:1.7.0-alph
 ```
 
 The module is discovered and installed automatically when it is present on the runtime classpath.
-It replays any marker from the previous process and persists the current process context before
-enabling the native signal handler.
+It persists the current process context and enables capture before replaying older launches on a
+separate background executor. Session-context updates do not wait for replay. The legacy flat files
+are replayed in place; they are never moved or overwritten by new capture.
+
+At most eight previous launch directories are replayed per startup, newest first. Older directories
+are pruned, so prolonged crash loops can discard the oldest pending reports. An I/O failure can leave
+files for a later cleanup attempt. The active directory is never replayed or pruned.
 
 ## Limitations
 
@@ -62,7 +67,9 @@ future signal handler. Symbol upload and symbolication are downstream concerns.
 
 Crashes that happen before native crash instrumentation finishes initialization are not recorded.
 
-The current marker-only implementation deletes the persisted marker immediately after its event is
-emitted. Replay is therefore at most once: if the application exits before the telemetry is
-exported, that crash event may be lost. A later change may add support for preserving multiple
-consecutive startup crashes. Unreadable or malformed markers are discarded rather than retried.
+The marker is deleted after its event is emitted, not after backend delivery. Exiting before export
+can lose the event; exiting between emission and cleanup can replay it again. Durable delivery claims
+and bounded retries remain separate recovery work. Unreadable or malformed markers are discarded.
+
+This layout supports one instrumented app process. Separate directories do not provide coordination
+between concurrently running app processes.

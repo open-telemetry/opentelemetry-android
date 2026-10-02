@@ -43,11 +43,12 @@ import java.util.concurrent.Executors
 /** Entry point for replaying native crashes captured by a previous app process. */
 @AutoService(AndroidInstrumentation::class)
 class NativeCrashInstrumentation internal constructor(
-    private val storeFactory: (Context) -> NativeCrashStore = { context ->
-        FileNativeCrashStore(File(context.filesDir, "opentelemetry/native-crash"))
+    private val storageFactory: (Context) -> NativeCrashStorage = { context ->
+        NativeCrashStorage(File(context.filesDir, "opentelemetry/native-crash"))
     },
     private val executor: Executor = Executors.newSingleThreadExecutor(),
     private val signalHandlerInstaller: NativeSignalHandlerInstaller = JniNativeSignalHandlerInstaller(),
+    private val replayExecutor: Executor = Executors.newSingleThreadExecutor(),
 ) : AndroidInstrumentation {
     override val name: String = "native-crash"
 
@@ -57,28 +58,43 @@ class NativeCrashInstrumentation internal constructor(
     ) {
         val applicationContext = context.applicationContext
         executor.execute {
-            val store = storeFactory(applicationContext)
-            val crashContext = applicationContext.currentCrashContext(openTelemetryRum)
-            NativeCrashReporter(
-                store = store,
-                openTelemetryRum = openTelemetryRum,
-            ).replayPreviousCrash()
-            if (!store.writeContext(crashContext)) {
-                Log.w(
-                    RumConstants.OTEL_RUM_LOG_TAG,
-                    "Native crash signal handler disabled because crash context could not be persisted",
-                )
-                return@execute
+            val storage =
+                try {
+                    storageFactory(applicationContext)
+                } catch (error: Exception) {
+                    Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to prepare native crash storage", error)
+                    return@execute
+                }
+            installCapture(storage.currentStore, applicationContext, openTelemetryRum)
+            replayExecutor.execute {
+                storage.replayPreviousCrashes { store ->
+                    NativeCrashReporter(store, openTelemetryRum).replayPreviousCrash()
+                }
             }
+        }
+    }
 
-            val sessionProvider = openTelemetryRum.sessionProvider
-            if (sessionProvider is SessionPublisher) {
-                sessionProvider.addObserver(NativeCrashSessionObserver(store, crashContext, executor))
-            }
+    private fun installCapture(
+        store: NativeCrashStore,
+        applicationContext: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
+        val crashContext = applicationContext.currentCrashContext(openTelemetryRum)
+        if (!store.writeContext(crashContext)) {
+            Log.w(
+                RumConstants.OTEL_RUM_LOG_TAG,
+                "Native crash signal handler disabled because crash context could not be persisted",
+            )
+            return
+        }
 
-            if (!signalHandlerInstaller.install(store.crashRecordPath)) {
-                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to install native crash signal handler")
-            }
+        val sessionProvider = openTelemetryRum.sessionProvider
+        if (sessionProvider is SessionPublisher) {
+            sessionProvider.addObserver(NativeCrashSessionObserver(store, crashContext, executor))
+        }
+
+        if (!signalHandlerInstaller.install(store.crashRecordPath)) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to install native crash signal handler")
         }
     }
 }
