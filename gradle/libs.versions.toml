@@ -1,5 +1,5 @@
 [versions]
-opentelemetry-instrumentation-alpha = "2.31.1-alpha"
+opentelemetry-instrumentation-alpha = "2.32.0-alpha"
 #opentelemetry-instrumentation = "2.9.0" // alpha bom includes non-alpha bom
 opentelemetry-contrib = "1.60.0-alpha"
 opentelemetry-semconv-kotlin = "0.8.0"
