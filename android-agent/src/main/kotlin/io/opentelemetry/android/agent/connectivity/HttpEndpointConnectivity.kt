@@ -9,7 +9,7 @@ import io.opentelemetry.android.Incubating
 
 internal class HttpEndpointConnectivity private constructor(
     private val url: String,
-    private val headers: Map<String, String>,
+    private val headers: () -> Map<String, String>,
     private val compression: Compression,
     private val sslContext: SSLContextConnectivity?,
     @OptIn(Incubating::class)
@@ -19,7 +19,7 @@ internal class HttpEndpointConnectivity private constructor(
         fun forTraces(
             baseUrl: String,
             fullUrl: Boolean = false,
-            headers: Map<String, String>,
+            headers: () -> Map<String, String>,
             compression: Compression,
             sslContext: SSLContextConnectivity?,
             @OptIn(Incubating::class)
@@ -37,7 +37,7 @@ internal class HttpEndpointConnectivity private constructor(
         fun forLogs(
             baseUrl: String,
             fullUrl: Boolean = false,
-            headers: Map<String, String>,
+            headers: () -> Map<String, String>,
             compression: Compression,
             sslContext: SSLContextConnectivity?,
             @OptIn(Incubating::class)
@@ -55,7 +55,7 @@ internal class HttpEndpointConnectivity private constructor(
         fun forMetrics(
             baseUrl: String,
             fullUrl: Boolean = false,
-            headers: Map<String, String>,
+            headers: () -> Map<String, String>,
             compression: Compression,
             sslContext: SSLContextConnectivity?,
             @OptIn(Incubating::class)
@@ -73,7 +73,7 @@ internal class HttpEndpointConnectivity private constructor(
 
     override fun getUrl(): String = url
 
-    override fun getHeaders(): Map<String, String> = headers
+    override fun getHeaders(): Map<String, String> = headers()
 
     override fun getCompression(): Compression = compression
 

@@ -54,6 +54,7 @@ public final class io/opentelemetry/android/agent/dsl/HttpExportConfiguration {
 	public final fun getClientTls ()Lio/opentelemetry/android/agent/connectivity/ClientTlsConnectivity;
 	public final fun getCompression ()Lio/opentelemetry/android/agent/connectivity/Compression;
 	public final fun getSslContext ()Lio/opentelemetry/android/agent/connectivity/SSLContextConnectivity;
+	public final fun headerSupplier (Lkotlin/jvm/functions/Function0;)V
 	public final fun logs (Lkotlin/jvm/functions/Function1;)V
 	public final fun metrics (Lkotlin/jvm/functions/Function1;)V
 	public final fun setBaseHeaders (Ljava/util/Map;)V
