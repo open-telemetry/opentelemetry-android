@@ -39,7 +39,7 @@ internal class SessionManager(
     }
 
     // Lookup still creates or rotates a session, but never extends an existing session's inactivity.
-    override fun getSessionId(): String = checkNotNull(updateSession(recordUserInteraction = false))
+    override fun getSessionId(): String = updateSession(recordUserInteraction = false) ?: invalidSession.id
 
     override fun recordUserInteraction() {
         updateSession(recordUserInteraction = true)
