@@ -22,9 +22,21 @@ class HttpExportConfiguration internal constructor() {
     var baseUrl: String = ""
 
     /**
-     * Global headers that should be attached to any HTTP export requests.
+     * Static global headers that should be attached to any HTTP export requests.
      */
     var baseHeaders: Map<String, String> = emptyMap()
+
+    private var headersSupplier: () -> Map<String, String> = { emptyMap() }
+
+    /**
+     * Supplies additional global headers for each HTTP export request across all signals. Supplied
+     * values override [baseHeaders] and signal-specific headers with the same key. The supplier
+     * runs on exporter threads and must be thread-safe and non-blocking. Use it to read a cached
+     * authentication token rather than refreshing the token here.
+     */
+    fun headerSupplier(supplier: () -> Map<String, String>) {
+        headersSupplier = supplier
+    }
 
     /**
      * Default compression algorithm for all export requests.
@@ -52,7 +64,7 @@ class HttpExportConfiguration internal constructor() {
         HttpEndpointConnectivity.forTraces(
             chooseUrlSource(spansConfig),
             isFullUrl(spansConfig),
-            spansConfig.headers + baseHeaders,
+            resolveEndpointHeaders(spansConfig),
             chooseCompression(spansConfig.compression),
             sslContext,
             clientTls,
@@ -63,7 +75,7 @@ class HttpExportConfiguration internal constructor() {
         HttpEndpointConnectivity.forLogs(
             chooseUrlSource(logsConfig),
             isFullUrl(logsConfig),
-            logsConfig.headers + baseHeaders,
+            resolveEndpointHeaders(logsConfig),
             chooseCompression(logsConfig.compression),
             sslContext,
             clientTls,
@@ -74,11 +86,16 @@ class HttpExportConfiguration internal constructor() {
         HttpEndpointConnectivity.forMetrics(
             chooseUrlSource(metricsConfig),
             isFullUrl(metricsConfig),
-            metricsConfig.headers + baseHeaders,
+            resolveEndpointHeaders(metricsConfig),
             chooseCompression(metricsConfig.compression),
             sslContext,
             clientTls,
         )
+
+    private fun resolveEndpointHeaders(cfg: EndpointConfiguration): () -> Map<String, String> =
+        {
+            cfg.headers + baseHeaders + headersSupplier()
+        }
 
     private fun chooseUrlSource(cfg: EndpointConfiguration): String =
         cfg.fullUrl?.takeUnless { it.isBlank() } ?: cfg.url.ifBlank { baseUrl }
