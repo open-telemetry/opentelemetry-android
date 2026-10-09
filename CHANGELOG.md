@@ -5,11 +5,15 @@
 ### Bug fixes
 
 - Session ID lookups no longer refresh background inactivity, so background telemetry no longer
-  keeps a session alive. First lookup and expiry still create a session. User activity recording is
-  internal and is not yet connected to user activity sources.
+  keeps a session alive. First lookup and expiry still create a session.
   ([#2049](https://github.com/open-telemetry/opentelemetry-android/issues/2049))
 
 ### 📈 Enhancements
+
+- Add opt-in Activity window input tracking with `session { userInactivityTimeout = ... }`.
+  The user-inactivity deadline also runs in the background, alongside the background timeout.
+  Passive telemetry does not extend either deadline. Background-only behavior remains the default.
+  ([#2088](https://github.com/open-telemetry/opentelemetry-android/pull/2088))
 
 - Add the experimental `session { storage(...) }` hook for custom session storage. The default
   remains in-memory; this does not restore sessions across app launches.
