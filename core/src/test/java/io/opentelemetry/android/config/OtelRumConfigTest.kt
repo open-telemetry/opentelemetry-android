@@ -72,6 +72,30 @@ class OtelRumConfigTest {
     }
 
     @Test
+    fun `legacy crash instrumentation name remains supported`() {
+        val config = OtelRumConfig()
+
+        config.suppressInstrumentation("crash")
+        assertThat(config.isSuppressed("java_crash")).isTrue()
+        assertThat(config.isSuppressed("native-crash")).isFalse()
+
+        config.allowInstrumentation("java_crash")
+        assertThat(config.isSuppressed("crash")).isFalse()
+    }
+
+    @Test
+    fun `java crash instrumentation can be allowed using legacy name`() {
+        val config = OtelRumConfig()
+
+        config.suppressInstrumentation("java_crash")
+        assertThat(config.isSuppressed("crash")).isTrue()
+        assertThat(config.isSuppressed("native-crash")).isFalse()
+
+        config.allowInstrumentation("crash")
+        assertThat(config.isSuppressed("java_crash")).isFalse()
+    }
+
+    @Test
     fun `signals are enabled by default`() {
         val config = OtelRumConfig()
         assertThat(config.tracingEnabled).isTrue()

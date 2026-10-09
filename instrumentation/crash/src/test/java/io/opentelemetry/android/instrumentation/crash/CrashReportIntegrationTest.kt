@@ -53,7 +53,7 @@ internal class CrashReportIntegrationTest {
 
     @Test
     fun `test crash reporter instrumentation is installed`() {
-        assertEquals("crash", instrumentation.name)
+        assertEquals("java_crash", instrumentation.name)
         instrumentation.install(context, openTelemetryRum)
 
         val handler = Thread.getDefaultUncaughtExceptionHandler()
