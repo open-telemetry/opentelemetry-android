@@ -9,6 +9,8 @@ import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.session.InMemorySessionStorage
 import io.opentelemetry.android.agent.session.SessionStorage
 import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.sdk.trace.samplers.Sampler
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
@@ -32,6 +34,21 @@ class SessionConfiguration internal constructor() {
 
     internal var sessionStorage: SessionStorage = InMemorySessionStorage()
         private set
+
+    internal var samplerFactory: ((SessionProvider) -> Sampler)? = null
+        private set
+
+    /**
+     * Creates a trace sampler with this agent's session provider during initialization.
+     * For example, `sampler { SessionIdRatioBasedSampler(0.5, it) }`.
+     * The last factory supplied is used. It is not called when tracing is disabled, and a
+     * factory failure aborts initialization. Logs and metrics are not sampled by this setting.
+     * This setting preserves existing span session IDs, subject to SDK attribute limits.
+     */
+    @Incubating
+    fun sampler(factory: (SessionProvider) -> Sampler) {
+        samplerFactory = factory
+    }
 
     /**
      * Replaces the default in-memory storage without changing session generation, expiry, or

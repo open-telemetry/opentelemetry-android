@@ -67,6 +67,7 @@ object OpenTelemetryRumInitializer {
                 cfg.diskBufferingConfig.applyToRumConfig()
 
                 setSessionProvider(createSessionProvider(Services.get(ctx).appLifecycle, cfg))
+                cfg.sessionConfig.samplerFactory?.let { factory -> setSessionSampler { factory(it) } }
                 setResource(cfg.resourceProvider(ctx))
                 setClock(cfg.clock)
 

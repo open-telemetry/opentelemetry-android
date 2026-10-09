@@ -14,12 +14,14 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.Incubating
+import io.opentelemetry.android.SessionIdRatioBasedSampler
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.agent.session.SessionStorage
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.testing.time.TestClock
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
@@ -95,6 +97,59 @@ class OpenTelemetryRumInitializerTest {
         verify {
             o1.onSessionStarted(any(), any())
             o2.onSessionStarted(any(), any())
+        }
+    }
+
+    @Test
+    fun `session sampler is created once with the agent provider`() {
+        val providers = mutableListOf<SessionProvider>()
+        val rum =
+            OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
+                diskBuffering { enabled(false) }
+                httpExport { baseUrl = "http://127.0.0.1:4318" }
+                session {
+                    sampler { error("Replaced factory must not run") }
+                    sampler { provider ->
+                        providers.add(provider)
+                        SessionIdRatioBasedSampler(0.0, provider)
+                    }
+                }
+            }
+        try {
+            assertThat(providers).containsExactly(rum.sessionProvider)
+            assertThat(rum.sessionProvider.getSessionId()).hasSize(32)
+            val span =
+                rum.openTelemetry
+                    .getTracer("test")
+                    .spanBuilder("dropped")
+                    .startSpan()
+            assertThat(span.isRecording).isFalse()
+            span.end()
+        } finally {
+            rum.shutdown()
+        }
+    }
+
+    @Test
+    fun `disabled tracing does not create the configured session sampler`() {
+        val rum =
+            OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
+                disableTracing()
+                disableLogging()
+                disableMetrics()
+                diskBuffering { enabled(false) }
+                session { sampler { error("Disabled tracing must not create a sampler") } }
+            }
+        try {
+            val span =
+                rum.openTelemetry
+                    .getTracer("test")
+                    .spanBuilder("disabled")
+                    .startSpan()
+            assertThat(span.isRecording).isFalse()
+            span.end()
+        } finally {
+            rum.shutdown()
         }
     }
 
