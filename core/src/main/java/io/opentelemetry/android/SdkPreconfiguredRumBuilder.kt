@@ -106,27 +106,14 @@ class SdkPreconfiguredRumBuilder internal constructor(
     }
 
     /**
-     * Enabled means non-suppressed. This method returns all non-suppressed instrumentations, and may
-     * reorder them so that session and native crash instrumentation (when enabled/available) are
-     * at the front of the list.
+     * Enabled means non-suppressed. This method returns all non-suppressed instrumentations, ordered
+     * according to the install order preferences of those that are
+     * `Comparable<AndroidInstrumentation>`.
      */
-    internal fun getEnabledInstrumentations(): List<AndroidInstrumentation> {
-        val instrumentations = getInstrumentations().filter { inst -> !config.isSuppressed(inst.name) }
-        val result = instrumentations.toMutableList()
-        val sessionInstrumentation = instrumentations.find { it.name == "session" }
-        sessionInstrumentation?.let {
-            // If session instrumentation is available, slam it to the front of the list.
-            // This helps prevent a session id from being created before the observers can be added.
-            result.remove(it)
-            result.add(0, it)
-        }
-        val nativeCrashInstrumentation = instrumentations.find { it.name == "native-crash" }
-        nativeCrashInstrumentation?.let {
-            result.remove(it)
-            result.add(if (sessionInstrumentation == null) 0 else 1, it)
-        }
-        return result.toList()
-    }
+    internal fun getEnabledInstrumentations(): List<AndroidInstrumentation> =
+        getInstrumentations()
+            .filter { inst -> !config.isSuppressed(inst.name) }
+            .sortedForInstall { Log.w(RumConstants.OTEL_RUM_LOG_TAG, it) }
 
     private fun getInstrumentations(): List<AndroidInstrumentation> {
         if (config.shouldDiscoverInstrumentations()) {

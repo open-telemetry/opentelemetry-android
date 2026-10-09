@@ -9,10 +9,13 @@ import android.content.Context
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.instrumentation.InstallConstraints
 import io.opentelemetry.android.session.SessionPublisher
 
 @AutoService(AndroidInstrumentation::class)
-class SessionInstrumentation : AndroidInstrumentation {
+class SessionInstrumentation :
+    AndroidInstrumentation,
+    Comparable<AndroidInstrumentation> by InstallConstraints(installFirst = true) {
     override val name: String = "session"
 
     override fun install(

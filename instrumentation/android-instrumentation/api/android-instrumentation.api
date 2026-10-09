@@ -4,6 +4,14 @@ public abstract interface class io/opentelemetry/android/instrumentation/Android
 	public fun uninstall (Landroid/content/Context;Lio/opentelemetry/android/OpenTelemetryRum;)V
 }
 
+public final class io/opentelemetry/android/instrumentation/InstallConstraints : java/lang/Comparable {
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Set;Ljava/util/Set;ZZ)V
+	public synthetic fun <init> (Ljava/util/Set;Ljava/util/Set;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun compareTo (Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;)I
+	public synthetic fun compareTo (Ljava/lang/Object;)I
+}
+
 public abstract interface class io/opentelemetry/android/instrumentation/InstrumentationConfigurator {
 	public abstract fun configure (Lio/opentelemetry/android/instrumentation/AndroidInstrumentation;)V
 	public abstract fun getInstrumentationType ()Ljava/lang/Class;

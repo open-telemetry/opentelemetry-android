@@ -11,6 +11,7 @@ import io.mockk.mockk
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoaderImpl
+import io.opentelemetry.android.instrumentation.InstallConstraints
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.common.Clock.getDefault
@@ -25,14 +26,12 @@ class SdkPreconfiguredRumBuilderTest {
         val sdk = mockk<OpenTelemetrySdk>()
         val config = mockk<OtelRumConfig>()
         val fooInstrumentation = mockk<AndroidInstrumentation>()
-        val sessionInstrumentation = mockk<AndroidInstrumentation>()
-        val nativeCrashInstrumentation = mockk<AndroidInstrumentation>()
+        val sessionInstrumentation = fakeSessionInstrumentation()
+        val nativeCrashInstrumentation = fakeNativeCrashInstrumentation()
 
         every { config.shouldDiscoverInstrumentations() } returns false // irrelevant
         every { config.isSuppressed(any()) } returns false
         every { fooInstrumentation.name } returns "foo"
-        every { sessionInstrumentation.name } returns "session"
-        every { nativeCrashInstrumentation.name } returns "native-crash"
 
         val sessionProvider =
             object : SessionProvider {
@@ -70,12 +69,11 @@ class SdkPreconfiguredRumBuilderTest {
         val sdk = mockk<OpenTelemetrySdk>()
         val config = mockk<OtelRumConfig>()
         val fooInstrumentation = mockk<AndroidInstrumentation>()
-        val nativeCrashInstrumentation = mockk<AndroidInstrumentation>()
+        val nativeCrashInstrumentation = fakeNativeCrashInstrumentation()
 
         every { config.shouldDiscoverInstrumentations() } returns false // irrelevant
         every { config.isSuppressed(any()) } returns false
         every { fooInstrumentation.name } returns "foo"
-        every { nativeCrashInstrumentation.name } returns "native-crash"
 
         val sessionProvider = SessionProvider { fail("Should not have been called!") }
         val builder =
@@ -94,4 +92,12 @@ class SdkPreconfiguredRumBuilderTest {
 
         assertThat(result).containsExactly(nativeCrashInstrumentation, fooInstrumentation)
     }
+
+    private fun fakeSessionInstrumentation() = FakeInstrumentation("session", InstallConstraints(installFirst = true))
+
+    private fun fakeNativeCrashInstrumentation() =
+        FakeInstrumentation(
+            "native-crash",
+            InstallConstraints(installFirst = true, installAfter = setOf("session")),
+        )
 }
