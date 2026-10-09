@@ -30,12 +30,20 @@ class SessionConfiguration internal constructor() {
      */
     var maxLifetime: Duration = 4.hours
 
+    /**
+     * Read the configured storage once during initialization and link the first new session to
+     * that record. The old session is not resumed and no end event is synthesized for it.
+     * Disabled by default. The storage implementation must handle its own read failures.
+     */
+    @Incubating
+    var linkPreviousSessionOnRestart: Boolean = false
+
     internal var sessionStorage: SessionStorage = InMemorySessionStorage()
         private set
 
     /**
      * Replaces the default in-memory storage without changing session generation, expiry, or
-     * observers. This does not restore sessions across launches; see [SessionStorage] for the
+     * observers. Restart linking requires [linkPreviousSessionOnRestart]; see [SessionStorage] for the
      * startup and failure contract. If called more than once, the last storage supplied is used.
      */
     @Incubating
