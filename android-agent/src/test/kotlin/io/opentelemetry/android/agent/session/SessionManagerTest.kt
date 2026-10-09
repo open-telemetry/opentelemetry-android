@@ -12,10 +12,12 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import io.mockk.verifyOrder
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.time.TestClock
@@ -64,6 +66,23 @@ internal class SessionManagerTest {
         assertThat(sessionId).isNotNull()
         assertThat(sessionId).hasSize(SESSION_ID_LENGTH)
         assertThat(Pattern.compile(sessionIdPattern).matcher(sessionId).matches()).isTrue()
+    }
+
+    @Test
+    fun `lookup returns the no-op ID if a session update has no result`() {
+        val manager =
+            spyk(
+                SessionManager(
+                    TestClock.create(),
+                    timeoutHandler = timeoutHandler,
+                    maxSessionLifetime = MAX_SESSION_LIFETIME.hours,
+                ),
+                recordPrivateCalls = true,
+            )
+        // Null is currently reset-only; exercise the defensive lookup fallback.
+        every { manager["updateSession"](false, false) } returns null
+
+        assertThat(manager.getSessionId()).isEqualTo(SessionProvider.getNoop().getSessionId())
     }
 
     @Test
