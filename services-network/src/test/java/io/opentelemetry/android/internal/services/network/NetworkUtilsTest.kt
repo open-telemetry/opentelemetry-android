@@ -5,9 +5,11 @@
 
 package io.opentelemetry.android.internal.services.network
 
+import android.Manifest.permission.INTERNET
 import android.Manifest.permission.READ_BASIC_PHONE_STATE
 import android.Manifest.permission.READ_PHONE_STATE
 import android.content.Context
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.FEATURE_TELEPHONY
 import android.content.pm.PackageManager.PERMISSION_DENIED
@@ -200,6 +202,50 @@ class NetworkUtilsTest {
         val result = hasTelephonyFeature(context)
         assertThat(result).isFalse()
     }
+
+    @Test
+    fun testRequestsReadPhoneStateWhenDeclared() {
+        mockRequestedPermissions(arrayOf(INTERNET, READ_PHONE_STATE))
+
+        assertThat(requestsReadPhoneState(context)).isTrue()
+    }
+
+    @Test
+    fun testRequestsReadPhoneStateWhenNotDeclared() {
+        mockRequestedPermissions(arrayOf(INTERNET, READ_BASIC_PHONE_STATE))
+
+        assertThat(requestsReadPhoneState(context)).isFalse()
+    }
+
+    @Test
+    fun testRequestsReadPhoneStateWithoutRequestedPermissions() {
+        mockRequestedPermissions(null)
+
+        assertThat(requestsReadPhoneState(context)).isFalse()
+    }
+
+    @Test
+    @Suppress("DEPRECATION")
+    fun testRequestsReadPhoneStateWhenLookupFails() {
+        val packageManager = mockPackageManager()
+        every { packageManager.getPackageInfo("app", PackageManager.GET_PERMISSIONS) } throws
+            PackageManager.NameNotFoundException()
+
+        assertThat(requestsReadPhoneState(context)).isTrue()
+    }
+
+    @Suppress("DEPRECATION")
+    private fun mockRequestedPermissions(permissions: Array<String>?) {
+        val packageManager = mockPackageManager()
+        every { packageManager.getPackageInfo("app", PackageManager.GET_PERMISSIONS) } returns
+            PackageInfo().apply { requestedPermissions = permissions }
+    }
+
+    private fun mockPackageManager(): PackageManager =
+        mockk<PackageManager>().also {
+            every { context.packageName } returns "app"
+            every { context.packageManager } returns it
+        }
 
     @Test
     @Suppress("DEPRECATION")
