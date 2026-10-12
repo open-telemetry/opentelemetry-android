@@ -19,5 +19,6 @@ dependencies {
     implementation(project(":services"))
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.instrumentation.api)
+    api(platform(libs.opentelemetry.platform.alpha))
     testImplementation(libs.androidx.fragment)
 }

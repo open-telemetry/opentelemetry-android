@@ -10,7 +10,7 @@ import android.content.Context
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import io.opentelemetry.android.instrumentation.view.common.ViewClickActivityCallback
+import io.opentelemetry.android.instrumentation.view.common.ViewGestureActivityCallback
 
 @AutoService(AndroidInstrumentation::class)
 class ViewScrollInstrumentation : AndroidInstrumentation {
@@ -21,7 +21,7 @@ class ViewScrollInstrumentation : AndroidInstrumentation {
         openTelemetryRum: OpenTelemetryRum,
     ) {
         (context as? Application)?.registerActivityLifecycleCallbacks(
-            ViewClickActivityCallback(
+            ViewGestureActivityCallback(
                 ViewScrollEventGenerator(
                     openTelemetryRum.openTelemetry
                         .logsBridge

@@ -80,7 +80,7 @@ internal class ViewScrollEventGenerator(
     override fun startTracking(window: Window) {
         windowRef = WeakReference(window)
         val currentCallback = window.callback
-        window.callback = WindowCallbackWrapper(currentCallback, this)
+        window.callback = WindowCallbackWrapper(currentCallback, this, WRAPPER_KEY_SCROLL)
     }
 
     override fun consumeEvent(event: MotionEvent?) {
@@ -92,7 +92,9 @@ internal class ViewScrollEventGenerator(
     override fun stopTracking() {
         windowRef?.get()?.run {
             if (callback is WindowCallbackWrapper) {
-                callback = (callback as WindowCallbackWrapper).unwrap()
+                if((callback as WindowCallbackWrapper).wrapperKey == WRAPPER_KEY_SCROLL) {
+                    callback = (callback as WindowCallbackWrapper).unwrap()
+                }
             }
         }
         windowRef = null
@@ -156,5 +158,9 @@ internal class ViewScrollEventGenerator(
             hwPointerVelocityX = gesture.velocityX,
             hwPointerVelocityY = gesture.velocityY,
         ).emit(eventLogger)
+    }
+
+    companion object {
+        private const val WRAPPER_KEY_SCROLL = "view-scroll-wrapper"
     }
 }

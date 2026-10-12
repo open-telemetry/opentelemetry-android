@@ -103,7 +103,7 @@ internal class ViewClickEventGenerator(
     override fun startTracking(window: Window) {
         windowRef = WeakReference(window)
         val currentCallback = window.callback
-        window.callback = WindowCallbackWrapper(currentCallback, this)
+        window.callback = WindowCallbackWrapper(currentCallback, this, WRAPPER_KEY_CLICK)
     }
 
     override fun consumeEvent(event: MotionEvent?) {
@@ -115,7 +115,9 @@ internal class ViewClickEventGenerator(
     override fun stopTracking() {
         windowRef?.get()?.run {
             if (callback is WindowCallbackWrapper) {
-                callback = (callback as WindowCallbackWrapper).unwrap()
+                if((callback as WindowCallbackWrapper).wrapperKey == WRAPPER_KEY_CLICK) {
+                    callback = (callback as WindowCallbackWrapper).unwrap()
+                }
             }
         }
         windowRef = null
@@ -170,7 +172,8 @@ internal class ViewClickEventGenerator(
         builder.put(APP_SCREEN_COORDINATE_Y, view.y.toLong())
         return builder.build()
     }
-}
 
-internal const val APP_SCREEN_CLICK_EVENT_NAME = "app.screen.click"
-internal const val VIEW_CLICK_EVENT_NAME = "app.widget.click"
+    companion object {
+        private const val WRAPPER_KEY_CLICK = "view-click-wrapper"
+    }
+}

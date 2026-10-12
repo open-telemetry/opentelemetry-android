@@ -9,7 +9,7 @@ import android.app.Activity
 import android.view.Window
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
 
-class ViewClickActivityCallback(
+class ViewGestureActivityCallback(
     private val toggleableTracker: ToggleableTracker,
 ) : DefaultingActivityLifecycleCallbacks {
     override fun onActivityResumed(activity: Activity) {
