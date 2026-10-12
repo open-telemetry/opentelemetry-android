@@ -17,7 +17,7 @@ import androidx.annotation.RequiresApi
 class WindowCallbackWrapper(
     private val callback: Callback,
     private val touchEventConsumer: TouchEventConsumer,
-    val wrapperKey: String
+    val wrapperKey: String,
 ) : Callback by callback {
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
         touchEventConsumer.consumeEvent(event)

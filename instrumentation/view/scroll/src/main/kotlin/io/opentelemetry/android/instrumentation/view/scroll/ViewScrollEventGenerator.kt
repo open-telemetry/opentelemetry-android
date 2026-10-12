@@ -91,10 +91,8 @@ internal class ViewScrollEventGenerator(
 
     override fun stopTracking() {
         windowRef?.get()?.run {
-            if (callback is WindowCallbackWrapper) {
-                if((callback as WindowCallbackWrapper).wrapperKey == WRAPPER_KEY_SCROLL) {
-                    callback = (callback as WindowCallbackWrapper).unwrap()
-                }
+            if ((callback is WindowCallbackWrapper) && (callback as WindowCallbackWrapper).wrapperKey == WRAPPER_KEY_SCROLL) {
+                callback = (callback as WindowCallbackWrapper).unwrap()
             }
         }
         windowRef = null

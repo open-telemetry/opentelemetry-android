@@ -40,7 +40,7 @@ public abstract interface class io/opentelemetry/android/instrumentation/view/co
 	public abstract fun consumeEvent (Landroid/view/MotionEvent;)V
 }
 
-public final class io/opentelemetry/android/instrumentation/view/common/ViewClickActivityCallback : io/opentelemetry/android/internal/services/visiblescreen/activities/DefaultingActivityLifecycleCallbacks {
+public final class io/opentelemetry/android/instrumentation/view/common/ViewGestureActivityCallback : io/opentelemetry/android/internal/services/visiblescreen/activities/DefaultingActivityLifecycleCallbacks {
 	public fun <init> (Lio/opentelemetry/android/instrumentation/view/common/ToggleableTracker;)V
 	public fun onActivityPaused (Landroid/app/Activity;)V
 	public fun onActivityResumed (Landroid/app/Activity;)V
@@ -52,13 +52,14 @@ public final class io/opentelemetry/android/instrumentation/view/common/ViewUtil
 }
 
 public final class io/opentelemetry/android/instrumentation/view/common/WindowCallbackWrapper : android/view/Window$Callback {
-	public fun <init> (Landroid/view/Window$Callback;Lio/opentelemetry/android/instrumentation/view/common/TouchEventConsumer;)V
+	public fun <init> (Landroid/view/Window$Callback;Lio/opentelemetry/android/instrumentation/view/common/TouchEventConsumer;Ljava/lang/String;)V
 	public fun dispatchGenericMotionEvent (Landroid/view/MotionEvent;)Z
 	public fun dispatchKeyEvent (Landroid/view/KeyEvent;)Z
 	public fun dispatchKeyShortcutEvent (Landroid/view/KeyEvent;)Z
 	public fun dispatchPopulateAccessibilityEvent (Landroid/view/accessibility/AccessibilityEvent;)Z
 	public fun dispatchTouchEvent (Landroid/view/MotionEvent;)Z
 	public fun dispatchTrackballEvent (Landroid/view/MotionEvent;)Z
+	public final fun getWrapperKey ()Ljava/lang/String;
 	public fun onActionModeFinished (Landroid/view/ActionMode;)V
 	public fun onActionModeStarted (Landroid/view/ActionMode;)V
 	public fun onAttachedToWindow ()V
