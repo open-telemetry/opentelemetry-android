@@ -8,9 +8,9 @@ package io.opentelemetry.android.instrumentation.network
 import android.content.Context
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.common.internal.features.networkattributes.data.CurrentNetwork
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.internal.services.Services.Companion.get
+import io.opentelemetry.android.internal.services.network.CurrentNetwork
 import io.opentelemetry.android.internal.services.network.NetworkProviderHolder
 import io.opentelemetry.api.common.AttributesBuilder
 

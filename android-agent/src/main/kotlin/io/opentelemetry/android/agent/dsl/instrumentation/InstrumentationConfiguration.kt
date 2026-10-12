@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.agent.dsl.instrumentation
 
+import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.dsl.OpenTelemetryDslMarker
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
@@ -35,6 +36,8 @@ class InstrumentationConfiguration internal constructor(
     private val screenOrientation: ScreenOrientationConfiguration by lazy {
         ScreenOrientationConfiguration(config, instrumentationLoader)
     }
+
+    internal val httpTelemetry = HttpTelemetryConfiguration()
 
     /**
      * Configures activity lifecycle instrumentation.
@@ -83,6 +86,14 @@ class InstrumentationConfiguration internal constructor(
      */
     fun screenOrientation(configure: ScreenOrientationConfiguration.() -> Unit) {
         screenOrientation.configure()
+    }
+
+    /**
+     * Configures HTTP telemetry.
+     */
+    @Incubating
+    fun httpTelemetry(configure: HttpTelemetryConfiguration.() -> Unit) {
+        httpTelemetry.configure()
     }
 
     /**

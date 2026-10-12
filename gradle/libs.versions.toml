@@ -1,8 +1,9 @@
 [versions]
-opentelemetry-instrumentation-alpha = "2.31.1-alpha"
+opentelemetry-instrumentation-alpha = "2.32.0-alpha"
 #opentelemetry-instrumentation = "2.9.0" // alpha bom includes non-alpha bom
-opentelemetry-contrib = "1.60.0-alpha"
+opentelemetry-contrib = "1.61.0-alpha"
 opentelemetry-semconv-kotlin = "0.8.0"
+opentelemetry-kotlin = "0.8.0"
 junit = "6.1.3"
 byteBuddy = "1.18.13"
 okhttp = "5.5.0"
@@ -21,7 +22,7 @@ fragment = "1.9.0"
 koverGradlePlugin = "0.9.9"
 openTelemetryProto = "1.11.0-alpha"
 protobufKotlin = "4.36.1"
-weaver = "0.26.1"
+weaver = "0.27.0"
 
 [libraries]
 opentelemetry-platform-alpha = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-instrumentation-alpha" }
@@ -31,7 +32,7 @@ androidx-navigation-fragment = { group = "androidx.navigation", name = "navigati
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "androidx-navigation" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidx-navigation" }
 androidx-core = "androidx.core:core:1.19.0"
-androidx-annotation = "androidx.annotation:annotation:1.10.0"
+androidx-annotation = "androidx.annotation:annotation:1.11.0"
 androidx-lifecycle-process = "androidx.lifecycle:lifecycle-process:2.11.0"
 androidx-fragment = { module = "androidx.fragment:fragment", version.ref="fragment" }
 
@@ -42,6 +43,8 @@ opentelemetry-instrumentation-api = { module = "io.opentelemetry.instrumentation
 opentelemetry-instrumentation-apiSemconv = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator", version.ref = "opentelemetry-instrumentation-alpha" }
 opentelemetry-instrumentation-okhttp = { module = "io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0", version.ref = "opentelemetry-instrumentation-alpha" }
 opentelemetry-semconv-kotlin = { module = "io.opentelemetry.kotlin:semconv-android", version.ref = "opentelemetry-semconv-kotlin"}
+opentelemetry-kotlin-api = { module = "io.opentelemetry.kotlin:api", version.ref = "opentelemetry-kotlin" }
+opentelemetry-kotlin-compat = { module = "io.opentelemetry.kotlin:compat", version.ref = "opentelemetry-kotlin" }
 opentelemetry-api = { module = "io.opentelemetry:opentelemetry-api" }
 opentelemetry-api-incubator = { module = "io.opentelemetry:opentelemetry-api-incubator" }
 opentelemetry-sdk-extension-incubator = { module = "io.opentelemetry:opentelemetry-sdk-extension-incubator" }
@@ -89,7 +92,7 @@ nullaway = "com.uber.nullaway:nullaway:0.14.1"
 errorprone-core = "com.google.errorprone:error_prone_core:2.50.0"
 spotless-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
 errorprone-plugin = "net.ltgt.gradle:gradle-errorprone-plugin:5.1.1"
-nullaway-plugin = "net.ltgt.gradle:gradle-nullaway-plugin:3.2.0"
+nullaway-plugin = "net.ltgt.gradle:gradle-nullaway-plugin:3.3.0"
 animalsniffer-plugin = "ru.vyarus:gradle-animalsniffer-plugin:2.0.1"
 android-plugin = { module = "com.android.tools.build:gradle", version.ref = "androidPlugin" }
 byteBuddy-plugin = { module = "net.bytebuddy:byte-buddy-gradle-plugin", version.ref = "byteBuddy" }

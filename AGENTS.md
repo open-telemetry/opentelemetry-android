@@ -29,12 +29,17 @@ android-agent          (opinionated setup: core + default instrumentations + Kot
     +-- core           (OTel Java SDK setup, builders, exporters, processors)
     |     |
     |     +-- instrumentation/android-instrumentation  (base instrumentation API)
-    |     +-- common        (shared internal utils, RumConstants, network data types)
+    |     +-- common        (shared internal utils, RumConstants)
     |     +-- services      (singleton wrappers around Android SDK APIs)
+    |     +-- services-network (network detection, data types, attribute processors)
     |     +-- session       (session API: Session, SessionProvider, SessionObserver)
     |     +-- agent-api     (public API: OpenTelemetryRum interface)
     |
     +-- instrumentation/*   (individual instrumentations, each in its own module)
+
+agent-api-ktx          (optional: opentelemetry-kotlin API accessor)
+    |
+    +-- agent-api
 ```
 
 Key points:
@@ -50,6 +55,8 @@ Key points:
   they cannot work as simple runtime dependencies.
 - **`session`** already provides `SessionProvider`, `SessionPublisher`, and `SessionObserver`.
   Session IDs are already injected into spans via processors in `core`.
+- **`agent-api-ktx`** is an optional add-on that exposes the
+  opentelemetry-kotlin API from an `OpenTelemetryRum`.
 
 ## PR Requirements
 

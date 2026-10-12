@@ -6,14 +6,36 @@
 package io.opentelemetry.android.agent.session
 
 import io.opentelemetry.sdk.testing.time.TestClock
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.Duration
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.nanoseconds
 
 class SessionIdTimeoutHandlerTest {
+    @Test
+    fun `synchronizing on the handler does not block timeout updates`() {
+        val timeoutHandler = SessionIdTimeoutHandler(TestClock.create(), 5.nanoseconds)
+        val executor = Executors.newSingleThreadExecutor()
+        try {
+            synchronized(timeoutHandler) {
+                val update =
+                    executor.submit<Boolean> {
+                        timeoutHandler.onApplicationBackgrounded()
+                        timeoutHandler.bump()
+                        timeoutHandler.onApplicationForegrounded()
+                        timeoutHandler.hasTimedOut()
+                    }
+                assertThat(update.get(5, TimeUnit.SECONDS)).isFalse()
+            }
+        } finally {
+            executor.shutdownNow()
+        }
+    }
+
     @Test
     fun shouldNeverTimeOutInForeground() {
         val clock: TestClock = TestClock.create()
@@ -24,6 +46,12 @@ class SessionIdTimeoutHandlerTest {
         timeoutHandler.bump()
 
         // never time out in foreground
+        clock.advance(Duration.ofHours(4))
+        assertFalse(timeoutHandler.hasTimedOut())
+
+        timeoutHandler.onApplicationBackgrounded()
+        clock.advance(14, TimeUnit.MINUTES)
+        timeoutHandler.onApplicationForegrounded()
         clock.advance(Duration.ofHours(4))
         assertFalse(timeoutHandler.hasTimedOut())
     }
@@ -61,7 +89,7 @@ class SessionIdTimeoutHandlerTest {
     }
 
     @Test
-    fun shouldApplyTimeoutToFirstSpanAfterAppBeingMovedToForeground() {
+    fun shouldPreserveBackgroundExpiryOnForegroundReturn() {
         val clock: TestClock = TestClock.create()
         val timeoutHandler =
             SessionIdTimeoutHandler(clock, SessionConfig.withDefaults().backgroundInactivityTimeout)
@@ -69,19 +97,19 @@ class SessionIdTimeoutHandlerTest {
         timeoutHandler.onApplicationBackgrounded()
         timeoutHandler.bump()
 
-        // the first span after app is moved to the foreground gets timed out
-        timeoutHandler.onApplicationForegrounded()
+        // Expiry while backgrounded survives the return to foreground.
         clock.advance(20, TimeUnit.MINUTES)
+        timeoutHandler.onApplicationForegrounded()
         assertTrue(timeoutHandler.hasTimedOut())
         timeoutHandler.bump()
 
-        // after the initial span it's the same as the usual foreground scenario
+        // Creating a new session clears the pending expiry.
         clock.advance(Duration.ofHours(4))
         assertFalse(timeoutHandler.hasTimedOut())
     }
 
     @Test
-    fun shouldApplyCustomTimeoutToFirstSpanAfterAppBeingMovedToForeground() {
+    fun shouldPreserveCustomBackgroundExpiryOnForegroundReturn() {
         val clock: TestClock = TestClock.create()
         val timeoutHandler =
             SessionIdTimeoutHandler(clock, 5.nanoseconds)
@@ -89,13 +117,13 @@ class SessionIdTimeoutHandlerTest {
         timeoutHandler.onApplicationBackgrounded()
         timeoutHandler.bump()
 
-        // the first span after app is moved to the foreground gets timed out
-        timeoutHandler.onApplicationForegrounded()
+        // Expiry while backgrounded survives the return to foreground.
         clock.advance(6, TimeUnit.MINUTES)
+        timeoutHandler.onApplicationForegrounded()
         assertTrue(timeoutHandler.hasTimedOut())
         timeoutHandler.bump()
 
-        // after the initial span it's the same as the usual foreground scenario
+        // Creating a new session clears the pending expiry.
         clock.advance(Duration.ofHours(4))
         assertFalse(timeoutHandler.hasTimedOut())
     }

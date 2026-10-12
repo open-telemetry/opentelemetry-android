@@ -18,6 +18,7 @@ dependencies {
     implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":instrumentation:common-api"))
     implementation(libs.opentelemetry.exporter.otlp)
+    implementation(libs.opentelemetry.semconv.kotlin)
 
     // Default instrumentations:
     implementation(project(":instrumentation:activity"))

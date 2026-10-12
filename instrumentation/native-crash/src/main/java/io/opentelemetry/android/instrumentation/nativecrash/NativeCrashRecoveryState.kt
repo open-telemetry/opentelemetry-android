@@ -1,0 +1,65 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.android.instrumentation.nativecrash
+
+import java.time.Instant
+
+internal enum class NativeCrashRecoveryPhase {
+    MARKER_READ,
+    SNAPSHOT_READ,
+    DELIVERY_CLAIMED,
+    CLEANUP,
+    ABANDONED,
+}
+
+internal data class NativeCrashRecoveryState(
+    val phase: NativeCrashRecoveryPhase,
+    val attempts: Int,
+    val firstAttemptEpochMillis: Long,
+    val signalNumber: Int? = null,
+    val timestampEpochSecond: Long? = null,
+    val timestampNano: Int? = null,
+) {
+    fun isValid(): Boolean {
+        if (attempts < 0 || firstAttemptEpochMillis <= 0) return false
+        val noIdentity = signalNumber == null && timestampEpochSecond == null && timestampNano == null
+        val validIdentity =
+            signalNumber != null && signalNumber > 0 &&
+                timestampEpochSecond != null && timestampEpochSecond >= 0 &&
+                timestampNano != null && timestampNano in 0..999_999_999
+        return when (phase) {
+            NativeCrashRecoveryPhase.MARKER_READ -> noIdentity
+            NativeCrashRecoveryPhase.SNAPSHOT_READ, NativeCrashRecoveryPhase.DELIVERY_CLAIMED -> validIdentity
+            NativeCrashRecoveryPhase.CLEANUP, NativeCrashRecoveryPhase.ABANDONED -> noIdentity || validIdentity
+        }
+    }
+
+    fun hasIdentity(): Boolean = signalNumber != null && timestampEpochSecond != null && timestampNano != null
+
+    fun matches(record: NativeCrashRecord): Boolean =
+        signalNumber == record.signalNumber &&
+            timestampEpochSecond == record.timestamp.epochSecond &&
+            timestampNano == record.timestamp.nano
+
+    fun appliesTo(record: NativeCrashRecord): Boolean =
+        if (hasIdentity()) matches(record) else record.timestamp <= Instant.ofEpochMilli(firstAttemptEpochMillis)
+
+    companion object {
+        fun create(
+            phase: NativeCrashRecoveryPhase,
+            nowMillis: Long,
+            record: NativeCrashRecord? = null,
+        ): NativeCrashRecoveryState =
+            NativeCrashRecoveryState(
+                phase = phase,
+                attempts = 0,
+                firstAttemptEpochMillis = nowMillis,
+                signalNumber = record?.signalNumber,
+                timestampEpochSecond = record?.timestamp?.epochSecond,
+                timestampNano = record?.timestamp?.nano,
+            ).also { require(it.isValid()) { "Invalid native crash recovery state" } }
+    }
+}

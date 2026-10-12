@@ -26,11 +26,11 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoaderImpl
 import io.opentelemetry.android.internal.features.persistence.DiskManager
 import io.opentelemetry.android.internal.initialization.InitializationEvents
 import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordAppender
-import io.opentelemetry.android.internal.processors.NetworkAttributesLogRecordAppender
-import io.opentelemetry.android.internal.processors.NetworkAttributesSpanAppender.Companion.create
 import io.opentelemetry.android.internal.processors.ScreenAttributesLogRecordProcessor
 import io.opentelemetry.android.internal.processors.SessionIdLogRecordAppender
 import io.opentelemetry.android.internal.services.Services
+import io.opentelemetry.android.internal.services.network.NetworkAttributesLogRecordAppender
+import io.opentelemetry.android.internal.services.network.NetworkAttributesSpanAppender
 import io.opentelemetry.android.internal.services.network.NetworkProviderHolder
 import io.opentelemetry.android.internal.services.periodic.PeriodicTaskScheduler
 import io.opentelemetry.android.internal.services.periodic.PeriodicTaskSchedulerImpl
@@ -549,7 +549,7 @@ class OpenTelemetryRumBuilder internal constructor(
             val networkProvider = NetworkProviderHolder.get(context)
             // Add span processor that appends network attributes.
             addTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
-                val networkAttributesSpanAppender = create(networkProvider)
+                val networkAttributesSpanAppender = NetworkAttributesSpanAppender.create(networkProvider)
                 tracerProviderBuilder.addSpanProcessor(networkAttributesSpanAppender)
             }
             // Add log record processor that appends network attributes.

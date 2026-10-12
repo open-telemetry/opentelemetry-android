@@ -5,8 +5,10 @@
 
 package io.opentelemetry.android.agent.session
 
+import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.session.Session
 
+@OptIn(Incubating::class)
 internal class InMemorySessionStorage(
     @Volatile var session: Session = invalidSession,
 ) : SessionStorage {

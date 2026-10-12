@@ -30,6 +30,7 @@ import io.opentelemetry.kotlin.semconv.OsAttributes.OS_VERSION
 import io.opentelemetry.kotlin.semconv.ServiceAttributes.SERVICE_VERSION
 import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_ID
 import java.io.DataInputStream
+import java.io.EOFException
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -42,11 +43,12 @@ import java.util.concurrent.Executors
 /** Entry point for replaying native crashes captured by a previous app process. */
 @AutoService(AndroidInstrumentation::class)
 class NativeCrashInstrumentation internal constructor(
-    private val storeFactory: (Context) -> NativeCrashStore = { context ->
-        FileNativeCrashStore(File(context.filesDir, "opentelemetry/native-crash"))
+    private val storageFactory: (Context) -> NativeCrashStorage = { context ->
+        NativeCrashStorage(File(context.filesDir, "opentelemetry/native-crash"))
     },
     private val executor: Executor = Executors.newSingleThreadExecutor(),
     private val signalHandlerInstaller: NativeSignalHandlerInstaller = JniNativeSignalHandlerInstaller(),
+    private val replayExecutor: Executor = Executors.newSingleThreadExecutor(),
 ) : AndroidInstrumentation {
     override val name: String = "native-crash"
 
@@ -56,28 +58,43 @@ class NativeCrashInstrumentation internal constructor(
     ) {
         val applicationContext = context.applicationContext
         executor.execute {
-            val store = storeFactory(applicationContext)
-            val crashContext = applicationContext.currentCrashContext(openTelemetryRum)
-            NativeCrashReporter(
-                store = store,
-                openTelemetryRum = openTelemetryRum,
-            ).replayPreviousCrash()
-            if (!store.writeContext(crashContext)) {
-                Log.w(
-                    RumConstants.OTEL_RUM_LOG_TAG,
-                    "Native crash signal handler disabled because crash context could not be persisted",
-                )
-                return@execute
+            val storage =
+                try {
+                    storageFactory(applicationContext)
+                } catch (error: Exception) {
+                    Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to prepare native crash storage", error)
+                    return@execute
+                }
+            installCapture(storage.currentStore, applicationContext, openTelemetryRum)
+            replayExecutor.execute {
+                storage.replayPreviousCrashes { store ->
+                    NativeCrashReporter(store, openTelemetryRum).replayPreviousCrash()
+                }
             }
+        }
+    }
 
-            val sessionProvider = openTelemetryRum.sessionProvider
-            if (sessionProvider is SessionPublisher) {
-                sessionProvider.addObserver(NativeCrashSessionObserver(store, crashContext, executor))
-            }
+    private fun installCapture(
+        store: NativeCrashStore,
+        applicationContext: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
+        val crashContext = applicationContext.currentCrashContext(openTelemetryRum)
+        if (!store.writeContext(crashContext)) {
+            Log.w(
+                RumConstants.OTEL_RUM_LOG_TAG,
+                "Native crash signal handler disabled because crash context could not be persisted",
+            )
+            return
+        }
 
-            if (!signalHandlerInstaller.install(store.crashRecordPath)) {
-                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to install native crash signal handler")
-            }
+        val sessionProvider = openTelemetryRum.sessionProvider
+        if (sessionProvider is SessionPublisher) {
+            sessionProvider.addObserver(NativeCrashSessionObserver(store, crashContext, executor))
+        }
+
+        if (!signalHandlerInstaller.install(store.crashRecordPath)) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to install native crash signal handler")
         }
     }
 }
@@ -204,7 +221,11 @@ internal interface NativeCrashStore {
 
     fun readCrashRecord(): NativeCrashRecord?
 
+    fun readCrashRecordForRecovery(): NativeCrashRead<NativeCrashRecord>
+
     fun readCrashSnapshot(record: NativeCrashRecord): NativeCrashSnapshot?
+
+    fun readCrashSnapshotForRecovery(record: NativeCrashRecord): NativeCrashRead<NativeCrashSnapshot>
 
     fun deleteCrashSnapshot(): Boolean
 
@@ -223,49 +244,77 @@ internal class FileNativeCrashStore(
     override val crashSnapshotPath = File(directory, "native-crash-snapshot.bin")
 
     override fun readCrashRecord(): NativeCrashRecord? {
-        if (!crashRecordPath.isFile) {
-            return null
-        }
+        if (!crashRecordPath.isFile) return null
+        val result = readCrashRecordForRecovery()
+        if (result is NativeCrashRead.Success) return result.value
+        if (result != NativeCrashRead.Missing) deleteCrashFiles()
+        return null
+    }
+
+    override fun readCrashRecordForRecovery(): NativeCrashRead<NativeCrashRecord> {
         val properties =
             try {
+                if (!crashRecordPath.isFile) return if (crashRecordPath.exists()) NativeCrashRead.Malformed else NativeCrashRead.Missing
                 crashRecordPath.readProperties()
             } catch (error: IllegalArgumentException) {
-                deleteCrashFiles()
-                return null
+                return NativeCrashRead.Malformed
             } catch (error: IOException) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash marker", error)
-                deleteCrashFiles()
-                return null
+                return NativeCrashRead.Failed
             } catch (error: SecurityException) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash marker", error)
-                deleteCrashFiles()
-                return null
+                return NativeCrashRead.Failed
             }
-        val record = properties.toCrashRecordOrNull()
-        if (record == null) {
-            deleteCrashFiles()
-        }
-        return record
+        return properties.toCrashRecordOrNull()?.let { NativeCrashRead.Success(it) }
+            ?: NativeCrashRead.Malformed
     }
 
     override fun readCrashSnapshot(record: NativeCrashRecord): NativeCrashSnapshot? {
         if (!crashSnapshotPath.isFile) return null
-        val snapshot =
+        val result =
             try {
+                readCrashSnapshotForRecovery(record)
+            } catch (error: Exception) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash snapshot", error)
+                NativeCrashRead.Failed
+            } catch (error: LinkageError) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash snapshot", error)
+                NativeCrashRead.Failed
+            }
+        if (result is NativeCrashRead.Success) return result.value
+        if (result != NativeCrashRead.Missing) deleteCrashSnapshot()
+        return null
+    }
+
+    override fun readCrashSnapshotForRecovery(record: NativeCrashRecord): NativeCrashRead<NativeCrashSnapshot> {
+        val bytes =
+            try {
+                if (!crashSnapshotPath.isFile) return if (crashSnapshotPath.exists()) NativeCrashRead.Malformed else NativeCrashRead.Missing
                 DataInputStream(FileInputStream(crashSnapshotPath)).use { input ->
                     val bytes = ByteArray(NativeCrashSnapshotLayout.RECORD_SIZE)
                     input.readFully(bytes)
-                    if (input.read() == -1) NativeCrashSnapshotParser.parse(bytes, record) else null
+                    if (input.read() != -1) return NativeCrashRead.Malformed
+                    bytes
                 }
-            } catch (error: Exception) {
+            } catch (error: EOFException) {
+                return NativeCrashRead.Malformed
+            } catch (error: IOException) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash snapshot", error)
-                null
-            } catch (error: LinkageError) {
+                return NativeCrashRead.Failed
+            } catch (error: SecurityException) {
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to read native crash snapshot", error)
-                null
+                return NativeCrashRead.Failed
             }
-        if (snapshot == null) deleteCrashSnapshot()
-        return snapshot
+        return try {
+            NativeCrashSnapshotParser.parse(bytes, record)?.let { NativeCrashRead.Success(it) }
+                ?: NativeCrashRead.Malformed
+        } catch (error: Exception) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to parse native crash snapshot", error)
+            NativeCrashRead.Malformed
+        } catch (error: LinkageError) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to parse native crash snapshot", error)
+            NativeCrashRead.Malformed
+        }
     }
 
     override fun deleteCrashSnapshot(): Boolean = deleteFile(crashSnapshotPath, "native crash snapshot")

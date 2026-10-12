@@ -22,7 +22,7 @@ dependencies {
     api(platform(libs.opentelemetry.platform.alpha)) // Required for sonatype publishing
     implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":services"))
-    implementation(project(":common"))
+    implementation(project(":services-network"))
     implementation(project(":agent-api"))
     implementation(project(":semconv"))
     implementation(libs.androidx.core)
