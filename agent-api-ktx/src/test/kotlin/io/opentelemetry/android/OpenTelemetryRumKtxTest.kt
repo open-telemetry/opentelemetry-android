@@ -32,6 +32,7 @@ class OpenTelemetryRumKtxTest {
                 .setTracerProvider(
                     SdkTracerProvider
                         .builder()
+                        .setClock(FIXED_CLOCK)
                         .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
                         .build(),
                 ).build()
