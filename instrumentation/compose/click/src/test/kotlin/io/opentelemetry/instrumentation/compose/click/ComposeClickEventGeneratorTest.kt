@@ -35,6 +35,7 @@ import io.opentelemetry.android.semconv.AppAttributes.APP_WIDGET_ID_KEY
 import io.opentelemetry.android.semconv.AppAttributes.APP_WIDGET_NAME_KEY
 import io.opentelemetry.android.semconv.events.AppScreenClickEvent.Companion.APP_SCREEN_CLICK_EVENT_NAME
 import io.opentelemetry.android.semconv.events.AppWidgetClickEvent.Companion.APP_WIDGET_CLICK_EVENT_NAME
+import io.opentelemetry.kotlin.toOtelKotlinApi
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
@@ -76,9 +77,10 @@ internal class ComposeClickEventGeneratorTest {
         MockKAnnotations.init(this, relaxUnitFun = true)
         composeClickEventGenerator =
             ComposeClickEventGenerator(
-                openTelemetryRule.openTelemetry.logsBridge
-                    .loggerBuilder("io.opentelemetry.android.instrumentation.compose")
-                    .build(),
+                openTelemetryRule.openTelemetry
+                    .toOtelKotlinApi()
+                    .loggerProvider
+                    .getLogger("io.opentelemetry.android.instrumentation.compose"),
                 composeLayoutNodeUtil,
             )
 
