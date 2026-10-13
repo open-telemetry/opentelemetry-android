@@ -16,6 +16,7 @@ buildscript {
 plugins {
     alias(libs.plugins.publishPlugin)
     id("org.jetbrains.kotlinx.kover")
+    id("otel.telemetry-docs-root")
 }
 
 extra["java_version"] = JavaVersion.VERSION_1_8
