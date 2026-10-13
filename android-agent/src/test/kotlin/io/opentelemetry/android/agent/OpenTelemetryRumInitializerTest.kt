@@ -242,11 +242,7 @@ class OpenTelemetryRumInitializerTest {
                 }
             try {
                 controller.start().resume()
-                if (enabled) {
-                    assertThat(activity.window.callback).isNotSameAs(original)
-                } else {
-                    assertThat(activity.window.callback).isSameAs(original)
-                }
+                assertThat(activity.window.callback !== original).isEqualTo(enabled)
                 val first = rum.sessionProvider.getSessionId()
                 testClock.advance(50, SECONDS)
                 val event = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 1f, 1f, 0)

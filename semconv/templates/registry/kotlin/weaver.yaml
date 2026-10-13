@@ -52,6 +52,7 @@ templates:
           brief: .brief,
           note: .note,
           deprecated: .deprecated,
+          kotlin_logger_emit: (.annotations.opentelemetry_android.kotlin_logger_emit // false),
           attributes: ((.attributes // [])
             | map(select(.type != "any"))
             | unique_by(.name)
@@ -81,6 +82,15 @@ text_maps:
     "boolean[]": booleanArrayKey
     "int[]": longArrayKey
     "double[]": doubleArrayKey
+  kotlin_mutator_setter:
+    string: setStringAttribute
+    boolean: setBooleanAttribute
+    int: setLongAttribute
+    double: setDoubleAttribute
+    "string[]": setStringListAttribute
+    "boolean[]": setBooleanListAttribute
+    "int[]": setLongListAttribute
+    "double[]": setDoubleListAttribute
   kotlin_event_type:
     int: Long
     double: Double

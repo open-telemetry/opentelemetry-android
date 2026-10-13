@@ -17,6 +17,30 @@ import java.time.Instant
 @RunWith(AndroidJUnit4::class)
 class NativeCrashMarkerCompatibilityTest {
     @Test
+    fun replayLeavesCurrentLaunchNativeMarkerUntouched() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val directory = File(context.cacheDir, "native-crash-launch-compatibility").apply { deleteRecursively() }
+        val old = NativeCrashStorage(directory, "launch-0000000000000000001-00000000-0000-0000-0000-000000000001")
+        val current = NativeCrashStorage(directory, "launch-0000000000000000002-00000000-0000-0000-0000-000000000002")
+        System.loadLibrary("otel_android_native_crash")
+        listOf(old, current).forEachIndexed { index, storage ->
+            assertThat(storage.currentStore.writeContext(NativeCrashContext("session-$index", "1", "Android", "test"))).isTrue()
+            assertThat(NativeCrashTestJni.writeCrashMarker(storage.currentStore.crashRecordPath.path, 11, 1_000_000_000L)).isTrue()
+        }
+        var replayed = 0
+        current.replayPreviousCrashes { store ->
+            assertThat(store.readContext()?.sessionId).isEqualTo("session-0")
+            assertThat(store.readCrashRecord()?.signalNumber).isEqualTo(11)
+            assertThat(store.deleteCrashFiles()).isTrue()
+            replayed++
+        }
+        assertThat(replayed).isEqualTo(1)
+        assertThat(current.currentStore.readContext()?.sessionId).isEqualTo("session-1")
+        assertThat(current.currentStore.readCrashRecord()?.signalNumber).isEqualTo(11)
+        current.replayPreviousCrashes { error("Report already replayed") }
+    }
+
+    @Test
     fun nativeWriterAndKotlinReaderUseCompatibleMarkerFormat() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val directory =

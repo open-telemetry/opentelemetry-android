@@ -11,10 +11,8 @@ import io.opentelemetry.sdk.common.Clock
 import kotlin.time.Duration
 
 /**
- * Tracks inactivity independently of telemetry reads. Entering the background starts its timeout.
- * The optional user-inactivity deadline runs in either state from the last recorded interaction;
- * a new session or explicit interaction restarts both deadlines. Whichever expires first wins.
- * Returning to the foreground stops only the background timer and preserves any pending expiry.
+ * Tracks background and optional user inactivity independently of telemetry reads. Returning to
+ * the foreground stops only the background timer and preserves expiry until the session rotates.
  * The configured clock must provide monotonic nanoseconds that include device sleep.
  */
 internal class SessionIdTimeoutHandler(
@@ -23,9 +21,10 @@ internal class SessionIdTimeoutHandler(
     private val userInactivityTimeout: Duration? = null,
 ) : ApplicationStateListener {
     private val lock = Any()
-
-    @Volatile
-    private var state = TimeoutState()
+    private var foreground = true
+    private var timeoutStartNanos = 0L
+    private var backgroundStartNanos = 0L
+    private var expiredOnForeground = false
 
     // for testing
     @OptIn(Incubating::class)
@@ -37,43 +36,43 @@ internal class SessionIdTimeoutHandler(
 
     override fun onApplicationForegrounded() {
         synchronized(lock) {
-            state = state.copy(foreground = true, expiredOnForeground = hasTimedOut())
+            expiredOnForeground = hasTimedOutLocked(clock.nanoTime())
+            foreground = true
         }
     }
 
     override fun onApplicationBackgrounded() {
         synchronized(lock) {
-            state =
-                state.copy(
-                    foreground = false,
-                    backgroundStartNanos = if (state.foreground) clock.nanoTime() else state.backgroundStartNanos,
-                )
+            if (foreground) backgroundStartNanos = clock.nanoTime()
+            foreground = false
         }
     }
 
-    fun hasTimedOut(): Boolean {
-        val current = state
-        if (current.expiredOnForeground) {
-            return true
-        }
-        val now = clock.nanoTime()
-        val userExpired = userInactivityTimeout?.let { now - current.timeoutStartNanos >= it.inWholeNanoseconds } ?: false
-        val backgroundExpired =
-            !current.foreground && now - current.backgroundStartNanos >= sessionBackgroundInactivityTimeout.inWholeNanoseconds
-        return userExpired || backgroundExpired
-    }
+    fun hasTimedOut(): Boolean = synchronized(lock) { hasTimedOutLocked(clock.nanoTime()) }
+
+    private fun hasTimedOutLocked(now: Long): Boolean =
+        expiredOnForeground ||
+            (userInactivityTimeout?.let { now - timeoutStartNanos >= it.inWholeNanoseconds } ?: false) ||
+            (!foreground && now - backgroundStartNanos >= sessionBackgroundInactivityTimeout.inWholeNanoseconds)
 
     fun bump() {
         synchronized(lock) {
-            val now = clock.nanoTime()
-            state = state.copy(timeoutStartNanos = now, backgroundStartNanos = now, expiredOnForeground = false)
+            bumpLocked(clock.nanoTime())
         }
     }
 
-    private data class TimeoutState(
-        val foreground: Boolean = true,
-        val timeoutStartNanos: Long = 0,
-        val backgroundStartNanos: Long = 0,
-        val expiredOnForeground: Boolean = false,
-    )
+    /** Refresh active input without allocating state or reviving an expired session. */
+    fun bumpIfActive(): Boolean =
+        synchronized(lock) {
+            val now = clock.nanoTime()
+            if (hasTimedOutLocked(now)) return false
+            bumpLocked(now)
+            true
+        }
+
+    private fun bumpLocked(now: Long) {
+        timeoutStartNanos = now
+        backgroundStartNanos = now
+        expiredOnForeground = false
+    }
 }

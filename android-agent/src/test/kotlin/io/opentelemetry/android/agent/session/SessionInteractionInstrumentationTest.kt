@@ -24,11 +24,14 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.TimeUnit.SECONDS
 import kotlin.time.Duration.Companion.minutes
 
 @RunWith(AndroidJUnit4::class)
+@Config(sdk = [23, 36])
 @OptIn(Incubating::class)
 class SessionInteractionInstrumentationTest {
     private val clock = TestClock.create()
@@ -37,8 +40,9 @@ class SessionInteractionInstrumentationTest {
     private val manager = SessionManager.create(timeout, config, clock)
     private val lifecycle = mockk<AppLifecycle>(relaxed = true)
     private val rum = mockk<OpenTelemetryRum>()
+    private val delegate = mockk<Window.Callback>(relaxed = true)
     private val app = RuntimeEnvironment.getApplication()
-    private val instrumentation = SessionInteractionInstrumentation(manager, lifecycle)
+    private var instrumentation = SessionInteractionInstrumentation(manager, lifecycle)
     private val activity = Robolectric.buildActivity(Activity::class.java).create().get()
 
     @After
@@ -53,30 +57,33 @@ class SessionInteractionInstrumentationTest {
         val delegate =
             object : Window.Callback by activity.window.callback {
                 override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+                    assertThat(timeout.hasTimedOut()).isFalse()
                     observed.add(manager.getSessionId())
                     return true
                 }
             }
         activity.window.callback = delegate
-        instrumentation.install(app, rum)
-        instrumentation.onActivityResumed(activity)
+        startTracking()
         val first = manager.getSessionId()
         clock.advance(50, SECONDS)
-        touch(MotionEvent.ACTION_MOVE)
+        repeat(120) {
+            clock.advance(1, MILLISECONDS)
+            touch(MotionEvent.ACTION_MOVE)
+        }
         clock.advance(50, SECONDS)
         assertThat(manager.getSessionId()).isEqualTo(first)
         clock.advance(10, SECONDS)
         touch()
         val second = manager.getSessionId()
         assertThat(second).isNotEqualTo(first)
-        assertThat(observed).containsExactly(first, second)
+        assertThat(observed.dropLast(1)).hasSize(120).containsOnly(first)
+        assertThat(observed.last()).isEqualTo(second)
     }
 
     @Test
     fun `keyboard activity and foreground return check expiry before extending it`() {
         activity.window.decorView
-        instrumentation.install(app, rum)
-        instrumentation.onActivityResumed(activity)
+        startTracking()
         val first = manager.getSessionId()
         clock.advance(60, SECONDS)
         activity.window.callback.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_A))
@@ -93,32 +100,37 @@ class SessionInteractionInstrumentationTest {
     }
 
     @Test
-    fun `paused window input delegates without refreshing inactivity`() {
-        val delegate = mockk<Window.Callback>(relaxed = true)
+    fun `paused or destroyed window leaves retained input inactive and other windows active`() {
+        val recorder = mockk<SessionUserInteractionRecorder>(relaxed = true)
         activity.window.callback = delegate
-        instrumentation.install(app, rum)
-        instrumentation.onActivityResumed(activity)
-        manager.getSessionId()
+        startTracking(recorder)
+        val retained = activity.window.callback
+        val other = Robolectric.buildActivity(Activity::class.java).create().get()
+        other.window.callback = delegate
+        instrumentation.onActivityResumed(other)
         instrumentation.onActivityPaused(activity)
-        clock.advance(60, SECONDS)
-        touch()
-        assertThat(timeout.hasTimedOut()).isTrue()
-        verify { delegate.dispatchTouchEvent(any()) }
+        val key = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_A)
+        retained.dispatchKeyEvent(key)
+        verify(exactly = 0) { recorder.recordUserInteraction() }
+        instrumentation.onActivityResumed(activity)
+        instrumentation.onActivityDestroyed(activity)
+        assertThat(activity.window.callback).isSameAs(delegate)
+        retained.dispatchKeyEvent(key)
+        verify(exactly = 0) { recorder.recordUserInteraction() }
+        other.window.callback.dispatchKeyEvent(key)
+        verify(exactly = 1) { recorder.recordUserInteraction() }
+        verify(exactly = 3) { delegate.dispatchKeyEvent(key) }
+        instrumentation.onActivityDestroyed(other)
+        assertThat(other.window.callback).isSameAs(delegate)
     }
 
     @Test
     fun `session callback exception does not prevent delivery to the application`() {
-        val delegate = mockk<Window.Callback>(relaxed = true)
         activity.window.callback = delegate
-        val failing = SessionInteractionInstrumentation(SessionUserInteractionRecorder { error("observer failed") }, lifecycle)
-        failing.install(app, rum)
-        try {
-            failing.onActivityResumed(activity)
-            touch()
-            verify(exactly = 1) { delegate.dispatchTouchEvent(any()) }
-        } finally {
-            failing.uninstall(app, rum)
-        }
+        startTracking { error("observer failed") }
+        touch()
+        verify(exactly = 1) { delegate.dispatchTouchEvent(any()) }
+        instrumentation.uninstall(app, rum)
         assertThat(activity.window.callback).isSameAs(delegate)
     }
 
@@ -136,10 +148,8 @@ class SessionInteractionInstrumentationTest {
 
     @Test
     fun `shutdown leaves later callback wrappers intact and makes retained callbacks inert`() {
-        val delegate = mockk<Window.Callback>(relaxed = true)
         activity.window.callback = delegate
-        instrumentation.install(app, rum)
-        instrumentation.onActivityResumed(activity)
+        startTracking()
         val installed = activity.window.callback
         val later = object : Window.Callback by installed {}
         activity.window.callback = later
@@ -156,79 +166,41 @@ class SessionInteractionInstrumentationTest {
     @Test
     fun `resume follows a replaced callback and leaves the previous wrapper inactive`() {
         val recorder = mockk<SessionUserInteractionRecorder>(relaxed = true)
-        val tracking = SessionInteractionInstrumentation(recorder, lifecycle)
-        val delegate = mockk<Window.Callback>(relaxed = true)
         activity.window.callback = delegate
-        tracking.install(app, rum)
-        try {
-            tracking.onActivityResumed(activity)
-            val previous = activity.window.callback
-            tracking.onActivityPaused(activity)
-            activity.window.callback = object : Window.Callback by previous {}
-            tracking.onActivityResumed(activity)
-            touch()
-            verify(exactly = 1) { recorder.recordUserInteraction() }
-            verify(exactly = 1) { delegate.dispatchTouchEvent(any()) }
-            val replacement = mockk<Window.Callback>(relaxed = true)
-            activity.window.callback = replacement
-            tracking.onActivityResumed(activity)
-            touch()
-            verify(exactly = 2) { recorder.recordUserInteraction() }
-            verify(exactly = 1) { replacement.dispatchTouchEvent(any()) }
-        } finally {
-            tracking.uninstall(app, rum)
-        }
-    }
-
-    @Test
-    fun `shutdown restores only the callback installed by this instrumentation`() {
-        val original = activity.window.callback
-        instrumentation.install(app, rum)
-        instrumentation.onActivityResumed(activity)
-        val firstWrapper = activity.window.callback
+        startTracking(recorder)
+        val previous = activity.window.callback
         instrumentation.onActivityPaused(activity)
+        activity.window.callback = object : Window.Callback by previous {}
         instrumentation.onActivityResumed(activity)
-        assertThat(activity.window.callback).isSameAs(firstWrapper)
-        instrumentation.uninstall(app, rum)
-        assertThat(activity.window.callback).isSameAs(original)
+        touch()
+        verify(exactly = 1) { recorder.recordUserInteraction() }
+        verify(exactly = 1) { delegate.dispatchTouchEvent(any()) }
+        val replacement = mockk<Window.Callback>(relaxed = true)
+        activity.window.callback = replacement
+        instrumentation.onActivityResumed(activity)
+        touch()
+        verify(exactly = 2) { recorder.recordUserInteraction() }
+        verify(exactly = 1) { replacement.dispatchTouchEvent(any()) }
     }
 
     @Test
     fun `move and scroll record activity but release and hover only delegate`() {
         val recorder = mockk<SessionUserInteractionRecorder>(relaxed = true)
-        val tracking = SessionInteractionInstrumentation(recorder, lifecycle)
-        val delegate = mockk<Window.Callback>(relaxed = true)
         activity.window.callback = delegate
-        tracking.install(app, rum)
-        try {
-            tracking.onActivityResumed(activity)
-            val actions = listOf(MotionEvent.ACTION_MOVE, MotionEvent.ACTION_UP, MotionEvent.ACTION_SCROLL, MotionEvent.ACTION_HOVER_MOVE)
-            actions.forEach { action ->
-                val event = MotionEvent.obtain(0, 0, action, 1f, 1f, 0)
-                try {
-                    if (action == MotionEvent.ACTION_MOVE || action == MotionEvent.ACTION_UP) {
-                        activity.window.callback.dispatchTouchEvent(event)
-                    } else {
-                        activity.window.callback.dispatchGenericMotionEvent(event)
-                    }
-                } finally {
-                    event.recycle()
-                }
-            }
-            verify(exactly = 2) { recorder.recordUserInteraction() }
-            verify(exactly = 2) { delegate.dispatchTouchEvent(any()) }
-            verify(exactly = 2) { delegate.dispatchGenericMotionEvent(any()) }
-        } finally {
-            tracking.uninstall(app, rum)
+        startTracking(recorder)
+        val actions = listOf(MotionEvent.ACTION_MOVE, MotionEvent.ACTION_UP, MotionEvent.ACTION_SCROLL, MotionEvent.ACTION_HOVER_MOVE)
+        actions.forEach { action ->
+            touch(action, generic = action == MotionEvent.ACTION_SCROLL || action == MotionEvent.ACTION_HOVER_MOVE)
         }
+        verify(exactly = 2) { recorder.recordUserInteraction() }
+        verify(exactly = 2) { delegate.dispatchTouchEvent(any()) }
+        verify(exactly = 2) { delegate.dispatchGenericMotionEvent(any()) }
     }
 
     @Test
     fun `background-thread shutdown disables input before main-thread cleanup`() {
-        val delegate = mockk<Window.Callback>(relaxed = true)
         activity.window.callback = delegate
-        instrumentation.install(app, rum)
-        instrumentation.onActivityResumed(activity)
+        startTracking()
         manager.getSessionId()
         val executor = Executors.newSingleThreadExecutor()
         try {
@@ -245,10 +217,23 @@ class SessionInteractionInstrumentationTest {
         }
     }
 
-    private fun touch(action: Int = MotionEvent.ACTION_DOWN) {
+    private fun startTracking(recorder: SessionUserInteractionRecorder = manager) {
+        instrumentation = SessionInteractionInstrumentation(recorder, lifecycle)
+        instrumentation.install(app, rum)
+        instrumentation.onActivityResumed(activity)
+        val callback = activity.window.callback
+        instrumentation.onActivityPaused(activity)
+        instrumentation.onActivityResumed(activity)
+        assertThat(activity.window.callback).isSameAs(callback)
+    }
+
+    private fun touch(
+        action: Int = MotionEvent.ACTION_DOWN,
+        generic: Boolean = false,
+    ) {
         val event = MotionEvent.obtain(0, 0, action, 1f, 1f, 0)
         try {
-            activity.window.callback.dispatchTouchEvent(event)
+            if (generic) activity.window.callback.dispatchGenericMotionEvent(event) else activity.window.callback.dispatchTouchEvent(event)
         } finally {
             event.recycle()
         }

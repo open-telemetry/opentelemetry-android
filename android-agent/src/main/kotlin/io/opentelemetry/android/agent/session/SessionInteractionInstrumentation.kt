@@ -74,16 +74,14 @@ internal class SessionInteractionInstrumentation(
             previous?.active = false
             return
         }
-        val callback =
-            if (previous != null && current === previous) {
-                previous
-            } else {
-                previous?.active = false
-                InteractionCallback(current).also {
-                    window.callback = it
-                    callbacks[window] = WeakReference(it)
-                }
-            }
+        if (previous != null && current === previous) {
+            previous.active = true
+            return
+        }
+        previous?.active = false
+        val callback = InteractionCallback(current)
+        window.callback = callback
+        callbacks[window] = WeakReference(callback)
         callback.active = true
     }
 

@@ -31,15 +31,13 @@ class SessionConfiguration internal constructor() {
     var maxLifetime: Duration = 4.hours
 
     /**
-     * Optionally expire sessions after this much time without Activity window touch or keyboard input,
-     * including in the foreground. Returning to the foreground also records activity, after
-     * checking expiry. Null preserves background-only inactivity. Background media and custom
-     * interaction sources, dialogs, and popups are not tracked by this option.
-     * Without a usable Application context, or when `session.interaction` is suppressed,
-     * this timeout is disabled.
-     * Initialize before Activities resume; already-resumed windows are not tracked until their next resume.
-     * Storage and observer callbacks can run during input dispatch and must return promptly.
-     * The background timeout still applies; whichever deadline is reached first expires the session.
+     * Optional inactivity timeout for Activity window touch and keyboard input, including in the foreground.
+     * Foreground return records activity after checking expiry. Null keeps background-only inactivity.
+     * Background media, custom input, dialogs and popups are not tracked.
+     * Requires a usable Application context and unsuppressed `session.interaction`; otherwise disabled.
+     * Initialize before Activities resume; already-resumed windows are tracked on their next resume.
+     * Storage and observer callbacks can run during input and must return promptly. The background timeout
+     * still applies; the earlier deadline wins.
      */
     @Incubating
     var userInactivityTimeout: Duration? = null

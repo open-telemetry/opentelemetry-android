@@ -50,6 +50,18 @@ dependencies {
 }
 ```
 
+### Kotlin API extensions
+
+If you want to use
+[opentelemetry-kotlin](https://github.com/open-telemetry/opentelemetry-kotlin)'s API alongside or instead of
+the OpenTelemetry Java API, add the optional `agent-api-ktx` module:
+
+```kotlin
+dependencies {
+    implementation("io.opentelemetry.android:agent-api-ktx")
+}
+```
+
 ## Snapshot Builds
 
 A snapshot is published for every commit to the `main` branch. Snapshots are intended for testing
@@ -131,7 +143,33 @@ private fun initOTel(context: Context): OpenTelemetryRum? =
     }.getOrNull()
 ```
 
-This call will return an `OpenTelemetryRum` instance with which you can use the Agent and OTel APIs.
+This call will return an `OpenTelemetryRum` instance. You can then use the Agent APIs, and additionally
+retrieve the opentelemetry-kotlin and opentelemetry-java APIs for more fine-grained control:
+
+```kotlin
+val otelJavaApi = otelRum.openTelemetry
+val otelKotlinApi = otelRum.openTelemetryKotlin
+```
+
+### Dynamic export headers
+
+For authentication tokens that change during the app's lifetime, configure a header supplier inside
+`OpenTelemetryRumInitializer.initialize`'s configuration block:
+
+```kotlin
+httpExport {
+    baseUrl = "https://collector.example.com"
+    baseHeaders = mapOf("X-App" to "my-app")
+    headerSupplier {
+        mapOf("Authorization" to "Bearer ${tokenStore.currentToken()}")
+    }
+}
+```
+
+The supplier is evaluated for each export request across traces, logs, and metrics. Its headers are
+merged with static global and signal-specific headers; supplier values win on matching keys. The
+supplier must be thread-safe and non-blocking; read a cached token rather than performing a token
+refresh inside the supplier.
 
 # Features
 
@@ -201,7 +239,6 @@ For more information about the maintainer role, see the [community repository](h
 - [Ben Joseph](https://github.com/benjoseph-grafana), Grafana
 - [DavidGrath](https://github.com/DavidGrath)
 - [Hanson Ho](https://github.com/bidetofevil), Embrace
-- [Manoel Aranda Neto](https://github.com/marandaneto), PostHog
 - [Vishwan Aranha](https://github.com/aranhave), Grafana
 
 For more information about the Approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
@@ -213,3 +250,10 @@ For more information about the Approver role, see the [community repository](htt
 [maven-image]: https://img.shields.io/maven-central/v/io.opentelemetry.android/android-agent.svg
 
 [maven-url]: https://central.sonatype.com/artifact/io.opentelemetry.android/android-agent
+
+## Emeritus
+
+- [Manoel Aranda Neto](https://github.com/marandaneto), Approver
+
+For more information about the emeritus role, see the
+[community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
