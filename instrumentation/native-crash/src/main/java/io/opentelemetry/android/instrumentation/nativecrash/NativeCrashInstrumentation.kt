@@ -236,6 +236,7 @@ internal interface NativeCrashStore {
 internal class FileNativeCrashStore(
     private val directory: File,
 ) : NativeCrashStore {
+    private val writeLock = Any()
     private val contextPath = File(directory, "native-crash-context.properties")
     private val recoveryStatePath = File(directory, "native-crash-recovery.properties")
     override val crashRecordPath = File(directory, "native-crash-record.properties")
@@ -333,9 +334,10 @@ internal class FileNativeCrashStore(
             ?: NativeCrashRead.Malformed
     }
 
-    @Synchronized
     override fun writeRecoveryState(state: NativeCrashRecoveryState): Boolean =
-        state.isValid() && writeRecoveryStateFile(state.toProperties())
+        synchronized(writeLock) {
+            state.isValid() && writeRecoveryStateFile(state.toProperties())
+        }
 
     override fun deleteCrashSnapshot(): Boolean = deleteFile(crashSnapshotPath, "native crash snapshot")
 
@@ -352,30 +354,31 @@ internal class FileNativeCrashStore(
         return properties.toCrashContextOrNull()
     }
 
-    @Synchronized
     override fun writeContext(context: NativeCrashContext): Boolean =
-        runCatching {
-            directory.mkdirs()
-            val properties = Properties()
-            properties.setIfNotNull(SESSION_ID, context.sessionId)
-            properties.setIfNotNull(SERVICE_VERSION, context.serviceVersion)
-            properties.setIfNotNull(OS_NAME, context.osName)
-            properties.setIfNotNull(OS_VERSION, context.osVersion)
-            val temporaryPath = File(directory, "${contextPath.name}.tmp")
-            try {
-                FileOutputStream(temporaryPath).use { properties.store(it, null) }
-                val replaced =
-                    temporaryPath.renameTo(contextPath) ||
-                        (contextPath.isFile && contextPath.delete() && temporaryPath.renameTo(contextPath))
-                if (!replaced) {
-                    throw IOException("Failed to replace native crash context")
+        synchronized(writeLock) {
+            runCatching {
+                directory.mkdirs()
+                val properties = Properties()
+                properties.setIfNotNull(SESSION_ID, context.sessionId)
+                properties.setIfNotNull(SERVICE_VERSION, context.serviceVersion)
+                properties.setIfNotNull(OS_NAME, context.osName)
+                properties.setIfNotNull(OS_VERSION, context.osVersion)
+                val temporaryPath = File(directory, "${contextPath.name}.tmp")
+                try {
+                    FileOutputStream(temporaryPath).use { properties.store(it, null) }
+                    val replaced =
+                        temporaryPath.renameTo(contextPath) ||
+                            (contextPath.isFile && contextPath.delete() && temporaryPath.renameTo(contextPath))
+                    if (!replaced) {
+                        throw IOException("Failed to replace native crash context")
+                    }
+                } finally {
+                    temporaryPath.delete()
                 }
-            } finally {
-                temporaryPath.delete()
-            }
-        }.onFailure { error ->
-            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to persist native crash context", error)
-        }.isSuccess
+            }.onFailure { error ->
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to persist native crash context", error)
+            }.isSuccess
+        }
 
     private fun Properties.toCrashRecordOrNull(): NativeCrashRecord? {
         return runCatching {
