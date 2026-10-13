@@ -11,67 +11,68 @@ import io.opentelemetry.sdk.common.Clock
 import kotlin.time.Duration
 
 /**
- * This class encapsulates the following criteria about the sessionId timeout:
- *
- *
- *  * If the app is in the foreground sessionId should never time out.
- *  * If the app is in the background and no activity (spans) happens for >15 minutes, sessionId
- * should time out.
- *  * If the app is in the background and some activity (spans) happens in <15 minute intervals,
- * sessionId should not time out.
- *
- *
- * Consequently, when the app spent >15 minutes without any activity (spans) in the background,
- * after moving to the foreground the first span should trigger the sessionId timeout.
+ * Tracks background and optional user inactivity independently of telemetry reads. Returning to
+ * the foreground stops only the background timer and preserves expiry until the session rotates.
+ * The configured clock must provide monotonic nanoseconds that include device sleep.
  */
 internal class SessionIdTimeoutHandler(
     private val clock: Clock,
     private val sessionBackgroundInactivityTimeout: Duration,
+    private val userInactivityTimeout: Duration? = null,
 ) : ApplicationStateListener {
-    @Volatile
-    private var timeoutStartNanos: Long = 0
-
-    @Volatile
-    private var state = State.FOREGROUND
+    private val lock = Any()
+    private var foreground = true
+    private var timeoutStartNanos = 0L
+    private var backgroundStartNanos = 0L
+    private var expiredOnForeground = false
 
     // for testing
     @OptIn(Incubating::class)
     internal constructor(sessionConfig: SessionConfig, clock: Clock) : this(
         clock,
         sessionConfig.backgroundInactivityTimeout,
+        sessionConfig.userInactivityTimeout,
     )
 
     override fun onApplicationForegrounded() {
-        state = State.TRANSITIONING_TO_FOREGROUND
+        synchronized(lock) {
+            expiredOnForeground = hasTimedOutLocked(clock.nanoTime())
+            foreground = true
+        }
     }
 
     override fun onApplicationBackgrounded() {
-        state = State.BACKGROUND
+        synchronized(lock) {
+            if (foreground) backgroundStartNanos = clock.nanoTime()
+            foreground = false
+        }
     }
 
-    fun hasTimedOut(): Boolean {
-        // don't apply sessionId timeout to apps in the foreground
-        if (state == State.FOREGROUND) {
-            return false
-        }
-        val elapsedTime = clock.nanoTime() - timeoutStartNanos
-        return elapsedTime >= sessionBackgroundInactivityTimeout.inWholeNanoseconds
-    }
+    fun hasTimedOut(): Boolean = synchronized(lock) { hasTimedOutLocked(clock.nanoTime()) }
+
+    private fun hasTimedOutLocked(now: Long): Boolean =
+        expiredOnForeground ||
+            (userInactivityTimeout?.let { now - timeoutStartNanos >= it.inWholeNanoseconds } ?: false) ||
+            (!foreground && now - backgroundStartNanos >= sessionBackgroundInactivityTimeout.inWholeNanoseconds)
 
     fun bump() {
-        timeoutStartNanos = clock.nanoTime()
-
-        // move from the temporary transition state to foreground after the first span
-        if (state == State.TRANSITIONING_TO_FOREGROUND) {
-            state = State.FOREGROUND
+        synchronized(lock) {
+            bumpLocked(clock.nanoTime())
         }
     }
 
-    private enum class State {
-        FOREGROUND,
-        BACKGROUND,
+    /** Refresh active input without allocating state or reviving an expired session. */
+    fun bumpIfActive(): Boolean =
+        synchronized(lock) {
+            val now = clock.nanoTime()
+            if (hasTimedOutLocked(now)) return false
+            bumpLocked(now)
+            true
+        }
 
-        /** A temporary state representing the first event after the app has been brought back.  */
-        TRANSITIONING_TO_FOREGROUND,
+    private fun bumpLocked(now: Long) {
+        timeoutStartNanos = now
+        backgroundStartNanos = now
+        expiredOnForeground = false
     }
 }

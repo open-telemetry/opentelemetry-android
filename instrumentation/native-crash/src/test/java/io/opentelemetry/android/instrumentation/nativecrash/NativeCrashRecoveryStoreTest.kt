@@ -25,6 +25,11 @@ import java.io.FileDescriptor
 import java.io.IOException
 import java.time.Instant
 import java.util.Properties
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.FutureTask
+import java.util.concurrent.TimeUnit.SECONDS
+import java.util.concurrent.locks.LockSupport
 
 class NativeCrashRecoveryStoreTest {
     private val directoryDescriptor = mockk<FileDescriptor>()
@@ -50,6 +55,69 @@ class NativeCrashRecoveryStoreTest {
         unmockkStatic(Log::class)
         unmockkStatic(Os::class)
         unmockkStatic(ParcelFileDescriptor::class)
+    }
+
+    @Test
+    fun `writes do not acquire the store instance monitor`() {
+        for (recoveryState in listOf(false, true)) {
+            val store = FileNativeCrashStore(tempDir)
+            val state = NativeCrashRecoveryState.create(NativeCrashRecoveryPhase.MARKER_READ, 2_000)
+            val context = NativeCrashContext("session", null, null, null)
+            val executor = Executors.newSingleThreadExecutor()
+            try {
+                synchronized(store) {
+                    val result =
+                        executor.submit<Boolean> {
+                            if (recoveryState) store.writeRecoveryState(state) else store.writeContext(context)
+                        }
+                    assertThat(result.get(5, SECONDS)).isTrue()
+                }
+            } finally {
+                executor.shutdownNow()
+                assertThat(executor.awaitTermination(5, SECONDS)).isTrue()
+            }
+        }
+    }
+
+    @Test
+    fun `writes remain serialized while recovery state is being synced`() {
+        for (recoveryState in listOf(false, true)) {
+            val store = FileNativeCrashStore(tempDir)
+            val state = NativeCrashRecoveryState.create(NativeCrashRecoveryPhase.MARKER_READ, 2_000)
+            val context = NativeCrashContext("session", null, null, null)
+            val syncing = CountDownLatch(1)
+            val releaseSync = CountDownLatch(1)
+            every { Os.fsync(directoryDescriptor) } answers {
+                syncing.countDown()
+                check(releaseSync.await(30, SECONDS))
+            }
+            val firstWrite = FutureTask { store.writeRecoveryState(state) }
+            val firstWriter = Thread(firstWrite)
+            val secondWrite =
+                FutureTask {
+                    if (recoveryState) store.writeRecoveryState(state) else store.writeContext(context)
+                }
+            val secondWriter = Thread(secondWrite)
+            try {
+                firstWriter.start()
+                assertThat(syncing.await(5, SECONDS)).isTrue()
+                secondWriter.start()
+                val deadline = System.nanoTime() + SECONDS.toNanos(5)
+                while (secondWriter.state != Thread.State.BLOCKED && !secondWrite.isDone && System.nanoTime() < deadline) {
+                    LockSupport.parkNanos(1_000_000)
+                }
+                assertThat(secondWriter.state).isEqualTo(Thread.State.BLOCKED)
+                releaseSync.countDown()
+                assertThat(firstWrite.get(5, SECONDS)).isTrue()
+                assertThat(secondWrite.get(5, SECONDS)).isTrue()
+            } finally {
+                releaseSync.countDown()
+                firstWriter.join(5_000)
+                secondWriter.join(5_000)
+                assertThat(firstWriter.isAlive).isFalse()
+                assertThat(secondWriter.isAlive).isFalse()
+            }
+        }
     }
 
     @Test
