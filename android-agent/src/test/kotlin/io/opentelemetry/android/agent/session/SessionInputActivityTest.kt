@@ -7,6 +7,7 @@ package io.opentelemetry.android.agent.session
 
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.session.Session
+import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.time.TestClock
 import org.assertj.core.api.Assertions.assertThat
@@ -64,6 +65,79 @@ class SessionInputActivityTest {
         clock.advance(100, MILLISECONDS)
         manager.recordUserInteraction()
         assertThat(manager.getSessionId()).isNotEqualTo(first)
+    }
+
+    @Test
+    fun `reset starts a fresh user inactivity deadline`() {
+        val storage = InMemorySessionStorage()
+        val manager = SessionManager.create(timeout, config, clock, storage)
+        val first = manager.getSessionId()
+        clock.advance(900, MILLISECONDS)
+        assertThat(manager.resetSession()).isTrue()
+        val second = manager.getSessionId()
+        assertThat(second).isNotEqualTo(first)
+        assertThat(storage.get().id).isEqualTo(second)
+        clock.advance(999, MILLISECONDS)
+        assertThat(manager.getSessionId()).isEqualTo(second)
+        clock.advance(1, MILLISECONDS)
+        manager.recordUserInteraction()
+        val third = manager.getSessionId()
+        assertThat(third).isNotEqualTo(second)
+        assertThat(storage.get().id).isEqualTo(third)
+    }
+
+    @Test
+    fun `input during reset delivery does not create an overlapping transition`() {
+        val saved = mutableListOf<Session>()
+        val storage =
+            object : SessionStorage {
+                override fun get(): Session = saved.lastOrNull() ?: invalidSession
+
+                override fun save(newSession: Session) {
+                    saved.add(newSession)
+                }
+            }
+        val manager = SessionManager.create(timeout, config, clock, storage)
+        val first = manager.getSessionId()
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        manager.addObserver(
+            object : SessionObserver {
+                override fun onSessionEnded(session: Session) {
+                    if (session.id == first) {
+                        entered.countDown()
+                        check(release.await(5, SECONDS))
+                    }
+                }
+
+                override fun onSessionStarted(
+                    newSession: Session,
+                    previousSession: Session,
+                ) {}
+            },
+        )
+        val executor = Executors.newFixedThreadPool(2)
+        try {
+            val reset = executor.submit<Boolean> { manager.resetSession() }
+            assertThat(entered.await(5, SECONDS)).isTrue()
+            val second = manager.getSessionId()
+            assertThat(second).isNotEqualTo(first)
+            clock.advance(900, MILLISECONDS)
+            executor.submit { manager.recordUserInteraction() }.get(1, SECONDS)
+            clock.advance(1000, MILLISECONDS)
+            executor.submit { manager.recordUserInteraction() }.get(1, SECONDS)
+            assertThat(manager.getSessionId()).isEqualTo(second)
+            assertThat(saved).hasSize(2)
+            release.countDown()
+            assertThat(reset.get(5, SECONDS)).isTrue()
+            manager.recordUserInteraction()
+            assertThat(manager.getSessionId()).isNotEqualTo(second)
+            assertThat(saved).hasSize(3)
+        } finally {
+            release.countDown()
+            executor.shutdownNow()
+            assertThat(executor.awaitTermination(5, SECONDS)).isTrue()
+        }
     }
 
     @Test
