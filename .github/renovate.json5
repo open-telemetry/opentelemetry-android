@@ -73,6 +73,21 @@
       enabled: false,
     },
     {
+      // compose 1.12+ is built with JVM target 11, which can't be inlined into our JVM target 1.8
+      // bytecode. Remove this once the project's jvm_target is raised to 11+.
+      matchPackageNames: [
+        'androidx.compose.ui:**',
+      ],
+      allowedVersions: '<1.12.0',
+    },
+    {
+      // detekt 1.23.x (latest stable) can't run on JDK 25. Remove this once detekt 2.x is adopted.
+      matchDepNames: [
+        'java-jdk',
+      ],
+      allowedVersions: '<25',
+    },
+    {
       // Try and force the demo app's kotlin and compose compilers to be in lockstep
       // See https://github.com/renovatebot/renovate/issues/18354
       includePaths: [
