@@ -72,27 +72,15 @@ class OtelRumConfigTest {
     }
 
     @Test
-    fun `legacy crash instrumentation name remains supported`() {
+    fun `java crash instrumentation can be suppressed and allowed by its name`() {
         val config = OtelRumConfig()
 
-        config.suppressInstrumentation("crash")
-        assertThat(config.isSuppressed("java_crash")).isTrue()
+        config.suppressInstrumentation("java-crash")
+        assertThat(config.isSuppressed("java-crash")).isTrue()
         assertThat(config.isSuppressed("native-crash")).isFalse()
 
-        config.allowInstrumentation("java_crash")
-        assertThat(config.isSuppressed("crash")).isFalse()
-    }
-
-    @Test
-    fun `java crash instrumentation can be allowed using legacy name`() {
-        val config = OtelRumConfig()
-
-        config.suppressInstrumentation("java_crash")
-        assertThat(config.isSuppressed("crash")).isTrue()
-        assertThat(config.isSuppressed("native-crash")).isFalse()
-
-        config.allowInstrumentation("crash")
-        assertThat(config.isSuppressed("java_crash")).isFalse()
+        config.allowInstrumentation("java-crash")
+        assertThat(config.isSuppressed("java-crash")).isFalse()
     }
 
     @Test

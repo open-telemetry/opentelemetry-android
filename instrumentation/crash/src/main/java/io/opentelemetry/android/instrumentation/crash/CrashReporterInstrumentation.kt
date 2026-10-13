@@ -31,5 +31,5 @@ class CrashReporterInstrumentation : AndroidInstrumentation {
         crashReporter.install(openTelemetryRum.openTelemetry)
     }
 
-    override val name: String = "java_crash"
+    override val name: String = "java-crash"
 }

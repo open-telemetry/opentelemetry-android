@@ -10,9 +10,6 @@ import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig.Compa
 import io.opentelemetry.api.common.Attributes
 import java.util.function.Supplier
 
-private const val LEGACY_CRASH_INSTRUMENTATION_NAME = "crash"
-private const val JAVA_CRASH_INSTRUMENTATION_NAME = "java_crash"
-
 /**
  * Configuration object for OpenTelemetry Android. The configuration items in this class will be
  * used in the OpenTelemetryRumBuilder to wire up and enable/disable various mobile instrumentation
@@ -24,7 +21,7 @@ class OtelRumConfig {
     private var generateSdkInitializationEvents = true
     private var includeScreenAttributes = true
     private var discoverInstrumentations = true
-    private val suppressedInstrumentations: MutableList<String> = mutableListOf()
+    private val suppressedInstrumentations: MutableSet<String> = mutableSetOf()
     private var diskBufferingConfigImpl: DiskBufferingConfig = create()
 
     /**
@@ -127,7 +124,7 @@ class OtelRumConfig {
      * that have been suppressed will not be installed at startup.
      */
     fun suppressInstrumentation(instrumentationName: String): OtelRumConfig {
-        suppressedInstrumentations.add(canonicalInstrumentationName(instrumentationName))
+        suppressedInstrumentations.add(instrumentationName)
         return this
     }
 
@@ -136,20 +133,12 @@ class OtelRumConfig {
      * Instrumentations that have been suppressed will not be installed at startup.
      */
     fun allowInstrumentation(instrumentationName: String): OtelRumConfig {
-        suppressedInstrumentations.remove(canonicalInstrumentationName(instrumentationName))
+        suppressedInstrumentations.remove(instrumentationName)
         return this
     }
 
     /** Returns false when the given instrumentation has been suppressed. True otherwise.  */
-    fun isSuppressed(instrumentationName: String): Boolean =
-        suppressedInstrumentations.contains(canonicalInstrumentationName(instrumentationName))
-
-    private fun canonicalInstrumentationName(instrumentationName: String): String =
-        if (instrumentationName == LEGACY_CRASH_INSTRUMENTATION_NAME) {
-            JAVA_CRASH_INSTRUMENTATION_NAME
-        } else {
-            instrumentationName
-        }
+    fun isSuppressed(instrumentationName: String): Boolean = suppressedInstrumentations.contains(instrumentationName)
 
     /**
      * Enables or disables the tracing API for the SDK. When disabled, the SDK will provide no-op implementations to instrumentation
