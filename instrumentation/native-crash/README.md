@@ -69,13 +69,12 @@ Crashes that happen before native crash instrumentation finishes initialization 
 
 Recovery records a process-durable delivery claim before handing the event to OpenTelemetry. A
 claimed crash is never emitted again, so replay is at most once and the event may be lost if the
-process exits before export. Marker, snapshot, and cleanup failures are retried on later launches,
-up to three attempts per phase and 24 hours from the first attempt. Pending recovery uses the old
-launch's directory and does not disable capture for the current launch.
+process exits before export. Failed cleanup is retried on later launches, retaining the claim while
+crash files remain. Retry budgets are separate follow-up work. Pending recovery uses the old launch's
+directory and does not disable capture for the current launch.
 
 Unreadable recovery state is left untouched rather than guessing whether the crash was already
-claimed. This does not use the attempt or age limits, but old directories are still subject to the
-launch retention limit. Other reports can replay and new crashes can be captured independently.
+claimed. Old directories are still subject to the launch retention limit. Other reports can replay and new crashes can be captured independently.
 Malformed recovery state, including an unknown format version, is discarded with the pending crash
 because its delivery status cannot be proven.
 

@@ -181,7 +181,7 @@ internal class NativeCrashReporter(
 
             NativeCrashRead.Missing,
             NativeCrashRead.Malformed,
-            -> cleanup(state?.asCleanup() ?: newState(NativeCrashRecoveryPhase.CLEANUP))
+            -> cleanup()
 
             NativeCrashRead.Failed -> recoverMarkerFailure(state)
         }
@@ -195,7 +195,7 @@ internal class NativeCrashReporter(
             when (state.phase) {
                 NativeCrashRecoveryPhase.DELIVERY_CLAIMED,
                 NativeCrashRecoveryPhase.CLEANUP,
-                -> return cleanup(state.asCleanup())
+                -> return cleanup()
 
                 NativeCrashRecoveryPhase.ABANDONED -> return cleanupAbandoned(state, record)
 
@@ -205,23 +205,8 @@ internal class NativeCrashReporter(
 
         val snapshot =
             when (val snapshotRead = store.readCrashSnapshotForRecovery(record)) {
-                is NativeCrashRead.Success -> {
-                    snapshotRead.value
-                }
-
-                NativeCrashRead.Missing,
-                NativeCrashRead.Malformed,
-                -> {
-                    null
-                }
-
-                NativeCrashRead.Failed -> {
-                    val retry = nextRetry(NativeCrashRecoveryPhase.SNAPSHOT_READ, state, record)
-                    if (!retry.isExhausted()) {
-                        return persistRetry(retry)
-                    }
-                    null
-                }
+                is NativeCrashRead.Success -> snapshotRead.value
+                else -> null
             }
 
         val claim = newState(NativeCrashRecoveryPhase.DELIVERY_CLAIMED, record, state)
@@ -233,7 +218,7 @@ internal class NativeCrashReporter(
         } catch (error: LinkageError) {
             logReplayFailure(error)
         }
-        return cleanup(claim)
+        return cleanup()
     }
 
     private fun replay(
@@ -289,10 +274,9 @@ internal class NativeCrashReporter(
         if (state?.phase == NativeCrashRecoveryPhase.DELIVERY_CLAIMED ||
             state?.phase == NativeCrashRecoveryPhase.CLEANUP
         ) {
-            return cleanup(state.asCleanup())
+            return cleanup()
         }
-        val retry = nextRetry(NativeCrashRecoveryPhase.MARKER_READ, state)
-        return if (retry.isExhausted()) abandon(retry) else persistRetry(retry)
+        return abandon(state ?: newState(NativeCrashRecoveryPhase.MARKER_READ))
     }
 
     private fun recoverFailedStateRead(): NativeCrashRecoveryResult =
@@ -303,31 +287,12 @@ internal class NativeCrashReporter(
 
             NativeCrashRead.Missing,
             NativeCrashRead.Malformed,
-            -> cleanup(newState(NativeCrashRecoveryPhase.CLEANUP))
+            -> cleanup()
         }
 
-    private fun nextRetry(
-        phase: NativeCrashRecoveryPhase,
-        state: NativeCrashRecoveryState?,
-        record: NativeCrashRecord? = null,
-    ): NativeCrashRecoveryState {
-        val matching =
-            state?.takeIf {
-                it.phase == phase &&
-                    ((record == null && !it.hasIdentity()) || (record != null && it.matches(record)))
-            }
-        return (matching ?: newState(phase, record, state)).copy(
-            attempts = (matching?.attempts ?: 0).coerceAtMost(MAX_ATTEMPTS - 1) + 1,
-        )
-    }
-
-    private fun persistRetry(state: NativeCrashRecoveryState): NativeCrashRecoveryResult =
-        if (store.writeRecoveryState(state)) NativeCrashRecoveryResult.RETRY_PENDING else abandon(state)
-
-    private fun cleanup(state: NativeCrashRecoveryState): NativeCrashRecoveryResult {
+    private fun cleanup(): NativeCrashRecoveryResult {
         if (store.deleteCrashFiles() && store.deleteRecoveryState()) return NativeCrashRecoveryResult.COMPLETE
-        val retry = state.asCleanup().copy(attempts = state.attempts.coerceAtMost(MAX_ATTEMPTS - 1) + 1)
-        return if (retry.isExhausted()) abandon(retry) else persistRetry(retry)
+        return NativeCrashRecoveryResult.RETRY_PENDING
     }
 
     private fun abandon(state: NativeCrashRecoveryState): NativeCrashRecoveryResult {
@@ -370,21 +335,11 @@ internal class NativeCrashReporter(
             record,
         )
 
-    private fun NativeCrashRecoveryState.asCleanup(): NativeCrashRecoveryState = copy(phase = NativeCrashRecoveryPhase.CLEANUP)
-
-    private fun NativeCrashRecoveryState.isExhausted(): Boolean {
-        val now = nowMillis()
-        return attempts >= MAX_ATTEMPTS ||
-            (now >= firstAttemptEpochMillis && now - firstAttemptEpochMillis >= MAX_RETRY_AGE_MILLIS)
-    }
-
     private fun logReplayFailure(error: Throwable) {
         Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to replay native crash", error)
     }
 
     private companion object {
-        const val MAX_ATTEMPTS = 3
-        const val MAX_RETRY_AGE_MILLIS = 24 * 60 * 60 * 1_000L
         val processRecoveryLock = Any()
     }
 }
