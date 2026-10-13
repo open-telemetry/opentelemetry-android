@@ -42,6 +42,14 @@ internal class SessionManager(
     override fun getSessionId(): String = updateSession(recordUserInteraction = false) ?: invalidSession.id
 
     override fun recordUserInteraction() {
+        val current = session
+        // Active input only refreshes its deadline; creation and rotation still use the manager lock.
+        if (current !== invalidSession &&
+            clock.now() - current.startTimestamp < maxSessionLifetime.inWholeNanoseconds &&
+            timeoutHandler.bumpIfActive()
+        ) {
+            return
+        }
         updateSession(recordUserInteraction = true)
     }
 
