@@ -62,4 +62,5 @@ dependencies {
     debugImplementation(libs.compose.ui.test.manifest)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.test.espresso.core)
 }
