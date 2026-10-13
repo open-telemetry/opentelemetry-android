@@ -163,6 +163,7 @@ object OpenTelemetryRumInitializer {
             SessionConfig(
                 cfg.sessionConfig.backgroundInactivityTimeout,
                 cfg.sessionConfig.maxLifetime,
+                cfg.sessionConfig.linkPreviousSessionOnRestart,
             )
         val clock = cfg.clock
         val timeoutHandler = SessionIdTimeoutHandler(sessionConfig, clock)
