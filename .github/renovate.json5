@@ -82,10 +82,11 @@
     },
     {
       // detekt 1.23.x (latest stable) can't run on JDK 25. Remove this once detekt 2.x is adopted.
+      // Until then cap at the current LTS (21).
       matchDepNames: [
         'java-jdk',
       ],
-      allowedVersions: '<25',
+      allowedVersions: '<22',
     },
     {
       // Try and force the demo app's kotlin and compose compilers to be in lockstep
