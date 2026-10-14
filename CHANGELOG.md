@@ -9,6 +9,14 @@
   internal and is not yet connected to user activity sources.
   ([#2049](https://github.com/open-telemetry/opentelemetry-android/issues/2049))
 
+- Network attributes now pick up `READ_PHONE_STATE` when the app is granted it after the SDK
+  started, instead of after the next network change or app restart. The network subtype is
+  reported, and the carrier switches to the API 28+ details, from the next span or log, or within
+  about 10 seconds when the grant comes more than 30 seconds after startup. The carrier name can
+  therefore change once during a session, and the network change instrumentation then emits a
+  `network.change` event with the updated attributes.
+  ([#1216](https://github.com/open-telemetry/opentelemetry-android/issues/1216))
+
 ### 📈 Enhancements
 
 - Add the experimental `session { storage(...) }` hook for custom session storage. The default
