@@ -39,7 +39,9 @@ internal class SessionInteractionInstrumentation(
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
     ) {
-        if (context !is Application) return
+        if (context !is Application) {
+            return
+        }
         installed = true
         context.registerActivityLifecycleCallbacks(this)
         lifecycle.registerListener(this)
@@ -56,17 +58,25 @@ internal class SessionInteractionInstrumentation(
             Runnable {
                 callbacks.keys.toList().forEach(::removeCallback)
             }
-        if (Looper.myLooper() == Looper.getMainLooper()) clear.run() else Handler(Looper.getMainLooper()).post(clear)
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            clear.run()
+        } else {
+            Handler(Looper.getMainLooper()).post(clear)
+        }
     }
 
     override fun onApplicationForegrounded() {
-        if (installed) recordInteraction()
+        if (installed) {
+            recordInteraction()
+        }
     }
 
     override fun onApplicationBackgrounded() {}
 
     override fun onActivityResumed(activity: Activity) {
-        if (!installed) return
+        if (!installed) {
+            return
+        }
         val window = activity.window
         val previous = callbacks[window]?.get()
         val current = window.callback
@@ -96,7 +106,9 @@ internal class SessionInteractionInstrumentation(
     private fun removeCallback(window: Window) {
         val callback = callbacks.remove(window)?.get() ?: return
         callback.active = false
-        if (window.callback === callback) window.callback = callback.delegate
+        if (window.callback === callback) {
+            window.callback = callback.delegate
+        }
     }
 
     private fun recordInteraction() {
@@ -121,12 +133,16 @@ internal class SessionInteractionInstrumentation(
         }
 
         override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-            if (installed && active && event.action == KeyEvent.ACTION_DOWN) recordInteraction()
+            if (installed && active && event.action == KeyEvent.ACTION_DOWN) {
+                recordInteraction()
+            }
             return delegate.dispatchKeyEvent(event)
         }
 
         override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
-            if (installed && active && event.actionMasked == MotionEvent.ACTION_SCROLL) recordInteraction()
+            if (installed && active && event.actionMasked == MotionEvent.ACTION_SCROLL) {
+                recordInteraction()
+            }
             return delegate.dispatchGenericMotionEvent(event)
         }
     }

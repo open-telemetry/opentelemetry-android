@@ -213,7 +213,7 @@ class OpenTelemetryRumInitializerTest {
 
     @Test
     fun `input tracking requires opt-in and an available source and cleans up on shutdown`() {
-        for (mode in listOf("default", "enabled", "suppressed", "non-application")) {
+        for (mode in listOf("default", "enabled", "suppressed", "non-application", "invalid")) {
             val enabled = mode == "enabled"
             val app = RuntimeEnvironment.getApplication()
             val context =
@@ -236,7 +236,14 @@ class OpenTelemetryRumInitializerTest {
                     disableTracing()
                     disableMetrics()
                     diskBuffering { enabled(false) }
-                    session { userInactivityTimeout = if (mode == "default") null else 1.minutes }
+                    session {
+                        userInactivityTimeout =
+                            when (mode) {
+                                "default" -> null
+                                "invalid" -> kotlin.time.Duration.ZERO
+                                else -> 1.minutes
+                            }
+                    }
                     if (mode == "suppressed") instrumentations { suppressing("session.interaction") }
                     if (mode == "non-application") instrumentations { disableInstrumentationAutoDiscovery() }
                 }
