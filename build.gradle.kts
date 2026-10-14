@@ -29,6 +29,17 @@ allprojects {
     }
 }
 
+// Instrumentation subprojects share names (e.g. 'library', 'agent', 'testing'). Kover requires
+// a unique group:name identity per project, so append the instrumentation name to the group.
+// See https://github.com/Kotlin/kotlinx-kover/issues/825
+// This does not affect published coordinates, see computeGroupId() in otel.publish-conventions.
+subprojects {
+    val match = Regex("^:instrumentation:([^:]+):[^:]+$").matchEntire(path)
+    if (match != null) {
+        group = "$group.instrumentation.${match.groupValues[1]}"
+    }
+}
+
 nexusPublishing {
     useStaging.set(findProperty("final") == "true")
     repositories {
