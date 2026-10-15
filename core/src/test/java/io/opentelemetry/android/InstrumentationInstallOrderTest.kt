@@ -138,6 +138,20 @@ class InstrumentationInstallOrderTest {
     }
 
     @Test
+    fun `named constraint from another instrumentation takes precedence over first`() {
+        val session = FakeInstrumentation("session", InstallConstraints(installFirst = true))
+        val nativeCrash =
+            FakeInstrumentation(
+                "native-crash",
+                InstallConstraints(installFirst = true, installAfter = setOf("session")),
+            )
+        val custom = FakeInstrumentation("custom", InstallConstraints(installBefore = setOf("native-crash")))
+
+        assertThat(sort(session, nativeCrash, custom)).containsExactly(session, custom, nativeCrash)
+        assertThat(warnings).isEmpty()
+    }
+
+    @Test
     fun `comparable of another type is treated as having no preference`() {
         val a = PlainInstrumentation("a")
         val other = StringComparableInstrumentation("other")
