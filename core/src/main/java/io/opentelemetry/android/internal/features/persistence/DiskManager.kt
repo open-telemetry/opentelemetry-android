@@ -45,7 +45,7 @@ internal class DiskManager(
 
             // Divides the available cache size by 3 (for each signal's folder)
             val calculatedSize = requestedSize / 3
-            Log.d(RumConstants.OTEL_RUM_LOG_TAG, "Requested cache size: %s, folder size: $requestedSize")
+            Log.d(RumConstants.OTEL_RUM_LOG_TAG, "Requested cache size: $requestedSize, folder size: $calculatedSize")
             return calculatedSize
         }
 
