@@ -1,0 +1,83 @@
+public abstract class io/opentelemetry/android/instrumentation/view/common/Gesture {
+	public synthetic fun <init> (Landroid/view/MotionEvent;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getAttributes ()Lio/opentelemetry/api/common/Attributes;
+	public final fun getButtonStateDescription ()Ljava/lang/String;
+	public final fun getM ()Landroid/view/MotionEvent;
+	public final fun getToolTypeDescription ()Ljava/lang/String;
+	public final fun setAttributes (Lio/opentelemetry/api/common/Attributes;)V
+}
+
+public final class io/opentelemetry/android/instrumentation/view/common/Gesture$Click : io/opentelemetry/android/instrumentation/view/common/Gesture {
+	public fun <init> (Landroid/view/MotionEvent;I)V
+	public final fun getMotionEvent ()Landroid/view/MotionEvent;
+}
+
+public final class io/opentelemetry/android/instrumentation/view/common/Gesture$Fling : io/opentelemetry/android/instrumentation/view/common/Gesture {
+	public fun <init> (Landroid/view/MotionEvent;DD)V
+	public final fun getMotionEvent ()Landroid/view/MotionEvent;
+	public final fun getVelocityX ()D
+	public final fun getVelocityY ()D
+}
+
+public final class io/opentelemetry/android/instrumentation/view/common/Gesture$LongPress : io/opentelemetry/android/instrumentation/view/common/Gesture {
+	public fun <init> (Landroid/view/MotionEvent;)V
+	public final fun getMotionEvent ()Landroid/view/MotionEvent;
+}
+
+public final class io/opentelemetry/android/instrumentation/view/common/Gesture$Scroll : io/opentelemetry/android/instrumentation/view/common/Gesture {
+	public fun <init> (Landroid/view/MotionEvent;DD)V
+	public final fun getDistanceX ()D
+	public final fun getDistanceY ()D
+	public final fun getMotionEvent ()Landroid/view/MotionEvent;
+}
+
+public abstract interface class io/opentelemetry/android/instrumentation/view/common/ToggleableTracker {
+	public abstract fun startTracking (Landroid/view/Window;)V
+	public abstract fun stopTracking ()V
+}
+
+public abstract interface class io/opentelemetry/android/instrumentation/view/common/TouchEventConsumer {
+	public abstract fun consumeEvent (Landroid/view/MotionEvent;)V
+}
+
+public final class io/opentelemetry/android/instrumentation/view/common/ViewClickActivityCallback : io/opentelemetry/android/internal/services/visiblescreen/activities/DefaultingActivityLifecycleCallbacks {
+	public fun <init> (Lio/opentelemetry/android/instrumentation/view/common/ToggleableTracker;)V
+	public fun onActivityPaused (Landroid/app/Activity;)V
+	public fun onActivityResumed (Landroid/app/Activity;)V
+}
+
+public final class io/opentelemetry/android/instrumentation/view/common/ViewUtilsKt {
+	public static final fun findTargetForTap (Landroid/view/View;FF[I)Landroid/view/View;
+	public static final fun viewToName (Landroid/view/View;)Ljava/lang/String;
+}
+
+public final class io/opentelemetry/android/instrumentation/view/common/WindowCallbackWrapper : android/view/Window$Callback {
+	public fun <init> (Landroid/view/Window$Callback;Lio/opentelemetry/android/instrumentation/view/common/TouchEventConsumer;)V
+	public fun dispatchGenericMotionEvent (Landroid/view/MotionEvent;)Z
+	public fun dispatchKeyEvent (Landroid/view/KeyEvent;)Z
+	public fun dispatchKeyShortcutEvent (Landroid/view/KeyEvent;)Z
+	public fun dispatchPopulateAccessibilityEvent (Landroid/view/accessibility/AccessibilityEvent;)Z
+	public fun dispatchTouchEvent (Landroid/view/MotionEvent;)Z
+	public fun dispatchTrackballEvent (Landroid/view/MotionEvent;)Z
+	public fun onActionModeFinished (Landroid/view/ActionMode;)V
+	public fun onActionModeStarted (Landroid/view/ActionMode;)V
+	public fun onAttachedToWindow ()V
+	public fun onContentChanged ()V
+	public fun onCreatePanelMenu (ILandroid/view/Menu;)Z
+	public fun onCreatePanelView (I)Landroid/view/View;
+	public fun onDetachedFromWindow ()V
+	public fun onMenuItemSelected (ILandroid/view/MenuItem;)Z
+	public fun onMenuOpened (ILandroid/view/Menu;)Z
+	public fun onPanelClosed (ILandroid/view/Menu;)V
+	public fun onPointerCaptureChanged (Z)V
+	public fun onPreparePanel (ILandroid/view/View;Landroid/view/Menu;)Z
+	public fun onProvideKeyboardShortcuts (Ljava/util/List;Landroid/view/Menu;I)V
+	public fun onSearchRequested ()Z
+	public fun onSearchRequested (Landroid/view/SearchEvent;)Z
+	public fun onWindowAttributesChanged (Landroid/view/WindowManager$LayoutParams;)V
+	public fun onWindowFocusChanged (Z)V
+	public fun onWindowStartingActionMode (Landroid/view/ActionMode$Callback;)Landroid/view/ActionMode;
+	public fun onWindowStartingActionMode (Landroid/view/ActionMode$Callback;I)Landroid/view/ActionMode;
+	public final fun unwrap ()Landroid/view/Window$Callback;
+}
+
