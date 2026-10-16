@@ -3,11 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+@file:OptIn(ExperimentalApi::class)
+
 package io.opentelemetry.android.instrumentation.thermal
 
 import android.os.PowerManager
 import io.opentelemetry.android.semconv.AndroidAttributes.ANDROID_THERMAL_THROTTLING_STATUS_KEY
 import io.opentelemetry.android.semconv.events.DeviceThermalStatusChangeEvent.Companion.DEVICE_THERMAL_STATUS_CHANGE_EVENT_NAME
+import io.opentelemetry.android.test.common.openTelemetryKotlin
+import io.opentelemetry.kotlin.ExperimentalApi
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -21,10 +25,9 @@ class ThermalDetectorTest {
     val openTelemetryRule: OpenTelemetryRule = OpenTelemetryRule.create()
 
     private val logger =
-        openTelemetryRule.openTelemetry
-            .logsBridge
-            .loggerBuilder("io.opentelemetry.test")
-            .build()
+        openTelemetryRule.openTelemetryKotlin
+            .loggerProvider
+            .getLogger("io.opentelemetry.test")
 
     @Before
     fun setup() {

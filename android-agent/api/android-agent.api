@@ -54,6 +54,7 @@ public final class io/opentelemetry/android/agent/dsl/HttpExportConfiguration {
 	public final fun getClientTls ()Lio/opentelemetry/android/agent/connectivity/ClientTlsConnectivity;
 	public final fun getCompression ()Lio/opentelemetry/android/agent/connectivity/Compression;
 	public final fun getSslContext ()Lio/opentelemetry/android/agent/connectivity/SSLContextConnectivity;
+	public final fun headerSupplier (Lkotlin/jvm/functions/Function0;)V
 	public final fun logs (Lkotlin/jvm/functions/Function1;)V
 	public final fun metrics (Lkotlin/jvm/functions/Function1;)V
 	public final fun setBaseHeaders (Ljava/util/Map;)V
@@ -77,9 +78,14 @@ public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration
 	public final fun instrumentations (Lkotlin/jvm/functions/Function1;)V
 	public final fun resource (Lio/opentelemetry/sdk/resources/Resource;)V
 	public final fun resource (Lkotlin/jvm/functions/Function1;)V
+	public final fun sampler (Lkotlin/jvm/functions/Function1;)V
 	public final fun semanticConventions (Lkotlin/jvm/functions/Function1;)V
 	public final fun session (Lkotlin/jvm/functions/Function1;)V
 	public final fun setClock (Lio/opentelemetry/sdk/common/Clock;)V
+}
+
+public final class io/opentelemetry/android/agent/dsl/SamplerConfiguration {
+	public final fun trace (Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class io/opentelemetry/android/agent/dsl/SemanticConventionsConfiguration {
@@ -92,7 +98,6 @@ public final class io/opentelemetry/android/agent/dsl/SessionConfiguration {
 	public final fun getBackgroundInactivityTimeout-UwyO8pc ()J
 	public final fun getMaxLifetime-UwyO8pc ()J
 	public final fun observers ([Lio/opentelemetry/android/session/SessionObserver;)V
-	public final fun sampler (Lkotlin/jvm/functions/Function1;)V
 	public final fun setBackgroundInactivityTimeout-LRDsOJo (J)V
 	public final fun setMaxLifetime-LRDsOJo (J)V
 	public final fun storage (Lio/opentelemetry/android/agent/session/SessionStorage;)V

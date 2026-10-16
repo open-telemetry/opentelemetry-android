@@ -36,13 +36,13 @@ jobs:
       - name: Set up gradle
         # zizmor: ignore[cache-poisoning] This workflow analyzes release branches
         # but does not build or publish release artifacts.
-        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
 
       - name: touch local props
         run: touch demo-app/local.properties
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
+        uses: github/codeql-action/init@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
         with:
           languages: java, actions
           # using "linked" helps to keep up with the latest Kotlin support
@@ -57,7 +57,7 @@ jobs:
         run: ./gradlew assemble --no-build-cache --no-daemon --stacktrace
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
+        uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
 
       - name: Enable KVM for Android tests
         run: |

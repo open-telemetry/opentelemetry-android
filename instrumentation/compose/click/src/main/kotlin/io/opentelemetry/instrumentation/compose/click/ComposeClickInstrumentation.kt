@@ -10,6 +10,7 @@ import android.content.Context
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.kotlin.toOtelKotlinApi
 
 @AutoService(AndroidInstrumentation::class)
 class ComposeClickInstrumentation : AndroidInstrumentation {
@@ -23,9 +24,9 @@ class ComposeClickInstrumentation : AndroidInstrumentation {
             ComposeClickActivityCallback(
                 ComposeClickEventGenerator(
                     openTelemetryRum.openTelemetry
-                        .logsBridge
-                        .loggerBuilder("io.opentelemetry.android.instrumentation.compose.click")
-                        .build(),
+                        .toOtelKotlinApi()
+                        .loggerProvider
+                        .getLogger("io.opentelemetry.android.instrumentation.compose.click"),
                 ),
             ),
         )

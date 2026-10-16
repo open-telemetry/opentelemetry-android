@@ -6,6 +6,12 @@ plugins {
 description = "OpenTelemetry Android View click library instrumentation"
 
 android {
+    kotlin {
+        compilerOptions {
+            optIn.add("io.opentelemetry.kotlin.ExperimentalApi")
+        }
+    }
+
     namespace = "io.opentelemetry.android.instrumentation.view.click"
 
     defaultConfig {
@@ -22,6 +28,7 @@ dependencies {
 
     implementation(libs.opentelemetry.instrumentation.apiSemconv)
     implementation(libs.opentelemetry.semconv.kotlin)
+    implementation(libs.opentelemetry.kotlin.compat)
 
     testImplementation(project(":test-common"))
     testImplementation(project(":session"))

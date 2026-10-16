@@ -123,7 +123,7 @@ class OpenTelemetryRumBuilder internal constructor(
     private var resource: Resource = createDefault(context)
     private var exportScheduleEnablement: ScheduleEnablement? = null
     private var sessionProvider: SessionProvider = SessionProvider.getNoop()
-    private var sessionSamplerFactory: Function<SessionProvider, Sampler>? = null
+    private var traceSamplerFactory: Function<SessionProvider, Sampler>? = null
     private var cacheStorageOverride: CacheStorage? = null
     private var periodicTaskSchedulerOverride: PeriodicTaskScheduler? = null
 
@@ -147,8 +147,8 @@ class OpenTelemetryRumBuilder internal constructor(
      * Without a factory, the OpenTelemetry SDK's default sampler is used.
      * This does not sample logs or metrics.
      */
-    fun setSessionSampler(factory: Function<SessionProvider, Sampler>): OpenTelemetryRumBuilder {
-        sessionSamplerFactory = factory
+    fun setTraceSampler(factory: Function<SessionProvider, Sampler>): OpenTelemetryRumBuilder {
+        traceSamplerFactory = factory
         return this
     }
 
@@ -611,8 +611,8 @@ class OpenTelemetryRumBuilder internal constructor(
     ): SdkTracerProvider {
         // Resolve user configuration before starting the batch processor's worker.
         val sampler =
-            sessionSamplerFactory?.let {
-                requireNotNull(it.apply(sessionProvider)) { "Session sampler factory returned null" }
+            traceSamplerFactory?.let {
+                requireNotNull(it.apply(sessionProvider)) { "Trace sampler factory returned null" }
             }
         var tracerProviderBuilder =
             SdkTracerProvider

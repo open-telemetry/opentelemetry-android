@@ -24,7 +24,8 @@ import io.opentelemetry.android.semconv.AppAttributes.APP_JANK_FRAME_COUNT_KEY
 import io.opentelemetry.android.semconv.AppAttributes.APP_JANK_PERIOD_KEY
 import io.opentelemetry.android.semconv.AppAttributes.APP_JANK_THRESHOLD_KEY
 import io.opentelemetry.android.semconv.events.AppJankEvent.Companion.APP_JANK_EVENT_NAME
-import io.opentelemetry.api.logs.Logger
+import io.opentelemetry.kotlin.logging.Logger
+import io.opentelemetry.kotlin.toOtelKotlinApi
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import kotlinx.coroutines.Runnable
 import org.assertj.core.api.Assertions.assertThat
@@ -233,7 +234,11 @@ class SlowRenderListenerTest {
         }
 
     private fun createEventReporter(): JankReporter {
-        val eventLogger: Logger = otelTesting.openTelemetry.logsBridge.get("JANK!")
+        val eventLogger: Logger =
+            otelTesting.openTelemetry
+                .toOtelKotlinApi()
+                .loggerProvider
+                .getLogger("JANK!")
         return EventJankReporter(eventLogger, SLOW_THRESHOLD_MS / 1000.0)
             .combine(EventJankReporter(eventLogger, FROZEN_THRESHOLD_MS / 1000.0))
     }

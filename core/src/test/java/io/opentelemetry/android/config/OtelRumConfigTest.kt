@@ -72,6 +72,18 @@ class OtelRumConfigTest {
     }
 
     @Test
+    fun `java crash instrumentation can be suppressed and allowed by its name`() {
+        val config = OtelRumConfig()
+
+        config.suppressInstrumentation("java-crash")
+        assertThat(config.isSuppressed("java-crash")).isTrue()
+        assertThat(config.isSuppressed("native-crash")).isFalse()
+
+        config.allowInstrumentation("java-crash")
+        assertThat(config.isSuppressed("java-crash")).isFalse()
+    }
+
+    @Test
     fun `signals are enabled by default`() {
         val config = OtelRumConfig()
         assertThat(config.tracingEnabled).isTrue()

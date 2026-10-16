@@ -63,6 +63,8 @@ android {
             all { test ->
                 test.testLogging.exceptionFormat = TestExceptionFormat.FULL
                 test.maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2) + 1
+                // robolectric requires this on API 37+ to access FileDescriptor internals
+                test.jvmArgs("--add-exports", "java.base/jdk.internal.access=ALL-UNNAMED")
             }
         }
     }

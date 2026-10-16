@@ -12,6 +12,9 @@ import io.opentelemetry.android.agent.FakeClock
 import io.opentelemetry.android.agent.FakeInstrumentationLoader
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
+import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
+import io.opentelemetry.android.instrumentation.crash.CrashReporterInstrumentation
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 
@@ -43,6 +46,30 @@ class InstrumentationConfigurationTest {
             rumConfig.suppressInstrumentation("two")
             rumConfig.suppressInstrumentation("three")
         }
+    }
+
+    @Test
+    fun canSuppressAndAllowCrashReporterByItsName() {
+        val config = OtelRumConfig()
+        val crashReporter = CrashReporterInstrumentation()
+        val loader = mockk<AndroidInstrumentationLoader>()
+        every { loader.getByType(CrashReporterInstrumentation::class.java) } returns crashReporter
+        val configuration =
+            OpenTelemetryConfiguration(
+                rumConfig = config,
+                instrumentationLoader = loader,
+                clock = FakeClock(),
+            )
+
+        configuration.instrumentations {
+            suppressing("java-crash")
+        }
+        assertThat(config.isSuppressed("java-crash")).isTrue()
+
+        configuration.instrumentations {
+            crashReporter { enabled(true) }
+        }
+        assertThat(config.isSuppressed("java-crash")).isFalse()
     }
 
     @Test

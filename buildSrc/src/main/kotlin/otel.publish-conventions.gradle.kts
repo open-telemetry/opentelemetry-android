@@ -127,7 +127,7 @@ fun computeArtifactId(path: String): String {
 }
 
 fun computeGroupId(path: String): String {
-    val groupId = project.group.toString()
+    val groupId = rootProject.group.toString()
     if (!path.startsWith(":instrumentation:")) {
         // Return default groupId for non instrumentation publications.
         return groupId

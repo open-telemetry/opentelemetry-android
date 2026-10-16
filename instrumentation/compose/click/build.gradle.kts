@@ -6,6 +6,12 @@ plugins {
 description = "OpenTelemetry Android compose click instrumentation"
 
 android {
+    kotlin {
+        compilerOptions {
+            optIn.add("io.opentelemetry.kotlin.ExperimentalApi")
+        }
+    }
+
     namespace = "io.opentelemetry.android.instrumentation.compose.click"
 
     defaultConfig {
@@ -19,6 +25,8 @@ dependencies {
     implementation(project(":agent-api"))
     implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":semconv"))
+    implementation(libs.opentelemetry.kotlin.compat)
+    implementation(libs.opentelemetry.semconv.kotlin)
     implementation(project(":services"))
 
     compileOnly(libs.compose) {

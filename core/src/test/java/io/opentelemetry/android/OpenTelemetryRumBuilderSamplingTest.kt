@@ -36,9 +36,11 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
 import java.util.function.Function
 
 @RunWith(AndroidJUnit4::class)
+@Config(sdk = [23, 36])
 class OpenTelemetryRumBuilderSamplingTest {
     private val application: Application = RuntimeEnvironment.getApplication()
     private val spanExporter = InMemorySpanExporter.create()
@@ -57,7 +59,7 @@ class OpenTelemetryRumBuilderSamplingTest {
     }
 
     @Test
-    fun sessionSamplerReceivesFinalProviderBeforeInstrumentation() {
+    fun traceSamplerReceivesFinalProviderBeforeInstrumentation() {
         val selectedProvider = SessionProvider { "00000000000000000000000000000001" }
         val factory = mockk<Function<SessionProvider, Sampler>>()
         every { factory.apply(selectedProvider) } returns SessionIdRatioBasedSampler(0.0, selectedProvider)
@@ -67,104 +69,73 @@ class OpenTelemetryRumBuilderSamplingTest {
             verify(exactly = 1) { factory.apply(selectedProvider) }
             val rum = secondArg<OpenTelemetryRum>()
             assertThat(rum.sessionProvider).isSameAs(selectedProvider)
-            val span =
-                rum.openTelemetry
-                    .getTracer("test")
-                    .spanBuilder("installation")
-                    .startSpan()
+            val span = rum.span("installation").startSpan()
             assertThat(span.isRecording).isFalse()
             span.end()
         }
-        val rum =
-            makeBuilder()
-                .setSessionProvider(SessionProvider { "replaced" })
-                .setSessionSampler(factory)
-                .setSessionProvider(selectedProvider)
-                .addInstrumentation(instrumentation)
-                .addTracerProviderCustomizer { builder, _ ->
-                    builder.addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-                }.build()
-        try {
-            verify(exactly = 1) { instrumentation.install(any(), rum) }
-            verify(exactly = 1) { factory.apply(selectedProvider) }
-            assertThat(spanExporter.finishedSpanItems).isEmpty()
-        } finally {
-            rum.shutdown()
-        }
+        makeBuilder()
+            .setSessionProvider(SessionProvider { "replaced" })
+            .setTraceSampler(factory)
+            .setSessionProvider(selectedProvider)
+            .addInstrumentation(instrumentation)
+            .addTracerProviderCustomizer { builder, _ ->
+                builder.addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
+            }.withRum { rum ->
+                verify(exactly = 1) { instrumentation.install(any(), rum) }
+                verify(exactly = 1) { factory.apply(selectedProvider) }
+                assertThat(spanExporter.finishedSpanItems).isEmpty()
+            }
     }
 
     @Test
-    fun tracerCustomizerCanReplaceSessionSampler() {
-        val rum =
-            makeBuilder()
-                .addTracerProviderCustomizer { builder, _ ->
-                    builder
-                        .setSampler(Sampler.alwaysOn())
-                        .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-                }.setSessionSampler { Sampler.alwaysOff() }
-                .build()
-        try {
-            rum.openTelemetry
-                .getTracer("test")
-                .spanBuilder("kept")
-                .startSpan()
-                .end()
-            assertThat(spanExporter.finishedSpanItems).hasSize(1)
-        } finally {
-            rum.shutdown()
-        }
+    fun tracerCustomizerCanReplaceTraceSampler() {
+        makeBuilder()
+            .addTracerProviderCustomizer { builder, _ ->
+                builder
+                    .setSampler(Sampler.alwaysOn())
+                    .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
+            }.setTraceSampler { Sampler.alwaysOff() }
+            .withRum { rum ->
+                rum.span("kept").startSpan().end()
+                assertThat(spanExporter.finishedSpanItems).hasSize(1)
+            }
     }
 
     @Test
-    fun sessionSamplerReceivesNoopProviderAndLastFactoryWins() {
+    fun traceSamplerReceivesNoopProviderAndLastFactoryWins() {
         val unused = mockk<Function<SessionProvider, Sampler>>()
         val factory = mockk<Function<SessionProvider, Sampler>>()
         every { factory.apply(SessionProvider.getNoop()) } returns Sampler.alwaysOn()
-        val rum = makeBuilder().setSessionSampler(unused).setSessionSampler(factory).build()
-        try {
+        makeBuilder().setTraceSampler(unused).setTraceSampler(factory).withRum { rum ->
             verify(exactly = 0) { unused.apply(any()) }
             verify(exactly = 1) { factory.apply(SessionProvider.getNoop()) }
-            val span =
-                rum.openTelemetry
-                    .getTracer("test")
-                    .spanBuilder("noop-provider")
-                    .startSpan()
+            val span = rum.span("noop-provider").startSpan()
             assertThat(span.isRecording).isTrue()
             span.end()
-        } finally {
-            rum.shutdown()
         }
     }
 
     @Test
-    fun disabledTracingDoesNotCallSessionSamplerFactory() {
+    fun disabledTracingDoesNotCallTraceSamplerFactory() {
         val factory = mockk<Function<SessionProvider, Sampler>>()
-        val rum =
-            OpenTelemetryRumBuilder(application, buildConfig().setTracingDisabled())
-                .setSessionSampler(factory)
-                .build()
-        try {
-            val span =
-                rum.openTelemetry
-                    .getTracer("test")
-                    .spanBuilder("disabled")
-                    .startSpan()
-            assertThat(span.isRecording).isFalse()
-            span.end()
-            verify(exactly = 0) { factory.apply(any()) }
-        } finally {
-            rum.shutdown()
-        }
+        OpenTelemetryRumBuilder(application, buildConfig().setTracingDisabled())
+            .setTraceSampler(factory)
+            .withRum { rum ->
+                val span = rum.span("disabled").startSpan()
+                assertThat(span.isRecording).isFalse()
+                span.end()
+                verify(exactly = 0) { factory.apply(any()) }
+            }
     }
 
     @Test
-    fun sessionSamplerFactoryFailureAbortsBeforeExportersAndInstrumentation() {
+    fun traceSamplerFactoryFailureAbortsBeforeExportersAndInstrumentation() {
         val failure = IllegalArgumentException("invalid sampling configuration")
         val exporterFactory = mockk<Function<SpanExporter, SpanExporter>>()
         val instrumentation = mockk<AndroidInstrumentation>(relaxed = true)
         val builder =
             makeBuilder()
-                .setSessionSampler { throw failure }
+                .setTraceSampler { throw failure }
                 .addTracerProviderCustomizer { _, _ -> error("Customizer must not run") }
                 .addSpanExporterCustomizer(exporterFactory)
                 .addInstrumentation(instrumentation)
@@ -174,53 +145,49 @@ class OpenTelemetryRumBuilderSamplingTest {
     }
 
     @Test
-    fun nullSessionSamplerFailsBeforeCustomizers() {
+    fun nullTraceSamplerFailsBeforeCustomizers() {
         // Java factories can return null despite the Kotlin signature.
         @Suppress("UNCHECKED_CAST")
         val factory = Function<SessionProvider, Sampler?> { null } as Function<SessionProvider, Sampler>
         val builder =
             makeBuilder()
-                .setSessionSampler(factory)
+                .setTraceSampler(factory)
                 .addTracerProviderCustomizer { _, _ -> error("Customizer must not run") }
         assertThatThrownBy { builder.build() }
             .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessage("Session sampler factory returned null")
+            .hasMessage("Trace sampler factory returned null")
     }
 
     @Test
     fun defaultSamplerStillSamplesRootsAndHonorsUnsampledParents() {
-        val rum =
-            makeBuilder()
-                .setSessionProvider(SessionProvider { "current" })
-                .addTracerProviderCustomizer { builder, _ -> builder.addSpanProcessor(SimpleSpanProcessor.create(spanExporter)) }
-                .build()
-        try {
-            val tracer = rum.openTelemetry.getTracer("test")
-            val span =
-                tracer
-                    .spanBuilder("root")
-                    .setNoParent()
-                    .setAttribute("session.id", "caller")
-                    .startSpan()
-            assertThat(span.spanContext.isSampled).isTrue()
-            span.end()
-            val attributes = spanExporter.finishedSpanItems.single().attributes
-            assertThat(attributes.get(stringKey("session.id"))).isEqualTo("current")
-            val parent =
-                Span.wrap(
-                    SpanContext.createFromRemoteParent(
-                        "00000000000000000000000000000001",
-                        "0000000000000001",
-                        TraceFlags.getDefault(),
-                        TraceState.getDefault(),
-                    ),
-                )
-            val child = tracer.spanBuilder("child").setParent(root().with(parent)).startSpan()
-            assertThat(child.isRecording).isFalse()
-            child.end()
-        } finally {
-            rum.shutdown()
-        }
+        makeBuilder()
+            .setSessionProvider(SessionProvider { "current" })
+            .addTracerProviderCustomizer { builder, _ -> builder.addSpanProcessor(SimpleSpanProcessor.create(spanExporter)) }
+            .withRum { rum ->
+                val tracer = rum.openTelemetry.getTracer("test")
+                val span =
+                    tracer
+                        .spanBuilder("root")
+                        .setNoParent()
+                        .setAttribute("session.id", "caller")
+                        .startSpan()
+                assertThat(span.spanContext.isSampled).isTrue()
+                span.end()
+                val attributes = spanExporter.finishedSpanItems.single().attributes
+                assertThat(attributes.get(stringKey("session.id"))).isEqualTo("current")
+                val parent =
+                    Span.wrap(
+                        SpanContext.createFromRemoteParent(
+                            "00000000000000000000000000000001",
+                            "0000000000000001",
+                            TraceFlags.getDefault(),
+                            TraceState.getDefault(),
+                        ),
+                    )
+                val child = tracer.spanBuilder("child").setParent(root().with(parent)).startSpan()
+                assertThat(child.isRecording).isFalse()
+                child.end()
+            }
     }
 
     @Test
@@ -228,24 +195,19 @@ class OpenTelemetryRumBuilderSamplingTest {
         for (configureFactory in listOf(false, true)) {
             val exporter = InMemorySpanExporter.create()
             val builder = makeBuilder().setSessionProvider(SessionProvider { "current" })
-            if (configureFactory) builder.setSessionSampler { Sampler.alwaysOff() }
-            val rum =
-                builder
-                    .addTracerProviderCustomizer { provider, _ ->
-                        provider.setSampler(Sampler.alwaysOn()).addSpanProcessor(SimpleSpanProcessor.create(exporter))
-                    }.build()
-            try {
-                rum.openTelemetry
-                    .getTracer("test")
-                    .spanBuilder("explicit")
-                    .setAttribute("session.id", "caller")
-                    .startSpan()
-                    .end()
-                val attributes = exporter.finishedSpanItems.single().attributes
-                assertThat(attributes.get(stringKey("session.id"))).isEqualTo(if (configureFactory) "caller" else "current")
-            } finally {
-                rum.shutdown()
-            }
+            if (configureFactory) builder.setTraceSampler { Sampler.alwaysOff() }
+            builder
+                .addTracerProviderCustomizer { provider, _ ->
+                    provider.setSampler(Sampler.alwaysOn()).addSpanProcessor(SimpleSpanProcessor.create(exporter))
+                }.withRum { rum ->
+                    rum
+                        .span("explicit")
+                        .setAttribute("session.id", "caller")
+                        .startSpan()
+                        .end()
+                    val attributes = exporter.finishedSpanItems.single().attributes
+                    assertThat(attributes.get(stringKey("session.id"))).isEqualTo(if (configureFactory) "caller" else "current")
+                }
         }
     }
 
@@ -253,37 +215,43 @@ class OpenTelemetryRumBuilderSamplingTest {
     fun traceSamplingDoesNotFilterLogsOrMetrics() {
         val logs = InMemoryLogRecordExporter.create()
         val metrics = InMemoryMetricReader.create()
-        val rum =
-            makeBuilder()
-                .setSessionSampler { Sampler.alwaysOff() }
-                .addLoggerProviderCustomizer { builder, _ ->
-                    builder.addLogRecordProcessor(SimpleLogRecordProcessor.create(logs))
-                }.addMeterProviderCustomizer { builder, _ -> builder.registerMetricReader(metrics) }
-                .build()
+        makeBuilder()
+            .setTraceSampler { Sampler.alwaysOff() }
+            .addLoggerProviderCustomizer { builder, _ ->
+                builder.addLogRecordProcessor(SimpleLogRecordProcessor.create(logs))
+            }.addMeterProviderCustomizer { builder, _ -> builder.registerMetricReader(metrics) }
+            .withRum { rum ->
+                rum.openTelemetry.logsBridge
+                    .get("test")
+                    .logRecordBuilder()
+                    .setBody("still recorded")
+                    .emit()
+                rum.openTelemetry
+                    .getMeter("test")
+                    .counterBuilder("counter")
+                    .build()
+                    .add(1)
+                assertThat(logs.finishedLogRecordItems).hasSize(1)
+                val point =
+                    metrics
+                        .collectAllMetrics()
+                        .single()
+                        .longSumData.points
+                        .single()
+                assertThat(point.value).isEqualTo(1L)
+            }
+    }
+
+    private fun OpenTelemetryRumBuilder.withRum(assertions: (OpenTelemetryRum) -> Unit) {
+        val rum = build()
         try {
-            rum.openTelemetry.logsBridge
-                .get("test")
-                .logRecordBuilder()
-                .setBody("still recorded")
-                .emit()
-            rum.openTelemetry
-                .getMeter("test")
-                .counterBuilder("counter")
-                .build()
-                .add(1)
-            assertThat(logs.finishedLogRecordItems).hasSize(1)
-            assertThat(
-                metrics
-                    .collectAllMetrics()
-                    .single()
-                    .longSumData.points
-                    .single()
-                    .value,
-            ).isEqualTo(1L)
+            assertions(rum)
         } finally {
             rum.shutdown()
         }
     }
+
+    private fun OpenTelemetryRum.span(name: String) = openTelemetry.getTracer("test").spanBuilder(name)
 
     private fun makeBuilder(): OpenTelemetryRumBuilder = OpenTelemetryRumBuilder(application, buildConfig())
 
