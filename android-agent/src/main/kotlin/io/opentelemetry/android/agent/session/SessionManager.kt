@@ -89,8 +89,14 @@ internal class SessionManager(
                 session = newSession
                 timeoutHandler.bump()
             }
+            val linkedSession =
+                if (previousSession === invalidSession) {
+                    readPreviousSession()
+                } else {
+                    previousSession
+                }
             sessionStorage.save(newSession)
-            notifyObserversOfSessionUpdate(previousSession, newSession)
+            notifyObserversOfSessionUpdate(previousSession, newSession, linkedSession)
             return newSession.id
         } finally {
             if (startedTransition) {
@@ -104,11 +110,18 @@ internal class SessionManager(
     private fun notifyObserversOfSessionUpdate(
         currentSession: Session,
         newSession: Session,
+        linkedSession: Session,
     ) {
         observers.forEach {
             it.onSessionEnded(currentSession)
-            it.onSessionStarted(newSession, currentSession)
+            it.onSessionStarted(newSession, linkedSession)
         }
+    }
+
+    private fun readPreviousSession(): Session {
+        val previous = sessionStorage.getPreviousSession() ?: return invalidSession
+        val id = previous.id
+        return if (id.isEmpty()) invalidSession else SessionImpl(id, previous.startTimestamp)
     }
 
     private fun sessionHasExpired(session: Session): Boolean {

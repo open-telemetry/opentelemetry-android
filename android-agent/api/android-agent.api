@@ -154,6 +154,7 @@ public final class io/opentelemetry/android/agent/dsl/instrumentation/SlowRender
 
 public abstract interface class io/opentelemetry/android/agent/session/SessionStorage {
 	public abstract fun get ()Lio/opentelemetry/android/session/Session;
+	public fun getPreviousSession ()Lio/opentelemetry/android/session/Session;
 	public abstract fun save (Lio/opentelemetry/android/session/Session;)V
 }
 
