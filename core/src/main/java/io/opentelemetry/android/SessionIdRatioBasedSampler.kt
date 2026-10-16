@@ -6,9 +6,11 @@
 package io.opentelemetry.android
 
 import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.context.Context
+import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.sdk.trace.data.LinkData
 import io.opentelemetry.sdk.trace.samplers.Sampler
 import io.opentelemetry.sdk.trace.samplers.SamplingResult
@@ -18,6 +20,7 @@ import io.opentelemetry.sdk.trace.samplers.SamplingResult
  * traceId to the underlying sampler in order to use the same ratio logic but on sessionId instead. This is valid as sessionId
  * uses [io.opentelemetry.api.trace.TraceId.fromLongs] internally to generate random session IDs.
  */
+@OptIn(IncubatingApi::class)
 class SessionIdRatioBasedSampler(
     ratio: Double,
     private val sessionProvider: SessionProvider,
@@ -33,16 +36,29 @@ class SessionIdRatioBasedSampler(
         attributes: Attributes,
         parentLinks: List<LinkData?>,
     ): SamplingResult {
+        val sessionId = sessionProvider.getSessionId()
         // Replace traceId with sessionId
-        return ratioBasedSampler.shouldSample(
-            parentContext,
-            sessionProvider.getSessionId(),
-            name,
-            spanKind,
-            attributes,
-            parentLinks,
+        val result =
+            ratioBasedSampler.shouldSample(
+                parentContext,
+                sessionId,
+                name,
+                spanKind,
+                attributes,
+                parentLinks,
+            )
+        return SamplingResult.create(
+            result.decision,
+            result.attributes
+                .toBuilder()
+                .put(SESSION_ID, sessionId)
+                .build(),
         )
     }
 
     override fun getDescription(): String = "SessionIdRatioBased{traceIdRatioBased:$ratioBasedSampler.description}"
+
+    private companion object {
+        val SESSION_ID = stringKey(io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_ID)
+    }
 }

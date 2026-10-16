@@ -14,19 +14,23 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.Incubating
+import io.opentelemetry.android.SessionIdRatioBasedSampler
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.agent.session.SessionStorage
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.testing.time.TestClock
+import io.opentelemetry.sdk.trace.samplers.Sampler
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
 import org.robolectric.annotation.LooperMode
 import org.robolectric.shadows.ShadowSystemClock
 import java.time.Duration
@@ -95,6 +99,88 @@ class OpenTelemetryRumInitializerTest {
         verify {
             o1.onSessionStarted(any(), any())
             o2.onSessionStarted(any(), any())
+        }
+    }
+
+    @Test
+    @Config(sdk = [23, 36])
+    fun `trace sampler is created once with the agent provider`() {
+        val providers = mutableListOf<SessionProvider>()
+        val rum =
+            OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
+                diskBuffering { enabled(false) }
+                httpExport { baseUrl = "http://127.0.0.1:4318" }
+                sampler { trace { error("Replaced factory must not run") } }
+                sampler {
+                    trace { provider ->
+                        providers.add(provider)
+                        SessionIdRatioBasedSampler(0.0, provider)
+                    }
+                }
+            }
+        try {
+            assertThat(providers).containsExactly(rum.sessionProvider)
+            assertThat(rum.sessionProvider.getSessionId()).hasSize(32)
+            val span =
+                rum.openTelemetry
+                    .getTracer("test")
+                    .spanBuilder("dropped")
+                    .startSpan()
+            assertThat(span.isRecording).isFalse()
+            span.end()
+        } finally {
+            rum.shutdown()
+        }
+    }
+
+    @Test
+    @Config(sdk = [23, 36])
+    fun `disabled tracing does not create the configured trace sampler`() {
+        val rum =
+            OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
+                disableTracing()
+                disableLogging()
+                disableMetrics()
+                diskBuffering { enabled(false) }
+                sampler { trace { error("Disabled tracing must not create a sampler") } }
+            }
+        try {
+            val span =
+                rum.openTelemetry
+                    .getTracer("test")
+                    .spanBuilder("disabled")
+                    .startSpan()
+            assertThat(span.isRecording).isFalse()
+            span.end()
+        } finally {
+            rum.shutdown()
+        }
+    }
+
+    @Test
+    @Config(sdk = [23, 36])
+    fun `trace DSL accepts general samplers and an empty block preserves the default`() {
+        for (sampled in listOf(null, false, true)) {
+            val rum =
+                OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
+                    diskBuffering { enabled(false) }
+                    httpExport { baseUrl = "http://127.0.0.1:4318" }
+                    sampler {
+                        if (sampled != null) trace { if (sampled) Sampler.alwaysOn() else Sampler.alwaysOff() }
+                    }
+                }
+            try {
+                val span =
+                    rum.openTelemetry
+                        .getTracer("test")
+                        .spanBuilder("root")
+                        .setNoParent()
+                        .startSpan()
+                assertThat(span.spanContext.isSampled).isEqualTo(sampled ?: true)
+                span.end()
+            } finally {
+                rum.shutdown()
+            }
         }
     }
 
