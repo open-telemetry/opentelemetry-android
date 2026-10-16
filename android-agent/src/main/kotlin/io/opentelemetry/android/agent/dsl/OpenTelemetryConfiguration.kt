@@ -71,6 +71,13 @@ class OpenTelemetryConfiguration internal constructor(
     }
 
     /**
+     * Disable the collection of events related to the initialization of the OTel Android SDK itself.
+     */
+    fun disableSdkInitializationEvents() {
+        rumConfig.disableSdkInitializationEvents()
+    }
+
+    /**
      * Configures how OpenTelemetry should export telemetry over HTTP.
      */
     fun httpExport(action: HttpExportConfiguration.() -> Unit) {

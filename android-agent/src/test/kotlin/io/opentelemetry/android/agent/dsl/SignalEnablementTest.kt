@@ -7,15 +7,14 @@ package io.opentelemetry.android.agent.dsl
 
 import io.opentelemetry.android.agent.FakeClock
 import io.opentelemetry.android.agent.FakeInstrumentationLoader
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Before
-import org.junit.Test
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class SignalEnablementTest {
     private lateinit var otelConfig: OpenTelemetryConfiguration
 
-    @Before
+    @BeforeEach
     fun setUp() {
         otelConfig =
             OpenTelemetryConfiguration(
@@ -26,29 +25,37 @@ class SignalEnablementTest {
 
     @Test
     fun testDefaults() {
-        assertTrue(otelConfig.rumConfig.tracingEnabled)
-        assertTrue(otelConfig.rumConfig.loggingEnabled)
-        assertTrue(otelConfig.rumConfig.metricsEnabled)
+        assertThat(otelConfig.rumConfig.tracingEnabled).isTrue()
+        assertThat(otelConfig.rumConfig.loggingEnabled).isTrue()
+        assertThat(otelConfig.rumConfig.metricsEnabled).isTrue()
+        assertThat(otelConfig.rumConfig.shouldGenerateSdkInitializationEvents()).isTrue()
     }
 
     @Test
     fun testDisableTracing() {
-        assertTrue(otelConfig.rumConfig.tracingEnabled)
+        assertThat(otelConfig.rumConfig.tracingEnabled).isTrue()
         otelConfig.disableTracing()
-        assertFalse(otelConfig.rumConfig.tracingEnabled)
+        assertThat(otelConfig.rumConfig.tracingEnabled).isFalse()
     }
 
     @Test
     fun testDisableLogging() {
-        assertTrue(otelConfig.rumConfig.loggingEnabled)
+        assertThat(otelConfig.rumConfig.loggingEnabled).isTrue()
         otelConfig.disableLogging()
-        assertFalse(otelConfig.rumConfig.loggingEnabled)
+        assertThat(otelConfig.rumConfig.loggingEnabled).isFalse()
     }
 
     @Test
     fun testDisableMetrics() {
-        assertTrue(otelConfig.rumConfig.metricsEnabled)
+        assertThat(otelConfig.rumConfig.metricsEnabled).isTrue()
         otelConfig.disableMetrics()
-        assertFalse(otelConfig.rumConfig.metricsEnabled)
+        assertThat(otelConfig.rumConfig.metricsEnabled).isFalse()
+    }
+
+    @Test
+    fun testDisableSdkInitializationEvents() {
+        assertThat(otelConfig.rumConfig.shouldGenerateSdkInitializationEvents()).isTrue()
+        otelConfig.disableSdkInitializationEvents()
+        assertThat(otelConfig.rumConfig.shouldGenerateSdkInitializationEvents()).isFalse()
     }
 }
