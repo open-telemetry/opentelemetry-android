@@ -10,12 +10,14 @@ package io.opentelemetry.instrumentation.compose.click
 import android.view.MotionEvent
 import android.view.Window
 import androidx.compose.ui.node.LayoutNode
-import io.opentelemetry.android.semconv.events.AppScreenClickEvent
-import io.opentelemetry.android.semconv.events.AppWidgetClickEvent
-import io.opentelemetry.api.logs.Logger
+import io.opentelemetry.kotlin.logging.Logger
+import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.semconv.events.AppScreenClickEvent
+import io.opentelemetry.kotlin.semconv.events.AppWidgetClickEvent
 import java.lang.ref.WeakReference
 import kotlin.let
 
+@OptIn(IncubatingApi::class)
 internal class ComposeClickEventGenerator(
     private val eventLogger: Logger,
     private val composeLayoutNodeUtil: ComposeLayoutNodeUtil = ComposeLayoutNodeUtil(),

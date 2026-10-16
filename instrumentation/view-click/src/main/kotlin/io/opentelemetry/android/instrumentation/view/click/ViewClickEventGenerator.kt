@@ -11,31 +11,31 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import io.opentelemetry.android.instrumentation.view.click.internal.Gesture
-import io.opentelemetry.android.semconv.events.AppScreenClickEvent.Companion.APP_SCREEN_CLICK_EVENT_NAME
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_BUTTON
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_CLICKS
+import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_TYPE
 import io.opentelemetry.android.semconv.events.AppScreenFlingEvent
 import io.opentelemetry.android.semconv.events.AppScreenLongpressEvent
 import io.opentelemetry.android.semconv.events.AppScreenScrollEvent
-import io.opentelemetry.android.semconv.events.AppWidgetClickEvent.Companion.APP_WIDGET_CLICK_EVENT_NAME
 import io.opentelemetry.android.semconv.events.AppWidgetFlingEvent
 import io.opentelemetry.android.semconv.events.AppWidgetLongpressEvent
 import io.opentelemetry.android.semconv.events.AppWidgetScrollEvent
-import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.Logger
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_X
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_Y
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_ID
-import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_NAME
+import io.opentelemetry.kotlin.attributes.AttributesMutator
 import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.semconv.events.AppScreenClickEvent
+import io.opentelemetry.kotlin.semconv.events.AppWidgetClickEvent
 import java.lang.ref.WeakReference
 import java.util.LinkedList
+import io.opentelemetry.kotlin.logging.Logger as KotlinLogger
 
+@OptIn(IncubatingApi::class)
 internal class ViewClickEventGenerator(
     private val eventLogger: Logger,
+    private val clickEventLogger: KotlinLogger,
 ) {
     private var windowRef: WeakReference<Window>? = null
 
-    @OptIn(IncubatingApi::class)
     private val gestureListener =
         object : GestureDetector.SimpleOnGestureListener() {
             override fun onDoubleTap(motionEvent: MotionEvent): Boolean {
@@ -44,15 +44,10 @@ internal class ViewClickEventGenerator(
                     val safeEvent = MotionEvent.obtain(motionEvent)
                     val gesture = Gesture.Click(motionEvent, 2)
 
-                    createEvent(APP_SCREEN_CLICK_EVENT_NAME, gesture)
-                        .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
-                        .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
-                        .emit()
+                    emitAppScreenClick(safeEvent, gesture, 2)
 
                     findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
-                        createEvent(APP_WIDGET_CLICK_EVENT_NAME, gesture)
-                            .setAllAttributes(createViewAttributes(view))
-                            .emit()
+                        emitAppWidgetClick(view, gesture, 2)
                     }
 
                     safeEvent.recycle()
@@ -66,15 +61,10 @@ internal class ViewClickEventGenerator(
                     val safeEvent = MotionEvent.obtain(motionEvent)
                     val gesture = Gesture.Click(safeEvent, 1)
 
-                    createEvent(APP_SCREEN_CLICK_EVENT_NAME, gesture)
-                        .setAttribute(APP_SCREEN_COORDINATE_Y, safeEvent.y.toLong())
-                        .setAttribute(APP_SCREEN_COORDINATE_X, safeEvent.x.toLong())
-                        .emit()
+                    emitAppScreenClick(safeEvent, gesture, 1)
 
                     findTargetForTap(window.decorView, safeEvent.x, safeEvent.y)?.let { view ->
-                        createEvent(APP_WIDGET_CLICK_EVENT_NAME, gesture)
-                            .setAllAttributes(createViewAttributes(view))
-                            .emit()
+                        emitAppWidgetClick(view, gesture, 1)
                     }
                     safeEvent.recycle()
                 }
@@ -161,17 +151,41 @@ internal class ViewClickEventGenerator(
         windowRef = null
     }
 
-    private fun createEvent(
-        name: String,
-        gesture: Gesture,
-    ): LogRecordBuilder {
-        val logger =
-            eventLogger
-                .logRecordBuilder()
-                .setEventName(name)
-                .setAllAttributes(gesture.attributes)
+    private fun emitAppScreenClick(
+        motionEvent: MotionEvent,
+        gesture: Gesture.Click,
+        clicks: Long,
+    ) {
+        AppScreenClickEvent(
+            appScreenCoordinateX = motionEvent.x.toLong(),
+            appScreenCoordinateY = motionEvent.y.toLong(),
+        ).emit(clickEventLogger) {
+            setPointerAttributes(gesture, clicks)
+        }
+    }
 
-        return logger
+    private fun emitAppWidgetClick(
+        view: View,
+        gesture: Gesture.Click,
+        clicks: Long,
+    ) {
+        AppWidgetClickEvent(
+            appScreenCoordinateX = view.x.toLong(),
+            appScreenCoordinateY = view.y.toLong(),
+            appWidgetId = view.id.toString(),
+            appWidgetName = viewToName(view),
+        ).emit(clickEventLogger) {
+            setPointerAttributes(gesture, clicks)
+        }
+    }
+
+    private fun AttributesMutator.setPointerAttributes(
+        gesture: Gesture.Click,
+        clicks: Long,
+    ) {
+        setStringAttribute(HW_POINTER_TYPE, gesture.toolTypeDescription)
+        gesture.buttonStateDescription?.let { setStringAttribute(HW_POINTER_BUTTON, it) }
+        setLongAttribute(HW_POINTER_CLICKS, clicks)
     }
 
     private fun emitAppScreenLongPress(
@@ -258,17 +272,6 @@ internal class ViewClickEventGenerator(
             hwPointerVelocityX = gesture.velocityX,
             hwPointerVelocityY = gesture.velocityY,
         ).emit(eventLogger)
-    }
-
-    @OptIn(IncubatingApi::class)
-    private fun createViewAttributes(view: View): Attributes {
-        val builder = Attributes.builder()
-        builder.put(APP_WIDGET_NAME, viewToName(view))
-        builder.put(APP_WIDGET_ID, view.id.toString())
-
-        builder.put(APP_SCREEN_COORDINATE_X, view.x.toLong())
-        builder.put(APP_SCREEN_COORDINATE_Y, view.y.toLong())
-        return builder.build()
     }
 
     private fun viewToName(view: View): String =

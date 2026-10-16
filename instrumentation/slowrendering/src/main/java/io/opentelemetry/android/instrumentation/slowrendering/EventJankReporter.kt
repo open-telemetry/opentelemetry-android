@@ -7,9 +7,11 @@ package io.opentelemetry.android.instrumentation.slowrendering
 
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants
-import io.opentelemetry.android.semconv.events.AppJankEvent
-import io.opentelemetry.api.logs.Logger
+import io.opentelemetry.kotlin.logging.Logger
+import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.semconv.events.AppJankEvent
 
+@OptIn(IncubatingApi::class)
 internal class EventJankReporter(
     private val eventLogger: Logger,
     private val threshold: Double,

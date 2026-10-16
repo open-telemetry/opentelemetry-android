@@ -13,6 +13,7 @@ import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.kotlin.toOtelKotlinApi
 import java.time.Duration
 
 internal const val SLOW_THRESHOLD_MS = 16
@@ -78,7 +79,11 @@ class SlowRenderingInstrumentation : AndroidInstrumentation {
             return
         }
 
-        val logger = openTelemetryRum.openTelemetry.logsBridge.get("app.jank")
+        val logger =
+            openTelemetryRum.openTelemetry
+                .toOtelKotlinApi()
+                .loggerProvider
+                .getLogger("app.jank")
         var jankReporter: JankReporter = EventJankReporter(logger, SLOW_THRESHOLD_MS / 1000.0, debugVerbose)
         jankReporter = jankReporter.combine(EventJankReporter(logger, FROZEN_THRESHOLD_MS / 1000.0, debugVerbose))
 

@@ -6,6 +6,12 @@ plugins {
 description = "OpenTelemetry Android slow rendering instrumentation"
 
 android {
+    kotlin {
+        compilerOptions {
+            optIn.add("io.opentelemetry.kotlin.ExperimentalApi")
+        }
+    }
+
     namespace = "io.opentelemetry.android.instrumentation.slowrendering"
 
     defaultConfig {
@@ -25,6 +31,8 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":agent-api"))
     implementation(project(":semconv"))
+    implementation(libs.opentelemetry.kotlin.compat)
+    implementation(libs.opentelemetry.semconv.kotlin)
     implementation(libs.androidx.core)
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.instrumentation.api)

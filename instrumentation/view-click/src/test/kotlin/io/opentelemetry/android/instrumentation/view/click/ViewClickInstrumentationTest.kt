@@ -147,6 +147,13 @@ class ViewClickInstrumentationTest {
                 equalTo(clicksKey, 1.toLong()),
                 equalTo(toolTypeKey, "finger"),
             )
+        assertClickEventScopes()
+    }
+
+    private fun assertClickEventScopes() {
+        assertThat(openTelemetryRule.logRecords).allSatisfy { record ->
+            assertThat(record.instrumentationScopeInfo.name).isEqualTo("io.opentelemetry.android.instrumentation.view.click")
+        }
     }
 
     @Test
