@@ -7,8 +7,13 @@
 
 package io.opentelemetry.android.instrumentation.nativecrash
 
+import android.os.ParcelFileDescriptor
+import android.system.ErrnoException
+import android.system.Os
+import android.system.OsConstants
 import android.util.Log
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.mockkStatic
@@ -19,6 +24,7 @@ import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.kotlin.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE
 import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.semconv.SessionAttributes.SESSION_ID
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -29,6 +35,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.io.FileDescriptor
 import java.io.IOException
 import java.io.RandomAccessFile
 import java.nio.file.Files
@@ -44,12 +51,82 @@ class NativeCrashReplayFailureTest {
         mockkStatic(Log::class)
         every { Log.w(any<String>(), any<String>()) } returns 0
         every { Log.w(any<String>(), any<String>(), any<Throwable>()) } returns 0
+        mockkStatic(ParcelFileDescriptor::class)
+        mockkStatic(Os::class)
+        val directoryHandle = mockk<ParcelFileDescriptor>(relaxed = true)
+        every { directoryHandle.fileDescriptor } returns mockk<FileDescriptor>()
+        every { ParcelFileDescriptor.open(any(), ParcelFileDescriptor.MODE_READ_ONLY) } returns directoryHandle
+        justRun { Os.fsync(any()) }
     }
 
     @AfterEach
     fun cleanup() {
         otelTesting.clearLogRecords()
         unmockkStatic(Log::class)
+        unmockkStatic(ParcelFileDescriptor::class)
+        unmockkStatic(Os::class)
+    }
+
+    @Test
+    fun `unreadable old state leaves new capture and other reports independent`() {
+        val previous = launch(1).currentStore
+        assertThat(previous.writeContext(NativeCrashContext("old", "1", "Android", "29"))).isTrue()
+        previous.crashRecordPath.writeText("signal.number=11\ntimestamp.epoch_nanos=1783598400000000000\n")
+        assertThat(previous.writeRecoveryState(NativeCrashRecoveryState.create(NativeCrashRecoveryPhase.DELIVERY_CLAIMED, 1, crashRecord)))
+            .isTrue()
+        val state = File(previous.crashRecordPath.parentFile, "native-crash-recovery.properties")
+        val stateBytes = state.readBytes()
+        val current = launch(2)
+        assertThat(current.currentStore.writeContext(NativeCrashContext("current", "1", "Android", "29"))).isTrue()
+        current.currentStore.crashRecordPath.writeText("signal.number=11\ntimestamp.epoch_nanos=1783598400000000000\n")
+
+        withUnreadableFile(state) {
+            current.replayPreviousCrashes {
+                assertThat(reporter(it).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+            }
+            assertThat(otelTesting.logRecords).isEmpty()
+            launch(3).replayPreviousCrashes { reporter(it).replayPreviousCrash() }
+            assertThat(
+                otelTesting.logRecords
+                    .single()
+                    .attributes
+                    .get(stringKey(SESSION_ID)),
+            ).isEqualTo("current")
+            assertThat(previous.crashRecordPath).exists()
+        }
+        assertThat(state.readBytes()).isEqualTo(stateBytes)
+        launch(4).replayPreviousCrashes { reporter(it).replayPreviousCrash() }
+        assertThat(otelTesting.logRecords).hasSize(1)
+        assertThat(previous.crashRecordPath.parentFile).doesNotExist()
+    }
+
+    private fun launch(number: Int): NativeCrashStorage =
+        NativeCrashStorage(tempDir, "launch-${number.toString().padStart(19, '0')}-00000000-0000-0000-0000-000000000001")
+
+    @Test
+    fun `failed directory sync does not emit and a retained claim stays suppressed after restart`() {
+        val fileStore = fileStoreWithCrashFiles()
+        val store =
+            object : NativeCrashStore by fileStore {
+                override fun deleteCrashFiles(): Boolean = false
+            }
+        every { Os.fsync(any()) } throws ErrnoException("fsync", OsConstants.EIO)
+
+        assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(otelTesting.logRecords).isEmpty()
+        assertThat(fileStore.crashRecordPath).exists()
+        val state = (fileStore.readRecoveryState() as NativeCrashRead.Success).value
+        assertThat(state.phase).isEqualTo(NativeCrashRecoveryPhase.ABANDONED)
+        assertThat(state.matches(crashRecord)).isTrue()
+
+        justRun { Os.fsync(any()) }
+        val restartedStore = FileNativeCrashStore(tempDir)
+        assertThat(reporter(restartedStore).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(otelTesting.logRecords).isEmpty()
+        assertCrashFilesRemoved(restartedStore)
+        assertThat(restartedStore.readRecoveryState()).isEqualTo(NativeCrashRead.Missing)
+        assertThat(reporter(restartedStore).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(otelTesting.logRecords).isEmpty()
     }
 
     @Test
@@ -257,9 +334,12 @@ class NativeCrashReplayFailureTest {
     private fun mockStore(snapshot: NativeCrashSnapshot): NativeCrashStore =
         mockk<NativeCrashStore>(relaxed = true).also { store ->
             every { store.readContext() } returns null
-            every { store.readCrashRecord() } returns crashRecord
-            every { store.readCrashSnapshot(crashRecord) } returns snapshot
+            every { store.readCrashRecordForRecovery() } returns NativeCrashRead.Success(crashRecord)
+            every { store.readCrashSnapshotForRecovery(crashRecord) } returns NativeCrashRead.Success(snapshot)
+            every { store.readRecoveryState() } returns NativeCrashRead.Missing
+            every { store.writeRecoveryState(any()) } returns true
             every { store.deleteCrashFiles() } returns true
+            every { store.deleteRecoveryState() } returns true
         }
 
     private fun snapshot(
