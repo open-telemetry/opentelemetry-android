@@ -28,4 +28,8 @@ internal class AnrDetectorToggler(
             future = null
         }
     }
+
+    fun stop() {
+        onApplicationBackgrounded()
+    }
 }

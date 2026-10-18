@@ -67,4 +67,44 @@ internal class AnrDetectorTest {
             appLifecycle.registerListener(any())
         }
     }
+
+    @Test
+    fun shouldStopInstrumentation() {
+        every { mainLooper.thread } returns Thread()
+        val openTelemetry: OpenTelemetry = OpenTelemetrySdk.builder().build()
+
+        val anrDetector =
+            AnrDetector(
+                emptyList(),
+                mainLooper,
+                scheduler,
+                appLifecycle,
+                openTelemetry,
+            )
+        anrDetector.start()
+        anrDetector.stop()
+
+        verify(exactly = 1) {
+            appLifecycle.unregisterListener(any())
+        }
+    }
+
+    @Test
+    fun shouldHandleStopBeforeStart() {
+        val openTelemetry: OpenTelemetry = OpenTelemetrySdk.builder().build()
+
+        val anrDetector =
+            AnrDetector(
+                emptyList(),
+                mainLooper,
+                scheduler,
+                appLifecycle,
+                openTelemetry,
+            )
+        anrDetector.stop()
+
+        verify(exactly = 0) {
+            appLifecycle.unregisterListener(any())
+        }
+    }
 }

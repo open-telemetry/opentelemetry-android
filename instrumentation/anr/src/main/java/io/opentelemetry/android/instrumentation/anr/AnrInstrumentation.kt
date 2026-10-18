@@ -21,8 +21,10 @@ import java.util.concurrent.ScheduledExecutorService
 class AnrInstrumentation : AndroidInstrumentation {
     private val additionalExtractors: MutableList<EventAttributesExtractor<Array<StackTraceElement>>> =
         mutableListOf()
-    private var mainLooper: Looper = Looper.getMainLooper()
+    private var mainLooper: Looper? = null
     private var scheduler: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
+
+    private var anrDetector: AnrDetector? = null
 
     /** Adds an [EventAttributesExtractor] that will extract additional attributes.  */
     fun addAttributesExtractor(extractor: EventAttributesExtractor<Array<StackTraceElement>>): AnrInstrumentation {
@@ -47,15 +49,25 @@ class AnrInstrumentation : AndroidInstrumentation {
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
     ) {
-        val anrDetector =
+        val looper = mainLooper ?: Looper.getMainLooper()
+        val detector =
             AnrDetector(
                 additionalExtractors,
-                mainLooper,
+                looper,
                 scheduler,
                 get(context).appLifecycle,
                 openTelemetryRum.openTelemetry,
             )
-        anrDetector.start()
+        detector.start()
+        anrDetector = detector
+    }
+
+    override fun uninstall(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
+        anrDetector?.stop()
+        anrDetector = null
     }
 
     override val name: String = "anr"
