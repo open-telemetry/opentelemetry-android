@@ -61,6 +61,37 @@ internal class CrashReportIntegrationTest {
     }
 
     @Test
+    fun `test crash reporter instrumentation is uninstalled`() {
+        val originalHandler = Thread.getDefaultUncaughtExceptionHandler()
+        try {
+            val customHandler = Thread.UncaughtExceptionHandler { _, _ -> }
+            Thread.setDefaultUncaughtExceptionHandler(customHandler)
+
+            instrumentation.install(context, openTelemetryRum)
+            assertTrue(Thread.getDefaultUncaughtExceptionHandler() is CrashReportingExceptionHandler)
+
+            instrumentation.uninstall(context, openTelemetryRum)
+            assertEquals(customHandler, Thread.getDefaultUncaughtExceptionHandler())
+        } finally {
+            Thread.setDefaultUncaughtExceptionHandler(originalHandler)
+        }
+    }
+
+    @Test
+    fun `test uninstall before install is safe no-op`() {
+        val originalHandler = Thread.getDefaultUncaughtExceptionHandler()
+        try {
+            val customHandler = Thread.UncaughtExceptionHandler { _, _ -> }
+            Thread.setDefaultUncaughtExceptionHandler(customHandler)
+
+            instrumentation.uninstall(context, openTelemetryRum)
+            assertEquals(customHandler, Thread.getDefaultUncaughtExceptionHandler())
+        } finally {
+            Thread.setDefaultUncaughtExceptionHandler(originalHandler)
+        }
+    }
+
+    @Test
     fun `test uncaught exception captured as log`() {
         val exc = IllegalStateException("Whoops")
         val log = simulateUncaughtException(exc)

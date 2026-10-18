@@ -7,7 +7,7 @@ package io.opentelemetry.android.instrumentation.crash
 
 internal class CrashReportingExceptionHandler(
     private val crashProcessor: (details: CrashDetails) -> Unit,
-    private val existingHandler: Thread.UncaughtExceptionHandler? = Thread.getDefaultUncaughtExceptionHandler(),
+    internal val existingHandler: Thread.UncaughtExceptionHandler? = Thread.getDefaultUncaughtExceptionHandler(),
 ) : Thread.UncaughtExceptionHandler {
     override fun uncaughtException(
         thread: Thread,

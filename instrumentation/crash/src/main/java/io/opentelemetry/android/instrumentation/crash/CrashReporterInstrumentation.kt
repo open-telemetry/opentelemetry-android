@@ -16,6 +16,7 @@ import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 class CrashReporterInstrumentation : AndroidInstrumentation {
     private val additionalExtractors: MutableList<EventAttributesExtractor<CrashDetails>> =
         mutableListOf()
+    private var crashReporter: CrashReporter? = null
 
     /** Adds an [EventAttributesExtractor] that will extract additional attributes.  */
     fun addAttributesExtractor(extractor: EventAttributesExtractor<CrashDetails>) {
@@ -27,8 +28,17 @@ class CrashReporterInstrumentation : AndroidInstrumentation {
         openTelemetryRum: OpenTelemetryRum,
     ) {
         addAttributesExtractor(RuntimeDetailsExtractor.create(context))
-        val crashReporter = CrashReporter(additionalExtractors)
-        crashReporter.install(openTelemetryRum.openTelemetry)
+        val reporter = CrashReporter(additionalExtractors)
+        reporter.install(openTelemetryRum.openTelemetry)
+        crashReporter = reporter
+    }
+
+    override fun uninstall(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
+        crashReporter?.uninstall()
+        crashReporter = null
     }
 
     override val name: String = "java-crash"
