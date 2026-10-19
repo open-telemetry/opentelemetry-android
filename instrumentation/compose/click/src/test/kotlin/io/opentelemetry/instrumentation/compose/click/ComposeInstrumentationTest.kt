@@ -168,6 +168,79 @@ internal class ComposeInstrumentationTest {
             )
     }
 
+    @Test
+    fun unregister_callbacks_and_stop_tracking_on_uninstall() {
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
+
+        val callbackCapturingSlot = slot<ComposeClickActivityCallback>()
+        every { window.callback } returns callback
+        every { callback.dispatchTouchEvent(any()) } returns false
+        every { activity.window } returns window
+        every { application.registerActivityLifecycleCallbacks(any()) } returns Unit
+        every { application.unregisterActivityLifecycleCallbacks(any()) } returns Unit
+
+        val instrumentation = ComposeClickInstrumentation()
+        instrumentation.install(application, openTelemetryRum)
+
+        verify {
+            application.registerActivityLifecycleCallbacks(capture(callbackCapturingSlot))
+        }
+
+        val clickActivityCallback = callbackCapturingSlot.captured
+        val wrapperCapturingSlot = slot<WindowCallbackWrapper>()
+        var currentCallback: Callback = callback
+        every { window.callback } answers { currentCallback }
+        every { window.callback = any() } answers { currentCallback = firstArg() }
+
+        clickActivityCallback.onActivityResumed(activity)
+        verify {
+            window.callback = capture(wrapperCapturingSlot)
+        }
+        assertThat(currentCallback).isInstanceOf(WindowCallbackWrapper::class.java)
+
+        instrumentation.uninstall(application, openTelemetryRum)
+
+        verify {
+            application.unregisterActivityLifecycleCallbacks(clickActivityCallback)
+        }
+        assertThat(currentCallback).isSameAs(callback)
+    }
+
+    @Test
+    fun uninstall_before_install_is_safe_noop() {
+        val openTelemetryRum = mockk<OpenTelemetryRum>()
+        val instrumentation = ComposeClickInstrumentation()
+
+        instrumentation.uninstall(application, openTelemetryRum)
+
+        verify(exactly = 0) {
+            application.unregisterActivityLifecycleCallbacks(any())
+        }
+    }
+
+    @Test
+    fun non_application_context_is_safe_noop() {
+        val nonAppContext = mockk<android.content.Context>()
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+            }
+        val instrumentation = ComposeClickInstrumentation()
+
+        instrumentation.install(nonAppContext, openTelemetryRum)
+        instrumentation.uninstall(nonAppContext, openTelemetryRum)
+
+        verify(exactly = 0) {
+            application.registerActivityLifecycleCallbacks(any())
+            application.unregisterActivityLifecycleCallbacks(any())
+        }
+    }
+
     private fun createMockLayoutNode(
         targetX: Float = 0f,
         targetY: Float = 0f,
