@@ -29,11 +29,23 @@ object OkHttpSingletons {
         }
     private val ATTRIBUTES_GETTER = OkHttpAttributesGetter()
 
-    @JvmField
-    var connectionErrorInterceptor: Interceptor = NOOP_INTERCEPTOR
+    @Volatile
+    private var currentConnectionErrorInterceptor: Interceptor = NOOP_INTERCEPTOR
+
+    @Volatile
+    private var currentTracingInterceptor: Interceptor = NOOP_INTERCEPTOR
 
     @JvmField
-    var tracingInterceptor: Interceptor = NOOP_INTERCEPTOR
+    val connectionErrorInterceptor: Interceptor =
+        Interceptor { chain: Interceptor.Chain ->
+            currentConnectionErrorInterceptor.intercept(chain)
+        }
+
+    @JvmField
+    val tracingInterceptor: Interceptor =
+        Interceptor { chain: Interceptor.Chain ->
+            currentTracingInterceptor.intercept(chain)
+        }
 
     fun configure(
         instrumentation: OkHttpInstrumentation,
@@ -71,13 +83,13 @@ object OkHttpSingletons {
 
         val instrumenter = instrumenterBuilder.build()
 
-        connectionErrorInterceptor = ConnectionErrorSpanInterceptor(instrumenter)
-        tracingInterceptor = TracingInterceptor(instrumenter, openTelemetry.propagators)
+        currentConnectionErrorInterceptor = ConnectionErrorSpanInterceptor(instrumenter)
+        currentTracingInterceptor = TracingInterceptor(instrumenter, openTelemetry.propagators)
     }
 
-    fun reset() {
-        connectionErrorInterceptor = NOOP_INTERCEPTOR
-        tracingInterceptor = NOOP_INTERCEPTOR
+    internal fun reset() {
+        currentConnectionErrorInterceptor = NOOP_INTERCEPTOR
+        currentTracingInterceptor = NOOP_INTERCEPTOR
     }
 
     @JvmField

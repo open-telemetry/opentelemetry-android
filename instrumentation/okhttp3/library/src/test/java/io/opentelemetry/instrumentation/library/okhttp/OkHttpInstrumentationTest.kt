@@ -10,8 +10,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.instrumentation.library.okhttp.internal.OkHttpSingletons
-import io.opentelemetry.instrumentation.okhttp.v3_0.internal.ConnectionErrorSpanInterceptor
-import io.opentelemetry.instrumentation.okhttp.v3_0.internal.TracingInterceptor
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -48,7 +46,7 @@ internal class OkHttpInstrumentationTest {
     }
 
     @Test
-    fun `install configures interceptors and uninstall resets them`() {
+    fun `install configures interceptors and uninstall resets them for existing and new clients`() {
         val instrumentation = OkHttpInstrumentation()
         val context = mockk<Context>()
         val openTelemetryRum =
@@ -58,13 +56,50 @@ internal class OkHttpInstrumentationTest {
 
         instrumentation.install(context, openTelemetryRum)
 
-        assertThat(OkHttpSingletons.connectionErrorInterceptor).isInstanceOf(ConnectionErrorSpanInterceptor::class.java)
-        assertThat(OkHttpSingletons.tracingInterceptor).isInstanceOf(TracingInterceptor::class.java)
+        // Existing client configured while installed
+        val client =
+            okhttp3.OkHttpClient
+                .Builder()
+                .addNetworkInterceptor(OkHttpSingletons.tracingInterceptor)
+                .build()
 
+        val request =
+            okhttp3.Request
+                .Builder()
+                .url("http://localhost/")
+                .build()
+
+        // Before uninstall, tracing interceptor is active
+        val chainBefore = mockk<okhttp3.Interceptor.Chain>()
+        val response =
+            okhttp3.Response
+                .Builder()
+                .request(request)
+                .protocol(okhttp3.Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .build()
+        every { chainBefore.request() } returns request
+        every { chainBefore.proceed(any()) } returns response
+        every { chainBefore.connection() } returns null
+
+        client.networkInterceptors.first().intercept(chainBefore)
+        assertThat(otelTesting.spans).hasSize(1)
+
+        otelTesting.clearSpans()
+
+        // Uninstall now
         instrumentation.uninstall(context, openTelemetryRum)
 
-        assertThat(OkHttpSingletons.connectionErrorInterceptor).isNotInstanceOf(ConnectionErrorSpanInterceptor::class.java)
-        assertThat(OkHttpSingletons.tracingInterceptor).isNotInstanceOf(TracingInterceptor::class.java)
+        // The SAME existing client executes a request after uninstall
+        val chainAfter = mockk<okhttp3.Interceptor.Chain>()
+        every { chainAfter.request() } returns request
+        every { chainAfter.proceed(request) } returns response
+
+        val result = client.networkInterceptors.first().intercept(chainAfter)
+        assertThat(result).isSameAs(response)
+        // No new spans should be created by the existing client
+        assertThat(otelTesting.spans).isEmpty()
     }
 
     @Test
@@ -75,7 +110,25 @@ internal class OkHttpInstrumentationTest {
 
         instrumentation.uninstall(context, openTelemetryRum)
 
-        assertThat(OkHttpSingletons.connectionErrorInterceptor).isNotInstanceOf(ConnectionErrorSpanInterceptor::class.java)
-        assertThat(OkHttpSingletons.tracingInterceptor).isNotInstanceOf(TracingInterceptor::class.java)
+        val request =
+            okhttp3.Request
+                .Builder()
+                .url("http://localhost/")
+                .build()
+        val response =
+            okhttp3.Response
+                .Builder()
+                .request(request)
+                .protocol(okhttp3.Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .build()
+        val chain = mockk<okhttp3.Interceptor.Chain>()
+        every { chain.request() } returns request
+        every { chain.proceed(request) } returns response
+
+        val result = OkHttpSingletons.tracingInterceptor.intercept(chain)
+        assertThat(result).isSameAs(response)
+        assertThat(otelTesting.spans).isEmpty()
     }
 }
