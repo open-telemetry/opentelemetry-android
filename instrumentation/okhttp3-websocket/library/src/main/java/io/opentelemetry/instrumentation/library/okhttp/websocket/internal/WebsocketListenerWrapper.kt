@@ -105,5 +105,15 @@ class WebsocketListenerWrapper(
                     .loggerBuilder(SCOPE)
                     .build()
         }
+
+        @JvmStatic
+        fun reset() {
+            logger =
+                OpenTelemetry
+                    .noop()
+                    .logsBridge
+                    .loggerBuilder(SCOPE)
+                    .build()
+        }
     }
 }
