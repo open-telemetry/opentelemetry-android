@@ -16,6 +16,13 @@ import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.instrumentation.nativecrash.NativeCrashRecoveryPhase.ABANDONED
+import io.opentelemetry.android.instrumentation.nativecrash.NativeCrashRecoveryPhase.CLEANUP
+import io.opentelemetry.android.instrumentation.nativecrash.NativeCrashRecoveryPhase.DELIVERY_CLAIMED
+import io.opentelemetry.android.instrumentation.nativecrash.NativeCrashRecoveryPhase.MARKER_READ
+import io.opentelemetry.android.instrumentation.nativecrash.NativeCrashRecoveryPhase.SNAPSHOT_READ
+import io.opentelemetry.android.instrumentation.nativecrash.NativeCrashRecoveryResult.COMPLETE
+import io.opentelemetry.android.instrumentation.nativecrash.NativeCrashRecoveryResult.RETRY_PENDING
 import io.opentelemetry.android.semconv.internal.SemconvCompat.Companion.map
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
@@ -181,7 +188,7 @@ internal class NativeCrashReporter(
 
             NativeCrashRead.Missing,
             NativeCrashRead.Malformed,
-            -> cleanup(state?.asCleanup() ?: newState(NativeCrashRecoveryPhase.CLEANUP))
+            -> cleanup(state?.asCleanup() ?: newState(CLEANUP))
 
             NativeCrashRead.Failed -> recoverMarkerFailure(state)
         }
@@ -193,11 +200,11 @@ internal class NativeCrashReporter(
     ): NativeCrashRecoveryResult {
         if (state != null && state.appliesTo(record)) {
             when (state.phase) {
-                NativeCrashRecoveryPhase.DELIVERY_CLAIMED,
-                NativeCrashRecoveryPhase.CLEANUP,
+                DELIVERY_CLAIMED,
+                CLEANUP,
                 -> return cleanup(state.asCleanup())
 
-                NativeCrashRecoveryPhase.ABANDONED -> return cleanupAbandoned(state, record)
+                ABANDONED -> return cleanupAbandoned(state, record)
 
                 else -> Unit
             }
@@ -216,7 +223,7 @@ internal class NativeCrashReporter(
                 }
 
                 NativeCrashRead.Failed -> {
-                    val retry = nextRetry(NativeCrashRecoveryPhase.SNAPSHOT_READ, state, record)
+                    val retry = nextRetry(SNAPSHOT_READ, state, record)
                     if (!retry.isExhausted()) {
                         return persistRetry(retry)
                     }
@@ -224,8 +231,10 @@ internal class NativeCrashReporter(
                 }
             }
 
-        val claim = newState(NativeCrashRecoveryPhase.DELIVERY_CLAIMED, record, state)
-        if (!store.writeRecoveryState(claim)) return abandon(claim)
+        val claim = newState(DELIVERY_CLAIMED, record, state)
+        if (!store.writeRecoveryState(claim)) {
+            return abandon(claim)
+        }
         try {
             replay(record, store.readContext(), snapshot)
         } catch (error: Exception) {
@@ -285,13 +294,13 @@ internal class NativeCrashReporter(
         }.joinToString("\n")
 
     private fun recoverMarkerFailure(state: NativeCrashRecoveryState?): NativeCrashRecoveryResult {
-        if (state?.phase == NativeCrashRecoveryPhase.ABANDONED) return NativeCrashRecoveryResult.COMPLETE
-        if (state?.phase == NativeCrashRecoveryPhase.DELIVERY_CLAIMED ||
-            state?.phase == NativeCrashRecoveryPhase.CLEANUP
-        ) {
+        if (state?.phase == ABANDONED) {
+            return COMPLETE
+        }
+        if (state?.phase == DELIVERY_CLAIMED || state?.phase == CLEANUP) {
             return cleanup(state.asCleanup())
         }
-        val retry = nextRetry(NativeCrashRecoveryPhase.MARKER_READ, state)
+        val retry = nextRetry(MARKER_READ, state)
         return if (retry.isExhausted()) abandon(retry) else persistRetry(retry)
     }
 
@@ -299,11 +308,11 @@ internal class NativeCrashReporter(
         when (store.readCrashRecordForRecovery()) {
             is NativeCrashRead.Success,
             NativeCrashRead.Failed,
-            -> NativeCrashRecoveryResult.RETRY_PENDING
+            -> RETRY_PENDING
 
             NativeCrashRead.Missing,
             NativeCrashRead.Malformed,
-            -> cleanup(newState(NativeCrashRecoveryPhase.CLEANUP))
+            -> cleanup(newState(CLEANUP))
         }
 
     private fun nextRetry(
@@ -322,19 +331,23 @@ internal class NativeCrashReporter(
     }
 
     private fun persistRetry(state: NativeCrashRecoveryState): NativeCrashRecoveryResult =
-        if (store.writeRecoveryState(state)) NativeCrashRecoveryResult.RETRY_PENDING else abandon(state)
+        if (store.writeRecoveryState(state)) RETRY_PENDING else abandon(state)
 
     private fun cleanup(state: NativeCrashRecoveryState): NativeCrashRecoveryResult {
-        if (store.deleteCrashFiles() && store.deleteRecoveryState()) return NativeCrashRecoveryResult.COMPLETE
+        if (store.deleteCrashFiles() && store.deleteRecoveryState()) {
+            return COMPLETE
+        }
         val retry = state.asCleanup().copy(attempts = state.attempts.coerceAtMost(MAX_ATTEMPTS - 1) + 1)
         return if (retry.isExhausted()) abandon(retry) else persistRetry(retry)
     }
 
     private fun abandon(state: NativeCrashRecoveryState): NativeCrashRecoveryResult {
-        store.writeRecoveryState(state.copy(phase = NativeCrashRecoveryPhase.ABANDONED))
+        store.writeRecoveryState(state.copy(phase = ABANDONED))
         val crashFilesDeleted = store.deleteCrashFiles()
-        if (crashFilesDeleted) store.deleteRecoveryState()
-        return NativeCrashRecoveryResult.COMPLETE
+        if (crashFilesDeleted) {
+            store.deleteRecoveryState()
+        }
+        return COMPLETE
     }
 
     private fun cleanupAbandoned(
@@ -343,18 +356,20 @@ internal class NativeCrashReporter(
     ): NativeCrashRecoveryResult {
         if (record != null && !state.hasIdentity()) {
             store.writeRecoveryState(
-                newState(NativeCrashRecoveryPhase.ABANDONED, record, state).copy(attempts = state.attempts),
+                newState(ABANDONED, record, state).copy(attempts = state.attempts),
             )
         }
-        if (store.deleteCrashFiles()) store.deleteRecoveryState()
-        return NativeCrashRecoveryResult.COMPLETE
+        if (store.deleteCrashFiles()) {
+            store.deleteRecoveryState()
+        }
+        return COMPLETE
     }
 
-    private fun discardUnreadableState(): NativeCrashRecoveryResult = abandon(newState(NativeCrashRecoveryPhase.ABANDONED))
+    private fun discardUnreadableState(): NativeCrashRecoveryResult = abandon(newState(ABANDONED))
 
     private fun abandonUnexpectedFailure(error: Throwable): NativeCrashRecoveryResult {
         logReplayFailure(error)
-        return abandon(newState(NativeCrashRecoveryPhase.ABANDONED))
+        return abandon(newState(ABANDONED))
     }
 
     private fun newState(
@@ -370,7 +385,11 @@ internal class NativeCrashReporter(
             record,
         )
 
-    private fun NativeCrashRecoveryState.asCleanup(): NativeCrashRecoveryState = copy(phase = NativeCrashRecoveryPhase.CLEANUP)
+    private fun NativeCrashRecoveryState.asCleanup(): NativeCrashRecoveryState =
+        copy(
+            phase = CLEANUP,
+            attempts = if (phase == CLEANUP || phase == ABANDONED) attempts else 0,
+        )
 
     private fun NativeCrashRecoveryState.isExhausted(): Boolean {
         val now = nowMillis()

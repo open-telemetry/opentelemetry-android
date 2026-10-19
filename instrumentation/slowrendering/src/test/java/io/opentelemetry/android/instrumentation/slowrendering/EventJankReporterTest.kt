@@ -12,6 +12,7 @@ import io.opentelemetry.android.semconv.AppAttributes.APP_JANK_FRAME_COUNT_KEY
 import io.opentelemetry.android.semconv.AppAttributes.APP_JANK_PERIOD_KEY
 import io.opentelemetry.android.semconv.AppAttributes.APP_JANK_THRESHOLD_KEY
 import io.opentelemetry.android.semconv.events.AppJankEvent.Companion.APP_JANK_EVENT_NAME
+import io.opentelemetry.kotlin.toOtelKotlinApi
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Rule
@@ -23,7 +24,11 @@ class EventJankReporterTest {
 
     @Test
     fun `event is generated`() {
-        val eventLogger = otelTesting.openTelemetry.logsBridge.get("JANK!")
+        val eventLogger =
+            otelTesting.openTelemetry
+                .toOtelKotlinApi()
+                .loggerProvider
+                .getLogger("JANK!")
         val jankReporter = EventJankReporter(eventLogger, 0.600)
         val histogramData = HashMap<Int, Int>()
         histogramData[17] = 3

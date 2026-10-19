@@ -10,6 +10,7 @@ import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.session.SessionPublisher
+import io.opentelemetry.kotlin.toOtelKotlinApi
 
 @AutoService(AndroidInstrumentation::class)
 class SessionInstrumentation : AndroidInstrumentation {
@@ -20,9 +21,10 @@ class SessionInstrumentation : AndroidInstrumentation {
         openTelemetryRum: OpenTelemetryRum,
     ) {
         val eventLogger =
-            openTelemetryRum.openTelemetry.logsBridge
-                .loggerBuilder("otel.session")
-                .build()
+            openTelemetryRum.openTelemetry
+                .toOtelKotlinApi()
+                .loggerProvider
+                .getLogger("otel.session")
         val sessionProvider = openTelemetryRum.sessionProvider
         if (sessionProvider is SessionPublisher) {
             sessionProvider.addObserver(SessionIdEventSender(eventLogger))

@@ -764,6 +764,67 @@ class NativeCrashRecoveryTest {
     }
 
     @Test
+    fun `cleanup has its own attempt budget after marker reads fail`() {
+        val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Failed)
+        repeat(2) {
+            assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+        }
+        store.marker = NativeCrashRead.Missing
+        store.crashFilesDeleteSucceeds = false
+
+        for (attempt in 1..2) {
+            assertThat(reporter(store, nowMillis = { 3_000 }).replayPreviousCrash())
+                .isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+            val state = (store.recoveryState as NativeCrashRead.Success).value
+            assertThat(state.phase).isEqualTo(NativeCrashRecoveryPhase.CLEANUP)
+            assertThat(state.attempts).isEqualTo(attempt)
+            assertThat(state.firstAttemptEpochMillis).isEqualTo(2_000)
+        }
+        repeat(2) {
+            assertThat(reporter(store, nowMillis = { 3_000 }).replayPreviousCrash())
+                .isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+            assertThat((store.recoveryState as NativeCrashRead.Success).value.phase)
+                .isEqualTo(NativeCrashRecoveryPhase.ABANDONED)
+        }
+        assertThat(otelTesting.logRecords).isEmpty()
+    }
+
+    @Test
+    fun `snapshot retries start a new attempt budget but keep the marker read deadline`() {
+        val firstAttempt = record.timestamp.toEpochMilli() + 1_000
+        val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
+        store.snapshot = NativeCrashRead.Failed
+        store.recoveryState =
+            recoveryState(NativeCrashRecoveryPhase.MARKER_READ, 2, firstAttempt, crashRecord = null)
+
+        assertThat(reporter(store, nowMillis = { firstAttempt + 86_399_999 }).replayPreviousCrash())
+            .isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+        val state = (store.recoveryState as NativeCrashRead.Success).value
+        assertThat(state.phase).isEqualTo(NativeCrashRecoveryPhase.SNAPSHOT_READ)
+        assertThat(state.attempts).isEqualTo(1)
+        assertThat(state.firstAttemptEpochMillis).isEqualTo(firstAttempt)
+        assertThat(otelTesting.logRecords).isEmpty()
+        assertThat(reporter(store, nowMillis = { firstAttempt + 86_400_000 }).replayPreviousCrash())
+            .isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(otelTesting.logRecords).hasSize(1)
+    }
+
+    @Test
+    fun `failed retry persistence does not emit an unclaimed crash`() {
+        for (marker in listOf(NativeCrashRead.Failed, NativeCrashRead.Success(record))) {
+            val store = FakeNativeCrashStore(tempDir, marker)
+            store.snapshot = NativeCrashRead.Failed
+            store.stateWriteSucceeds = false
+            store.crashFilesDeleteSucceeds = false
+
+            assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+            assertThat(store.marker).isEqualTo(marker)
+            assertThat(store.recoveryState).isEqualTo(NativeCrashRead.Missing)
+            assertThat(otelTesting.logRecords).isEmpty()
+        }
+    }
+
+    @Test
     fun `does not replay a durable claim after process death`() {
         val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
         val processDeath = SimulatedProcessDeath()

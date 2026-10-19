@@ -10,7 +10,8 @@ import io.opentelemetry.android.semconv.SessionAttributes.SESSION_PREVIOUS_ID_KE
 import io.opentelemetry.android.semconv.events.SessionEndEvent.Companion.SESSION_END_EVENT_NAME
 import io.opentelemetry.android.semconv.events.SessionStartEvent.Companion.SESSION_START_EVENT_NAME
 import io.opentelemetry.android.session.Session
-import io.opentelemetry.api.logs.Logger
+import io.opentelemetry.kotlin.logging.Logger
+import io.opentelemetry.kotlin.toOtelKotlinApi
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -28,7 +29,11 @@ class SessionIdEventSenderTest {
 
     @BeforeEach
     fun setup() {
-        logger = otelTesting.openTelemetry.logsBridge.get("testLogger")
+        logger =
+            otelTesting.openTelemetry
+                .toOtelKotlinApi()
+                .loggerProvider
+                .getLogger("testLogger")
     }
 
     @AfterEach
@@ -72,6 +77,25 @@ class SessionIdEventSenderTest {
         assertThat(event.eventName).isEqualTo(SESSION_END_EVENT_NAME)
         assertThat(event.attributes.get(SESSION_ID_KEY)).isEqualTo(session.id)
         assertThat(event.attributes.get(SESSION_PREVIOUS_ID_KEY)).isNull()
+    }
+
+    @Test
+    fun `preserves logger scope and current span context`() {
+        val span =
+            otelTesting.openTelemetry
+                .getTracer("testTracer")
+                .spanBuilder("testSpan")
+                .startSpan()
+        try {
+            span.makeCurrent().use {
+                SessionIdEventSender(logger).onSessionStarted(FakeSession("123", 12L), FakeSession("", -1))
+            }
+            val event = otelTesting.logRecords.single()
+            assertThat(event.instrumentationScopeInfo.name).isEqualTo("testLogger")
+            assertThat(event.spanContext).isEqualTo(span.spanContext)
+        } finally {
+            span.end()
+        }
     }
 
     @Test

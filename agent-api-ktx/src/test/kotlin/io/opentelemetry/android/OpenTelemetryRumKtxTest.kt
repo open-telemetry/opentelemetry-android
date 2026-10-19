@@ -32,6 +32,7 @@ class OpenTelemetryRumKtxTest {
                 .setTracerProvider(
                     SdkTracerProvider
                         .builder()
+                        .setClock(FIXED_CLOCK)
                         .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
                         .build(),
                 ).build()
@@ -54,14 +55,14 @@ class OpenTelemetryRumKtxTest {
     }
 
     @Test
-    fun `uses the clock from the rum instance`() {
+    fun `uses the clock from the underlying java sdk`() {
         rum.openTelemetryKotlin
             .tracerProvider
             .getTracer("test-scope")
             .startSpan("test-span")
             .end()
         val span = spanExporter.finishedSpanItems.single()
-        assertThat(span.startEpochNanos).isEqualTo(FIXED_TIME_NANOS)
+        assertThat(span.startEpochNanos).isEqualTo(SDK_TIME_NANOS)
     }
 
     @Test
@@ -70,13 +71,13 @@ class OpenTelemetryRumKtxTest {
     }
 
     private companion object {
-        const val FIXED_TIME_NANOS = 1_234_567_890_000L
+        const val SDK_TIME_NANOS = 1_234_567_890_000L
 
         val FIXED_CLOCK =
             object : Clock {
-                override fun now(): Long = FIXED_TIME_NANOS
+                override fun now(): Long = SDK_TIME_NANOS
 
-                override fun nanoTime(): Long = FIXED_TIME_NANOS
+                override fun nanoTime(): Long = SDK_TIME_NANOS
             }
     }
 }

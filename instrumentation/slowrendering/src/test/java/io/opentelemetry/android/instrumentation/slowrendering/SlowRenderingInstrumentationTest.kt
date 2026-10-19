@@ -17,9 +17,9 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.api.logs.LoggerProvider
-import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.common.Clock
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -35,8 +35,8 @@ class SlowRenderingInstrumentationTest {
     @MockK
     private lateinit var application: Application
 
-    @MockK
-    private lateinit var openTelemetry: OpenTelemetrySdk
+    @MockK(relaxed = true)
+    private lateinit var openTelemetry: OpenTelemetry
 
     @MockK
     private lateinit var logger: Logger
@@ -44,10 +44,10 @@ class SlowRenderingInstrumentationTest {
     @Before
     fun setUp() {
         MockKAnnotations.init(this)
-        val logsBridge: LoggerProvider = mockk()
+        val logsBridge: LoggerProvider = mockk(relaxed = true)
         slowRenderingInstrumentation = SlowRenderingInstrumentation()
         every { openTelemetry.logsBridge } returns logsBridge
-        every { logsBridge.get("app.jank") } returns logger
+        every { logsBridge.loggerBuilder("app.jank").build() } returns logger
     }
 
     @Test

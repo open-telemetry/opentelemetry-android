@@ -21,7 +21,7 @@ class OtelRumConfig {
     private var generateSdkInitializationEvents = true
     private var includeScreenAttributes = true
     private var discoverInstrumentations = true
-    private val suppressedInstrumentations: MutableList<String> = mutableListOf()
+    private val suppressedInstrumentations: MutableSet<String> = mutableSetOf()
     private var diskBufferingConfigImpl: DiskBufferingConfig = create()
 
     /**
