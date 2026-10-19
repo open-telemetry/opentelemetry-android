@@ -30,7 +30,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RuntimeEnvironment
-import org.robolectric.annotation.Config
 import org.robolectric.annotation.LooperMode
 import org.robolectric.shadows.ShadowSystemClock
 import java.time.Duration
@@ -103,7 +102,6 @@ class OpenTelemetryRumInitializerTest {
     }
 
     @Test
-    @Config(sdk = [23, 36])
     fun `trace sampler is created once with the agent provider`() {
         val providers = mutableListOf<SessionProvider>()
         val rum =
@@ -134,7 +132,6 @@ class OpenTelemetryRumInitializerTest {
     }
 
     @Test
-    @Config(sdk = [23, 36])
     fun `disabled tracing does not create the configured trace sampler`() {
         val rum =
             OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
@@ -158,7 +155,6 @@ class OpenTelemetryRumInitializerTest {
     }
 
     @Test
-    @Config(sdk = [23, 36])
     fun `trace DSL accepts general samplers and an empty block preserves the default`() {
         for (sampled in listOf(null, false, true)) {
             val rum =
