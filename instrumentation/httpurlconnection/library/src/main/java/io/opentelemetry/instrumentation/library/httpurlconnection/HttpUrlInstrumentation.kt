@@ -113,6 +113,13 @@ class HttpUrlInstrumentation : AndroidInstrumentation {
         HttpUrlConnectionSingletons.configure(this, openTelemetryRum.openTelemetry)
     }
 
+    override fun uninstall(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
+        HttpUrlConnectionSingletons.reset()
+    }
+
     /**
      * Configures the connection inactivity timeout in milliseconds.
      *
