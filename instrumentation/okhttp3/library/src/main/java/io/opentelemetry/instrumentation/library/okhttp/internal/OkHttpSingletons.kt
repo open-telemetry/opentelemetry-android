@@ -75,6 +75,11 @@ object OkHttpSingletons {
         tracingInterceptor = TracingInterceptor(instrumenter, openTelemetry.propagators)
     }
 
+    fun reset() {
+        connectionErrorInterceptor = NOOP_INTERCEPTOR
+        tracingInterceptor = NOOP_INTERCEPTOR
+    }
+
     @JvmField
     val CALLBACK_CONTEXT_INTERCEPTOR: Interceptor =
         Interceptor { chain: Interceptor.Chain ->

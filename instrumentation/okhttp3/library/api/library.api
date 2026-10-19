@@ -13,6 +13,7 @@ public final class io/opentelemetry/instrumentation/library/okhttp/OkHttpInstrum
 	public final fun setEmitExperimentalHttpClientTelemetry (Z)V
 	public final fun setKnownMethods (Ljava/util/Set;)V
 	public final fun setPeerServiceMapping (Ljava/util/Map;)V
+	public fun uninstall (Landroid/content/Context;Lio/opentelemetry/android/OpenTelemetryRum;)V
 }
 
 public final class io/opentelemetry/instrumentation/library/okhttp/internal/OkHttpSingletons {
@@ -22,5 +23,6 @@ public final class io/opentelemetry/instrumentation/library/okhttp/internal/OkHt
 	public static field connectionErrorInterceptor Lokhttp3/Interceptor;
 	public static field tracingInterceptor Lokhttp3/Interceptor;
 	public final fun configure (Lio/opentelemetry/instrumentation/library/okhttp/OkHttpInstrumentation;Lio/opentelemetry/api/OpenTelemetry;)V
+	public final fun reset ()V
 }
 
