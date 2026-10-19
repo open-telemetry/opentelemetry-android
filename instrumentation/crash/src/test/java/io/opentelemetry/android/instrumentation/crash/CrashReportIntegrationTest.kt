@@ -86,6 +86,9 @@ internal class CrashReportIntegrationTest {
 
             instrumentation.uninstall(context, openTelemetryRum)
             assertEquals(customHandler, Thread.getDefaultUncaughtExceptionHandler())
+
+            CrashReporter(emptyList()).uninstall()
+            assertEquals(customHandler, Thread.getDefaultUncaughtExceptionHandler())
         } finally {
             Thread.setDefaultUncaughtExceptionHandler(originalHandler)
         }
