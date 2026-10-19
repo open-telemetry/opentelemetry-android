@@ -65,13 +65,9 @@ internal class CrashReporter(
         handler = newHandler
     }
 
-    /** Uninstalls the crash reporting instrumentation, restoring the previous uncaught exception handler. */
+    /** Uninstalls the crash reporting instrumentation, disabling crash telemetry emission. */
     fun uninstall() {
-        handler?.let { installedHandler ->
-            if (Thread.getDefaultUncaughtExceptionHandler() == installedHandler) {
-                Thread.setDefaultUncaughtExceptionHandler(installedHandler.existingHandler)
-            }
-        }
+        handler?.enabled = false
         handler = null
     }
 

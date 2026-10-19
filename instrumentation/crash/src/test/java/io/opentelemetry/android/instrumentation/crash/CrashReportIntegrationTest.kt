@@ -64,14 +64,26 @@ internal class CrashReportIntegrationTest {
     fun `test crash reporter instrumentation is uninstalled`() {
         val originalHandler = Thread.getDefaultUncaughtExceptionHandler()
         try {
-            val customHandler = Thread.UncaughtExceptionHandler { _, _ -> }
+            var delegateInvoked = false
+            val customHandler =
+                Thread.UncaughtExceptionHandler { _, _ ->
+                    delegateInvoked = true
+                }
             Thread.setDefaultUncaughtExceptionHandler(customHandler)
 
             instrumentation.install(context, openTelemetryRum)
-            assertTrue(Thread.getDefaultUncaughtExceptionHandler() is CrashReportingExceptionHandler)
+            val installedHandler = Thread.getDefaultUncaughtExceptionHandler()
+            assertTrue(installedHandler is CrashReportingExceptionHandler)
 
             instrumentation.uninstall(context, openTelemetryRum)
-            assertEquals(customHandler, Thread.getDefaultUncaughtExceptionHandler())
+
+            // Handler remains in chain, but disabled
+            assertEquals(installedHandler, Thread.getDefaultUncaughtExceptionHandler())
+
+            // Uncaught exception after uninstall should invoke delegate but not emit telemetry
+            installedHandler?.uncaughtException(Thread.currentThread(), RuntimeException("After uninstall"))
+            assertTrue(delegateInvoked)
+            assertTrue(rule.logRecords.isEmpty())
         } finally {
             Thread.setDefaultUncaughtExceptionHandler(originalHandler)
         }
@@ -95,17 +107,30 @@ internal class CrashReportIntegrationTest {
     }
 
     @Test
-    fun `test uninstall does not overwrite handler set after install`() {
+    fun `test uninstall preserves subsequent handler chain and does not emit telemetry`() {
         val originalHandler = Thread.getDefaultUncaughtExceptionHandler()
         try {
+            var delegateInvoked = false
             instrumentation.install(context, openTelemetryRum)
-            assertTrue(Thread.getDefaultUncaughtExceptionHandler() is CrashReportingExceptionHandler)
+            val otelHandler = Thread.getDefaultUncaughtExceptionHandler()
+            assertTrue(otelHandler is CrashReportingExceptionHandler)
 
-            val subsequentHandler = Thread.UncaughtExceptionHandler { _, _ -> }
+            val subsequentHandler =
+                Thread.UncaughtExceptionHandler { t, e ->
+                    delegateInvoked = true
+                    otelHandler?.uncaughtException(t, e)
+                }
             Thread.setDefaultUncaughtExceptionHandler(subsequentHandler)
 
             instrumentation.uninstall(context, openTelemetryRum)
+
+            // Subsequent handler is still the default handler
             assertEquals(subsequentHandler, Thread.getDefaultUncaughtExceptionHandler())
+
+            // Triggering subsequent handler calls through to otelHandler, which delegates without logging
+            subsequentHandler.uncaughtException(Thread.currentThread(), RuntimeException("Subsequent crash"))
+            assertTrue(delegateInvoked)
+            assertTrue(rule.logRecords.isEmpty())
         } finally {
             Thread.setDefaultUncaughtExceptionHandler(originalHandler)
         }
