@@ -92,6 +92,23 @@ internal class CrashReportIntegrationTest {
     }
 
     @Test
+    fun `test uninstall does not overwrite handler set after install`() {
+        val originalHandler = Thread.getDefaultUncaughtExceptionHandler()
+        try {
+            instrumentation.install(context, openTelemetryRum)
+            assertTrue(Thread.getDefaultUncaughtExceptionHandler() is CrashReportingExceptionHandler)
+
+            val subsequentHandler = Thread.UncaughtExceptionHandler { _, _ -> }
+            Thread.setDefaultUncaughtExceptionHandler(subsequentHandler)
+
+            instrumentation.uninstall(context, openTelemetryRum)
+            assertEquals(subsequentHandler, Thread.getDefaultUncaughtExceptionHandler())
+        } finally {
+            Thread.setDefaultUncaughtExceptionHandler(originalHandler)
+        }
+    }
+
+    @Test
     fun `test uncaught exception captured as log`() {
         val exc = IllegalStateException("Whoops")
         val log = simulateUncaughtException(exc)
