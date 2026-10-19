@@ -802,4 +802,22 @@ class ViewClickInstrumentationTest {
             application.unregisterActivityLifecycleCallbacks(any())
         }
     }
+
+    @Test
+    fun non_application_context_is_safe_noop() {
+        val nonAppContext = mockk<android.content.Context>()
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+            }
+        val instrumentation = ViewClickInstrumentation()
+
+        instrumentation.install(nonAppContext, openTelemetryRum)
+        instrumentation.uninstall(nonAppContext, openTelemetryRum)
+
+        verify(exactly = 0) {
+            application.registerActivityLifecycleCallbacks(any())
+            application.unregisterActivityLifecycleCallbacks(any())
+        }
+    }
 }
