@@ -789,6 +789,11 @@ class ViewClickInstrumentationTest {
             application.unregisterActivityLifecycleCallbacks(viewClickActivityCallback)
         }
         assertThat(currentCallback).isSameAs(callback)
+        assertThat(viewClickActivityCallback.isEnabled).isFalse()
+
+        // Subsequent onActivityResumed should not re-wrap
+        viewClickActivityCallback.onActivityResumed(activity)
+        assertThat(currentCallback).isSameAs(callback)
     }
 
     @Test
