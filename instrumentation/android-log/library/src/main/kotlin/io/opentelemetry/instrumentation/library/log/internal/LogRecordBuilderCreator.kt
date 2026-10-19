@@ -26,6 +26,16 @@ object LogRecordBuilderCreator {
     }
 
     @JvmStatic
+    fun reset() {
+        logger =
+            OpenTelemetry
+                .noop()
+                .logsBridge
+                .loggerBuilder("io.opentelemetry.android.log.noop")
+                .build()
+    }
+
+    @JvmStatic
     fun createLogRecordBuilder(): LogRecordBuilder = logger.logRecordBuilder()
 
     @JvmStatic

@@ -9,7 +9,7 @@ import android.content.Context
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import io.opentelemetry.instrumentation.library.log.internal.LogRecordBuilderCreator.configure
+import io.opentelemetry.instrumentation.library.log.internal.LogRecordBuilderCreator
 
 @AutoService(AndroidInstrumentation::class)
 class AndroidLogInstrumentation : AndroidInstrumentation {
@@ -17,7 +17,14 @@ class AndroidLogInstrumentation : AndroidInstrumentation {
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
     ) {
-        configure(openTelemetryRum.openTelemetry)
+        LogRecordBuilderCreator.configure(openTelemetryRum.openTelemetry)
+    }
+
+    override fun uninstall(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
+        LogRecordBuilderCreator.reset()
     }
 
     override val name: String = "android-log"

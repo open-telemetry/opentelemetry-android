@@ -2,6 +2,7 @@ public final class io/opentelemetry/instrumentation/library/log/AndroidLogInstru
 	public fun <init> ()V
 	public fun getName ()Ljava/lang/String;
 	public fun install (Landroid/content/Context;Lio/opentelemetry/android/OpenTelemetryRum;)V
+	public fun uninstall (Landroid/content/Context;Lio/opentelemetry/android/OpenTelemetryRum;)V
 }
 
 public final class io/opentelemetry/instrumentation/library/log/AndroidLogSubstitutions {
@@ -28,5 +29,6 @@ public final class io/opentelemetry/instrumentation/library/log/internal/LogReco
 	public static final fun createLogRecordBuilder ()Lio/opentelemetry/api/logs/LogRecordBuilder;
 	public static final fun getTypeName (Ljava/lang/Throwable;)Ljava/lang/String;
 	public static final fun printStacktrace (Ljava/lang/Throwable;)Ljava/lang/String;
+	public static final fun reset ()V
 }
 
