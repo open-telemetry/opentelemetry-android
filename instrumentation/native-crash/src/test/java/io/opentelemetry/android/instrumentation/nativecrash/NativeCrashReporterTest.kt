@@ -825,6 +825,39 @@ class NativeCrashRecoveryTest {
     }
 
     @Test
+    fun `a different crash does not inherit either read budget`() {
+        val previous = record.copy(timestamp = record.timestamp.minusSeconds(1))
+        val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Failed)
+        store.recoveryState =
+            recoveryState(NativeCrashRecoveryPhase.SNAPSHOT_READ, 2, crashRecord = previous)
+                .let { NativeCrashRead.Success(it.value.copy(markerReadAttempts = 1)) }
+        assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+        store.marker = NativeCrashRead.Success(record)
+        store.snapshot = NativeCrashRead.Failed
+        val now = record.timestamp.toEpochMilli() + 1_000
+
+        assertThat(reporter(store, nowMillis = { now }).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+        val state = (store.recoveryState as NativeCrashRead.Success).value
+        assertThat(state.matches(record)).isTrue()
+        assertThat(state.attempts).isEqualTo(1)
+        assertThat(state.markerReadAttempts).isZero()
+        assertThat(state.firstAttemptEpochMillis).isEqualTo(now)
+        assertThat(otelTesting.logRecords).isEmpty()
+    }
+
+    @Test
+    fun `large marker failure counts after snapshot reads cannot wrap into another retry`() {
+        val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Failed)
+        store.recoveryState =
+            recoveryState(NativeCrashRecoveryPhase.SNAPSHOT_READ)
+                .let { NativeCrashRead.Success(it.value.copy(markerReadAttempts = Int.MAX_VALUE)) }
+
+        assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(store.recoveryState).isEqualTo(NativeCrashRead.Missing)
+        assertThat(otelTesting.logRecords).isEmpty()
+    }
+
+    @Test
     fun `does not replay a durable claim after process death`() {
         val store = FakeNativeCrashStore(tempDir, NativeCrashRead.Success(record))
         val processDeath = SimulatedProcessDeath()

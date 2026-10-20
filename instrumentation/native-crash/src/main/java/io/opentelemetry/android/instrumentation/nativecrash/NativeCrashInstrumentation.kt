@@ -301,7 +301,7 @@ internal class NativeCrashReporter(
             return cleanup(state.asCleanup())
         }
         val retry = nextRetry(MARKER_READ, state)
-        return if (retry.isExhausted()) abandon(retry) else persistRetry(retry)
+        return if (retry.isExhausted(MARKER_READ)) abandon(retry) else persistRetry(retry)
     }
 
     private fun recoverFailedStateRead(): NativeCrashRecoveryResult =
@@ -320,14 +320,21 @@ internal class NativeCrashReporter(
         state: NativeCrashRecoveryState?,
         record: NativeCrashRecord? = null,
     ): NativeCrashRecoveryState {
+        // A later marker failure must not erase the snapshot count or known crash identity.
+        if (phase == MARKER_READ && state?.phase == SNAPSHOT_READ) {
+            return state.copy(markerReadAttempts = state.markerReadAttempts.coerceAtMost(MAX_ATTEMPTS - 1) + 1)
+        }
         val matching =
             state?.takeIf {
                 it.phase == phase &&
                     ((record == null && !it.hasIdentity()) || (record != null && it.matches(record)))
             }
-        return (matching ?: newState(phase, record, state)).copy(
-            attempts = (matching?.attempts ?: 0).coerceAtMost(MAX_ATTEMPTS - 1) + 1,
-        )
+        val retry =
+            matching ?: newState(phase, record, state).copy(
+                markerReadAttempts =
+                    state?.takeIf { it.phase == MARKER_READ && record != null && it.appliesTo(record) }?.attempts ?: 0,
+            )
+        return retry.copy(attempts = retry.attempts.coerceAtMost(MAX_ATTEMPTS - 1) + 1)
     }
 
     private fun persistRetry(state: NativeCrashRecoveryState): NativeCrashRecoveryResult =
@@ -389,11 +396,13 @@ internal class NativeCrashReporter(
         copy(
             phase = CLEANUP,
             attempts = if (phase == CLEANUP || phase == ABANDONED) attempts else 0,
+            markerReadAttempts = 0,
         )
 
-    private fun NativeCrashRecoveryState.isExhausted(): Boolean {
+    private fun NativeCrashRecoveryState.isExhausted(failedPhase: NativeCrashRecoveryPhase = phase): Boolean {
         val now = nowMillis()
-        return attempts >= MAX_ATTEMPTS ||
+        val failures = if (failedPhase == MARKER_READ && phase == SNAPSHOT_READ) markerReadAttempts else attempts
+        return failures >= MAX_ATTEMPTS ||
             (now >= firstAttemptEpochMillis && now - firstAttemptEpochMillis >= MAX_RETRY_AGE_MILLIS)
     }
 
@@ -626,6 +635,8 @@ internal class FileNativeCrashStore(
                 ?.let { value -> NativeCrashRecoveryPhase.entries.firstOrNull { it.name == value } }
                 ?: return null
         val attempts = getProperty(RECOVERY_ATTEMPTS_KEY)?.toIntOrNull() ?: return null
+        val markerReadAttempts =
+            if (containsKey(RECOVERY_MARKER_ATTEMPTS_KEY)) getProperty(RECOVERY_MARKER_ATTEMPTS_KEY)?.toIntOrNull() ?: return null else 0
         val firstAttempt = getProperty(RECOVERY_FIRST_ATTEMPT_KEY)?.toLongOrNull() ?: return null
         val signalNumber = getProperty(SIGNAL_NUMBER_KEY)?.toIntOrNull()
         val timestampSecond = getProperty(RECOVERY_TIMESTAMP_SECOND_KEY)?.toLongOrNull()
@@ -641,6 +652,7 @@ internal class FileNativeCrashStore(
             signalNumber = signalNumber,
             timestampEpochSecond = timestampSecond,
             timestampNano = timestampNano,
+            markerReadAttempts = markerReadAttempts,
         ).takeIf { it.isValid() }
     }
 
@@ -649,6 +661,7 @@ internal class FileNativeCrashStore(
             properties.setProperty(RECOVERY_VERSION_KEY, RECOVERY_VERSION.toString())
             properties.setProperty(RECOVERY_PHASE_KEY, phase.name)
             properties.setProperty(RECOVERY_ATTEMPTS_KEY, attempts.toString())
+            properties.setProperty(RECOVERY_MARKER_ATTEMPTS_KEY, markerReadAttempts.toString())
             properties.setProperty(RECOVERY_FIRST_ATTEMPT_KEY, firstAttemptEpochMillis.toString())
             signalNumber?.let { properties.setProperty(SIGNAL_NUMBER_KEY, it.toString()) }
             timestampEpochSecond?.let { properties.setProperty(RECOVERY_TIMESTAMP_SECOND_KEY, it.toString()) }
@@ -706,6 +719,7 @@ internal class FileNativeCrashStore(
         const val RECOVERY_VERSION_KEY = "recovery.version"
         const val RECOVERY_PHASE_KEY = "recovery.phase"
         const val RECOVERY_ATTEMPTS_KEY = "recovery.attempts"
+        const val RECOVERY_MARKER_ATTEMPTS_KEY = "recovery.marker_read_attempts"
         const val RECOVERY_FIRST_ATTEMPT_KEY = "recovery.first_attempt_epoch_millis"
         const val RECOVERY_TIMESTAMP_SECOND_KEY = "recovery.timestamp_epoch_second"
         const val RECOVERY_TIMESTAMP_NANO_KEY = "recovery.timestamp_nano"
