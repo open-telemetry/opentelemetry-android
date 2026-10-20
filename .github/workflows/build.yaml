@@ -22,7 +22,7 @@ jobs:
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 22
       - name: touch local props
         run: touch demo-app/local.properties
       - name: run gradle check
@@ -54,7 +54,7 @@ jobs:
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 22
       - name: stop gradle daemons before publishing
         # The previous Gradle invocations leave daemons with loaded Android/Dokka classloaders;
         # publishToSonatype generates release docs and has been running out of metaspace.
