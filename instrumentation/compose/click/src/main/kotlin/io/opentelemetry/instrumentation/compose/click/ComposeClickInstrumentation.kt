@@ -16,19 +16,37 @@ import io.opentelemetry.kotlin.toOtelKotlinApi
 class ComposeClickInstrumentation : AndroidInstrumentation {
     override val name: String = "compose.click"
 
+    private var activityCallback: ComposeClickActivityCallback? = null
+    private var eventGenerator: ComposeClickEventGenerator? = null
+
     override fun install(
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
     ) {
-        (context as? Application)?.registerActivityLifecycleCallbacks(
-            ComposeClickActivityCallback(
-                ComposeClickEventGenerator(
-                    openTelemetryRum.openTelemetry
-                        .toOtelKotlinApi()
-                        .loggerProvider
-                        .getLogger("io.opentelemetry.android.instrumentation.compose.click"),
-                ),
-            ),
-        )
+        val generator =
+            ComposeClickEventGenerator(
+                openTelemetryRum.openTelemetry
+                    .toOtelKotlinApi()
+                    .loggerProvider
+                    .getLogger("io.opentelemetry.android.instrumentation.compose.click"),
+            )
+        val callback = ComposeClickActivityCallback(generator)
+        (context as? Application)?.registerActivityLifecycleCallbacks(callback)
+        activityCallback = callback
+        eventGenerator = generator
+    }
+
+    override fun uninstall(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
+        (context as? Application)?.let { app ->
+            activityCallback?.let { callback ->
+                app.unregisterActivityLifecycleCallbacks(callback)
+            }
+        }
+        eventGenerator?.stopTracking()
+        activityCallback = null
+        eventGenerator = null
     }
 }
