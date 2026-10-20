@@ -20,6 +20,8 @@ internal class AnrDetector(
     private val appLifecycle: AppLifecycle,
     private val openTelemetry: OpenTelemetry,
 ) {
+    private var toggler: AnrDetectorToggler? = null
+
     /**
      * Starts the ANR detection instrumentation.
      *
@@ -36,5 +38,17 @@ internal class AnrDetector(
         listener.onApplicationForegrounded()
 
         appLifecycle.registerListener(listener)
+        toggler = listener
+    }
+
+    /**
+     * Stops the ANR detection instrumentation and unregisters the application lifecycle listener.
+     */
+    fun stop() {
+        toggler?.let {
+            it.stop()
+            appLifecycle.unregisterListener(it)
+        }
+        toggler = null
     }
 }
