@@ -29,6 +29,5 @@ public final class io/opentelemetry/instrumentation/library/log/internal/LogReco
 	public static final fun createLogRecordBuilder ()Lio/opentelemetry/api/logs/LogRecordBuilder;
 	public static final fun getTypeName (Ljava/lang/Throwable;)Ljava/lang/String;
 	public static final fun printStacktrace (Ljava/lang/Throwable;)Ljava/lang/String;
-	public static final fun reset ()V
 }
 
