@@ -9,6 +9,7 @@ import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.session.InMemorySessionStorage
 import io.opentelemetry.android.agent.session.SessionStorage
 import io.opentelemetry.android.session.SessionObserver
+import java.util.logging.Logger
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
@@ -30,6 +31,26 @@ class SessionConfiguration internal constructor() {
      */
     var maxLifetime: Duration = 4.hours
 
+    /**
+     * Optional inactivity timeout for Activity window touch and keyboard input, including in the foreground.
+     * Foreground return records activity after checking expiry. Null keeps background-only inactivity.
+     * Invalid values are logged and ignored, preserving the previous value.
+     * Background media, custom input, dialogs and popups are not tracked.
+     * Requires a usable Application context and unsuppressed `session.interaction`; otherwise disabled.
+     * Initialize before Activities resume; already-resumed windows are tracked on their next resume.
+     * Storage and observer callbacks can run during input and must return promptly. The background timeout
+     * still applies; the earlier deadline wins.
+     */
+    @Incubating
+    var userInactivityTimeout: Duration? = null
+        set(value) {
+            if (value != null && (!value.isFinite() || !value.isPositive())) {
+                logger.warning("Ignoring user inactivity timeout: it must be positive and finite")
+                return
+            }
+            field = value
+        }
+
     internal var sessionStorage: SessionStorage = InMemorySessionStorage()
         private set
 
@@ -49,5 +70,9 @@ class SessionConfiguration internal constructor() {
 
     fun observers(vararg observers: SessionObserver) {
         observersList.addAll(observers)
+    }
+
+    private companion object {
+        val logger: Logger = Logger.getLogger(SessionConfiguration::class.java.name)
     }
 }

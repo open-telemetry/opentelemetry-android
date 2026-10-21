@@ -17,7 +17,8 @@ import io.opentelemetry.android.session.Session
  * enable session restoration.
  *
  * Calls run synchronously on the calling thread, including during SDK initialization and
- * telemetry recording. Implementations must be thread-safe, return promptly, and handle their
+ * telemetry recording and, with user inactivity tracking enabled, UI input dispatch.
+ * Implementations must be thread-safe, return promptly, and handle their
  * own failures without throwing. Saves and observer notifications run in order without holding
  * the manager's lock. Concurrent reads return the current session while those calls run; another
  * session change is deferred until they finish and a subsequent access detects expiry.
