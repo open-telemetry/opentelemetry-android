@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.test.common
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Bundle
 import android.view.View
@@ -16,6 +17,7 @@ class TestActivity : Activity() {
         private const val TEST_VIEW_HEIGHT = 500
     }
 
+    @SuppressLint("ResourceType")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val viewGroup = LinearLayout(this)
