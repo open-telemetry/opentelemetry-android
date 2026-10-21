@@ -9,12 +9,14 @@ import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.logs.LogRecordBuilder
 
 object LogRecordBuilderCreator {
-    private var logger =
+    private val noopLogger =
         OpenTelemetry
             .noop()
             .logsBridge
             .loggerBuilder("io.opentelemetry.android.log.noop")
             .build()
+
+    private var logger = noopLogger
 
     @JvmStatic
     fun configure(openTelemetry: OpenTelemetry) {
@@ -23,6 +25,11 @@ object LogRecordBuilderCreator {
                 .logsBridge
                 .loggerBuilder("io.opentelemetry.android.log")
                 .build()
+    }
+
+    @JvmStatic
+    internal fun reset() {
+        logger = noopLogger
     }
 
     @JvmStatic
