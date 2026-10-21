@@ -21,7 +21,7 @@ internal object HttpUrlConnectionSingletons {
     private const val INSTRUMENTATION_NAME = "io.opentelemetry.android.http-url-connection"
 
     private var otelInstance: OpenTelemetry = OpenTelemetry.noop()
-    private var httpUrlInstrumenter: Instrumenter<URLConnection, Int> = createNoopInstrumenter(otelInstance)
+    private var httpUrlInstrumenter: Instrumenter<URLConnection, Int> = createNoopInstrumenter()
 
     fun configure(
         instrumentation: HttpUrlInstrumentation,
@@ -84,15 +84,14 @@ internal object HttpUrlConnectionSingletons {
     fun openTelemetryInstance(): OpenTelemetry = otelInstance
 
     fun reset() {
-        val noopOtel = OpenTelemetry.noop()
-        otelInstance = noopOtel
-        httpUrlInstrumenter = createNoopInstrumenter(noopOtel)
+        otelInstance = OpenTelemetry.noop()
+        httpUrlInstrumenter = createNoopInstrumenter()
     }
 
-    private fun createNoopInstrumenter(openTelemetry: OpenTelemetry): Instrumenter<URLConnection, Int> =
+    private fun createNoopInstrumenter(): Instrumenter<URLConnection, Int> =
         Instrumenter
             .builder<URLConnection?, Int?>(
-                openTelemetry,
+                OpenTelemetry.noop(),
                 INSTRUMENTATION_NAME,
             ) { _ -> "" }
             .buildClientInstrumenter(RequestPropertySetter)
