@@ -126,6 +126,8 @@ class OpenTelemetryRumBuilder internal constructor(
     private var resource: Resource = createDefault(context)
     private var exportScheduleEnablement: ScheduleEnablement? = null
     private var sessionProvider: SessionProvider = SessionProvider.getNoop()
+
+    // Filters only the owned batch processor; custom processors keep their existing behavior.
     internal var logRecordFilter: Predicate<ReadWriteLogRecord>? = null
     private var cacheStorageOverride: CacheStorage? = null
     private var periodicTaskSchedulerOverride: PeriodicTaskScheduler? = null

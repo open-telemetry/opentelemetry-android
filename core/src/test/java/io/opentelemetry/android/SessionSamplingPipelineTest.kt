@@ -76,8 +76,7 @@ class SessionSamplingPipelineTest {
                 .addTracerProviderCustomizer { tracer, _ -> tracer.setSampler(SessionIdRatioBasedSampler(decision, provider)) }
                 .addSpanExporterCustomizer { spans }
         builder.logRecordFilter = Predicate { decision.test(checkNotNull(it.getAttribute(idKey))) }
-        val rum = builder.build()
-        try {
+        builder.withRum { rum ->
             listOf(keptId, droppedId).forEach { id ->
                 current.set(id)
                 rum.openTelemetry
@@ -89,18 +88,10 @@ class SessionSamplingPipelineTest {
                 rum.emitEvent(id)
             }
             flush()
-            assertThat(
-                sdk.sdkTracerProvider
-                    .forceFlush()
-                    .join(5, SECONDS)
-                    .isSuccess,
-            ).isTrue()
             await().atMost(Duration.ofSeconds(5)).untilAsserted {
                 assertThat(logs.finishedLogRecordItems.map { it.attributes.get(idKey) }).containsExactly(keptId)
                 assertThat(spans.finishedSpanItems.map { it.attributes.get(idKey) }).containsExactly(keptId)
             }
-        } finally {
-            rum.shutdown()
         }
     }
 
@@ -117,8 +108,7 @@ class SessionSamplingPipelineTest {
                 calls.add(id)
                 decision.test(id)
             }
-        val rum = builder.build()
-        try {
+        builder.withRum { rum ->
             awaitDisk()
             rum.emitEvent("session.start")
             current.set(droppedId)
@@ -138,8 +128,6 @@ class SessionSamplingPipelineTest {
             assertThat(calls).containsExactly(keptId, droppedId, keptId, keptId, droppedId)
             checkNotNull(SignalFromDiskExporter.get()).exportLogsFromDisk()
             assertThat(exporter.finishedLogRecordItems).hasSize(3)
-        } finally {
-            rum.shutdown()
         }
     }
 
@@ -154,16 +142,13 @@ class SessionSamplingPipelineTest {
                 calls++
                 false
             }
-        val rum = builder.build()
-        try {
+        builder.withRum { rum ->
             awaitDisk()
             repeat(100) { rum.emitEvent("rejected") }
             flush()
             assertThat(calls).isEqualTo(100)
             assertThat(File(directory, "logs").walkTopDown().filter { it.isFile }.toList()).isEmpty()
             assertThat(exporter.finishedLogRecordItems).isEmpty()
-        } finally {
-            rum.shutdown()
         }
     }
 
@@ -173,16 +158,13 @@ class SessionSamplingPipelineTest {
         val firstExport = InMemoryLogRecordExporter.create()
         val firstBuilder = builder(directory, SessionProvider { keptId }, firstExport)
         firstBuilder.logRecordFilter = Predicate { true }
-        val first = firstBuilder.build()
-        try {
+        firstBuilder.withRum { first ->
             awaitDisk()
             first.emitEvent("accepted-before-restart")
             flush()
             assertThat(firstExport.finishedLogRecordItems).isEmpty()
-        } finally {
-            first.shutdown()
-            SignalFromDiskExporter.resetForTesting()
         }
+        SignalFromDiskExporter.resetForTesting()
         val secondExport = InMemoryLogRecordExporter.create()
         var calls = 0
         val secondBuilder = builder(directory, SessionProvider { droppedId }, secondExport)
@@ -191,8 +173,7 @@ class SessionSamplingPipelineTest {
                 calls++
                 false
             }
-        val second = secondBuilder.build()
-        try {
+        secondBuilder.withRum { second ->
             awaitDisk()
             second.emitEvent("rejected-after-restart")
             flush()
@@ -207,16 +188,13 @@ class SessionSamplingPipelineTest {
                     .get(idKey),
             ).isEqualTo(keptId)
             assertThat(calls).isEqualTo(1)
-        } finally {
-            second.shutdown()
         }
     }
 
     @Test
     fun noFilterLeavesCurrentAndHistoricalRecordsUnchanged() {
         val exporter = InMemoryLogRecordExporter.create()
-        val rum = builder(null, SessionProvider { droppedId }, exporter).build()
-        try {
+        builder(null, SessionProvider { droppedId }, exporter).withRum { rum ->
             rum.emitEvent("current")
             rum.emitEvent("crash", attributes = Attributes.of(idKey, keptId))
             flush()
@@ -224,46 +202,76 @@ class SessionSamplingPipelineTest {
                 assertThat(exporter.finishedLogRecordItems.map { it.eventName }).containsExactly("current", "crash")
             }
             assertThat(exporter.finishedLogRecordItems.map { it.attributes.get(idKey) }).containsExactly(droppedId, keptId)
-        } finally {
-            rum.shutdown()
         }
     }
 
     @Test
-    fun lookupUsesAttributedSessionEvenIfCurrentSessionChangesDuringLookup() {
+    fun tracesAndLogsKeepTheirSampledSessionWhenItChangesDuringLookup() {
         var current = keptId
         var reads = 0
         val exporter = InMemoryLogRecordExporter.create()
-        val builder =
-            builder(
-                null,
-                SessionProvider {
-                    reads++
-                    current
-                },
-                exporter,
-            )
-        builder.logRecordFilter =
-            Predicate {
-                current = droppedId
-                decision.test(checkNotNull(it.getAttribute(idKey)))
+        val spans = InMemorySpanExporter.create()
+        val provider =
+            SessionProvider {
+                reads++
+                current
             }
-        val rum = builder.build()
-        try {
+        val rotatingDecision =
+            Predicate<String> {
+                current = droppedId
+                decision.test(it)
+            }
+        val builder =
+            builder(null, provider, exporter)
+                .addTracerProviderCustomizer { tracer, _ -> tracer.setSampler(SessionIdRatioBasedSampler(rotatingDecision, provider)) }
+                .addSpanExporterCustomizer { spans }
+        builder.logRecordFilter = Predicate { rotatingDecision.test(checkNotNull(it.getAttribute(idKey))) }
+        builder.withRum { rum ->
+            rum.openTelemetry
+                .getTracer("probe")
+                .spanBuilder("kept")
+                .startSpan()
+                .end()
+            assertThat(current).isEqualTo(droppedId)
+            current = keptId
             rum.emitEvent("kept")
             flush()
             await().atMost(Duration.ofSeconds(5)).untilAsserted {
                 assertThat(exporter.finishedLogRecordItems.map { it.attributes.get(idKey) }).containsExactly(keptId)
+                assertThat(spans.finishedSpanItems.map { it.attributes.get(idKey) }).containsExactly(keptId)
             }
-            assertThat(reads).isEqualTo(1)
+            assertThat(reads).isEqualTo(2)
             assertThat(current).isEqualTo(droppedId)
-        } finally {
-            rum.shutdown()
+        }
+    }
+
+    @Test
+    fun diskInitializationFailureDoesNotBypassFiltering() {
+        val exporter = InMemoryLogRecordExporter.create()
+        val builder = builder(File(temporary.newFile(), "signals"), SessionProvider { keptId }, exporter)
+        builder.logRecordFilter = Predicate { decision.test(checkNotNull(it.getAttribute(idKey))) }
+        builder.withRum { rum ->
+            rum.emitEvent("kept")
+            rum.emitEvent("dropped", attributes = Attributes.of(idKey, droppedId))
+            flush()
+            await().atMost(Duration.ofSeconds(5)).untilAsserted {
+                assertThat(exporter.finishedLogRecordItems.map { it.eventName }).containsExactly("kept")
+            }
+            assertThat(SignalFromDiskExporter.get()).isNull()
         }
     }
 
     private fun awaitDisk() {
         await().atMost(Duration.ofSeconds(5)).until { SignalFromDiskExporter.get() != null }
+    }
+
+    private fun OpenTelemetryRumBuilder.withRum(assertions: (OpenTelemetryRum) -> Unit) {
+        val rum = build()
+        try {
+            assertions(rum)
+        } finally {
+            rum.shutdown()
+        }
     }
 
     private fun builder(
@@ -293,11 +301,8 @@ class SessionSamplingPipelineTest {
     }
 
     private fun flush() {
-        assertThat(
-            sdk.sdkLoggerProvider
-                .forceFlush()
-                .join(5, SECONDS)
-                .isSuccess,
-        ).isTrue()
+        listOf(sdk.sdkLoggerProvider.forceFlush(), sdk.sdkTracerProvider.forceFlush()).forEach {
+            assertThat(it.join(5, SECONDS).isSuccess).isTrue()
+        }
     }
 }
