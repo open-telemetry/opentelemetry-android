@@ -60,6 +60,8 @@ internal class SessionManager(
      */
     internal fun resetSession(): Boolean = updateSession(recordUserInteraction = false, reset = true) != null
 
+    override fun startNewSession(): Boolean = resetSession()
+
     private fun updateSession(
         recordUserInteraction: Boolean,
         reset: Boolean = false,

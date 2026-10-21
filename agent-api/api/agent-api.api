@@ -5,5 +5,6 @@ public abstract interface class io/opentelemetry/android/OpenTelemetryRum {
 	public abstract fun getOpenTelemetry ()Lio/opentelemetry/api/OpenTelemetry;
 	public abstract fun getSessionProvider ()Lio/opentelemetry/android/session/SessionProvider;
 	public abstract fun shutdown ()V
+	public fun startNewSession ()Z
 }
 
