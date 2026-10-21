@@ -70,6 +70,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor
 import io.opentelemetry.sdk.trace.export.SpanExporter
+import io.opentelemetry.sdk.trace.samplers.Sampler
 import java.io.File
 import java.io.IOException
 import java.util.function.BiFunction
@@ -150,6 +151,7 @@ class OpenTelemetryRumBuilder internal constructor(
      * argument.
      *
      * Multiple calls will execute the customizers in order.
+     * Setting a sampler preserves existing span session IDs, including IDs supplied by sampling.
      *
      * Note: calling [SdkTracerProviderBuilder.setResource] inside of your
      * configuration function will cause any resource customizers to be ignored that were configured
@@ -591,12 +593,15 @@ class OpenTelemetryRumBuilder internal constructor(
         spanExporter: SpanExporter,
         clock: Clock,
     ): SdkTracerProvider {
+        val defaultSampler = Sampler.parentBased(Sampler.alwaysOn())
+        val sessionIdAppender = SessionIdSpanAppender(sessionProvider)
         var tracerProviderBuilder =
             SdkTracerProvider
                 .builder()
                 .setResource(resource)
                 .setClock(clock)
-                .addSpanProcessor(SessionIdSpanAppender(sessionProvider))
+                .setSampler(defaultSampler)
+                .addSpanProcessor(sessionIdAppender)
 
         val batchSpanProcessor = BatchSpanProcessor.builder(spanExporter).build()
         tracerProviderBuilder.addSpanProcessor(batchSpanProcessor)
@@ -604,7 +609,10 @@ class OpenTelemetryRumBuilder internal constructor(
         for (customizer in tracerProviderCustomizers) {
             tracerProviderBuilder = customizer.apply(tracerProviderBuilder, context)
         }
-        return tracerProviderBuilder.build()
+        return tracerProviderBuilder.build().also {
+            // Configure before publishing the provider, after all sampler customizers have run.
+            sessionIdAppender.preserveExistingSessionId = it.sampler !== defaultSampler
+        }
     }
 
     private fun buildLoggerProvider(

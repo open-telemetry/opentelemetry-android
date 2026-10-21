@@ -12,16 +12,24 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.spyk
 import io.mockk.verify
 import io.opentelemetry.android.Incubating
+import io.opentelemetry.android.SessionIdRatioBasedSampler
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.agent.session.SessionStorage
+import io.opentelemetry.android.internal.initialization.InitializationEvents
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.sdk.testing.time.TestClock
+import io.opentelemetry.sdk.trace.ReadableSpan
+import io.opentelemetry.sdk.trace.samplers.Sampler
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -95,6 +103,167 @@ class OpenTelemetryRumInitializerTest {
         verify {
             o1.onSessionStarted(any(), any())
             o2.onSessionStarted(any(), any())
+        }
+    }
+
+    @Test
+    fun `trace sampler is created once with the agent provider`() {
+        val providers = mutableListOf<SessionProvider>()
+        val rum =
+            OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
+                diskBuffering { enabled(false) }
+                httpExport { baseUrl = "http://127.0.0.1:4318" }
+                sampler { trace { error("Replaced factory must not run") } }
+                sampler {
+                    trace { provider ->
+                        providers.add(provider)
+                        SessionIdRatioBasedSampler(0.0, provider)
+                    }
+                }
+            }
+        try {
+            assertThat(providers).containsExactly(rum.sessionProvider)
+            assertThat(rum.sessionProvider.getSessionId()).hasSize(32)
+            val span =
+                rum.openTelemetry
+                    .getTracer("test")
+                    .spanBuilder("dropped")
+                    .startSpan()
+            assertThat(span.isRecording).isFalse()
+            span.end()
+        } finally {
+            rum.shutdown()
+        }
+    }
+
+    @Test
+    fun `disabled tracing does not create the configured trace sampler`() {
+        val rum =
+            OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
+                disableTracing()
+                disableLogging()
+                disableMetrics()
+                diskBuffering { enabled(false) }
+                sampler { trace { error("Disabled tracing must not create a sampler") } }
+            }
+        try {
+            val span =
+                rum.openTelemetry
+                    .getTracer("test")
+                    .spanBuilder("disabled")
+                    .startSpan()
+            assertThat(span.isRecording).isFalse()
+            span.end()
+        } finally {
+            rum.shutdown()
+        }
+    }
+
+    @Test
+    fun `trace sampler factory failure aborts DSL initialization`() {
+        val failure = IllegalArgumentException("invalid sampling configuration")
+        val initialization = mockk<InitializationEvents>(relaxed = true)
+        InitializationEvents.set(initialization)
+        try {
+            assertThatThrownBy {
+                OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
+                    diskBuffering { enabled(false) }
+                    httpExport { baseUrl = "http://127.0.0.1:4318" }
+                    sampler { trace { throw failure } }
+                }
+            }.isSameAs(failure)
+            verify(exactly = 0) { initialization.sdkInitializationStarted() }
+        } finally {
+            InitializationEvents.resetForTest()
+        }
+    }
+
+    @Test
+    fun `null trace sampler fails before SDK initialization`() {
+        @Suppress("UNCHECKED_CAST")
+        val factory = { _: SessionProvider -> null } as (SessionProvider) -> Sampler
+        assertThatThrownBy {
+            OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
+                sampler { trace(factory) }
+            }
+        }.isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessage("Trace sampler factory returned null")
+    }
+
+    @Test
+    fun `trace DSL preserves sampled identity when the session rotates before span start`() {
+        val clock = TestClock.create()
+        var sampledSession: String? = null
+        val rum =
+            OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
+                this.clock = clock
+                session { maxLifetime = 1.hours }
+                diskBuffering { enabled(false) }
+                disableLogging()
+                disableMetrics()
+                rumConfig.disableInstrumentationDiscovery().disableNetworkAttributes().disableScreenAttributes()
+                httpExport { baseUrl = "http://127.0.0.1:4318" }
+                sampler {
+                    trace { provider ->
+                        val delegate = SessionIdRatioBasedSampler(1.0, provider)
+                        val sampler = spyk<Sampler>(delegate)
+                        every { sampler.shouldSample(any(), any(), any(), any(), any(), any()) } answers {
+                            val result =
+                                delegate.shouldSample(
+                                    firstArg(),
+                                    secondArg(),
+                                    thirdArg(),
+                                    arg(3),
+                                    arg(4),
+                                    arg(5),
+                                )
+                            sampledSession = result.attributes.get(stringKey("session.id"))
+                            clock.advance(2, TimeUnit.HOURS)
+                            assertThat(provider.getSessionId()).isNotEqualTo(sampledSession)
+                            result
+                        }
+                        sampler
+                    }
+                }
+            }
+        try {
+            val span =
+                rum.openTelemetry
+                    .getTracer("test")
+                    .spanBuilder("rotating")
+                    .setNoParent()
+                    .startSpan()
+            span.end()
+            assertThat(sampledSession).isNotNull()
+            assertThat((span as ReadableSpan).getAttribute(stringKey("session.id"))).isEqualTo(sampledSession)
+        } finally {
+            rum.shutdown()
+        }
+    }
+
+    @Test
+    fun `trace DSL accepts general samplers and an empty block preserves the default`() {
+        for (sampled in listOf(null, false, true)) {
+            val rum =
+                OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
+                    diskBuffering { enabled(false) }
+                    httpExport { baseUrl = "http://127.0.0.1:4318" }
+                    sampler {
+                        if (sampled != null) trace { if (sampled) Sampler.alwaysOn() else Sampler.alwaysOff() }
+                    }
+                }
+            try {
+                val span =
+                    rum.openTelemetry
+                        .getTracer("test")
+                        .spanBuilder("root")
+                        .setNoParent()
+                        .startSpan()
+                assertThat(span.spanContext.isSampled).isEqualTo(sampled ?: true)
+                span.end()
+            } finally {
+                rum.shutdown()
+            }
         }
     }
 
