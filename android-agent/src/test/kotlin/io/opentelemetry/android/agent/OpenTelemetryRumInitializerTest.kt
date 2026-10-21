@@ -20,6 +20,7 @@ import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.testing.time.TestClock
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
@@ -96,6 +97,30 @@ class OpenTelemetryRumInitializerTest {
             o1.onSessionStarted(any(), any())
             o2.onSessionStarted(any(), any())
         }
+    }
+
+    @Test
+    fun `Verify custom session provider is applied`() {
+        val customProvider =
+            mockk<SessionProvider> {
+                every { getSessionId() } returns "custom-session-123"
+            }
+
+        val rum =
+            OpenTelemetryRumInitializer.initialize(
+                context = RuntimeEnvironment.getApplication(),
+                configuration = {
+                    httpExport {
+                        baseUrl = "http://127.0.0.1:4318"
+                    }
+                    session {
+                        sessionProvider = customProvider
+                    }
+                },
+            )
+
+        assertThat(rum.sessionProvider.getSessionId()).isEqualTo("custom-session-123")
+        rum.shutdown()
     }
 
     @Test

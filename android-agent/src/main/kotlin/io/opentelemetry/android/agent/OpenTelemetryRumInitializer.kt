@@ -66,7 +66,9 @@ object OpenTelemetryRumInitializer {
                     ).also(configuration)
                 cfg.diskBufferingConfig.applyToRumConfig()
 
-                setSessionProvider(createSessionProvider(Services.get(ctx).appLifecycle, cfg))
+                val sessionProvider =
+                    cfg.sessionConfig.sessionProvider ?: createSessionProvider(Services.get(ctx).appLifecycle, cfg)
+                setSessionProvider(sessionProvider)
                 setResource(cfg.resourceProvider(ctx))
                 setClock(cfg.clock)
 

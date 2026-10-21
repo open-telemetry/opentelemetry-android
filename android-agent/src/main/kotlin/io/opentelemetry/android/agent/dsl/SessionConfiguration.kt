@@ -9,6 +9,7 @@ import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.session.InMemorySessionStorage
 import io.opentelemetry.android.agent.session.SessionStorage
 import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.android.session.SessionProvider
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
@@ -29,6 +30,12 @@ class SessionConfiguration internal constructor() {
      * The maximum duration which a session can remain open before it automatically expires.
      */
     var maxLifetime: Duration = 4.hours
+
+    /**
+     * Sets a custom [SessionProvider] that controls the session ID.
+     * When set, this overrides default session generation and timeout handling.
+     */
+    var sessionProvider: SessionProvider? = null
 
     internal var sessionStorage: SessionStorage = InMemorySessionStorage()
         private set
