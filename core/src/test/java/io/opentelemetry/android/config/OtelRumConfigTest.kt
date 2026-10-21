@@ -98,4 +98,25 @@ class OtelRumConfigTest {
         assertThat(config.setLoggingDisabled().loggingEnabled).isFalse()
         assertThat(config.setMetricsDisabled().metricsEnabled).isFalse()
     }
+
+    @Test
+    fun `sdk initialization events are disabled by default`() {
+        val config = OtelRumConfig()
+        assertThat(config.shouldGenerateSdkInitializationEvents()).isFalse()
+    }
+
+    @Test
+    fun `can enable sdk initialization events`() {
+        val config = OtelRumConfig()
+        config.enableSdkInitializationEvents()
+        assertThat(config.shouldGenerateSdkInitializationEvents()).isTrue()
+    }
+
+    @Test
+    fun `can disable sdk initialization events`() {
+        val config = OtelRumConfig()
+        config.enableSdkInitializationEvents()
+        config.disableSdkInitializationEvents()
+        assertThat(config.shouldGenerateSdkInitializationEvents()).isFalse()
+    }
 }

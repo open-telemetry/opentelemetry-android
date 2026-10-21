@@ -10,6 +10,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.mockk.Called
 import io.mockk.MockKAnnotations
 import io.mockk.clearAllMocks
 import io.mockk.every
@@ -521,7 +522,7 @@ class OpenTelemetryRumBuilderTest {
         InitializationEvents.resetForTest()
         InitializationEvents.set(events)
 
-        val config = buildConfig()
+        val config = buildConfig().enableSdkInitializationEvents()
         config.setDiskBufferingConfig(DiskBufferingConfig(true))
 
         RumBuilder
@@ -553,7 +554,7 @@ class OpenTelemetryRumBuilderTest {
         InitializationEvents.resetForTest()
         InitializationEvents.set(events)
 
-        val config = buildConfig()
+        val config = buildConfig().enableSdkInitializationEvents()
         config.setDiskBufferingConfig(DiskBufferingConfig(true))
 
         RumBuilder
@@ -596,7 +597,7 @@ class OpenTelemetryRumBuilderTest {
         InitializationEvents.resetForTest()
         InitializationEvents.set(events)
 
-        val config = buildConfig()
+        val config = buildConfig().enableSdkInitializationEvents()
         config.setDiskBufferingConfig(DiskBufferingConfig())
 
         RumBuilder
@@ -664,6 +665,20 @@ class OpenTelemetryRumBuilderTest {
                     .put(stringKey(APP_SCREEN_NAME), CUR_SCREEN_NAME)
                     .build(),
             )
+    }
+
+    @Test
+    fun initializationEventsDisabledByDefault() {
+        createAndSetServiceManager()
+        val events = mockk<InitializationEvents>(relaxed = true)
+        InitializationEvents.resetForTest()
+        InitializationEvents.set(events)
+
+        RumBuilder
+            .builder(application, buildConfig())
+            .build()
+
+        verify { events wasNot Called }
     }
 
     private fun makeBuilder(): OpenTelemetryRumBuilder = RumBuilder.builder(application, buildConfig())

@@ -336,7 +336,13 @@ class OpenTelemetryRumBuilder internal constructor(
         val cacheStorage: Lazy<CacheStorage> = lazy { cacheStorageOverride ?: CacheStorageImpl(context) }
         val periodicTaskScheduler: Lazy<PeriodicTaskScheduler> =
             lazy { periodicTaskSchedulerOverride ?: PeriodicTaskSchedulerImpl() }
-        val initializationEvents = InitializationEvents.get()
+        val initializationEvents =
+            if (config.shouldGenerateSdkInitializationEvents()) {
+                InitializationEvents.get()
+            } else {
+                InitializationEvents.set(InitializationEvents.NO_OP)
+                InitializationEvents.NO_OP
+            }
         applyConfiguration(services, initializationEvents)
 
         val bufferDelegatingSpanExporter = BufferDelegatingSpanExporter()
