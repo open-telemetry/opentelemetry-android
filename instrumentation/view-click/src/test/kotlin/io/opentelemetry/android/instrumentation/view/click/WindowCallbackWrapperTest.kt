@@ -39,15 +39,21 @@ class WindowCallbackWrapperTest {
         activityScenario = ActivityScenario.launch(TestActivity::class.java)
     }
 
-    class TestingTracker(val key: String): ToggleableTracker {
+    class TestingTracker(
+        val key: String,
+    ) : ToggleableTracker {
         var reference: WeakReference<Window>? = null
+
         override fun startTracking(window: Window) {
             reference = WeakReference(window)
-            WindowCallbackWrapper.registerConsumer(window, key, object : TouchEventConsumer {
-                override fun consumeEvent(event: MotionEvent?) {
-
-                }
-            })
+            WindowCallbackWrapper.registerConsumer(
+                window,
+                key,
+                object : TouchEventConsumer {
+                    override fun consumeEvent(event: MotionEvent?) {
+                    }
+                },
+            )
         }
 
         override fun stopTracking() {
@@ -57,11 +63,8 @@ class WindowCallbackWrapperTest {
         }
     }
 
-
     @Test
     fun callbackWrappedOnResume() {
-
-
         var originalCallback: Window.Callback? = null
         activityScenario.onActivity {
             originalCallback = it.window.callback
@@ -70,10 +73,10 @@ class WindowCallbackWrapperTest {
         assertFalse(originalCallback is WindowCallbackWrapper)
 
         application.registerActivityLifecycleCallbacks(
-            ViewClickActivityCallback(TestingTracker("tracker-a"))
+            ViewClickActivityCallback(TestingTracker("tracker-a")),
         )
         application.registerActivityLifecycleCallbacks(
-            ViewClickActivityCallback(TestingTracker("tracker-b"))
+            ViewClickActivityCallback(TestingTracker("tracker-b")),
         )
 
         var currentCallback: Window.Callback? = null
@@ -85,18 +88,17 @@ class WindowCallbackWrapperTest {
         assertTrue(currentCallback is WindowCallbackWrapper)
         MatcherAssert.assertThat(
             (currentCallback as WindowCallbackWrapper).keys(),
-            CoreMatchers.hasItems("tracker-a", "tracker-b")
+            CoreMatchers.hasItems("tracker-a", "tracker-b"),
         )
     }
 
     @Test
     fun callbackNotWrappedOnPause() {
-
         application.registerActivityLifecycleCallbacks(
-            ViewClickActivityCallback(TestingTracker("tracker-a"))
+            ViewClickActivityCallback(TestingTracker("tracker-a")),
         )
         application.registerActivityLifecycleCallbacks(
-            ViewClickActivityCallback(TestingTracker("tracker-b"))
+            ViewClickActivityCallback(TestingTracker("tracker-b")),
         )
 
         var currentCallback: Window.Callback? = null
@@ -109,7 +111,7 @@ class WindowCallbackWrapperTest {
         assertTrue(currentCallback is WindowCallbackWrapper)
         MatcherAssert.assertThat(
             (currentCallback as WindowCallbackWrapper).keys(),
-            CoreMatchers.hasItems("tracker-a", "tracker-b")
+            CoreMatchers.hasItems("tracker-a", "tracker-b"),
         )
 
         activityScenario.moveToState(Lifecycle.State.STARTED)
@@ -119,7 +121,5 @@ class WindowCallbackWrapperTest {
         }
         assertNotNull(currentCallback)
         assertFalse(currentCallback is WindowCallbackWrapper)
-
     }
-
 }

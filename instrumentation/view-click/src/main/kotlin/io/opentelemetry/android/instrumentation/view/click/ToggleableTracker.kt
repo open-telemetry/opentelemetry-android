@@ -11,5 +11,4 @@ interface ToggleableTracker {
     fun startTracking(window: Window)
 
     fun stopTracking()
-
 }

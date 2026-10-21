@@ -33,7 +33,7 @@ import io.opentelemetry.kotlin.logging.Logger as KotlinLogger
 internal class ViewClickEventGenerator(
     private val eventLogger: Logger,
     private val clickEventLogger: KotlinLogger,
-): TouchEventConsumer,
+) : TouchEventConsumer,
     ToggleableTracker {
     private var windowRef: WeakReference<Window>? = null
 

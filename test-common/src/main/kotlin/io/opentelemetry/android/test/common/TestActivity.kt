@@ -10,14 +10,12 @@ import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
 
-class TestActivity: Activity() {
+class TestActivity : Activity() {
     companion object {
-        val TEST_VIEW_WIDTH = 500
-        val TEST_VIEW_HEIGHT = 500
-
-
-
+        private const val TEST_VIEW_WIDTH = 500
+        private const val TEST_VIEW_HEIGHT = 500
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val viewGroup = LinearLayout(this)
