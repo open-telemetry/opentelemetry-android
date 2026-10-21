@@ -11,8 +11,10 @@
 
 ### 📈 Enhancements
 
-- Add `disableSdkInitializationEvents()` to `OpenTelemetryConfiguration` agent DSL to allow
-  disabling SDK initialization events.
+- SDK initialization events are now disabled by default in core and made opt-in via
+  `OtelRumConfig.enableSdkInitializationEvents()`.
+  ([#2109](https://github.com/open-telemetry/opentelemetry-android/pull/2109),
+  [#2108](https://github.com/open-telemetry/opentelemetry-android/issues/2108))
 
 - Add the experimental `session { storage(...) }` hook for custom session storage. The default
   remains in-memory; this does not restore sessions across app launches.

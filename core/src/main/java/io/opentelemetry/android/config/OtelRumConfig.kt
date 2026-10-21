@@ -18,7 +18,7 @@ import java.util.function.Supplier
 class OtelRumConfig {
     private var globalAttributesSupplierImpl: Supplier<Attributes>? = null
     private var includeNetworkAttributes = true
-    private var generateSdkInitializationEvents = true
+    private var generateSdkInitializationEvents = false
     private var includeScreenAttributes = true
     private var discoverInstrumentations = true
     private val suppressedInstrumentations: MutableList<String> = mutableListOf()
@@ -77,8 +77,19 @@ class OtelRumConfig {
     fun shouldIncludeNetworkAttributes(): Boolean = includeNetworkAttributes
 
     /**
+     * Enables the collection of events related to the initialization of the OTel Android SDK
+     * itself. Default = false.
+     *
+     * @return this
+     */
+    fun enableSdkInitializationEvents(): OtelRumConfig {
+        generateSdkInitializationEvents = true
+        return this
+    }
+
+    /**
      * Disables the collection of events related to the initialization of the OTel Android SDK
-     * itself. Default = true.
+     * itself. Default = false.
      *
      * @return this
      */

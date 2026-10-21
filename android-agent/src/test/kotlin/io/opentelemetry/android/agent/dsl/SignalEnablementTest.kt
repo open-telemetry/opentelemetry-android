@@ -28,7 +28,6 @@ class SignalEnablementTest {
         assertThat(otelConfig.rumConfig.tracingEnabled).isTrue()
         assertThat(otelConfig.rumConfig.loggingEnabled).isTrue()
         assertThat(otelConfig.rumConfig.metricsEnabled).isTrue()
-        assertThat(otelConfig.rumConfig.shouldGenerateSdkInitializationEvents()).isTrue()
     }
 
     @Test
@@ -50,12 +49,5 @@ class SignalEnablementTest {
         assertThat(otelConfig.rumConfig.metricsEnabled).isTrue()
         otelConfig.disableMetrics()
         assertThat(otelConfig.rumConfig.metricsEnabled).isFalse()
-    }
-
-    @Test
-    fun testDisableSdkInitializationEvents() {
-        assertThat(otelConfig.rumConfig.shouldGenerateSdkInitializationEvents()).isTrue()
-        otelConfig.disableSdkInitializationEvents()
-        assertThat(otelConfig.rumConfig.shouldGenerateSdkInitializationEvents()).isFalse()
     }
 }
