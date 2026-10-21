@@ -11,15 +11,19 @@ import android.view.KeyboardShortcutGroup
 import android.view.Menu
 import android.view.MotionEvent
 import android.view.SearchEvent
+import android.view.Window
 import android.view.Window.Callback
 import androidx.annotation.RequiresApi
 
-internal class WindowCallbackWrapper(
+internal class WindowCallbackWrapper private constructor(
     private val callback: Callback,
-    private val viewClickEventGenerator: ViewClickEventGenerator,
 ) : Callback by callback {
+
+    private val callbackMap = LinkedHashMap<String, TouchEventConsumer>()
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
-        viewClickEventGenerator.generateClick(event)
+        for((key,touchConsumer) in callbackMap) {
+            touchConsumer.consumeEvent(event)
+        }
         return callback.dispatchTouchEvent(event)
     }
 
@@ -45,4 +49,47 @@ internal class WindowCallbackWrapper(
     ): ActionMode? = this.callback.onWindowStartingActionMode(callback, type)
 
     fun unwrap(): Callback = callback
+
+    fun keys(): List<String> {
+        return callbackMap.keys.toList()
+    }
+
+    companion object {
+
+        private val windowMap = SmallMap<Window, WindowCallbackWrapper>()
+        private const val MAX_ENTRIES = 2
+        class SmallMap<K, V>: LinkedHashMap<K, V>() {
+            override fun removeEldestEntry(eldest: Map.Entry<K?, V?>?): Boolean {
+                return size >= MAX_ENTRIES
+            }
+        }
+        @JvmStatic
+        fun registerConsumer(window: Window, key: String, consumer: TouchEventConsumer) {
+            if(windowMap[window] == null) {
+                windowMap[window] = WindowCallbackWrapper(window.callback)
+                window.callback = windowMap[window]!!
+            }
+            val wrapper = windowMap[window]!!
+            val callbackMap = wrapper.callbackMap
+            if(callbackMap[key] != null) {
+                callbackMap.remove(key)
+            }
+            callbackMap[key] = consumer
+        }
+
+        @JvmStatic
+        fun unregisterConsumer(window: Window, key: String) {
+            val wrapper = windowMap[window] ?: return
+            wrapper.callbackMap.remove(key)
+            if(wrapper.callbackMap.isEmpty()) {
+                window.callback = wrapper.unwrap()
+                windowMap.remove(window)
+            }
+        }
+    }
+
+}
+
+interface TouchEventConsumer {
+    fun consumeEvent(event: MotionEvent?)
 }
