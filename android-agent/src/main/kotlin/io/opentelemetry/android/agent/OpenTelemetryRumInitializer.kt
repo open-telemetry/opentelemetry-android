@@ -66,7 +66,8 @@ object OpenTelemetryRumInitializer {
                     ).also(configuration)
                 cfg.diskBufferingConfig.applyToRumConfig()
 
-                setSessionProvider(createSessionProvider(Services.get(ctx).appLifecycle, cfg))
+                val sessionProvider = createSessionProvider(Services.get(ctx).appLifecycle, cfg)
+                setSessionProvider(sessionProvider)
                 setResource(cfg.resourceProvider(ctx))
                 setClock(cfg.clock)
 
@@ -77,6 +78,11 @@ object OpenTelemetryRumInitializer {
                 }
 
                 if (rumConfig.tracingEnabled) {
+                    cfg.samplerConfig.traceSamplerFactory?.let { factory ->
+                        // Resolve user configuration before build starts any SDK workers.
+                        val sampler = requireNotNull(factory(sessionProvider)) { "Trace sampler factory returned null" }
+                        addTracerProviderCustomizer { builder, _ -> builder.setSampler(sampler) }
+                    }
                     addSpanExporterCustomizer {
                         createSpanExporter(cfg.exportConfig.spansEndpoint())
                     }

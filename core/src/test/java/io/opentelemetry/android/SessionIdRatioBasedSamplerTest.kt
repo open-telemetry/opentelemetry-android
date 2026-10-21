@@ -9,10 +9,12 @@ import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.opentelemetry.android.session.SessionProvider
+import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanContext
 import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.api.trace.TraceState
 import io.opentelemetry.context.Context
 import io.opentelemetry.sdk.trace.IdGenerator
 import io.opentelemetry.sdk.trace.data.LinkData
@@ -81,6 +83,17 @@ internal class SessionIdRatioBasedSamplerTest {
         val samplerLow =
             SessionIdRatioBasedSampler(1.0, sessionProvider)
         assertThat(shouldSample(samplerLow)).isEqualTo(SamplingDecision.RECORD_AND_SAMPLE)
+    }
+
+    @Test
+    fun `sampling attributes preserve parent trace state`() {
+        every { sessionProvider.getSessionId() } returns LOW_ID
+        val traceState = TraceState.builder().put("vendor", "value").build()
+        val result =
+            SessionIdRatioBasedSampler(0.5, sessionProvider)
+                .shouldSample(parentContext, traceId, "test", SpanKind.INTERNAL, Attributes.empty(), parentLinks)
+        assertThat(result.attributes).isEqualTo(Attributes.of(stringKey("session.id"), LOW_ID))
+        assertThat(result.getUpdatedTraceState(traceState)).isSameAs(traceState)
     }
 
     private fun shouldSample(sampler: Sampler): SamplingDecision? =

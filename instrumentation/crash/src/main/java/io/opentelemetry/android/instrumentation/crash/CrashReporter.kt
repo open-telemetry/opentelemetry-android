@@ -51,15 +51,24 @@ internal class CrashReporter(
         }
     }
 
+    private var handler: CrashReportingExceptionHandler? = null
+
     /** Installs the crash reporting instrumentation.  */
     fun install(openTelemetry: OpenTelemetry) {
-        val handler =
+        val newHandler =
             CrashReportingExceptionHandler(
                 crashProcessor = { crashDetails: CrashDetails ->
                     processCrash(openTelemetry, crashDetails)
                 },
             )
-        Thread.setDefaultUncaughtExceptionHandler(handler)
+        Thread.setDefaultUncaughtExceptionHandler(newHandler)
+        handler = newHandler
+    }
+
+    /** Uninstalls the crash reporting instrumentation, disabling crash telemetry emission. */
+    fun uninstall() {
+        handler?.enabled = false
+        handler = null
     }
 
     private fun stackTraceToTruncatedString(

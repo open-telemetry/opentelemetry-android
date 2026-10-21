@@ -67,4 +67,21 @@ internal class AnrDetectorTogglerTest {
 
         verify(exactly = 1) { future.cancel(true) }
     }
+
+    @Test
+    fun testStop() {
+        every {
+            scheduler.scheduleWithFixedDelay(
+                anrWatcher,
+                1,
+                1,
+                TimeUnit.SECONDS,
+            )
+        } returns future
+
+        underTest.onApplicationForegrounded()
+        underTest.stop()
+
+        verify(exactly = 1) { future.cancel(true) }
+    }
 }

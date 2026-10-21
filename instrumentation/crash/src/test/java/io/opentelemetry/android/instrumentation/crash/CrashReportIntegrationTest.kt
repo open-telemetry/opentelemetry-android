@@ -61,6 +61,82 @@ internal class CrashReportIntegrationTest {
     }
 
     @Test
+    fun `test crash reporter instrumentation is uninstalled`() {
+        val originalHandler = Thread.getDefaultUncaughtExceptionHandler()
+        try {
+            var delegateInvoked = false
+            val customHandler =
+                Thread.UncaughtExceptionHandler { _, _ ->
+                    delegateInvoked = true
+                }
+            Thread.setDefaultUncaughtExceptionHandler(customHandler)
+
+            instrumentation.install(context, openTelemetryRum)
+            val installedHandler = Thread.getDefaultUncaughtExceptionHandler()
+            assertTrue(installedHandler is CrashReportingExceptionHandler)
+
+            instrumentation.uninstall(context, openTelemetryRum)
+
+            // Handler remains in chain, but disabled
+            assertEquals(installedHandler, Thread.getDefaultUncaughtExceptionHandler())
+
+            // Uncaught exception after uninstall should invoke delegate but not emit telemetry
+            installedHandler?.uncaughtException(Thread.currentThread(), RuntimeException("After uninstall"))
+            assertTrue(delegateInvoked)
+            assertTrue(rule.logRecords.isEmpty())
+        } finally {
+            Thread.setDefaultUncaughtExceptionHandler(originalHandler)
+        }
+    }
+
+    @Test
+    fun `test uninstall before install is safe no-op`() {
+        val originalHandler = Thread.getDefaultUncaughtExceptionHandler()
+        try {
+            val customHandler = Thread.UncaughtExceptionHandler { _, _ -> }
+            Thread.setDefaultUncaughtExceptionHandler(customHandler)
+
+            instrumentation.uninstall(context, openTelemetryRum)
+            assertEquals(customHandler, Thread.getDefaultUncaughtExceptionHandler())
+
+            CrashReporter(emptyList()).uninstall()
+            assertEquals(customHandler, Thread.getDefaultUncaughtExceptionHandler())
+        } finally {
+            Thread.setDefaultUncaughtExceptionHandler(originalHandler)
+        }
+    }
+
+    @Test
+    fun `test uninstall preserves subsequent handler chain and does not emit telemetry`() {
+        val originalHandler = Thread.getDefaultUncaughtExceptionHandler()
+        try {
+            var delegateInvoked = false
+            instrumentation.install(context, openTelemetryRum)
+            val otelHandler = Thread.getDefaultUncaughtExceptionHandler()
+            assertTrue(otelHandler is CrashReportingExceptionHandler)
+
+            val subsequentHandler =
+                Thread.UncaughtExceptionHandler { t, e ->
+                    delegateInvoked = true
+                    otelHandler?.uncaughtException(t, e)
+                }
+            Thread.setDefaultUncaughtExceptionHandler(subsequentHandler)
+
+            instrumentation.uninstall(context, openTelemetryRum)
+
+            // Subsequent handler is still the default handler
+            assertEquals(subsequentHandler, Thread.getDefaultUncaughtExceptionHandler())
+
+            // Triggering subsequent handler calls through to otelHandler, which delegates without logging
+            subsequentHandler.uncaughtException(Thread.currentThread(), RuntimeException("Subsequent crash"))
+            assertTrue(delegateInvoked)
+            assertTrue(rule.logRecords.isEmpty())
+        } finally {
+            Thread.setDefaultUncaughtExceptionHandler(originalHandler)
+        }
+    }
+
+    @Test
     fun `test uncaught exception captured as log`() {
         val exc = IllegalStateException("Whoops")
         val log = simulateUncaughtException(exc)
