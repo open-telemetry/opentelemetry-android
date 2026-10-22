@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.8.0 (2026-10-22)
+
 ### 📣 Migration notes
 
 - SDK initialization events are now disabled by default. Call
