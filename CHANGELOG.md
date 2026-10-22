@@ -11,6 +11,9 @@
 
 ### 📈 Enhancements
 
+- Add generic `ApiExtension` lookup and builder registration for manual APIs contributed by
+  optional modules, with classpath discovery and explicit-registration precedence.
+
 - SDK initialization events are now disabled by default in core and made opt-in via
   `OtelRumConfig.enableSdkInitializationEvents()`.
   ([#2109](https://github.com/open-telemetry/opentelemetry-android/pull/2109),

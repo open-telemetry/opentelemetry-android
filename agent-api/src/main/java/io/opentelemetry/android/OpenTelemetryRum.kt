@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android
 
+import io.opentelemetry.android.extensions.ApiExtension
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.Attributes
@@ -44,6 +45,15 @@ interface OpenTelemetryRum {
         body: String = "",
         attributes: Attributes = Attributes.empty(),
     )
+
+    /**
+     * Returns the extension registered under the exact public [type], or null when absent.
+     * Unregistered implementation-class keys do not match their public interfaces.
+     *
+     * Kotlin callers can use [io.opentelemetry.android.extensions.extension].
+     * The default returns null to preserve existing implementations.
+     */
+    fun <T : ApiExtension> getExtension(type: Class<T>): T? = null
 
     /**
      * Initiates orderly shutdown of this OpenTelemetryRum instance. After this method completes,
