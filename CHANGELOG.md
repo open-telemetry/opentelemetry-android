@@ -2,37 +2,101 @@
 
 ## Unreleased
 
-### Bug fixes
+### 📣 Migration notes
+
+- SDK initialization events are now disabled by default. Call
+  `enableSdkInitializationEvents()` to keep emitting them.
+  ([#2109](https://github.com/open-telemetry/opentelemetry-android/pull/2109),
+  [#2108](https://github.com/open-telemetry/opentelemetry-android/issues/2108))
 
 - Session ID lookups no longer refresh background inactivity, so background telemetry no longer
   keeps a session alive. First lookup and expiry still create a session. User activity recording is
   internal and is not yet connected to user activity sources.
-  ([#2049](https://github.com/open-telemetry/opentelemetry-android/issues/2049))
+  ([#2078](https://github.com/open-telemetry/opentelemetry-android/pull/2078),
+  [#2049](https://github.com/open-telemetry/opentelemetry-android/issues/2049))
+
+- A reminder that non-stable instrumentation names are subject to change. In this
+  release, java crash instrumentation has been renamed to `java-crash`. This aligns
+  naming with `native-crash` while providing a clearer distinction.
+  ([#2103](https://github.com/open-telemetry/opentelemetry-android/pull/2103))
+
+### 🌟 New instrumentation
+
+- Add OpenTelemetry context propagation to `CoroutineScope.launch` calls in application classes
+  transformed by ByteBuddy. Other coroutine builders, including `async` and `withContext`, are
+  not covered. See the [installation instructions](instrumentation/coroutines/README.md) for the
+  required ByteBuddy setup.
+  ([#1935](https://github.com/open-telemetry/opentelemetry-android/pull/1935))
 
 ### 📈 Enhancements
 
-- SDK initialization events are now disabled by default in core and made opt-in via
-  `OtelRumConfig.enableSdkInitializationEvents()`.
-  ([#2109](https://github.com/open-telemetry/opentelemetry-android/pull/2109),
-  [#2108](https://github.com/open-telemetry/opentelemetry-android/issues/2108))
+- Native crash state recovery now replays captured stack frames and uses validated, per-launch recovery
+  state with at-most-once delivery claims.
+  ([#2032](https://github.com/open-telemetry/opentelemetry-android/pull/2032),
+  [#2050](https://github.com/open-telemetry/opentelemetry-android/pull/2050),
+  [#2081](https://github.com/open-telemetry/opentelemetry-android/pull/2081),
+  [#2091](https://github.com/open-telemetry/opentelemetry-android/pull/2091),
+  [#2051](https://github.com/open-telemetry/opentelemetry-android/pull/2051),
+  [#2052](https://github.com/open-telemetry/opentelemetry-android/pull/2052))
 
-- Add the experimental `session { storage(...) }` hook for custom session storage. The default
-  remains in-memory; this does not restore sessions across app launches.
-  ([#2061](https://github.com/open-telemetry/opentelemetry-android/pull/2061))
+- Disk buffering is now configurable through the Android Agent DSL, including its export period, storage
+  location, and maximum cache size.
+  ([#2047](https://github.com/open-telemetry/opentelemetry-android/pull/2047))
 
-- Add the experimental HTTP span filtering hook to the agent DSL. `instrumentations { httpTelemetry {
-  shouldRecordSpanForHost { host -> host == "api.example.com" } } }` decides per host whether
-  to record an HTTP client span; return false and spans recording that `server.address` are
-  dropped before export. The predicate receives the host lowercased, exactly as the client
-  recorded it, and can express either an allowlist or a denylist. Every host is recorded when
-  no predicate is set.
-  ([#1686](https://github.com/open-telemetry/opentelemetry-android/issues/1686))
+- The Android Agent DSL can now replace or remove attributes in the default resource and customize
+  or replace propagators.
+  ([#2080](https://github.com/open-telemetry/opentelemetry-android/pull/2080),
+  [#2083](https://github.com/open-telemetry/opentelemetry-android/pull/2083))
 
-- New optional `agent-api-ktx` module adding an `OpenTelemetryRum.openTelemetryKotlin` extension
-  property. This allows you to use opentelemetry-kotlin's APIs within opentelemetry-android,
-  backed by the agent's existing Java SDK instance. This module and opentelemetry-kotlin are not
-  stable yet and may change their APIs in future.
+- Add dynamic export headers with `headerSupplier { ... }` in the Agent DSL. 
+  Supplied values are refreshed for traces, logs, and metrics and take precedence
+  over conflicting static values.
+  ([#2101](https://github.com/open-telemetry/opentelemetry-android/pull/2101))
+
+- The Android Agent DSL can filter HTTP client spans by host before export with
+  `shouldRecordSpanForHost { ... }`. The predicate receives the lowercased host; all matching
+  spans are recorded when no predicate is configured. This can help mitigate unwanted
+  telemetry for 3rd-party analytics services. 
+  ([#2074](https://github.com/open-telemetry/opentelemetry-android/pull/2074),
+  [#1686](https://github.com/open-telemetry/opentelemetry-android/issues/1686))
+
+- Session storage can be customized through the DSL, and storage can provide previous-session
+  context to link a new session's start event to the prior session. The default storage remains
+  in-memory.
+  ([#2061](https://github.com/open-telemetry/opentelemetry-android/pull/2061),
+  [#2126](https://github.com/open-telemetry/opentelemetry-android/pull/2126))
+
+- Configure a trace sampler via Agent DSL, including samplers that use the final session
+  provider.
+  ([#2096](https://github.com/open-telemetry/opentelemetry-android/pull/2096))
+
+- ANR, crash, Compose click, HttpURLConnection, and Android log instrumentations now support
+  `uninstall()`.
+  ([#2128](https://github.com/open-telemetry/opentelemetry-android/pull/2128),
+  [#2129](https://github.com/open-telemetry/opentelemetry-android/pull/2129),
+  [#2133](https://github.com/open-telemetry/opentelemetry-android/pull/2133),
+  [#2137](https://github.com/open-telemetry/opentelemetry-android/pull/2137),
+  [#2136](https://github.com/open-telemetry/opentelemetry-android/pull/2136))
+
+- Add the optional `agent-api-ktx` module with the `OpenTelemetryRum.openTelemetryKotlin`
+  extension for using the
+  [`opentelemetry-kotlin`](https://github.com/open-telemetry/opentelemetry-kotlin)
+  API with the agent's existing Java SDK instance. This is recommended only for
+  early adopters and contributors. 
   ([#2062](https://github.com/open-telemetry/opentelemetry-android/pull/2062))
+
+### Bug fixes
+
+- Fix incorrect log message formatting.
+  ([#2125](https://github.com/open-telemetry/opentelemetry-android/pull/2125))
+
+### 🧰 Tooling
+
+- Fix self-repository references in CI, document the Java 21 build requirement, and update
+  Renovate settings.
+  ([#2067](https://github.com/open-telemetry/opentelemetry-android/pull/2067),
+  [#2079](https://github.com/open-telemetry/opentelemetry-android/pull/2079),
+  [#2118](https://github.com/open-telemetry/opentelemetry-android/pull/2118))
 
 ## Version 1.7.0 (2026-09-04)
 
