@@ -22,7 +22,10 @@
 
 ### 🌟 New instrumentation
 
-- Add coroutine context propagation so spans created in coroutines inherit the active trace context.
+- Add OpenTelemetry context propagation to `CoroutineScope.launch` calls in application classes
+  transformed by ByteBuddy. Other coroutine builders, including `async` and `withContext`, are
+  not covered. See the [installation instructions](instrumentation/coroutines/README.md) for the
+  required ByteBuddy setup.
   ([#1935](https://github.com/open-telemetry/opentelemetry-android/pull/1935))
 
 ### 📈 Enhancements
@@ -40,10 +43,9 @@
   location, and maximum cache size.
   ([#2047](https://github.com/open-telemetry/opentelemetry-android/pull/2047))
 
-- The Android Agent DSL can now replace values the default resource.
+- The Android Agent DSL can now replace or remove attributes in the default resource and customize
+  or replace propagators.
   ([#2080](https://github.com/open-telemetry/opentelemetry-android/pull/2080),
-
-- Propagators can now be customized via the Android Agent DSL.
   [#2083](https://github.com/open-telemetry/opentelemetry-android/pull/2083))
 
 - Add dynamic export headers with `headerSupplier { ... }` in the Agent DSL. 
