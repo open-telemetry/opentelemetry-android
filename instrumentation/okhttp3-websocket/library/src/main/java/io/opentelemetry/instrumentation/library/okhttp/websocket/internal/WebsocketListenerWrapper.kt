@@ -91,12 +91,15 @@ class WebsocketListenerWrapper(
     companion object {
         private const val SCOPE = "io.opentelemetry.websocket.events"
 
-        private var logger: Logger =
+        private val noopLogger: Logger =
             OpenTelemetry
                 .noop()
                 .logsBridge
                 .loggerBuilder(SCOPE)
                 .build()
+
+        @Volatile
+        private var logger: Logger = noopLogger
 
         @JvmStatic
         fun configure(openTelemetry: OpenTelemetry) {
@@ -108,12 +111,7 @@ class WebsocketListenerWrapper(
 
         @JvmStatic
         fun reset() {
-            logger =
-                OpenTelemetry
-                    .noop()
-                    .logsBridge
-                    .loggerBuilder(SCOPE)
-                    .build()
+            logger = noopLogger
         }
     }
 }
