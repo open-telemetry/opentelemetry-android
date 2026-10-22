@@ -64,24 +64,24 @@ internal class SessionManager(
         recordUserInteraction: Boolean,
         reset: Boolean = false,
     ): String? {
-        val previousSession: Session
+        val currentSession: Session
         val newSession: Session
         var startedTransition = false
         try {
             synchronized(lock) {
-                previousSession = session
-                if (!reset && !recordUserInteraction && !sessionHasExpired(previousSession)) {
-                    return previousSession.id
+                currentSession = session
+                if (!reset && !recordUserInteraction && !sessionHasExpired(currentSession)) {
+                    return currentSession.id
                 }
-                if (!reset && !sessionHasExpired(previousSession)) {
+                if (!reset && !sessionHasExpired(currentSession)) {
                     if (recordUserInteraction) {
                         timeoutHandler.bump()
                     }
-                    return previousSession.id
+                    return currentSession.id
                 }
                 // Finish the current notification sequence before allowing another rotation.
                 if (transitionInProgress) {
-                    return if (reset) null else previousSession.id
+                    return if (reset) null else currentSession.id
                 }
                 newSession = SessionImpl(idGenerator.generateSessionId(), clock.now())
                 startedTransition = true
@@ -89,8 +89,14 @@ internal class SessionManager(
                 session = newSession
                 timeoutHandler.bump()
             }
+            val previousSession =
+                if (currentSession === invalidSession) {
+                    readPreviousSession()
+                } else {
+                    currentSession
+                }
             sessionStorage.save(newSession)
-            notifyObserversOfSessionUpdate(previousSession, newSession)
+            notifyObserversOfSessionUpdate(currentSession, newSession, previousSession)
             return newSession.id
         } finally {
             if (startedTransition) {
@@ -104,11 +110,18 @@ internal class SessionManager(
     private fun notifyObserversOfSessionUpdate(
         currentSession: Session,
         newSession: Session,
+        previousSession: Session,
     ) {
         observers.forEach {
             it.onSessionEnded(currentSession)
-            it.onSessionStarted(newSession, currentSession)
+            it.onSessionStarted(newSession, previousSession)
         }
+    }
+
+    private fun readPreviousSession(): Session {
+        val previous = sessionStorage.getPreviousSession() ?: return invalidSession
+        val id = previous.id
+        return if (id.isEmpty()) invalidSession else SessionImpl(id, previous.startTimestamp)
     }
 
     private fun sessionHasExpired(session: Session): Boolean {

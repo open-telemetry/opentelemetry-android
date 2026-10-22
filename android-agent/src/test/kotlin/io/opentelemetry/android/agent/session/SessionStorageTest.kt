@@ -36,6 +36,7 @@ internal class SessionStorageTest {
         val storage = mockk<SessionStorage>()
         val saved = mutableListOf<Session>()
         val previousId = "a".repeat(32)
+        every { storage.getPreviousSession() } returns null
         every { storage.get() } returns SessionImpl(previousId, clock.now())
         every { storage.save(capture(saved)) } returns Unit
 
