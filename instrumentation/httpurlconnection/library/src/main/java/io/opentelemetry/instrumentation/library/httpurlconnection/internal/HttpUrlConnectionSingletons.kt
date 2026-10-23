@@ -20,8 +20,8 @@ import java.net.URLConnection
 internal object HttpUrlConnectionSingletons {
     private const val INSTRUMENTATION_NAME = "io.opentelemetry.android.http-url-connection"
 
-    private lateinit var instrumenter: Instrumenter<URLConnection, Int>
-    private lateinit var openTelemetryInstance: OpenTelemetry
+    private var otelInstance: OpenTelemetry = OpenTelemetry.noop()
+    private var httpUrlInstrumenter: Instrumenter<URLConnection, Int> = createNoopInstrumenter()
 
     fun configure(
         instrumentation: HttpUrlInstrumentation,
@@ -49,12 +49,12 @@ internal object HttpUrlConnectionSingletons {
                 openTelemetry,
             )
 
-        openTelemetryInstance = openTelemetry
+        otelInstance = openTelemetry
 
         val builder =
             Instrumenter
                 .builder<URLConnection?, Int?>(
-                    openTelemetryInstance,
+                    otelInstance,
                     INSTRUMENTATION_NAME,
                     httpSpanNameExtractorBuilder.build(),
                 ).setSpanStatusExtractor(
@@ -74,12 +74,25 @@ internal object HttpUrlConnectionSingletons {
                 ).addOperationMetrics(HttpClientExperimentalMetrics.get())
         }
 
-        instrumenter = builder.buildClientInstrumenter(RequestPropertySetter)
+        httpUrlInstrumenter = builder.buildClientInstrumenter(RequestPropertySetter)
     }
 
     @JvmStatic
-    fun instrumenter(): Instrumenter<URLConnection, Int> = instrumenter
+    fun instrumenter(): Instrumenter<URLConnection, Int> = httpUrlInstrumenter
 
     @JvmStatic
-    fun openTelemetryInstance(): OpenTelemetry = openTelemetryInstance
+    fun openTelemetryInstance(): OpenTelemetry = otelInstance
+
+    fun reset() {
+        otelInstance = OpenTelemetry.noop()
+        httpUrlInstrumenter = createNoopInstrumenter()
+    }
+
+    private fun createNoopInstrumenter(): Instrumenter<URLConnection, Int> =
+        Instrumenter
+            .builder<URLConnection?, Int?>(
+                OpenTelemetry.noop(),
+                INSTRUMENTATION_NAME,
+            ) { _ -> "" }
+            .buildClientInstrumenter(RequestPropertySetter)
 }

@@ -34,6 +34,7 @@ class OpenTelemetryConfiguration internal constructor(
 ) {
     internal val exportConfig = HttpExportConfiguration()
     internal val sessionConfig = SessionConfiguration()
+    internal val samplerConfig = SamplerConfiguration()
     internal val instrumentations = InstrumentationConfiguration(rumConfig, instrumentationLoader)
 
     internal val semanticConventions = SemanticConventionsConfiguration()
@@ -96,6 +97,12 @@ class OpenTelemetryConfiguration internal constructor(
      */
     fun session(action: SessionConfiguration.() -> Unit) {
         sessionConfig.action()
+    }
+
+    /** Configures sampling. An empty block leaves the SDK's default sampler unchanged. */
+    @Incubating
+    fun sampler(action: SamplerConfiguration.() -> Unit) {
+        samplerConfig.action()
     }
 
     /**

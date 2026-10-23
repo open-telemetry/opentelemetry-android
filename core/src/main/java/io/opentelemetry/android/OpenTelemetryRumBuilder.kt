@@ -25,6 +25,7 @@ import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoaderImpl
 import io.opentelemetry.android.internal.features.persistence.DiskManager
 import io.opentelemetry.android.internal.initialization.InitializationEvents
+import io.opentelemetry.android.internal.processors.FilteringLogRecordProcessor
 import io.opentelemetry.android.internal.processors.GlobalAttributesLogRecordAppender
 import io.opentelemetry.android.internal.processors.ScreenAttributesLogRecordProcessor
 import io.opentelemetry.android.internal.processors.SessionIdLogRecordAppender
@@ -56,6 +57,7 @@ import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.logs.LogRecordProcessor
+import io.opentelemetry.sdk.logs.ReadWriteLogRecord
 import io.opentelemetry.sdk.logs.SdkLoggerProvider
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor
@@ -70,11 +72,13 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor
 import io.opentelemetry.sdk.trace.export.SpanExporter
+import io.opentelemetry.sdk.trace.samplers.Sampler
 import java.io.File
 import java.io.IOException
 import java.util.function.BiFunction
 import java.util.function.Consumer
 import java.util.function.Function
+import java.util.function.Predicate
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
@@ -122,6 +126,9 @@ class OpenTelemetryRumBuilder internal constructor(
     private var resource: Resource = createDefault(context)
     private var exportScheduleEnablement: ScheduleEnablement? = null
     private var sessionProvider: SessionProvider = SessionProvider.getNoop()
+
+    // Filters only the owned batch processor; custom processors keep their existing behavior.
+    internal var logRecordFilter: Predicate<ReadWriteLogRecord>? = null
     private var cacheStorageOverride: CacheStorage? = null
     private var periodicTaskSchedulerOverride: PeriodicTaskScheduler? = null
 
@@ -150,6 +157,7 @@ class OpenTelemetryRumBuilder internal constructor(
      * argument.
      *
      * Multiple calls will execute the customizers in order.
+     * Setting a sampler preserves existing span session IDs, including IDs supplied by sampling.
      *
      * Note: calling [SdkTracerProviderBuilder.setResource] inside of your
      * configuration function will cause any resource customizers to be ignored that were configured
@@ -334,7 +342,13 @@ class OpenTelemetryRumBuilder internal constructor(
         val cacheStorage: Lazy<CacheStorage> = lazy { cacheStorageOverride ?: CacheStorageImpl(context) }
         val periodicTaskScheduler: Lazy<PeriodicTaskScheduler> =
             lazy { periodicTaskSchedulerOverride ?: PeriodicTaskSchedulerImpl() }
-        val initializationEvents = InitializationEvents.get()
+        val initializationEvents =
+            if (config.shouldGenerateSdkInitializationEvents()) {
+                InitializationEvents.get()
+            } else {
+                InitializationEvents.set(InitializationEvents.NO_OP)
+                InitializationEvents.NO_OP
+            }
         applyConfiguration(services, initializationEvents)
 
         val bufferDelegatingSpanExporter = BufferDelegatingSpanExporter()
@@ -591,12 +605,15 @@ class OpenTelemetryRumBuilder internal constructor(
         spanExporter: SpanExporter,
         clock: Clock,
     ): SdkTracerProvider {
+        val defaultSampler = Sampler.parentBased(Sampler.alwaysOn())
+        val sessionIdAppender = SessionIdSpanAppender(sessionProvider)
         var tracerProviderBuilder =
             SdkTracerProvider
                 .builder()
                 .setResource(resource)
                 .setClock(clock)
-                .addSpanProcessor(SessionIdSpanAppender(sessionProvider))
+                .setSampler(defaultSampler)
+                .addSpanProcessor(sessionIdAppender)
 
         val batchSpanProcessor = BatchSpanProcessor.builder(spanExporter).build()
         tracerProviderBuilder.addSpanProcessor(batchSpanProcessor)
@@ -604,7 +621,10 @@ class OpenTelemetryRumBuilder internal constructor(
         for (customizer in tracerProviderCustomizers) {
             tracerProviderBuilder = customizer.apply(tracerProviderBuilder, context)
         }
-        return tracerProviderBuilder.build()
+        return tracerProviderBuilder.build().also {
+            // Configure before publishing the provider, after all sampler customizers have run.
+            sessionIdAppender.preserveExistingSessionId = it.sampler !== defaultSampler
+        }
     }
 
     private fun buildLoggerProvider(
@@ -626,7 +646,9 @@ class OpenTelemetryRumBuilder internal constructor(
                 )
         val batchLogsProcessor: LogRecordProcessor =
             BatchLogRecordProcessor.builder(logsExporter).build()
-        loggerProviderBuilder.addLogRecordProcessor(batchLogsProcessor)
+        loggerProviderBuilder.addLogRecordProcessor(
+            logRecordFilter?.let { FilteringLogRecordProcessor(batchLogsProcessor, it) } ?: batchLogsProcessor,
+        )
         for (customizer in loggerProviderCustomizers) {
             loggerProviderBuilder = customizer.apply(loggerProviderBuilder, context)
         }
