@@ -16,22 +16,42 @@ import io.opentelemetry.kotlin.toOtelKotlinApi
 class ViewClickInstrumentation : AndroidInstrumentation {
     override val name: String = "view.click"
 
+    private var activityCallback: ViewClickActivityCallback? = null
+    private var eventGenerator: ViewClickEventGenerator? = null
+
     override fun install(
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
     ) {
+        val application = context as? Application ?: return
         val scopeName = "io.opentelemetry.android.instrumentation.view.click"
-        (context as? Application)?.registerActivityLifecycleCallbacks(
-            ViewClickActivityCallback(
-                ViewClickEventGenerator(
-                    eventLogger = openTelemetryRum.openTelemetry.logsBridge.get(scopeName),
-                    clickEventLogger =
-                        openTelemetryRum.openTelemetry
-                            .toOtelKotlinApi()
-                            .loggerProvider
-                            .getLogger(scopeName),
-                ),
-            ),
-        )
+        val generator =
+            ViewClickEventGenerator(
+                eventLogger = openTelemetryRum.openTelemetry.logsBridge.get(scopeName),
+                clickEventLogger =
+                    openTelemetryRum.openTelemetry
+                        .toOtelKotlinApi()
+                        .loggerProvider
+                        .getLogger(scopeName),
+            )
+        val callback = ViewClickActivityCallback(generator)
+        application.registerActivityLifecycleCallbacks(callback)
+        activityCallback = callback
+        eventGenerator = generator
+    }
+
+    override fun uninstall(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
+        (context as? Application)?.let { app ->
+            activityCallback?.let { callback ->
+                callback.isEnabled = false
+                app.unregisterActivityLifecycleCallbacks(callback)
+            }
+        }
+        eventGenerator?.stopTracking()
+        activityCallback = null
+        eventGenerator = null
     }
 }
