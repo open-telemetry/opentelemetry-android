@@ -20,6 +20,7 @@ import io.opentelemetry.android.instrumentation.nativecrash.NativeCrashRecoveryP
 import io.opentelemetry.android.instrumentation.nativecrash.NativeCrashRecoveryPhase.CLEANUP
 import io.opentelemetry.android.instrumentation.nativecrash.NativeCrashRecoveryPhase.DELIVERY_CLAIMED
 import io.opentelemetry.android.instrumentation.nativecrash.NativeCrashRecoveryPhase.MARKER_READ
+import io.opentelemetry.android.instrumentation.nativecrash.NativeCrashRecoveryPhase.SNAPSHOT_READ
 import io.opentelemetry.android.instrumentation.nativecrash.NativeCrashRecoveryResult.COMPLETE
 import io.opentelemetry.android.instrumentation.nativecrash.NativeCrashRecoveryResult.RETRY_PENDING
 import io.opentelemetry.android.semconv.internal.SemconvCompat.Companion.map
@@ -187,7 +188,7 @@ internal class NativeCrashReporter(
 
             NativeCrashRead.Missing,
             NativeCrashRead.Malformed,
-            -> cleanup()
+            -> cleanup(state?.asCleanup() ?: newState(CLEANUP))
 
             NativeCrashRead.Failed -> recoverMarkerFailure(state)
         }
@@ -201,7 +202,7 @@ internal class NativeCrashReporter(
             when (state.phase) {
                 DELIVERY_CLAIMED,
                 CLEANUP,
-                -> return cleanup()
+                -> return cleanup(state.asCleanup())
 
                 ABANDONED -> return cleanupAbandoned(state, record)
 
@@ -211,8 +212,23 @@ internal class NativeCrashReporter(
 
         val snapshot =
             when (val snapshotRead = store.readCrashSnapshotForRecovery(record)) {
-                is NativeCrashRead.Success -> snapshotRead.value
-                else -> null
+                is NativeCrashRead.Success -> {
+                    snapshotRead.value
+                }
+
+                NativeCrashRead.Missing,
+                NativeCrashRead.Malformed,
+                -> {
+                    null
+                }
+
+                NativeCrashRead.Failed -> {
+                    val retry = nextRetry(SNAPSHOT_READ, state, record)
+                    if (!retry.isExhausted()) {
+                        return persistRetry(retry)
+                    }
+                    null
+                }
             }
 
         val claim = newState(DELIVERY_CLAIMED, record, state)
@@ -226,7 +242,7 @@ internal class NativeCrashReporter(
         } catch (error: LinkageError) {
             logReplayFailure(error)
         }
-        return cleanup()
+        return cleanup(claim)
     }
 
     private fun replay(
@@ -282,9 +298,10 @@ internal class NativeCrashReporter(
             return COMPLETE
         }
         if (state?.phase == DELIVERY_CLAIMED || state?.phase == CLEANUP) {
-            return cleanup()
+            return cleanup(state.asCleanup())
         }
-        return abandon(state ?: newState(MARKER_READ))
+        val retry = nextRetry(MARKER_READ, state)
+        return if (retry.isExhausted(MARKER_READ)) abandon(retry) else persistRetry(retry)
     }
 
     private fun recoverFailedStateRead(): NativeCrashRecoveryResult =
@@ -295,14 +312,40 @@ internal class NativeCrashReporter(
 
             NativeCrashRead.Missing,
             NativeCrashRead.Malformed,
-            -> cleanup()
+            -> cleanup(newState(CLEANUP))
         }
 
-    private fun cleanup(): NativeCrashRecoveryResult {
+    private fun nextRetry(
+        phase: NativeCrashRecoveryPhase,
+        state: NativeCrashRecoveryState?,
+        record: NativeCrashRecord? = null,
+    ): NativeCrashRecoveryState {
+        // A later marker failure must not erase the snapshot count or known crash identity.
+        if (phase == MARKER_READ && state?.phase == SNAPSHOT_READ) {
+            return state.copy(markerReadAttempts = state.markerReadAttempts.coerceAtMost(MAX_ATTEMPTS - 1) + 1)
+        }
+        val matching =
+            state?.takeIf {
+                it.phase == phase &&
+                    ((record == null && !it.hasIdentity()) || (record != null && it.matches(record)))
+            }
+        val retry =
+            matching ?: newState(phase, record, state).copy(
+                markerReadAttempts =
+                    state?.takeIf { it.phase == MARKER_READ && record != null && it.appliesTo(record) }?.attempts ?: 0,
+            )
+        return retry.copy(attempts = retry.attempts.coerceAtMost(MAX_ATTEMPTS - 1) + 1)
+    }
+
+    private fun persistRetry(state: NativeCrashRecoveryState): NativeCrashRecoveryResult =
+        if (store.writeRecoveryState(state)) RETRY_PENDING else abandon(state)
+
+    private fun cleanup(state: NativeCrashRecoveryState): NativeCrashRecoveryResult {
         if (store.deleteCrashFiles() && store.deleteRecoveryState()) {
             return COMPLETE
         }
-        return RETRY_PENDING
+        val retry = state.asCleanup().copy(attempts = state.attempts.coerceAtMost(MAX_ATTEMPTS - 1) + 1)
+        return if (retry.isExhausted()) abandon(retry) else persistRetry(retry)
     }
 
     private fun abandon(state: NativeCrashRecoveryState): NativeCrashRecoveryResult {
@@ -349,11 +392,27 @@ internal class NativeCrashReporter(
             record,
         )
 
+    private fun NativeCrashRecoveryState.asCleanup(): NativeCrashRecoveryState =
+        copy(
+            phase = CLEANUP,
+            attempts = if (phase == CLEANUP || phase == ABANDONED) attempts else 0,
+            markerReadAttempts = 0,
+        )
+
+    private fun NativeCrashRecoveryState.isExhausted(failedPhase: NativeCrashRecoveryPhase = phase): Boolean {
+        val now = nowMillis()
+        val failures = if (failedPhase == MARKER_READ && phase == SNAPSHOT_READ) markerReadAttempts else attempts
+        return failures >= MAX_ATTEMPTS ||
+            (now >= firstAttemptEpochMillis && now - firstAttemptEpochMillis >= MAX_RETRY_AGE_MILLIS)
+    }
+
     private fun logReplayFailure(error: Throwable) {
         Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to replay native crash", error)
     }
 
     private companion object {
+        const val MAX_ATTEMPTS = 3
+        const val MAX_RETRY_AGE_MILLIS = 24 * 60 * 60 * 1_000L
         val processRecoveryLock = Any()
     }
 }
@@ -576,6 +635,8 @@ internal class FileNativeCrashStore(
                 ?.let { value -> NativeCrashRecoveryPhase.entries.firstOrNull { it.name == value } }
                 ?: return null
         val attempts = getProperty(RECOVERY_ATTEMPTS_KEY)?.toIntOrNull() ?: return null
+        val markerReadAttempts =
+            if (containsKey(RECOVERY_MARKER_ATTEMPTS_KEY)) getProperty(RECOVERY_MARKER_ATTEMPTS_KEY)?.toIntOrNull() ?: return null else 0
         val firstAttempt = getProperty(RECOVERY_FIRST_ATTEMPT_KEY)?.toLongOrNull() ?: return null
         val signalNumber = getProperty(SIGNAL_NUMBER_KEY)?.toIntOrNull()
         val timestampSecond = getProperty(RECOVERY_TIMESTAMP_SECOND_KEY)?.toLongOrNull()
@@ -591,6 +652,7 @@ internal class FileNativeCrashStore(
             signalNumber = signalNumber,
             timestampEpochSecond = timestampSecond,
             timestampNano = timestampNano,
+            markerReadAttempts = markerReadAttempts,
         ).takeIf { it.isValid() }
     }
 
@@ -599,6 +661,7 @@ internal class FileNativeCrashStore(
             properties.setProperty(RECOVERY_VERSION_KEY, RECOVERY_VERSION.toString())
             properties.setProperty(RECOVERY_PHASE_KEY, phase.name)
             properties.setProperty(RECOVERY_ATTEMPTS_KEY, attempts.toString())
+            properties.setProperty(RECOVERY_MARKER_ATTEMPTS_KEY, markerReadAttempts.toString())
             properties.setProperty(RECOVERY_FIRST_ATTEMPT_KEY, firstAttemptEpochMillis.toString())
             signalNumber?.let { properties.setProperty(SIGNAL_NUMBER_KEY, it.toString()) }
             timestampEpochSecond?.let { properties.setProperty(RECOVERY_TIMESTAMP_SECOND_KEY, it.toString()) }
@@ -656,6 +719,7 @@ internal class FileNativeCrashStore(
         const val RECOVERY_VERSION_KEY = "recovery.version"
         const val RECOVERY_PHASE_KEY = "recovery.phase"
         const val RECOVERY_ATTEMPTS_KEY = "recovery.attempts"
+        const val RECOVERY_MARKER_ATTEMPTS_KEY = "recovery.marker_read_attempts"
         const val RECOVERY_FIRST_ATTEMPT_KEY = "recovery.first_attempt_epoch_millis"
         const val RECOVERY_TIMESTAMP_SECOND_KEY = "recovery.timestamp_epoch_second"
         const val RECOVERY_TIMESTAMP_NANO_KEY = "recovery.timestamp_nano"
