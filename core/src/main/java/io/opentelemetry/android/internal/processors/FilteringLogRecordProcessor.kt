@@ -23,6 +23,7 @@ internal class FilteringLogRecordProcessor(
         if (predicate.test(logRecord)) delegate.onEmit(context, logRecord)
     }
 
+    // Kotlin delegation leaves these Java default methods unforwarded.
     override fun forceFlush(): CompletableResultCode = delegate.forceFlush()
 
     override fun shutdown(): CompletableResultCode = delegate.shutdown()

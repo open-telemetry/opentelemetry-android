@@ -7,8 +7,12 @@ package io.opentelemetry.android.internal.processors
 
 import io.opentelemetry.android.SessionIdRatioBasedSampler
 import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanContext
 import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.api.trace.TraceFlags
 import io.opentelemetry.api.trace.TraceId
+import io.opentelemetry.api.trace.TraceState
 import io.opentelemetry.context.Context
 import io.opentelemetry.sdk.trace.samplers.Sampler
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision
@@ -41,6 +45,31 @@ class SessionIdRatioBasedPredicateTest {
                 assertThat(sampled.getOrNull()).isEqualTo(expected.getOrNull())
                 assertThat(sampled.exceptionOrNull()?.javaClass).isEqualTo(expected.exceptionOrNull()?.javaClass)
                 assertThat(sampler.description).isEqualTo("SessionIdRatioBased{traceIdRatioBased:$upstream.description}")
+            }
+        }
+    }
+
+    @Test
+    fun `session decision does not depend on the current span`() {
+        val predicate = SessionIdRatioBasedPredicate(0.5)
+        val contexts =
+            listOf(Context.root()) +
+                listOf(TraceFlags.getSampled(), TraceFlags.getDefault()).map { flags ->
+                    Context.root().with(
+                        Span.wrap(
+                            SpanContext.create(
+                                "00000000000000000000000000000002",
+                                "0000000000000001",
+                                flags,
+                                TraceState.getDefault(),
+                            ),
+                        ),
+                    )
+                }
+        contexts.forEach { context ->
+            context.makeCurrent().use {
+                assertThat(predicate.test("00000000000000000000000000000001")).isTrue()
+                assertThat(predicate.test("00000000000000007fffffffffffffff")).isFalse()
             }
         }
     }

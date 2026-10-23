@@ -18,6 +18,7 @@ internal class SessionIdRatioBasedPredicate(
 ) : Predicate<String> {
     private val sampler = Sampler.traceIdRatioBased(ratio)
 
+    // The session decision must not depend on the active span's sampling decision.
     override fun test(sessionId: String): Boolean =
         sampler.shouldSample(Context.root(), sessionId, "", SpanKind.INTERNAL, Attributes.empty(), emptyList()).decision ==
             SamplingDecision.RECORD_AND_SAMPLE
