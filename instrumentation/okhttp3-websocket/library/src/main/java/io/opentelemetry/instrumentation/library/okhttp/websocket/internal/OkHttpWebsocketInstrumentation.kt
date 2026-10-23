@@ -19,5 +19,12 @@ class OkHttpWebsocketInstrumentation : AndroidInstrumentation {
         WebsocketListenerWrapper.configure(openTelemetryRum.openTelemetry)
     }
 
+    override fun uninstall(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
+        WebsocketListenerWrapper.reset()
+    }
+
     override val name: String = "okhttp-websocket"
 }
