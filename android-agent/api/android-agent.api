@@ -157,6 +157,11 @@ public final class io/opentelemetry/android/agent/dsl/instrumentation/SlowRender
 	public fun enabled (Z)V
 }
 
+public abstract interface class io/opentelemetry/android/agent/session/SessionExtension : io/opentelemetry/android/extensions/ApiExtension {
+	public fun getType ()Ljava/lang/Class;
+	public abstract fun startNewSession ()Z
+}
+
 public abstract interface class io/opentelemetry/android/agent/session/SessionStorage {
 	public abstract fun get ()Lio/opentelemetry/android/session/Session;
 	public fun getPreviousSession ()Lio/opentelemetry/android/session/Session;
