@@ -1,0 +1,2 @@
+io.opentelemetry.android.extensions.TestApiProvider
+io.opentelemetry.android.extensions.OtherTestApiProvider

@@ -10,6 +10,9 @@ import android.content.Context
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.config.OtelRumConfig
+import io.opentelemetry.android.extensions.ApiExtension
+import io.opentelemetry.android.extensions.ApiExtensionLoader
+import io.opentelemetry.android.extensions.ApiExtensionRegistry
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.InstrumentationConfigurators
@@ -27,6 +30,7 @@ class SdkPreconfiguredRumBuilder internal constructor(
 ) {
     private var onShutdown: Runnable = Runnable {} // nop
     private val instrumentations = mutableListOf<AndroidInstrumentation>()
+    private val apiExtensions = mutableListOf<ApiExtension>()
 
     /**
      * Adds an instrumentation to be applied as a part of the [build] method call.
@@ -35,6 +39,19 @@ class SdkPreconfiguredRumBuilder internal constructor(
      */
     fun addInstrumentation(instrumentation: AndroidInstrumentation): SdkPreconfiguredRumBuilder {
         instrumentations.add(instrumentation)
+        return this
+    }
+
+    /**
+     * Registers an extension under its exact [ApiExtension.type] before instrumentation installation.
+     * Explicit registration overrides discovery; the last registration wins, with a warning on
+     * replacement. Discovery is independent of instrumentation discovery settings.
+     *
+     * Each build snapshots the registry. The owning module, not RUM, manages extension lifecycle.
+     * Returns `this`.
+     */
+    fun addApiExtension(extension: ApiExtension): SdkPreconfiguredRumBuilder {
+        apiExtensions.add(extension)
         return this
     }
 
@@ -78,6 +95,7 @@ class SdkPreconfiguredRumBuilder internal constructor(
                     ),
                 sessionProvider = sessionProvider,
                 clock = clock,
+                apiExtensions = ApiExtensionRegistry.create(ApiExtensionLoader.load(), apiExtensions),
             )
         openTelemetryRum.onShutdown =
             Runnable {

@@ -19,6 +19,9 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.config.OtelRumConfig
+import io.opentelemetry.android.extensions.OtherTestApi
+import io.opentelemetry.android.extensions.OtherTestApiProvider
+import io.opentelemetry.android.extensions.TestApi
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter.Companion.resetForTesting
@@ -347,6 +350,36 @@ class OpenTelemetryRumBuilderTest {
 
         verify(exactly = 1) { localInstrumentation.install(any(), any()) }
         verify(exactly = 1) { classpathInstrumentation.install(any(), any()) }
+    }
+
+    @Test
+    fun apiExtensionsAreForwardedBeforeInstallationAndRemainPerInstance() {
+        val services = createAndSetServiceManager()
+        every { services.close() } answers {}
+        val instrumentation = mockk<AndroidInstrumentation>(relaxed = true)
+        var expected: TestApi = object : TestApi {}
+        every { instrumentation.name } returns "extension-test"
+        every { instrumentation.install(any(), any()) } answers {
+            val rum = secondArg<OpenTelemetryRum>()
+            assertThat(rum.getExtension(TestApi::class.java)).isSameAs(expected)
+            assertThat(rum.getExtension(OtherTestApi::class.java)).isInstanceOf(OtherTestApiProvider::class.java)
+        }
+        val builder =
+            OpenTelemetryRumBuilder(application, buildConfig().disableInstrumentationDiscovery())
+                .addInstrumentation(instrumentation)
+        val previousHandler = Thread.getDefaultUncaughtExceptionHandler()
+        val built = mutableListOf<OpenTelemetryRum>()
+        try {
+            val first = builder.addApiExtension(expected).build().also(built::add)
+            val original = expected
+            expected = object : TestApi {}
+            val second = builder.addApiExtension(expected).build().also(built::add)
+            assertThat(first.getExtension(TestApi::class.java)).isSameAs(original)
+            assertThat(second.getExtension(TestApi::class.java)).isSameAs(expected)
+        } finally {
+            built.forEach { it.shutdown() }
+            Thread.setDefaultUncaughtExceptionHandler(previousHandler)
+        }
     }
 
     @Test
