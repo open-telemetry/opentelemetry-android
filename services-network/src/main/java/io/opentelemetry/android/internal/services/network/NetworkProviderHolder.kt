@@ -46,5 +46,15 @@ object NetworkProviderHolder {
         CurrentNetworkProviderImpl(
             NetworkDetector.create(context),
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager,
+            phoneStatePermissionGrantCheckTrigger(context),
         )
+
+    private fun phoneStatePermissionGrantCheckTrigger(context: Context): PermissionGrantCheckTrigger =
+        if (hasTelephonyFeature(context) && !hasPhoneStatePermission(context) && requestsReadPhoneState(context)) {
+            // READ_PHONE_STATE is the only phone state permission that can be granted later.
+            PollingPermissionGrantCheckTrigger({ hasReadPhoneStatePermission(context) })
+        } else {
+            // No telephony, the permission is already granted, or the app never requests it.
+            PermissionGrantCheckTrigger.NONE
+        }
 }
