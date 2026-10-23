@@ -21,6 +21,14 @@ internal class ApiExtensionRegistry private constructor(
             val result = mutableMapOf<Class<out ApiExtension>, ApiExtension>()
             for (extension in discovered + registered) {
                 val type = extension.type
+                if (!type.isInstance(extension)) {
+                    Log.w(
+                        OTEL_RUM_LOG_TAG,
+                        "ApiExtension provider '${extension.javaClass.name}' does not implement " +
+                            "its declared type '${type.name}' and was skipped.",
+                    )
+                    continue
+                }
                 val previous = result.put(type, extension)
                 if (previous != null) {
                     Log.w(
