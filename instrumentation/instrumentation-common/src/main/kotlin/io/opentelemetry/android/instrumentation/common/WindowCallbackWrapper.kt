@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.instrumentation.view.click
+package io.opentelemetry.android.instrumentation.common
 
 import android.os.Build.VERSION_CODES
 import android.view.ActionMode
@@ -15,7 +15,7 @@ import android.view.Window
 import android.view.Window.Callback
 import androidx.annotation.RequiresApi
 
-internal class WindowCallbackWrapper private constructor(
+class WindowCallbackWrapper private constructor(
     private val callback: Callback,
 ) : Callback by callback {
     private val callbackMap = LinkedHashMap<String, TouchEventConsumer>()
@@ -94,5 +94,5 @@ internal class WindowCallbackWrapper private constructor(
 }
 
 interface TouchEventConsumer {
-    fun consumeEvent(event: MotionEvent?)
+    fun consumeEvent(motionEvent: MotionEvent?)
 }

@@ -10,6 +10,9 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import io.opentelemetry.android.instrumentation.common.ToggleableTracker
+import io.opentelemetry.android.instrumentation.common.TouchEventConsumer
+import io.opentelemetry.android.instrumentation.common.WindowCallbackWrapper
 import io.opentelemetry.android.instrumentation.view.click.internal.Gesture
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_BUTTON
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_CLICKS
@@ -133,18 +136,18 @@ internal class ViewClickEventGenerator(
 
     override fun startTracking(window: Window) {
         windowRef = WeakReference(window)
-        WindowCallbackWrapper.registerConsumer(window, WRAPPER_KEY_CLICK, this)
+        WindowCallbackWrapper.registerConsumer(window, WRAPPER_KEY_VIEW_CLICK, this)
     }
 
-    override fun consumeEvent(event: MotionEvent?) {
-        if (event != null) {
-            gestureDetector.onTouchEvent(event)
+    override fun consumeEvent(motionEvent: MotionEvent?) {
+        if (motionEvent != null) {
+            gestureDetector.onTouchEvent(motionEvent)
         }
     }
 
     override fun stopTracking() {
         windowRef?.get()?.run {
-            WindowCallbackWrapper.unregisterConsumer(this, WRAPPER_KEY_CLICK)
+            WindowCallbackWrapper.unregisterConsumer(this, WRAPPER_KEY_VIEW_CLICK)
         }
         windowRef = null
     }
@@ -343,6 +346,6 @@ internal class ViewClickEventGenerator(
         get() = visibility == View.VISIBLE
 
     companion object {
-        private const val WRAPPER_KEY_CLICK = "view-click-wrapper"
+        private const val WRAPPER_KEY_VIEW_CLICK = "view-click-wrapper"
     }
 }

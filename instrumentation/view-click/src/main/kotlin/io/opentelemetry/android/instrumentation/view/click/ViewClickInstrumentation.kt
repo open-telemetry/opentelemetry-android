@@ -10,6 +10,7 @@ import android.content.Context
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.instrumentation.common.InstrumentationActivityCallback
 import io.opentelemetry.kotlin.toOtelKotlinApi
 
 @AutoService(AndroidInstrumentation::class)
@@ -22,7 +23,7 @@ class ViewClickInstrumentation : AndroidInstrumentation {
     ) {
         val scopeName = "io.opentelemetry.android.instrumentation.view.click"
         (context as? Application)?.registerActivityLifecycleCallbacks(
-            ViewClickActivityCallback(
+            InstrumentationActivityCallback(
                 ViewClickEventGenerator(
                     eventLogger = openTelemetryRum.openTelemetry.logsBridge.get(scopeName),
                     clickEventLogger =
