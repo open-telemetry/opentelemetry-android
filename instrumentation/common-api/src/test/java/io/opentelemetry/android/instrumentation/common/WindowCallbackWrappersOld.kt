@@ -133,3 +133,56 @@ class MinimalTrackerClick :
         windowRef = null
     }
 }
+
+class ThirdPartyWindowCallbackWrapper(
+    private val callback: Callback,
+    private val consumer: TouchEventConsumer,
+) : Callback by callback {
+    override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
+        consumer.consumeEvent(event)
+        return callback.dispatchTouchEvent(event)
+    }
+
+    @RequiresApi(api = VERSION_CODES.O)
+    override fun onPointerCaptureChanged(hasCapture: Boolean) {
+        callback.onPointerCaptureChanged(hasCapture)
+    }
+
+    @RequiresApi(api = VERSION_CODES.N)
+    override fun onProvideKeyboardShortcuts(
+        data: List<KeyboardShortcutGroup?>?,
+        menu: Menu?,
+        deviceId: Int,
+    ) {
+        callback.onProvideKeyboardShortcuts(data, menu, deviceId)
+    }
+
+    override fun onSearchRequested(searchEvent: SearchEvent?): Boolean = callback.onSearchRequested(searchEvent)
+
+    override fun onWindowStartingActionMode(
+        callback: ActionMode.Callback?,
+        type: Int,
+    ): ActionMode? = this.callback.onWindowStartingActionMode(callback, type)
+
+    fun unwrap(): Callback = callback
+}
+
+class MinimalTrackerThirdParty :
+    TouchEventConsumer,
+    ToggleableTracker {
+    private var windowRef: WeakReference<Window>? = null
+
+    override fun startTracking(window: Window) {
+        windowRef = WeakReference(window)
+        val currentCallback = window.callback
+        window.callback = ThirdPartyWindowCallbackWrapper(currentCallback, this)
+    }
+
+    override fun consumeEvent(event: MotionEvent?) {
+        windowRef?.get()?.let { window ->
+        }
+    }
+
+    override fun stopTracking() {
+    }
+}

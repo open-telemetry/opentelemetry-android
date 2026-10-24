@@ -86,8 +86,10 @@ class WindowCallbackWrapper private constructor(
             val wrapper = windowMap[window] ?: return
             wrapper.callbackMap.remove(key)
             if (wrapper.callbackMap.isEmpty()) {
-                window.callback = wrapper.unwrap()
                 windowMap.remove(window)
+                if (window.callback is WindowCallbackWrapper) {
+                    window.callback = wrapper.unwrap()
+                }
             }
         }
     }

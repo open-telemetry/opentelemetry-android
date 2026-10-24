@@ -14,7 +14,9 @@ import androidx.test.core.app.ApplicationProvider
 import io.opentelemetry.android.test.common.TestActivity
 import io.opentelemetry.sdk.testing.junit4.OpenTelemetryRule
 import org.hamcrest.CoreMatchers
+import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -166,6 +168,77 @@ class WindowCallbackWrapperTest {
     }
 
     @Test
+    fun thirdPartyWrapperDoesNotCauseDuplicatesForWindowOnRegister() {
+        application.registerActivityLifecycleCallbacks(
+            InstrumentationActivityCallback(TestingTracker("tracker-a")),
+        )
+        application.registerActivityLifecycleCallbacks(
+            InstrumentationActivityCallback(MinimalTrackerThirdParty()),
+        )
+        application.registerActivityLifecycleCallbacks(
+            InstrumentationActivityCallback(TestingTracker("tracker-b")),
+        )
+
+        var currentCallback: Window.Callback? = null
+
+        activityScenario.recreate()
+        activityScenario.onActivity {
+            currentCallback = it.window.callback
+        }
+
+        assertNotNull(currentCallback)
+        assertFalse(currentCallback is WindowCallbackWrapper)
+
+        val list = traverseWrapper(currentCallback)
+        assertThat(list.count { it is WindowCallbackWrapper }, equalTo(1))
+        val wrapper = list.first { it is WindowCallbackWrapper } as WindowCallbackWrapper
+        assertThat(
+            wrapper.keys(),
+            CoreMatchers.hasItems("tracker-a", "tracker-b"),
+        )
+    }
+
+    @Test
+    fun thirdPartyWrapperDoesNotGetErasedOnUnregister() {
+        application.registerActivityLifecycleCallbacks(
+            InstrumentationActivityCallback(TestingTracker("tracker-a")),
+        )
+        application.registerActivityLifecycleCallbacks(
+            InstrumentationActivityCallback(MinimalTrackerThirdParty()),
+        )
+        application.registerActivityLifecycleCallbacks(
+            InstrumentationActivityCallback(TestingTracker("tracker-b")),
+        )
+
+        var currentCallback: Window.Callback? = null
+
+        activityScenario.recreate()
+
+        activityScenario.onActivity {
+            currentCallback = it.window.callback
+        }
+        var list = traverseWrapper(currentCallback!!)
+        assertThat(list.count { it is ThirdPartyWindowCallbackWrapper }, equalTo(1))
+
+        activityScenario.moveToState(Lifecycle.State.STARTED)
+
+        activityScenario.onActivity {
+            currentCallback = it.window.callback
+        }
+
+        assertNotNull(currentCallback)
+        assertFalse(currentCallback is WindowCallbackWrapper)
+
+        list = traverseWrapper(currentCallback)
+        assertThat(list.count { it is ThirdPartyWindowCallbackWrapper }, equalTo(1))
+        val wrapper = list.first { it is WindowCallbackWrapper } as WindowCallbackWrapper
+        assertThat(
+            wrapper.keys().size,
+            equalTo(0),
+        )
+    }
+
+    @Test
     fun oldCallbacksDoNotRestoreOriginalOnPause() {
         application.registerActivityLifecycleCallbacks(
             InstrumentationActivityCallback(MinimalTrackerCompose()),
@@ -230,7 +303,10 @@ class WindowCallbackWrapperTest {
 
     fun traverseWrapper(callback: Window.Callback): List<Window.Callback> {
         var currentCallback = callback
-        var wrapped = currentCallback is WindowCallbackWrapperCompose || currentCallback is WindowCallbackWrapperClick
+        var wrapped =
+            currentCallback is WindowCallbackWrapperCompose || currentCallback is WindowCallbackWrapperClick ||
+                currentCallback is WindowCallbackWrapper || currentCallback is ThirdPartyWindowCallbackWrapper
+
         if (!wrapped) {
             return listOf(currentCallback)
         }
@@ -239,10 +315,15 @@ class WindowCallbackWrapperTest {
             list.add(currentCallback)
             if (currentCallback is WindowCallbackWrapperClick) {
                 currentCallback = currentCallback.unwrap()
+            } else if (currentCallback is WindowCallbackWrapperCompose) {
+                currentCallback = (currentCallback).unwrap()
+            } else if (currentCallback is WindowCallbackWrapper) {
+                currentCallback = (currentCallback).unwrap()
             } else {
-                currentCallback = (currentCallback as WindowCallbackWrapperCompose).unwrap()
+                currentCallback = (currentCallback as ThirdPartyWindowCallbackWrapper).unwrap()
             }
-            wrapped = currentCallback is WindowCallbackWrapperCompose || currentCallback is WindowCallbackWrapperClick
+            wrapped = currentCallback is WindowCallbackWrapperCompose || currentCallback is WindowCallbackWrapperClick ||
+                currentCallback is WindowCallbackWrapper || currentCallback is ThirdPartyWindowCallbackWrapper
         }
         list.add(currentCallback)
         return list

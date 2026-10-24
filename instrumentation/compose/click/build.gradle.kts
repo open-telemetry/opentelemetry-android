@@ -28,7 +28,7 @@ dependencies {
     implementation(libs.opentelemetry.kotlin.compat)
     implementation(libs.opentelemetry.semconv.kotlin)
     implementation(project(":services"))
-    implementation(project(":instrumentation:instrumentation-common"))
+    implementation(project(":instrumentation:common-api"))
 
     compileOnly(libs.compose) {
         exclude(group = "org.jetbrains.kotlinx")
