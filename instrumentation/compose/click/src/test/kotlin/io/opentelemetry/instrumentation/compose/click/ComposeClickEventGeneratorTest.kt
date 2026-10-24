@@ -105,7 +105,7 @@ internal class ComposeClickEventGeneratorTest {
             clickableIndexes = listOf(2, 3, 4),
         )
 
-        composeClickEventGenerator.generateClick(motionEvent)
+        composeClickEventGenerator.consumeEvent(motionEvent)
 
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
@@ -142,7 +142,7 @@ internal class ComposeClickEventGeneratorTest {
             clickableIndexes = listOf(2, 3, 4),
         )
 
-        composeClickEventGenerator.generateClick(motionEvent)
+        composeClickEventGenerator.consumeEvent(motionEvent)
 
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)
@@ -180,7 +180,7 @@ internal class ComposeClickEventGeneratorTest {
             describableIndexes = listOf(3, 4),
         )
 
-        composeClickEventGenerator.generateClick(motionEvent)
+        composeClickEventGenerator.consumeEvent(motionEvent)
 
         val events = openTelemetryRule.logRecords
         assertThat(events).hasSize(2)

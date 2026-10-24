@@ -10,6 +10,9 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import io.opentelemetry.android.instrumentation.common.ToggleableTracker
+import io.opentelemetry.android.instrumentation.common.TouchEventConsumer
+import io.opentelemetry.android.instrumentation.common.WindowCallbackWrapper
 import io.opentelemetry.android.instrumentation.view.click.internal.Gesture
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_BUTTON
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_CLICKS
@@ -33,7 +36,8 @@ import io.opentelemetry.kotlin.logging.Logger as KotlinLogger
 internal class ViewClickEventGenerator(
     private val eventLogger: Logger,
     private val clickEventLogger: KotlinLogger,
-) {
+) : TouchEventConsumer,
+    ToggleableTracker {
     private var windowRef: WeakReference<Window>? = null
 
     private val gestureListener =
@@ -130,23 +134,20 @@ internal class ViewClickEventGenerator(
 
     private val viewCoordinates = IntArray(2)
 
-    fun startTracking(window: Window) {
+    override fun startTracking(window: Window) {
         windowRef = WeakReference(window)
-        val currentCallback = window.callback
-        window.callback = WindowCallbackWrapper(currentCallback, this)
+        WindowCallbackWrapper.registerConsumer(window, WRAPPER_KEY_VIEW_CLICK, this)
     }
 
-    fun generateClick(motionEvent: MotionEvent?) {
+    override fun consumeEvent(motionEvent: MotionEvent?) {
         if (motionEvent != null) {
             gestureDetector.onTouchEvent(motionEvent)
         }
     }
 
-    fun stopTracking() {
+    override fun stopTracking() {
         windowRef?.get()?.run {
-            if (callback is WindowCallbackWrapper) {
-                callback = (callback as WindowCallbackWrapper).unwrap()
-            }
+            WindowCallbackWrapper.unregisterConsumer(this, WRAPPER_KEY_VIEW_CLICK)
         }
         windowRef = null
     }
@@ -343,4 +344,8 @@ internal class ViewClickEventGenerator(
 
     private val View.isVisible: Boolean
         get() = visibility == View.VISIBLE
+
+    companion object {
+        private const val WRAPPER_KEY_VIEW_CLICK = "view-click-wrapper"
+    }
 }

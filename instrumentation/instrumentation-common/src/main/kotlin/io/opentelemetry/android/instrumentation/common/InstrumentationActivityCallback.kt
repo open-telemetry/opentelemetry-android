@@ -3,19 +3,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.instrumentation.compose.click
+package io.opentelemetry.android.instrumentation.common
 
 import android.app.Activity
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
 
-internal class ComposeClickActivityCallback(
-    private val composeClickEventGenerator: ComposeClickEventGenerator,
+class InstrumentationActivityCallback(
+    private val toggleableTracker: ToggleableTracker,
 ) : DefaultingActivityLifecycleCallbacks {
     override fun onActivityResumed(activity: Activity) {
-        composeClickEventGenerator.startTracking(activity.window)
+        super.onActivityResumed(activity)
+        toggleableTracker.startTracking(activity.window)
     }
 
     override fun onActivityPaused(activity: Activity) {
-        composeClickEventGenerator.stopTracking()
+        super.onActivityPaused(activity)
+        toggleableTracker.stopTracking()
     }
 }
