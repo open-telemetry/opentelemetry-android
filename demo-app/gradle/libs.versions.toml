@@ -1,6 +1,6 @@
 [versions]
 byteBuddy = "1.18.15"
-okhttp = "5.5.0"
+okhttp = "5.5.1"
 opentelemetry = "1.67.0"
 opentelemetry-alpha = "1.67.0-alpha"
 junit = "6.1.3"

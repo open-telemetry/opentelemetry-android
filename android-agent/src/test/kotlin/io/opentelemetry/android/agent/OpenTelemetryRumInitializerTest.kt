@@ -301,6 +301,7 @@ class OpenTelemetryRumInitializerTest {
         val clock = TestClock.create()
         val storage = mockk<SessionStorage>()
         val saved = Collections.synchronizedList(mutableListOf<Session>())
+        every { storage.getPreviousSession() } returns null
         every { storage.save(capture(saved)) } returns Unit
         val rum =
             OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
@@ -341,6 +342,10 @@ class OpenTelemetryRumInitializerTest {
     @Test
     fun `custom storage is used by the configured manager`() {
         val storage = mockk<SessionStorage>()
+        val previous = mockk<Session>()
+        every { previous.id } returns "previous-launch"
+        every { previous.startTimestamp } returns 12
+        every { storage.getPreviousSession() } returns previous
         val saved = Collections.synchronizedList(mutableListOf<Session>())
         every { storage.save(capture(saved)) } returns Unit
         val testClock = TestClock.create()
@@ -365,9 +370,11 @@ class OpenTelemetryRumInitializerTest {
             val second = rum.sessionProvider.getSessionId()
             assertThat(second).isNotEqualTo(first)
             assertThat(saved.map { it.id }).containsExactly(first, second)
+            verify { observer.onSessionStarted(match { it.id == first }, match { it.id == "previous-launch" && it.startTimestamp == 12L }) }
             verify { observer.onSessionStarted(match { it.id == second }, match { it.id == first }) }
             verify { appLifecycle.registerListener(any<SessionIdTimeoutHandler>()) }
             verify(exactly = 0) { storage.get() }
+            verify(exactly = 1) { storage.getPreviousSession() }
         } finally {
             rum.shutdown()
         }

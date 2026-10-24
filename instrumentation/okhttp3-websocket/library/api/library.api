@@ -2,6 +2,7 @@ public final class io/opentelemetry/instrumentation/library/okhttp/websocket/int
 	public fun <init> ()V
 	public fun getName ()Ljava/lang/String;
 	public fun install (Landroid/content/Context;Lio/opentelemetry/android/OpenTelemetryRum;)V
+	public fun uninstall (Landroid/content/Context;Lio/opentelemetry/android/OpenTelemetryRum;)V
 }
 
 public final class io/opentelemetry/instrumentation/library/okhttp/websocket/internal/WebsocketListenerWrapper : okhttp3/WebSocketListener {
@@ -13,9 +14,11 @@ public final class io/opentelemetry/instrumentation/library/okhttp/websocket/int
 	public fun onMessage (Lokhttp3/WebSocket;Ljava/lang/String;)V
 	public fun onMessage (Lokhttp3/WebSocket;Lokio/ByteString;)V
 	public fun onOpen (Lokhttp3/WebSocket;Lokhttp3/Response;)V
+	public static final fun reset ()V
 }
 
 public final class io/opentelemetry/instrumentation/library/okhttp/websocket/internal/WebsocketListenerWrapper$Companion {
 	public final fun configure (Lio/opentelemetry/api/OpenTelemetry;)V
+	public final fun reset ()V
 }
 

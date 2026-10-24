@@ -176,6 +176,55 @@ internal class WebsocketListenerWrapperTest {
         verify(exactly = 1) { delegateListener.onFailure(webSocket, throwable, response) }
     }
 
+    @Test
+    fun testResetRestoresNoopLogger() {
+        WebsocketListenerWrapper.reset()
+
+        val response = buildMockResponse()
+        every { delegateListener.onOpen(webSocket, response) } returns Unit
+        wrapper.onOpen(webSocket, response)
+
+        assertThat(otelTesting.logRecords).isEmpty()
+        verify(exactly = 1) { delegateListener.onOpen(webSocket, response) }
+    }
+
+    @Test
+    fun testInstrumentationInstallAndUninstall() {
+        val instrumentation = OkHttpWebsocketInstrumentation()
+        val context = io.mockk.mockk<android.content.Context>()
+        val rum =
+            io.mockk.mockk<io.opentelemetry.android.OpenTelemetryRum> {
+                every { openTelemetry } returns otelTesting.openTelemetry
+            }
+
+        instrumentation.install(context, rum)
+
+        val response = buildMockResponse()
+        every { delegateListener.onOpen(webSocket, response) } returns Unit
+        wrapper.onOpen(webSocket, response)
+        assertThat(otelTesting.logRecords).hasSize(1)
+
+        otelTesting.clearLogRecords()
+        instrumentation.uninstall(context, rum)
+
+        wrapper.onOpen(webSocket, response)
+        assertThat(otelTesting.logRecords).isEmpty()
+    }
+
+    @Test
+    fun testUninstallBeforeInstallIsSafeNoop() {
+        val instrumentation = OkHttpWebsocketInstrumentation()
+        val context = io.mockk.mockk<android.content.Context>()
+        val rum = io.mockk.mockk<io.opentelemetry.android.OpenTelemetryRum>()
+
+        instrumentation.uninstall(context, rum)
+
+        val response = buildMockResponse()
+        every { delegateListener.onOpen(webSocket, response) } returns Unit
+        wrapper.onOpen(webSocket, response)
+        assertThat(otelTesting.logRecords).isEmpty()
+    }
+
     private fun buildMockResponse(): Response =
         Response
             .Builder()
