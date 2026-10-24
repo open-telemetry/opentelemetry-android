@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.instrumentation.common
 
 import android.os.Build.VERSION_CODES
@@ -77,9 +82,9 @@ class WindowCallbackWrapperCompose(
     fun unwrap(): Callback = callback
 }
 
-
-class MinimalTrackerCompose(
-): TouchEventConsumer, ToggleableTracker {
+class MinimalTrackerCompose :
+    TouchEventConsumer,
+    ToggleableTracker {
     private var windowRef: WeakReference<Window>? = null
 
     override fun startTracking(window: Window) {
@@ -90,7 +95,6 @@ class MinimalTrackerCompose(
 
     override fun consumeEvent(event: MotionEvent?) {
         windowRef?.get()?.let { window ->
-
         }
     }
 
@@ -104,9 +108,9 @@ class MinimalTrackerCompose(
     }
 }
 
-
-class MinimalTrackerClick(
-): TouchEventConsumer, ToggleableTracker {
+class MinimalTrackerClick :
+    TouchEventConsumer,
+    ToggleableTracker {
     private var windowRef: WeakReference<Window>? = null
 
     override fun startTracking(window: Window) {
@@ -117,7 +121,6 @@ class MinimalTrackerClick(
 
     override fun consumeEvent(event: MotionEvent?) {
         windowRef?.get()?.let { window ->
-
         }
     }
 

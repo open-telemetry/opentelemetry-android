@@ -1,12 +1,3 @@
-public abstract interface class io/opentelemetry/android/instrumentation/view/click/ToggleableTracker {
-	public abstract fun startTracking (Landroid/view/Window;)V
-	public abstract fun stopTracking ()V
-}
-
-public abstract interface class io/opentelemetry/android/instrumentation/view/click/TouchEventConsumer {
-	public abstract fun consumeEvent (Landroid/view/MotionEvent;)V
-}
-
 public final class io/opentelemetry/android/instrumentation/view/click/ViewClickInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
 	public fun <init> ()V
 	public fun getName ()Ljava/lang/String;

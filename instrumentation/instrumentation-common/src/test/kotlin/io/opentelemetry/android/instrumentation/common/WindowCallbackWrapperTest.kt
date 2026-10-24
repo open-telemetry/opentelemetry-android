@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.android.instrumentation.common
 
 import android.app.Application
@@ -18,7 +23,6 @@ import org.junit.jupiter.api.assertNotNull
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.lang.ref.WeakReference
-
 
 @RunWith(RobolectricTestRunner::class)
 class WindowCallbackWrapperTest {
@@ -117,7 +121,6 @@ class WindowCallbackWrapperTest {
         assertNotNull(currentCallback)
         assertFalse(currentCallback is WindowCallbackWrapper)
     }
-
 
     @Test
     fun callbackWrappedOnResume() {
@@ -228,13 +231,13 @@ class WindowCallbackWrapperTest {
     fun traverseWrapper(callback: Window.Callback): List<Window.Callback> {
         var currentCallback = callback
         var wrapped = currentCallback is WindowCallbackWrapperCompose || currentCallback is WindowCallbackWrapperClick
-        if(!wrapped) {
+        if (!wrapped) {
             return listOf(currentCallback)
         }
         val list = mutableListOf<Window.Callback>()
-        while(wrapped) {
+        while (wrapped) {
             list.add(currentCallback)
-            if(currentCallback is WindowCallbackWrapperClick) {
+            if (currentCallback is WindowCallbackWrapperClick) {
                 currentCallback = currentCallback.unwrap()
             } else {
                 currentCallback = (currentCallback as WindowCallbackWrapperCompose).unwrap()

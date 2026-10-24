@@ -25,7 +25,8 @@ internal class ComposeClickEventGenerator(
     private val eventLogger: Logger,
     private val composeLayoutNodeUtil: ComposeLayoutNodeUtil = ComposeLayoutNodeUtil(),
     private val composeTapTargetDetector: ComposeTapTargetDetector = ComposeTapTargetDetector(composeLayoutNodeUtil),
-): TouchEventConsumer, ToggleableTracker {
+) : TouchEventConsumer,
+    ToggleableTracker {
     private var windowRef: WeakReference<Window>? = null
 
     override fun startTracking(window: Window) {

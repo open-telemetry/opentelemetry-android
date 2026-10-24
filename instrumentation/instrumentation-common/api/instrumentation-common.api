@@ -1,0 +1,66 @@
+public final class io/opentelemetry/android/instrumentation/common/InstrumentationActivityCallback : io/opentelemetry/android/internal/services/visiblescreen/activities/DefaultingActivityLifecycleCallbacks {
+	public fun <init> (Lio/opentelemetry/android/instrumentation/common/ToggleableTracker;)V
+	public fun onActivityPaused (Landroid/app/Activity;)V
+	public fun onActivityResumed (Landroid/app/Activity;)V
+}
+
+public abstract interface class io/opentelemetry/android/instrumentation/common/ToggleableTracker {
+	public abstract fun startTracking (Landroid/view/Window;)V
+	public abstract fun stopTracking ()V
+}
+
+public abstract interface class io/opentelemetry/android/instrumentation/common/TouchEventConsumer {
+	public abstract fun consumeEvent (Landroid/view/MotionEvent;)V
+}
+
+public final class io/opentelemetry/android/instrumentation/common/WindowCallbackWrapper : android/view/Window$Callback {
+	public static final field Companion Lio/opentelemetry/android/instrumentation/common/WindowCallbackWrapper$Companion;
+	public synthetic fun <init> (Landroid/view/Window$Callback;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun dispatchGenericMotionEvent (Landroid/view/MotionEvent;)Z
+	public fun dispatchKeyEvent (Landroid/view/KeyEvent;)Z
+	public fun dispatchKeyShortcutEvent (Landroid/view/KeyEvent;)Z
+	public fun dispatchPopulateAccessibilityEvent (Landroid/view/accessibility/AccessibilityEvent;)Z
+	public fun dispatchTouchEvent (Landroid/view/MotionEvent;)Z
+	public fun dispatchTrackballEvent (Landroid/view/MotionEvent;)Z
+	public final fun keys ()Ljava/util/List;
+	public fun onActionModeFinished (Landroid/view/ActionMode;)V
+	public fun onActionModeStarted (Landroid/view/ActionMode;)V
+	public fun onAttachedToWindow ()V
+	public fun onContentChanged ()V
+	public fun onCreatePanelMenu (ILandroid/view/Menu;)Z
+	public fun onCreatePanelView (I)Landroid/view/View;
+	public fun onDetachedFromWindow ()V
+	public fun onMenuItemSelected (ILandroid/view/MenuItem;)Z
+	public fun onMenuOpened (ILandroid/view/Menu;)Z
+	public fun onPanelClosed (ILandroid/view/Menu;)V
+	public fun onPointerCaptureChanged (Z)V
+	public fun onPreparePanel (ILandroid/view/View;Landroid/view/Menu;)Z
+	public fun onProvideKeyboardShortcuts (Ljava/util/List;Landroid/view/Menu;I)V
+	public fun onSearchRequested ()Z
+	public fun onSearchRequested (Landroid/view/SearchEvent;)Z
+	public fun onWindowAttributesChanged (Landroid/view/WindowManager$LayoutParams;)V
+	public fun onWindowFocusChanged (Z)V
+	public fun onWindowStartingActionMode (Landroid/view/ActionMode$Callback;)Landroid/view/ActionMode;
+	public fun onWindowStartingActionMode (Landroid/view/ActionMode$Callback;I)Landroid/view/ActionMode;
+	public static final fun registerConsumer (Landroid/view/Window;Ljava/lang/String;Lio/opentelemetry/android/instrumentation/common/TouchEventConsumer;)V
+	public static final fun unregisterConsumer (Landroid/view/Window;Ljava/lang/String;)V
+	public final fun unwrap ()Landroid/view/Window$Callback;
+}
+
+public final class io/opentelemetry/android/instrumentation/common/WindowCallbackWrapper$Companion {
+	public final fun registerConsumer (Landroid/view/Window;Ljava/lang/String;Lio/opentelemetry/android/instrumentation/common/TouchEventConsumer;)V
+	public final fun unregisterConsumer (Landroid/view/Window;Ljava/lang/String;)V
+}
+
+public final class io/opentelemetry/android/instrumentation/common/WindowCallbackWrapper$Companion$SmallMap : java/util/LinkedHashMap {
+	public fun <init> ()V
+	public final fun entrySet ()Ljava/util/Set;
+	public fun getEntries ()Ljava/util/Set;
+	public fun getKeys ()Ljava/util/Set;
+	public fun getSize ()I
+	public fun getValues ()Ljava/util/Collection;
+	public final fun keySet ()Ljava/util/Set;
+	public final fun size ()I
+	public final fun values ()Ljava/util/Collection;
+}
+
