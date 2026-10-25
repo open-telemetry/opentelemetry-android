@@ -33,7 +33,7 @@ class OpenTelemetryConfiguration internal constructor(
     instrumentationLoader: AndroidInstrumentationLoader,
 ) {
     internal val exportConfig = HttpExportConfiguration()
-    internal val sessionConfig = SessionConfiguration()
+    internal val sessionConfig = SessionConfiguration(rumConfig)
     internal val samplerConfig = SamplerConfiguration()
     internal val instrumentations = InstrumentationConfiguration(rumConfig, instrumentationLoader)
 
@@ -76,6 +76,20 @@ class OpenTelemetryConfiguration internal constructor(
      */
     fun httpExport(action: HttpExportConfiguration.() -> Unit) {
         exportConfig.action()
+    }
+
+    /**
+     * Disable screen attributes (`app.screen.name`) from being automatically attached to spans and logs.
+     */
+    fun disableScreenAttributes() {
+        rumConfig.disableScreenAttributes()
+    }
+
+    /**
+     * Disable automatic attachment of `session.id` to spans and logs.
+     */
+    fun disableSessionId() {
+        rumConfig.disableSessionId()
     }
 
     /**

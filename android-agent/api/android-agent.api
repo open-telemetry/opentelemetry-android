@@ -69,6 +69,8 @@ public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration
 	public final fun addPropagator (Lio/opentelemetry/context/propagation/TextMapPropagator;)V
 	public final fun disableLogging ()V
 	public final fun disableMetrics ()V
+	public final fun disableScreenAttributes ()V
+	public final fun disableSessionId ()V
 	public final fun disableTracing ()V
 	public final fun diskBuffering (Lkotlin/jvm/functions/Function1;)V
 	public final fun getClock ()Lio/opentelemetry/sdk/common/Clock;
@@ -95,10 +97,13 @@ public final class io/opentelemetry/android/agent/dsl/SemanticConventionsConfigu
 }
 
 public final class io/opentelemetry/android/agent/dsl/SessionConfiguration {
+	public fun <init> ()V
 	public final fun getBackgroundInactivityTimeout-UwyO8pc ()J
+	public final fun getIncludeSessionId ()Z
 	public final fun getMaxLifetime-UwyO8pc ()J
 	public final fun observers ([Lio/opentelemetry/android/session/SessionObserver;)V
 	public final fun setBackgroundInactivityTimeout-LRDsOJo (J)V
+	public final fun setIncludeSessionId (Z)V
 	public final fun setMaxLifetime-LRDsOJo (J)V
 	public final fun storage (Lio/opentelemetry/android/agent/session/SessionStorage;)V
 }
