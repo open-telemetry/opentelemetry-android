@@ -25,45 +25,55 @@ internal object InstrumentationSorter {
             return instrumentations
         }
 
-        val nameToInst = mutableMapOf<String, AndroidInstrumentation>()
-        for (inst in instrumentations) {
-            nameToInst[inst.name] = inst
-        }
+        val nameToInst = instrumentations.associateBy { it.name }
+        val (outgoingEdges, inDegree) = buildDependencyGraph(instrumentations, nameToInst)
 
-        // Graph: node -> list of dependent nodes that must come AFTER it (edges: u -> v means u before v)
-        val outgoingEdges = mutableMapOf<String, MutableSet<String>>()
-        val inDegree = mutableMapOf<String, Int>()
+        return executeKahnSort(instrumentations, nameToInst, outgoingEdges, inDegree, warn)
+    }
 
-        for (inst in instrumentations) {
-            outgoingEdges[inst.name] = mutableSetOf()
-            inDegree[inst.name] = 0
-        }
+    private fun buildDependencyGraph(
+        instrumentations: List<AndroidInstrumentation>,
+        nameToInst: Map<String, AndroidInstrumentation>,
+    ): Pair<Map<String, MutableSet<String>>, MutableMap<String, Int>> {
+        val outgoingEdges = instrumentations.associate { it.name to mutableSetOf<String>() }
+        val inDegree = instrumentations.associate { it.name to 0 }.toMutableMap()
 
-        // Build edges based on OrderedAndroidInstrumentation constraints
         for (inst in instrumentations) {
             if (inst is OrderedAndroidInstrumentation) {
-                // inst must install AFTER other -> edge other -> inst
-                for (beforeName in inst.installAfter) {
-                    if (nameToInst.containsKey(beforeName) && beforeName != inst.name) {
-                        if (outgoingEdges[beforeName]!!.add(inst.name)) {
-                            inDegree[inst.name] = inDegree[inst.name]!! + 1
-                        }
-                    }
-                }
-
-                // inst must install BEFORE other -> edge inst -> other
-                for (afterName in inst.installBefore) {
-                    if (nameToInst.containsKey(afterName) && afterName != inst.name) {
-                        if (outgoingEdges[inst.name]!!.add(afterName)) {
-                            inDegree[afterName] = inDegree[afterName]!! + 1
-                        }
-                    }
-                }
+                addEdges(inst, inst.installAfter, isAfter = true, nameToInst, outgoingEdges, inDegree)
+                addEdges(inst, inst.installBefore, isAfter = false, nameToInst, outgoingEdges, inDegree)
             }
         }
 
-        // Stable Kahn's algorithm: queue preserving discovery order
-        // We find all nodes with inDegree == 0 in original discovery order
+        return Pair(outgoingEdges, inDegree)
+    }
+
+    private fun addEdges(
+        inst: AndroidInstrumentation,
+        targets: Set<String>,
+        isAfter: Boolean,
+        nameToInst: Map<String, AndroidInstrumentation>,
+        outgoingEdges: Map<String, MutableSet<String>>,
+        inDegree: MutableMap<String, Int>,
+    ) {
+        for (target in targets) {
+            if (nameToInst.containsKey(target) && target != inst.name) {
+                val from = if (isAfter) target else inst.name
+                val to = if (isAfter) inst.name else target
+                if (outgoingEdges[from]?.add(to) == true) {
+                    inDegree[to] = (inDegree[to] ?: 0) + 1
+                }
+            }
+        }
+    }
+
+    private fun executeKahnSort(
+        instrumentations: List<AndroidInstrumentation>,
+        nameToInst: Map<String, AndroidInstrumentation>,
+        outgoingEdges: Map<String, MutableSet<String>>,
+        inDegree: MutableMap<String, Int>,
+        warn: (String) -> Unit,
+    ): List<AndroidInstrumentation> {
         val available = ArrayDeque<String>()
         val visited = mutableSetOf<String>()
 
@@ -76,12 +86,12 @@ internal object InstrumentationSorter {
         val sorted = mutableListOf<AndroidInstrumentation>()
 
         while (available.isNotEmpty()) {
-            val currentName = available.removeFirst()
-            visited.add(currentName)
-            sorted.add(nameToInst[currentName]!!)
+            val current = available.removeFirst()
+            visited.add(current)
+            nameToInst[current]?.let { sorted.add(it) }
 
-            for (neighbor in outgoingEdges[currentName]!!) {
-                val newDegree = inDegree[neighbor]!! - 1
+            outgoingEdges[current]?.forEach { neighbor ->
+                val newDegree = (inDegree[neighbor] ?: 1) - 1
                 inDegree[neighbor] = newDegree
                 if (newDegree == 0) {
                     available.add(neighbor)
@@ -89,7 +99,6 @@ internal object InstrumentationSorter {
             }
         }
 
-        // Cycle check: if some nodes were not visited, there is a cycle
         if (sorted.size < instrumentations.size) {
             val remaining = instrumentations.filter { !visited.contains(it.name) }
             val remainingNames = remaining.map { it.name }
