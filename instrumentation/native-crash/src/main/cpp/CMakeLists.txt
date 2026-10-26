@@ -7,6 +7,7 @@ project(otel_android_native_crash LANGUAGES C)
 option(OTEL_NATIVE_CRASH_TESTING "Build native crash instrumentation test hooks" OFF)
 
 add_library(otel_android_native_crash SHARED native_crash_handler.c native_crash_modules.c)
+target_link_libraries(otel_android_native_crash PRIVATE dl)
 
 set_target_properties(
     otel_android_native_crash
@@ -28,7 +29,6 @@ if(OTEL_NATIVE_CRASH_TESTING)
     target_sources(
         otel_android_native_crash PRIVATE ../../androidTest/cpp/native_crash_modules_test.c
     )
-    target_link_libraries(otel_android_native_crash PRIVATE dl)
     target_compile_definitions(
         otel_android_native_crash
         PRIVATE

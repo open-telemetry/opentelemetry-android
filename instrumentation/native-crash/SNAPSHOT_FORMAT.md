@@ -86,12 +86,25 @@ The snapshot record lives in pre-allocated static storage. Before installing the
 the writer walks the loaded ELF program headers and prepares the module table while normal runtime
 services are available. At crash time, the handler uses that table as-is; it does not inspect ELF
 metadata. If `OTEL_NCS_ARCH_CURRENT` is `OTEL_NCS_ARCH_UNKNOWN`, or if module preparation fails,
-marker capture remains enabled but snapshot capture is omitted. This costs 20,568 bytes of process
-storage but does not consume the alternate signal stack or allocate during a crash.
+marker capture remains enabled but snapshot capture is omitted. The record uses 20,568 bytes of
+process storage, plus two `PATH_MAX` path buffers and the publication flag. None of these consume
+the alternate signal stack or allocate during a crash.
 
-`otel_native_crash_prepare_modules` prepares just the module entries using `dl_iterate_phdr`.
-It is not yet wired into handler installation; the capture follow-up will call it before publishing
-the snapshot. It prioritizes libraries under `/data/` and `/mnt/expand/`, including APK-embedded
+`otel_native_crash_prepare_modules` prepares the module entries using `dl_iterate_phdr` during
+handler installation. Preparation also zeroes the static snapshot buffer, fills its fixed header,
+and copies the per-launch snapshot and temporary paths. The state is published with a release store
+only after every handler installs successfully. A future capture reader must acquire-load the
+lock-free ready flag before touching it; signals during installation remain marker-only.
+Failed installation leaves the state unpublished so a retry can replace it. Once published,
+preparation never rewrites it. Repeated installation does not refresh the table or paths, and a
+different snapshot path is rejected once the state is published.
+Snapshot preparation failure does not disable marker capture. The handler does not consume the
+prepared state or write snapshots yet.
+
+JNI string-allocation failure still aborts installation; there is no attempt to recover from an
+out-of-memory exception by installing only part of the requested state.
+
+The table prioritizes libraries under `/data/` and `/mnt/expand/`, including APK-embedded
 libraries, then keeps other images in loader order. This is a path heuristic, not verified app
 ownership. Empty, overlong or invalid UTF-8 basenames and
 overflowing executable ranges are skipped. Enumeration failure clears the entire table. Build IDs
@@ -169,12 +182,11 @@ delivery is claimed, later launches perform cleanup only and never emit the even
 event is handed to OpenTelemetry, recovery deletes the marker, snapshot, and recovery state.
 Cleanup failures retain the remaining files for bounded cleanup-only retries.
 
-The signal handler is not installed while a retry is pending because version 1 uses one fixed marker
-and snapshot pair that a new crash would overwrite. Ordinary recovery exceptions and linkage errors
+Each launch uses its own marker and snapshot paths, so pending recovery does not disable capture
+for the current launch. Ordinary recovery exceptions and linkage errors
 are contained at the instrumentation boundary so they cannot terminate the host application;
 unrecoverable virtual-machine errors are not intercepted. Every retry path is bounded by count or
-age. After the applicable limit is reached, recovery performs best-effort cleanup and allows the
-signal handler to be installed again.
+age. After the applicable limit is reached, recovery performs best-effort cleanup.
 
 ## Limitations
 
@@ -187,6 +199,6 @@ the module table is prepared are not represented, so recovery can return a parti
 CFI-aware unwinder or Crashpad integration can replace the reader without changing the
 signal-handler safety model. Symbol upload and backend symbolication remain separate work.
 
-While recovery is pending, native crashes in that process are not captured. Supporting concurrent
-pending and new crashes requires per-crash paths or renaming the pending files out of the handler's
-fixed destinations and is outside version 1.
+This preparation step does not capture registers or stack bytes, write snapshots, or refresh the
+table after library loads and unloads. The crash-time writer must claim the shared buffer once
+before modifying it, preserving the existing reentrancy guard.
