@@ -108,4 +108,20 @@ class InstrumentationSorterTest {
         val result = InstrumentationSorter.sort(listOf(a, b))
         assertThat(result.map { it.name }).containsExactly("a", "b")
     }
+
+    @Test
+    fun `default getters return empty sets for ordered instrumentation`() {
+        val defaultOrdered =
+            object : OrderedAndroidInstrumentation {
+                override val name: String = "test-default"
+
+                override fun install(
+                    context: Context,
+                    openTelemetryRum: OpenTelemetryRum,
+                ) {}
+            }
+
+        assertThat(defaultOrdered.installAfter).isEmpty()
+        assertThat(defaultOrdered.installBefore).isEmpty()
+    }
 }

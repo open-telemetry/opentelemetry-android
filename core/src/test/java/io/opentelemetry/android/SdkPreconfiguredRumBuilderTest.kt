@@ -101,4 +101,39 @@ class SdkPreconfiguredRumBuilderTest {
 
         assertThat(result).containsExactly(fooInstrumentation, nativeCrashInstrumentation)
     }
+
+    @Test
+    fun `cycle in instrumentation ordering logs warning and falls back to discovery order`() {
+        val context = mockk<Context>()
+        val sdk = mockk<OpenTelemetrySdk>()
+        val config = mockk<OtelRumConfig>()
+        val a = mockk<OrderedAndroidInstrumentation>()
+        val b = mockk<OrderedAndroidInstrumentation>()
+
+        every { config.shouldDiscoverInstrumentations() } returns false
+        every { config.isSuppressed(any()) } returns false
+        every { a.name } returns "inst-a"
+        every { a.installAfter } returns setOf("inst-b")
+        every { a.installBefore } returns emptySet()
+        every { b.name } returns "inst-b"
+        every { b.installAfter } returns setOf("inst-a")
+        every { b.installBefore } returns emptySet()
+
+        val sessionProvider = SessionProvider { fail("Should not have been called!") }
+        val builder =
+            SdkPreconfiguredRumBuilder(
+                context,
+                sdk,
+                sessionProvider,
+                config,
+                getDefault(),
+                AndroidInstrumentationLoaderImpl(),
+            )
+        builder.addInstrumentation(a)
+        builder.addInstrumentation(b)
+
+        val result = builder.getEnabledInstrumentations()
+
+        assertThat(result).containsExactlyInAnyOrder(a, b)
+    }
 }
