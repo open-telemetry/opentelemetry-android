@@ -26,8 +26,8 @@ class SdkPreconfiguredRumBuilderTest {
         val sdk = mockk<OpenTelemetrySdk>()
         val config = mockk<OtelRumConfig>()
         val fooInstrumentation = mockk<AndroidInstrumentation>()
-        val sessionInstrumentation = mockk<OrderedAndroidInstrumentation>()
-        val nativeCrashInstrumentation = mockk<OrderedAndroidInstrumentation>()
+        val sessionInstrumentation = mockk<OrderedAndroidInstrumentation>(relaxed = true)
+        val nativeCrashInstrumentation = mockk<OrderedAndroidInstrumentation>(relaxed = true)
 
         every { config.shouldDiscoverInstrumentations() } returns false // irrelevant
         every { config.isSuppressed(any()) } returns false
@@ -75,7 +75,7 @@ class SdkPreconfiguredRumBuilderTest {
         val sdk = mockk<OpenTelemetrySdk>()
         val config = mockk<OtelRumConfig>()
         val fooInstrumentation = mockk<AndroidInstrumentation>()
-        val nativeCrashInstrumentation = mockk<OrderedAndroidInstrumentation>()
+        val nativeCrashInstrumentation = mockk<OrderedAndroidInstrumentation>(relaxed = true)
 
         every { config.shouldDiscoverInstrumentations() } returns false // irrelevant
         every { config.isSuppressed(any()) } returns false
@@ -107,8 +107,8 @@ class SdkPreconfiguredRumBuilderTest {
         val context = mockk<Context>()
         val sdk = mockk<OpenTelemetrySdk>()
         val config = mockk<OtelRumConfig>()
-        val a = mockk<OrderedAndroidInstrumentation>()
-        val b = mockk<OrderedAndroidInstrumentation>()
+        val a = mockk<OrderedAndroidInstrumentation>(relaxed = true)
+        val b = mockk<OrderedAndroidInstrumentation>(relaxed = true)
 
         every { config.shouldDiscoverInstrumentations() } returns false
         every { config.isSuppressed(any()) } returns false
