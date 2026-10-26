@@ -107,6 +107,30 @@ class OpenTelemetryRumInitializerTest {
     }
 
     @Test
+    fun `Verify custom session provider is applied`() {
+        val customProvider =
+            mockk<SessionProvider> {
+                every { getSessionId() } returns "custom-session-123"
+            }
+
+        val rum =
+            OpenTelemetryRumInitializer.initialize(
+                context = RuntimeEnvironment.getApplication(),
+                configuration = {
+                    httpExport {
+                        baseUrl = "http://127.0.0.1:4318"
+                    }
+                    session {
+                        sessionProvider = customProvider
+                    }
+                },
+            )
+
+        assertThat(rum.sessionProvider.getSessionId()).isEqualTo("custom-session-123")
+        rum.shutdown()
+    }
+
+    @Test
     fun `trace sampler is created once with the agent provider`() {
         val providers = mutableListOf<SessionProvider>()
         val rum =

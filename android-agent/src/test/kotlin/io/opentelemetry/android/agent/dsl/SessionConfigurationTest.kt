@@ -9,6 +9,7 @@ import io.mockk.mockk
 import io.opentelemetry.android.agent.FakeClock
 import io.opentelemetry.android.agent.FakeInstrumentationLoader
 import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -32,6 +33,7 @@ internal class SessionConfigurationTest {
     fun testDefaults() {
         assertEquals(15.minutes, otelConfig.sessionConfig.backgroundInactivityTimeout)
         assertEquals(4.hours, otelConfig.sessionConfig.maxLifetime)
+        assertThat(otelConfig.sessionConfig.sessionProvider).isNull()
     }
 
     @Test
@@ -60,5 +62,17 @@ internal class SessionConfigurationTest {
                 }
             }
         assertThat(otelConfig.sessionConfig.getObservers()).containsExactly(o1, o2)
+    }
+
+    @Test
+    fun `can set custom session provider`() {
+        val customProvider: SessionProvider = mockk()
+        val otelConfig =
+            otelConfig.apply {
+                session {
+                    sessionProvider = customProvider
+                }
+            }
+        assertThat(otelConfig.sessionConfig.sessionProvider).isSameAs(customProvider)
     }
 }
