@@ -73,8 +73,11 @@ internal object InstrumentationSorter {
         }
 
         for (first in firstIndices) {
+            val firstInst = instrumentations[first] as? OrderedAndroidInstrumentation
+            val explicitAfter = firstInst?.installAfter ?: emptySet()
             for (other in nonFirstIndices) {
-                if (outgoingEdges[first].add(other)) {
+                // Do not add first -> other if first explicitly declared it must install after other
+                if (instrumentations[other].name !in explicitAfter && outgoingEdges[first].add(other)) {
                     inDegree[other]++
                 }
             }

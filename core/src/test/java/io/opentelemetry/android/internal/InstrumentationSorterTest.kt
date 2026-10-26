@@ -149,4 +149,30 @@ class InstrumentationSorterTest {
 
         assertThat(names).containsExactly("session", "startup", "native-crash", "anr")
     }
+
+    @Test
+    fun `installFirst respects explicit installAfter without creating cycle`() {
+        val warnings = mutableListOf<String>()
+        val setup = TestInstrumentation("setup")
+        val session =
+            OrderedTestInstrumentation(
+                "session",
+                installFirst = true,
+                installAfter = setOf("setup"),
+                installBefore = setOf("native-crash"),
+            )
+        val nativeCrash = OrderedTestInstrumentation("native-crash", installAfter = setOf("session"))
+        val unconstrained = TestInstrumentation("other")
+
+        val result = InstrumentationSorter.sort(listOf(unconstrained, nativeCrash, session, setup)) { warnings.add(it) }
+        val names = result.map { it.name }
+
+        assertThat(warnings).isEmpty()
+        // setup must precede session due to explicit installAfter
+        assertThat(names.indexOf("setup")).isLessThan(names.indexOf("session"))
+        // session must precede nativeCrash due to explicit installBefore
+        assertThat(names.indexOf("session")).isLessThan(names.indexOf("native-crash"))
+        // session has installFirst so it still precedes unconstrained 'other'
+        assertThat(names.indexOf("session")).isLessThan(names.indexOf("other"))
+    }
 }
