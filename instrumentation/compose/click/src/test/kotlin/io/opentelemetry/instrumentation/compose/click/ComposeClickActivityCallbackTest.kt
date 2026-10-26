@@ -12,14 +12,13 @@ import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.verify
-import io.opentelemetry.android.instrumentation.common.InstrumentationActivityCallback
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 internal class ComposeClickActivityCallbackTest {
-    lateinit var composeClickActivityCallback: InstrumentationActivityCallback
+    lateinit var composeClickActivityCallback: ComposeClickActivityCallback
 
     @MockK
     lateinit var composeClickEventGenerator: ComposeClickEventGenerator
@@ -33,7 +32,7 @@ internal class ComposeClickActivityCallbackTest {
     @Before
     fun setup() {
         MockKAnnotations.init(this)
-        composeClickActivityCallback = InstrumentationActivityCallback(composeClickEventGenerator)
+        composeClickActivityCallback = ComposeClickActivityCallback(composeClickEventGenerator)
     }
 
     @Test

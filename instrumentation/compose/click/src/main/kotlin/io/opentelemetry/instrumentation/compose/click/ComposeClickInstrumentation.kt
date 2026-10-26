@@ -10,14 +10,13 @@ import android.content.Context
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
-import io.opentelemetry.android.instrumentation.common.InstrumentationActivityCallback
 import io.opentelemetry.kotlin.toOtelKotlinApi
 
 @AutoService(AndroidInstrumentation::class)
 class ComposeClickInstrumentation : AndroidInstrumentation {
     override val name: String = "compose.click"
 
-    private var activityCallback: InstrumentationActivityCallback? = null
+    private var activityCallback: ComposeClickActivityCallback? = null
     private var eventGenerator: ComposeClickEventGenerator? = null
 
     override fun install(
@@ -31,7 +30,7 @@ class ComposeClickInstrumentation : AndroidInstrumentation {
                     .loggerProvider
                     .getLogger("io.opentelemetry.android.instrumentation.compose.click"),
             )
-        val callback = InstrumentationActivityCallback(generator)
+        val callback = ComposeClickActivityCallback(generator)
         (context as? Application)?.registerActivityLifecycleCallbacks(callback)
         activityCallback = callback
         eventGenerator = generator

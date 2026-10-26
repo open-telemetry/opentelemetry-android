@@ -10,9 +10,6 @@ package io.opentelemetry.instrumentation.compose.click
 import android.view.MotionEvent
 import android.view.Window
 import androidx.compose.ui.node.LayoutNode
-import io.opentelemetry.android.instrumentation.common.ToggleableTracker
-import io.opentelemetry.android.instrumentation.common.TouchEventConsumer
-import io.opentelemetry.android.instrumentation.common.WindowCallbackWrapper
 import io.opentelemetry.kotlin.logging.Logger
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.kotlin.semconv.events.AppScreenClickEvent
@@ -25,16 +22,16 @@ internal class ComposeClickEventGenerator(
     private val eventLogger: Logger,
     private val composeLayoutNodeUtil: ComposeLayoutNodeUtil = ComposeLayoutNodeUtil(),
     private val composeTapTargetDetector: ComposeTapTargetDetector = ComposeTapTargetDetector(composeLayoutNodeUtil),
-) : TouchEventConsumer,
-    ToggleableTracker {
+) {
     private var windowRef: WeakReference<Window>? = null
 
-    override fun startTracking(window: Window) {
+    fun startTracking(window: Window) {
         windowRef = WeakReference(window)
-        WindowCallbackWrapper.registerConsumer(window, WRAPPER_KEY_COMPOSE_CLICK, this)
+        val currentCallback = window.callback
+        window.callback = WindowCallbackWrapper(currentCallback, this)
     }
 
-    override fun consumeEvent(motionEvent: MotionEvent?) {
+    fun generateClick(motionEvent: MotionEvent?) {
         windowRef?.get()?.let { window ->
             if (motionEvent != null && motionEvent.actionMasked == MotionEvent.ACTION_UP) {
                 AppScreenClickEvent(
@@ -56,14 +53,12 @@ internal class ComposeClickEventGenerator(
         }
     }
 
-    override fun stopTracking() {
+    fun stopTracking() {
         windowRef?.get()?.run {
-            WindowCallbackWrapper.unregisterConsumer(this, WRAPPER_KEY_COMPOSE_CLICK)
+            if (callback is WindowCallbackWrapper) {
+                callback = (callback as WindowCallbackWrapper).unwrap()
+            }
         }
         windowRef = null
-    }
-
-    companion object {
-        private const val WRAPPER_KEY_COMPOSE_CLICK = "compose-click-wrapper"
     }
 }

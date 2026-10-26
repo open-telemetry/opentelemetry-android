@@ -40,8 +40,6 @@ import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.instrumentation.common.InstrumentationActivityCallback
-import io.opentelemetry.android.instrumentation.common.WindowCallbackWrapper
 import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_COORDINATE_X_KEY
 import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_COORDINATE_Y_KEY
 import io.opentelemetry.android.semconv.AppAttributes.APP_WIDGET_ID_KEY
@@ -109,7 +107,7 @@ internal class ComposeInstrumentationTest {
                 every { clock } returns Clock.getDefault()
             }
 
-        val callbackCapturingSlot = slot<InstrumentationActivityCallback>()
+        val callbackCapturingSlot = slot<ComposeClickActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
@@ -179,7 +177,7 @@ internal class ComposeInstrumentationTest {
                 every { clock } returns Clock.getDefault()
             }
 
-        val callbackCapturingSlot = slot<InstrumentationActivityCallback>()
+        val callbackCapturingSlot = slot<ComposeClickActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
         every { activity.window } returns window
