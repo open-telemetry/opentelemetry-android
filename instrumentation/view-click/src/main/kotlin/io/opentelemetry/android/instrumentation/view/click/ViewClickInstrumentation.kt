@@ -46,9 +46,13 @@ class ViewClickInstrumentation : AndroidInstrumentation {
     ) {
         val app = context as? Application ?: return
         activityCallback?.let { callback ->
+            callback.isActive = false
             app.unregisterActivityLifecycleCallbacks(callback)
         }
-        eventGenerator?.stopTracking()
+        eventGenerator?.let { generator ->
+            generator.isActive = false
+            generator.stopTracking()
+        }
         activityCallback = null
         eventGenerator = null
     }

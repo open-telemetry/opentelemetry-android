@@ -840,4 +840,37 @@ class ViewClickInstrumentationTest {
 
         assertThat(openTelemetryRule.logRecords).isEmpty()
     }
+
+    @Test
+    fun callback_dispatched_after_uninstall_does_not_restart_tracking() {
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
+
+        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        var currentCallback: Callback = callback
+        every { window.callback } answers { currentCallback }
+        every { window.callback = any() } answers { currentCallback = firstArg() }
+        every { activity.window } returns window
+        every { application.registerActivityLifecycleCallbacks(any()) } returns Unit
+        every { application.unregisterActivityLifecycleCallbacks(any()) } returns Unit
+
+        val instrumentation = ViewClickInstrumentation()
+        instrumentation.install(application, openTelemetryRum)
+
+        verify {
+            application.registerActivityLifecycleCallbacks(capture(callbackCapturingSlot))
+        }
+
+        val clickActivityCallback = callbackCapturingSlot.captured
+
+        instrumentation.uninstall(application, openTelemetryRum)
+
+        clickActivityCallback.onActivityResumed(activity)
+
+        assertThat(currentCallback).isSameAs(callback)
+    }
 }

@@ -34,6 +34,9 @@ internal class ViewClickEventGenerator(
     private val eventLogger: Logger,
     private val clickEventLogger: KotlinLogger,
 ) {
+    @Volatile
+    var isActive: Boolean = true
+
     private var windowRef: WeakReference<Window>? = null
 
     private val gestureListener =
@@ -131,13 +134,14 @@ internal class ViewClickEventGenerator(
     private val viewCoordinates = IntArray(2)
 
     fun startTracking(window: Window) {
+        if (!isActive) return
         windowRef = WeakReference(window)
         val currentCallback = window.callback
         window.callback = WindowCallbackWrapper(currentCallback, this)
     }
 
     fun generateClick(motionEvent: MotionEvent?) {
-        if (windowRef == null) return
+        if (!isActive || windowRef == null) return
         if (motionEvent != null) {
             gestureDetector.onTouchEvent(motionEvent)
         }
