@@ -125,6 +125,16 @@ class OtelRumConfig {
         return this
     }
 
+    /**
+     * Call this to enable the automatic addition of the `session.id` attribute to spans and logs.
+     *
+     * @return this
+     */
+    fun enableSessionId(): OtelRumConfig {
+        includeSessionId = true
+        return this
+    }
+
     /** Return true if the SDK should be configured to add the `session.id` attribute to spans and logs. */
     fun shouldIncludeSessionId(): Boolean = includeSessionId
 

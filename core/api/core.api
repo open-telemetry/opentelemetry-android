@@ -65,6 +65,7 @@ public final class io/opentelemetry/android/config/OtelRumConfig {
 	public final fun disableSdkInitializationEvents ()Lio/opentelemetry/android/config/OtelRumConfig;
 	public final fun disableSessionId ()Lio/opentelemetry/android/config/OtelRumConfig;
 	public final fun enableSdkInitializationEvents ()Lio/opentelemetry/android/config/OtelRumConfig;
+	public final fun enableSessionId ()Lio/opentelemetry/android/config/OtelRumConfig;
 	public final fun getDiskBufferingConfig ()Lio/opentelemetry/android/features/diskbuffering/DiskBufferingConfig;
 	public final fun getGlobalAttributesSupplier ()Ljava/util/function/Supplier;
 	public final fun getLoggingEnabled ()Z

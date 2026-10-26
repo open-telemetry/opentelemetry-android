@@ -28,7 +28,9 @@ class SessionConfiguration internal constructor(
     var includeSessionId: Boolean = true
         set(value) {
             field = value
-            if (!value) {
+            if (value) {
+                rumConfig?.enableSessionId()
+            } else {
                 rumConfig?.disableSessionId()
             }
         }

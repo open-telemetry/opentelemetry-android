@@ -73,6 +73,7 @@ public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration
 	public final fun disableSessionId ()V
 	public final fun disableTracing ()V
 	public final fun diskBuffering (Lkotlin/jvm/functions/Function1;)V
+	public final fun enableSessionId ()V
 	public final fun getClock ()Lio/opentelemetry/sdk/common/Clock;
 	public final fun globalAttributes (Lkotlin/jvm/functions/Function0;)V
 	public final fun globalAttributesSupplier (Lkotlin/jvm/functions/Function0;)V

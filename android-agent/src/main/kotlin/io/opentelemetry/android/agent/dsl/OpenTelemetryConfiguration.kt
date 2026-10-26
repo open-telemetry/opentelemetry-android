@@ -93,6 +93,13 @@ class OpenTelemetryConfiguration internal constructor(
     }
 
     /**
+     * Enable automatic attachment of `session.id` to spans and logs.
+     */
+    fun enableSessionId() {
+        rumConfig.enableSessionId()
+    }
+
+    /**
      * Configures individual instrumentations.
      */
     fun instrumentations(action: InstrumentationConfiguration.() -> Unit) {
