@@ -54,6 +54,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @ExtendWith(MockKExtension::class)
+@Suppress("LargeClass")
 class ViewClickInstrumentationTest {
     private lateinit var openTelemetryRule: OpenTelemetryRule
 
