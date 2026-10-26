@@ -137,6 +137,7 @@ internal class ViewClickEventGenerator(
     }
 
     fun generateClick(motionEvent: MotionEvent?) {
+        if (windowRef == null) return
         if (motionEvent != null) {
             gestureDetector.onTouchEvent(motionEvent)
         }
@@ -144,8 +145,9 @@ internal class ViewClickEventGenerator(
 
     fun stopTracking() {
         windowRef?.get()?.run {
-            if (callback is WindowCallbackWrapper) {
-                callback = (callback as WindowCallbackWrapper).unwrap()
+            val currentCallback = callback
+            if (currentCallback is WindowCallbackWrapper) {
+                callback = currentCallback.unwrap()
             }
         }
         windowRef = null

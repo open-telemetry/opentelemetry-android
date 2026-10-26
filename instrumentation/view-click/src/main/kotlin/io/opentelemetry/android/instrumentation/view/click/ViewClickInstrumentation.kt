@@ -23,6 +23,7 @@ class ViewClickInstrumentation : AndroidInstrumentation {
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
     ) {
+        val app = context as? Application ?: return
         val scopeName = "io.opentelemetry.android.instrumentation.view.click"
         val generator =
             ViewClickEventGenerator(
@@ -34,7 +35,7 @@ class ViewClickInstrumentation : AndroidInstrumentation {
                         .getLogger(scopeName),
             )
         val callback = ViewClickActivityCallback(generator)
-        (context as? Application)?.registerActivityLifecycleCallbacks(callback)
+        app.registerActivityLifecycleCallbacks(callback)
         activityCallback = callback
         eventGenerator = generator
     }
@@ -43,10 +44,9 @@ class ViewClickInstrumentation : AndroidInstrumentation {
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
     ) {
-        (context as? Application)?.let { app ->
-            activityCallback?.let { callback ->
-                app.unregisterActivityLifecycleCallbacks(callback)
-            }
+        val app = context as? Application ?: return
+        activityCallback?.let { callback ->
+            app.unregisterActivityLifecycleCallbacks(callback)
         }
         eventGenerator?.stopTracking()
         activityCallback = null

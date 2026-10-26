@@ -40,6 +40,7 @@ import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_Y
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_ID
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_NAME
 import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.toOtelKotlinApi
 import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
@@ -805,10 +806,7 @@ class ViewClickInstrumentationTest {
     @Test
     fun non_application_context_is_safe_noop() {
         val nonAppContext = mockk<android.content.Context>()
-        val openTelemetryRum =
-            mockk<OpenTelemetryRum> {
-                every { openTelemetry } returns openTelemetryRule.openTelemetry
-            }
+        val openTelemetryRum = mockk<OpenTelemetryRum>()
         val instrumentation = ViewClickInstrumentation()
 
         instrumentation.install(nonAppContext, openTelemetryRum)
@@ -818,5 +816,28 @@ class ViewClickInstrumentationTest {
             application.registerActivityLifecycleCallbacks(any())
             application.unregisterActivityLifecycleCallbacks(any())
         }
+    }
+
+    @Test
+    fun generate_click_ignored_after_stop_tracking() {
+        every { window.callback } returns callback
+        every { window.callback = any() } returns Unit
+
+        val generator =
+            ViewClickEventGenerator(
+                eventLogger = openTelemetryRule.openTelemetry.logsBridge.get("test"),
+                clickEventLogger =
+                    openTelemetryRule.openTelemetry
+                        .toOtelKotlinApi()
+                        .loggerProvider
+                        .getLogger("test"),
+            )
+        generator.startTracking(window)
+        generator.stopTracking()
+
+        val motionEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, 10f, 10f, 0)
+        generator.generateClick(motionEvent)
+
+        assertThat(openTelemetryRule.logRecords).isEmpty()
     }
 }
