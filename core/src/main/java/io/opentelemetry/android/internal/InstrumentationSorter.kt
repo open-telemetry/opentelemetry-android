@@ -25,43 +25,79 @@ internal object InstrumentationSorter {
             return instrumentations
         }
 
-        val nameToInst = instrumentations.associateBy { it.name }
-        val (outgoingEdges, inDegree) = buildDependencyGraph(instrumentations, nameToInst)
+        val nameToIndices = mutableMapOf<String, MutableList<Int>>()
+        instrumentations.forEachIndexed { index, inst ->
+            nameToIndices.getOrPut(inst.name) { mutableListOf() }.add(index)
+        }
 
-        return executeKahnSort(instrumentations, nameToInst, outgoingEdges, inDegree, warn)
+        val (outgoingEdges, inDegree) = buildDependencyGraph(instrumentations, nameToIndices)
+
+        return executeKahnSort(instrumentations, outgoingEdges, inDegree, warn)
     }
 
     private fun buildDependencyGraph(
         instrumentations: List<AndroidInstrumentation>,
-        nameToInst: Map<String, AndroidInstrumentation>,
-    ): Pair<Map<String, MutableSet<String>>, MutableMap<String, Int>> {
-        val outgoingEdges = instrumentations.associate { it.name to mutableSetOf<String>() }
-        val inDegree = instrumentations.associate { it.name to 0 }.toMutableMap()
+        nameToIndices: Map<String, List<Int>>,
+    ): Pair<Array<MutableSet<Int>>, IntArray> {
+        val size = instrumentations.size
+        val outgoingEdges = Array(size) { mutableSetOf<Int>() }
+        val inDegree = IntArray(size)
 
-        for (inst in instrumentations) {
+        addInstallFirstEdges(instrumentations, outgoingEdges, inDegree)
+
+        for (i in 0 until size) {
+            val inst = instrumentations[i]
             if (inst is OrderedAndroidInstrumentation) {
-                addEdges(inst, inst.installAfter, isAfter = true, nameToInst, outgoingEdges, inDegree)
-                addEdges(inst, inst.installBefore, isAfter = false, nameToInst, outgoingEdges, inDegree)
+                addNamedEdges(i, inst.installAfter, isAfter = true, nameToIndices, outgoingEdges, inDegree)
+                addNamedEdges(i, inst.installBefore, isAfter = false, nameToIndices, outgoingEdges, inDegree)
             }
         }
 
         return Pair(outgoingEdges, inDegree)
     }
 
-    private fun addEdges(
-        inst: AndroidInstrumentation,
+    private fun addInstallFirstEdges(
+        instrumentations: List<AndroidInstrumentation>,
+        outgoingEdges: Array<MutableSet<Int>>,
+        inDegree: IntArray,
+    ) {
+        val firstIndices = mutableListOf<Int>()
+        val nonFirstIndices = mutableListOf<Int>()
+        for (i in instrumentations.indices) {
+            val inst = instrumentations[i]
+            if (inst is OrderedAndroidInstrumentation && inst.installFirst) {
+                firstIndices.add(i)
+            } else {
+                nonFirstIndices.add(i)
+            }
+        }
+
+        for (first in firstIndices) {
+            for (other in nonFirstIndices) {
+                if (outgoingEdges[first].add(other)) {
+                    inDegree[other]++
+                }
+            }
+        }
+    }
+
+    private fun addNamedEdges(
+        sourceIndex: Int,
         targets: Set<String>,
         isAfter: Boolean,
-        nameToInst: Map<String, AndroidInstrumentation>,
-        outgoingEdges: Map<String, MutableSet<String>>,
-        inDegree: MutableMap<String, Int>,
+        nameToIndices: Map<String, List<Int>>,
+        outgoingEdges: Array<MutableSet<Int>>,
+        inDegree: IntArray,
     ) {
-        for (target in targets) {
-            if (nameToInst.containsKey(target) && target != inst.name) {
-                val from = if (isAfter) target else inst.name
-                val to = if (isAfter) inst.name else target
-                if (outgoingEdges[from]?.add(to) == true) {
-                    inDegree[to] = (inDegree[to] ?: 0) + 1
+        for (targetName in targets) {
+            val matchingIndices = nameToIndices[targetName] ?: continue
+            for (targetIndex in matchingIndices) {
+                if (targetIndex != sourceIndex) {
+                    val from = if (isAfter) targetIndex else sourceIndex
+                    val to = if (isAfter) sourceIndex else targetIndex
+                    if (outgoingEdges[from].add(to)) {
+                        inDegree[to]++
+                    }
                 }
             }
         }
@@ -69,17 +105,16 @@ internal object InstrumentationSorter {
 
     private fun executeKahnSort(
         instrumentations: List<AndroidInstrumentation>,
-        nameToInst: Map<String, AndroidInstrumentation>,
-        outgoingEdges: Map<String, MutableSet<String>>,
-        inDegree: MutableMap<String, Int>,
+        outgoingEdges: Array<MutableSet<Int>>,
+        inDegree: IntArray,
         warn: (String) -> Unit,
     ): List<AndroidInstrumentation> {
-        val available = ArrayDeque<String>()
-        val visited = mutableSetOf<String>()
+        val available = ArrayDeque<Int>()
+        val visited = BooleanArray(instrumentations.size)
 
-        for (inst in instrumentations) {
-            if (inDegree[inst.name] == 0) {
-                available.add(inst.name)
+        for (i in instrumentations.indices) {
+            if (inDegree[i] == 0) {
+                available.add(i)
             }
         }
 
@@ -87,23 +122,26 @@ internal object InstrumentationSorter {
 
         while (available.isNotEmpty()) {
             val current = available.removeFirst()
-            visited.add(current)
-            nameToInst[current]?.let { sorted.add(it) }
+            visited[current] = true
+            sorted.add(instrumentations[current])
 
-            outgoingEdges[current]?.forEach { neighbor ->
-                val newDegree = (inDegree[neighbor] ?: 1) - 1
-                inDegree[neighbor] = newDegree
-                if (newDegree == 0) {
+            for (neighbor in outgoingEdges[current]) {
+                inDegree[neighbor]--
+                if (inDegree[neighbor] == 0) {
                     available.add(neighbor)
                 }
             }
         }
 
         if (sorted.size < instrumentations.size) {
-            val remaining = instrumentations.filter { !visited.contains(it.name) }
-            val remainingNames = remaining.map { it.name }
+            val remainingNames = mutableListOf<String>()
+            for (i in instrumentations.indices) {
+                if (!visited[i]) {
+                    sorted.add(instrumentations[i])
+                    remainingNames.add(instrumentations[i].name)
+                }
+            }
             warn("Cycle detected in instrumentation ordering constraints. Remaining in discovery order: $remainingNames")
-            sorted.addAll(remaining)
         }
 
         return sorted

@@ -12,5 +12,6 @@ public abstract interface class io/opentelemetry/android/instrumentation/Instrum
 public abstract interface class io/opentelemetry/android/instrumentation/OrderedAndroidInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
 	public fun getInstallAfter ()Ljava/util/Set;
 	public fun getInstallBefore ()Ljava/util/Set;
+	public fun getInstallFirst ()Z
 }
 

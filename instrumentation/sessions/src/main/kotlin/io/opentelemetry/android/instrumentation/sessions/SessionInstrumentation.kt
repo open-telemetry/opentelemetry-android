@@ -17,6 +17,8 @@ import io.opentelemetry.kotlin.toOtelKotlinApi
 class SessionInstrumentation : OrderedAndroidInstrumentation {
     override val name: String = "session"
 
+    override val installFirst: Boolean = true
+
     override val installBefore: Set<String> = setOf("native-crash")
 
     override fun install(

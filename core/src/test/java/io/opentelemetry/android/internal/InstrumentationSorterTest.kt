@@ -24,6 +24,7 @@ class InstrumentationSorterTest {
 
     private class OrderedTestInstrumentation(
         name: String,
+        override val installFirst: Boolean = false,
         override val installAfter: Set<String> = emptySet(),
         override val installBefore: Set<String> = emptySet(),
     ) : TestInstrumentation(name),
@@ -123,5 +124,29 @@ class InstrumentationSorterTest {
 
         assertThat(defaultOrdered.installAfter).isEmpty()
         assertThat(defaultOrdered.installBefore).isEmpty()
+        assertThat(defaultOrdered.installFirst).isFalse()
+    }
+
+    @Test
+    fun `preserves duplicate registrations in discovery order`() {
+        val foo1 = TestInstrumentation("foo")
+        val foo2 = TestInstrumentation("foo")
+        val bar = TestInstrumentation("bar")
+
+        val result = InstrumentationSorter.sort(listOf(foo1, bar, foo2))
+        assertThat(result).containsExactly(foo1, bar, foo2)
+    }
+
+    @Test
+    fun `installFirst places instrumentation before unconstrained ones`() {
+        val startup = TestInstrumentation("startup")
+        val session = OrderedTestInstrumentation("session", installFirst = true, installBefore = setOf("native-crash"))
+        val nativeCrash = OrderedTestInstrumentation("native-crash", installAfter = setOf("session"))
+        val anr = TestInstrumentation("anr")
+
+        val result = InstrumentationSorter.sort(listOf(startup, nativeCrash, session, anr))
+        val names = result.map { it.name }
+
+        assertThat(names).containsExactly("session", "startup", "native-crash", "anr")
     }
 }

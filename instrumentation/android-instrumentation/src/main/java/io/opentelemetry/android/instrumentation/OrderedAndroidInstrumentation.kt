@@ -13,6 +13,12 @@ package io.opentelemetry.android.instrumentation
  */
 interface OrderedAndroidInstrumentation : AndroidInstrumentation {
     /**
+     * If true, this instrumentation should be installed before other instrumentations that do not declare
+     * [installFirst], unless explicit ordering constraints indicate otherwise.
+     */
+    val installFirst: Boolean get() = false
+
+    /**
      * Set of instrumentation names (from [AndroidInstrumentation.name]) that must be installed
      * BEFORE this instrumentation is installed.
      *
