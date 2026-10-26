@@ -21,7 +21,8 @@ class WindowCallbackWrapper private constructor(
     private val callbackMap = LinkedHashMap<String, TouchEventConsumer>()
 
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
-        for ((key, touchConsumer) in callbackMap) {
+        val consumers = callbackMap.values.toList()
+        for (touchConsumer in consumers) {
             touchConsumer.consumeEvent(event)
         }
         return callback.dispatchTouchEvent(event)

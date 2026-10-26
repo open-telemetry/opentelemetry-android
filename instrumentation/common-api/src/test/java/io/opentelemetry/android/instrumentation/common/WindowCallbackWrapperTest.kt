@@ -6,8 +6,13 @@
 package io.opentelemetry.android.instrumentation.common
 
 import android.app.Application
+import android.os.Build.VERSION_CODES
+import android.view.KeyboardShortcutGroup
+import android.view.Menu
 import android.view.MotionEvent
 import android.view.Window
+import android.view.Window.Callback
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -238,74 +243,9 @@ class WindowCallbackWrapperTest {
         )
     }
 
-    @Test
-    fun oldCallbacksDoNotRestoreOriginalOnPause() {
-        application.registerActivityLifecycleCallbacks(
-            InstrumentationActivityCallback(MinimalTrackerCompose()),
-        )
-        application.registerActivityLifecycleCallbacks(
-            InstrumentationActivityCallback(MinimalTrackerClick()),
-        )
-
-        var currentCallback: Window.Callback? = null
-
-        activityScenario.recreate()
-        activityScenario.onActivity {
-            currentCallback = it.window.callback
-        }
-        assertNotNull(currentCallback)
-        var list = traverseWrapper(currentCallback)
-        assertTrue(list.any { it is WindowCallbackWrapperCompose })
-        assertTrue(list.any { it is WindowCallbackWrapperClick })
-
-        activityScenario.moveToState(Lifecycle.State.STARTED)
-
-        activityScenario.onActivity {
-            currentCallback = it.window.callback
-        }
-        assertNotNull(currentCallback)
-        list = traverseWrapper(currentCallback)
-        assertTrue(list.any { it is WindowCallbackWrapperCompose })
-        assertFalse(list.any { it is WindowCallbackWrapperClick })
-    }
-
-    @Test
-    fun oldCallbacksDuplicateNestingOnResume() {
-        application.registerActivityLifecycleCallbacks(
-            InstrumentationActivityCallback(MinimalTrackerCompose()),
-        )
-        application.registerActivityLifecycleCallbacks(
-            InstrumentationActivityCallback(MinimalTrackerClick()),
-        )
-
-        var currentCallback: Window.Callback? = null
-
-        activityScenario.recreate()
-        activityScenario.onActivity {
-            currentCallback = it.window.callback
-        }
-        assertNotNull(currentCallback)
-        var list = traverseWrapper(currentCallback)
-        assertTrue(list.any { it is WindowCallbackWrapperCompose })
-        assertTrue(list.any { it is WindowCallbackWrapperClick })
-
-        activityScenario.moveToState(Lifecycle.State.STARTED)
-        activityScenario.moveToState(Lifecycle.State.RESUMED)
-
-        activityScenario.onActivity {
-            currentCallback = it.window.callback
-        }
-        assertNotNull(currentCallback)
-        list = traverseWrapper(currentCallback)
-        assertTrue(list.count { it is WindowCallbackWrapperCompose } > 1)
-        assertTrue(list.any { it is WindowCallbackWrapperClick })
-    }
-
     fun traverseWrapper(callback: Window.Callback): List<Window.Callback> {
         var currentCallback = callback
-        var wrapped =
-            currentCallback is WindowCallbackWrapperCompose || currentCallback is WindowCallbackWrapperClick ||
-                currentCallback is WindowCallbackWrapper || currentCallback is ThirdPartyWindowCallbackWrapper
+        var wrapped = currentCallback is WindowCallbackWrapper || currentCallback is ThirdPartyWindowCallbackWrapper
 
         if (!wrapped) {
             return listOf(currentCallback)
@@ -313,19 +253,60 @@ class WindowCallbackWrapperTest {
         val list = mutableListOf<Window.Callback>()
         while (wrapped) {
             list.add(currentCallback)
-            if (currentCallback is WindowCallbackWrapperClick) {
-                currentCallback = currentCallback.unwrap()
-            } else if (currentCallback is WindowCallbackWrapperCompose) {
-                currentCallback = (currentCallback).unwrap()
-            } else if (currentCallback is WindowCallbackWrapper) {
+            if (currentCallback is WindowCallbackWrapper) {
                 currentCallback = (currentCallback).unwrap()
             } else {
                 currentCallback = (currentCallback as ThirdPartyWindowCallbackWrapper).unwrap()
             }
-            wrapped = currentCallback is WindowCallbackWrapperCompose || currentCallback is WindowCallbackWrapperClick ||
-                currentCallback is WindowCallbackWrapper || currentCallback is ThirdPartyWindowCallbackWrapper
+            wrapped = currentCallback is WindowCallbackWrapper || currentCallback is ThirdPartyWindowCallbackWrapper
         }
         list.add(currentCallback)
         return list
+    }
+
+    class ThirdPartyWindowCallbackWrapper(
+        private val callback: Callback,
+        private val consumer: TouchEventConsumer,
+    ) : Callback by callback {
+        override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
+            consumer.consumeEvent(event)
+            return callback.dispatchTouchEvent(event)
+        }
+
+        @RequiresApi(api = VERSION_CODES.O)
+        override fun onPointerCaptureChanged(hasCapture: Boolean) {
+            callback.onPointerCaptureChanged(hasCapture)
+        }
+
+        @RequiresApi(api = VERSION_CODES.N)
+        override fun onProvideKeyboardShortcuts(
+            data: List<KeyboardShortcutGroup?>?,
+            menu: Menu?,
+            deviceId: Int,
+        ) {
+            callback.onProvideKeyboardShortcuts(data, menu, deviceId)
+        }
+
+        fun unwrap(): Callback = callback
+    }
+
+    class MinimalTrackerThirdParty :
+        TouchEventConsumer,
+        ToggleableTracker {
+        private var windowRef: WeakReference<Window>? = null
+
+        override fun startTracking(window: Window) {
+            windowRef = WeakReference(window)
+            val currentCallback = window.callback
+            window.callback = ThirdPartyWindowCallbackWrapper(currentCallback, this)
+        }
+
+        override fun consumeEvent(event: MotionEvent?) {
+            windowRef?.get()?.let { window ->
+            }
+        }
+
+        override fun stopTracking() {
+        }
     }
 }
