@@ -133,11 +133,15 @@ internal class ViewClickEventGenerator(
 
     private val viewCoordinates = IntArray(2)
 
+    private val lock = Any()
+
     fun startTracking(window: Window) {
-        if (!isActive) return
-        windowRef = WeakReference(window)
-        val currentCallback = window.callback
-        window.callback = WindowCallbackWrapper(currentCallback, this)
+        synchronized(lock) {
+            if (!isActive) return
+            windowRef = WeakReference(window)
+            val currentCallback = window.callback
+            window.callback = WindowCallbackWrapper(currentCallback, this)
+        }
     }
 
     fun generateClick(motionEvent: MotionEvent?) {
@@ -148,6 +152,19 @@ internal class ViewClickEventGenerator(
     }
 
     fun stopTracking() {
+        synchronized(lock) {
+            stopTrackingInternal()
+        }
+    }
+
+    fun teardown() {
+        synchronized(lock) {
+            isActive = false
+            stopTrackingInternal()
+        }
+    }
+
+    private fun stopTrackingInternal() {
         windowRef?.get()?.run {
             val currentCallback = callback
             if (currentCallback is WindowCallbackWrapper) {

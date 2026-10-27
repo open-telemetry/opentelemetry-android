@@ -49,10 +49,7 @@ class ViewClickInstrumentation : AndroidInstrumentation {
             callback.isActive = false
             app.unregisterActivityLifecycleCallbacks(callback)
         }
-        eventGenerator?.let { generator ->
-            generator.isActive = false
-            generator.stopTracking()
-        }
+        eventGenerator?.teardown()
         activityCallback = null
         eventGenerator = null
     }

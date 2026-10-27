@@ -51,6 +51,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 @ExtendWith(MockKExtension::class)
@@ -873,5 +876,60 @@ class ViewClickInstrumentationTest {
         clickActivityCallback.onActivityResumed(activity)
 
         assertThat(currentCallback).isSameAs(callback)
+    }
+
+    @Test
+    fun start_tracking_serialized_with_teardown_does_not_leave_wrapper_attached() {
+        val originalCallback = callback
+        var currentCallback: Callback = originalCallback
+        val windowCallbackAccessStarted = CountDownLatch(1)
+        val allowWindowCallbackAccess = CountDownLatch(1)
+
+        every { window.callback } answers {
+            windowCallbackAccessStarted.countDown()
+            allowWindowCallbackAccess.await(5, TimeUnit.SECONDS)
+            currentCallback
+        }
+        every { window.callback = any() } answers {
+            currentCallback = firstArg()
+        }
+
+        val generator =
+            ViewClickEventGenerator(
+                eventLogger = openTelemetryRule.openTelemetry.logsBridge.get("test"),
+                clickEventLogger =
+                    openTelemetryRule.openTelemetry
+                        .toOtelKotlinApi()
+                        .loggerProvider
+                        .getLogger("test"),
+            )
+
+        val executor = Executors.newFixedThreadPool(2)
+        try {
+            val startFuture =
+                executor.submit {
+                    generator.startTracking(window)
+                }
+
+            assertThat(windowCallbackAccessStarted.await(5, TimeUnit.SECONDS)).isTrue()
+
+            val teardownFuture =
+                executor.submit {
+                    generator.teardown()
+                }
+
+            Thread.sleep(50)
+            assertThat(teardownFuture.isDone).isFalse()
+
+            allowWindowCallbackAccess.countDown()
+
+            startFuture.get(5, TimeUnit.SECONDS)
+            teardownFuture.get(5, TimeUnit.SECONDS)
+
+            assertThat(currentCallback).isSameAs(originalCallback)
+            assertThat(generator.isActive).isFalse()
+        } finally {
+            executor.shutdownNow()
+        }
     }
 }
