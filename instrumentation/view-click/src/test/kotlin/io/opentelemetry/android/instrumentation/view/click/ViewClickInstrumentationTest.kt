@@ -913,12 +913,14 @@ class ViewClickInstrumentationTest {
 
             assertThat(windowCallbackAccessStarted.await(5, TimeUnit.SECONDS)).isTrue()
 
+            val teardownWorkerStarted = CountDownLatch(1)
             val teardownFuture =
                 executor.submit {
+                    teardownWorkerStarted.countDown()
                     generator.teardown()
                 }
 
-            Thread.sleep(50)
+            assertThat(teardownWorkerStarted.await(5, TimeUnit.SECONDS)).isTrue()
             assertThat(teardownFuture.isDone).isFalse()
 
             allowWindowCallbackAccess.countDown()
