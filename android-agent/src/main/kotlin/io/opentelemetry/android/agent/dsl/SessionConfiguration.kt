@@ -8,6 +8,7 @@ package io.opentelemetry.android.agent.dsl
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.agent.session.InMemorySessionStorage
 import io.opentelemetry.android.agent.session.SessionStorage
+import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.android.session.SessionProvider
 import kotlin.time.Duration
@@ -19,7 +20,22 @@ import kotlin.time.Duration.Companion.minutes
  */
 @OpenTelemetryDslMarker
 @OptIn(Incubating::class)
-class SessionConfiguration internal constructor() {
+class SessionConfiguration internal constructor(
+    private val rumConfig: OtelRumConfig? = null,
+) {
+    /**
+     * Whether to automatically inject the `session.id` attribute into spans and logs. Default = true.
+     */
+    var includeSessionId: Boolean = true
+        set(value) {
+            field = value
+            if (value) {
+                rumConfig?.enableSessionId()
+            } else {
+                rumConfig?.disableSessionId()
+            }
+        }
+
     /**
      * The maximum duration which a session can remain open in the background before it
      * automatically expires.

@@ -20,6 +20,7 @@ class OtelRumConfig {
     private var includeNetworkAttributes = true
     private var generateSdkInitializationEvents = false
     private var includeScreenAttributes = true
+    private var includeSessionId = true
     private var discoverInstrumentations = true
     private val suppressedInstrumentations: MutableSet<String> = mutableSetOf()
     private var diskBufferingConfigImpl: DiskBufferingConfig = create()
@@ -113,6 +114,29 @@ class OtelRumConfig {
 
     /** Return true if the SDK should be configured to report screen attributes.  */
     fun shouldIncludeScreenAttributes(): Boolean = includeScreenAttributes
+
+    /**
+     * Call this to disable the automatic addition of the `session.id` attribute to spans and logs. Default = true.
+     *
+     * @return this
+     */
+    fun disableSessionId(): OtelRumConfig {
+        includeSessionId = false
+        return this
+    }
+
+    /**
+     * Call this to enable the automatic addition of the `session.id` attribute to spans and logs.
+     *
+     * @return this
+     */
+    fun enableSessionId(): OtelRumConfig {
+        includeSessionId = true
+        return this
+    }
+
+    /** Return true if the SDK should be configured to add the `session.id` attribute to spans and logs. */
+    fun shouldIncludeSessionId(): Boolean = includeSessionId
 
     /**
      * Return true if the RUM initialization should look for instrumentations in the

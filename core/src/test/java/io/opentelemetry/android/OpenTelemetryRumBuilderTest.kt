@@ -681,6 +681,77 @@ class OpenTelemetryRumBuilderTest {
         verify { events wasNot Called }
     }
 
+    @OptIn(IncubatingApi::class)
+    @Test
+    fun disableSessionIdPreventsSessionIdOnSpansAndLogs() {
+        createAndSetServiceManager()
+        val openTelemetryRum =
+            RumBuilder
+                .builder(
+                    application,
+                    buildConfig().disableSessionId(),
+                ).setSessionProvider(SessionProvider { "test-session" })
+                .addTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
+                    tracerProviderBuilder.addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
+                }.addLoggerProviderCustomizer { logRecordProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
+                    logRecordProviderBuilder.addLogRecordProcessor(
+                        SimpleLogRecordProcessor.create(logsExporter),
+                    )
+                }.build()
+
+        openTelemetryRum.openTelemetry
+            .getTracer("test")
+            .spanBuilder("test-span")
+            .startSpan()
+            .end()
+        openTelemetryRum.openTelemetry.logsBridge
+            .loggerBuilder("test")
+            .build()
+            .logRecordBuilder()
+            .emit()
+
+        val span = spanExporter.finishedSpanItems.single()
+        assertThat(span.attributes.get(stringKey(SESSION_ID))).isNull()
+
+        val log = logsExporter.finishedLogRecordItems.single()
+        assertThat(log.attributes.get(stringKey(SESSION_ID))).isNull()
+    }
+
+    @OptIn(IncubatingApi::class)
+    @Test
+    fun disableScreenAttributesPreventsScreenNameOnSpansAndLogs() {
+        createAndSetServiceManager()
+        val openTelemetryRum =
+            RumBuilder
+                .builder(
+                    application,
+                    buildConfig().disableScreenAttributes(),
+                ).addTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
+                    tracerProviderBuilder.addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
+                }.addLoggerProviderCustomizer { logRecordProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
+                    logRecordProviderBuilder.addLogRecordProcessor(
+                        SimpleLogRecordProcessor.create(logsExporter),
+                    )
+                }.build()
+
+        openTelemetryRum.openTelemetry
+            .getTracer("test")
+            .spanBuilder("test-span")
+            .startSpan()
+            .end()
+        openTelemetryRum.openTelemetry.logsBridge
+            .loggerBuilder("test")
+            .build()
+            .logRecordBuilder()
+            .emit()
+
+        val span = spanExporter.finishedSpanItems.single()
+        assertThat(span.attributes.get(stringKey(APP_SCREEN_NAME))).isNull()
+
+        val log = logsExporter.finishedLogRecordItems.single()
+        assertThat(log.attributes.get(stringKey(APP_SCREEN_NAME))).isNull()
+    }
+
     private fun makeBuilder(): OpenTelemetryRumBuilder = RumBuilder.builder(application, buildConfig())
 
     private fun buildConfig(): OtelRumConfig =

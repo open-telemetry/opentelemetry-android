@@ -31,9 +31,56 @@ internal class SessionConfigurationTest {
 
     @Test
     fun testDefaults() {
+        assertEquals(true, otelConfig.sessionConfig.includeSessionId)
+        assertEquals(true, otelConfig.rumConfig.shouldIncludeSessionId())
         assertEquals(15.minutes, otelConfig.sessionConfig.backgroundInactivityTimeout)
         assertEquals(4.hours, otelConfig.sessionConfig.maxLifetime)
         assertThat(otelConfig.sessionConfig.sessionProvider).isNull()
+    }
+
+    @Test
+    fun testDisableSessionIdViaSessionConfig() {
+        val otelConfig =
+            otelConfig.apply {
+                session {
+                    includeSessionId = false
+                }
+            }
+        assertEquals(false, otelConfig.sessionConfig.includeSessionId)
+        assertEquals(false, otelConfig.rumConfig.shouldIncludeSessionId())
+
+        // Re-enable session id
+        otelConfig.apply {
+            session {
+                includeSessionId = true
+            }
+        }
+        assertEquals(true, otelConfig.sessionConfig.includeSessionId)
+        assertEquals(true, otelConfig.rumConfig.shouldIncludeSessionId())
+    }
+
+    @Test
+    fun testDisableAndEnableSessionIdDirectly() {
+        val otelConfig =
+            otelConfig.apply {
+                disableSessionId()
+            }
+        assertEquals(false, otelConfig.rumConfig.shouldIncludeSessionId())
+
+        otelConfig.apply {
+            enableSessionId()
+        }
+        assertEquals(true, otelConfig.rumConfig.shouldIncludeSessionId())
+    }
+
+    @Test
+    fun testDisableScreenAttributesDirectly() {
+        assertEquals(true, otelConfig.rumConfig.shouldIncludeScreenAttributes())
+        val otelConfig =
+            otelConfig.apply {
+                disableScreenAttributes()
+            }
+        assertEquals(false, otelConfig.rumConfig.shouldIncludeScreenAttributes())
     }
 
     @Test
