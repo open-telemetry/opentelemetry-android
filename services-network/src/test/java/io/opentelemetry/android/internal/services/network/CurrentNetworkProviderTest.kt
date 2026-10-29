@@ -259,7 +259,7 @@ internal class CurrentNetworkProviderTest {
     }
 
     @Test
-    fun `concurrent network observations all complete`() {
+    fun `concurrent network observations do not fail or deadlock`() {
         val networkDetector =
             mockk<NetworkDetector> {
                 every { detectCurrentNetwork() } returns wifi
