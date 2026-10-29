@@ -109,6 +109,7 @@ object OpenTelemetryRumInitializer {
                     }
                 }
             }.build()
+            .let(::IncubatingOpenTelemetryRumImpl)
     }
 
     private fun createSpanExporter(endpoint: HttpEndpointConnectivity): SpanExporter =

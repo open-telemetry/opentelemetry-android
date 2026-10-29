@@ -9,6 +9,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.every
 import io.mockk.mockk
 import io.opentelemetry.android.Incubating
+import io.opentelemetry.android.IncubatingOpenTelemetryRum
 import io.opentelemetry.android.agent.OpenTelemetryRumInitializer
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.semconv.events.SessionEndEvent.Companion.SESSION_END_EVENT_NAME
@@ -69,7 +70,7 @@ class StartNewSessionIntegrationTest {
                 session { sessionProvider = provider }
             }
         try {
-            assertThat(rum.startNewSession()).isFalse()
+            assertThat((rum as IncubatingOpenTelemetryRum).startNewSession()).isFalse()
             assertThat(rum.sessionProvider).isSameAs(provider)
             assertThat(provider.getSessionId()).isEqualTo("custom-session")
         } finally {
@@ -134,7 +135,7 @@ class StartNewSessionIntegrationTest {
                 val logger = rum.openTelemetry.logsBridge.get("start-new-session-test")
                 val existingSpan = tracer.spanBuilder("before-reset").startSpan()
                 logger.logRecordBuilder().setBody("before-reset").emit()
-                assertThat(rum.startNewSession()).isTrue()
+                assertThat((rum as IncubatingOpenTelemetryRum).startNewSession()).isTrue()
                 second = saved.last().id
                 assertThat(second).isNotEqualTo(first)
                 assertThat(rum.sessionProvider.getSessionId()).isEqualTo(second)

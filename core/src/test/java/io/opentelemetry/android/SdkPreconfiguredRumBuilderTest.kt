@@ -5,11 +5,9 @@
 
 package io.opentelemetry.android
 
-import android.app.Application
 import android.content.Context
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoaderImpl
@@ -21,29 +19,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 
 class SdkPreconfiguredRumBuilderTest {
-    @Test
-    fun `manual session replacement uses the supplied provider`() {
-        val provider = mockk<SessionProvider>()
-        every { provider.startNewSession() } returns true
-        val previousHandler = Thread.getDefaultUncaughtExceptionHandler()
-        val rum =
-            SdkPreconfiguredRumBuilder(
-                mockk<Application>(),
-                OpenTelemetrySdk.builder().build(),
-                provider,
-                OtelRumConfig().disableInstrumentationDiscovery(),
-                getDefault(),
-                AndroidInstrumentationLoaderImpl(),
-            ).build()
-        try {
-            assertThat(rum.startNewSession()).isTrue()
-            verify(exactly = 1) { provider.startNewSession() }
-        } finally {
-            rum.shutdown()
-            Thread.setDefaultUncaughtExceptionHandler(previousHandler)
-        }
-    }
-
     @Test
     fun `session and native crash instrumentations must come first`() {
         val context = mockk<Context>()

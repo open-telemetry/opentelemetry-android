@@ -9,8 +9,10 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.Incubating
+import io.opentelemetry.android.IncubatingOpenTelemetryRum
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.RumBuilder
+import io.opentelemetry.android.agent.IncubatingOpenTelemetryRumImpl
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
 import io.opentelemetry.android.session.SessionProvider
@@ -22,9 +24,11 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.TimeUnit.SECONDS
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(Incubating::class)
 class StartNewSessionTest {
@@ -35,22 +39,40 @@ class StartNewSessionTest {
     private val rum = rum(manager)
 
     @Test
+    fun `existing rum operations still use the original instance`() {
+        val delegate = mockk<OpenTelemetryRum>(relaxed = true)
+        val telemetry = OpenTelemetry.noop()
+        every { delegate.openTelemetry } returns telemetry
+        every { delegate.sessionProvider } returns manager
+        every { delegate.clock } returns clock
+        val wrapped = IncubatingOpenTelemetryRumImpl(delegate)
+        assertThat(wrapped.openTelemetry).isSameAs(telemetry)
+        assertThat(wrapped.sessionProvider).isSameAs(manager)
+        assertThat(wrapped.clock).isSameAs(clock)
+        val attributes = Attributes.builder().put("test", "value").build()
+        wrapped.emitEvent("test-event", "test-body", attributes)
+        wrapped.shutdown()
+        verify(exactly = 1) { delegate.emitEvent("test-event", "test-body", attributes) }
+        verify(exactly = 1) { delegate.shutdown() }
+    }
+
+    @Test
     fun `forwards the result without retrying a busy transition`() {
         for (accepted in listOf(true, false)) {
-            val provider = mockk<SessionProvider>()
-            every { provider.startNewSession() } returns accepted
+            val provider = mockk<SessionManager>()
+            every { provider.resetSession() } returns accepted
             assertThat(rum(provider).startNewSession()).isEqualTo(accepted)
-            verify(exactly = 1) { provider.startNewSession() }
+            verify(exactly = 1) { provider.resetSession() }
         }
     }
 
     @Test
     fun `does not retry or hide a partially delivered transition`() {
-        val provider = mockk<SessionProvider>()
+        val provider = mockk<SessionManager>()
         val failure = IllegalStateException("observer failed")
-        every { provider.startNewSession() } throws failure
+        every { provider.resetSession() } throws failure
         assertThatThrownBy { rum(provider).startNewSession() }.isSameAs(failure)
-        verify(exactly = 1) { provider.startNewSession() }
+        verify(exactly = 1) { provider.resetSession() }
     }
 
     @Test
@@ -137,8 +159,86 @@ class StartNewSessionTest {
     }
 
     @Test
+    fun `end observer failure releases the transition without retrying it`() = checkObserverFailure(failOnEnd = true)
+
+    @Test
+    fun `start observer failure releases the transition without retrying it`() = checkObserverFailure(failOnEnd = false)
+
+    private fun checkObserverFailure(failOnEnd: Boolean) {
+        manager.getSessionId()
+        var fail = true
+        val failure = IllegalStateException("observer failed")
+        val events = mutableListOf<String>()
+        val laterObserver = mockk<SessionObserver>(relaxed = true)
+        manager.addObserver(
+            object : SessionObserver {
+                override fun onSessionEnded(session: Session) {
+                    events.add("end:${session.id}")
+                    if (fail && failOnEnd) throw failure
+                }
+
+                override fun onSessionStarted(
+                    newSession: Session,
+                    previousSession: Session,
+                ) {
+                    events.add("start:${newSession.id}:${previousSession.id}")
+                    if (fail) throw failure
+                }
+            },
+        )
+        manager.addObserver(laterObserver)
+        val first = manager.getSessionId()
+        assertThatThrownBy { rum.startNewSession() }.isSameAs(failure)
+        val second = manager.getSessionId()
+        assertThat(second).isNotEqualTo(first).isEqualTo(storage.get().id)
+        val expected = if (failOnEnd) listOf("end:$first") else listOf("end:$first", "start:$second:$first")
+        assertThat(events).containsExactlyElementsOf(expected)
+        verify(exactly = 0) { laterObserver.onSessionEnded(any()) }
+        verify(exactly = 0) { laterObserver.onSessionStarted(any(), any()) }
+        fail = false
+        events.clear()
+        assertThat(rum.startNewSession()).isTrue()
+        val third = manager.getSessionId()
+        assertThat(events).containsExactly("end:$second", "start:$third:$second")
+        verify(exactly = 1) { laterObserver.onSessionStarted(match { it.id == third }, match { it.id == second }) }
+    }
+
+    @Test
+    fun `busy reset during storage does not extend the session timeout`() {
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val storage = mockk<SessionStorage>()
+        every { storage.getPreviousSession() } returns null
+        every { storage.save(any()) } answers {
+            entered.countDown()
+            check(release.await(5, SECONDS))
+        }
+        val timeout = SessionIdTimeoutHandler(clock, 15.minutes, 1.seconds)
+        val manager = SessionManager(clock, storage, timeout, maxSessionLifetime = 4.hours)
+        val rum = rum(manager)
+        val executor = Executors.newSingleThreadExecutor()
+        try {
+            val accepted = executor.submit<Boolean> { rum.startNewSession() }
+            assertThat(entered.await(5, SECONDS)).isTrue()
+            clock.advance(900, MILLISECONDS)
+            assertThat(rum.startNewSession()).isFalse()
+            verify(exactly = 1) { storage.save(any()) }
+            clock.advance(100, MILLISECONDS)
+            assertThat(timeout.hasTimedOut()).isTrue()
+            release.countDown()
+            assertThat(accepted.get(5, SECONDS)).isTrue()
+            manager.getSessionId()
+            verify(exactly = 2) { storage.save(any()) }
+        } finally {
+            release.countDown()
+            executor.shutdownNow()
+            assertThat(executor.awaitTermination(5, SECONDS)).isTrue()
+        }
+    }
+
+    @Test
     fun `no-op rum does not start a session`() {
-        assertThat(RumBuilder.noop().startNewSession()).isFalse()
+        assertThat(IncubatingOpenTelemetryRumImpl(RumBuilder.noop()).startNewSession()).isFalse()
         assertThat(RumBuilder.noop().sessionProvider.getSessionId()).isEmpty()
     }
 
@@ -149,18 +249,20 @@ class StartNewSessionTest {
         assertThat(provider.getSessionId()).isEqualTo("custom-session")
     }
 
-    private fun rum(provider: SessionProvider): OpenTelemetryRum =
-        object : OpenTelemetryRum {
-            override val openTelemetry = OpenTelemetry.noop()
-            override val sessionProvider = provider
-            override val clock = this@StartNewSessionTest.clock
+    private fun rum(provider: SessionProvider): IncubatingOpenTelemetryRum =
+        IncubatingOpenTelemetryRumImpl(
+            object : OpenTelemetryRum {
+                override val openTelemetry = OpenTelemetry.noop()
+                override val sessionProvider = provider
+                override val clock = this@StartNewSessionTest.clock
 
-            override fun emitEvent(
-                eventName: String,
-                body: String,
-                attributes: Attributes,
-            ) {}
+                override fun emitEvent(
+                    eventName: String,
+                    body: String,
+                    attributes: Attributes,
+                ) {}
 
-            override fun shutdown() {}
-        }
+                override fun shutdown() {}
+            },
+        )
 }
