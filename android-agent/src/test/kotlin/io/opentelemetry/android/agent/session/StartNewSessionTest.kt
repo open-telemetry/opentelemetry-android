@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.agent.session
 
+import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -15,7 +16,6 @@ import io.opentelemetry.android.RumBuilder
 import io.opentelemetry.android.agent.IncubatingOpenTelemetryRumImpl
 import io.opentelemetry.android.session.Session
 import io.opentelemetry.android.session.SessionObserver
-import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.sdk.testing.time.TestClock
@@ -45,7 +45,7 @@ class StartNewSessionTest {
         every { delegate.openTelemetry } returns telemetry
         every { delegate.sessionProvider } returns manager
         every { delegate.clock } returns clock
-        val wrapped = IncubatingOpenTelemetryRumImpl(delegate)
+        val wrapped = IncubatingOpenTelemetryRumImpl(delegate, manager)
         assertThat(wrapped.openTelemetry).isSameAs(telemetry)
         assertThat(wrapped.sessionProvider).isSameAs(manager)
         assertThat(wrapped.clock).isSameAs(clock)
@@ -238,18 +238,18 @@ class StartNewSessionTest {
 
     @Test
     fun `no-op rum does not start a session`() {
-        assertThat(IncubatingOpenTelemetryRumImpl(RumBuilder.noop()).startNewSession()).isFalse()
+        assertThat(IncubatingOpenTelemetryRumImpl(RumBuilder.noop(), null).startNewSession()).isFalse()
         assertThat(RumBuilder.noop().sessionProvider.getSessionId()).isEmpty()
     }
 
     @Test
-    fun `existing custom provider does not need to support replacement`() {
-        val provider = SessionProvider { "custom-session" }
-        assertThat(rum(provider).startNewSession()).isFalse()
-        assertThat(provider.getSessionId()).isEqualTo("custom-session")
+    fun `wrapper without an owned manager does not consult its delegate`() {
+        val delegate = mockk<OpenTelemetryRum>()
+        assertThat(IncubatingOpenTelemetryRumImpl(delegate, null).startNewSession()).isFalse()
+        verify { delegate wasNot Called }
     }
 
-    private fun rum(provider: SessionProvider): IncubatingOpenTelemetryRum =
+    private fun rum(provider: SessionManager): IncubatingOpenTelemetryRum =
         IncubatingOpenTelemetryRumImpl(
             object : OpenTelemetryRum {
                 override val openTelemetry = OpenTelemetry.noop()
@@ -264,5 +264,6 @@ class StartNewSessionTest {
 
                 override fun shutdown() {}
             },
+            provider,
         )
 }

@@ -61,22 +61,44 @@ class StartNewSessionIntegrationTest {
     @Test
     fun `agent with existing custom provider leaves its session unchanged`() {
         val provider = SessionProvider { "custom-session" }
-        val rum =
-            OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
-                disableTracing()
-                disableLogging()
-                disableMetrics()
-                diskBuffering { enabled(false) }
-                session { sessionProvider = provider }
-            }
+        val rum = createRum(provider)
         try {
-            assertThat((rum as IncubatingOpenTelemetryRum).startNewSession()).isFalse()
+            assertThat(rum.startNewSession()).isFalse()
             assertThat(rum.sessionProvider).isSameAs(provider)
             assertThat(provider.getSessionId()).isEqualTo("custom-session")
         } finally {
             rum.shutdown()
         }
     }
+
+    @Test
+    fun `agent cannot replace a manager explicitly supplied by another agent`() {
+        val owner = createRum()
+        try {
+            val first = owner.sessionProvider.getSessionId()
+            val borrower = createRum(owner.sessionProvider)
+            try {
+                assertThat(borrower.sessionProvider).isSameAs(owner.sessionProvider)
+                assertThat(borrower.startNewSession()).isFalse()
+                assertThat(owner.sessionProvider.getSessionId()).isEqualTo(first)
+                assertThat(owner.startNewSession()).isTrue()
+                assertThat(borrower.sessionProvider.getSessionId()).isNotEqualTo(first)
+            } finally {
+                borrower.shutdown()
+            }
+        } finally {
+            owner.shutdown()
+        }
+    }
+
+    private fun createRum(provider: SessionProvider? = null): IncubatingOpenTelemetryRum =
+        OpenTelemetryRumInitializer.initialize(RuntimeEnvironment.getApplication()) {
+            disableTracing()
+            disableLogging()
+            disableMetrics()
+            diskBuffering { enabled(false) }
+            session { sessionProvider = provider }
+        } as IncubatingOpenTelemetryRum
 
     @Test
     fun `manual replacement exports linked events and keeps telemetry with its original session`() {

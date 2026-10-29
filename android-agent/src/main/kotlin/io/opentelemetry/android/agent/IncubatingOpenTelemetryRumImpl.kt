@@ -13,7 +13,8 @@ import io.opentelemetry.android.agent.session.SessionManager
 @OptIn(Incubating::class)
 internal class IncubatingOpenTelemetryRumImpl(
     private val delegate: OpenTelemetryRum,
+    private val ownedSessionManager: SessionManager?,
 ) : IncubatingOpenTelemetryRum,
     OpenTelemetryRum by delegate {
-    override fun startNewSession(): Boolean = (delegate.sessionProvider as? SessionManager)?.resetSession() ?: false
+    override fun startNewSession(): Boolean = ownedSessionManager?.resetSession() ?: false
 }

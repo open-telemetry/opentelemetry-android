@@ -20,7 +20,6 @@ import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.export.FilteringSpanExporter
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
-import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
@@ -56,6 +55,7 @@ object OpenTelemetryRumInitializer {
             }
 
         val rumConfig = OtelRumConfig()
+        var manager: SessionManager? = null
         return RumBuilder
             .builder(ctx, rumConfig)
             .apply {
@@ -67,7 +67,7 @@ object OpenTelemetryRumInitializer {
                 cfg.diskBufferingConfig.applyToRumConfig()
 
                 val sessionProvider =
-                    cfg.sessionConfig.sessionProvider ?: createSessionProvider(Services.get(ctx).appLifecycle, cfg)
+                    cfg.sessionConfig.sessionProvider ?: createSessionProvider(Services.get(ctx).appLifecycle, cfg).also { manager = it }
                 setSessionProvider(sessionProvider)
                 setResource(cfg.resourceProvider(ctx))
                 setClock(cfg.clock)
@@ -109,7 +109,7 @@ object OpenTelemetryRumInitializer {
                     }
                 }
             }.build()
-            .let(::IncubatingOpenTelemetryRumImpl)
+            .let { IncubatingOpenTelemetryRumImpl(it, manager) }
     }
 
     private fun createSpanExporter(endpoint: HttpEndpointConnectivity): SpanExporter =
@@ -166,7 +166,7 @@ object OpenTelemetryRumInitializer {
     private fun createSessionProvider(
         appLifecycle: AppLifecycle,
         cfg: OpenTelemetryConfiguration,
-    ): SessionProvider {
+    ): SessionManager {
         val sessionConfig =
             SessionConfig(
                 cfg.sessionConfig.backgroundInactivityTimeout,
