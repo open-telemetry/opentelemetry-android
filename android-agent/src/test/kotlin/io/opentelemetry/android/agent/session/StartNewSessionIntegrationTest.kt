@@ -26,6 +26,7 @@ import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import mockwebserver3.RecordedRequest
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -59,11 +60,11 @@ class StartNewSessionIntegrationTest {
     }
 
     @Test
-    fun `agent with existing custom provider leaves its session unchanged`() {
+    fun `agent with existing custom provider rejects replacement and leaves its session unchanged`() {
         val provider = SessionProvider { "custom-session" }
         val rum = createRum(provider)
         try {
-            assertThat(rum.startNewSession()).isFalse()
+            assertThatThrownBy { rum.startNewSession() }.isInstanceOf(IllegalStateException::class.java)
             assertThat(rum.sessionProvider).isSameAs(provider)
             assertThat(provider.getSessionId()).isEqualTo("custom-session")
         } finally {
@@ -79,7 +80,7 @@ class StartNewSessionIntegrationTest {
             val borrower = createRum(owner.sessionProvider)
             try {
                 assertThat(borrower.sessionProvider).isSameAs(owner.sessionProvider)
-                assertThat(borrower.startNewSession()).isFalse()
+                assertThatThrownBy { borrower.startNewSession() }.isInstanceOf(IllegalStateException::class.java)
                 assertThat(owner.sessionProvider.getSessionId()).isEqualTo(first)
                 assertThat(owner.startNewSession()).isTrue()
                 assertThat(borrower.sessionProvider.getSessionId()).isNotEqualTo(first)

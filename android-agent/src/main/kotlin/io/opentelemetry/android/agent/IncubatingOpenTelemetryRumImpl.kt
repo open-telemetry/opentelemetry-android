@@ -16,5 +16,8 @@ internal class IncubatingOpenTelemetryRumImpl(
     private val ownedSessionManager: SessionManager?,
 ) : IncubatingOpenTelemetryRum,
     OpenTelemetryRum by delegate {
-    override fun startNewSession(): Boolean = ownedSessionManager?.resetSession() ?: false
+    override fun startNewSession(): Boolean =
+        checkNotNull(ownedSessionManager) {
+            "startNewSession() requires the default session provider created by the initializer."
+        }.resetSession()
 }

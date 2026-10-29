@@ -238,14 +238,17 @@ class StartNewSessionTest {
 
     @Test
     fun `no-op rum does not start a session`() {
-        assertThat(IncubatingOpenTelemetryRumImpl(RumBuilder.noop(), null).startNewSession()).isFalse()
+        assertThatThrownBy { IncubatingOpenTelemetryRumImpl(RumBuilder.noop(), null).startNewSession() }
+            .isInstanceOf(IllegalStateException::class.java)
         assertThat(RumBuilder.noop().sessionProvider.getSessionId()).isEmpty()
     }
 
     @Test
     fun `wrapper without an owned manager does not consult its delegate`() {
         val delegate = mockk<OpenTelemetryRum>()
-        assertThat(IncubatingOpenTelemetryRumImpl(delegate, null).startNewSession()).isFalse()
+        assertThatThrownBy { IncubatingOpenTelemetryRumImpl(delegate, null).startNewSession() }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessage("startNewSession() requires the default session provider created by the initializer.")
         verify { delegate wasNot Called }
     }
 

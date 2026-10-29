@@ -27,9 +27,10 @@ interface IncubatingOpenTelemetryRum : OpenTelemetryRum {
      * transition is being delivered returns false without queuing a replacement, including calls
      * from a session observer.
      *
-     * Returns false when a custom session provider is configured, leaving that provider unchanged.
+     * A custom session provider cannot be replaced through this API and is left unchanged.
      *
-     * @return true when the replacement completes, or false for a custom provider or a busy transition.
+     * @return true when the replacement completes, or false for a busy transition.
+     * @throws IllegalStateException if a custom session provider was configured.
      */
     fun startNewSession(): Boolean
 }
