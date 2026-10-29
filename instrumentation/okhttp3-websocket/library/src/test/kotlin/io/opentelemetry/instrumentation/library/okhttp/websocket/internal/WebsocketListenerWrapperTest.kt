@@ -8,6 +8,7 @@ package io.opentelemetry.instrumentation.library.okhttp.websocket.internal
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.semconv.WebsocketAttributes.WEBSOCKET_MESSAGE_SIZE_KEY
 import io.opentelemetry.android.semconv.WebsocketAttributes.WEBSOCKET_MESSAGE_TYPE_KEY
@@ -20,6 +21,7 @@ import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import io.opentelemetry.semconv.HttpAttributes
 import io.opentelemetry.semconv.NetworkAttributes
+import io.opentelemetry.semconv.ServerAttributes
 import io.opentelemetry.semconv.UrlAttributes
 import okhttp3.Protocol
 import okhttp3.Request
@@ -174,6 +176,26 @@ internal class WebsocketListenerWrapperTest {
                 equalTo(NetworkAttributes.NETWORK_PEER_PORT, 8080L),
             )
         verify(exactly = 1) { delegateListener.onFailure(webSocket, throwable, response) }
+    }
+
+    @Test
+    fun allEventsIncludeTheCanonicalOriginalHost() {
+        val request = Request.Builder().url("wss://BÜCHER.example:8443/socket").build()
+        every { webSocket.request() } returns request
+        val listener = WebsocketListenerWrapper(mockk(relaxed = true))
+        val response = buildMockResponse()
+
+        listener.onOpen(webSocket, response)
+        listener.onMessage(webSocket, "text")
+        listener.onMessage(webSocket, "bytes".encodeUtf8())
+        listener.onClosed(webSocket, 1000, "closed")
+        listener.onFailure(webSocket, RuntimeException("failed"), null)
+
+        assertThat(otelTesting.logRecords).hasSize(5).allSatisfy { event ->
+            assertThat(event).hasAttributesSatisfying(
+                equalTo(ServerAttributes.SERVER_ADDRESS, "xn--bcher-kva.example"),
+            )
+        }
     }
 
     @Test

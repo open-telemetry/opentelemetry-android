@@ -25,6 +25,24 @@ the peer host/port and any configured headers.
 If a websocket connection errors, the instrumentation records the error on the
 connection telemetry.
 
+## Filtering events by host
+
+When using the Android Agent, configure a predicate to keep or drop WebSocket events:
+
+```kotlin
+instrumentations {
+    httpTelemetry {
+        shouldRecordWebsocketEventForHost { host -> host == "api.example.com" }
+    }
+}
+```
+
+The predicate receives the lowercased `server.address` from the original WebSocket request
+(OkHttp uses punycode for internationalized hosts). It applies to open, message, close and error
+log events, not HTTP spans, metrics or trace context propagation. No events are filtered by default.
+Filtering occurs before network export, so rejected events may still be recorded and buffered on disk.
+Handshake redirects do not change the host used for filtering.
+
 ## Installation
 
 ### Applying the Byte Buddy plugin
