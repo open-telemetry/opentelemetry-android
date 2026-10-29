@@ -51,6 +51,7 @@ import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 
+@Suppress("LargeClass")
 @RunWith(AndroidJUnit4::class)
 @ExtendWith(MockKExtension::class)
 class ViewClickInstrumentationTest {
@@ -745,5 +746,83 @@ class ViewClickInstrumentationTest {
                 equalTo(clicksKey, 2.toLong()),
                 equalTo(toolTypeKey, "finger"),
             )
+    }
+
+    @Test
+    fun unregister_callbacks_and_stop_tracking_on_uninstall() {
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
+
+        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        every { window.callback } returns callback
+        every { callback.dispatchTouchEvent(any()) } returns false
+        every { activity.window } returns window
+        every { application.registerActivityLifecycleCallbacks(any()) } returns Unit
+        every { application.unregisterActivityLifecycleCallbacks(any()) } returns Unit
+
+        val instrumentation = ViewClickInstrumentation()
+        instrumentation.install(application, openTelemetryRum)
+
+        verify {
+            application.registerActivityLifecycleCallbacks(capture(callbackCapturingSlot))
+        }
+
+        val viewClickActivityCallback = callbackCapturingSlot.captured
+        val wrapperCapturingSlot = slot<WindowCallbackWrapper>()
+        var currentCallback: Callback = callback
+        every { window.callback } answers { currentCallback }
+        every { window.callback = any() } answers { currentCallback = firstArg() }
+
+        viewClickActivityCallback.onActivityResumed(activity)
+        verify {
+            window.callback = capture(wrapperCapturingSlot)
+        }
+        assertThat(currentCallback).isInstanceOf(WindowCallbackWrapper::class.java)
+
+        instrumentation.uninstall(application, openTelemetryRum)
+
+        verify {
+            application.unregisterActivityLifecycleCallbacks(viewClickActivityCallback)
+        }
+        assertThat(currentCallback).isSameAs(callback)
+        assertThat(viewClickActivityCallback.isEnabled).isFalse()
+
+        // Subsequent onActivityResumed should not re-wrap
+        viewClickActivityCallback.onActivityResumed(activity)
+        assertThat(currentCallback).isSameAs(callback)
+    }
+
+    @Test
+    fun uninstall_before_install_is_safe_noop() {
+        val openTelemetryRum = mockk<OpenTelemetryRum>()
+        val instrumentation = ViewClickInstrumentation()
+
+        instrumentation.uninstall(application, openTelemetryRum)
+
+        verify(exactly = 0) {
+            application.unregisterActivityLifecycleCallbacks(any())
+        }
+    }
+
+    @Test
+    fun non_application_context_is_safe_noop() {
+        val nonAppContext = mockk<android.content.Context>()
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+            }
+        val instrumentation = ViewClickInstrumentation()
+
+        instrumentation.install(nonAppContext, openTelemetryRum)
+        instrumentation.uninstall(nonAppContext, openTelemetryRum)
+
+        verify(exactly = 0) {
+            application.registerActivityLifecycleCallbacks(any())
+            application.unregisterActivityLifecycleCallbacks(any())
+        }
     }
 }
