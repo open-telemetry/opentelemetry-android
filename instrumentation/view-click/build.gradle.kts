@@ -17,6 +17,10 @@ android {
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")
     }
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
 }
 
 dependencies {
@@ -25,6 +29,7 @@ dependencies {
     implementation(project(":agent-api"))
     implementation(project(":instrumentation:android-instrumentation"))
     implementation(project(":semconv"))
+    implementation(project(":instrumentation:common-api"))
 
     implementation(libs.opentelemetry.instrumentation.apiSemconv)
     implementation(libs.opentelemetry.semconv.kotlin)

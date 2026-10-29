@@ -11,13 +11,22 @@ android {
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")
     }
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
 }
 
 dependencies {
     api(platform(libs.opentelemetry.platform.alpha)) // Required for sonatype publishing
     implementation(project(":agent-api"))
     implementation(project(":semconv"))
+    implementation(project(":services"))
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.instrumentation.api)
+
+    testImplementation(project(":test-common"))
     testImplementation(libs.androidx.fragment)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
 }

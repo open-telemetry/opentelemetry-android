@@ -25,3 +25,13 @@ dependencies {
     // Needed to compile OtelGlobalConfigProvider; consumers already provide Robolectric at test runtime.
     compileOnly(libs.robolectric)
 }
+
+kover {
+    reports {
+        filters {
+            excludes {
+                classes("io.opentelemetry.android.test.common.TestActivity")
+            }
+        }
+    }
+}
