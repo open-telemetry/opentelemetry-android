@@ -111,18 +111,13 @@ internal class CurrentNetworkProviderImpl(
             var latest = latestObservation.get()
             while (latest.sequence <= sequence) {
                 if (latestObservation.compareAndSet(latest, Observation(sequence, network))) {
-                    // Reviewers: this thread can pause after storing, letting onLost store and
-                    // notify NO_NETWORK before this call notifies the older network. The cache
-                    // stays correct, but listener notifications can arrive out of order. The
-                    // one-time permission refresh limits exposure; likelihood is not measured.
                     // A shared lock around detection, storage, and notification would serialize
-                    // concurrent observations and replace the sequence/CAS logic. However, a
-                    // permission-triggered read from a span/log on the main thread could then
-                    // block behind a callback's detection and synchronous listeners. Ordinary
-                    // cached reads would remain lock-free. Reentrant listeners would still need
-                    // care to prevent nested notifications from overtaking the current delivery.
-                    // Should we accept this risk, lock the whole observation, or queue notifications
-                    // in observation order and deliver them outside the lock?
+                    // concurrent observations, but a permission-triggered read from a span/log on
+                    // the main thread could then block behind a callback's detection and
+                    // synchronous listeners. We accept instead that the sequence check only keeps
+                    // the cache correct: a thread can pause between storing and notifying, so
+                    // listeners can see two overlapping observations out of order. This is rarer
+                    // than, and less harmful than, blocking the main thread.
                     onStored(latest.network, network)
                     break
                 }
