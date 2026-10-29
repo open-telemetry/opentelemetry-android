@@ -16,6 +16,7 @@ import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.instrumentation.OrderedAndroidInstrumentation
 import io.opentelemetry.android.instrumentation.nativecrash.NativeCrashRecoveryPhase.ABANDONED
 import io.opentelemetry.android.instrumentation.nativecrash.NativeCrashRecoveryPhase.CLEANUP
 import io.opentelemetry.android.instrumentation.nativecrash.NativeCrashRecoveryPhase.DELIVERY_CLAIMED
@@ -58,8 +59,10 @@ class NativeCrashInstrumentation internal constructor(
     private val executor: Executor = Executors.newSingleThreadExecutor(),
     private val signalHandlerInstaller: NativeSignalHandlerInstaller = JniNativeSignalHandlerInstaller(),
     private val replayExecutor: Executor = Executors.newSingleThreadExecutor(),
-) : AndroidInstrumentation {
+) : OrderedAndroidInstrumentation {
     override val name: String = "native-crash"
+
+    override val installAfter: Set<String> = setOf("session")
 
     override fun install(
         context: Context,

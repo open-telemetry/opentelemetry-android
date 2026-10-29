@@ -13,6 +13,7 @@ import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.InstrumentationConfigurators
+import io.opentelemetry.android.internal.InstrumentationSorter
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.common.Clock
@@ -106,26 +107,14 @@ class SdkPreconfiguredRumBuilder internal constructor(
     }
 
     /**
-     * Enabled means non-suppressed. This method returns all non-suppressed instrumentations, and may
-     * reorder them so that session and native crash instrumentation (when enabled/available) are
-     * at the front of the list.
+     * Enabled means non-suppressed. This method returns all non-suppressed instrumentations, sorted
+     * topologically according to their relative ordering constraints.
      */
     internal fun getEnabledInstrumentations(): List<AndroidInstrumentation> {
-        val instrumentations = getInstrumentations().filter { inst -> !config.isSuppressed(inst.name) }
-        val result = instrumentations.toMutableList()
-        val sessionInstrumentation = instrumentations.find { it.name == "session" }
-        sessionInstrumentation?.let {
-            // If session instrumentation is available, slam it to the front of the list.
-            // This helps prevent a session id from being created before the observers can be added.
-            result.remove(it)
-            result.add(0, it)
+        val filtered = getInstrumentations().filter { inst -> !config.isSuppressed(inst.name) }
+        return InstrumentationSorter.sort(filtered) { warning ->
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, warning)
         }
-        val nativeCrashInstrumentation = instrumentations.find { it.name == "native-crash" }
-        nativeCrashInstrumentation?.let {
-            result.remove(it)
-            result.add(if (sessionInstrumentation == null) 0 else 1, it)
-        }
-        return result.toList()
     }
 
     private fun getInstrumentations(): List<AndroidInstrumentation> {
