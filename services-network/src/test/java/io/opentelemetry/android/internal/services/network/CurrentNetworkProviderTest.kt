@@ -22,6 +22,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 @RunWith(AndroidJUnit4::class)
@@ -34,8 +37,10 @@ internal class CurrentNetworkProviderTest {
             state = NetworkState.TRANSPORT_CELLULAR,
             subType = "LTE",
         )
+    private val cellularWithoutSubtype = CurrentNetwork(NetworkState.TRANSPORT_CELLULAR)
     private val noNetwork = CurrentNetwork(NetworkState.NO_NETWORK_AVAILABLE)
     private val mockConnectivityManager = mockk<ConnectivityManager>()
+    private val networkCallback = slot<NetworkCallback>()
     private val errorNetworkDetector: NetworkDetector =
         mockk<NetworkDetector>().apply {
             every { detectCurrentNetwork() }.throws(SecurityException("bug"))
@@ -165,4 +170,147 @@ internal class CurrentNetworkProviderTest {
             CurrentNetworkProviderImpl(networkDetector, connectivityManager) { networkRequest }
         assertThat(networkProvider.refreshNetworkStatus()).isEqualTo(UNKNOWN_NETWORK)
     }
+
+    @Test
+    fun `listeners get the network re-detected when the permission grant check triggers`() {
+        val networkDetector =
+            mockk<NetworkDetector> {
+                every { detectCurrentNetwork() } returns cellularWithoutSubtype andThen cellular
+            }
+        val currentNetworkProvider = createProvider(networkDetector, permissionGrantChecks = listOf(true))
+        val notified = currentNetworkProvider.recordNetworkChanges()
+
+        assertThat(currentNetworkProvider.currentNetwork).isEqualTo(cellular)
+        assertThat(notified).containsExactly(cellular)
+    }
+
+    @Test
+    fun `listeners are not notified when the network re-detected after the permission grant is unchanged`() {
+        val networkDetector =
+            mockk<NetworkDetector> {
+                every { detectCurrentNetwork() } returns cellular
+            }
+        val currentNetworkProvider = createProvider(networkDetector, permissionGrantChecks = listOf(true))
+        val notified = currentNetworkProvider.recordNetworkChanges()
+
+        assertThat(currentNetworkProvider.currentNetwork).isEqualTo(cellular)
+        assertThat(notified).isEmpty()
+    }
+
+    @Test
+    fun `network is not re-detected while the permission grant check does not trigger`() {
+        val networkDetector =
+            mockk<NetworkDetector> {
+                every { detectCurrentNetwork() } returns cellularWithoutSubtype andThen cellular
+            }
+        val currentNetworkProvider = createProvider(networkDetector, permissionGrantChecks = listOf(false))
+        val notified = currentNetworkProvider.recordNetworkChanges()
+
+        assertThat(currentNetworkProvider.currentNetwork).isEqualTo(cellularWithoutSubtype)
+        assertThat(currentNetworkProvider.currentNetwork).isEqualTo(cellularWithoutSubtype)
+        assertThat(notified).isEmpty()
+        verify(exactly = 1) { networkDetector.detectCurrentNetwork() }
+    }
+
+    @Test
+    fun `a failed re-detection after the permission grant keeps the previous network`() {
+        val networkDetector =
+            mockk<NetworkDetector> {
+                every { detectCurrentNetwork() } returns cellularWithoutSubtype andThenThrows SecurityException("bug")
+            }
+        val currentNetworkProvider = createProvider(networkDetector, permissionGrantChecks = listOf(true))
+        val notified = currentNetworkProvider.recordNetworkChanges()
+
+        assertThat(currentNetworkProvider.currentNetwork).isEqualTo(cellularWithoutSubtype)
+        assertThat(notified).isEmpty()
+    }
+
+    @Test
+    fun `a network lost while re-detecting after the permission grant is kept`() {
+        val networkDetector = mockk<NetworkDetector>()
+        every { networkDetector.detectCurrentNetwork() } returns cellularWithoutSubtype andThenAnswer {
+            // the network drops while the re-detection triggered by the grant is still running
+            networkCallback.captured.onLost(fakeNet)
+            cellular
+        }
+        val currentNetworkProvider = createProvider(networkDetector, permissionGrantChecks = listOf(true))
+        val notified = currentNetworkProvider.recordNetworkChanges()
+
+        assertThat(currentNetworkProvider.currentNetwork).isEqualTo(noNetwork)
+        assertThat(notified).containsExactly(noNetwork)
+    }
+
+    @Test
+    fun `a callback detection that started before the permission grant does not overwrite the network re-detected after it`() {
+        lateinit var currentNetworkProvider: CurrentNetworkProvider
+        val networkDetector = mockk<NetworkDetector>()
+        every { networkDetector.detectCurrentNetwork() } returns cellularWithoutSubtype andThenAnswer {
+            // a span reads the network after the grant while this callback detection is still running
+            currentNetworkProvider.currentNetwork
+            cellularWithoutSubtype
+        } andThen cellular
+        currentNetworkProvider = createProvider(networkDetector, permissionGrantChecks = listOf(true, false))
+        val notified = currentNetworkProvider.recordNetworkChanges()
+
+        networkCallback.captured.onAvailable(fakeNet)
+
+        assertThat(currentNetworkProvider.currentNetwork).isEqualTo(cellular)
+        assertThat(notified).containsExactly(cellular)
+    }
+
+    @Test
+    fun `concurrent network observations do not fail or deadlock`() {
+        val networkDetector =
+            mockk<NetworkDetector> {
+                every { detectCurrentNetwork() } returns wifi
+            }
+        val currentNetworkProvider = createProvider(networkDetector, permissionGrantChecks = listOf(true))
+        val threads = 8
+        val iterations = 1_000
+        val start = CountDownLatch(1)
+        val executor = Executors.newFixedThreadPool(threads)
+
+        // every thread goes through each path that stores a network, so the stores keep contending
+        val tasks =
+            (0 until threads).map { thread ->
+                executor.submit {
+                    start.await()
+                    repeat(iterations) { iteration ->
+                        when ((thread + iteration) % 4) {
+                            0 -> networkCallback.captured.onAvailable(fakeNet)
+                            1 -> networkCallback.captured.onLost(fakeNet)
+                            2 -> currentNetworkProvider.refreshNetworkStatus()
+                            else -> currentNetworkProvider.currentNetwork
+                        }
+                    }
+                }
+            }
+        start.countDown()
+        executor.shutdown()
+
+        assertThat(executor.awaitTermination(10, TimeUnit.SECONDS)).isTrue()
+        tasks.forEach { it.get() } // rethrows a failure from any thread
+        assertThat(currentNetworkProvider.currentNetwork).isIn(wifi, noNetwork)
+    }
+
+    /** [permissionGrantChecks] are the trigger's results in order; the last one repeats. */
+    private fun createProvider(
+        networkDetector: NetworkDetector,
+        permissionGrantChecks: List<Boolean>,
+    ): CurrentNetworkProvider =
+        CurrentNetworkProviderImpl(
+            networkDetector,
+            mockk {
+                every { registerDefaultNetworkCallback(capture(networkCallback)) } just Runs
+            },
+            phoneStatePermissionGrantCheckTrigger =
+                mockk {
+                    every { consumeTrigger() } returnsMany permissionGrantChecks
+                },
+        )
+
+    private fun CurrentNetworkProvider.recordNetworkChanges(): List<CurrentNetwork> =
+        mutableListOf<CurrentNetwork>().also { notified ->
+            addNetworkChangeListener { notified += it }
+        }
 }
