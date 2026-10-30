@@ -1,6 +1,10 @@
 public abstract interface annotation class io/opentelemetry/android/Incubating : java/lang/annotation/Annotation {
 }
 
+public abstract interface class io/opentelemetry/android/IncubatingOpenTelemetryRum : io/opentelemetry/android/OpenTelemetryRum {
+	public abstract fun startNewSession ()Z
+}
+
 public final class io/opentelemetry/android/agent/OpenTelemetryRumInitializer {
 	public static final field INSTANCE Lio/opentelemetry/android/agent/OpenTelemetryRumInitializer;
 	public static final fun initialize (Landroid/content/Context;Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRum;
