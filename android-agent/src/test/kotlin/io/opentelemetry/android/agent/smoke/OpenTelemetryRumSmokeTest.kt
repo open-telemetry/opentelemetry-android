@@ -9,11 +9,13 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.agent.OpenTelemetryRumInitializer
 import io.opentelemetry.android.agent.dsl.OpenTelemetryConfiguration
 import io.opentelemetry.android.semconv.SessionAttributes.SESSION_ID
 import io.opentelemetry.android.semconv.events.SessionEndEvent.Companion.SESSION_END_EVENT_NAME
+import io.opentelemetry.api.common.AttributeKey.stringKey
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest
 import io.opentelemetry.proto.logs.v1.LogRecord
@@ -54,6 +56,55 @@ class OpenTelemetryRumSmokeTest {
         )
 
         assertLogRequestReceived(server.awaitLogRequest { findLog(it) })
+    }
+
+    @Test
+    @OptIn(Incubating::class)
+    fun testWebsocketEventsAreFilteredThroughTheDsl() {
+        val scope = "io.opentelemetry.websocket.events"
+        val events = listOf("websocket.open", "websocket.message", "websocket.close", "websocket.error")
+        performOpenTelemetryRumAction(
+            config = {
+                httpExport { baseUrl = server.url }
+                diskBufferingConfig.enabled(false)
+                disableTracing()
+                disableMetrics()
+                instrumentations {
+                    httpTelemetry {
+                        shouldRecordWebsocketEventForHost { it == "api.example.com" }
+                    }
+                }
+            },
+            action = {
+                val logger = openTelemetry.logsBridge.get(scope)
+                for (event in events) {
+                    for (host in listOf("API.EXAMPLE.COM", "thirdparty.example.com")) {
+                        logger
+                            .logRecordBuilder()
+                            .setEventName(event)
+                            .setAttribute(stringKey("server.address"), host)
+                            .emit()
+                    }
+                }
+                recordLog()
+            },
+        )
+
+        val request = server.awaitLogRequest { findLog(it) }
+        val websocketRecords =
+            request.resourceLogsList
+                .flatMap { it.scopeLogsList }
+                .filter { it.scope.name == scope }
+                .flatMap { it.logRecordsList }
+        assertThat(websocketRecords.map { it.eventName }).containsExactlyElementsOf(events)
+        assertThat(websocketRecords).allSatisfy { record ->
+            assertThat(
+                record.attributesList
+                    .first { it.key == "server.address" }
+                    .value.stringValue,
+            ).isEqualTo("API.EXAMPLE.COM")
+        }
+        assertLogRequestReceived(request)
     }
 
     @Test

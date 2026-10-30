@@ -21,6 +21,7 @@ import io.opentelemetry.android.export.FilteringSpanExporter
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.context.propagation.TextMapPropagator
+import io.opentelemetry.contrib.interceptor.InterceptableLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
@@ -100,7 +101,7 @@ object OpenTelemetryRumInitializer {
                 }
                 if (rumConfig.loggingEnabled) {
                     addLogRecordExporterCustomizer {
-                        createLogExporter(cfg.exportConfig.logsEndpoint())
+                        createLogExporter(cfg.exportConfig.logsEndpoint(), cfg.instrumentations.httpTelemetry.recordWebsocketEventForHost())
                     }
                 }
                 if (rumConfig.metricsEnabled) {
@@ -127,20 +128,29 @@ object OpenTelemetryRumInitializer {
                 }
             }.build()
 
-    private fun createLogExporter(endpoint: HttpEndpointConnectivity): LogRecordExporter =
-        OtlpHttpLogRecordExporter
-            .builder()
-            .setEndpoint(endpoint.getUrl())
-            .setHeaders(endpoint::getHeaders)
-            .setCompression(endpoint.getCompression().getUpstreamName())
-            .apply {
-                endpoint.getClientTls()?.let {
-                    setClientTls(it.privateKeyPem, it.certificatePem)
-                }
-                endpoint.getSslContext()?.let {
-                    setSslContext(it.sslContext, it.sslX509TrustManager)
-                }
-            }.build()
+    private fun createLogExporter(
+        endpoint: HttpEndpointConnectivity,
+        recordWebsocketEventForHost: ((String) -> Boolean)?,
+    ): LogRecordExporter {
+        val exporter =
+            OtlpHttpLogRecordExporter
+                .builder()
+                .setEndpoint(endpoint.getUrl())
+                .setHeaders(endpoint::getHeaders)
+                .setCompression(endpoint.getCompression().getUpstreamName())
+                .apply {
+                    endpoint.getClientTls()?.let {
+                        setClientTls(it.privateKeyPem, it.certificatePem)
+                    }
+                    endpoint.getSslContext()?.let {
+                        setSslContext(it.sslContext, it.sslX509TrustManager)
+                    }
+                }.build()
+        val hostFilter = WebsocketEventHostFilter.create(recordWebsocketEventForHost) ?: return exporter
+        return InterceptableLogRecordExporter(exporter) { record ->
+            if (hostFilter.rejects(record)) null else record
+        }
+    }
 
     private fun createMetricExporter(endpoint: HttpEndpointConnectivity): MetricExporter =
         OtlpHttpMetricExporter

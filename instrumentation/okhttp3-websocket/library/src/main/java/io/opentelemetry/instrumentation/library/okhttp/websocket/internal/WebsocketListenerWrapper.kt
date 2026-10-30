@@ -15,6 +15,7 @@ import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.semconv.HttpAttributes
 import io.opentelemetry.semconv.NetworkAttributes
+import io.opentelemetry.semconv.ServerAttributes
 import io.opentelemetry.semconv.UrlAttributes
 import okhttp3.Response
 import okhttp3.WebSocket
@@ -85,6 +86,7 @@ class WebsocketListenerWrapper(
                 put(NetworkAttributes.NETWORK_PROTOCOL_NAME, "websocket")
                 put(HttpAttributes.HTTP_REQUEST_METHOD, request.method)
                 put(UrlAttributes.URL_FULL, request.url.toString())
+                put(ServerAttributes.SERVER_ADDRESS, request.url.host)
                 put(NetworkAttributes.NETWORK_PEER_PORT, request.url.port.toLong())
             }.build()
 

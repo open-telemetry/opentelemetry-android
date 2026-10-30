@@ -27,6 +27,26 @@ class HttpTelemetryConfigurationTest {
     }
 
     @Test
+    fun websocketFilteringIsDisabledByDefault() {
+        assertThat(HttpTelemetryConfiguration().recordWebsocketEventForHost()).isNull()
+    }
+
+    @Test
+    fun websocketPredicateIsIndependentAndTheLastOneWins() {
+        val config =
+            HttpTelemetryConfiguration().apply {
+                shouldRecordSpanForHost { it == "spans.example.com" }
+                shouldRecordWebsocketEventForHost { false }
+                shouldRecordWebsocketEventForHost { it == "socket.example.com" }
+            }
+
+        val predicate = checkNotNull(config.recordWebsocketEventForHost())
+        assertThat(predicate("socket.example.com")).isTrue()
+        assertThat(predicate("other.example.com")).isFalse()
+        assertThat(checkNotNull(config.recordSpanForHost())("spans.example.com")).isTrue()
+    }
+
+    @Test
     fun theLastPredicateWins() {
         val config =
             HttpTelemetryConfiguration().apply {
