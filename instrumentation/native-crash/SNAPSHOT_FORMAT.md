@@ -55,8 +55,8 @@ Each 128-byte module entry contains:
 | 92 | 32 | Raw ELF build-ID bytes followed by zero padding |
 | 124 | 4 | Reserved; must be zero |
 
-The writer zero-fills unused entries. It records app-owned modules before system modules and
-preserves loader order within each group, so the table is not address-sorted. Every populated entry
+The writer zero-fills unused entries. It uses the path priority described below to prefer app modules,
+preserving loader order within each group, so the table is not address-sorted. Every populated entry
 satisfies `loadBias <= executableStart < executableEnd`. Names are nonblank UTF-8 without control
 characters, use at most 63 bytes, and always include a NUL terminator followed by zero padding.
 The 32-byte capacity accommodates build IDs up through 256 bits. Longer IDs are recorded as
@@ -88,6 +88,17 @@ services are available. At crash time, the handler uses that table as-is; it doe
 metadata. If `OTEL_NCS_ARCH_CURRENT` is `OTEL_NCS_ARCH_UNKNOWN`, or if module preparation fails,
 marker capture remains enabled but snapshot capture is omitted. This costs 20,568 bytes of process
 storage but does not consume the alternate signal stack or allocate during a crash.
+
+`otel_native_crash_prepare_modules` prepares just the module entries using `dl_iterate_phdr`.
+It is not yet wired into handler installation; the capture follow-up will call it before publishing
+the snapshot. It prioritizes libraries under `/data/` and `/mnt/expand/`, including APK-embedded
+libraries, then keeps other images in loader order. This is a path heuristic, not verified app
+ownership. Empty, overlong or invalid UTF-8 basenames and
+overflowing executable ranges are skipped. Enumeration failure clears the entire table. Build IDs
+remain unavailable in this step. A zero count means snapshot capture must be omitted. The caller
+must not modify a published table while it is in use.
+Names reflect the loader's path: on API 23, an APK-embedded library can be reported as `base.apk`
+rather than its library basename. Such a name alone cannot identify a binary for symbolication.
 
 The marker and snapshot use the same signal number and a timestamp from a single `clock_gettime`
 call. The marker is written, synced, and atomically renamed first. The snapshot is then written and
