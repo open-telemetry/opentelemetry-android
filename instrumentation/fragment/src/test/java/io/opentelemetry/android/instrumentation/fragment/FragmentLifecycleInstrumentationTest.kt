@@ -102,6 +102,7 @@ internal class FragmentLifecycleInstrumentationTest {
         verify(exactly = 0) {
             application.registerActivityLifecycleCallbacks(any())
             application.unregisterActivityLifecycleCallbacks(any())
+            openTelemetryRum.openTelemetry
         }
     }
 }
