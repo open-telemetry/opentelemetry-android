@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### 📈 Enhancements
+
+- Add `shouldRecordWebsocketEventForHost { ... }` to the Android Agent's `httpTelemetry` DSL
+  to filter OkHttp WebSocket events by host before network export. WebSocket events now include
+  `server.address`. HTTP spans, metrics and trace context propagation are unchanged.
+  ([#1686](https://github.com/open-telemetry/opentelemetry-android/issues/1686))
+
 ## Version 1.8.0 (2026-10-22)
 
 ### 📣 Migration notes

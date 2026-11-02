@@ -40,6 +40,7 @@ import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_COORDINATE_Y
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_ID
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_WIDGET_NAME
 import io.opentelemetry.kotlin.semconv.IncubatingApi
+import io.opentelemetry.kotlin.toOtelKotlinApi
 import io.opentelemetry.sdk.common.Clock
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
@@ -50,9 +51,13 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 @ExtendWith(MockKExtension::class)
+@Suppress("LargeClass")
 class ViewClickInstrumentationTest {
     private lateinit var openTelemetryRule: OpenTelemetryRule
 
@@ -745,5 +750,188 @@ class ViewClickInstrumentationTest {
                 equalTo(clicksKey, 2.toLong()),
                 equalTo(toolTypeKey, "finger"),
             )
+    }
+
+    @Test
+    fun unregister_callbacks_and_stop_tracking_on_uninstall() {
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
+
+        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        every { window.callback } returns callback
+        every { callback.dispatchTouchEvent(any()) } returns false
+        every { activity.window } returns window
+        every { application.registerActivityLifecycleCallbacks(any()) } returns Unit
+        every { application.unregisterActivityLifecycleCallbacks(any()) } returns Unit
+
+        val instrumentation = ViewClickInstrumentation()
+        instrumentation.install(application, openTelemetryRum)
+
+        verify {
+            application.registerActivityLifecycleCallbacks(capture(callbackCapturingSlot))
+        }
+
+        val clickActivityCallback = callbackCapturingSlot.captured
+        val wrapperCapturingSlot = slot<WindowCallbackWrapper>()
+        var currentCallback: Callback = callback
+        every { window.callback } answers { currentCallback }
+        every { window.callback = any() } answers { currentCallback = firstArg() }
+
+        clickActivityCallback.onActivityResumed(activity)
+        verify {
+            window.callback = capture(wrapperCapturingSlot)
+        }
+        assertThat(currentCallback).isInstanceOf(WindowCallbackWrapper::class.java)
+
+        instrumentation.uninstall(application, openTelemetryRum)
+
+        verify {
+            application.unregisterActivityLifecycleCallbacks(clickActivityCallback)
+        }
+        assertThat(currentCallback).isSameAs(callback)
+    }
+
+    @Test
+    fun uninstall_before_install_is_safe_noop() {
+        val openTelemetryRum = mockk<OpenTelemetryRum>()
+        val instrumentation = ViewClickInstrumentation()
+
+        instrumentation.uninstall(application, openTelemetryRum)
+
+        verify(exactly = 0) {
+            application.unregisterActivityLifecycleCallbacks(any())
+        }
+    }
+
+    @Test
+    fun non_application_context_is_safe_noop() {
+        val nonAppContext = mockk<android.content.Context>()
+        val openTelemetryRum = mockk<OpenTelemetryRum>()
+        val instrumentation = ViewClickInstrumentation()
+
+        instrumentation.install(nonAppContext, openTelemetryRum)
+        instrumentation.uninstall(nonAppContext, openTelemetryRum)
+
+        verify(exactly = 0) {
+            application.registerActivityLifecycleCallbacks(any())
+            application.unregisterActivityLifecycleCallbacks(any())
+        }
+    }
+
+    @Test
+    fun generate_click_ignored_after_stop_tracking() {
+        every { window.callback } returns callback
+        every { window.callback = any() } returns Unit
+
+        val generator =
+            ViewClickEventGenerator(
+                eventLogger = openTelemetryRule.openTelemetry.logsBridge.get("test"),
+                clickEventLogger =
+                    openTelemetryRule.openTelemetry
+                        .toOtelKotlinApi()
+                        .loggerProvider
+                        .getLogger("test"),
+            )
+        generator.startTracking(window)
+        generator.stopTracking()
+
+        val motionEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, 10f, 10f, 0)
+        generator.generateClick(motionEvent)
+
+        assertThat(openTelemetryRule.logRecords).isEmpty()
+    }
+
+    @Test
+    fun callback_dispatched_after_uninstall_does_not_restart_tracking() {
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
+
+        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        var currentCallback: Callback = callback
+        every { window.callback } answers { currentCallback }
+        every { window.callback = any() } answers { currentCallback = firstArg() }
+        every { activity.window } returns window
+        every { application.registerActivityLifecycleCallbacks(any()) } returns Unit
+        every { application.unregisterActivityLifecycleCallbacks(any()) } returns Unit
+
+        val instrumentation = ViewClickInstrumentation()
+        instrumentation.install(application, openTelemetryRum)
+
+        verify {
+            application.registerActivityLifecycleCallbacks(capture(callbackCapturingSlot))
+        }
+
+        val clickActivityCallback = callbackCapturingSlot.captured
+
+        instrumentation.uninstall(application, openTelemetryRum)
+
+        clickActivityCallback.onActivityResumed(activity)
+
+        assertThat(currentCallback).isSameAs(callback)
+    }
+
+    @Test
+    fun start_tracking_serialized_with_teardown_does_not_leave_wrapper_attached() {
+        val originalCallback = callback
+        var currentCallback: Callback = originalCallback
+        val windowCallbackAccessStarted = CountDownLatch(1)
+        val allowWindowCallbackAccess = CountDownLatch(1)
+
+        every { window.callback } answers {
+            windowCallbackAccessStarted.countDown()
+            allowWindowCallbackAccess.await(5, TimeUnit.SECONDS)
+            currentCallback
+        }
+        every { window.callback = any() } answers {
+            currentCallback = firstArg()
+        }
+
+        val generator =
+            ViewClickEventGenerator(
+                eventLogger = openTelemetryRule.openTelemetry.logsBridge.get("test"),
+                clickEventLogger =
+                    openTelemetryRule.openTelemetry
+                        .toOtelKotlinApi()
+                        .loggerProvider
+                        .getLogger("test"),
+            )
+
+        val executor = Executors.newFixedThreadPool(2)
+        try {
+            val startFuture =
+                executor.submit {
+                    generator.startTracking(window)
+                }
+
+            assertThat(windowCallbackAccessStarted.await(5, TimeUnit.SECONDS)).isTrue()
+
+            val teardownWorkerStarted = CountDownLatch(1)
+            val teardownFuture =
+                executor.submit {
+                    teardownWorkerStarted.countDown()
+                    generator.teardown()
+                }
+
+            assertThat(teardownWorkerStarted.await(5, TimeUnit.SECONDS)).isTrue()
+            assertThat(teardownFuture.isDone).isFalse()
+
+            allowWindowCallbackAccess.countDown()
+
+            startFuture.get(5, TimeUnit.SECONDS)
+            teardownFuture.get(5, TimeUnit.SECONDS)
+
+            assertThat(currentCallback).isSameAs(originalCallback)
+            assertThat(generator.isActive).isFalse()
+        } finally {
+            executor.shutdownNow()
+        }
     }
 }

@@ -9,6 +9,42 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define UTF8_ASCII_LIMIT 0x80
+#define UTF8_TWO_BYTE_LEAD_MIN 0xc2
+#define UTF8_TWO_BYTE_LEAD_MAX 0xdf
+#define UTF8_TWO_BYTE_CODE_POINT_MIN 0x80
+#define UTF8_TWO_BYTE_PAYLOAD_MASK 0x1f
+#define UTF8_THREE_BYTE_LEAD_MIN 0xe0
+#define UTF8_THREE_BYTE_LEAD_MAX 0xef
+#define UTF8_THREE_BYTE_CODE_POINT_MIN 0x800
+#define UTF8_THREE_BYTE_PAYLOAD_MASK 0x0f
+#define UTF8_FOUR_BYTE_LEAD_MIN 0xf0
+#define UTF8_FOUR_BYTE_LEAD_MAX 0xf4
+#define UTF8_FOUR_BYTE_CODE_POINT_MIN 0x10000
+#define UTF8_FOUR_BYTE_PAYLOAD_MASK 0x07
+#define UTF8_CONTINUATION_PREFIX_MASK 0xc0
+#define UTF8_CONTINUATION_PREFIX 0x80
+#define UTF8_CONTINUATION_PAYLOAD_MASK 0x3f
+#define UTF8_CONTINUATION_PAYLOAD_BITS 6
+
+#define UNICODE_CODE_POINT_MAX 0x10ffff
+#define UNICODE_SURROGATE_FIRST 0xd800
+#define UNICODE_SURROGATE_LAST 0xdfff
+#define UNICODE_C0_CONTROL_LIMIT 0x20
+#define UNICODE_DELETE 0x7f
+#define UNICODE_C1_CONTROL_LAST 0x9f
+
+#define UNICODE_SPACE 0x20
+#define UNICODE_NO_BREAK_SPACE 0xa0
+#define UNICODE_OGHAM_SPACE_MARK 0x1680
+#define UNICODE_EN_QUAD 0x2000
+#define UNICODE_HAIR_SPACE 0x200a
+#define UNICODE_LINE_SEPARATOR 0x2028
+#define UNICODE_PARAGRAPH_SEPARATOR 0x2029
+#define UNICODE_NARROW_NO_BREAK_SPACE 0x202f
+#define UNICODE_MEDIUM_MATHEMATICAL_SPACE 0x205f
+#define UNICODE_IDEOGRAPHIC_SPACE 0x3000
+
 struct module_collection {
     struct otel_native_crash_module *modules;
     uint32_t count;
@@ -22,33 +58,38 @@ static bool valid_name(const char *name, size_t length) {
         uint32_t value = (unsigned char) name[offset++];
         uint32_t minimum = 0;
         unsigned int remaining = 0;
-        if (value >= 0xc2 && value <= 0xdf) {
+        if (value >= UTF8_TWO_BYTE_LEAD_MIN && value <= UTF8_TWO_BYTE_LEAD_MAX) {
             remaining = 1;
-            minimum = 0x80;
-            value &= 0x1f;
-        } else if (value >= 0xe0 && value <= 0xef) {
+            minimum = UTF8_TWO_BYTE_CODE_POINT_MIN;
+            value &= UTF8_TWO_BYTE_PAYLOAD_MASK;
+        } else if (value >= UTF8_THREE_BYTE_LEAD_MIN && value <= UTF8_THREE_BYTE_LEAD_MAX) {
             remaining = 2;
-            minimum = 0x800;
-            value &= 0x0f;
-        } else if (value >= 0xf0 && value <= 0xf4) {
+            minimum = UTF8_THREE_BYTE_CODE_POINT_MIN;
+            value &= UTF8_THREE_BYTE_PAYLOAD_MASK;
+        } else if (value >= UTF8_FOUR_BYTE_LEAD_MIN && value <= UTF8_FOUR_BYTE_LEAD_MAX) {
             remaining = 3;
-            minimum = 0x10000;
-            value &= 0x07;
-        } else if (value >= 0x80) {
+            minimum = UTF8_FOUR_BYTE_CODE_POINT_MIN;
+            value &= UTF8_FOUR_BYTE_PAYLOAD_MASK;
+        } else if (value >= UTF8_ASCII_LIMIT) {
             return false;
         }
         if (remaining > length - offset) return false;
         while (remaining > 0) {
             remaining--;
             unsigned char next = (unsigned char) name[offset++];
-            if ((next & 0xc0) != 0x80) return false;
-            value = (value << 6) | (next & 0x3f);
+            if ((next & UTF8_CONTINUATION_PREFIX_MASK) != UTF8_CONTINUATION_PREFIX) return false;
+            value = (value << UTF8_CONTINUATION_PAYLOAD_BITS) | (next & UTF8_CONTINUATION_PAYLOAD_MASK);
         }
-        if (value < minimum || value > 0x10ffff || (value >= 0xd800 && value <= 0xdfff) ||
-            value < 0x20 || (value >= 0x7f && value <= 0x9f)) return false;
-        bool whitespace = value == 0x20 || value == 0xa0 || value == 0x1680 ||
-            (value >= 0x2000 && value <= 0x200a) || value == 0x2028 || value == 0x2029 ||
-            value == 0x202f || value == 0x205f || value == 0x3000;
+        if (value < minimum || value > UNICODE_CODE_POINT_MAX ||
+            (value >= UNICODE_SURROGATE_FIRST && value <= UNICODE_SURROGATE_LAST) ||
+            value < UNICODE_C0_CONTROL_LIMIT ||
+            (value >= UNICODE_DELETE && value <= UNICODE_C1_CONTROL_LAST)) return false;
+        bool whitespace = value == UNICODE_SPACE || value == UNICODE_NO_BREAK_SPACE ||
+            value == UNICODE_OGHAM_SPACE_MARK ||
+            (value >= UNICODE_EN_QUAD && value <= UNICODE_HAIR_SPACE) ||
+            value == UNICODE_LINE_SEPARATOR || value == UNICODE_PARAGRAPH_SEPARATOR ||
+            value == UNICODE_NARROW_NO_BREAK_SPACE || value == UNICODE_MEDIUM_MATHEMATICAL_SPACE ||
+            value == UNICODE_IDEOGRAPHIC_SPACE;
         nonblank |= !whitespace;
     }
     return nonblank;
