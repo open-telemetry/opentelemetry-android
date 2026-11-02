@@ -102,27 +102,33 @@ class NativeCrashInstrumentation internal constructor(
             sessionProvider.addObserver(NativeCrashSessionObserver(store, crashContext, executor))
         }
 
-        if (!signalHandlerInstaller.install(store.crashRecordPath)) {
+        if (!signalHandlerInstaller.install(store.crashRecordPath, store.crashSnapshotPath)) {
             Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to install native crash signal handler")
         }
     }
 }
 
 internal fun interface NativeSignalHandlerInstaller {
-    fun install(crashRecordPath: File): Boolean
+    fun install(
+        crashRecordPath: File,
+        crashSnapshotPath: File,
+    ): Boolean
 }
 
 internal class JniNativeSignalHandlerInstaller(
     private val loadLibrary: (String) -> Unit = System::loadLibrary,
-    private val nativeInstall: (String) -> Boolean = NativeCrashJni::install,
+    private val nativeInstall: (String, String) -> Boolean = NativeCrashJni::installForPaths,
 ) : NativeSignalHandlerInstaller {
-    override fun install(crashRecordPath: File): Boolean {
+    override fun install(
+        crashRecordPath: File,
+        crashSnapshotPath: File,
+    ): Boolean {
         if (!prepareCrashRecordDirectory(crashRecordPath)) {
             return false
         }
         return runCatching {
             loadLibrary(NATIVE_LIBRARY_NAME)
-            nativeInstall(crashRecordPath.absolutePath)
+            nativeInstall(crashRecordPath.absolutePath, crashSnapshotPath.absolutePath)
         }.onFailure { error ->
             Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to load native crash signal handler", error)
         }.getOrDefault(false)

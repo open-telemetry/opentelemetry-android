@@ -109,7 +109,9 @@ class NativeCrashReporterTest {
                 },
                 executor = { task -> queuedTask = task },
                 replayExecutor = { task -> queuedReplay = task },
-                signalHandlerInstaller = {
+                signalHandlerInstaller = { markerPath, snapshotPath ->
+                    assertThat(markerPath).isEqualTo(store.crashRecordPath)
+                    assertThat(snapshotPath).isEqualTo(store.crashSnapshotPath)
                     assertThat(store.readCrashRecord()).isNull()
                     assertThat(store.readContext()?.sessionId).isEqualTo("current-session")
                     assertThat(previousStore.readContext()?.sessionId).isEqualTo("crashed-session")
@@ -166,7 +168,7 @@ class NativeCrashReporterTest {
                 storageFactory = { storageFor(store) },
                 executor = directExecutor,
                 replayExecutor = directExecutor,
-                signalHandlerInstaller = {
+                signalHandlerInstaller = { _, _ ->
                     signalHandlerInstalled = true
                     true
                 },
@@ -205,18 +207,22 @@ class NativeCrashReporterTest {
         val marker = File(tempDir, "missing/native-crash-record.properties")
         var loadedLibrary: String? = null
         var installedPath: String? = null
+        var installedSnapshotPath: String? = null
+        val snapshot = File(marker.parentFile, "native-crash-snapshot.bin")
         val installer =
             JniNativeSignalHandlerInstaller(
                 loadLibrary = { loadedLibrary = it },
-                nativeInstall = { path ->
+                nativeInstall = { path, snapshotPath ->
                     installedPath = path
+                    installedSnapshotPath = snapshotPath
                     true
                 },
             )
 
-        assertThat(installer.install(marker)).isTrue()
+        assertThat(installer.install(marker, snapshot)).isTrue()
         assertThat(loadedLibrary).isEqualTo("otel_android_native_crash")
         assertThat(installedPath).isEqualTo(marker.absolutePath)
+        assertThat(installedSnapshotPath).isEqualTo(snapshot.absolutePath)
     }
 
     @Test
@@ -227,10 +233,10 @@ class NativeCrashReporterTest {
         val installer =
             JniNativeSignalHandlerInstaller(
                 loadLibrary = { libraryLoaded = true },
-                nativeInstall = { true },
+                nativeInstall = { _, _ -> true },
             )
 
-        assertThat(installer.install(marker)).isFalse()
+        assertThat(installer.install(marker, File(tempDir, "snapshot"))).isFalse()
         assertThat(libraryLoaded).isFalse()
     }
 
@@ -241,10 +247,10 @@ class NativeCrashReporterTest {
         val installer =
             JniNativeSignalHandlerInstaller(
                 loadLibrary = { throw failure },
-                nativeInstall = { true },
+                nativeInstall = { _, _ -> true },
             )
 
-        assertThat(installer.install(marker)).isFalse()
+        assertThat(installer.install(marker, File(tempDir, "snapshot"))).isFalse()
         verify {
             Log.w(
                 any<String>(),
@@ -285,8 +291,9 @@ class NativeCrashReporterTest {
                 },
                 executor = directExecutor,
                 replayExecutor = { replay = it },
-                signalHandlerInstaller = { markerPath ->
+                signalHandlerInstaller = { markerPath, snapshotPath ->
                     installedMarkerPath = markerPath
+                    assertThat(snapshotPath).isEqualTo(store.crashSnapshotPath)
                     true
                 },
             )
@@ -321,7 +328,7 @@ class NativeCrashReporterTest {
             storageFactory = { throw failure },
             executor = directExecutor,
             replayExecutor = { error("Replay must not run") },
-            signalHandlerInstaller = { error("Capture must not run") },
+            signalHandlerInstaller = { _, _ -> error("Capture must not run") },
         ).install(context, fakeRum())
         verify { Log.w(any<String>(), "Failed to prepare native crash storage", failure) }
     }
@@ -343,7 +350,7 @@ class NativeCrashReporterTest {
                 storageFactory = { storageFor(store) },
                 executor = directExecutor,
                 replayExecutor = directExecutor,
-                signalHandlerInstaller = { false },
+                signalHandlerInstaller = { _, _ -> false },
             )
 
         instrumentation.install(context, fakeRum(sessionProvider))
@@ -1028,8 +1035,9 @@ class NativeCrashRecoveryTest {
                 storageFactory = { storage },
                 executor = directExecutor,
                 replayExecutor = directExecutor,
-                signalHandlerInstaller = {
-                    assertThat(it).isEqualTo(current.crashRecordPath)
+                signalHandlerInstaller = { markerPath, snapshotPath ->
+                    assertThat(markerPath).isEqualTo(current.crashRecordPath)
+                    assertThat(snapshotPath).isEqualTo(current.crashSnapshotPath)
                     assertThat(previous.recoveryState).isEqualTo(NativeCrashRead.Missing)
                     handlerInstalled = true
                     true
