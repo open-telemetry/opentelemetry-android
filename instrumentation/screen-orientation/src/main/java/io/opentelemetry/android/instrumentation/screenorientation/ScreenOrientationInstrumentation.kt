@@ -35,9 +35,9 @@ class ScreenOrientationInstrumentation : AndroidInstrumentation {
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
     ) {
-        detector?.let {
-            context.applicationContext.unregisterComponentCallbacks(it)
-        }
+        val currentDetector = detector ?: return
+        context.applicationContext.unregisterComponentCallbacks(currentDetector)
+        detector = null
     }
 
     override val name: String = "screen_orientation"
