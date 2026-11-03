@@ -6,6 +6,7 @@
 package io.opentelemetry.android.internal.services.network
 
 import io.opentelemetry.android.internal.services.network.PollingPermissionGrantCheckTrigger.Companion.CHECK_INTERVAL_MS
+import io.opentelemetry.android.internal.services.network.PollingPermissionGrantCheckTrigger.Companion.STARTUP_CHECK_INTERVAL_MS
 import io.opentelemetry.android.internal.services.network.PollingPermissionGrantCheckTrigger.Companion.STARTUP_WINDOW_MS
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -43,12 +44,19 @@ internal class PollingPermissionGrantCheckTriggerTest {
     }
 
     @Test
-    fun `checks on every call during the startup window`() {
+    fun `checks at most once per startup interval during the startup window`() {
         val trigger = createTrigger()
 
         repeat(3) { trigger.consumeTrigger() }
+        assertThat(checks).isEqualTo(2) // once at creation, then once for the burst
 
-        assertThat(checks).isEqualTo(4) // once at creation, then once per call
+        now += STARTUP_CHECK_INTERVAL_MS - 1
+        trigger.consumeTrigger()
+        assertThat(checks).isEqualTo(2)
+
+        now += 1
+        trigger.consumeTrigger()
+        assertThat(checks).isEqualTo(3)
     }
 
     @Test
