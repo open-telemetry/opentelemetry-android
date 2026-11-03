@@ -177,4 +177,47 @@ internal class CurrentNetworkProviderTest {
         assertThat(provider.currentNetwork).isEqualTo(wifi)
         provider.close()
     }
+
+    @Test
+    fun `unregister callback exception is suppressed, listeners are cleared, and second close does not retry`() {
+        val networkRequest: NetworkRequest = mockk()
+        val networkDetector: NetworkDetector = mockk()
+        val connectivityManager: ConnectivityManager = mockk()
+        every { networkDetector.detectCurrentNetwork() } returns wifi
+        every { connectivityManager.registerDefaultNetworkCallback(any()) } just Runs
+        every { connectivityManager.unregisterNetworkCallback(any<NetworkCallback>()) } throws
+            IllegalArgumentException("Callback was not registered")
+
+        val currentNetworkProvider =
+            CurrentNetworkProviderImpl(
+                networkDetector,
+                connectivityManager,
+            ) { networkRequest }
+
+        val monitorSlot = slot<NetworkCallback>()
+        verify(exactly = 1) {
+            connectivityManager.registerDefaultNetworkCallback(capture(monitorSlot))
+        }
+
+        val notified = AtomicInteger(0)
+        currentNetworkProvider.addNetworkChangeListener { notified.incrementAndGet() }
+
+        // close() should catch and suppress IllegalArgumentException
+        currentNetworkProvider.close()
+
+        verify(exactly = 1) {
+            connectivityManager.unregisterNetworkCallback(monitorSlot.captured)
+        }
+
+        // Verify listeners are cleared: firing callback after close does not notify listener
+        monitorSlot.captured.onAvailable(fakeNet)
+        assertThat(notified.get()).isEqualTo(0)
+
+        // Second close() must not retry unregistration
+        currentNetworkProvider.close()
+
+        verify(exactly = 1) {
+            connectivityManager.unregisterNetworkCallback(any<NetworkCallback>())
+        }
+    }
 }
