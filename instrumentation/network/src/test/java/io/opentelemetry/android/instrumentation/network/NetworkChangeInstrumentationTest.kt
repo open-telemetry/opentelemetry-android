@@ -277,6 +277,41 @@ class NetworkChangeInstrumentationTest {
         }
     }
 
+    @Test
+    fun reinstallationDoesNotDuplicateExtractors() {
+        val networkChangeListenerSlots = mutableListOf<NetworkChangeListener>()
+        val (context, openTelemetryRum) = createTestDependencies()
+        val instrumentation = NetworkChangeInstrumentation()
+
+        var customExtractorInvocations = 0
+        instrumentation.addAttributesExtractor { builder, _ ->
+            customExtractorInvocations++
+            builder.put("custom.key", "custom.value")
+        }
+
+        instrumentation.install(context, openTelemetryRum)
+        instrumentation.uninstall(context, openTelemetryRum)
+        instrumentation.install(context, openTelemetryRum)
+
+        verify(exactly = 2) {
+            currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlots))
+        }
+
+        val secondListener = networkChangeListenerSlots.last()
+        secondListener.onNetworkChange(CurrentNetwork(NetworkState.TRANSPORT_WIFI))
+
+        assertThat(customExtractorInvocations).isEqualTo(1)
+        val events = otelTesting.logRecords
+        assertThat(events).hasSize(1)
+        val event = events[0]
+        assertThat(event)
+            .hasEventName(NETWORK_CHANGE_EVENT_NAME)
+            .hasAttributesSatisfyingExactly(
+                equalTo(stringKey(NETWORK_CONNECTION_TYPE), "wifi"),
+                equalTo(stringKey("custom.key"), "custom.value"),
+            )
+    }
+
     private fun createTestDependencies(): Pair<Application, OpenTelemetryRum> {
         val app = mockk<Application>()
         val services = mockk<Services>()

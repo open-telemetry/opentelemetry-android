@@ -37,10 +37,10 @@ class NetworkChangeInstrumentation : AndroidInstrumentation {
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
     ) {
-        additionalAttributeExtractors.add(NetworkChangeAttributesExtractor())
+        val extractors = listOf(NetworkChangeAttributesExtractor()) + additionalAttributeExtractors
         val listener = NetworkApplicationListener(NetworkProviderHolder.get(context))
         val logger = openTelemetryRum.openTelemetry.logsBridge["io.opentelemetry.network"]
-        listener.startMonitoring(logger, additionalAttributeExtractors)
+        listener.startMonitoring(logger, extractors)
         get(context).appLifecycle.registerListener(listener)
         networkApplicationListener = listener
     }
