@@ -33,9 +33,11 @@ class SdkPreconfiguredRumBuilderTest {
         every { config.isSuppressed(any()) } returns false
         every { fooInstrumentation.name } returns "foo"
         every { sessionInstrumentation.name } returns "session"
+        every { sessionInstrumentation.installFirst } returns true
         every { sessionInstrumentation.installBefore } returns setOf("native-crash")
         every { sessionInstrumentation.installAfter } returns emptySet()
         every { nativeCrashInstrumentation.name } returns "native-crash"
+        every { nativeCrashInstrumentation.installFirst } returns true
         every { nativeCrashInstrumentation.installBefore } returns emptySet()
         every { nativeCrashInstrumentation.installAfter } returns setOf("session")
 
@@ -63,9 +65,9 @@ class SdkPreconfiguredRumBuilderTest {
 
         assertThat(result)
             .containsExactly(
-                fooInstrumentation,
                 sessionInstrumentation,
                 nativeCrashInstrumentation,
+                fooInstrumentation,
             )
     }
 
@@ -81,6 +83,7 @@ class SdkPreconfiguredRumBuilderTest {
         every { config.isSuppressed(any()) } returns false
         every { fooInstrumentation.name } returns "foo"
         every { nativeCrashInstrumentation.name } returns "native-crash"
+        every { nativeCrashInstrumentation.installFirst } returns true
         every { nativeCrashInstrumentation.installAfter } returns setOf("session")
         every { nativeCrashInstrumentation.installBefore } returns emptySet()
 
@@ -99,7 +102,7 @@ class SdkPreconfiguredRumBuilderTest {
 
         val result = builder.getEnabledInstrumentations()
 
-        assertThat(result).containsExactly(fooInstrumentation, nativeCrashInstrumentation)
+        assertThat(result).containsExactly(nativeCrashInstrumentation, fooInstrumentation)
     }
 
     @Test

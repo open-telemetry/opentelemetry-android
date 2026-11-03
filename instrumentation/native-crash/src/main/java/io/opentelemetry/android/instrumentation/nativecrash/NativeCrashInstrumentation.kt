@@ -61,6 +61,8 @@ class NativeCrashInstrumentation internal constructor(
 ) : OrderedAndroidInstrumentation {
     override val name: String = "native-crash"
 
+    override val installFirst: Boolean = true
+
     override val installAfter: Set<String> = setOf("session")
 
     override fun install(

@@ -43,8 +43,6 @@ internal object InstrumentationSorter {
         val outgoingEdges = Array(size) { mutableSetOf<Int>() }
         val inDegree = IntArray(size)
 
-        addInstallFirstEdges(instrumentations, outgoingEdges, inDegree)
-
         for (i in 0 until size) {
             val inst = instrumentations[i]
             if (inst is OrderedAndroidInstrumentation) {
@@ -52,6 +50,8 @@ internal object InstrumentationSorter {
                 addNamedEdges(i, inst.installBefore, isAfter = false, nameToIndices, outgoingEdges, inDegree)
             }
         }
+
+        addInstallFirstEdges(instrumentations, outgoingEdges, inDegree)
 
         return Pair(outgoingEdges, inDegree)
     }
@@ -73,15 +73,35 @@ internal object InstrumentationSorter {
         }
 
         for (first in firstIndices) {
-            val firstInst = instrumentations[first] as? OrderedAndroidInstrumentation
-            val explicitAfter = firstInst?.installAfter ?: emptySet()
             for (other in nonFirstIndices) {
-                // Do not add first -> other if first explicitly declared it must install after other
-                if (instrumentations[other].name !in explicitAfter && outgoingEdges[first].add(other)) {
+                if (!hasPath(other, first, outgoingEdges) && outgoingEdges[first].add(other)) {
                     inDegree[other]++
                 }
             }
         }
+    }
+
+    private fun hasPath(
+        from: Int,
+        to: Int,
+        outgoingEdges: Array<MutableSet<Int>>,
+    ): Boolean {
+        if (from == to) return true
+        val queue = ArrayDeque<Int>()
+        val visited = BooleanArray(outgoingEdges.size)
+        queue.add(from)
+        visited[from] = true
+        while (queue.isNotEmpty()) {
+            val curr = queue.removeFirst()
+            for (next in outgoingEdges[curr]) {
+                if (next == to) return true
+                if (!visited[next]) {
+                    visited[next] = true
+                    queue.add(next)
+                }
+            }
+        }
+        return false
     }
 
     private fun addNamedEdges(

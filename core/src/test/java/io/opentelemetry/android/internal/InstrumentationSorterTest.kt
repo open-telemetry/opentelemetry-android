@@ -97,8 +97,8 @@ class InstrumentationSorterTest {
 
         assertThat(warnings).hasSize(1)
         assertThat(warnings[0]).contains("Cycle detected")
-        // Everything still gets installed
-        assertThat(result.map { it.name }).containsExactlyInAnyOrder("a", "b", "c")
+        // Everything still gets installed, unblocked items first and remaining in discovery order
+        assertThat(result.map { it.name }).containsExactly("c", "a", "b")
     }
 
     @Test
@@ -141,13 +141,13 @@ class InstrumentationSorterTest {
     fun `installFirst places instrumentation before unconstrained ones`() {
         val startup = TestInstrumentation("startup")
         val session = OrderedTestInstrumentation("session", installFirst = true, installBefore = setOf("native-crash"))
-        val nativeCrash = OrderedTestInstrumentation("native-crash", installAfter = setOf("session"))
+        val nativeCrash = OrderedTestInstrumentation("native-crash", installFirst = true, installAfter = setOf("session"))
         val anr = TestInstrumentation("anr")
 
         val result = InstrumentationSorter.sort(listOf(startup, nativeCrash, session, anr))
         val names = result.map { it.name }
 
-        assertThat(names).containsExactly("session", "startup", "native-crash", "anr")
+        assertThat(names).containsExactly("session", "native-crash", "startup", "anr")
     }
 
     @Test
@@ -174,5 +174,20 @@ class InstrumentationSorterTest {
         assertThat(names.indexOf("session")).isLessThan(names.indexOf("native-crash"))
         // session has installFirst so it still precedes unconstrained 'other'
         assertThat(names.indexOf("session")).isLessThan(names.indexOf("other"))
+    }
+
+    @Test
+    fun `installFirst respects prerequisite installBefore and transitive dependencies without creating cycle`() {
+        val warnings = mutableListOf<String>()
+        val init = TestInstrumentation("init")
+        val setup = OrderedTestInstrumentation("setup", installAfter = setOf("init"), installBefore = setOf("session"))
+        val session = OrderedTestInstrumentation("session", installFirst = true)
+        val normal = TestInstrumentation("normal")
+
+        val result = InstrumentationSorter.sort(listOf(normal, session, setup, init)) { warnings.add(it) }
+        val names = result.map { it.name }
+
+        assertThat(warnings).isEmpty()
+        assertThat(names).containsExactly("init", "setup", "session", "normal")
     }
 }
