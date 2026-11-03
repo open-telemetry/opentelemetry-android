@@ -165,4 +165,16 @@ internal class CurrentNetworkProviderTest {
             CurrentNetworkProviderImpl(networkDetector, connectivityManager) { networkRequest }
         assertThat(networkProvider.refreshNetworkStatus()).isEqualTo(UNKNOWN_NETWORK)
     }
+
+    @Test
+    fun `null connectivity manager handled gracefully`() {
+        val networkDetector: NetworkDetector = mockk()
+        val networkRequest: NetworkRequest = mockk()
+        every { networkDetector.detectCurrentNetwork() } returns wifi
+
+        val provider = CurrentNetworkProviderImpl(networkDetector, null) { networkRequest }
+
+        assertThat(provider.currentNetwork).isEqualTo(wifi)
+        provider.close()
+    }
 }

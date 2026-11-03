@@ -45,6 +45,6 @@ object NetworkProviderHolder {
     private fun createProvider(context: Context): CurrentNetworkProvider =
         CurrentNetworkProviderImpl(
             NetworkDetector.create(context),
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager,
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager,
         )
 }
