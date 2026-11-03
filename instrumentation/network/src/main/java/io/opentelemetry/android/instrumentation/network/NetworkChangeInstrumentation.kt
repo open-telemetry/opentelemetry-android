@@ -6,6 +6,7 @@
 package io.opentelemetry.android.instrumentation.network
 
 import android.content.Context
+import androidx.annotation.VisibleForTesting
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
@@ -22,8 +23,11 @@ fun interface NetworkAttributesExtractor : (AttributesBuilder, CurrentNetwork) -
 /** Generates telemetry for when the network status changes.  */
 @AutoService(AndroidInstrumentation::class)
 class NetworkChangeInstrumentation : AndroidInstrumentation {
-    private val additionalAttributeExtractors: MutableList<NetworkAttributesExtractor> = ArrayList()
-    private var networkApplicationListener: NetworkApplicationListener? = null
+    @VisibleForTesting
+    internal val additionalAttributeExtractors: MutableList<NetworkAttributesExtractor> = ArrayList()
+
+    @VisibleForTesting
+    internal var networkApplicationListener: NetworkApplicationListener? = null
 
     override val name = "network"
 

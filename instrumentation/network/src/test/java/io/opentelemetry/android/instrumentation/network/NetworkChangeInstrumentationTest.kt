@@ -283,15 +283,23 @@ class NetworkChangeInstrumentationTest {
         val (context, openTelemetryRum) = createTestDependencies()
         val instrumentation = NetworkChangeInstrumentation()
 
-        var customExtractorInvocations = 0
-        instrumentation.addAttributesExtractor { builder, _ ->
-            customExtractorInvocations++
-            builder.put("custom.key", "custom.value")
-        }
+        val customExtractor =
+            NetworkAttributesExtractor { builder, _ ->
+                builder.put("custom.key", "custom.value")
+            }
+        instrumentation.addAttributesExtractor(customExtractor)
 
         instrumentation.install(context, openTelemetryRum)
         instrumentation.uninstall(context, openTelemetryRum)
         instrumentation.install(context, openTelemetryRum)
+
+        // Verify that additionalAttributeExtractors was not polluted with default extractors
+        assertThat(instrumentation.additionalAttributeExtractors).containsExactly(customExtractor)
+
+        // Inspect the installed extractors list to ensure default extractor is not duplicated
+        val installedExtractors = instrumentation.networkApplicationListener?.installedExtractors
+        assertThat(installedExtractors).hasSize(2)
+        assertThat(installedExtractors?.filterIsInstance<NetworkChangeAttributesExtractor>()).hasSize(1)
 
         verify(exactly = 2) {
             currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlots))
@@ -300,7 +308,6 @@ class NetworkChangeInstrumentationTest {
         val secondListener = networkChangeListenerSlots.last()
         secondListener.onNetworkChange(CurrentNetwork(NetworkState.TRANSPORT_WIFI))
 
-        assertThat(customExtractorInvocations).isEqualTo(1)
         val events = otelTesting.logRecords
         assertThat(events).hasSize(1)
         val event = events[0]
