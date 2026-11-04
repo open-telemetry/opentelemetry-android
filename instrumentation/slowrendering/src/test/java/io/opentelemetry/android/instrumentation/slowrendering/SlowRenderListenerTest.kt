@@ -142,7 +142,7 @@ class SlowRenderListenerTest {
                 jankReporter,
                 executorService,
                 frameMetricsHandler,
-                Duration.ZERO,
+                Duration.ofMillis(1500),
             )
 
         testInstance.onActivityResumed(activity)
@@ -161,7 +161,7 @@ class SlowRenderListenerTest {
 
         testInstance.onActivityPaused(activity)
 
-        assertLogContent(periodSeconds = 0.0)
+        assertLogContent(periodSeconds = 1.5)
     }
 
     @Test
@@ -205,7 +205,7 @@ class SlowRenderListenerTest {
 
         testInstance.start()
 
-        assertLogContent(periodSeconds = 1.0)
+        assertLogContent(periodSeconds = 1.001)
     }
 
     @Test
