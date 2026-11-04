@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicReference
  */
 internal class CurrentNetworkProviderImpl(
     private val networkDetector: NetworkDetector,
-    private val connectivityManager: ConnectivityManager,
+    private val connectivityManager: ConnectivityManager?,
     createNetworkMonitoringRequest: () -> NetworkRequest = ::createNetworkMonitoringRequest,
 ) : CurrentNetworkProvider {
     @Volatile
@@ -44,8 +44,15 @@ internal class CurrentNetworkProviderImpl(
 
     private fun startMonitoring(createNetworkMonitoringRequest: () -> NetworkRequest) {
         refreshNetworkStatus()
+        if (connectivityManager == null) {
+            Log.w(
+                RumConstants.OTEL_RUM_LOG_TAG,
+                "ConnectivityManager is not available. Automatic network monitoring is disabled.",
+            )
+            return
+        }
         try {
-            registerNetworkCallbacks(createNetworkMonitoringRequest)
+            registerNetworkCallbacks(connectivityManager, createNetworkMonitoringRequest)
         } catch (e: Exception) {
             // if this fails, we'll go without network change events.
             Log.w(
@@ -56,9 +63,12 @@ internal class CurrentNetworkProviderImpl(
         }
     }
 
-    private fun registerNetworkCallbacks(createNetworkMonitoringRequest: () -> NetworkRequest) {
+    private fun registerNetworkCallbacks(
+        connectivityManager: ConnectivityManager,
+        createNetworkMonitoringRequest: () -> NetworkRequest,
+    ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            registerNetworkCallbackApi24()
+            registerNetworkCallbackApi24(connectivityManager)
         } else {
             val networkRequest = createNetworkMonitoringRequest()
             val callback: NetworkCallback = ConnectionMonitor()
@@ -68,7 +78,7 @@ internal class CurrentNetworkProviderImpl(
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    private fun registerNetworkCallbackApi24() {
+    private fun registerNetworkCallbackApi24(connectivityManager: ConnectivityManager) {
         val callback: NetworkCallback = ConnectionMonitor()
         connectivityManager.registerDefaultNetworkCallback(callback)
         callbackRef.set(callback)
@@ -104,7 +114,15 @@ internal class CurrentNetworkProviderImpl(
     override fun close() {
         val callback = callbackRef.get()
         if (callback != null) {
-            connectivityManager.unregisterNetworkCallback(callback)
+            try {
+                connectivityManager?.unregisterNetworkCallback(callback)
+            } catch (e: Exception) {
+                Log.w(
+                    RumConstants.OTEL_RUM_LOG_TAG,
+                    "Failed to unregister network callback.",
+                    e,
+                )
+            }
             listeners.clear()
             callbackRef.set(null)
         }
