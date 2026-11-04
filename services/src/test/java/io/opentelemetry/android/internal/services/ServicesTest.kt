@@ -55,6 +55,12 @@ class ServicesTest {
 
         val services = Services.get(nonAppContext)
         assertThat(services).isNotNull
+        val retainedContext =
+            Services::class.java
+                .getDeclaredField("context")
+                .apply { isAccessible = true }
+                .get(services)
+        assertThat(retainedContext).isSameAs(app)
         assertThat(services.visibleScreenTracker).isNotNull
         services.close()
     }
