@@ -277,6 +277,48 @@ class NetworkChangeInstrumentationTest {
         }
     }
 
+    @Test
+    fun reinstallationDoesNotDuplicateExtractors() {
+        val networkChangeListenerSlots = mutableListOf<NetworkChangeListener>()
+        val (context, openTelemetryRum) = createTestDependencies()
+        val instrumentation = NetworkChangeInstrumentation()
+
+        val customExtractor =
+            NetworkAttributesExtractor { builder, _ ->
+                builder.put("custom.key", "custom.value")
+            }
+        instrumentation.addAttributesExtractor(customExtractor)
+
+        instrumentation.install(context, openTelemetryRum)
+        instrumentation.uninstall(context, openTelemetryRum)
+        instrumentation.install(context, openTelemetryRum)
+
+        // Verify that additionalAttributeExtractors was not polluted with default extractors
+        assertThat(instrumentation.additionalAttributeExtractors).containsExactly(customExtractor)
+
+        // Inspect the installed extractors list to ensure default extractor is not duplicated
+        val installedExtractors = instrumentation.networkApplicationListener?.installedExtractors
+        assertThat(installedExtractors).hasSize(2)
+        assertThat(installedExtractors?.filterIsInstance<NetworkChangeAttributesExtractor>()).hasSize(1)
+
+        verify(exactly = 2) {
+            currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlots))
+        }
+
+        val secondListener = networkChangeListenerSlots.last()
+        secondListener.onNetworkChange(CurrentNetwork(NetworkState.TRANSPORT_WIFI))
+
+        val events = otelTesting.logRecords
+        assertThat(events).hasSize(1)
+        val event = events[0]
+        assertThat(event)
+            .hasEventName(NETWORK_CHANGE_EVENT_NAME)
+            .hasAttributesSatisfyingExactly(
+                equalTo(stringKey(NETWORK_CONNECTION_TYPE), "wifi"),
+                equalTo(stringKey("custom.key"), "custom.value"),
+            )
+    }
+
     private fun createTestDependencies(): Pair<Application, OpenTelemetryRum> {
         val app = mockk<Application>()
         val services = mockk<Services>()

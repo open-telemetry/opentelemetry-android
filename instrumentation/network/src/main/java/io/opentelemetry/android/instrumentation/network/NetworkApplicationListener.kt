@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.instrumentation.network
 
+import androidx.annotation.VisibleForTesting
 import io.opentelemetry.android.internal.services.applifecycle.ApplicationStateListener
 import io.opentelemetry.android.internal.services.network.CurrentNetwork
 import io.opentelemetry.android.internal.services.network.CurrentNetworkProvider
@@ -20,6 +21,10 @@ internal class NetworkApplicationListener(
 ) : ApplicationStateListener {
     private val shouldEmitChangeEvents = AtomicBoolean(true)
     private var networkChangeListener: TracingNetworkChangeListener? = null
+
+    @VisibleForTesting
+    internal val installedExtractors: List<NetworkAttributesExtractor>?
+        get() = networkChangeListener?.additionalExtractors
 
     fun startMonitoring(
         eventLogger: Logger,
@@ -50,10 +55,10 @@ internal class NetworkApplicationListener(
         shouldEmitChangeEvents.set(false)
     }
 
-    private class TracingNetworkChangeListener(
+    internal class TracingNetworkChangeListener(
         private val eventLogger: Logger,
         private val shouldEmitChangeEvents: AtomicBoolean,
-        private val additionalExtractors: List<NetworkAttributesExtractor>,
+        internal val additionalExtractors: List<NetworkAttributesExtractor>,
     ) : NetworkChangeListener {
         override fun onNetworkChange(currentNetwork: CurrentNetwork) {
             if (!shouldEmitChangeEvents.get()) {
