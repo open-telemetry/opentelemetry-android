@@ -6,6 +6,7 @@
 package io.opentelemetry.android.internal.services
 
 import android.annotation.SuppressLint
+import android.app.Application
 import android.content.Context
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -19,8 +20,10 @@ import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTra
  * This class is internal and not for public use. Its APIs are unstable and can change at any time.
  */
 class Services internal constructor(
-    private val context: Context,
+    context: Context,
 ) : ServicesFactory {
+    private val context: Context = (context as? Application) ?: context.applicationContext ?: context
+
     override val appLifecycle: AppLifecycle by lazy {
         AppLifecycleImpl(
             ApplicationStateWatcher(),
@@ -35,6 +38,11 @@ class Services internal constructor(
     override fun close() {
         appLifecycle.close()
         visibleScreenTracker.close()
+        synchronized(Companion) {
+            if (instance === this) {
+                instance = null
+            }
+        }
     }
 
     companion object {
@@ -45,7 +53,8 @@ class Services internal constructor(
         fun get(context: Context): Services =
             synchronized(this) {
                 if (instance == null) {
-                    set(Services(context))
+                    val appContext = (context as? Application) ?: context.applicationContext ?: context
+                    set(Services(appContext))
                 }
                 return checkNotNull(instance)
             }
