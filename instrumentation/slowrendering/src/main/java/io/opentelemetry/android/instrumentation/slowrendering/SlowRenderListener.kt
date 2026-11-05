@@ -21,7 +21,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
-@RequiresApi(api = Build.VERSION_CODES.N)
 internal class SlowRenderListener(
     private val jankReporter: JankReporter,
     private val executorService: ScheduledExecutorService,
@@ -47,6 +46,7 @@ internal class SlowRenderListener(
         )
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     fun shutdown() {
         executorService.shutdownNow()
         for (entry in activities.entries) {
@@ -57,6 +57,7 @@ internal class SlowRenderListener(
         activities.clear()
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     override fun onActivityResumed(activity: Activity) {
         if (executorService.isShutdown) {
             return
@@ -68,6 +69,7 @@ internal class SlowRenderListener(
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     override fun onActivityPaused(activity: Activity) {
         if (executorService.isShutdown) {
             return
