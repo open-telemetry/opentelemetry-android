@@ -30,6 +30,9 @@ internal class SlowRenderListener(
 ) : DefaultingActivityLifecycleCallbacks {
     private val activities: ConcurrentMap<Activity, PerActivityListener> = ConcurrentHashMap()
 
+    // Not Duration.toSeconds(), which is missing before Android 12 (API 31).
+    private val pollIntervalSeconds: Double = pollInterval.toMillis() / 1000.0
+
     constructor(jankReporter: JankReporter, pollInterval: Duration) : this(
         jankReporter,
         Executors.newScheduledThreadPool(1),
@@ -76,7 +79,7 @@ internal class SlowRenderListener(
         if (listener != null) {
             activity.window.removeOnFrameMetricsAvailableListener(listener)
             val durationToCountHistogram = listener.resetMetrics()
-            jankReporter.reportSlow(durationToCountHistogram, pollInterval.toSeconds().toDouble(), listener.getActivityName())
+            jankReporter.reportSlow(durationToCountHistogram, pollIntervalSeconds, listener.getActivityName())
         }
     }
 
@@ -84,7 +87,7 @@ internal class SlowRenderListener(
         try {
             activities.forEach { (_: Activity?, listener: PerActivityListener) ->
                 val durationToCountHistogram = listener.resetMetrics()
-                jankReporter.reportSlow(durationToCountHistogram, pollInterval.toSeconds().toDouble(), listener.getActivityName())
+                jankReporter.reportSlow(durationToCountHistogram, pollIntervalSeconds, listener.getActivityName())
             }
         } catch (e: Exception) {
             Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Exception while processing frame metrics", e)

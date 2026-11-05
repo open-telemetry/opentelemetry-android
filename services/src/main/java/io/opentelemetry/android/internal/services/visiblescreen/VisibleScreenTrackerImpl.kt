@@ -40,7 +40,7 @@ internal class VisibleScreenTrackerImpl internal constructor(
     private val activityLifecycleTracker by lazy { buildActivitiesTracker() }
     private val fragmentLifecycleTrackerRegisterer by lazy { buildFragmentsTrackerRegisterer() }
 
-    private val application = context as? Application
+    private val application = (context as? Application) ?: (context.applicationContext as? Application)
 
     init {
         application?.let {
