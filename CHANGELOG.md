@@ -9,6 +9,10 @@
   which only exists from Android 12 (API 31).
   ([#2183](https://github.com/open-telemetry/opentelemetry-android/issues/2183))
 
+- Prevent `Services` from retaining non-application contexts and reset its singleton on close so
+  lifecycle tracking works after SDK reinitialization.
+  ([#2188](https://github.com/open-telemetry/opentelemetry-android/pull/2188))
+
 ## Version 1.8.0 (2026-10-22)
 
 ### 📣 Migration notes
