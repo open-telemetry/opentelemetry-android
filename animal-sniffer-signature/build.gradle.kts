@@ -30,9 +30,21 @@ configurations.create("generatedSignature") {
     isCanBeResolved = false
 }
 
+val noDesugarSignatureJar =
+    configurations.create("noDesugarSignatureJar") {
+        isCanBeConsumed = false
+        isCanBeResolved = true
+    }
+
+configurations.create("noDesugarSignature") {
+    isCanBeConsumed = true
+    isCanBeResolved = false
+}
+
 dependencies {
     signature("com.toasttab.android:gummy-bears-api-${project.property("android.minSdk")}:0.9.0@signature")
     signatureJar(libs.desugarJdkLibs)
+    noDesugarSignatureJar("com.toasttab.android:gummy-bears-api-${project.property("android.minSdkWithNoDesugar")}:0.9.0@signature")
 }
 
 val signatureSimpleName = "android.signature"
@@ -57,6 +69,12 @@ artifacts {
         },
     ) {
         builtBy(signatureBuilderTask)
+    }
+}
+
+artifacts {
+    add("noDesugarSignature", project.provider { noDesugarSignatureJar.singleFile }) {
+        builtBy(noDesugarSignatureJar)
     }
 }
 
