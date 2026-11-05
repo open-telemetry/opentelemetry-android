@@ -9,6 +9,15 @@
   which only exists from Android 12 (API 31).
   ([#2183](https://github.com/open-telemetry/opentelemetry-android/issues/2183))
 
+- Network attributes now pick up `READ_PHONE_STATE` when the app is granted it after the SDK
+  started, instead of after the next network change or app restart. The network subtype is
+  reported, and the carrier switches to the API 28+ details, from a later span or log. The
+  permission is checked when spans and logs are created: at most once per 3 seconds in the first
+  30 seconds after startup, then at most once per 10 seconds. The carrier name can
+  therefore change once during a session, and the network change instrumentation then emits a
+  `network.change` event with the updated attributes.
+  ([#1216](https://github.com/open-telemetry/opentelemetry-android/issues/1216))
+
 ### 📈 Enhancements
 
 - Add `shouldRecordWebsocketEventForHost { ... }` to the Android Agent's `httpTelemetry` DSL

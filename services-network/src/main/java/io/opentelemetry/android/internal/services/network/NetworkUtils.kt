@@ -16,7 +16,7 @@ import androidx.core.content.ContextCompat
 /**
  * Checks if the app has [READ_PHONE_STATE][Manifest.permission.READ_PHONE_STATE] permission.
  */
-private fun hasReadPhoneStatePermission(context: Context): Boolean =
+internal fun hasReadPhoneStatePermission(context: Context): Boolean =
     ContextCompat.checkSelfPermission(
         context,
         Manifest.permission.READ_PHONE_STATE,
@@ -43,6 +43,22 @@ internal fun hasPhoneStatePermission(context: Context): Boolean =
             hasReadPhoneStatePermission(context)
     } else {
         hasReadPhoneStatePermission(context)
+    }
+
+/**
+ * Checks if the app's manifest requests [READ_PHONE_STATE][Manifest.permission.READ_PHONE_STATE],
+ * the only phone state permission that can be granted after the app started. Assumes it does when
+ * the manifest cannot be read.
+ */
+@Suppress("DEPRECATION") // the PackageInfoFlags overload needs API 33
+internal fun requestsReadPhoneState(context: Context): Boolean =
+    try {
+        context.packageManager
+            .getPackageInfo(context.packageName, PackageManager.GET_PERMISSIONS)
+            .requestedPermissions
+            ?.contains(Manifest.permission.READ_PHONE_STATE) == true
+    } catch (e: Exception) {
+        true
     }
 
 /** Checks if the device has telephony capabilities. */
