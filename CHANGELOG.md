@@ -1,5 +1,14 @@
 # OpenTelemetry Android Changelog
 
+## Unreleased
+
+### 🛠️ Bug fixes
+
+- Fix a `NoSuchMethodError` crash in the slow rendering instrumentation on Android 8 - 11
+  (API 26 - 30) when core library desugaring is not enabled. It called `Duration.toSeconds()`,
+  which only exists from Android 12 (API 31).
+  ([#2183](https://github.com/open-telemetry/opentelemetry-android/issues/2183))
+
 ## Version 1.8.0 (2026-10-22)
 
 ### 📣 Migration notes
