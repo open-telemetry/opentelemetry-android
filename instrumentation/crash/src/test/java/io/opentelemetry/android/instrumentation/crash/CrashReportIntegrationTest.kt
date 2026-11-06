@@ -7,9 +7,12 @@
 
 package io.opentelemetry.android.instrumentation.crash
 
+import android.annotation.SuppressLint
 import android.app.Application
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.android.instrumentation.utils.threadIdCompat
@@ -29,11 +32,13 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.io.File
 import java.io.PrintWriter
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
+@SuppressLint("UnspecifiedRegisterReceiverFlag")
 internal class CrashReportIntegrationTest {
     private lateinit var rule: OpenTelemetryRule
     private lateinit var context: Application
@@ -87,6 +92,83 @@ internal class CrashReportIntegrationTest {
         } finally {
             Thread.setDefaultUncaughtExceptionHandler(originalHandler)
         }
+    }
+
+    @Test
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    fun `test uninstall unregisters runtime details broadcast receiver`() {
+        val receiverSlot = slot<RuntimeDetailsExtractor>()
+        every { context.registerReceiver(capture(receiverSlot), any()) } returns null
+
+        instrumentation.install(context, openTelemetryRum)
+        verify(exactly = 1) { context.registerReceiver(any(), any()) }
+
+        instrumentation.uninstall(context, openTelemetryRum)
+        verify(exactly = 1) { context.unregisterReceiver(receiverSlot.captured) }
+    }
+
+    @Test
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    fun `test repeated uninstall unregisters broadcast receiver only once`() {
+        val receiverSlot = slot<RuntimeDetailsExtractor>()
+        every { context.registerReceiver(capture(receiverSlot), any()) } returns null
+
+        instrumentation.install(context, openTelemetryRum)
+        instrumentation.uninstall(context, openTelemetryRum)
+        instrumentation.uninstall(context, openTelemetryRum)
+
+        verify(exactly = 1) { context.unregisterReceiver(receiverSlot.captured) }
+    }
+
+    @Test
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    fun `test repeated install while active is a safe no-op`() {
+        every { context.registerReceiver(any(), any()) } returns null
+
+        instrumentation.install(context, openTelemetryRum)
+        instrumentation.install(context, openTelemetryRum)
+
+        verify(exactly = 1) { context.registerReceiver(any(), any()) }
+
+        instrumentation.uninstall(context, openTelemetryRum)
+    }
+
+    @Test
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    fun `test reinstallation does not duplicate runtime extractors or leak receivers`() {
+        val receiverSlots = mutableListOf<RuntimeDetailsExtractor>()
+        every { context.registerReceiver(capture(receiverSlots), any()) } returns null
+
+        val customExtractor = mockk<EventAttributesExtractor<CrashDetails>>(relaxed = true)
+        instrumentation.addAttributesExtractor(customExtractor)
+
+        val firstFilesDir = mockk<File>(relaxed = true)
+        val secondFilesDir = mockk<File>(relaxed = true)
+        every { context.filesDir } returns firstFilesDir
+
+        // First install -> uninstall cycle
+        instrumentation.install(context, openTelemetryRum)
+        assertEquals(1, receiverSlots.size)
+        instrumentation.uninstall(context, openTelemetryRum)
+        verify(exactly = 1) { context.unregisterReceiver(receiverSlots[0]) }
+
+        // Second install cycle
+        every { context.filesDir } returns secondFilesDir
+        instrumentation.install(context, openTelemetryRum)
+        assertEquals(2, receiverSlots.size)
+
+        // Simulate crash
+        val exc = RuntimeException("Boom")
+        simulateUncaughtException(exc)
+
+        // Verify only second installation's runtime extractor was invoked
+        verify(exactly = 0) { firstFilesDir.freeSpace }
+        verify(exactly = 1) { secondFilesDir.freeSpace }
+        // Custom extractor called only once per crash
+        verify(exactly = 1) { customExtractor.extract(any(), any()) }
+
+        instrumentation.uninstall(context, openTelemetryRum)
+        verify(exactly = 1) { context.unregisterReceiver(receiverSlots[1]) }
     }
 
     @Test

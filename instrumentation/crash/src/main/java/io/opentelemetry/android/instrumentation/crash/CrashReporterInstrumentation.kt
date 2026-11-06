@@ -17,6 +17,7 @@ class CrashReporterInstrumentation : AndroidInstrumentation {
     private val additionalExtractors: MutableList<EventAttributesExtractor<CrashDetails>> =
         mutableListOf()
     private var crashReporter: CrashReporter? = null
+    private var runtimeDetailsExtractor: RuntimeDetailsExtractor? = null
 
     /** Adds an [EventAttributesExtractor] that will extract additional attributes.  */
     fun addAttributesExtractor(extractor: EventAttributesExtractor<CrashDetails>) {
@@ -27,8 +28,13 @@ class CrashReporterInstrumentation : AndroidInstrumentation {
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
     ) {
-        addAttributesExtractor(RuntimeDetailsExtractor.create(context))
-        val reporter = CrashReporter(additionalExtractors)
+        if (crashReporter != null) {
+            return
+        }
+        val runtimeExtractor = RuntimeDetailsExtractor.create(context)
+        runtimeDetailsExtractor = runtimeExtractor
+        val allExtractors = listOf(runtimeExtractor) + additionalExtractors
+        val reporter = CrashReporter(allExtractors)
         reporter.install(openTelemetryRum.openTelemetry)
         crashReporter = reporter
     }
@@ -39,6 +45,9 @@ class CrashReporterInstrumentation : AndroidInstrumentation {
     ) {
         crashReporter?.uninstall()
         crashReporter = null
+
+        runtimeDetailsExtractor?.unregister(context)
+        runtimeDetailsExtractor = null
     }
 
     override val name: String = "java-crash"
