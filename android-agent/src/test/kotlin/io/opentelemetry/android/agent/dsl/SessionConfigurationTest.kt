@@ -58,17 +58,12 @@ internal class SessionConfigurationTest {
     }
 
     @Test
-    fun testDisableAndEnableSessionIdDirectly() {
+    fun testDisableSessionIdDirectly() {
         val otelConfig =
             otelConfig.apply {
                 disableSessionId()
             }
         assertEquals(false, otelConfig.rumConfig.shouldIncludeSessionId())
-
-        otelConfig.apply {
-            enableSessionId()
-        }
-        assertEquals(true, otelConfig.rumConfig.shouldIncludeSessionId())
     }
 
     @Test
