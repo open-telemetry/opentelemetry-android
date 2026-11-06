@@ -12,7 +12,6 @@ import android.os.Handler
 import android.view.FrameMetrics
 import android.view.Window
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.blogspot.mydailyjava.weaklockfree.WeakConcurrentMap
 import io.mockk.CapturingSlot
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -311,28 +310,27 @@ class SlowRenderListenerTest {
             SlowRenderListener::class.java.getDeclaredField("activities").apply {
                 isAccessible = true
             }
-        val activities = activitiesField.get(testInstance) as WeakConcurrentMap<*, *>
-        assertThat(activities.approximateSize()).isEqualTo(0)
+        val activities = activitiesField.get(testInstance) as Map<*, *>
+        assertThat(activities).isEmpty()
     }
 
+    @Suppress("ExplicitGarbageCollectionCall")
     private fun forceGarbageCollection() {
-        for (i in 0..4) {
+        repeat(5) {
             Runtime.getRuntime().gc()
             System.runFinalization()
             try {
                 Thread.sleep(20)
             } catch (ignored: InterruptedException) {
+                // Expected during test GC wait loop
             }
         }
     }
 
     private class TestActivity : Activity() {
-        private val component = ComponentName("io.otel", "TestComponent")
-        private val mockWindow = mockk<Window>(relaxed = true)
+        override fun getComponentName(): ComponentName = ComponentName("io.otel", "TestComponent")
 
-        override fun getComponentName(): ComponentName = component
-
-        override fun getWindow(): Window = mockWindow
+        override fun getWindow(): Window = mockk(relaxed = true)
     }
 
     private fun makeSomeDurations(): List<Long> =

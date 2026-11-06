@@ -34,7 +34,6 @@ dependencies {
     implementation(libs.opentelemetry.kotlin.compat)
     implementation(libs.opentelemetry.semconv.kotlin)
     implementation(libs.androidx.core)
-    implementation(libs.weak.lock.free)
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.instrumentation.api)
     testImplementation(libs.robolectric)

@@ -11,11 +11,12 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
+import androidx.annotation.GuardedBy
 import androidx.annotation.RequiresApi
-import com.blogspot.mydailyjava.weaklockfree.WeakConcurrentMap
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
 import java.time.Duration
+import java.util.WeakHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -27,7 +28,10 @@ internal class SlowRenderListener(
     private val frameMetricsHandler: Handler,
     private val pollInterval: Duration,
 ) : DefaultingActivityLifecycleCallbacks {
-    private val activities = WeakConcurrentMap<Activity, PerActivityListener>(false)
+    private val lock = Any()
+
+    @GuardedBy("lock")
+    private val activities: MutableMap<Activity, PerActivityListener> = WeakHashMap()
 
     // Not Duration.toSeconds(), which is missing before Android 12 (API 31).
     private val pollIntervalSeconds: Double = pollInterval.toMillis() / 1000.0
@@ -51,13 +55,15 @@ internal class SlowRenderListener(
 
     fun shutdown() {
         executorService.shutdownNow()
-        activities.expungeStaleEntries()
-        for (entry in activities) {
-            val activity: Activity? = entry.key
-            val listener = entry.value
-            activity?.window?.removeOnFrameMetricsAvailableListener(listener)
+        val activeEntries =
+            synchronized(lock) {
+                val entries = activities.toList()
+                activities.clear()
+                entries
+            }
+        for ((activity, listener) in activeEntries) {
+            activity.window.removeOnFrameMetricsAvailableListener(listener)
         }
-        activities.clear()
     }
 
     override fun onActivityResumed(activity: Activity) {
@@ -65,8 +71,16 @@ internal class SlowRenderListener(
             return
         }
         val listener = PerActivityListener(activity)
-        val existing = activities.putIfAbsent(activity, listener)
-        if (existing == null) {
+        val added =
+            synchronized(lock) {
+                if (!activities.containsKey(activity)) {
+                    activities[activity] = listener
+                    true
+                } else {
+                    false
+                }
+            }
+        if (added) {
             activity.window.addOnFrameMetricsAvailableListener(listener, frameMetricsHandler)
         }
     }
@@ -75,7 +89,10 @@ internal class SlowRenderListener(
         if (executorService.isShutdown) {
             return
         }
-        val listener = activities.remove(activity)
+        val listener =
+            synchronized(lock) {
+                activities.remove(activity)
+            }
         if (listener != null) {
             activity.window.removeOnFrameMetricsAvailableListener(listener)
             val durationToCountHistogram = listener.resetMetrics()
@@ -85,9 +102,11 @@ internal class SlowRenderListener(
 
     private fun reportSlowRenders() {
         try {
-            activities.expungeStaleEntries()
-            activities.forEach { entry ->
-                val listener = entry.value
+            val activeListeners =
+                synchronized(lock) {
+                    activities.values.toList()
+                }
+            for (listener in activeListeners) {
                 val durationToCountHistogram = listener.resetMetrics()
                 jankReporter.reportSlow(durationToCountHistogram, pollIntervalSeconds, listener.getActivityName())
             }
