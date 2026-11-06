@@ -12,11 +12,10 @@ import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresApi
+import com.blogspot.mydailyjava.weaklockfree.WeakConcurrentMap
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
 import java.time.Duration
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -28,7 +27,7 @@ internal class SlowRenderListener(
     private val frameMetricsHandler: Handler,
     private val pollInterval: Duration,
 ) : DefaultingActivityLifecycleCallbacks {
-    private val activities: ConcurrentMap<Activity, PerActivityListener> = ConcurrentHashMap()
+    private val activities = WeakConcurrentMap<Activity, PerActivityListener>(false)
 
     // Not Duration.toSeconds(), which is missing before Android 12 (API 31).
     private val pollIntervalSeconds: Double = pollInterval.toMillis() / 1000.0
@@ -52,10 +51,11 @@ internal class SlowRenderListener(
 
     fun shutdown() {
         executorService.shutdownNow()
-        for (entry in activities.entries) {
-            val activity: Activity = entry.key!!
+        activities.expungeStaleEntries()
+        for (entry in activities) {
+            val activity: Activity? = entry.key
             val listener = entry.value
-            activity.window.removeOnFrameMetricsAvailableListener(listener)
+            activity?.window?.removeOnFrameMetricsAvailableListener(listener)
         }
         activities.clear()
     }
@@ -85,7 +85,9 @@ internal class SlowRenderListener(
 
     private fun reportSlowRenders() {
         try {
-            activities.forEach { (_: Activity?, listener: PerActivityListener) ->
+            activities.expungeStaleEntries()
+            activities.forEach { entry ->
+                val listener = entry.value
                 val durationToCountHistogram = listener.resetMetrics()
                 jankReporter.reportSlow(durationToCountHistogram, pollIntervalSeconds, listener.getActivityName())
             }

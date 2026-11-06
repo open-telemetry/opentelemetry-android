@@ -10,7 +10,9 @@ import android.content.ComponentName
 import android.os.Build
 import android.os.Handler
 import android.view.FrameMetrics
+import android.view.Window
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.blogspot.mydailyjava.weaklockfree.WeakConcurrentMap
 import io.mockk.CapturingSlot
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -34,6 +36,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import java.lang.ref.WeakReference
 import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -215,6 +218,121 @@ class SlowRenderListenerTest {
         listener.onFrameMetricsAvailable(null, frameMetrics, 99)
         every { frameMetrics.getMetric(FrameMetrics.DRAW_DURATION) }
         verify(exactly = 0) { frameMetrics.getMetric(FrameMetrics.DRAW_DURATION) }
+    }
+
+    @Test
+    fun perActivityListenerDoesNotRetainActivity() {
+        val activityFields =
+            PerActivityListener::class.java.declaredFields.filter {
+                Activity::class.java.isAssignableFrom(it.type)
+            }
+        assertThat(activityFields).isEmpty()
+    }
+
+    @Test
+    fun perActivityListenerAllowsActivityToBeGarbageCollected() {
+        var localActivity: Activity? = TestActivity()
+        val weakRef = WeakReference(localActivity)
+        val listener = PerActivityListener(localActivity!!)
+        localActivity = null
+
+        forceGarbageCollection()
+
+        assertThat(weakRef.get()).isNull()
+        assertThat(listener.getActivityName()).isEqualTo("io.otel/TestComponent")
+    }
+
+    @Test
+    fun slowRenderListenerDoesNotPreventActivityGarbageCollection() {
+        val testInstance =
+            SlowRenderListener(
+                jankReporter,
+                executorService,
+                frameMetricsHandler,
+                Duration.ZERO,
+            )
+
+        var localActivity: Activity? = TestActivity()
+        val weakRef = WeakReference(localActivity)
+
+        testInstance.onActivityResumed(localActivity!!)
+        localActivity = null
+
+        forceGarbageCollection()
+
+        assertThat(weakRef.get()).isNull()
+    }
+
+    @Test
+    fun shutdownHandlesGarbageCollectedActivityWithoutCrashing() {
+        val testInstance =
+            SlowRenderListener(
+                jankReporter,
+                executorService,
+                frameMetricsHandler,
+                Duration.ZERO,
+            )
+
+        var localActivity: Activity? = TestActivity()
+
+        testInstance.onActivityResumed(localActivity!!)
+        localActivity = null
+
+        forceGarbageCollection()
+
+        // Calling shutdown when the weak key has been collected must not throw NPE
+        testInstance.shutdown()
+    }
+
+    @Test
+    fun reportSlowRendersExpungesGarbageCollectedEntries() {
+        val testInstance =
+            SlowRenderListener(
+                jankReporter,
+                executorService,
+                frameMetricsHandler,
+                Duration.ofSeconds(1),
+            )
+
+        var localActivity: Activity? = TestActivity()
+
+        testInstance.onActivityResumed(localActivity!!)
+        localActivity = null
+
+        forceGarbageCollection()
+
+        val reportSlowRendersMethod =
+            SlowRenderListener::class.java.getDeclaredMethod("reportSlowRenders").apply {
+                isAccessible = true
+            }
+        reportSlowRendersMethod.invoke(testInstance)
+
+        val activitiesField =
+            SlowRenderListener::class.java.getDeclaredField("activities").apply {
+                isAccessible = true
+            }
+        val activities = activitiesField.get(testInstance) as WeakConcurrentMap<*, *>
+        assertThat(activities.approximateSize()).isEqualTo(0)
+    }
+
+    private fun forceGarbageCollection() {
+        for (i in 0..4) {
+            Runtime.getRuntime().gc()
+            System.runFinalization()
+            try {
+                Thread.sleep(20)
+            } catch (ignored: InterruptedException) {
+            }
+        }
+    }
+
+    private class TestActivity : Activity() {
+        private val component = ComponentName("io.otel", "TestComponent")
+        private val mockWindow = mockk<Window>(relaxed = true)
+
+        override fun getComponentName(): ComponentName = component
+
+        override fun getWindow(): Window = mockWindow
     }
 
     private fun makeSomeDurations(): List<Long> =
