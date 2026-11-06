@@ -150,6 +150,33 @@ internal class AnrInstrumentationTest {
         }
     }
 
+    @Test
+    fun shouldNotScheduleForegroundCallbackArrivingAfterUninstall() {
+        val (context, openTelemetryRum) = createTestDependencies()
+        val instrumentation = createInstrumentation()
+        val listenerSlot = slot<ApplicationStateListener>()
+
+        instrumentation.install(context, openTelemetryRum)
+        verify(exactly = 1) {
+            appLifecycle.registerListener(capture(listenerSlot))
+        }
+        // install() invokes listener.onApplicationForegrounded() which schedules once
+        verify(exactly = 1) {
+            scheduler.scheduleWithFixedDelay(any(), any(), any(), any())
+        }
+
+        instrumentation.uninstall(context, openTelemetryRum)
+        verify(exactly = 1) { scheduler.shutdownNow() }
+
+        // Simulate concurrent dispatch from CopyOnWriteArrayList snapshot in ApplicationStateWatcher
+        listenerSlot.captured.onApplicationForegrounded()
+
+        // Count must still be 1 (not scheduled again after uninstall)
+        verify(exactly = 1) {
+            scheduler.scheduleWithFixedDelay(any(), any(), any(), any())
+        }
+    }
+
     private fun createInstrumentation(): AnrInstrumentation {
         val instrumentation = AnrInstrumentation()
         instrumentation.setMainLooper(mainLooper)

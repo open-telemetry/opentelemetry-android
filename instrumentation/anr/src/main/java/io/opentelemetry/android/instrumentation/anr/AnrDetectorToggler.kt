@@ -14,22 +14,34 @@ internal class AnrDetectorToggler(
     private val anrWatcher: Runnable,
     private val anrScheduler: ScheduledExecutorService,
 ) : ApplicationStateListener {
+    private val lock = Any()
     private var future: ScheduledFuture<*>? = null
+    private var stopped = false
 
     override fun onApplicationForegrounded() {
-        if (future == null) {
-            future = anrScheduler.scheduleWithFixedDelay(anrWatcher, 1, 1, TimeUnit.SECONDS)
+        synchronized(lock) {
+            if (stopped) {
+                return
+            }
+            if (future == null) {
+                future = anrScheduler.scheduleWithFixedDelay(anrWatcher, 1, 1, TimeUnit.SECONDS)
+            }
         }
     }
 
     override fun onApplicationBackgrounded() {
-        future?.let {
-            it.cancel(true)
-            future = null
+        synchronized(lock) {
+            future?.let {
+                it.cancel(true)
+                future = null
+            }
         }
     }
 
     fun stop() {
-        onApplicationBackgrounded()
+        synchronized(lock) {
+            stopped = true
+            onApplicationBackgrounded()
+        }
     }
 }
