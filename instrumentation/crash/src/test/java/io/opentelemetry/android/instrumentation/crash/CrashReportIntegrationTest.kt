@@ -10,6 +10,8 @@ package io.opentelemetry.android.instrumentation.crash
 import android.app.Application
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.android.instrumentation.utils.threadIdCompat
@@ -87,6 +89,71 @@ internal class CrashReportIntegrationTest {
         } finally {
             Thread.setDefaultUncaughtExceptionHandler(originalHandler)
         }
+    }
+
+    @Test
+    fun `test uninstall unregisters runtime details broadcast receiver`() {
+        val receiverSlot = slot<RuntimeDetailsExtractor>()
+        every { context.registerReceiver(capture(receiverSlot), any()) } returns null
+
+        instrumentation.install(context, openTelemetryRum)
+        verify(exactly = 1) { context.registerReceiver(any(), any()) }
+
+        instrumentation.uninstall(context, openTelemetryRum)
+        verify(exactly = 1) { context.unregisterReceiver(receiverSlot.captured) }
+    }
+
+    @Test
+    fun `test repeated uninstall unregisters broadcast receiver only once`() {
+        val receiverSlot = slot<RuntimeDetailsExtractor>()
+        every { context.registerReceiver(capture(receiverSlot), any()) } returns null
+
+        instrumentation.install(context, openTelemetryRum)
+        instrumentation.uninstall(context, openTelemetryRum)
+        instrumentation.uninstall(context, openTelemetryRum)
+
+        verify(exactly = 1) { context.unregisterReceiver(receiverSlot.captured) }
+    }
+
+    @Test
+    fun `test repeated install while active is a safe no-op`() {
+        every { context.registerReceiver(any(), any()) } returns null
+
+        instrumentation.install(context, openTelemetryRum)
+        instrumentation.install(context, openTelemetryRum)
+
+        verify(exactly = 1) { context.registerReceiver(any(), any()) }
+
+        instrumentation.uninstall(context, openTelemetryRum)
+    }
+
+    @Test
+    fun `test reinstallation does not duplicate runtime extractors or leak receivers`() {
+        val receiverSlots = mutableListOf<RuntimeDetailsExtractor>()
+        every { context.registerReceiver(capture(receiverSlots), any()) } returns null
+
+        val customExtractor = mockk<EventAttributesExtractor<CrashDetails>>(relaxed = true)
+        instrumentation.addAttributesExtractor(customExtractor)
+
+        // First install -> uninstall cycle
+        instrumentation.install(context, openTelemetryRum)
+        assertEquals(1, receiverSlots.size)
+        instrumentation.uninstall(context, openTelemetryRum)
+        verify(exactly = 1) { context.unregisterReceiver(receiverSlots[0]) }
+
+        // Second install cycle
+        instrumentation.install(context, openTelemetryRum)
+        assertEquals(2, receiverSlots.size)
+
+        // Simulate crash
+        val exc = RuntimeException("Boom")
+        simulateUncaughtException(exc)
+
+        // Custom extractor called only once per crash
+        verify(exactly = 1) { customExtractor.extract(any(), any()) }
+
+        instrumentation.uninstall(context, openTelemetryRum)
+        verify(exactly = 1) { context.unregisterReceiver(receiverSlots[1]) }
     }
 
     @Test
