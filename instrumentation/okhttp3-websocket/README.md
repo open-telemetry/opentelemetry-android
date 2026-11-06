@@ -61,6 +61,6 @@ plugins {
 ### Adding dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:okhttp3-websocket-library:1.8.0-alpha")
-byteBuddy("io.opentelemetry.android.instrumentation:okhttp3-websocket-agent:1.8.0-alpha")
+implementation("io.opentelemetry.android.instrumentation:okhttp3-websocket-library:1.8.1-alpha")
+byteBuddy("io.opentelemetry.android.instrumentation:okhttp3-websocket-agent:1.8.1-alpha")
 ```

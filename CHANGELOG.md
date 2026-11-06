@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### 📈 Enhancements
+
+- Add `shouldRecordWebsocketEventForHost { ... }` to the Android Agent's `httpTelemetry` DSL
+  to filter OkHttp WebSocket events by host before network export. WebSocket events now include
+  `server.address`. HTTP spans, metrics and trace context propagation are unchanged.
+  ([#1686](https://github.com/open-telemetry/opentelemetry-android/issues/1686))
+
+## Version 1.8.1 (2026-11-05)
+
 ### 🛠️ Bug fixes
 
 - Fix a `NoSuchMethodError` crash in the slow rendering instrumentation on Android 8 - 11
@@ -9,12 +18,9 @@
   which only exists from Android 12 (API 31).
   ([#2183](https://github.com/open-telemetry/opentelemetry-android/issues/2183))
 
-### 📈 Enhancements
-
-- Add `shouldRecordWebsocketEventForHost { ... }` to the Android Agent's `httpTelemetry` DSL
-  to filter OkHttp WebSocket events by host before network export. WebSocket events now include
-  `server.address`. HTTP spans, metrics and trace context propagation are unchanged.
-  ([#1686](https://github.com/open-telemetry/opentelemetry-android/issues/1686))
+- Prevent `Services` from retaining non-application contexts and reset its singleton on close so
+  lifecycle tracking works after SDK reinitialization.
+  ([#2188](https://github.com/open-telemetry/opentelemetry-android/pull/2188))
 
 ## Version 1.8.0 (2026-10-22)
 
