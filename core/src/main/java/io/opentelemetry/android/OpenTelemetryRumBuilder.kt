@@ -606,14 +606,21 @@ class OpenTelemetryRumBuilder internal constructor(
         clock: Clock,
     ): SdkTracerProvider {
         val defaultSampler = Sampler.parentBased(Sampler.alwaysOn())
-        val sessionIdAppender = SessionIdSpanAppender(sessionProvider)
         var tracerProviderBuilder =
             SdkTracerProvider
                 .builder()
                 .setResource(resource)
                 .setClock(clock)
                 .setSampler(defaultSampler)
-                .addSpanProcessor(sessionIdAppender)
+
+        val sessionIdAppender =
+            if (config.shouldIncludeSessionId()) {
+                SessionIdSpanAppender(sessionProvider).also {
+                    tracerProviderBuilder.addSpanProcessor(it)
+                }
+            } else {
+                null
+            }
 
         val batchSpanProcessor = BatchSpanProcessor.builder(spanExporter).build()
         tracerProviderBuilder.addSpanProcessor(batchSpanProcessor)
@@ -623,7 +630,7 @@ class OpenTelemetryRumBuilder internal constructor(
         }
         return tracerProviderBuilder.build().also {
             // Configure before publishing the provider, after all sampler customizers have run.
-            sessionIdAppender.preserveExistingSessionId = it.sampler !== defaultSampler
+            sessionIdAppender?.preserveExistingSessionId = it.sampler !== defaultSampler
         }
     }
 
@@ -638,12 +645,16 @@ class OpenTelemetryRumBuilder internal constructor(
                 .builder()
                 .setResource(resource)
                 .setClock(clock)
-                .addLogRecordProcessor(SessionIdLogRecordAppender(sessionProvider))
-                .addLogRecordProcessor(
-                    GlobalAttributesLogRecordAppender(
-                        config.getGlobalAttributesSupplier(),
-                    ),
-                )
+
+        if (config.shouldIncludeSessionId()) {
+            loggerProviderBuilder.addLogRecordProcessor(SessionIdLogRecordAppender(sessionProvider))
+        }
+
+        loggerProviderBuilder.addLogRecordProcessor(
+            GlobalAttributesLogRecordAppender(
+                config.getGlobalAttributesSupplier(),
+            ),
+        )
         val batchLogsProcessor: LogRecordProcessor =
             BatchLogRecordProcessor.builder(logsExporter).build()
         loggerProviderBuilder.addLogRecordProcessor(

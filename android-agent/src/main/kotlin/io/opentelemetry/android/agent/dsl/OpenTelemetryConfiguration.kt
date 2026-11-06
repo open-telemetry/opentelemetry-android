@@ -33,7 +33,7 @@ class OpenTelemetryConfiguration internal constructor(
     instrumentationLoader: AndroidInstrumentationLoader,
 ) {
     internal val exportConfig = HttpExportConfiguration()
-    internal val sessionConfig = SessionConfiguration()
+    internal val sessionConfig = SessionConfiguration(rumConfig)
     internal val samplerConfig = SamplerConfiguration()
     internal val instrumentations = InstrumentationConfiguration(rumConfig, instrumentationLoader)
 
@@ -76,6 +76,24 @@ class OpenTelemetryConfiguration internal constructor(
      */
     fun httpExport(action: HttpExportConfiguration.() -> Unit) {
         exportConfig.action()
+    }
+
+    /**
+     * Disables global screen attribute processors from automatically attaching `app.screen.name`
+     * to spans and logs. Note that specific instrumentations (such as activity and fragment
+     * lifecycle tracking) may still set `app.screen.name` on their own spans.
+     */
+    fun disableScreenAttributes() {
+        rumConfig.disableScreenAttributes()
+    }
+
+    /**
+     * Disables the global span and log appenders from automatically attaching the `session.id`
+     * attribute. Note that session lifecycle events, native crash reports, and the
+     * `SessionIdRatioBasedSampler` will still include `session.id`.
+     */
+    fun disableSessionId() {
+        rumConfig.disableSessionId()
     }
 
     /**
