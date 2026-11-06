@@ -31,6 +31,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.io.File
 import java.io.PrintWriter
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
@@ -135,6 +136,10 @@ internal class CrashReportIntegrationTest {
         val customExtractor = mockk<EventAttributesExtractor<CrashDetails>>(relaxed = true)
         instrumentation.addAttributesExtractor(customExtractor)
 
+        val firstFilesDir = mockk<File>(relaxed = true)
+        val secondFilesDir = mockk<File>(relaxed = true)
+        every { context.filesDir } returns firstFilesDir
+
         // First install -> uninstall cycle
         instrumentation.install(context, openTelemetryRum)
         assertEquals(1, receiverSlots.size)
@@ -142,6 +147,7 @@ internal class CrashReportIntegrationTest {
         verify(exactly = 1) { context.unregisterReceiver(receiverSlots[0]) }
 
         // Second install cycle
+        every { context.filesDir } returns secondFilesDir
         instrumentation.install(context, openTelemetryRum)
         assertEquals(2, receiverSlots.size)
 
@@ -149,6 +155,9 @@ internal class CrashReportIntegrationTest {
         val exc = RuntimeException("Boom")
         simulateUncaughtException(exc)
 
+        // Verify only second installation's runtime extractor was invoked
+        verify(exactly = 0) { firstFilesDir.freeSpace }
+        verify(exactly = 1) { secondFilesDir.freeSpace }
         // Custom extractor called only once per crash
         verify(exactly = 1) { customExtractor.extract(any(), any()) }
 
