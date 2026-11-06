@@ -7,6 +7,7 @@
 
 package io.opentelemetry.android.instrumentation.crash
 
+import android.annotation.SuppressLint
 import android.app.Application
 import io.mockk.every
 import io.mockk.mockk
@@ -37,6 +38,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
+@SuppressLint("UnspecifiedRegisterReceiverFlag")
 internal class CrashReportIntegrationTest {
     private lateinit var rule: OpenTelemetryRule
     private lateinit var context: Application
@@ -93,6 +95,7 @@ internal class CrashReportIntegrationTest {
     }
 
     @Test
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     fun `test uninstall unregisters runtime details broadcast receiver`() {
         val receiverSlot = slot<RuntimeDetailsExtractor>()
         every { context.registerReceiver(capture(receiverSlot), any()) } returns null
@@ -105,6 +108,7 @@ internal class CrashReportIntegrationTest {
     }
 
     @Test
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     fun `test repeated uninstall unregisters broadcast receiver only once`() {
         val receiverSlot = slot<RuntimeDetailsExtractor>()
         every { context.registerReceiver(capture(receiverSlot), any()) } returns null
@@ -117,6 +121,7 @@ internal class CrashReportIntegrationTest {
     }
 
     @Test
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     fun `test repeated install while active is a safe no-op`() {
         every { context.registerReceiver(any(), any()) } returns null
 
@@ -129,6 +134,7 @@ internal class CrashReportIntegrationTest {
     }
 
     @Test
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     fun `test reinstallation does not duplicate runtime extractors or leak receivers`() {
         val receiverSlots = mutableListOf<RuntimeDetailsExtractor>()
         every { context.registerReceiver(capture(receiverSlots), any()) } returns null
