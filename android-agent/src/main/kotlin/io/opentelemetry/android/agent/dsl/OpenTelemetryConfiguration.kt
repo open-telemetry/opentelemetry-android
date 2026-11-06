@@ -79,14 +79,18 @@ class OpenTelemetryConfiguration internal constructor(
     }
 
     /**
-     * Disable screen attributes (`app.screen.name`) from being automatically attached to spans and logs.
+     * Disables global screen attribute processors from automatically attaching `app.screen.name`
+     * to spans and logs. Note that specific instrumentations (such as activity and fragment
+     * lifecycle tracking) may still set `app.screen.name` on their own spans.
      */
     fun disableScreenAttributes() {
         rumConfig.disableScreenAttributes()
     }
 
     /**
-     * Disable automatic attachment of `session.id` to spans and logs.
+     * Disables the global span and log appenders from automatically attaching the `session.id`
+     * attribute. Note that session lifecycle events, native crash reports, and the
+     * `SessionIdRatioBasedSampler` will still include `session.id`.
      */
     fun disableSessionId() {
         rumConfig.disableSessionId()

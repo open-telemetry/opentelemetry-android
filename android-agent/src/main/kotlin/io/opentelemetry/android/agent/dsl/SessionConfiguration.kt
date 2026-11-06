@@ -23,7 +23,9 @@ class SessionConfiguration internal constructor(
     private val rumConfig: OtelRumConfig,
 ) {
     /**
-     * Whether to automatically inject the `session.id` attribute into spans and logs. Default = true.
+     * Whether the global span and log appenders should automatically inject the `session.id`
+     * attribute into spans and logs. Default = true. Note that session lifecycle events, native
+     * crash reports, and the `SessionIdRatioBasedSampler` will still include `session.id`.
      */
     var includeSessionId: Boolean
         get() = rumConfig.shouldIncludeSessionId()
