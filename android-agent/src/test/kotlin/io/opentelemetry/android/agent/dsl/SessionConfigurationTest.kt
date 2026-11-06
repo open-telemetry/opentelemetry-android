@@ -63,6 +63,7 @@ internal class SessionConfigurationTest {
             otelConfig.apply {
                 disableSessionId()
             }
+        assertEquals(false, otelConfig.sessionConfig.includeSessionId)
         assertEquals(false, otelConfig.rumConfig.shouldIncludeSessionId())
     }
 

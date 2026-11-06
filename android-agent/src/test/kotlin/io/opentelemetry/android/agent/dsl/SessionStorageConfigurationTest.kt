@@ -23,8 +23,9 @@ internal class SessionStorageConfigurationTest {
 
     @Test
     fun `each configuration has its own default in-memory storage`() {
+        val otherConfig = OpenTelemetryConfiguration(clock = FakeClock(), instrumentationLoader = FakeInstrumentationLoader())
         assertThat(config.sessionConfig.sessionStorage).isInstanceOf(InMemorySessionStorage::class.java)
-        assertThat(config.sessionConfig.sessionStorage).isNotSameAs(SessionConfiguration().sessionStorage)
+        assertThat(config.sessionConfig.sessionStorage).isNotSameAs(otherConfig.sessionConfig.sessionStorage)
         assertThat(config.sessionConfig.backgroundInactivityTimeout).isEqualTo(15.minutes)
         assertThat(config.sessionConfig.maxLifetime).isEqualTo(4.hours)
     }

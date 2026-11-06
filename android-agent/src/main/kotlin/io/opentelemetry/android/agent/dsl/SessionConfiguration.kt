@@ -20,18 +20,18 @@ import kotlin.time.Duration.Companion.minutes
 @OpenTelemetryDslMarker
 @OptIn(Incubating::class)
 class SessionConfiguration internal constructor(
-    private val rumConfig: OtelRumConfig? = null,
+    private val rumConfig: OtelRumConfig,
 ) {
     /**
      * Whether to automatically inject the `session.id` attribute into spans and logs. Default = true.
      */
-    var includeSessionId: Boolean = true
+    var includeSessionId: Boolean
+        get() = rumConfig.shouldIncludeSessionId()
         set(value) {
-            field = value
             if (value) {
-                rumConfig?.enableSessionId()
+                rumConfig.enableSessionId()
             } else {
-                rumConfig?.disableSessionId()
+                rumConfig.disableSessionId()
             }
         }
 
