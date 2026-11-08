@@ -133,3 +133,16 @@ Any change to the public API surface is detected by `apiCheck` and requires extr
 - Bundling unrelated changes into a single PR.
 - Skipping tests or formatting.
 - Leaving CoPilot or other automated review comments unresolved.
+- PRs for issues with the `contribfest` label will be rejected unless
+  the progrmamer/operator is physically at a Kubecon ContribFest event.
+
+## Issue Review/Selection
+
+- If looking for an issue to work on, disregard issues with the label `contribfest`. 
+  These issues are tagged for work at a Kubecon ContribFest event and should not
+  be picked up by agents looking for open issues.
+- If an issue has more than a handful of comments, it may require additional human
+  context, design considerations, or clarification. These issues typically have a larger
+  scope and should not be considered great candidates for simple open issues to 
+  work on. If there is any doubt, leave a comment asking for issue status and/or
+  additional clarification.
