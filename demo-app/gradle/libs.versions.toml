@@ -1,8 +1,8 @@
 [versions]
 byteBuddy = "1.18.17-jdk5"
 okhttp = "5.5.1"
-opentelemetry = "1.67.0"
-opentelemetry-alpha = "1.67.0-alpha"
+opentelemetry = "1.68.0"
+opentelemetry-alpha = "1.68.0-alpha"
 junit = "6.1.3"
 spotless = "8.11.0"
 kotlin = "2.4.21"
