@@ -16,11 +16,13 @@ internal class CrashReportingExceptionHandler(
         thread: Thread,
         throwable: Throwable,
     ) {
-        if (enabled) {
-            crashProcessor(CrashDetails(thread, throwable))
+        try {
+            if (enabled) {
+                crashProcessor(CrashDetails(thread, throwable))
+            }
+        } finally {
+            // preserve any existing behavior
+            existingHandler?.uncaughtException(thread, throwable)
         }
-
-        // preserve any existing behavior
-        existingHandler?.uncaughtException(thread, throwable)
     }
 }
