@@ -42,32 +42,35 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
     ) {
-        startupTimer.start(openTelemetryRum.openTelemetry.getTracer(INSTRUMENTATION_SCOPE), openTelemetryRum.clock)
-        (context as? Application)?.let {
-            startupLifecycle =
-                startupTimer.createLifecycleCallback().apply {
-                    it.registerActivityLifecycleCallbacks(this)
-                }
-            activityLifecycle =
-                buildActivityLifecycleTracer(context, openTelemetryRum.openTelemetry).apply {
-                    it.registerActivityLifecycleCallbacks(this)
-                }
+        if (activityLifecycle != null) {
+            return
         }
+
+        val app = (context as? Application) ?: (context.applicationContext as? Application) ?: return
+
+        startupTimer.start(openTelemetryRum.openTelemetry.getTracer(INSTRUMENTATION_SCOPE), openTelemetryRum.clock)
+        startupLifecycle =
+            startupTimer.createLifecycleCallback().apply {
+                app.registerActivityLifecycleCallbacks(this)
+            }
+        activityLifecycle =
+            buildActivityLifecycleTracer(context, openTelemetryRum.openTelemetry).apply {
+                app.registerActivityLifecycleCallbacks(this)
+            }
     }
 
     override fun uninstall(
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
     ) {
-        (context as? Application)?.let {
-            if (startupLifecycle != null) {
-                it.unregisterActivityLifecycleCallbacks(startupLifecycle)
-                startupLifecycle = null
-            }
-            if (activityLifecycle != null) {
-                it.unregisterActivityLifecycleCallbacks(activityLifecycle)
-                activityLifecycle = null
-            }
+        val app = (context as? Application) ?: (context.applicationContext as? Application) ?: return
+        if (startupLifecycle != null) {
+            app.unregisterActivityLifecycleCallbacks(startupLifecycle)
+            startupLifecycle = null
+        }
+        if (activityLifecycle != null) {
+            app.unregisterActivityLifecycleCallbacks(activityLifecycle)
+            activityLifecycle = null
         }
     }
 
