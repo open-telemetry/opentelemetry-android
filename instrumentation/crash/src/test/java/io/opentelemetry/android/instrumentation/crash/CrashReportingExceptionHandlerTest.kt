@@ -43,4 +43,18 @@ internal class CrashReportingExceptionHandlerTest {
         assertThat(crashProcessorCalled).isFalse()
         assertThat(existingHandlerCalled).isTrue()
     }
+
+    @Test
+    fun shouldInvokeCrashProcessorWhenNoExistingHandler() {
+        var crashProcessorCalled = false
+        val handler =
+            CrashReportingExceptionHandler(
+                crashProcessor = { crashProcessorCalled = true },
+                existingHandler = null,
+            )
+
+        handler.uncaughtException(Thread.currentThread(), NullPointerException())
+
+        assertThat(crashProcessorCalled).isTrue()
+    }
 }
