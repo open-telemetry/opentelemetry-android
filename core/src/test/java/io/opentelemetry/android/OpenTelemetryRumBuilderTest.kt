@@ -622,6 +622,8 @@ class OpenTelemetryRumBuilderTest {
         val events = mockk<InitializationEvents>(relaxed = true)
         InitializationEvents.resetForTest()
         InitializationEvents.set(events)
+        val cacheStorage = mockk<CacheStorage>()
+        every { cacheStorage.cacheDir } answers { throw IOException() }
 
         val config = buildConfig().enableSdkInitializationEvents()
         config.setDiskBufferingConfig(DiskBufferingConfig(true))
@@ -632,6 +634,7 @@ class OpenTelemetryRumBuilderTest {
         RumBuilder
             .builder(application, config)
             .setExportScheduleEnablement(scheduleHandler)
+            .setCacheStorage(cacheStorage)
             .build()
 
         Awaitility
@@ -641,6 +644,7 @@ class OpenTelemetryRumBuilderTest {
                 verify(exactly = 0) { events.spanExporterInitialized(any()) }
                 verify(exactly = 0) { scheduleHandler.enable() }
                 verify(atLeast = 1) { scheduleHandler.disable() }
+                verify { cacheStorage wasNot Called }
             }
     }
 
