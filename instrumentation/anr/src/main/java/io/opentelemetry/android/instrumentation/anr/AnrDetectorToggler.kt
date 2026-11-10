@@ -15,7 +15,11 @@ internal class AnrDetectorToggler(
     private val anrScheduler: ScheduledExecutorService,
 ) : ApplicationStateListener {
     private val lock = Any()
+
+    @Volatile
     private var future: ScheduledFuture<*>? = null
+
+    @Volatile
     private var stopped = false
 
     override fun onApplicationForegrounded() {
