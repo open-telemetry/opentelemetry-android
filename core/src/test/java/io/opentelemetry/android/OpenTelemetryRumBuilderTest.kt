@@ -75,6 +75,7 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.File
 import java.io.IOException
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
@@ -112,6 +113,7 @@ class OpenTelemetryRumBuilderTest {
     fun setup() {
         MockKAnnotations.init(this, relaxed = true)
         every { application.applicationContext } returns applicationContext
+        every { application.cacheDir } returns File(System.getProperty("java.io.tmpdir") ?: "/tmp")
         every { application.mainLooper } returns looper
         every { application.getSystemService(Context.CONNECTIVITY_SERVICE) } returns connectivityManager
         InitializationEvents.set(initializationEvents)
@@ -574,6 +576,75 @@ class OpenTelemetryRumBuilderTest {
                     .isNotInstanceOf(SpanToDiskExporter::class.java)
                 assertThat(SignalFromDiskExporter.get())
                     .isNull()
+            }
+    }
+
+    @Test
+    fun diskBufferingRespectsDisabledSignals() {
+        createAndSetServiceManager()
+        val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)
+        val events = mockk<InitializationEvents>(relaxed = true)
+        InitializationEvents.resetForTest()
+        InitializationEvents.set(events)
+
+        var logExporterCustomizerCalled = false
+        var metricExporterCustomizerCalled = false
+        val config = buildConfig().enableSdkInitializationEvents()
+        config.setDiskBufferingConfig(DiskBufferingConfig(true))
+        config.setLoggingDisabled()
+        config.setMetricsDisabled()
+
+        RumBuilder
+            .builder(application, config)
+            .setExportScheduleEnablement(scheduleHandler)
+            .addLogRecordExporterCustomizer {
+                logExporterCustomizerCalled = true
+                it
+            }.addMetricExporterCustomizer {
+                metricExporterCustomizerCalled = true
+                it
+            }.build()
+
+        Awaitility
+            .await()
+            .atMost(Duration.ofSeconds(5))
+            .untilAsserted {
+                verify(exactly = 1) { scheduleHandler.enable() }
+                assertThat(logExporterCustomizerCalled).isFalse()
+                assertThat(metricExporterCustomizerCalled).isFalse()
+            }
+    }
+
+    @Test
+    fun diskBufferingDisabledScheduleWhenAllSignalsDisabled() {
+        createAndSetServiceManager()
+        val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)
+        val events = mockk<InitializationEvents>(relaxed = true)
+        InitializationEvents.resetForTest()
+        InitializationEvents.set(events)
+        val cacheStorage = mockk<CacheStorage>()
+        every { cacheStorage.cacheDir } answers { throw IOException() }
+
+        val config = buildConfig().enableSdkInitializationEvents()
+        config.setDiskBufferingConfig(DiskBufferingConfig(true))
+        config.setTracingDisabled()
+        config.setLoggingDisabled()
+        config.setMetricsDisabled()
+
+        RumBuilder
+            .builder(application, config)
+            .setExportScheduleEnablement(scheduleHandler)
+            .setCacheStorage(cacheStorage)
+            .build()
+
+        Awaitility
+            .await()
+            .atMost(Duration.ofSeconds(5))
+            .untilAsserted {
+                verify(exactly = 0) { events.spanExporterInitialized(any()) }
+                verify(exactly = 0) { scheduleHandler.enable() }
+                verify(atLeast = 1) { scheduleHandler.disable() }
+                verify { cacheStorage wasNot Called }
             }
     }
 

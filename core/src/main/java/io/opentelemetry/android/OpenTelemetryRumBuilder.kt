@@ -16,6 +16,7 @@ import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.export.BufferDelegatingLogExporter
 import io.opentelemetry.android.export.BufferDelegatingMetricExporter
 import io.opentelemetry.android.export.BufferDelegatingSpanExporter
+import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter
 import io.opentelemetry.android.features.diskbuffering.SignalFromDiskExporter.Companion.set
 import io.opentelemetry.android.features.diskbuffering.scheduler.DiskBufferingEnablement
@@ -435,51 +436,18 @@ class OpenTelemetryRumBuilder internal constructor(
         bufferDelegatingMetricExporter: BufferDelegatingMetricExporter,
     ) {
         val diskBufferingConfig = config.getDiskBufferingConfig()
-        var spanExporter: SpanExporter? = null
-        var logsExporter: LogRecordExporter? = null
-        var metricExporter: MetricExporter? = null
+        var spanExporter = if (config.tracingEnabled) buildSpanExporter() else null
+        var logsExporter = if (config.loggingEnabled) buildLogsExporter() else null
+        var metricExporter = if (config.metricsEnabled) buildMetricExporter() else null
         var signalFromDiskExporter: SignalFromDiskExporter? = null
 
-        if (diskBufferingConfig.enabled) {
-            spanExporter = buildSpanExporter()
-            logsExporter = buildLogsExporter()
-            metricExporter = buildMetricExporter()
-            try {
-                val diskManager = DiskManager(cacheStorage.value, diskBufferingConfig)
-                val signalsRoot = diskManager.signalsBufferDir
-                val spansDir = File(signalsRoot, "spans")
-                val metricsDir = File(signalsRoot, "metrics")
-                val logsDir = File(signalsRoot, "logs")
-                val fileConfig = createStorageConfiguration(diskManager)
-                val spanStorage = FileSpanStorage.create(spansDir, fileConfig)
-                val logStorage = FileLogRecordStorage.create(logsDir, fileConfig)
-                val metricStorage = FileMetricStorage.create(metricsDir, fileConfig)
-                signalFromDiskExporter =
-                    SignalFromDiskExporter(
-                        spanStorage = spanStorage,
-                        spanExporter = spanExporter,
-                        logStorage = logStorage,
-                        logExporter = logsExporter,
-                        metricStorage = metricStorage,
-                        metricExporter = metricExporter,
-                    )
-
-                logsExporter = LogRecordToDiskExporter.builder(logStorage).build()
-                spanExporter = SpanToDiskExporter.builder(spanStorage).build()
-                metricExporter = MetricToDiskExporter.builder(metricStorage).build()
-            } catch (e: IOException) {
-                Log.e(RumConstants.OTEL_RUM_LOG_TAG, "Could not initialize disk exporters.", e)
-            }
-        } else {
-            if (config.tracingEnabled) {
-                spanExporter = buildSpanExporter()
-            }
-            if (config.loggingEnabled) {
-                logsExporter = buildLogsExporter()
-            }
-            if (config.metricsEnabled) {
-                metricExporter = buildMetricExporter()
-            }
+        val hasAnySignalEnabled = config.tracingEnabled || config.loggingEnabled || config.metricsEnabled
+        if (diskBufferingConfig.enabled && hasAnySignalEnabled) {
+            val result = initializeDiskBuffering(cacheStorage, diskBufferingConfig, spanExporter, logsExporter, metricExporter)
+            spanExporter = result.spanExporter
+            logsExporter = result.logsExporter
+            metricExporter = result.metricExporter
+            signalFromDiskExporter = result.signalFromDiskExporter
         }
 
         if (spanExporter != null) {
@@ -497,6 +465,55 @@ class OpenTelemetryRumBuilder internal constructor(
 
         scheduleDiskTelemetryReader(periodicTaskScheduler, signalFromDiskExporter)
     }
+
+    private fun initializeDiskBuffering(
+        cacheStorage: Lazy<CacheStorage>,
+        diskBufferingConfig: DiskBufferingConfig,
+        initialSpans: SpanExporter?,
+        initialLogs: LogRecordExporter?,
+        initialMetrics: MetricExporter?,
+    ): DiskBufferingResult {
+        try {
+            val diskManager = DiskManager(cacheStorage.value, diskBufferingConfig)
+            val signalsRoot = diskManager.signalsBufferDir
+            val fileConfig = createStorageConfiguration(diskManager)
+
+            val spanStorage = if (config.tracingEnabled) FileSpanStorage.create(File(signalsRoot, "spans"), fileConfig) else null
+            val logStorage = if (config.loggingEnabled) FileLogRecordStorage.create(File(signalsRoot, "logs"), fileConfig) else null
+            val metricStorage = if (config.metricsEnabled) FileMetricStorage.create(File(signalsRoot, "metrics"), fileConfig) else null
+
+            val signalFromDiskExporter =
+                if (spanStorage != null || logStorage != null || metricStorage != null) {
+                    SignalFromDiskExporter(
+                        spanStorage = spanStorage,
+                        spanExporter = initialSpans,
+                        logStorage = logStorage,
+                        logExporter = initialLogs,
+                        metricStorage = metricStorage,
+                        metricExporter = initialMetrics,
+                    )
+                } else {
+                    null
+                }
+
+            return DiskBufferingResult(
+                spanExporter = spanStorage?.let { SpanToDiskExporter.builder(it).build() } ?: initialSpans,
+                logsExporter = logStorage?.let { LogRecordToDiskExporter.builder(it).build() } ?: initialLogs,
+                metricExporter = metricStorage?.let { MetricToDiskExporter.builder(it).build() } ?: initialMetrics,
+                signalFromDiskExporter = signalFromDiskExporter,
+            )
+        } catch (e: IOException) {
+            Log.e(RumConstants.OTEL_RUM_LOG_TAG, "Could not initialize disk exporters.", e)
+            return DiskBufferingResult(initialSpans, initialLogs, initialMetrics, null)
+        }
+    }
+
+    private class DiskBufferingResult(
+        val spanExporter: SpanExporter?,
+        val logsExporter: LogRecordExporter?,
+        val metricExporter: MetricExporter?,
+        val signalFromDiskExporter: SignalFromDiskExporter?,
+    )
 
     @Throws(IOException::class)
     private fun createStorageConfiguration(diskManager: DiskManager): FileStorageConfiguration {
