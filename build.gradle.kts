@@ -1,3 +1,4 @@
+import kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
@@ -15,7 +16,7 @@ buildscript {
 
 plugins {
     alias(libs.plugins.publishPlugin)
-    id("org.jetbrains.kotlinx.kover")
+    id("org.jetbrains.kotlinx.kover") apply false
 }
 
 extra["java_version"] = JavaVersion.VERSION_1_8
@@ -53,7 +54,16 @@ nexusPublishing {
     }
 }
 
-kover {
+// Kover instruments every JVM test, even when no coverage report is requested.
+val koverEnabled = providers.environmentVariable("CI").isPresent ||
+    providers.gradleProperty("io.opentelemetry.android.coverage").map { it.toBoolean() }.getOrElse(false)
+
+if (koverEnabled) {
+    apply(plugin = "org.jetbrains.kotlinx.kover")
+    configureKover()
+}
+
+fun configureKover() = extensions.configure<KoverProjectExtension> {
     merge {
         subprojects { project ->
             true
