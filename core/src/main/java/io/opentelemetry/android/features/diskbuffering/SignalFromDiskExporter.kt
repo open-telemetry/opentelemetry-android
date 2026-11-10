@@ -19,12 +19,12 @@ import java.util.concurrent.TimeUnit
 class SignalFromDiskExporter
     @JvmOverloads
     internal constructor(
-        private val spanStorage: SignalStorage.Span,
-        private val spanExporter: SpanExporter,
-        private val logStorage: SignalStorage.LogRecord,
-        private val logExporter: LogRecordExporter,
-        private val metricStorage: SignalStorage.Metric,
-        private val metricExporter: MetricExporter,
+        private val spanStorage: SignalStorage.Span?,
+        private val spanExporter: SpanExporter?,
+        private val logStorage: SignalStorage.LogRecord?,
+        private val logExporter: LogRecordExporter?,
+        private val metricStorage: SignalStorage.Metric?,
+        private val metricExporter: MetricExporter?,
         private val exportTimeoutInMillis: Long = TimeUnit.SECONDS.toMillis(5),
     ) {
         /**
@@ -34,7 +34,12 @@ class SignalFromDiskExporter
          * @return `true`, if the exporting completely succeeded, `false` otherwise.
          */
         @WorkerThread
-        fun exportSpansFromDisk(): Boolean = export(spanStorage, spanExporter::export)
+        fun exportSpansFromDisk(): Boolean =
+            if (spanStorage != null && spanExporter != null) {
+                export(spanStorage, spanExporter::export)
+            } else {
+                true
+            }
 
         /**
          * Exports all persisted metrics from the disk and deletes the successfully consumed batches
@@ -43,7 +48,12 @@ class SignalFromDiskExporter
          * @return `true`, if the exporting completely succeeded, `false` otherwise.
          */
         @WorkerThread
-        fun exportMetricsFromDisk(): Boolean = export(metricStorage, metricExporter::export)
+        fun exportMetricsFromDisk(): Boolean =
+            if (metricStorage != null && metricExporter != null) {
+                export(metricStorage, metricExporter::export)
+            } else {
+                true
+            }
 
         /**
          * Exports all persisted logs from the disk and deletes the successfully consumed batches
@@ -52,7 +62,12 @@ class SignalFromDiskExporter
          * @return `true`, if the exporting completely succeeded, `false` otherwise.
          */
         @WorkerThread
-        fun exportLogsFromDisk(): Boolean = export(logStorage, logExporter::export)
+        fun exportLogsFromDisk(): Boolean =
+            if (logStorage != null && logExporter != null) {
+                export(logStorage, logExporter::export)
+            } else {
+                true
+            }
 
         /**
          * Exports all persisted spans/metrics/logs from the disk and deletes the successfully
