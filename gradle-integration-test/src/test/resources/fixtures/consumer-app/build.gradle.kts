@@ -37,6 +37,7 @@ dependencies {
     implementation(platform("io.opentelemetry.android:opentelemetry-android-bom:${pins.getValue("bomVersion")}"))
 
     implementation("io.opentelemetry.android:android-agent")
+    implementation("io.opentelemetry.android:agent-api-ktx")
 
     implementation("io.opentelemetry.android.instrumentation:android-log-library")
     implementation("io.opentelemetry.android.instrumentation:compose-click")
