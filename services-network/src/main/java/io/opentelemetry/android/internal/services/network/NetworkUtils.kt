@@ -46,8 +46,8 @@ internal fun hasPhoneStatePermission(context: Context): Boolean =
     }
 
 /**
- * Checks if the app's manifest requests a phone state permission ([READ_PHONE_STATE][Manifest.permission.READ_PHONE_STATE],
- * or on API 33+ [READ_BASIC_PHONE_STATE][Manifest.permission.READ_BASIC_PHONE_STATE]) that can be granted after the app started.
+ * Checks if the app's manifest requests [READ_PHONE_STATE][Manifest.permission.READ_PHONE_STATE]
+ * or, on API 33+, [READ_BASIC_PHONE_STATE][Manifest.permission.READ_BASIC_PHONE_STATE].
  * Assumes it does when the manifest cannot be read.
  */
 @Suppress("DEPRECATION") // the PackageInfoFlags overload needs API 33

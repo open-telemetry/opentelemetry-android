@@ -52,7 +52,7 @@ object NetworkProviderHolder {
     @VisibleForTesting
     internal fun phoneStatePermissionGrantCheckTrigger(context: Context): PermissionGrantCheckTrigger =
         if (hasTelephonyFeature(context) && !hasPhoneStatePermission(context) && requestsPhoneStatePermission(context)) {
-            // A phone state permission can be granted later at runtime (READ_PHONE_STATE or on API 33+ READ_BASIC_PHONE_STATE).
+            // READ_PHONE_STATE is a dangerous permission that can be granted later at runtime.
             PollingPermissionGrantCheckTrigger({ hasPhoneStatePermission(context) })
         } else {
             // No telephony, the permission is already granted, or the app never requests it.
