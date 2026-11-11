@@ -46,20 +46,34 @@ internal fun hasPhoneStatePermission(context: Context): Boolean =
     }
 
 /**
- * Checks if the app's manifest requests [READ_PHONE_STATE][Manifest.permission.READ_PHONE_STATE],
- * the only phone state permission that can be granted after the app started. Assumes it does when
- * the manifest cannot be read.
+ * Checks if the app's manifest requests a phone state permission ([READ_PHONE_STATE][Manifest.permission.READ_PHONE_STATE],
+ * or on API 33+ [READ_BASIC_PHONE_STATE][Manifest.permission.READ_BASIC_PHONE_STATE]) that can be granted after the app started.
+ * Assumes it does when the manifest cannot be read.
  */
 @Suppress("DEPRECATION") // the PackageInfoFlags overload needs API 33
-internal fun requestsReadPhoneState(context: Context): Boolean =
+internal fun requestsPhoneStatePermission(context: Context): Boolean =
     try {
-        context.packageManager
-            .getPackageInfo(context.packageName, PackageManager.GET_PERMISSIONS)
-            .requestedPermissions
-            ?.contains(Manifest.permission.READ_PHONE_STATE) == true
+        val requestedPermissions =
+            context.packageManager
+                .getPackageInfo(context.packageName, PackageManager.GET_PERMISSIONS)
+                .requestedPermissions
+        if (requestedPermissions == null) {
+            false
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestedPermissions.contains(Manifest.permission.READ_PHONE_STATE) ||
+                requestedPermissions.contains(Manifest.permission.READ_BASIC_PHONE_STATE)
+        } else {
+            requestedPermissions.contains(Manifest.permission.READ_PHONE_STATE)
+        }
     } catch (e: Exception) {
         true
     }
+
+@Deprecated(
+    "Use requestsPhoneStatePermission instead",
+    ReplaceWith("requestsPhoneStatePermission(context)"),
+)
+internal fun requestsReadPhoneState(context: Context): Boolean = requestsPhoneStatePermission(context)
 
 /** Checks if the device has telephony capabilities. */
 internal fun hasTelephonyFeature(context: Context): Boolean = context.packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)

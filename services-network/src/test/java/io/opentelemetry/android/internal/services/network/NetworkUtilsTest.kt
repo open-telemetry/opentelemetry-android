@@ -204,34 +204,50 @@ class NetworkUtilsTest {
     }
 
     @Test
-    fun testRequestsReadPhoneStateWhenDeclared() {
+    fun testRequestsPhoneStatePermissionWhenReadPhoneStateDeclared() {
         mockRequestedPermissions(arrayOf(INTERNET, READ_PHONE_STATE))
 
-        assertThat(requestsReadPhoneState(context)).isTrue()
+        assertThat(requestsPhoneStatePermission(context)).isTrue()
     }
 
     @Test
-    fun testRequestsReadPhoneStateWhenNotDeclared() {
+    @Config(sdk = [Build.VERSION_CODES.TIRAMISU])
+    fun testRequestsPhoneStatePermissionWhenReadBasicPhoneStateDeclared_api33() {
         mockRequestedPermissions(arrayOf(INTERNET, READ_BASIC_PHONE_STATE))
 
-        assertThat(requestsReadPhoneState(context)).isFalse()
+        assertThat(requestsPhoneStatePermission(context)).isTrue()
     }
 
     @Test
-    fun testRequestsReadPhoneStateWithoutRequestedPermissions() {
+    @Config(sdk = [Build.VERSION_CODES.M])
+    fun testRequestsPhoneStatePermissionWhenReadBasicPhoneStateDeclared_preApi33() {
+        mockRequestedPermissions(arrayOf(INTERNET, READ_BASIC_PHONE_STATE))
+
+        assertThat(requestsPhoneStatePermission(context)).isFalse()
+    }
+
+    @Test
+    fun testRequestsPhoneStatePermissionWhenNotDeclared() {
+        mockRequestedPermissions(arrayOf(INTERNET))
+
+        assertThat(requestsPhoneStatePermission(context)).isFalse()
+    }
+
+    @Test
+    fun testRequestsPhoneStatePermissionWithoutRequestedPermissions() {
         mockRequestedPermissions(null)
 
-        assertThat(requestsReadPhoneState(context)).isFalse()
+        assertThat(requestsPhoneStatePermission(context)).isFalse()
     }
 
     @Test
     @Suppress("DEPRECATION")
-    fun testRequestsReadPhoneStateWhenLookupFails() {
+    fun testRequestsPhoneStatePermissionWhenLookupFails() {
         val packageManager = mockPackageManager()
         every { packageManager.getPackageInfo("app", PackageManager.GET_PERMISSIONS) } throws
             PackageManager.NameNotFoundException()
 
-        assertThat(requestsReadPhoneState(context)).isTrue()
+        assertThat(requestsPhoneStatePermission(context)).isTrue()
     }
 
     @Suppress("DEPRECATION")

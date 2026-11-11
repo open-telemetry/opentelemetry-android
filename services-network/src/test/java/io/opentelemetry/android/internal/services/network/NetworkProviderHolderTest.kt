@@ -5,17 +5,29 @@
 
 package io.opentelemetry.android.internal.services.network
 
+import android.Manifest.permission.READ_BASIC_PHONE_STATE
+import android.Manifest.permission.READ_PHONE_STATE
 import android.content.Context
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
+import android.content.pm.PackageManager.FEATURE_TELEPHONY
+import android.content.pm.PackageManager.PERMISSION_DENIED
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.net.ConnectivityManager
+import android.os.Build
+import androidx.core.content.ContextCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.annotation.Config
 
 @RunWith(AndroidJUnit4::class)
 class NetworkProviderHolderTest {
@@ -73,5 +85,58 @@ class NetworkProviderHolderTest {
         NetworkProviderHolder.set(mockProvider)
 
         assertThat(NetworkProviderHolder.get(context)).isSameAs(mockProvider)
+    }
+
+    @Test
+    @Config(sdk = [Build.VERSION_CODES.TIRAMISU])
+    fun `phoneStatePermissionGrantCheckTrigger creates polling trigger when READ_BASIC_PHONE_STATE is requested on API 33+`() {
+        mockkStatic(ContextCompat::class)
+        try {
+            val packageManager = mockk<PackageManager>()
+            every { context.packageName } returns "app"
+            every { context.packageManager } returns packageManager
+            every { packageManager.hasSystemFeature(FEATURE_TELEPHONY) } returns true
+            @Suppress("DEPRECATION")
+            every { packageManager.getPackageInfo("app", PackageManager.GET_PERMISSIONS) } returns
+                PackageInfo().apply { requestedPermissions = arrayOf(READ_BASIC_PHONE_STATE) }
+
+            every { ContextCompat.checkSelfPermission(context, READ_PHONE_STATE) } returns PERMISSION_DENIED
+            every { ContextCompat.checkSelfPermission(context, READ_BASIC_PHONE_STATE) } returns PERMISSION_DENIED
+
+            val trigger = NetworkProviderHolder.phoneStatePermissionGrantCheckTrigger(context)
+
+            assertThat(trigger).isInstanceOf(PollingPermissionGrantCheckTrigger::class.java)
+
+            every { ContextCompat.checkSelfPermission(context, READ_BASIC_PHONE_STATE) } returns PERMISSION_GRANTED
+
+            assertThat(trigger.consumeTrigger()).isTrue()
+            assertThat(trigger.consumeTrigger()).isFalse()
+        } finally {
+            unmockkStatic(ContextCompat::class)
+        }
+    }
+
+    @Test
+    @Config(sdk = [Build.VERSION_CODES.TIRAMISU])
+    fun `phoneStatePermissionGrantCheckTrigger returns NONE when phone state permission already granted`() {
+        mockkStatic(ContextCompat::class)
+        try {
+            val packageManager = mockk<PackageManager>()
+            every { context.packageName } returns "app"
+            every { context.packageManager } returns packageManager
+            every { packageManager.hasSystemFeature(FEATURE_TELEPHONY) } returns true
+            @Suppress("DEPRECATION")
+            every { packageManager.getPackageInfo("app", PackageManager.GET_PERMISSIONS) } returns
+                PackageInfo().apply { requestedPermissions = arrayOf(READ_BASIC_PHONE_STATE) }
+
+            every { ContextCompat.checkSelfPermission(context, READ_PHONE_STATE) } returns PERMISSION_DENIED
+            every { ContextCompat.checkSelfPermission(context, READ_BASIC_PHONE_STATE) } returns PERMISSION_GRANTED
+
+            val trigger = NetworkProviderHolder.phoneStatePermissionGrantCheckTrigger(context)
+
+            assertThat(trigger).isSameAs(PermissionGrantCheckTrigger.NONE)
+        } finally {
+            unmockkStatic(ContextCompat::class)
+        }
     }
 }
