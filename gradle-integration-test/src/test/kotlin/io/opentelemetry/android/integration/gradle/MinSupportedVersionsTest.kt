@@ -32,6 +32,13 @@ class MinSupportedVersionsTest {
         assembleFixture("weaving-app", tmp)
     }
 
+    @Test
+    fun `coroutines instrumentation builds at its own minimum Kotlin version`(
+        @TempDir tmp: Path,
+    ) {
+        assembleFixture("coroutines-app", tmp)
+    }
+
     private fun assembleFixture(
         fixtureName: String,
         tmp: Path,

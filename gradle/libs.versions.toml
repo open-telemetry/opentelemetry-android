@@ -25,9 +25,11 @@ weaver = "0.28.0"
 
 # Minimum toolchain that a consumer of the published artifacts must be able to build with,
 # as documented in VERSIONING.md. Enforced by the :gradle-integration-test module.
-minSupportedAgp = "8.13.2"
+minSupportedAgp = "8.12.0"
 minSupportedGradle = "8.13"
-minSupportedKotlin = "2.2.0"
+minSupportedKotlin = "2.1.0"
+# The coroutines instrumentation needs a newer Kotlin than everything else.
+minSupportedKotlinCoroutines = "2.3.0"
 minSupportedJdk = "17"
 
 [libraries]

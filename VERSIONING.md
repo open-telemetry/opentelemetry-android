@@ -25,9 +25,9 @@ builds, but their use in production is strongly discouraged.
 
 The android-agent currently supports the following minimum versions:
 
-- Kotlin 2.2
+- Kotlin 2.1, or 2.3 when [`coroutines-library`](instrumentation/coroutines/README.md) is used
 - API 23+ ([desugaring of the core library](https://developer.android.com/studio/write/java8-support#library-desugaring) required for API <26)
-- Android Gradle Plugin (AGP) 8.13.2 and Gradle 8.13
+- Android Gradle Plugin (AGP) 8.12.0 and Gradle 8.13
 - `compileSdk` 37
 - JDK 17 (build-time)
 - Java language level 8 as per [opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java/blob/main/VERSIONING.md#language-version-compatibility)

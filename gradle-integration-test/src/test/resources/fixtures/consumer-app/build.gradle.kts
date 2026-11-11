@@ -42,7 +42,6 @@ dependencies {
     implementation("io.opentelemetry.android.instrumentation:android-log-library")
     implementation("io.opentelemetry.android.instrumentation:compose-click")
     implementation("io.opentelemetry.android.instrumentation:compose-navigation")
-    implementation("io.opentelemetry.android.instrumentation:coroutines-library")
     implementation("io.opentelemetry.android.instrumentation:httpurlconnection-library")
     implementation("io.opentelemetry.android.instrumentation:native-crash")
     implementation("io.opentelemetry.android.instrumentation:okhttp3-library")

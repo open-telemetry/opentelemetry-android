@@ -8,10 +8,6 @@ package io.opentelemetry.android.minversions.weaving
 import android.app.Application
 import android.util.Log
 import io.opentelemetry.android.agent.OpenTelemetryRumInitializer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
@@ -22,8 +18,6 @@ import java.net.URL
  * Calls an API that each agent weaves, so the weaving has something to rewrite.
  */
 class WeavingApplication : Application() {
-    private val scope = CoroutineScope(Dispatchers.Default)
-
     override fun onCreate() {
         super.onCreate()
         OpenTelemetryRumInitializer.initialize(this)
@@ -37,6 +31,4 @@ class WeavingApplication : Application() {
     fun connect(url: String) = URL(url).openConnection().connect()
 
     fun log(message: String) = Log.v("WeavingApplication", message)
-
-    fun launchWork(): Job = scope.launch { okHttpClient() }
 }

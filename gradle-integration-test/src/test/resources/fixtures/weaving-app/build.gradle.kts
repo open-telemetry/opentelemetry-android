@@ -41,19 +41,16 @@ dependencies {
 
     implementation("io.opentelemetry.android:android-agent")
     implementation("io.opentelemetry.android.instrumentation:android-log-library")
-    implementation("io.opentelemetry.android.instrumentation:coroutines-library")
     implementation("io.opentelemetry.android.instrumentation:httpurlconnection-library")
     implementation("io.opentelemetry.android.instrumentation:okhttp3-library")
     implementation("io.opentelemetry.android.instrumentation:okhttp3-websocket-library")
     implementation(libs.okhttp)
-    implementation(libs.kotlinx.coroutines)
 
     byteBuddy(platform("io.opentelemetry.android:opentelemetry-android-bom:${pins.getValue("bomVersion")}"))
     byteBuddy("io.opentelemetry.android.instrumentation:okhttp3-agent")
     byteBuddy("io.opentelemetry.android.instrumentation:okhttp3-websocket-agent")
     byteBuddy("io.opentelemetry.android.instrumentation:httpurlconnection-agent")
     byteBuddy("io.opentelemetry.android.instrumentation:android-log-agent")
-    byteBuddy("io.opentelemetry.android.instrumentation:coroutines-agent")
 
     coreLibraryDesugaring(libs.desugarJdkLibs)
 }
