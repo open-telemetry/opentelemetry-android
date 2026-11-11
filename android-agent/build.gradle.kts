@@ -5,6 +5,16 @@ plugins {
 
 android {
     namespace = "io.opentelemetry.android.agent"
+
+    defaultConfig {
+        // The OTLP exporter brings in OkHttp 5.5, which requires consumers to compile against this.
+        aarMetadata {
+            minCompileSdk =
+                libs.versions.minSupportedCompileSdk
+                    .get()
+                    .toInt()
+        }
+    }
 }
 
 dependencies {

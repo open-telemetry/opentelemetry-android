@@ -30,6 +30,7 @@ minSupportedGradle = "8.13"
 minSupportedKotlin = "2.1.0"
 # The coroutines instrumentation needs a newer Kotlin than everything else.
 minSupportedKotlinCoroutines = "2.3.0"
+minSupportedCompileSdk = "37"
 minSupportedJdk = "17"
 
 [libraries]

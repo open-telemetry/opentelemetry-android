@@ -11,6 +11,11 @@
   ([#2077](https://github.com/open-telemetry/opentelemetry-android/pull/2077),
   [#1526](https://github.com/open-telemetry/opentelemetry-android/issues/1526))
 
+- Published modules now declare a `minCompileSdk` of 36 in their AAR metadata, up from 34.
+  `android-agent` and `okhttp3-agent` declare 37, which OkHttp 5.5 already required of their
+  consumers.
+  ([#2077](https://github.com/open-telemetry/opentelemetry-android/pull/2077))
+
 ### 🛠️ Bug fixes
 
 - Network attributes now pick up `READ_PHONE_STATE` when the app is granted it after the SDK

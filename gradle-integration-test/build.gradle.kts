@@ -25,7 +25,7 @@ val fixtures = layout.projectDirectory.dir("src/test/resources/fixtures")
 val catalog = rootProject.layout.projectDirectory.file("gradle/libs.versions.toml")
 
 val minSdk = project.property("android.minSdk") as String
-val minCompileSdk = project.property("android.minCompileSdk") as String
+val minCompileSdk = libs.versions.minSupportedCompileSdk.get()
 
 val androidSdkDir: Provider<String> =
     providers

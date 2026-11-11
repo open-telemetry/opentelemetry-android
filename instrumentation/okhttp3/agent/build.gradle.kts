@@ -7,6 +7,16 @@ description = "OpenTelemetry build-time auto-instrumentation for OkHttp on Andro
 
 android {
     namespace = "io.opentelemetry.android.okhttp.agent"
+
+    defaultConfig {
+        // OkHttp 5.5 requires consumers to compile against this.
+        aarMetadata {
+            minCompileSdk =
+                libs.versions.minSupportedCompileSdk
+                    .get()
+                    .toInt()
+        }
+    }
 }
 
 dependencies {
