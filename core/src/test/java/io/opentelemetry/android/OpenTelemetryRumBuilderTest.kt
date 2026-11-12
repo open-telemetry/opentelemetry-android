@@ -84,6 +84,7 @@ import java.util.function.Function
 
 @OptIn(IncubatingApi::class)
 @RunWith(AndroidJUnit4::class)
+@Suppress("LargeClass")
 class OpenTelemetryRumBuilderTest {
     private val resource: Resource =
         Resource
