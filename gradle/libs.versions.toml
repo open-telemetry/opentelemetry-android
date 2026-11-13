@@ -23,6 +23,16 @@ openTelemetryProto = "1.11.1-alpha"
 protobufKotlin = "4.36.2"
 weaver = "0.28.0"
 
+# Minimum toolchain that a consumer of the published artifacts must be able to build with,
+# as documented in VERSIONING.md. Enforced by the :gradle-integration-test module.
+minSupportedAgp = "8.12.0"
+minSupportedGradle = "8.13"
+minSupportedKotlin = "2.1.0"
+# The coroutines instrumentation needs a newer Kotlin than everything else.
+minSupportedKotlinCoroutines = "2.3.0"
+minSupportedCompileSdk = "37"
+minSupportedJdk = "17"
+
 [libraries]
 opentelemetry-platform-alpha = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-instrumentation-alpha" }
 opentelemetry-platform = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom" }
@@ -30,7 +40,7 @@ opentelemetry-core-bom = { module = "io.opentelemetry:opentelemetry-bom" }
 androidx-navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "androidx-navigation" }
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "androidx-navigation" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidx-navigation" }
-androidx-core = "androidx.core:core:1.19.1"
+androidx-core = "androidx.core:core:1.18.0"
 androidx-annotation = "androidx.annotation:annotation:1.11.0"
 androidx-lifecycle-process = "androidx.lifecycle:lifecycle-process:2.11.0"
 androidx-fragment = { module = "androidx.fragment:fragment", version.ref="fragment" }

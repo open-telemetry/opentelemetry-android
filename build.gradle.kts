@@ -65,7 +65,7 @@ if (koverEnabled) {
 fun configureKover() = extensions.configure<KoverProjectExtension> {
     merge {
         subprojects { project ->
-            true
+            project.path != ":gradle-integration-test"
         }
     }
     reports {

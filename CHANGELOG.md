@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+### 📣 Migration notes
+
+- The documented minimum supported versions did not build and have been corrected: Kotlin 2.1
+  (2.3 with `coroutines-library`), AGP 8.12.0, Gradle 8.13, `compileSdk` 37 and JDK 17 at build
+  time. They are now verified on every pull request. `androidx.core` goes back to 1.18.0, so AGP 8
+  works again; 1.7.0 to 1.8.1 required AGP 9.1.
+  ([#2077](https://github.com/open-telemetry/opentelemetry-android/pull/2077),
+  [#1526](https://github.com/open-telemetry/opentelemetry-android/issues/1526))
+
+- Published modules now declare a `minCompileSdk` of 36 in their AAR metadata, up from 34.
+  `android-agent` and `okhttp3-agent` declare 37, which OkHttp 5.5 already required of their
+  consumers.
+  ([#2077](https://github.com/open-telemetry/opentelemetry-android/pull/2077))
+
 ### 🛠️ Bug fixes
 
 - Network attributes now pick up `READ_PHONE_STATE` when the app is granted it after the SDK
