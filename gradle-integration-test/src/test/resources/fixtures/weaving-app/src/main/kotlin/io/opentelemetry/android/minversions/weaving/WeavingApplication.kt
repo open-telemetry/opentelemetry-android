@@ -15,7 +15,8 @@ import okhttp3.WebSocketListener
 import java.net.URL
 
 /**
- * Calls an API that each agent weaves, so the weaving has something to rewrite.
+ * Gives each agent something to weave. The log and HttpURLConnection agents rewrite the calls made
+ * here, while the OkHttp agents rewrite OkHttp's own classes.
  */
 class WeavingApplication : Application() {
     override fun onCreate() {

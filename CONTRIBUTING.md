@@ -190,9 +190,10 @@ instrumentation [here](instrumentation/okhttp3) for reference.
 #### Minimum supported versions test
 
 The `gradle-integration-test` module builds real consumer apps against the published artifacts
-using the minimum Gradle, AGP, Kotlin and compileSdk listed in [VERSIONING.md](VERSIONING.md). It
-is not part of `./gradlew check` because it resolves those artifacts from Maven Local, so they have
-to be published first:
+using the minimum JDK, Gradle, AGP, Kotlin and compileSdk listed in [VERSIONING.md](VERSIONING.md).
+It is not part of `./gradlew check` because it resolves those artifacts from Maven Local, so they
+have to be published first. It also needs that minimum JDK installed, in addition to the one that
+runs Gradle:
 
 ```
 ./gradlew publishToMavenLocal

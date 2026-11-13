@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id("org.jetbrains.kotlin.jvm")
     id("otel.spotless-conventions")
@@ -7,9 +9,16 @@ description = "Verifies the published artifacts are consumable at the minimum su
 
 val minSupportedJdk = libs.versions.minSupportedJdk.get()
 
-// TestKit starts the fixture builds on the JVM that runs the tests, so this is the consumer's JDK.
+// Compiled by the JDK that runs Gradle, so that ./gradlew check needs no other JDK installed.
+java {
+    sourceCompatibility = JavaVersion.toVersion(minSupportedJdk)
+    targetCompatibility = JavaVersion.toVersion(minSupportedJdk)
+}
+
 kotlin {
-    jvmToolchain(minSupportedJdk.toInt())
+    compilerOptions {
+        jvmTarget.set(JvmTarget.fromTarget(minSupportedJdk))
+    }
 }
 
 dependencies {
@@ -59,6 +68,13 @@ tasks.register<Test>("minSupportedVersionsTest") {
             .get()
             .output.classesDirs
     classpath = sourceSets.test.get().runtimeClasspath
+
+    // TestKit starts the fixture builds on the JVM that runs the tests, so this is the consumer's JDK.
+    javaLauncher.set(
+        javaToolchains.launcherFor {
+            languageVersion.set(JavaLanguageVersion.of(minSupportedJdk))
+        },
+    )
 
     systemProperty("fixtureSrcDir", fixtures.asFile.absolutePath)
     systemProperty("catalogPath", catalog.asFile.absolutePath)
