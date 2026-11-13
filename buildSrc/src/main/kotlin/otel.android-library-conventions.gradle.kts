@@ -25,11 +25,18 @@ plugins {
 val javaVersion = rootProject.extra["java_version"] as JavaVersion
 val targetJvm = rootProject.extra["jvm_target"] as JvmTarget
 val minKotlinVersion = rootProject.extra["kotlin_min_supported_version"] as KotlinVersion
+val noDesugarApi26Check =
+    providers.gradleProperty("otel.android.noDesugarApi26Check").map(String::toBoolean).getOrElse(false)
 android {
     compileSdk = (property("android.compileSdk") as String).toInt()
 
     defaultConfig {
-        minSdk = (property("android.minSdk") as String).toInt()
+        minSdk =
+            if (noDesugarApi26Check) {
+                26
+            } else {
+                (property("android.minSdk") as String).toInt()
+            }
         aarMetadata {
             minCompileSdk = (property("android.minCompileSdk") as String).toInt()
         }
@@ -41,7 +48,12 @@ android {
         // we rely on dependabot for dependency updates
         disable.add("GradleDependency")
         disable.add("AndroidGradlePluginVersion")
-        disable.add("NewApi")
+        if (noDesugarApi26Check) {
+            checkOnly.add("NewApi")
+            enable.add("NewApi")
+        } else {
+            disable.add("NewApi")
+        }
     }
 
     compileOptions {
