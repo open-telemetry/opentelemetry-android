@@ -89,7 +89,7 @@ class NetworkProviderHolderTest {
 
     @Test
     @Config(sdk = [Build.VERSION_CODES.TIRAMISU])
-    fun `phoneStatePermissionGrantCheckTrigger creates polling trigger when READ_BASIC_PHONE_STATE is requested on API 33+`() {
+    fun `phoneStatePermissionGrantCheckTrigger creates polling trigger for READ_PHONE_STATE on API 33+`() {
         mockkStatic(ContextCompat::class)
         try {
             val packageManager = mockk<PackageManager>()
@@ -98,7 +98,7 @@ class NetworkProviderHolderTest {
             every { packageManager.hasSystemFeature(FEATURE_TELEPHONY) } returns true
             @Suppress("DEPRECATION")
             every { packageManager.getPackageInfo("app", PackageManager.GET_PERMISSIONS) } returns
-                PackageInfo().apply { requestedPermissions = arrayOf(READ_BASIC_PHONE_STATE) }
+                PackageInfo().apply { requestedPermissions = arrayOf(READ_PHONE_STATE) }
 
             every { ContextCompat.checkSelfPermission(context, READ_PHONE_STATE) } returns PERMISSION_DENIED
             every { ContextCompat.checkSelfPermission(context, READ_BASIC_PHONE_STATE) } returns PERMISSION_DENIED
@@ -107,7 +107,7 @@ class NetworkProviderHolderTest {
 
             assertThat(trigger).isInstanceOf(PollingPermissionGrantCheckTrigger::class.java)
 
-            every { ContextCompat.checkSelfPermission(context, READ_BASIC_PHONE_STATE) } returns PERMISSION_GRANTED
+            every { ContextCompat.checkSelfPermission(context, READ_PHONE_STATE) } returns PERMISSION_GRANTED
 
             assertThat(trigger.consumeTrigger()).isTrue()
             assertThat(trigger.consumeTrigger()).isFalse()
@@ -118,7 +118,7 @@ class NetworkProviderHolderTest {
 
     @Test
     @Config(sdk = [Build.VERSION_CODES.TIRAMISU])
-    fun `phoneStatePermissionGrantCheckTrigger returns NONE when phone state permission already granted`() {
+    fun `phoneStatePermissionGrantCheckTrigger returns NONE when READ_BASIC_PHONE_STATE granted on API 33+`() {
         mockkStatic(ContextCompat::class)
         try {
             val packageManager = mockk<PackageManager>()
@@ -130,6 +130,7 @@ class NetworkProviderHolderTest {
                 PackageInfo().apply { requestedPermissions = arrayOf(READ_BASIC_PHONE_STATE) }
 
             every { ContextCompat.checkSelfPermission(context, READ_PHONE_STATE) } returns PERMISSION_DENIED
+            // READ_BASIC_PHONE_STATE is a normal permission granted at installation on Android 13+
             every { ContextCompat.checkSelfPermission(context, READ_BASIC_PHONE_STATE) } returns PERMISSION_GRANTED
 
             val trigger = NetworkProviderHolder.phoneStatePermissionGrantCheckTrigger(context)
@@ -138,5 +139,20 @@ class NetworkProviderHolderTest {
         } finally {
             unmockkStatic(ContextCompat::class)
         }
+    }
+
+    @Test
+    fun `phoneStatePermissionGrantCheckTrigger returns NONE when phone state permission is not requested in manifest`() {
+        val packageManager = mockk<PackageManager>()
+        every { context.packageName } returns "app"
+        every { context.packageManager } returns packageManager
+        every { packageManager.hasSystemFeature(FEATURE_TELEPHONY) } returns true
+        @Suppress("DEPRECATION")
+        every { packageManager.getPackageInfo("app", PackageManager.GET_PERMISSIONS) } returns
+            PackageInfo().apply { requestedPermissions = arrayOf("android.permission.INTERNET") }
+
+        val trigger = NetworkProviderHolder.phoneStatePermissionGrantCheckTrigger(context)
+
+        assertThat(trigger).isSameAs(PermissionGrantCheckTrigger.NONE)
     }
 }
