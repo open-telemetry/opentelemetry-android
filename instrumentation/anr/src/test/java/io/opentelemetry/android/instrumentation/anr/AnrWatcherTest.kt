@@ -16,6 +16,7 @@ import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -118,22 +119,33 @@ class AnrWatcherTest {
 
     @Test
     fun anr_extractorThrows_doesNotPropagateAndKeepsWatching() {
+        var calls = 0
         val extractor =
             EventAttributesExtractor<Array<StackTraceElement>> { _, _ ->
-                throw IllegalStateException("boom")
+                calls++
+                check(calls > 1) { "boom" }
+                Attributes.empty()
             }
         val anrWatcher = AnrWatcher(handler, mainThread, logger, listOf(extractor), 1)
         every { handler.post(any()) } returns true
 
+        // first detection cycle: the extractor throws, nothing is emitted and run() does not throw
         for (i in 0..4) {
             anrWatcher.run()
         }
+        assertThat(calls).isEqualTo(1)
         verify(exactly = 0) { logRecordBuilder.emit() }
 
-        // the counter was reset, so the next detection cycle still happens
-        for (i in 0..4) {
+        // the counter was reset, so four more polls are not enough for another detection
+        for (i in 0..3) {
             anrWatcher.run()
         }
+        assertThat(calls).isEqualTo(1)
         verify(exactly = 0) { logRecordBuilder.emit() }
+
+        // the fifth poll completes the next cycle and the event is emitted
+        anrWatcher.run()
+        assertThat(calls).isEqualTo(2)
+        verify(exactly = 1) { logRecordBuilder.emit() }
     }
 }
