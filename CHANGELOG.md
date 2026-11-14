@@ -4,6 +4,10 @@
 
 ### 🛠️ Bug fixes
 
+- Exceptions thrown while emitting an ANR event (for example from a custom stack trace extractor)
+  or while registering or removing slow rendering frame metrics listeners no longer escape into
+  the host app or stop the periodic ANR polling.
+  ([#2233](https://github.com/open-telemetry/opentelemetry-android/issues/2233))
 - Network attributes now pick up `READ_PHONE_STATE` when the app is granted it after the SDK
   started, instead of after the next network change or app restart. The network subtype is
   reported, and the carrier switches to the API 28+ details, from a later span or log. The

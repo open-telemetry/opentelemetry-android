@@ -10,6 +10,7 @@ import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.android.semconv.events.DeviceAnrEvent.Companion.DEVICE_ANR_EVENT_NAME
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.LogRecordBuilder
@@ -113,5 +114,26 @@ class AnrWatcherTest {
         verify(exactly = 2) { logRecordBuilder.setEventName(DEVICE_ANR_EVENT_NAME) }
         verify(exactly = 2) { logRecordBuilder.setAllAttributes(any<Attributes>()) }
         verify(exactly = 2) { logRecordBuilder.emit() }
+    }
+
+    @Test
+    fun anr_extractorThrows_doesNotPropagateAndKeepsWatching() {
+        val extractor =
+            EventAttributesExtractor<Array<StackTraceElement>> { _, _ ->
+                throw IllegalStateException("boom")
+            }
+        val anrWatcher = AnrWatcher(handler, mainThread, logger, listOf(extractor), 1)
+        every { handler.post(any()) } returns true
+
+        for (i in 0..4) {
+            anrWatcher.run()
+        }
+        verify(exactly = 0) { logRecordBuilder.emit() }
+
+        // the counter was reset, so the next detection cycle still happens
+        for (i in 0..4) {
+            anrWatcher.run()
+        }
+        verify(exactly = 0) { logRecordBuilder.emit() }
     }
 }
