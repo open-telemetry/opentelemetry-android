@@ -6,6 +6,8 @@
 package io.opentelemetry.android.instrumentation.anr
 
 import android.os.Handler
+import android.util.Log
+import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.instrumentation.common.EventAttributesExtractor
 import io.opentelemetry.android.instrumentation.utils.threadIdCompat
 import io.opentelemetry.android.semconv.events.DeviceAnrEvent
@@ -68,10 +70,14 @@ internal class AnrWatcher(
             return
         }
         if (anrCounter.incrementAndGet() >= 5) {
-            val stackTrace = mainThread.stackTrace
-            emitAnrEvent(stackTrace)
             // only report once per 5s.
             anrCounter.set(0)
+            try {
+                emitAnrEvent(mainThread.stackTrace)
+            } catch (e: Exception) {
+                // a failure here (e.g. in a user supplied extractor) must not cancel the polling
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to emit ANR event", e)
+            }
         }
     }
 

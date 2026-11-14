@@ -97,6 +97,26 @@ class SlowRenderListenerTest {
     }
 
     @Test
+    fun resumeAndPauseDoNotPropagateExceptions() {
+        val testInstance =
+            SlowRenderListener(
+                jankReporter,
+                executorService,
+                frameMetricsHandler,
+                Duration.ZERO,
+            )
+        every {
+            activity.window.addOnFrameMetricsAvailableListener(any(), any())
+        } throws IllegalStateException("boom")
+        every {
+            activity.window.removeOnFrameMetricsAvailableListener(any())
+        } throws IllegalStateException("boom")
+
+        testInstance.onActivityResumed(activity)
+        testInstance.onActivityPaused(activity)
+    }
+
+    @Test
     fun removeBeforeAddOk() {
         val testInstance =
             SlowRenderListener(
