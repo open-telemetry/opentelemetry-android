@@ -33,7 +33,19 @@ cd opentelemetry-android
 
 The output artifacts will be in `instrumentation/build/outputs/`.
 
-3. To run the tests and code checks:
+You can run unit tests for one module without an emulator. For example, run all `core` tests:
+
+```
+./gradlew :core:test
+```
+
+To run one test class:
+
+```
+./gradlew :core:test --tests "io.opentelemetry.android.OpenTelemetryRumBuilderTest"
+```
+
+3. To run the full tests and code checks before submitting:
 
 ```
 ./gradlew check
