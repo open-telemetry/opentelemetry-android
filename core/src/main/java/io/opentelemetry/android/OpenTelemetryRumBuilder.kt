@@ -395,7 +395,13 @@ class OpenTelemetryRumBuilder internal constructor(
                     setPropagators(buildFinalPropagators())
                 }.build()
 
-        otelReadyListeners.forEach { it(sdk) }
+        for (listener in otelReadyListeners) {
+            try {
+                listener(sdk)
+            } catch (e: Exception) {
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "OpenTelemetry ready listener failed", e)
+            }
+        }
 
         val delegate =
             SdkPreconfiguredRumBuilder(context, sdk, sessionProvider, config, clock, instrumentationLoader)
