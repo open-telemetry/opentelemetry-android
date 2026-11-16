@@ -82,7 +82,15 @@ class SdkPreconfiguredRumBuilder internal constructor(
         openTelemetryRum.onShutdown =
             Runnable {
                 for (instrumentation in enabledInstrumentations) {
-                    instrumentation.uninstall(context, openTelemetryRum)
+                    try {
+                        instrumentation.uninstall(context, openTelemetryRum)
+                    } catch (e: Exception) {
+                        Log.w(
+                            RumConstants.OTEL_RUM_LOG_TAG,
+                            "Failed to uninstall instrumentation '${instrumentation.name}'",
+                            e,
+                        )
+                    }
                 }
                 sdk.shutdown()
                 onShutdown.run()
@@ -98,8 +106,16 @@ class SdkPreconfiguredRumBuilder internal constructor(
         val configurator = InstrumentationConfigurators.create()
         // Install instrumentations
         for (instrumentation in enabledInstrumentations) {
-            configurator.configure(instrumentation)
-            instrumentation.install(context, openTelemetryRum)
+            try {
+                configurator.configure(instrumentation)
+                instrumentation.install(context, openTelemetryRum)
+            } catch (e: Exception) {
+                Log.w(
+                    RumConstants.OTEL_RUM_LOG_TAG,
+                    "Failed to install instrumentation '${instrumentation.name}'",
+                    e,
+                )
+            }
         }
 
         return openTelemetryRum
