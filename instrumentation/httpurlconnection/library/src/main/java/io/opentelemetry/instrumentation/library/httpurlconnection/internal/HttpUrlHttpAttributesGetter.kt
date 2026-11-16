@@ -10,9 +10,9 @@ import java.net.HttpURLConnection
 import java.net.URLConnection
 
 internal class HttpUrlHttpAttributesGetter : HttpClientAttributesGetter<URLConnection, Int> {
-    override fun getHttpRequestMethod(connection: URLConnection): String {
-        val httpURLConnection = connection as HttpURLConnection
-        return httpURLConnection.requestMethod
+    override fun getHttpRequestMethod(connection: URLConnection): String? {
+        val httpURLConnection = connection as? HttpURLConnection
+        return httpURLConnection?.requestMethod
     }
 
     override fun getUrlFull(connection: URLConnection): String = connection.getURL().toExternalForm()
