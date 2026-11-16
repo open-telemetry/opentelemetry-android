@@ -581,6 +581,41 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
+    fun diskBufferingEnabled_when_non_io_exception_thrown() {
+        createAndSetServiceManager()
+        val cacheStorage = mockk<CacheStorage>()
+        every { cacheStorage.cacheDir } answers { throw SecurityException() }
+
+        val exporterSlot = slot<SpanExporter>()
+        val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)
+        val events = mockk<InitializationEvents>(relaxed = true)
+        InitializationEvents.resetForTest()
+        InitializationEvents.set(events)
+
+        val config = buildConfig().enableSdkInitializationEvents()
+        config.setDiskBufferingConfig(DiskBufferingConfig(true))
+
+        RumBuilder
+            .builder(application, config)
+            .setExportScheduleEnablement(scheduleHandler)
+            .setCacheStorage(cacheStorage)
+            .build()
+
+        Awaitility
+            .await()
+            .atMost(Duration.ofSeconds(5))
+            .untilAsserted {
+                verify(exactly = 1) { events.spanExporterInitialized(capture(exporterSlot)) }
+                verify(exactly = 0) { scheduleHandler.enable() }
+                verify(exactly = 1) { scheduleHandler.disable() }
+                assertThat(exporterSlot.captured)
+                    .isNotInstanceOf(SpanToDiskExporter::class.java)
+                assertThat(SignalFromDiskExporter.get())
+                    .isNull()
+            }
+    }
+
+    @Test
     fun diskBufferingRespectsDisabledSignals() {
         createAndSetServiceManager()
         val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)

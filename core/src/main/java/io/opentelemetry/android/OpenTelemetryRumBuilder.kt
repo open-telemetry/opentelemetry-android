@@ -502,7 +502,7 @@ class OpenTelemetryRumBuilder internal constructor(
                 metricExporter = metricStorage?.let { MetricToDiskExporter.builder(it).build() } ?: initialMetrics,
                 signalFromDiskExporter = signalFromDiskExporter,
             )
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             Log.e(RumConstants.OTEL_RUM_LOG_TAG, "Could not initialize disk exporters.", e)
             return DiskBufferingResult(initialSpans, initialLogs, initialMetrics, null)
         }
