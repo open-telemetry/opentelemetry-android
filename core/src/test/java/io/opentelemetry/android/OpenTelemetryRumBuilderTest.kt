@@ -662,6 +662,21 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
+    fun throwingOtelReadyListenerDoesNotStopOtherListeners() {
+        val config = buildConfig()
+        val seen = AtomicReference<OpenTelemetry>()
+        createAndSetServiceManager()
+        val rum =
+            RumBuilder
+                .builder(application, config)
+                .addOtelReadyListener { error("listener failed") }
+                .addOtelReadyListener { otel: OpenTelemetry -> seen.set(otel) }
+                .build()
+        assertThat(rum).isNotNull()
+        assertThat(seen.get()).isNotNull()
+    }
+
+    @Test
     fun diskBufferingDisabled() {
         val exporterSlot = slot<SpanExporter>()
         val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)
