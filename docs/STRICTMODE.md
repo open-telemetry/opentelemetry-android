@@ -25,7 +25,7 @@ We group known violations into three categories:
 | Source / Stack (Representative) | Category | Description | Mitigation / Workaround |
 |---------------------------------|----------|-------------|--------------------------|
 | `io.opentelemetry.context.LazyStorage.<clinit>` SPI resource scan (ServiceLoader) | 2 | One‑time classpath resource + service index scan across DEX/JAR elements to initialize context storage in OpenTelemetry Java | Pre‑seed the default context storage via system property to avoid ServiceLoader disk scan during first span; see below. |
-| Offline persistence initialization (creating / listing storage dir) | 2 | Disk reads/writes to enable offline batching of telemetry (creates cache subdir, may stat existing files) | Disable offline buffering (`DiskBufferingConfig.enabled = false` when configuring, or omit enabling the feature) if startup StrictMode cleanliness is critical – see `core/src/main/java/io/opentelemetry/android/features/diskbuffering/DiskBufferingConfig.kt` |
+| Offline persistence initialization (creating / listing storage dir) | 2 | Disk reads/writes to enable disk buffering of telemetry (creates cache subdir, may stat existing files). The Android Agent enables disk buffering by default. | Disable it in the agent configuration if startup StrictMode cleanliness is critical; see the example below. |
 | Crash / ANR signal handlers registration (proc / system reads) | 3 | Light, one‑time metadata collection (may read `/proc/self/` entries, system traces) | No direct workaround; expected to be minimal on typical hardware—measure on low‑end devices |
 | Reading network state / registering listeners | 2 | Accessing system services (e.g. `ConnectivityManager`, possibly reading system settings) | Disable specific instrumentation modules (network, slow/frozen frame) or remove their Gradle dependency |
 
@@ -112,7 +112,7 @@ startup telemetry) still meets your requirements.
 
 | Feature | Potential Main Thread I/O (Examples) | Bypass / Disable (Current State) | Trade‑offs |
 |---------|--------------------------------------|----------------------------------|------------|
-| Offline buffering / storage | Create cache dir, list existing batch files, stat file sizes | Disable via `DiskBufferingConfig(enabled = false)` (or omit enabling); if no runtime toggle exposed, remove related dependency | No offline durability; data loss when offline |
+| Disk buffering / storage | Create cache dir, list existing batch files, stat file sizes | The Android Agent enables disk buffering by default. Disable it with `diskBuffering { enabled(false) }` during agent initialization. | No offline durability; data loss when offline |
 | Crash reporting | Read `/proc/self/stat`, signal handler setup, collect app/package metadata | Remove crash instrumentation dependency (runtime toggle TBD) | No automatic crash spans / attributes |
 | ANR detection | Install handlers / read traces or binder timeouts (light reads) | Remove ANR instrumentation dependency | Lose ANR diagnostics |
 | Slow / frozen frame detection | Access frame metrics / choreographer callbacks (minimal disk I/O) | Remove slowrendering instrumentation dependency | Lose frame performance telemetry |
@@ -120,6 +120,16 @@ startup telemetry) still meets your requirements.
 | Context storage init | ServiceLoader resource scan | Pre‑seed property OR off-main-thread warmup | None (once-only cost) |
 
 (Exact configuration flags / Gradle coordinates to disable each module should be documented here as those features become generally available. PRs welcome.)
+
+Disable disk buffering during agent initialization:
+
+```kotlin
+OpenTelemetryRumInitializer.initialize(context) {
+    diskBuffering {
+        enabled(false)
+    }
+}
+```
 
 ## Policy
 
