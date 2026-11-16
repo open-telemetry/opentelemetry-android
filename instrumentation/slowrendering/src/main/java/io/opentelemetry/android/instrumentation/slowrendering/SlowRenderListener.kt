@@ -67,6 +67,22 @@ internal class SlowRenderListener(
     }
 
     override fun onActivityResumed(activity: Activity) {
+        try {
+            registerActivity(activity)
+        } catch (e: Exception) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Exception while starting frame metrics collection", e)
+        }
+    }
+
+    override fun onActivityPaused(activity: Activity) {
+        try {
+            unregisterActivity(activity)
+        } catch (e: Exception) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Exception while stopping frame metrics collection", e)
+        }
+    }
+
+    private fun registerActivity(activity: Activity) {
         if (executorService.isShutdown) {
             return
         }
@@ -85,7 +101,7 @@ internal class SlowRenderListener(
         }
     }
 
-    override fun onActivityPaused(activity: Activity) {
+    private fun unregisterActivity(activity: Activity) {
         if (executorService.isShutdown) {
             return
         }
