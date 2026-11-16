@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 8484)
-Total output lines: 896
-
 /*
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
@@ -249,7 +246,384 @@ class OpenTelemetryRumBuilderTest {
         val metricReader = InMemoryMetricReader.create()
         val openTelemetryRum =
             makeBuilder()
-  …3484 tokens truncated…)
+                .setResource(resource)
+                .addMeterProviderCustomizer { sdkMeterProviderBuilder: SdkMeterProviderBuilder, _: Context ->
+                    val metricResAttrs =
+                        Attributes.of(AttributeKey.stringKey("mmm"), "nnn")
+                    sdkMeterProviderBuilder
+                        .setResource(Resource.create(metricResAttrs))
+                        .registerMetricReader(metricReader)
+                }.build()
+
+        val meter =
+            openTelemetryRum.openTelemetry.meterProvider
+                .meterBuilder("myMeter")
+                .build()
+        val counterAttrs = Attributes.of(AttributeKey.longKey("adams"), 42L)
+        val counter = meter.counterBuilder("myCounter").build()
+        counter.add(40, counterAttrs)
+        metricReader.forceFlush()
+        counter.add(2, counterAttrs)
+
+        val metrics: MutableList<MetricData> =
+            ArrayList(metricReader.collectAllMetrics())
+        assertThat(metrics).hasSize(1)
+        OpenTelemetryAssertions
+            .assertThat(metrics[0])
+            .hasName("myCounter")
+            .hasLongSumSatisfying { sum: LongSumAssert ->
+                sum.hasPointsSatisfying({ pt: LongPointAssert ->
+                    pt.hasValue(42L).hasAttributes(counterAttrs)
+                })
+            }.hasResourceSatisfying { res: ResourceAssert ->
+                res.hasAttribute(
+                    AttributeKey.stringKey("mmm"),
+                    "nnn",
+                )
+            }
+    }
+
+    @Test
+    fun canCustomizeMetricExport() {
+        val exporter =
+            InMemoryMetricExporter.create(AggregationTemporality.DELTA) // NOT THE DEFAULT
+        val periodicReader = PeriodicMetricReader.builder(exporter).build()
+        val openTelemetryRum =
+            makeBuilder()
+                .setResource(resource)
+                .addMeterProviderCustomizer { _: SdkMeterProviderBuilder, _: Context ->
+                    SdkMeterProvider
+                        .builder()
+                        .registerMetricReader(periodicReader)
+                }.addMetricExporterCustomizer(Function { _: MetricExporter -> exporter })
+                .build()
+
+        val meter =
+            openTelemetryRum.openTelemetry.meterProvider
+                .meterBuilder("FOOMETER")
+                .build()
+        val counter = meter.counterBuilder("FOOCOUNTER").build()
+        counter.add(22)
+        periodicReader.forceFlush()
+        counter.add(2)
+        counter.add(3)
+        periodicReader.forceFlush()
+        val metrics =
+            exporter.finishedMetricItems.filter { it.name == "FOOCOUNTER" }
+
+        assertThat(metrics).hasSize(2)
+        OpenTelemetryAssertions
+            .assertThat(metrics[0])
+            .hasName("FOOCOUNTER")
+            .hasLongSumSatisfying { sum: LongSumAssert ->
+                sum.hasPointsSatisfying({ pt: LongPointAssert -> pt.hasValue(22L) })
+            }
+        OpenTelemetryAssertions
+            .assertThat(metrics[1])
+            .hasName("FOOCOUNTER")
+            .hasLongSumSatisfying { sum: LongSumAssert ->
+                sum.hasPointsSatisfying({ pt: LongPointAssert -> pt.hasValue(5L) })
+            }
+    }
+
+    @Test
+    fun shouldInstallInstrumentation() {
+        createAndSetServiceManager()
+        val sessionProvider = mockk<SessionProvider>()
+        val localInstrumentation =
+            mockk<AndroidInstrumentation>(relaxed = true) {
+                every { name } returns "local"
+            }
+        val classpathInstrumentation =
+            mockk<AndroidInstrumentation>(relaxed = true) {
+                every { name } returns "classpath"
+            }
+
+        val builder =
+            OpenTelemetryRumBuilder(application, buildConfig())
+                .addInstrumentation(localInstrumentation)
+                .setSessionProvider(sessionProvider)
+        (builder.instrumentationLoader as AndroidInstrumentationLoaderImpl).registerForTest(classpathInstrumentation)
+        builder.build()
+
+        verify(exactly = 1) { localInstrumentation.install(any(), any()) }
+        verify(exactly = 1) { classpathInstrumentation.install(any(), any()) }
+    }
+
+    @Test
+    fun shouldInstallInstrumentation_excludingClasspathImplsWhenRequestedInConfig() {
+        createAndSetServiceManager()
+        val sessionProvider = mockk<SessionProvider>()
+        val localInstrumentation =
+            mockk<AndroidInstrumentation>(relaxed = true) {
+                every { name } returns "local"
+            }
+        val classpathInstrumentation =
+            mockk<AndroidInstrumentation>(relaxed = true) {
+                every { name } returns "classpath"
+            }
+
+        val builder =
+            OpenTelemetryRumBuilder(
+                application,
+                buildConfig().disableInstrumentationDiscovery(),
+            ).addInstrumentation(localInstrumentation)
+                .setSessionProvider(sessionProvider)
+        (builder.instrumentationLoader as AndroidInstrumentationLoaderImpl).registerForTest(classpathInstrumentation)
+        builder.build()
+
+        verify(exactly = 1) { localInstrumentation.install(any(), any()) }
+        verify(exactly = 0) { classpathInstrumentation.install(any(), any()) }
+    }
+
+    @Test
+    fun canAddPropagator() {
+        val context =
+            io.opentelemetry.context.Context
+                .root()
+        val carrier = Any()
+
+        val expected = mockk<io.opentelemetry.context.Context>()
+        val customPropagator = mockk<TextMapPropagator>()
+
+        val getter: TextMapGetter<Any> = mockk()
+        every {
+            customPropagator.extract(
+                context,
+                carrier,
+                getter,
+            )
+        } returns expected
+
+        val rum =
+            makeBuilder()
+                .addPropagatorCustomizer(Function { _: TextMapPropagator -> customPropagator })
+                .build()
+        val result =
+            rum
+                .openTelemetry
+                .propagators
+                .textMapPropagator
+                .extract(context, carrier, getter)
+        assertThat(result).isSameAs(expected)
+    }
+
+    @Test
+    fun canSetPropagator() {
+        val customPropagator = mockk<TextMapPropagator>()
+
+        val rum =
+            makeBuilder()
+                .addPropagatorCustomizer(Function { _: TextMapPropagator -> customPropagator })
+                .build()
+        val result = rum.openTelemetry.propagators.textMapPropagator
+        assertThat(result).isSameAs(customPropagator)
+    }
+
+    @Test
+    fun setSpanExporterCustomizer() {
+        // Create a relaxed mock so un-stubbed calls are safe
+        val exporter = mockk<SpanExporter>(relaxed = true)
+
+        // Stub export() to return success
+        every { exporter.export(any()) } returns CompletableResultCode.ofSuccess()
+
+        val wasCalled = AtomicBoolean(false)
+        val customizer: (SpanExporter) -> SpanExporter = {
+            wasCalled.set(true)
+            exporter
+        }
+
+        val rum =
+            makeBuilder()
+                .addSpanExporterCustomizer(customizer)
+                .build()
+
+        val span =
+            rum
+                .openTelemetry
+                .getTracer("test")
+                .spanBuilder("foo")
+                .startSpan()
+
+        try {
+            span.makeCurrent().use {
+                // no-op
+            }
+        } finally {
+            span.end()
+        }
+
+        // Default is 5s, allow up to 30s for export to happen
+        Awaitility
+            .await()
+            .atMost(Duration.ofSeconds(30))
+            .untilAsserted {
+                verify { exporter.export(any()) }
+            }
+
+        assertThat(wasCalled.get()).isTrue()
+    }
+
+    @Test
+    fun setLogRecordExporterCustomizer() {
+        createAndSetServiceManager()
+        val wasCalled = AtomicBoolean(false)
+        val customizer: Function<LogRecordExporter, LogRecordExporter> =
+            Function { _: LogRecordExporter ->
+                wasCalled.set(true)
+                logsExporter
+            }
+        val rum = makeBuilder().addLogRecordExporterCustomizer(customizer).build()
+
+        val logger =
+            rum
+                .openTelemetry
+                .logsBridge
+                .loggerBuilder("LogScope")
+                .build()
+        logger
+            .logRecordBuilder()
+            .setBody("foo")
+            .setSeverity(Severity.FATAL3)
+            .setAttribute(AttributeKey.stringKey("bing"), "bang")
+            .emit()
+        // 5 sec is default
+        Awaitility
+            .await()
+            .atMost(Duration.ofSeconds(5))
+            .untilAsserted {
+                assertThat(logsExporter.finishedLogRecordItems)
+                    .isNotEmpty()
+            }
+        assertThat(wasCalled.get()).isTrue()
+        val logs: MutableCollection<LogRecordData> = logsExporter.finishedLogRecordItems
+        assertThat(logs).hasSize(1)
+        OpenTelemetryAssertions
+            .assertThat(logs.iterator().next())
+            .hasBody("foo")
+            .hasAttributesSatisfyingExactly(
+                OpenTelemetryAssertions.equalTo(AttributeKey.stringKey("bing"), "bang"),
+                OpenTelemetryAssertions.equalTo(stringKey(APP_SCREEN_NAME), CUR_SCREEN_NAME),
+                OpenTelemetryAssertions.equalTo(
+                    stringKey(SESSION_ID),
+                    rum.sessionProvider.getSessionId(),
+                ),
+            ).hasSeverity(Severity.FATAL3)
+    }
+
+    @Ignore("Earlier with mockito cacheDir was null which was causing this TC to pass")
+    @Test
+    fun diskBufferingEnabled() {
+        createAndSetServiceManager()
+
+        val exporterSlot = slot<SpanExporter>()
+        val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)
+        val events = mockk<InitializationEvents>(relaxed = true)
+        InitializationEvents.resetForTest()
+        InitializationEvents.set(events)
+
+        val config = buildConfig().enableSdkInitializationEvents()
+        config.setDiskBufferingConfig(DiskBufferingConfig(true))
+
+        RumBuilder
+            .builder(application, config)
+            .setExportScheduleEnablement(scheduleHandler)
+            .build()
+
+        Awaitility
+            .await()
+            .atMost(Duration.ofSeconds(5))
+            .untilAsserted {
+                verify(exactly = 1) { events.spanExporterInitialized(capture(exporterSlot)) }
+                verify(exactly = 1) { scheduleHandler.enable() }
+                verify(exactly = 0) { scheduleHandler.disable() }
+                assertThat(exporterSlot.captured)
+                    .isInstanceOf(SpanToDiskExporter::class.java)
+            }
+    }
+
+    @Test
+    fun diskBufferingEnabled_when_exception_thrown() {
+        createAndSetServiceManager()
+        val cacheStorage = mockk<CacheStorage>()
+        every { cacheStorage.cacheDir } answers { throw IOException() }
+
+        val exporterSlot = slot<SpanExporter>()
+        val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)
+        val events = mockk<InitializationEvents>(relaxed = true)
+        InitializationEvents.resetForTest()
+        InitializationEvents.set(events)
+
+        val config = buildConfig().enableSdkInitializationEvents()
+        config.setDiskBufferingConfig(DiskBufferingConfig(true))
+
+        RumBuilder
+            .builder(application, config)
+            .setExportScheduleEnablement(scheduleHandler)
+            .setCacheStorage(cacheStorage)
+            .build()
+
+        Awaitility
+            .await()
+            .atMost(Duration.ofSeconds(5))
+            .untilAsserted {
+                verify(exactly = 1) { events.spanExporterInitialized(capture(exporterSlot)) }
+                verify(exactly = 0) { scheduleHandler.enable() }
+                verify(exactly = 1) { scheduleHandler.disable() }
+                assertThat(exporterSlot.captured)
+                    .isNotInstanceOf(SpanToDiskExporter::class.java)
+                assertThat(SignalFromDiskExporter.get())
+                    .isNull()
+            }
+    }
+
+    @Test
+    fun diskBufferingEnabled_when_non_io_exception_thrown() {
+        createAndSetServiceManager()
+        val cacheStorage = mockk<CacheStorage>()
+        every { cacheStorage.cacheDir } answers { throw SecurityException() }
+
+        val exporterSlot = slot<SpanExporter>()
+        val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)
+        val events = mockk<InitializationEvents>(relaxed = true)
+        InitializationEvents.resetForTest()
+        InitializationEvents.set(events)
+
+        val config = buildConfig().enableSdkInitializationEvents()
+        config.setDiskBufferingConfig(DiskBufferingConfig(true))
+
+        RumBuilder
+            .builder(application, config)
+            .setExportScheduleEnablement(scheduleHandler)
+            .setCacheStorage(cacheStorage)
+            .build()
+
+        Awaitility
+            .await()
+            .atMost(Duration.ofSeconds(5))
+            .untilAsserted {
+                verify(exactly = 1) { events.spanExporterInitialized(capture(exporterSlot)) }
+                verify(exactly = 0) { scheduleHandler.enable() }
+                verify(exactly = 1) { scheduleHandler.disable() }
+                assertThat(exporterSlot.captured)
+                    .isNotInstanceOf(SpanToDiskExporter::class.java)
+                assertThat(SignalFromDiskExporter.get())
+                    .isNull()
+            }
+    }
+
+    @Test
+    fun diskBufferingRespectsDisabledSignals() {
+        createAndSetServiceManager()
+        val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)
+        val events = mockk<InitializationEvents>(relaxed = true)
+        InitializationEvents.resetForTest()
+        InitializationEvents.set(events)
+
+        var logExporterCustomizerCalled = false
+        var metricExporterCustomizerCalled = false
+        val config = buildConfig().enableSdkInitializationEvents()
         config.setDiskBufferingConfig(DiskBufferingConfig(true))
         config.setLoggingDisabled()
         config.setMetricsDisabled()
