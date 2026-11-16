@@ -193,13 +193,14 @@ The following instrumentation modules are bundled with the Android Agent:
 * [Startup](./instrumentation/startup)
 * [Sessions](./instrumentation/sessions)
 * [Screen orientation](./instrumentation/screen-orientation)
-* [View click](./instrumentation/view-click/)
 
 There are also other
 [additional instrumentation modules](https://github.com/open-telemetry/opentelemetry-android/tree/main/instrumentation)
 that application developers can include through a gradle dependency. 
 Instrumentations are detected at runtime via the classpath, and
 are installed automatically.
+
+The [View click instrumentation](./instrumentation/view-click/README.md) is optional and must be added separately.
 
 ## Additional Documentation
 
