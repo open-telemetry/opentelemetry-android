@@ -36,4 +36,14 @@ class AndroidInstrumentationLoaderImplTest {
 
         assertThat(instrumentations).anyMatch { it is TestAndroidInstrumentation }
     }
+
+    @Test
+    fun `A provider that fails to load does not crash the loader`() {
+        TestAndroidInstrumentation.failOnCreate = true
+        try {
+            assertThat(AndroidInstrumentationLoaderImpl().getAll()).isEmpty()
+        } finally {
+            TestAndroidInstrumentation.failOnCreate = false
+        }
+    }
 }

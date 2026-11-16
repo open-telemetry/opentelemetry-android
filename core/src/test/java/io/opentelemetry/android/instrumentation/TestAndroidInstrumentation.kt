@@ -9,6 +9,10 @@ import android.content.Context
 import io.opentelemetry.android.OpenTelemetryRum
 
 class TestAndroidInstrumentation : AndroidInstrumentation {
+    init {
+        check(!failOnCreate) { "TestAndroidInstrumentation failed to load" }
+    }
+
     override val name: String = "test"
 
     var installed = false
@@ -26,5 +30,9 @@ class TestAndroidInstrumentation : AndroidInstrumentation {
         openTelemetryRum: OpenTelemetryRum,
     ) {
         installed = false
+    }
+
+    companion object {
+        var failOnCreate = false
     }
 }
