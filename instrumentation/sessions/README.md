@@ -29,7 +29,15 @@ OpenTelemetryRumInitializer.initialize(context) {
 }
 ```
 
-If not using the agent, you can create a `SessionManager` directly with a custom `SessionConfig`.
+To provide a custom session ID, use the public [SessionConfiguration](../../android-agent/src/main/kotlin/io/opentelemetry/android/agent/dsl/SessionConfiguration.kt) DSL with a [SessionProvider](../../session/src/main/kotlin/io/opentelemetry/android/session/SessionProvider.kt):
+
+```kotlin
+OpenTelemetryRumInitializer.initialize(context) {
+    session {
+        sessionProvider = SessionProvider { "my-session-id" }
+    }
+}
+```
 
 ## Installation
 
