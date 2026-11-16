@@ -68,6 +68,9 @@ dependencies {
 }
 ```
 
+This instrumentation requires Kotlin 2.3 or later, which is newer than the
+[minimum for the rest of the SDK](../../VERSIONING.md#android-ecosystem-compatibility).
+
 ## Context precedence
 
 If `CoroutineScope.launch` is called with an explicit, non-root OpenTelemetry coroutine context
