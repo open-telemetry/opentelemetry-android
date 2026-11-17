@@ -8,10 +8,11 @@ package io.opentelemetry.android.demo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
@@ -40,11 +41,13 @@ fun SessionId(sessionId: StateFlow<String>) {
                 Arrangement.Center,
             ) {
                 CenterText(text = "session.id", fontSize = 18.sp, color = Color.Black)
-                //TODO: Fix me -- this selection doesn't work
-                SelectionContainer(modifier = Modifier.padding(top = 15.dp)) {
-                    CenterText(text = sessionId.collectAsState().value, fontSize = 14.sp,
-                        selectable = true, color = Color(0xFF425CC7))
-                }
+                Spacer(modifier = Modifier.height(15.dp))
+                CenterText(
+                    text = sessionId.collectAsState().value,
+                    fontSize = 14.sp,
+                    selectable = true,
+                    color = Color(0xFF425CC7),
+                )
             }
         }
     }
