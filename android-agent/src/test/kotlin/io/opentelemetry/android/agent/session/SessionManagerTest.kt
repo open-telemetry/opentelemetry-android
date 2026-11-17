@@ -174,6 +174,71 @@ internal class SessionManagerTest {
     }
 
     @Test
+    fun `removed observer no longer receives session updates`() {
+        val observer = mockk<SessionObserver>()
+        every { observer.onSessionStarted(any(), any()) } just Runs
+        every { observer.onSessionEnded(any()) } just Runs
+        val clock = TestClock.create()
+        val manager =
+            SessionManager(
+                clock,
+                timeoutHandler = timeoutHandler,
+                maxSessionLifetime = MAX_SESSION_LIFETIME.hours,
+            )
+        manager.addObserver(observer)
+        manager.getSessionId()
+        manager.removeObserver(observer)
+
+        clock.advance(MAX_SESSION_LIFETIME, TimeUnit.HOURS)
+        manager.getSessionId()
+
+        verify(exactly = 1) { observer.onSessionStarted(any(), any()) }
+        verify(exactly = 1) { observer.onSessionEnded(any()) }
+    }
+
+    @Test
+    fun `removing an observer uses identity rather than equality`() {
+        class EqualObserver : SessionObserver {
+            var started = 0
+            var ended = 0
+
+            override fun onSessionStarted(
+                newSession: Session,
+                previousSession: Session,
+            ) {
+                started++
+            }
+
+            override fun onSessionEnded(session: Session) {
+                ended++
+            }
+
+            override fun equals(other: Any?): Boolean = other is EqualObserver
+
+            override fun hashCode(): Int = 0
+        }
+
+        val first = EqualObserver()
+        val second = EqualObserver()
+        val manager =
+            SessionManager(
+                TestClock.create(),
+                timeoutHandler = timeoutHandler,
+                maxSessionLifetime = MAX_SESSION_LIFETIME.hours,
+            )
+        manager.addObserver(first)
+        manager.addObserver(second)
+        manager.removeObserver(second)
+
+        manager.getSessionId()
+
+        assertThat(first.started).isEqualTo(1)
+        assertThat(first.ended).isEqualTo(1)
+        assertThat(second.started).isZero()
+        assertThat(second.ended).isZero()
+    }
+
+    @Test
     fun `observer can be added while observers are notified`() {
         val clock = TestClock.create()
         val mockObserver = mockk<SessionObserver>()

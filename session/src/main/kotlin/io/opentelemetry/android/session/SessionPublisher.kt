@@ -13,4 +13,9 @@ fun interface SessionPublisher {
      * Adds an observer that is invoked when the session changes.
      */
     fun addObserver(observer: SessionObserver)
+
+    /**
+     * Removes a previously registered observer.
+     */
+    fun removeObserver(observer: SessionObserver) {}
 }
