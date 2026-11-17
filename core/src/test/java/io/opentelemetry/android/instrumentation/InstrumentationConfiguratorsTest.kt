@@ -46,6 +46,16 @@ class InstrumentationConfiguratorsTest {
         assertThat(inst1.configured).isTrue
         assertThat(inst2.configured).isTrue
     }
+
+    @Test
+    fun aConfiguratorThatFailsToLoadDoesNotCrashCreate() {
+        TestInstrumentationConfigurator.failOnCreate = true
+        try {
+            InstrumentationConfigurators.create().configure(TestAndroidInstrumentation())
+        } finally {
+            TestInstrumentationConfigurator.failOnCreate = false
+        }
+    }
 }
 
 class TestInstrumentation1 : AndroidInstrumentation {
