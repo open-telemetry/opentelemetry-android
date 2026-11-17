@@ -319,6 +319,29 @@ class NetworkChangeInstrumentationTest {
             )
     }
 
+    @Test
+    fun extractorThrows_eventStillEmittedWithOtherAttributes() {
+        val networkChangeListenerSlot = slot<NetworkChangeListener>()
+        val (context, openTelemetryRum) = createTestDependencies()
+        val instrumentation = NetworkChangeInstrumentation()
+        instrumentation.addAttributesExtractor(NetworkAttributesExtractor { _, _ -> error("boom") })
+        instrumentation.install(context, openTelemetryRum)
+
+        verify {
+            currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
+        }
+
+        networkChangeListenerSlot.captured.onNetworkChange(
+            CurrentNetwork(NetworkState.TRANSPORT_WIFI),
+        )
+
+        assertThat(otelTesting.logRecords.single())
+            .hasEventName(NETWORK_CHANGE_EVENT_NAME)
+            .hasAttributesSatisfyingExactly(
+                equalTo(stringKey(NETWORK_CONNECTION_TYPE), "wifi"),
+            )
+    }
+
     private fun createTestDependencies(): Pair<Application, OpenTelemetryRum> {
         val app = mockk<Application>()
         val services = mockk<Services>()
