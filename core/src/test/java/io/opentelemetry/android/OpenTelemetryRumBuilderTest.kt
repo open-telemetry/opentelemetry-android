@@ -211,9 +211,7 @@ class OpenTelemetryRumBuilderTest {
                     "foo",
                 ),
             ).hasResource(resource)
-        // TODO: verify event name inline above when the assertions framework can handle it
-        val log0 = logs[0]
-        assertThat(log0.eventName).isEqualTo("test.event")
+            .hasEventName("test.event")
     }
 
     @Test
