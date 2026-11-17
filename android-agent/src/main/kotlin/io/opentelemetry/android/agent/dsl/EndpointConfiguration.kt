@@ -25,7 +25,9 @@ class EndpointConfiguration internal constructor(
      */
     var fullUrl: String? = null,
     /**
-     * Headers that should be attached to HTTP export requests.
+     * Headers that should be attached to HTTP export requests. [HttpExportConfiguration.baseHeaders]
+     * override these values for matching keys, and [HttpExportConfiguration.headerSupplier] values
+     * override both.
      */
     var headers: Map<String, String> = emptyMap(),
     /**

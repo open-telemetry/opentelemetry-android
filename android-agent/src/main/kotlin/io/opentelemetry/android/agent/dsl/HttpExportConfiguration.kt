@@ -22,7 +22,8 @@ class HttpExportConfiguration internal constructor() {
     var baseUrl: String = ""
 
     /**
-     * Static global headers that should be attached to any HTTP export requests.
+     * Static global headers that should be attached to any HTTP export requests. These override
+     * signal-specific [EndpointConfiguration.headers]; [headerSupplier] values override both.
      */
     var baseHeaders: Map<String, String> = emptyMap()
 
