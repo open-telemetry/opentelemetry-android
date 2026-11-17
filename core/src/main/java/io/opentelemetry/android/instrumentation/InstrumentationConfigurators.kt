@@ -6,7 +6,6 @@
 package io.opentelemetry.android.instrumentation
 
 import io.opentelemetry.android.common.RumConstants.OTEL_RUM_LOG_TAG
-import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 
 private typealias Konfigurator = InstrumentationConfigurator<*>
@@ -40,9 +39,7 @@ internal class InstrumentationConfigurators
                     ) {
                         configurators.add(configurator)
                     }
-                } catch (e: ServiceConfigurationError) {
-                    android.util.Log.w(OTEL_RUM_LOG_TAG, "Failed to load instrumentation configurators", e)
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     android.util.Log.w(OTEL_RUM_LOG_TAG, "Failed to load instrumentation configurators", e)
                 }
                 return configurators
