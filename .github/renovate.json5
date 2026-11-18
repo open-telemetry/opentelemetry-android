@@ -81,6 +81,14 @@
       allowedVersions: '<1.12.0',
     },
     {
+      // robolectric 4.18+ drops support for API 23, which the agent still supports and tests
+      // against. Remove this once API 23 coverage is provided by a device or emulator instead.
+      matchPackageNames: [
+        'org.robolectric:robolectric',
+      ],
+      allowedVersions: '<4.18',
+    },
+    {
       // detekt 1.23.x (latest stable) can't run on JDK 25. Remove this once detekt 2.x is adopted.
       // Until then cap at the current LTS (21).
       matchDepNames: [
