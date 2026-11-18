@@ -21,6 +21,8 @@
 - An exception thrown by a network attributes extractor (for example a custom one) no longer
   escapes into the connectivity callback. The network change event is still emitted with the
   attributes from the other extractors.
+- An exception thrown while tracing an activity lifecycle callback no longer escapes into the
+  host app's lifecycle dispatch on the main thread.
   ([#2233](https://github.com/open-telemetry/opentelemetry-android/issues/2233))
 - Exceptions thrown while emitting an ANR event (for example from a custom stack trace extractor)
   or while registering or removing slow rendering frame metrics listeners no longer escape into
