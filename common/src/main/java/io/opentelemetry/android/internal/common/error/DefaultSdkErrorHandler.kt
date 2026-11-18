@@ -3,21 +3,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.common.error
+package io.opentelemetry.android.internal.common.error
 
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants
 
 /**
+ * This class is internal and not for public use. Its APIs are unstable and can change at any time.
+ *
  * Default implementation of [SdkErrorHandler] that logs errors via Android [Log] under [logTag].
  */
-internal class DefaultSdkErrorHandler(
+class DefaultSdkErrorHandler(
     private val logTag: String = RumConstants.OTEL_RUM_LOG_TAG,
 ) : SdkErrorHandler {
     override fun onError(error: SdkError) {
         when (error) {
             is SdkError.SdkBug -> {
-                Log.e(logTag, "Internal SDK error: ${error.description}", error.throwable)
+                Log.w(logTag, "Internal SDK error: ${error.description}", error.throwable)
             }
 
             is SdkError.UserCode -> {

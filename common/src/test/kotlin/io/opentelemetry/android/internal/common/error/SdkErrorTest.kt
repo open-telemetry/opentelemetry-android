@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.common.error
+package io.opentelemetry.android.internal.common.error
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 internal class SdkErrorTest {
     @Test
     fun `SdkBug stores throwable and description`() {
-        val throwable = RuntimeException("boom")
+        val throwable = IllegalStateException("boom")
         val error = SdkError.SdkBug(throwable, "unexpected crash")
 
         assertThat(error.throwable).isSameAs(throwable)
@@ -40,9 +40,9 @@ internal class SdkErrorTest {
     fun `exhaustive pattern matching works across all SdkError subtypes`() {
         val errors: List<SdkError> =
             listOf(
-                SdkError.SdkBug(RuntimeException(), "bug"),
-                SdkError.UserCode(RuntimeException(), "user"),
-                SdkError.ApiMisuse(RuntimeException(), "misuse"),
+                SdkError.SdkBug(IllegalStateException(), "bug"),
+                SdkError.UserCode(IllegalStateException(), "user"),
+                SdkError.ApiMisuse(IllegalArgumentException(), "misuse"),
             )
 
         val categories =

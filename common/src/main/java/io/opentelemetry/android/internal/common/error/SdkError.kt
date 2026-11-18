@@ -3,12 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.common.error
+package io.opentelemetry.android.internal.common.error
 
 /**
+ * This interface is internal and not for public use. Its APIs are unstable and can change at any time.
+ *
  * Represents an error encountered by the OpenTelemetry Android SDK.
  */
-internal sealed interface SdkError {
+sealed interface SdkError {
     val throwable: Throwable
     val description: String
 

@@ -3,3 +3,79 @@ public final class io/opentelemetry/android/common/RumConstants {
 	public static final field OTEL_RUM_LOG_TAG Ljava/lang/String;
 }
 
+public final class io/opentelemetry/android/internal/common/error/DefaultSdkErrorHandler : io/opentelemetry/android/internal/common/error/SdkErrorHandler {
+	public static final field Companion Lio/opentelemetry/android/internal/common/error/DefaultSdkErrorHandler$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun onError (Lio/opentelemetry/android/internal/common/error/SdkError;)V
+}
+
+public final class io/opentelemetry/android/internal/common/error/DefaultSdkErrorHandler$Companion {
+	public final fun getINSTANCE ()Lio/opentelemetry/android/internal/common/error/DefaultSdkErrorHandler;
+}
+
+public abstract interface class io/opentelemetry/android/internal/common/error/SdkError {
+	public abstract fun getDescription ()Ljava/lang/String;
+	public abstract fun getThrowable ()Ljava/lang/Throwable;
+}
+
+public final class io/opentelemetry/android/internal/common/error/SdkError$ApiMisuse : io/opentelemetry/android/internal/common/error/SdkError {
+	public fun <init> (Ljava/lang/Throwable;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/Throwable;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/Throwable;Ljava/lang/String;)Lio/opentelemetry/android/internal/common/error/SdkError$ApiMisuse;
+	public static synthetic fun copy$default (Lio/opentelemetry/android/internal/common/error/SdkError$ApiMisuse;Ljava/lang/Throwable;Ljava/lang/String;ILjava/lang/Object;)Lio/opentelemetry/android/internal/common/error/SdkError$ApiMisuse;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getDescription ()Ljava/lang/String;
+	public fun getThrowable ()Ljava/lang/Throwable;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/opentelemetry/android/internal/common/error/SdkError$SdkBug : io/opentelemetry/android/internal/common/error/SdkError {
+	public fun <init> (Ljava/lang/Throwable;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/Throwable;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/Throwable;Ljava/lang/String;)Lio/opentelemetry/android/internal/common/error/SdkError$SdkBug;
+	public static synthetic fun copy$default (Lio/opentelemetry/android/internal/common/error/SdkError$SdkBug;Ljava/lang/Throwable;Ljava/lang/String;ILjava/lang/Object;)Lio/opentelemetry/android/internal/common/error/SdkError$SdkBug;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getDescription ()Ljava/lang/String;
+	public fun getThrowable ()Ljava/lang/Throwable;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/opentelemetry/android/internal/common/error/SdkError$UserCode : io/opentelemetry/android/internal/common/error/SdkError {
+	public fun <init> (Ljava/lang/Throwable;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/Throwable;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/Throwable;Ljava/lang/String;)Lio/opentelemetry/android/internal/common/error/SdkError$UserCode;
+	public static synthetic fun copy$default (Lio/opentelemetry/android/internal/common/error/SdkError$UserCode;Ljava/lang/Throwable;Ljava/lang/String;ILjava/lang/Object;)Lio/opentelemetry/android/internal/common/error/SdkError$UserCode;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getDescription ()Ljava/lang/String;
+	public fun getThrowable ()Ljava/lang/Throwable;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class io/opentelemetry/android/internal/common/error/SdkErrorHandler {
+	public static final field Companion Lio/opentelemetry/android/internal/common/error/SdkErrorHandler$Companion;
+	public abstract fun onError (Lio/opentelemetry/android/internal/common/error/SdkError;)V
+}
+
+public final class io/opentelemetry/android/internal/common/error/SdkErrorHandler$Companion {
+	public final fun getNOOP ()Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;
+}
+
+public final class io/opentelemetry/android/internal/common/error/SdkErrorHandlerKt {
+	public static final fun guarded (Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public static final fun guarded (Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public static final fun guardedApiMisuse (Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;Ljava/lang/String;Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public static final fun guardedApiMisuse (Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public static final fun guardedSdkBug (Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;Ljava/lang/String;Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public static final fun guardedSdkBug (Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public static final fun guardedUserCode (Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;Ljava/lang/String;Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public static final fun guardedUserCode (Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+}
+

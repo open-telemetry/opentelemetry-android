@@ -3,12 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.common.error
+package io.opentelemetry.android.internal.common.error
+
+import java.util.concurrent.CancellationException
 
 /**
+ * This interface is internal and not for public use. Its APIs are unstable and can change at any time.
+ *
  * Handler for [SdkError]s encountered during OpenTelemetry Android SDK execution.
  */
-internal fun interface SdkErrorHandler {
+fun interface SdkErrorHandler {
     fun onError(error: SdkError)
 
     companion object {
@@ -19,38 +23,54 @@ internal fun interface SdkErrorHandler {
 /**
  * Safely executes [block]. If an exception is thrown, it is reported to this [SdkErrorHandler] via [errorFactory],
  * and [default] is returned without crashing the host application.
+ *
+ * [CancellationException] is rethrown immediately without reporting to avoid disrupting coroutine cancellation.
  */
-internal inline fun <T> SdkErrorHandler.guarded(
+inline fun <T> SdkErrorHandler.guarded(
     default: T,
     errorFactory: (Throwable) -> SdkError,
     block: () -> T,
 ): T =
     try {
         block()
+    } catch (e: CancellationException) {
+        throw e
     } catch (t: Throwable) {
-        onError(errorFactory(t))
+        try {
+            onError(errorFactory(t))
+        } catch (_: Throwable) {
+            // Suppress reporting failures to guarantee fallback is returned
+        }
         default
     }
 
 /**
  * Safely executes [block]. If an exception is thrown, it is reported to this [SdkErrorHandler] via [errorFactory],
  * and `null` is returned without crashing the host application.
+ *
+ * [CancellationException] is rethrown immediately without reporting to avoid disrupting coroutine cancellation.
  */
-internal inline fun <T> SdkErrorHandler.guarded(
+inline fun <T> SdkErrorHandler.guarded(
     errorFactory: (Throwable) -> SdkError,
     block: () -> T,
 ): T? =
     try {
         block()
+    } catch (e: CancellationException) {
+        throw e
     } catch (t: Throwable) {
-        onError(errorFactory(t))
+        try {
+            onError(errorFactory(t))
+        } catch (_: Throwable) {
+            // Suppress reporting failures to guarantee fallback is returned
+        }
         null
     }
 
 /**
  * Executes [block], reporting any thrown exception as an [SdkError.UserCode].
  */
-internal inline fun <T> SdkErrorHandler.guardedUserCode(
+inline fun <T> SdkErrorHandler.guardedUserCode(
     description: String,
     default: T,
     block: () -> T,
@@ -59,7 +79,7 @@ internal inline fun <T> SdkErrorHandler.guardedUserCode(
 /**
  * Executes [block], reporting any thrown exception as an [SdkError.UserCode].
  */
-internal inline fun <T> SdkErrorHandler.guardedUserCode(
+inline fun <T> SdkErrorHandler.guardedUserCode(
     description: String,
     block: () -> T,
 ): T? = guarded({ SdkError.UserCode(it, description) }, block)
@@ -67,7 +87,7 @@ internal inline fun <T> SdkErrorHandler.guardedUserCode(
 /**
  * Executes [block], reporting any thrown exception as an [SdkError.SdkBug].
  */
-internal inline fun <T> SdkErrorHandler.guardedSdkBug(
+inline fun <T> SdkErrorHandler.guardedSdkBug(
     description: String,
     default: T,
     block: () -> T,
@@ -76,7 +96,7 @@ internal inline fun <T> SdkErrorHandler.guardedSdkBug(
 /**
  * Executes [block], reporting any thrown exception as an [SdkError.SdkBug].
  */
-internal inline fun <T> SdkErrorHandler.guardedSdkBug(
+inline fun <T> SdkErrorHandler.guardedSdkBug(
     description: String,
     block: () -> T,
 ): T? = guarded({ SdkError.SdkBug(it, description) }, block)
@@ -84,7 +104,7 @@ internal inline fun <T> SdkErrorHandler.guardedSdkBug(
 /**
  * Executes [block], reporting any thrown exception as an [SdkError.ApiMisuse].
  */
-internal inline fun <T> SdkErrorHandler.guardedApiMisuse(
+inline fun <T> SdkErrorHandler.guardedApiMisuse(
     description: String,
     default: T,
     block: () -> T,
@@ -93,7 +113,7 @@ internal inline fun <T> SdkErrorHandler.guardedApiMisuse(
 /**
  * Executes [block], reporting any thrown exception as an [SdkError.ApiMisuse].
  */
-internal inline fun <T> SdkErrorHandler.guardedApiMisuse(
+inline fun <T> SdkErrorHandler.guardedApiMisuse(
     description: String,
     block: () -> T,
 ): T? = guarded({ SdkError.ApiMisuse(it, description) }, block)

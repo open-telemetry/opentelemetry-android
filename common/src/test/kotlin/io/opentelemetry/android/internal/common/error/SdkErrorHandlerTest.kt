@@ -3,11 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.android.common.error
+package io.opentelemetry.android.internal.common.error
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatCode
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import java.util.concurrent.CancellationException
 
 internal class SdkErrorHandlerTest {
     @Test
@@ -28,7 +30,7 @@ internal class SdkErrorHandlerTest {
     fun `guarded with default catches exception reports error and returns default`() {
         val captured = mutableListOf<SdkError>()
         val handler = SdkErrorHandler { captured.add(it) }
-        val exception = RuntimeException("failure")
+        val exception = IllegalStateException("failure")
 
         val result =
             handler.guarded(default = -1, errorFactory = { SdkError.SdkBug(it, "failed calculation") }) {
@@ -61,10 +63,99 @@ internal class SdkErrorHandlerTest {
     }
 
     @Test
+    fun `guarded with default rethrows CancellationException without reporting`() {
+        val captured = mutableListOf<SdkError>()
+        val handler = SdkErrorHandler { captured.add(it) }
+        val cancellation = CancellationException("coroutine cancelled")
+
+        assertThatThrownBy {
+            handler.guarded(default = "fallback", errorFactory = { SdkError.SdkBug(it, "desc") }) {
+                throw cancellation
+            }
+        }.isSameAs(cancellation)
+
+        assertThat(captured).isEmpty()
+    }
+
+    @Test
+    fun `guarded without default rethrows CancellationException without reporting`() {
+        val captured = mutableListOf<SdkError>()
+        val handler = SdkErrorHandler { captured.add(it) }
+        val cancellation = CancellationException("coroutine cancelled")
+
+        assertThatThrownBy {
+            handler.guarded(errorFactory = { SdkError.SdkBug(it, "desc") }) {
+                throw cancellation
+            }
+        }.isSameAs(cancellation)
+
+        assertThat(captured).isEmpty()
+    }
+
+    @Test
+    fun `guarded with default returns fallback even if handler throws`() {
+        val throwingHandler =
+            SdkErrorHandler {
+                throw IllegalStateException("handler crashed")
+            }
+
+        val resultWithDefault =
+            throwingHandler.guarded(default = "fallback", errorFactory = { SdkError.SdkBug(it, "desc") }) {
+                throw IllegalStateException("block failure")
+            }
+        assertThat(resultWithDefault).isEqualTo("fallback")
+    }
+
+    @Test
+    fun `guarded without default returns null even if handler throws`() {
+        val throwingHandler =
+            SdkErrorHandler {
+                throw IllegalStateException("handler crashed")
+            }
+
+        val resultWithoutDefault: String? =
+            throwingHandler.guarded(errorFactory = { SdkError.SdkBug(it, "desc") }) {
+                throw IllegalStateException("block failure")
+            }
+        assertThat(resultWithoutDefault).isNull()
+    }
+
+    @Test
+    fun `guarded with default returns fallback even if errorFactory throws`() {
+        val captured = mutableListOf<SdkError>()
+        val handler = SdkErrorHandler { captured.add(it) }
+
+        val resultWithDefault =
+            handler.guarded(
+                default = 100,
+                errorFactory = { throw IllegalStateException("factory crashed") },
+            ) {
+                throw IllegalStateException("block failure")
+            }
+        assertThat(resultWithDefault).isEqualTo(100)
+        assertThat(captured).isEmpty()
+    }
+
+    @Test
+    fun `guarded without default returns null even if errorFactory throws`() {
+        val captured = mutableListOf<SdkError>()
+        val handler = SdkErrorHandler { captured.add(it) }
+
+        val resultWithoutDefault: Int? =
+            handler.guarded(
+                errorFactory = { throw IllegalStateException("factory crashed") },
+            ) {
+                throw IllegalStateException("block failure")
+            }
+        assertThat(resultWithoutDefault).isNull()
+        assertThat(captured).isEmpty()
+    }
+
+    @Test
     fun `guardedUserCode with default catches and reports SdkError UserCode`() {
         val captured = mutableListOf<SdkError>()
         val handler = SdkErrorHandler { captured.add(it) }
-        val exception = RuntimeException("user callback error")
+        val exception = IllegalStateException("user callback error")
 
         val result =
             handler.guardedUserCode(description = "listener execution", default = "fallback") {
@@ -83,7 +174,7 @@ internal class SdkErrorHandlerTest {
     fun `guardedUserCode without default catches and returns null`() {
         val captured = mutableListOf<SdkError>()
         val handler = SdkErrorHandler { captured.add(it) }
-        val exception = RuntimeException("user error")
+        val exception = IllegalStateException("user error")
 
         val result: Int? =
             handler.guardedUserCode(description = "extractor") {
@@ -118,7 +209,7 @@ internal class SdkErrorHandlerTest {
     fun `guardedSdkBug without default catches and returns null`() {
         val captured = mutableListOf<SdkError>()
         val handler = SdkErrorHandler { captured.add(it) }
-        val exception = RuntimeException("bug")
+        val exception = IllegalStateException("bug")
 
         val result: String? =
             handler.guardedSdkBug(description = "buggy code") {
@@ -168,7 +259,7 @@ internal class SdkErrorHandlerTest {
     @Test
     fun `NOOP handler safely ignores errors without throwing`() {
         assertThatCode {
-            SdkErrorHandler.NOOP.onError(SdkError.SdkBug(RuntimeException(), "noop test"))
+            SdkErrorHandler.NOOP.onError(SdkError.SdkBug(IllegalStateException(), "noop test"))
         }.doesNotThrowAnyException()
     }
 }
