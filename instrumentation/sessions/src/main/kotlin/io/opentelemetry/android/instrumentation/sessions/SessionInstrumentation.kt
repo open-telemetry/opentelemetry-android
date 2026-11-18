@@ -14,7 +14,10 @@ import io.opentelemetry.kotlin.toOtelKotlinApi
 
 @AutoService(AndroidInstrumentation::class)
 class SessionInstrumentation : AndroidInstrumentation {
+    @Volatile
     private var sessionPublisher: SessionPublisher? = null
+
+    @Volatile
     private var sessionObserver: SessionIdEventSender? = null
 
     override val name: String = "session"
