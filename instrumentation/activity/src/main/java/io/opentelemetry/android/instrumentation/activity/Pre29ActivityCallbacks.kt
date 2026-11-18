@@ -7,6 +7,8 @@ package io.opentelemetry.android.instrumentation.activity
 
 import android.app.Activity
 import android.os.Bundle
+import android.util.Log
+import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
 
 internal class Pre29ActivityCallbacks(
@@ -16,39 +18,63 @@ internal class Pre29ActivityCallbacks(
         activity: Activity,
         savedInstanceState: Bundle?,
     ) {
-        tracers.startActivityCreation(activity).addEvent("activityCreated")
+        guarded("onActivityCreated") {
+            tracers.startActivityCreation(activity).addEvent("activityCreated")
+        }
     }
 
     override fun onActivityStarted(activity: Activity) {
-        tracers.initiateRestartSpanIfNecessary(activity).addEvent("activityStarted")
+        guarded("onActivityStarted") {
+            tracers.initiateRestartSpanIfNecessary(activity).addEvent("activityStarted")
+        }
     }
 
     override fun onActivityResumed(activity: Activity) {
-        tracers
-            .startSpanIfNoneInProgress(activity, "Resumed")
-            .addEvent("activityResumed")
-            .addPreviousScreenAttribute()
-            .endSpanForActivityResumed()
+        guarded("onActivityResumed") {
+            tracers
+                .startSpanIfNoneInProgress(activity, "Resumed")
+                .addEvent("activityResumed")
+                .addPreviousScreenAttribute()
+                .endSpanForActivityResumed()
+        }
     }
 
     override fun onActivityPaused(activity: Activity) {
-        tracers
-            .startSpanIfNoneInProgress(activity, "Paused")
-            .addEvent("activityPaused")
-            .endActiveSpan()
+        guarded("onActivityPaused") {
+            tracers
+                .startSpanIfNoneInProgress(activity, "Paused")
+                .addEvent("activityPaused")
+                .endActiveSpan()
+        }
     }
 
     override fun onActivityStopped(activity: Activity) {
-        tracers
-            .startSpanIfNoneInProgress(activity, "Stopped")
-            .addEvent("activityStopped")
-            .endActiveSpan()
+        guarded("onActivityStopped") {
+            tracers
+                .startSpanIfNoneInProgress(activity, "Stopped")
+                .addEvent("activityStopped")
+                .endActiveSpan()
+        }
     }
 
     override fun onActivityDestroyed(activity: Activity) {
-        tracers
-            .startSpanIfNoneInProgress(activity, "Destroyed")
-            .addEvent("activityDestroyed")
-            .endActiveSpan()
+        guarded("onActivityDestroyed") {
+            tracers
+                .startSpanIfNoneInProgress(activity, "Destroyed")
+                .addEvent("activityDestroyed")
+                .endActiveSpan()
+        }
+    }
+
+    private inline fun guarded(
+        callback: String,
+        block: () -> Unit,
+    ) {
+        try {
+            block()
+        } catch (e: Exception) {
+            // runs inside the host app's lifecycle dispatch on the main thread, so it must not throw
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Exception in activity lifecycle callback $callback", e)
+        }
     }
 }
