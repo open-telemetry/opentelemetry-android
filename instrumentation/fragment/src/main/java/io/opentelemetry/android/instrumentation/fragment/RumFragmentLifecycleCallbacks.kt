@@ -11,7 +11,6 @@ import android.view.View
 import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.api.trace.Tracer
 
@@ -159,7 +158,7 @@ internal class RumFragmentLifecycleCallbacks(
                 fragment,
                 tracer,
                 screenNameExtractor.extract(fragment),
-                ActiveSpan(lastVisibleScreen),
+                lastVisibleScreen,
             )
         }
 }
