@@ -361,6 +361,57 @@ internal class RumFragmentLifecycleCallbacksTest {
         checkEventExists(events, "fragmentDetached")
     }
 
+    @Test
+    fun multipleInstancesOfSameFragmentClassHaveIndependentTracersAndScreenNames() {
+        val fragment1 = mockk<Fragment>()
+        val fragment2 = mockk<Fragment>()
+        every { screenNameExtractor.extract(fragment1) } returns "Page1"
+        every { screenNameExtractor.extract(fragment2) } returns "Page2"
+
+        val callbacks =
+            RumFragmentLifecycleCallbacks(
+                tracer,
+                visibleScreenTracker::previouslyVisibleScreen,
+                screenNameExtractor,
+            )
+        val testHarness = FragmentCallbackTestHarness(callbacks)
+
+        testHarness.runFragmentCreationLifecycle(fragment1)
+        testHarness.runFragmentCreationLifecycle(fragment2)
+
+        val spans = otelTesting.spans
+        assertEquals(2, spans.size)
+
+        val span1 = spans[0]
+        val span2 = spans[1]
+
+        assertEquals("Created", span1.name)
+        assertEquals("Page1", span1.attributes.get(stringKey(APP_SCREEN_NAME)))
+
+        assertEquals("Created", span2.name)
+        assertEquals("Page2", span2.attributes.get(stringKey(APP_SCREEN_NAME)))
+    }
+
+    @Test
+    fun detachedFragmentIsEvictedFromTracers() {
+        val callbacks =
+            RumFragmentLifecycleCallbacks(
+                tracer,
+                visibleScreenTracker::previouslyVisibleScreen,
+                screenNameExtractor,
+            )
+        val testHarness = FragmentCallbackTestHarness(callbacks)
+        val fragment = mockk<Fragment>()
+
+        assertEquals(0, callbacks.activeTracersCount)
+
+        testHarness.runFragmentCreationLifecycle(fragment)
+        assertEquals(1, callbacks.activeTracersCount)
+
+        testHarness.runFragmentDetachedLifecycle(fragment)
+        assertEquals(0, callbacks.activeTracersCount)
+    }
+
     private fun checkEventExists(
         events: List<EventData>,
         eventName: String,
