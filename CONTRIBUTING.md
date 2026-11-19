@@ -39,6 +39,21 @@ The output artifacts will be in `instrumentation/build/outputs/`.
 ./gradlew check
 ```
 
+During development, you can run one module's unit tests without an emulator. For example,
+to run all `core` unit tests:
+
+```
+./gradlew :core:test
+```
+
+To run one test class, use the debug variant's unit-test task:
+
+```
+./gradlew :core:testDebugUnitTest --tests "io.opentelemetry.android.OpenTelemetryRumBuilderTest"
+```
+
+Run the full `./gradlew check` before submitting.
+
 ## Submitting Pull Requests (PRs)
 
 Pull requests are welcome! As an open source community project, OpenTelemetry Android
