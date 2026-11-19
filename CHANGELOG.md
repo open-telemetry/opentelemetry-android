@@ -21,13 +21,16 @@
 - An exception thrown by a network attributes extractor (for example a custom one) no longer
   escapes into the connectivity callback. The network change event is still emitted with the
   attributes from the other extractors.
+
 - An exception thrown while tracing an activity lifecycle callback no longer escapes into the
   host app's lifecycle dispatch on the main thread.
   ([#2233](https://github.com/open-telemetry/opentelemetry-android/issues/2233))
+
 - Exceptions thrown while emitting an ANR event (for example from a custom stack trace extractor)
   or while registering or removing slow rendering frame metrics listeners no longer escape into
   the host app or stop the periodic ANR polling.
   ([#2233](https://github.com/open-telemetry/opentelemetry-android/issues/2233))
+
 - Network attributes now pick up `READ_PHONE_STATE` when the app is granted it after the SDK
   started, instead of after the next network change or app restart. The network subtype is
   reported, and the carrier switches to the API 28+ details, from a later span or log. The
@@ -36,6 +39,7 @@
   therefore change once during a session, and the network change instrumentation then emits a
   `network.change` event with the updated attributes.
   ([#1216](https://github.com/open-telemetry/opentelemetry-android/issues/1216))
+
 - A failure while loading or running one instrumentation no longer prevents the SDK from
   starting. An instrumentation or configurator that cannot be loaded through `ServiceLoader`, an
   instrumentation that throws during `install()` or `uninstall()`, and an OTel-ready listener that
@@ -44,20 +48,25 @@
   [#2244](https://github.com/open-telemetry/opentelemetry-android/pull/2244),
   [#2245](https://github.com/open-telemetry/opentelemetry-android/pull/2245),
   [#2236](https://github.com/open-telemetry/opentelemetry-android/issues/2236))
+
 - Any exception while setting up disk buffering, such as a `SecurityException` from the cache
   directory, now falls back to exporting without disk buffering. Previously only an `IOException`
   did, and other exceptions left the exporters unset.
   ([#2246](https://github.com/open-telemetry/opentelemetry-android/pull/2246),
   [#2236](https://github.com/open-telemetry/opentelemetry-android/issues/2236))
+
 - Disk buffering no longer initializes storage, exporters and readers for signals that are
   disabled in the configuration.
   ([#2221](https://github.com/open-telemetry/opentelemetry-android/issues/2221))
+
 - The SDK no longer crashes at startup on devices where the connectivity service is unavailable,
   such as Android Automotive or headless devices.
   ([#2181](https://github.com/open-telemetry/opentelemetry-android/pull/2181))
+
 - The HttpURLConnection instrumentation no longer throws a `ClassCastException` for non-HTTP
   connections such as `JarURLConnection`.
   ([#2241](https://github.com/open-telemetry/opentelemetry-android/issues/2241))
+
 - Calling `install()` more than once, or `uninstall()` before `install()` or repeatedly, no
   longer duplicates callbacks, receivers or attribute extractors, or leaks them, in the activity
   lifecycle, ANR, crash, fragment, network change, power save mode and screen orientation
@@ -70,6 +79,7 @@
   [#2182](https://github.com/open-telemetry/opentelemetry-android/pull/2182),
   [#2205](https://github.com/open-telemetry/opentelemetry-android/issues/2205),
   [#2174](https://github.com/open-telemetry/opentelemetry-android/pull/2174))
+
 - The slow rendering instrumentation no longer keeps strong references to activities, which
   could prevent them from being garbage collected.
   ([#1192](https://github.com/open-telemetry/opentelemetry-android/issues/1192))
