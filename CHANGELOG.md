@@ -21,13 +21,16 @@
 - An exception thrown by a network attributes extractor (for example a custom one) no longer
   escapes into the connectivity callback. The network change event is still emitted with the
   attributes from the other extractors.
+
 - An exception thrown while tracing an activity lifecycle callback no longer escapes into the
   host app's lifecycle dispatch on the main thread.
   ([#2233](https://github.com/open-telemetry/opentelemetry-android/issues/2233))
+
 - Exceptions thrown while emitting an ANR event (for example from a custom stack trace extractor)
   or while registering or removing slow rendering frame metrics listeners no longer escape into
   the host app or stop the periodic ANR polling.
   ([#2233](https://github.com/open-telemetry/opentelemetry-android/issues/2233))
+
 - Network attributes now pick up `READ_PHONE_STATE` when the app is granted it after the SDK
   started, instead of after the next network change or app restart. The network subtype is
   reported, and the carrier switches to the API 28+ details, from a later span or log. The
@@ -37,12 +40,81 @@
   `network.change` event with the updated attributes.
   ([#1216](https://github.com/open-telemetry/opentelemetry-android/issues/1216))
 
+- A failure while loading or running one instrumentation no longer prevents the SDK from
+  starting. An instrumentation or configurator that cannot be loaded through `ServiceLoader`, an
+  instrumentation that throws during `install()` or `uninstall()`, and an OTel-ready listener that
+  throws are now logged as warnings, and the remaining ones still run.
+  ([#2247](https://github.com/open-telemetry/opentelemetry-android/pull/2247),
+  [#2244](https://github.com/open-telemetry/opentelemetry-android/pull/2244),
+  [#2245](https://github.com/open-telemetry/opentelemetry-android/pull/2245),
+  [#2236](https://github.com/open-telemetry/opentelemetry-android/issues/2236))
+
+- Any exception while setting up disk buffering, such as a `SecurityException` from the cache
+  directory, now falls back to exporting without disk buffering. Previously only an `IOException`
+  did, and other exceptions left the exporters unset.
+  ([#2246](https://github.com/open-telemetry/opentelemetry-android/pull/2246),
+  [#2236](https://github.com/open-telemetry/opentelemetry-android/issues/2236))
+
+- Disk buffering no longer initializes storage, exporters and readers for signals that are
+  disabled in the configuration.
+  ([#2221](https://github.com/open-telemetry/opentelemetry-android/issues/2221))
+
+- The SDK no longer crashes at startup on devices where the connectivity service is unavailable,
+  such as Android Automotive or headless devices.
+  ([#2181](https://github.com/open-telemetry/opentelemetry-android/pull/2181))
+
+- The HttpURLConnection instrumentation no longer throws a `ClassCastException` for non-HTTP
+  connections such as `JarURLConnection`.
+  ([#2241](https://github.com/open-telemetry/opentelemetry-android/issues/2241))
+
+- Calling `install()` more than once, or `uninstall()` before `install()` or repeatedly, no
+  longer duplicates callbacks, receivers or attribute extractors, or leaks them, in the activity
+  lifecycle, ANR, crash, fragment, network change, power save mode and screen orientation
+  instrumentations. The ANR instrumentation now creates its scheduler thread only when it is
+  installed and shuts it down on `uninstall()`.
+  ([#2208](https://github.com/open-telemetry/opentelemetry-android/issues/2208),
+  [#2201](https://github.com/open-telemetry/opentelemetry-android/issues/2201),
+  [#2192](https://github.com/open-telemetry/opentelemetry-android/issues/2192),
+  [#2175](https://github.com/open-telemetry/opentelemetry-android/pull/2175),
+  [#2182](https://github.com/open-telemetry/opentelemetry-android/pull/2182),
+  [#2205](https://github.com/open-telemetry/opentelemetry-android/issues/2205),
+  [#2174](https://github.com/open-telemetry/opentelemetry-android/pull/2174))
+
+- The slow rendering instrumentation no longer keeps strong references to activities, which
+  could prevent them from being garbage collected.
+  ([#1192](https://github.com/open-telemetry/opentelemetry-android/issues/1192))
+
 ### 📈 Enhancements
 
 - Add `shouldRecordWebsocketEventForHost { ... }` to the Android Agent's `httpTelemetry` DSL
   to filter OkHttp WebSocket events by host before network export. WebSocket events now include
   `server.address`. HTTP spans, metrics and trace context propagation are unchanged.
   ([#1686](https://github.com/open-telemetry/opentelemetry-android/issues/1686))
+
+- Add `sessionProvider` to the `session { ... }` block of the Android Agent DSL to configure a
+  custom `SessionProvider`.
+  ([#2044](https://github.com/open-telemetry/opentelemetry-android/issues/2044))
+
+- Add an incubating `startNewSession()` API to the Android agent to start a replacement session
+  linked to the previous one. The name and the return value may change.
+  ([#2141](https://github.com/open-telemetry/opentelemetry-android/pull/2141))
+
+- The session ID and screen name attributes can now be disabled with `disableSessionId()` and
+  `disableScreenAttributes()` in the Android Agent DSL, or `disableSessionId()` in
+  `OtelRumConfig`. The session ID can also be turned off with `includeSessionId` in the
+  `session { ... }` block.
+  ([#1966](https://github.com/open-telemetry/opentelemetry-android/issues/1966))
+
+- The OkHttp3, OkHttp3 WebSocket and view click instrumentations now support `uninstall()`.
+  ([#2134](https://github.com/open-telemetry/opentelemetry-android/pull/2134),
+  [#2135](https://github.com/open-telemetry/opentelemetry-android/pull/2135),
+  [#2155](https://github.com/open-telemetry/opentelemetry-android/pull/2155),
+  [#1128](https://github.com/open-telemetry/opentelemetry-android/issues/1128))
+
+- Native crash recovery now stops after three failed attempts per read or cleanup phase, or after
+  24 hours. An exhausted snapshot read falls back to the marker-only event, and an exhausted
+  marker read abandons the report without emitting an event.
+  ([#2121](https://github.com/open-telemetry/opentelemetry-android/pull/2121))
 
 ## Version 1.8.1 (2026-11-05)
 
