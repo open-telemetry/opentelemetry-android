@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.9.0 (2026-11-19)
+
 ### 📣 Migration notes
 
 - The documented minimum supported versions did not build and have been corrected: Kotlin 2.1
