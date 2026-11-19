@@ -414,6 +414,38 @@ internal class RumFragmentLifecycleCallbacksTest {
     }
 
     @Test
+    @Suppress("ExplicitGarbageCollectionCall")
+    fun garbageCollectedFragmentIsEvictedEvenIfNotDetached() {
+        val callbacks =
+            RumFragmentLifecycleCallbacks(
+                tracer,
+                visibleScreenTracker::previouslyVisibleScreen,
+                screenNameExtractor,
+            )
+        val testHarness = FragmentCallbackTestHarness(callbacks)
+
+        class TestFragment : Fragment()
+        var fragment: Fragment? = TestFragment()
+
+        testHarness.runFragmentCreationLifecycle(fragment!!)
+        assertEquals(1, callbacks.activeTracersCount)
+
+        io.mockk.clearMocks(screenNameExtractor)
+        @Suppress("UNUSED_VALUE")
+        fragment = null
+
+        var attempts = 0
+        while (callbacks.activeTracersCount > 0 && attempts < 50) {
+            System.gc()
+            System.runFinalization()
+            Thread.sleep(20)
+            attempts++
+        }
+
+        assertEquals(0, callbacks.activeTracersCount)
+    }
+
+    @Test
     fun interleavedFragmentLifecyclesRestoreOriginalContext() {
         val initialContext = Context.current()
 
