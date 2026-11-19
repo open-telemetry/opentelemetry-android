@@ -78,6 +78,7 @@ import org.junit.runner.RunWith
 import java.io.File
 import java.io.IOException
 import java.time.Duration
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Function
@@ -304,10 +305,10 @@ class OpenTelemetryRumBuilderTest {
                 .build()
         val counter = meter.counterBuilder("FOOCOUNTER").build()
         counter.add(22)
-        periodicReader.forceFlush()
+        periodicReader.forceFlush().join(10, TimeUnit.SECONDS)
         counter.add(2)
         counter.add(3)
-        periodicReader.forceFlush()
+        periodicReader.forceFlush().join(10, TimeUnit.SECONDS)
         val metrics =
             exporter.finishedMetricItems.filter { it.name == "FOOCOUNTER" }
 
