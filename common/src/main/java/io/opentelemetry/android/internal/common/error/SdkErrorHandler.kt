@@ -38,6 +38,8 @@ inline fun <T> SdkErrorHandler.guarded(
     } catch (t: Throwable) {
         try {
             onError(errorFactory(t))
+        } catch (e: CancellationException) {
+            throw e
         } catch (_: Throwable) {
             // Suppress reporting failures to guarantee fallback is returned
         }
@@ -61,6 +63,8 @@ inline fun <T> SdkErrorHandler.guarded(
     } catch (t: Throwable) {
         try {
             onError(errorFactory(t))
+        } catch (e: CancellationException) {
+            throw e
         } catch (_: Throwable) {
             // Suppress reporting failures to guarantee fallback is returned
         }

@@ -152,6 +152,65 @@ internal class SdkErrorHandlerTest {
     }
 
     @Test
+    fun `guarded with default rethrows CancellationException thrown by handler`() {
+        val cancellation = CancellationException("handler cancelled")
+        val handler =
+            SdkErrorHandler {
+                throw cancellation
+            }
+
+        assertThatThrownBy {
+            handler.guarded(default = "fallback", errorFactory = { SdkError.SdkBug(it, "desc") }) {
+                throw IllegalStateException("block failure")
+            }
+        }.isSameAs(cancellation)
+    }
+
+    @Test
+    fun `guarded without default rethrows CancellationException thrown by handler`() {
+        val cancellation = CancellationException("handler cancelled")
+        val handler =
+            SdkErrorHandler {
+                throw cancellation
+            }
+
+        assertThatThrownBy {
+            handler.guarded(errorFactory = { SdkError.SdkBug(it, "desc") }) {
+                throw IllegalStateException("block failure")
+            }
+        }.isSameAs(cancellation)
+    }
+
+    @Test
+    fun `guarded with default rethrows CancellationException thrown by errorFactory`() {
+        val cancellation = CancellationException("factory cancelled")
+        val handler = SdkErrorHandler { }
+
+        assertThatThrownBy {
+            handler.guarded(
+                default = "fallback",
+                errorFactory = { throw cancellation },
+            ) {
+                throw IllegalStateException("block failure")
+            }
+        }.isSameAs(cancellation)
+    }
+
+    @Test
+    fun `guarded without default rethrows CancellationException thrown by errorFactory`() {
+        val cancellation = CancellationException("factory cancelled")
+        val handler = SdkErrorHandler { }
+
+        assertThatThrownBy {
+            handler.guarded(
+                errorFactory = { throw cancellation },
+            ) {
+                throw IllegalStateException("block failure")
+            }
+        }.isSameAs(cancellation)
+    }
+
+    @Test
     fun `guardedUserCode with default catches and reports SdkError UserCode`() {
         val captured = mutableListOf<SdkError>()
         val handler = SdkErrorHandler { captured.add(it) }
