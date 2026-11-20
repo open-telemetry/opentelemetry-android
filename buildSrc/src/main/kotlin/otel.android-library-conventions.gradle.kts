@@ -1,10 +1,12 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import kotlinx.validation.KotlinApiBuildTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.time.Duration
 
 plugins {
     id("com.android.library")
@@ -64,9 +66,13 @@ android {
         unitTests {
             all { test ->
                 test.testLogging.exceptionFormat = TestExceptionFormat.FULL
-                test.maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2) + 1
+                test.testLogging.events(TestLogEvent.FAILED)
+                val testClassCount = fileTree("src/test") { include("**/*Test.kt", "**/*Test.java") }.files.size
+                test.maxParallelForks = minOf(Runtime.getRuntime().availableProcessors() / 3 + 1, testClassCount / 8).coerceAtLeast(1)
+                test.timeout.set(Duration.ofMinutes(10))
                 // robolectric requires this on API 37+ to access FileDescriptor internals
                 test.jvmArgs("--add-exports", "java.base/jdk.internal.access=ALL-UNNAMED")
+                test.jvmArgs("-XX:TieredStopAtLevel=1")
             }
         }
     }
