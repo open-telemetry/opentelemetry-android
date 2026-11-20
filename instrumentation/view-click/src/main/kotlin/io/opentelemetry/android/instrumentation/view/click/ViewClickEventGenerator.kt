@@ -38,10 +38,8 @@ internal class ViewClickEventGenerator(
     private val clickEventLogger: KotlinLogger,
 ) : TouchEventConsumer,
     ToggleableTracker {
-
     @Volatile
     var isActive: Boolean = true
-
 
     private var windowRef: WeakReference<Window>? = null
 
@@ -145,12 +143,9 @@ internal class ViewClickEventGenerator(
         synchronized(lock) {
             if (!isActive) return
             windowRef = WeakReference(window)
-            val currentCallback = window.callback
             WindowCallbackWrapper.registerConsumer(window, WRAPPER_KEY_VIEW_CLICK, this)
         }
     }
-
-
 
     override fun consumeEvent(motionEvent: MotionEvent?) {
         if (!isActive || windowRef == null) return
@@ -160,8 +155,7 @@ internal class ViewClickEventGenerator(
         }
     }
 
-
-        override fun stopTracking() {
+    override fun stopTracking() {
         synchronized(lock) {
             stopTrackingInternal()
         }
@@ -177,7 +171,6 @@ internal class ViewClickEventGenerator(
     private fun stopTrackingInternal() {
         windowRef?.get()?.run {
             WindowCallbackWrapper.unregisterConsumer(this, WRAPPER_KEY_VIEW_CLICK)
-
         }
         windowRef = null
     }

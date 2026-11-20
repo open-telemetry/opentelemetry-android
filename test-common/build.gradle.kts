@@ -29,7 +29,8 @@ dependencies {
     compileOnly(libs.robolectric)
 }
 
-val koverEnabled = providers.environmentVariable("CI").isPresent ||
+val koverEnabled =
+    providers.environmentVariable("CI").isPresent ||
         providers.gradleProperty("io.opentelemetry.android.coverage").map { it.toBoolean() }.getOrElse(false)
 
 if (koverEnabled) {

@@ -27,8 +27,10 @@ public abstract interface class io/opentelemetry/android/instrumentation/common/
 
 public final class io/opentelemetry/android/instrumentation/common/InstrumentationActivityCallback : io/opentelemetry/android/internal/services/visiblescreen/activities/DefaultingActivityLifecycleCallbacks {
 	public fun <init> (Lio/opentelemetry/android/instrumentation/common/ToggleableTracker;)V
+	public final fun isActive ()Z
 	public fun onActivityPaused (Landroid/app/Activity;)V
 	public fun onActivityResumed (Landroid/app/Activity;)V
+	public final fun setActive (Z)V
 }
 
 public abstract interface class io/opentelemetry/android/instrumentation/common/ScreenNameExtractor {

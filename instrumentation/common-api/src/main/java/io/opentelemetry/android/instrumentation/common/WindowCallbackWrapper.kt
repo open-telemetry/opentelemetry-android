@@ -32,7 +32,6 @@ class WindowCallbackWrapper(
                 // click tracking must never break touch dispatch for the host app
                 Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to generate click event", e)
             }
-
         }
         return callback.dispatchTouchEvent(event)
     }
