@@ -106,7 +106,7 @@ class OpenTelemetryRumBuilder internal constructor(
     }
 
     private var clock: Clock = OtelAndroidClock()
-    private val tracerProviderCustomizers: MutableList<BiFunction<SdkTracerProviderBuilder, Context, SdkTracerProviderBuilder>> =
+    private val tracerProviderCustomizers: MutableList<(SdkTracerProviderBuilder, Context) -> SdkTracerProviderBuilder> =
         mutableListOf()
     private val meterProviderCustomizers: MutableList<BiFunction<SdkMeterProviderBuilder, Context, SdkMeterProviderBuilder>> =
         mutableListOf()
@@ -164,9 +164,29 @@ class OpenTelemetryRumBuilder internal constructor(
      * configuration function will cause any resource customizers to be ignored that were configured
      * via [.setResource].
      */
+    @Deprecated(
+        "Use the Kotlin function overload of addTracerProviderCustomizer. This overload will be removed in 1.11.0.",
+        ReplaceWith("addTracerProviderCustomizer(customizer::apply)"),
+    )
     fun addTracerProviderCustomizer(
         customizer: BiFunction<SdkTracerProviderBuilder, Context, SdkTracerProviderBuilder>,
-    ): OpenTelemetryRumBuilder {
+    ): OpenTelemetryRumBuilder = addTracerProviderCustomizer(customizer::apply)
+
+    /**
+     * Adds a function to invoke with the [SdkTracerProviderBuilder] and [Context] to allow
+     * customization. The return value of the function will replace the passed-in
+     * builder.
+     *
+     * Multiple calls will execute the customizers in order.
+     * Setting a sampler preserves existing span session IDs, including IDs supplied by sampling.
+     *
+     * Calling [SdkTracerProviderBuilder.setResource] inside of your configuration function
+     * will cause any resource customizers to be ignored that were configured via [.setResource].
+     *
+     * @since 1.10.0
+     */
+    @JvmSynthetic
+    fun addTracerProviderCustomizer(customizer: (SdkTracerProviderBuilder, Context) -> SdkTracerProviderBuilder): OpenTelemetryRumBuilder {
         tracerProviderCustomizers.add(customizer)
         return this
     }
@@ -599,16 +619,13 @@ class OpenTelemetryRumBuilder internal constructor(
 
         // Add processors that append screen attribute(s)
         if (config.shouldIncludeScreenAttributes()) {
-            tracerProviderCustomizers.add(
-                0,
-                BiFunction { builder: SdkTracerProviderBuilder, _: Context ->
-                    builder.addSpanProcessor(
-                        ScreenAttributesSpanProcessor(
-                            services.visibleScreenTracker,
-                        ),
-                    )
-                },
-            )
+            tracerProviderCustomizers.add(0) { builder, _ ->
+                builder.addSpanProcessor(
+                    ScreenAttributesSpanProcessor(
+                        services.visibleScreenTracker,
+                    ),
+                )
+            }
             loggerProviderCustomizers.add(
                 0,
                 BiFunction { builder: SdkLoggerProviderBuilder, _: Context ->
@@ -649,7 +666,7 @@ class OpenTelemetryRumBuilder internal constructor(
         tracerProviderBuilder.addSpanProcessor(batchSpanProcessor)
 
         for (customizer in tracerProviderCustomizers) {
-            tracerProviderBuilder = customizer.apply(tracerProviderBuilder, context)
+            tracerProviderBuilder = customizer(tracerProviderBuilder, context)
         }
         return tracerProviderBuilder.build().also {
             // Configure before publishing the provider, after all sampler customizers have run.

@@ -34,6 +34,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RuntimeEnvironment
+import java.util.function.BiFunction
 
 @RunWith(AndroidJUnit4::class)
 class OpenTelemetryRumBuilderSamplingTest {
@@ -79,10 +80,11 @@ class OpenTelemetryRumBuilderSamplingTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun tracerCustomizerCanReplaceTraceSampler() {
         makeBuilder()
             .setSessionProvider(SessionProvider { "current" })
-            .addTracerProviderCustomizer { builder, _ -> builder.setSampler(Sampler.alwaysOff()) }
+            .addTracerProviderCustomizer(BiFunction { builder, _ -> builder.setSampler(Sampler.alwaysOff()) })
             .addTracerProviderCustomizer { builder, _ ->
                 builder
                     .setSampler(Sampler.alwaysOn())
