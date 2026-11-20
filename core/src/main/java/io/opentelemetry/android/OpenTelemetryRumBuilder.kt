@@ -82,6 +82,10 @@ import java.util.function.Function
 import java.util.function.Predicate
 import kotlin.time.Duration.Companion.milliseconds
 
+internal typealias TracerProviderCustomizer = (SdkTracerProviderBuilder, Context) -> SdkTracerProviderBuilder
+internal typealias MeterProviderCustomizer = (SdkMeterProviderBuilder, Context) -> SdkMeterProviderBuilder
+internal typealias LoggerProviderCustomizer = (SdkLoggerProviderBuilder, Context) -> SdkLoggerProviderBuilder
+
 /**
  * A builder of [OpenTelemetryRum]. It enabled configuring the OpenTelemetry SDK and disabling
  * built-in Android instrumentations.
@@ -106,11 +110,11 @@ class OpenTelemetryRumBuilder internal constructor(
     }
 
     private var clock: Clock = OtelAndroidClock()
-    private val tracerProviderCustomizers: MutableList<(SdkTracerProviderBuilder, Context) -> SdkTracerProviderBuilder> =
+    private val tracerProviderCustomizers: MutableList<TracerProviderCustomizer> =
         mutableListOf()
-    private val meterProviderCustomizers: MutableList<(SdkMeterProviderBuilder, Context) -> SdkMeterProviderBuilder> =
+    private val meterProviderCustomizers: MutableList<MeterProviderCustomizer> =
         mutableListOf()
-    private val loggerProviderCustomizers: MutableList<(SdkLoggerProviderBuilder, Context) -> SdkLoggerProviderBuilder> =
+    private val loggerProviderCustomizers: MutableList<LoggerProviderCustomizer> =
         mutableListOf()
     private val instrumentations: MutableList<AndroidInstrumentation> =
         mutableListOf()
@@ -186,7 +190,7 @@ class OpenTelemetryRumBuilder internal constructor(
      * @since 1.10.0
      */
     @JvmSynthetic
-    fun addTracerProviderCustomizer(customizer: (SdkTracerProviderBuilder, Context) -> SdkTracerProviderBuilder): OpenTelemetryRumBuilder {
+    fun addTracerProviderCustomizer(customizer: TracerProviderCustomizer): OpenTelemetryRumBuilder {
         tracerProviderCustomizers.add(customizer)
         return this
     }
@@ -223,7 +227,7 @@ class OpenTelemetryRumBuilder internal constructor(
      * @since 1.10.0
      */
     @JvmSynthetic
-    fun addMeterProviderCustomizer(customizer: (SdkMeterProviderBuilder, Context) -> SdkMeterProviderBuilder): OpenTelemetryRumBuilder {
+    fun addMeterProviderCustomizer(customizer: MeterProviderCustomizer): OpenTelemetryRumBuilder {
         meterProviderCustomizers.add(customizer)
         return this
     }
@@ -260,7 +264,7 @@ class OpenTelemetryRumBuilder internal constructor(
      * @since 1.10.0
      */
     @JvmSynthetic
-    fun addLoggerProviderCustomizer(customizer: (SdkLoggerProviderBuilder, Context) -> SdkLoggerProviderBuilder): OpenTelemetryRumBuilder {
+    fun addLoggerProviderCustomizer(customizer: LoggerProviderCustomizer): OpenTelemetryRumBuilder {
         loggerProviderCustomizers.add(customizer)
         return this
     }
