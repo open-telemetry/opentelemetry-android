@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.internal.common.error
 
+import android.os.SystemClock
 import android.util.Log
 import io.opentelemetry.android.common.RumConstants
 
@@ -18,7 +19,7 @@ class DefaultSdkErrorHandler(
     private val logTag: String = RumConstants.OTEL_RUM_LOG_TAG,
     private val maxEventsPerPeriod: Int = DEFAULT_MAX_LOGS_PER_PERIOD,
     private val periodMs: Long = DEFAULT_PERIOD_MS,
-    private val clock: () -> Long = System::currentTimeMillis,
+    private val clock: () -> Long = SystemClock::elapsedRealtime,
 ) : SdkErrorHandler {
     private val lock = Any()
     private var windowStartMs: Long = clock()

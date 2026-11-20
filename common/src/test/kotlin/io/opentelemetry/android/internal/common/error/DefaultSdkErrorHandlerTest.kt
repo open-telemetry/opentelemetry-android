@@ -5,6 +5,7 @@
 
 package io.opentelemetry.android.internal.common.error
 
+import android.os.SystemClock
 import android.util.Log
 import io.mockk.every
 import io.mockk.mockkStatic
@@ -22,11 +23,14 @@ internal class DefaultSdkErrorHandlerTest {
         mockkStatic(Log::class)
         every { Log.w(any(), any<String>(), any()) } returns 0
         every { Log.w(any(), any<String>()) } returns 0
+        mockkStatic(SystemClock::class)
+        every { SystemClock.elapsedRealtime() } returns 1000L
     }
 
     @AfterEach
     fun tearDown() {
         unmockkStatic(Log::class)
+        unmockkStatic(SystemClock::class)
     }
 
     @Test
