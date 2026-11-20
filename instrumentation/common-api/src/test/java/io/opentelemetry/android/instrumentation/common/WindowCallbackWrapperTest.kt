@@ -22,6 +22,7 @@ import org.hamcrest.CoreMatchers
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert
 import org.hamcrest.MatcherAssert.assertThat
+import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -43,6 +44,11 @@ class WindowCallbackWrapperTest {
         openTelemetryRule = OpenTelemetryRule.create()
         application = ApplicationProvider.getApplicationContext()
         activityScenario = ActivityScenario.launch(TestActivity::class.java)
+    }
+
+    @After
+    fun tearDown() {
+        activityScenario.close()
     }
 
     class TestingTracker(
@@ -243,9 +249,51 @@ class WindowCallbackWrapperTest {
         )
     }
 
-    fun traverseWrapper(callback: Window.Callback): List<Window.Callback> {
+    @Test
+    fun opaqueThirdPartyDoesNotCauseDuplicatesForWindowOnResumeIfCallbackReachable() {
+        application.registerActivityLifecycleCallbacks(
+            InstrumentationActivityCallback(TestingTracker("tracker-a")),
+        )
+        application.registerActivityLifecycleCallbacks(
+            InstrumentationActivityCallback(MinimalTrackerThirdParty()),
+        )
+        application.registerActivityLifecycleCallbacks(
+            InstrumentationActivityCallback(TestingTracker("tracker-b")),
+        )
+
+        var currentCallback: Window.Callback? = null
+
+        activityScenario.moveToState(Lifecycle.State.STARTED)
+        activityScenario.moveToState(Lifecycle.State.RESUMED)
+        activityScenario.onActivity {
+            currentCallback = it.window.callback
+        }
+
+        assertNotNull(currentCallback)
+        assertFalse(currentCallback is WindowCallbackWrapper)
+
+        val transparentList = traverseWrapper(currentCallback)
+        val opaqueList = traverseWrapper(currentCallback, opaqueThirdParty = true)
+        assertThat(transparentList.count { it is WindowCallbackWrapper }, equalTo(1))
+        assertThat(opaqueList.count { it is WindowCallbackWrapper }, equalTo(0))
+        val wrapper = transparentList.first { it is WindowCallbackWrapper } as WindowCallbackWrapper
+        assertThat(
+            wrapper.keys(),
+            CoreMatchers.hasItems("tracker-a", "tracker-b"),
+        )
+    }
+
+    fun traverseWrapper(
+        callback: Window.Callback,
+        opaqueThirdParty: Boolean = false,
+    ): List<Window.Callback> {
         var currentCallback = callback
-        var wrapped = currentCallback is WindowCallbackWrapper || currentCallback is ThirdPartyWindowCallbackWrapper
+        var wrapped =
+            if (opaqueThirdParty) {
+                currentCallback is WindowCallbackWrapper
+            } else {
+                currentCallback is WindowCallbackWrapper || currentCallback is ThirdPartyWindowCallbackWrapper
+            }
 
         if (!wrapped) {
             return listOf(currentCallback)
@@ -258,7 +306,12 @@ class WindowCallbackWrapperTest {
             } else {
                 currentCallback = (currentCallback as ThirdPartyWindowCallbackWrapper).unwrap()
             }
-            wrapped = currentCallback is WindowCallbackWrapper || currentCallback is ThirdPartyWindowCallbackWrapper
+            wrapped =
+                if (opaqueThirdParty) {
+                    currentCallback is WindowCallbackWrapper
+                } else {
+                    currentCallback is WindowCallbackWrapper || currentCallback is ThirdPartyWindowCallbackWrapper
+                }
         }
         list.add(currentCallback)
         return list

@@ -46,7 +46,7 @@ public abstract interface class io/opentelemetry/android/instrumentation/common/
 
 public final class io/opentelemetry/android/instrumentation/common/WindowCallbackWrapper : android/view/Window$Callback {
 	public static final field Companion Lio/opentelemetry/android/instrumentation/common/WindowCallbackWrapper$Companion;
-	public synthetic fun <init> (Landroid/view/Window$Callback;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Landroid/view/Window$Callback;)V
 	public fun dispatchGenericMotionEvent (Landroid/view/MotionEvent;)Z
 	public fun dispatchKeyEvent (Landroid/view/KeyEvent;)Z
 	public fun dispatchKeyShortcutEvent (Landroid/view/KeyEvent;)Z
@@ -81,18 +81,6 @@ public final class io/opentelemetry/android/instrumentation/common/WindowCallbac
 public final class io/opentelemetry/android/instrumentation/common/WindowCallbackWrapper$Companion {
 	public final fun registerConsumer (Landroid/view/Window;Ljava/lang/String;Lio/opentelemetry/android/instrumentation/common/TouchEventConsumer;)V
 	public final fun unregisterConsumer (Landroid/view/Window;Ljava/lang/String;)V
-}
-
-public final class io/opentelemetry/android/instrumentation/common/WindowCallbackWrapper$Companion$SmallMap : java/util/LinkedHashMap {
-	public fun <init> ()V
-	public final fun entrySet ()Ljava/util/Set;
-	public fun getEntries ()Ljava/util/Set;
-	public fun getKeys ()Ljava/util/Set;
-	public fun getSize ()I
-	public fun getValues ()Ljava/util/Collection;
-	public final fun keySet ()Ljava/util/Set;
-	public final fun size ()I
-	public final fun values ()Ljava/util/Collection;
 }
 
 public final class io/opentelemetry/android/instrumentation/utils/AndroidUtilsKt {

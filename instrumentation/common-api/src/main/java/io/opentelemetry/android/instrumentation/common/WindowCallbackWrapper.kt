@@ -14,8 +14,9 @@ import android.view.SearchEvent
 import android.view.Window
 import android.view.Window.Callback
 import androidx.annotation.RequiresApi
+import java.util.WeakHashMap
 
-class WindowCallbackWrapper private constructor(
+class WindowCallbackWrapper(
     private val callback: Callback,
 ) : Callback by callback {
     private val callbackMap = LinkedHashMap<String, TouchEventConsumer>()
@@ -54,12 +55,7 @@ class WindowCallbackWrapper private constructor(
     fun keys(): List<String> = callbackMap.keys.toList()
 
     companion object {
-        private val windowMap = SmallMap<Window, WindowCallbackWrapper>()
-        private const val MAX_ENTRIES = 2
-
-        class SmallMap<K, V> : LinkedHashMap<K, V>() {
-            override fun removeEldestEntry(eldest: Map.Entry<K?, V?>?): Boolean = size >= MAX_ENTRIES
-        }
+        private val windowMap = WeakHashMap<Window, WindowCallbackWrapper>()
 
         @JvmStatic
         fun registerConsumer(
