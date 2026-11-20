@@ -110,7 +110,7 @@ class OpenTelemetryRumBuilder internal constructor(
         mutableListOf()
     private val meterProviderCustomizers: MutableList<(SdkMeterProviderBuilder, Context) -> SdkMeterProviderBuilder> =
         mutableListOf()
-    private val loggerProviderCustomizers: MutableList<BiFunction<SdkLoggerProviderBuilder, Context, SdkLoggerProviderBuilder>> =
+    private val loggerProviderCustomizers: MutableList<(SdkLoggerProviderBuilder, Context) -> SdkLoggerProviderBuilder> =
         mutableListOf()
     private val instrumentations: MutableList<AndroidInstrumentation> =
         mutableListOf()
@@ -239,9 +239,28 @@ class OpenTelemetryRumBuilder internal constructor(
      * configuration function will cause any resource customizers to be ignored that were configured
      * via [.setResource].
      */
+    @Deprecated(
+        "Use the Kotlin function overload of addLoggerProviderCustomizer. This overload will be removed in 1.11.0.",
+        ReplaceWith("addLoggerProviderCustomizer(customizer::apply)"),
+    )
     fun addLoggerProviderCustomizer(
         customizer: BiFunction<SdkLoggerProviderBuilder, Context, SdkLoggerProviderBuilder>,
-    ): OpenTelemetryRumBuilder {
+    ): OpenTelemetryRumBuilder = addLoggerProviderCustomizer(customizer::apply)
+
+    /**
+     * Adds a function to invoke with the [SdkLoggerProviderBuilder] and [Context] to allow
+     * customization. The return value of the function will replace the passed-in
+     * builder.
+     *
+     * Multiple calls will execute the customizers in order.
+     *
+     * Calling [SdkLoggerProviderBuilder.setResource] inside of your configuration function
+     * will cause any resource customizers to be ignored that were configured via [.setResource].
+     *
+     * @since 1.10.0
+     */
+    @JvmSynthetic
+    fun addLoggerProviderCustomizer(customizer: (SdkLoggerProviderBuilder, Context) -> SdkLoggerProviderBuilder): OpenTelemetryRumBuilder {
         loggerProviderCustomizers.add(customizer)
         return this
     }
@@ -645,16 +664,13 @@ class OpenTelemetryRumBuilder internal constructor(
                     ),
                 )
             }
-            loggerProviderCustomizers.add(
-                0,
-                BiFunction { builder: SdkLoggerProviderBuilder, _: Context ->
-                    builder.addLogRecordProcessor(
-                        ScreenAttributesLogRecordProcessor(
-                            services.visibleScreenTracker,
-                        ),
-                    )
-                },
-            )
+            loggerProviderCustomizers.add(0) { builder, _ ->
+                builder.addLogRecordProcessor(
+                    ScreenAttributesLogRecordProcessor(
+                        services.visibleScreenTracker,
+                    ),
+                )
+            }
         }
     }
 
@@ -720,7 +736,7 @@ class OpenTelemetryRumBuilder internal constructor(
             logRecordFilter?.let { FilteringLogRecordProcessor(batchLogsProcessor, it) } ?: batchLogsProcessor,
         )
         for (customizer in loggerProviderCustomizers) {
-            loggerProviderBuilder = customizer.apply(loggerProviderBuilder, context)
+            loggerProviderBuilder = customizer(loggerProviderBuilder, context)
         }
         return loggerProviderBuilder.build()
     }

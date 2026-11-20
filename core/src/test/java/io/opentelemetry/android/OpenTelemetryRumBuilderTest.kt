@@ -177,15 +177,20 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun shouldBuildLogRecordProvider() {
         createAndSetServiceManager()
         val openTelemetryRum =
             makeBuilder()
                 .setResource(resource)
-                .addLoggerProviderCustomizer { logRecordProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
-                    logRecordProviderBuilder.addLogRecordProcessor(
-                        SimpleLogRecordProcessor.create(logsExporter),
-                    )
+                .addLoggerProviderCustomizer(
+                    BiFunction { builder, _ ->
+                        builder
+                            .setResource(Resource.empty())
+                            .addLogRecordProcessor(SimpleLogRecordProcessor.create(logsExporter))
+                    },
+                ).addLoggerProviderCustomizer { builder, _ ->
+                    builder.setResource(resource)
                 }.build()
 
         val attrs =
