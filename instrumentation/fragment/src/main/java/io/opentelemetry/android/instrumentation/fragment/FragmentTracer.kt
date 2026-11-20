@@ -5,7 +5,6 @@
 
 package io.opentelemetry.android.instrumentation.fragment
 
-import androidx.fragment.app.Fragment
 import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_PREVIOUS_NAME
 import io.opentelemetry.android.semconv.FragmentAttributes.FRAGMENT_NAME_KEY
 import io.opentelemetry.android.semconv.internal.SemconvCompat.Companion.map
@@ -15,12 +14,11 @@ import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 
 internal class FragmentTracer(
-    fragment: Fragment,
+    private val fragmentName: String,
     private val tracer: Tracer,
     private val screenName: String,
     private val lastVisibleScreen: () -> String?,
 ) {
-    private val fragmentName: String = fragment.javaClass.simpleName
     private var span: Span? = null
 
     fun startSpanIfNoneInProgress(action: String): FragmentTracer {

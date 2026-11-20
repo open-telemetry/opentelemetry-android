@@ -5,8 +5,6 @@
 
 package io.opentelemetry.android.instrumentation.fragment
 
-import androidx.fragment.app.Fragment
-import io.mockk.mockk
 import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_PREVIOUS_NAME_KEY
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
@@ -34,7 +32,7 @@ internal class FragmentTracerTest {
     fun create() {
         val trackableTracer =
             FragmentTracer(
-                fragment = mockk<Fragment>(),
+                fragmentName = "Fragment",
                 tracer = tracer,
                 screenName = "",
                 lastVisibleScreen = { null },
@@ -49,7 +47,7 @@ internal class FragmentTracerTest {
     fun addPreviousScreen_noPrevious() {
         val trackableTracer =
             FragmentTracer(
-                fragment = mockk<Fragment>(),
+                fragmentName = "Fragment",
                 tracer = tracer,
                 screenName = "",
                 lastVisibleScreen = { null },
@@ -67,7 +65,7 @@ internal class FragmentTracerTest {
     fun addPreviousScreen_currentSameAsPrevious() {
         val trackableTracer =
             FragmentTracer(
-                fragment = mockk<Fragment>(),
+                fragmentName = "Fragment",
                 tracer = tracer,
                 screenName = "",
                 lastVisibleScreen = { "Fragment" },
@@ -85,7 +83,7 @@ internal class FragmentTracerTest {
     fun addPreviousScreen() {
         val fragmentTracer =
             FragmentTracer(
-                fragment = mockk<Fragment>(),
+                fragmentName = "Fragment",
                 tracer = tracer,
                 screenName = "",
                 lastVisibleScreen = { "previousScreen" },

@@ -156,7 +156,7 @@ internal class RumFragmentLifecycleCallbacks(
     private fun getTracer(fragment: Fragment): FragmentTracer =
         tracersByFragment.getOrPut(fragment) {
             FragmentTracer(
-                fragment,
+                fragment.javaClass.simpleName,
                 tracer,
                 screenNameExtractor.extract(fragment),
                 lastVisibleScreen,
