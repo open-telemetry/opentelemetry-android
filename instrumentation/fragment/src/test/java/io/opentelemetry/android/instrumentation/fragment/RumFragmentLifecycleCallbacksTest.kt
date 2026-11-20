@@ -15,7 +15,9 @@ import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTra
 import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_PREVIOUS_NAME_KEY
 import io.opentelemetry.android.semconv.FragmentAttributes.FRAGMENT_NAME_KEY
 import io.opentelemetry.api.common.AttributeKey.stringKey
+import io.opentelemetry.api.trace.SpanId
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.context.Context
 import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
@@ -410,6 +412,52 @@ internal class RumFragmentLifecycleCallbacksTest {
 
         testHarness.runFragmentDetachedLifecycle(fragment)
         assertEquals(0, callbacks.activeTracersCount)
+    }
+
+    @Test
+    fun interleavedFragmentLifecyclesRestoreOriginalContext() {
+        val initialContext = Context.current()
+
+        val fragment1 = mockk<Fragment>()
+        val fragment2 = mockk<Fragment>()
+        every { screenNameExtractor.extract(fragment1) } returns "Page1"
+        every { screenNameExtractor.extract(fragment2) } returns "Page2"
+
+        val callbacks =
+            RumFragmentLifecycleCallbacks(
+                tracer,
+                visibleScreenTracker::previouslyVisibleScreen,
+                screenNameExtractor,
+            )
+
+        val context = mockk<android.content.Context>()
+        val fragmentManager = mockk<androidx.fragment.app.FragmentManager>()
+
+        // Interleaved sequence: preAttach(A) -> preAttach(B) -> resume(A) -> resume(B)
+        callbacks.onFragmentPreAttached(fragmentManager, fragment1, context)
+        callbacks.onFragmentPreAttached(fragmentManager, fragment2, context)
+
+        callbacks.onFragmentResumed(fragmentManager, fragment1)
+        callbacks.onFragmentResumed(fragmentManager, fragment2)
+
+        assertEquals(initialContext, Context.current())
+
+        // Verify later spans do not inherit an already-ended fragment span as parent
+        val laterSpan = tracer.spanBuilder("laterSpan").startSpan()
+        try {
+            assertEquals(initialContext, Context.current())
+        } finally {
+            laterSpan.end()
+        }
+
+        val spans = otelTesting.spans
+        assertEquals(3, spans.size)
+        assertEquals("Created", spans[0].name)
+        assertEquals("Page1", spans[0].attributes.get(stringKey(APP_SCREEN_NAME)))
+        assertEquals("Created", spans[1].name)
+        assertEquals("Page2", spans[1].attributes.get(stringKey(APP_SCREEN_NAME)))
+        assertEquals("laterSpan", spans[2].name)
+        assertEquals(SpanId.getInvalid(), spans[2].parentSpanId)
     }
 
     private fun checkEventExists(
