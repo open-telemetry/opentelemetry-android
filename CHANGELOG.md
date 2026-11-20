@@ -28,6 +28,10 @@
   host app's lifecycle dispatch on the main thread.
   ([#2233](https://github.com/open-telemetry/opentelemetry-android/issues/2233))
 
+- An exception thrown while generating a view or Compose click event no longer escapes into the
+  host app's touch dispatch. The touch event is still passed on to the app's window callback.
+  ([#2233](https://github.com/open-telemetry/opentelemetry-android/issues/2233))
+
 - Exceptions thrown while emitting an ANR event (for example from a custom stack trace extractor)
   or while registering or removing slow rendering frame metrics listeners no longer escape into
   the host app or stop the periodic ANR polling.
