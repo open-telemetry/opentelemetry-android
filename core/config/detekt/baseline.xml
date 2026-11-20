@@ -3,5 +3,6 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <ID>LongMethod:OpenTelemetryRumBuilder.kt$OpenTelemetryRumBuilder$fun build(): OpenTelemetryRum</ID>
+    <ID>TooManyFunctions:OpenTelemetryRumBuilder.kt$OpenTelemetryRumBuilder</ID>
   </CurrentIssues>
 </SmellBaseline>

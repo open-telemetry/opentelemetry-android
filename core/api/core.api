@@ -9,6 +9,7 @@ public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
 	public final fun addLogRecordExporterCustomizer (Ljava/util/function/Function;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun addLoggerProviderCustomizer (Ljava/util/function/BiFunction;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun addMeterProviderCustomizer (Ljava/util/function/BiFunction;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final synthetic fun addMeterProviderCustomizer (Lkotlin/jvm/functions/Function2;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun addMetricExporterCustomizer (Ljava/util/function/Function;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun addOtelReadyListener (Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun addPropagatorCustomizer (Ljava/util/function/Function;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;

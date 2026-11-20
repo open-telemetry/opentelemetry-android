@@ -81,6 +81,7 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import java.util.function.BiFunction
 import java.util.function.Function
 
 @OptIn(IncubatingApi::class)
@@ -243,17 +244,18 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun canCustomizeMetrics() {
         val metricReader = InMemoryMetricReader.create()
         val openTelemetryRum =
             makeBuilder()
                 .setResource(resource)
-                .addMeterProviderCustomizer { sdkMeterProviderBuilder: SdkMeterProviderBuilder, _: Context ->
+                .addMeterProviderCustomizer(
+                    BiFunction { builder, _ -> builder.setResource(resource).registerMetricReader(metricReader) },
+                ).addMeterProviderCustomizer { builder, _ ->
                     val metricResAttrs =
                         Attributes.of(AttributeKey.stringKey("mmm"), "nnn")
-                    sdkMeterProviderBuilder
-                        .setResource(Resource.create(metricResAttrs))
-                        .registerMetricReader(metricReader)
+                    builder.setResource(Resource.create(metricResAttrs))
                 }.build()
 
         val meter =

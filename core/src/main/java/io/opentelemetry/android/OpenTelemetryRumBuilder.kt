@@ -108,7 +108,7 @@ class OpenTelemetryRumBuilder internal constructor(
     private var clock: Clock = OtelAndroidClock()
     private val tracerProviderCustomizers: MutableList<(SdkTracerProviderBuilder, Context) -> SdkTracerProviderBuilder> =
         mutableListOf()
-    private val meterProviderCustomizers: MutableList<BiFunction<SdkMeterProviderBuilder, Context, SdkMeterProviderBuilder>> =
+    private val meterProviderCustomizers: MutableList<(SdkMeterProviderBuilder, Context) -> SdkMeterProviderBuilder> =
         mutableListOf()
     private val loggerProviderCustomizers: MutableList<BiFunction<SdkLoggerProviderBuilder, Context, SdkLoggerProviderBuilder>> =
         mutableListOf()
@@ -202,9 +202,28 @@ class OpenTelemetryRumBuilder internal constructor(
      * configuration function will cause any resource customizers to be ignored that were configured
      * via [.setResource].
      */
+    @Deprecated(
+        "Use the Kotlin function overload of addMeterProviderCustomizer. This overload will be removed in 1.11.0.",
+        ReplaceWith("addMeterProviderCustomizer(customizer::apply)"),
+    )
     fun addMeterProviderCustomizer(
         customizer: BiFunction<SdkMeterProviderBuilder, Context, SdkMeterProviderBuilder>,
-    ): OpenTelemetryRumBuilder {
+    ): OpenTelemetryRumBuilder = addMeterProviderCustomizer(customizer::apply)
+
+    /**
+     * Adds a function to invoke with the [SdkMeterProviderBuilder] and [Context] to allow
+     * customization. The return value of the function will replace the passed-in
+     * builder.
+     *
+     * Multiple calls will execute the customizers in order.
+     *
+     * Calling [SdkMeterProviderBuilder.setResource] inside of your configuration function
+     * will cause any resource customizers to be ignored that were configured via [.setResource].
+     *
+     * @since 1.10.0
+     */
+    @JvmSynthetic
+    fun addMeterProviderCustomizer(customizer: (SdkMeterProviderBuilder, Context) -> SdkMeterProviderBuilder): OpenTelemetryRumBuilder {
         meterProviderCustomizers.add(customizer)
         return this
     }
@@ -734,7 +753,7 @@ class OpenTelemetryRumBuilder internal constructor(
                 .setResource(resource)
                 .setClock(clock)
         for (customizer in meterProviderCustomizers) {
-            meterProviderBuilder = customizer.apply(meterProviderBuilder, context)
+            meterProviderBuilder = customizer(meterProviderBuilder, context)
         }
         return meterProviderBuilder.build()
     }
