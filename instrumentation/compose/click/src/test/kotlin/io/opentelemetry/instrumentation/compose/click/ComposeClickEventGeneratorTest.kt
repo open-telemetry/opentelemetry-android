@@ -166,6 +166,95 @@ internal class ComposeClickEventGeneratorTest {
     }
 
     @Test
+    fun `capture click uses testTag as widget name when feature flag enabled`() {
+        val testTagGenerator =
+            ComposeClickEventGenerator(
+                openTelemetryRule.openTelemetry
+                    .toOtelKotlinApi()
+                    .loggerProvider
+                    .getLogger("io.opentelemetry.android.instrumentation.compose"),
+                composeLayoutNodeUtil,
+                featureFlagUseTestTag = true,
+            )
+
+        every { window.callback } returns callback
+        every { window.decorView } returns composeView
+        every { window.callback = any() } returns Unit
+        testTagGenerator.startTracking(window)
+
+        val motionEvent =
+            MotionEvent.obtain(0L, SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, 250f, 50f, 0)
+
+        every { composeView.childCount } returns 0
+        every { semanticsConfiguration.getOrNull(eq(SemanticsProperties.TestTag)) } returns null
+
+        buildMockLayoutNodeTreeWithTestTags(
+            targetX = motionEvent.x,
+            targetY = motionEvent.y,
+            hitIndexes = listOf(2),
+            clickableIndexes = listOf(2, 3, 4),
+            testTagIndexes = mapOf(2 to "submit_button"),
+        )
+
+        testTagGenerator.generateClick(motionEvent)
+
+        val events = openTelemetryRule.logRecords
+        assertThat(events).hasSize(2)
+
+        val event = events[1]
+        assertThat(event)
+            .hasEventName(APP_WIDGET_CLICK_EVENT_NAME)
+            .hasAttributesSatisfying(
+                equalTo(APP_WIDGET_ID_KEY, "2"),
+                equalTo(APP_WIDGET_NAME_KEY, "submit_button"),
+            )
+    }
+
+    @Test
+    fun `capture click falls back to semantics name when no testTag and feature flag enabled`() {
+        val testTagGenerator =
+            ComposeClickEventGenerator(
+                openTelemetryRule.openTelemetry
+                    .toOtelKotlinApi()
+                    .loggerProvider
+                    .getLogger("io.opentelemetry.android.instrumentation.compose"),
+                composeLayoutNodeUtil,
+                featureFlagUseTestTag = true,
+            )
+
+        every { window.callback } returns callback
+        every { window.decorView } returns composeView
+        every { window.callback = any() } returns Unit
+        testTagGenerator.startTracking(window)
+
+        val motionEvent =
+            MotionEvent.obtain(0L, SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, 250f, 50f, 0)
+
+        every { composeView.childCount } returns 0
+        every { semanticsConfiguration.getOrNull(eq(SemanticsProperties.TestTag)) } returns null
+
+        buildMockLayoutNodeTree(
+            targetX = motionEvent.x,
+            targetY = motionEvent.y,
+            hitIndexes = listOf(2),
+            clickableIndexes = listOf(2, 3, 4),
+        )
+
+        testTagGenerator.generateClick(motionEvent)
+
+        val events = openTelemetryRule.logRecords
+        assertThat(events).hasSize(2)
+
+        val event = events[1]
+        assertThat(event)
+            .hasEventName(APP_WIDGET_CLICK_EVENT_NAME)
+            .hasAttributesSatisfying(
+                equalTo(APP_WIDGET_ID_KEY, "2"),
+                equalTo(APP_WIDGET_NAME_KEY, "click"),
+            )
+    }
+
+    @Test
     fun `capture click when there are two valid targets but the top target wins and use content description for name`() {
         val motionEvent =
             MotionEvent.obtain(0L, SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, 250f, 50f, 0)
@@ -214,6 +303,7 @@ internal class ComposeClickEventGeneratorTest {
     ): LayoutNode {
         val mockNode = mockkClass(LayoutNode::class)
         every { mockNode.isPlaced } returns true
+        every { mockNode.parent } returns null
 
         val bounds =
             if (hit) {
@@ -294,5 +384,111 @@ internal class ComposeClickEventGeneratorTest {
         every { nodeList[3].zSortedChildren } returns mutableVectorOf()
         every { nodeList[4].zSortedChildren } returns mutableVectorOf()
         every { composeView.root } returns nodeList[0]
+    }
+
+    private fun buildMockLayoutNodeTreeWithTestTags(
+        targetX: Float,
+        targetY: Float,
+        hitIndexes: List<Int> = emptyList(),
+        clickableIndexes: List<Int> = emptyList(),
+        testTagIndexes: Map<Int, String> = emptyMap(),
+    ) {
+        val nodeList = mutableListOf<LayoutNode>()
+        for (i in 0 until 5) {
+            val tag = testTagIndexes[i]
+            if (tag != null) {
+                nodeList.add(
+                    createMockLayoutNodeWithTestTag(
+                        targetX = targetX,
+                        targetY = targetY,
+                        id = i,
+                        hit = hitIndexes.contains(i),
+                        clickable = clickableIndexes.contains(i),
+                        testTag = tag,
+                    ),
+                )
+            } else {
+                nodeList.add(
+                    createMockLayoutNode(
+                        targetX = targetX,
+                        targetY = targetY,
+                        id = i,
+                        hit = hitIndexes.contains(i),
+                        clickable = clickableIndexes.contains(i),
+                    ),
+                )
+            }
+        }
+
+        for (node in nodeList) {
+            every { node.parent } returns null
+        }
+
+        every { nodeList[0].zSortedChildren } returns mutableVectorOf(nodeList[1], nodeList[2])
+        every { nodeList[1].zSortedChildren } returns mutableVectorOf(nodeList[4], nodeList[3])
+        every { nodeList[2].zSortedChildren } returns mutableVectorOf()
+
+        every { nodeList[3].zSortedChildren } returns mutableVectorOf()
+        every { nodeList[4].zSortedChildren } returns mutableVectorOf()
+        every { composeView.root } returns nodeList[0]
+    }
+
+    private fun createMockLayoutNodeWithTestTag(
+        targetX: Float = 0f,
+        targetY: Float = 0f,
+        hitOffset: IntArray = intArrayOf(10, 20),
+        id: Int = 100,
+        hit: Boolean = false,
+        clickable: Boolean = false,
+        testTag: String = "",
+    ): LayoutNode {
+        val mockNode = mockkClass(LayoutNode::class)
+        every { mockNode.isPlaced } returns true
+        every { mockNode.parent } returns null
+        val bounds =
+            if (hit) {
+                Rect(
+                    left = targetX - hitOffset[0],
+                    right = targetX + hitOffset[0],
+                    top = targetY - hitOffset[1],
+                    bottom = targetY + hitOffset[1],
+                )
+            } else {
+                Rect(
+                    left = targetX + hitOffset[0],
+                    right = targetX + hitOffset[0],
+                    top = targetY + hitOffset[1],
+                    bottom = targetY + hitOffset[1],
+                )
+            }
+        val tagSemanticsConfig = mockkClass(SemanticsConfiguration::class)
+        if (testTag.isNotEmpty()) {
+            every { tagSemanticsConfig.getOrNull(eq(SemanticsProperties.TestTag)) } returns testTag
+        } else {
+            every { tagSemanticsConfig.getOrNull(eq(SemanticsProperties.TestTag)) } returns null
+        }
+        if (clickable) {
+            every { tagSemanticsConfig.contains(eq(SemanticsActions.OnClick)) } returns true
+            every { tagSemanticsConfig.getOrNull(eq(SemanticsActions.OnClick)) } returns
+                AccessibilityAction<() -> Boolean>("click") { true }
+            every { tagSemanticsConfig.getOrNull(eq(SemanticsProperties.ContentDescription)) } returns null
+        } else {
+            every { tagSemanticsConfig.contains(eq(SemanticsActions.OnClick)) } returns false
+        }
+
+        val tagSemanticsModifier = mockkClass(SemanticsModifier::class)
+        every { tagSemanticsModifier.semanticsConfiguration } returns tagSemanticsConfig
+
+        val tagModifierInfo = mockkClass(ModifierInfo::class)
+        every { tagModifierInfo.modifier } returns tagSemanticsModifier
+        every { mockNode.getModifierInfo() } returns listOf(tagModifierInfo)
+        every { mockNode.semanticsId } returns id
+        every { composeLayoutNodeUtil.getLayoutNodeBoundsInWindow(mockNode) } returns bounds
+        every { composeLayoutNodeUtil.getLayoutNodePositionInWindow(mockNode) } returns
+            Offset(
+                x = bounds.left,
+                y = bounds.top,
+            )
+        return mockNode
     }
 }

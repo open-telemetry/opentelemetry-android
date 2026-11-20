@@ -10,14 +10,15 @@ package io.opentelemetry.instrumentation.compose.click
 import android.util.Log
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.node.LayoutNode
-import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.semantics.SemanticsModifier
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 
 internal class TestTagFinder {
-    fun findTaggedTarget(node: LayoutNode): LayoutNode {
-        var candidate = node
+    fun findTaggedTarget(node: LayoutNode?): LayoutNode? {
+        node ?: return null
+
+        var candidate: LayoutNode = node
         while (true) {
             if (hasTag(candidate)) {
                 return candidate

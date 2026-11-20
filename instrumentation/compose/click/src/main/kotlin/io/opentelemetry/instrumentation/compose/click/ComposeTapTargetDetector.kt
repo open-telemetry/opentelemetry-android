@@ -19,7 +19,7 @@ import java.util.LinkedList
 
 internal class ComposeTapTargetDetector(
     private val composeLayoutNodeUtil: ComposeLayoutNodeUtil,
-    featureFlagUseTestTag: Boolean = true,
+    featureFlagUseTestTag: Boolean = false,
 ) {
     private val testTagFinder = if (featureFlagUseTestTag) TestTagFinder() else null
 
@@ -75,20 +75,16 @@ internal class ComposeTapTargetDetector(
         while (queue.isNotEmpty()) {
             val node = queue.removeFirst()
             if (node.isPlaced && hitTest(node, x, y)) {
-                if (testTagFinder == null) {
-                    target = node
-                } else {
-                    return testTagFinder.findTaggedTarget(node)
-                }
+                target = node
             }
             // Pre-order DFS in draw order (ascending Z), so the last hit is the front-most node.
             queue.addAll(node.zSortedChildren.asMutableList())
         }
-        return target?.let {
-            testTagFinder?.findTaggedTarget(it) ?: it
+        if (testTagFinder == null) {
+            return target
+        } else {
+            return testTagFinder.findTaggedTarget(target)
         }
-
-//        return target
     }
 
     private fun isValidClickTarget(node: LayoutNode): Boolean {

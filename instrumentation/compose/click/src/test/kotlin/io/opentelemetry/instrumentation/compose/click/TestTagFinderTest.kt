@@ -27,9 +27,9 @@ internal class TestTagFinderTest {
 
     @Test
     fun `reads tag from modern Compose modifier`() {
-        val node: LayoutNode = nodeWithModifiers(Modifier.testTag("mb_button"))
+        val node: LayoutNode = nodeWithModifiers(Modifier.testTag("button"))
 
-        assertThat(finder.findTag(node)).isEqualTo("mb_button")
+        assertThat(finder.findTag(node)).isEqualTo("button")
     }
 
     @Test
@@ -48,17 +48,17 @@ internal class TestTagFinderTest {
         val node: LayoutNode =
             nodeWithModifiers(
                 Modifier.testTag(""),
-                Modifier.testTag("mb_button_label"),
-                Modifier.testTag("mb_text"),
+                Modifier.testTag("button_label"),
+                Modifier.testTag("text"),
             )
 
-        assertThat(finder.findTag(node)).isEqualTo("mb_button_label")
+        assertThat(finder.findTag(node)).isEqualTo("button_label")
     }
 
     @Test
     fun `returns nearest tagged ancestor`() {
-        val card: LayoutNode = nodeWithModifiers(Modifier.testTag("mb_card"))
-        val button: LayoutNode = nodeWithModifiers(Modifier.testTag("mb_button"))
+        val card: LayoutNode = nodeWithModifiers(Modifier.testTag("card"))
+        val button: LayoutNode = nodeWithModifiers(Modifier.testTag("button"))
         val clickable: LayoutNode = nodeWithModifiers(Modifier)
         every { button.parent } returns card
         every { clickable.parent } returns button
@@ -68,8 +68,8 @@ internal class TestTagFinderTest {
 
     @Test
     fun `prefers own tag over ancestor tag`() {
-        val card: LayoutNode = nodeWithModifiers(Modifier.testTag("mb_card"))
-        val button: LayoutNode = nodeWithModifiers(Modifier.testTag("mb_button"))
+        val card: LayoutNode = nodeWithModifiers(Modifier.testTag("card"))
+        val button: LayoutNode = nodeWithModifiers(Modifier.testTag("button"))
         every { button.parent } returns card
 
         assertThat(finder.findTaggedTarget(button)).isEqualTo(button)

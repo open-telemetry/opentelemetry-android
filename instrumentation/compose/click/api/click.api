@@ -1,7 +1,9 @@
 public final class io/opentelemetry/instrumentation/compose/click/ComposeClickInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
 	public fun <init> ()V
+	public final fun getFeatureFlagUseTestTag ()Z
 	public fun getName ()Ljava/lang/String;
 	public fun install (Landroid/content/Context;Lio/opentelemetry/android/OpenTelemetryRum;)V
+	public final fun setFeatureFlagUseTestTag (Z)V
 	public fun uninstall (Landroid/content/Context;Lio/opentelemetry/android/OpenTelemetryRum;)V
 }
 

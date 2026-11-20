@@ -19,6 +19,17 @@ class ComposeClickInstrumentation : AndroidInstrumentation {
     private var activityCallback: ComposeClickActivityCallback? = null
     private var eventGenerator: ComposeClickEventGenerator? = null
 
+    /**
+     * When `true`, the instrumentation uses the Compose `testTag` modifier as the click target's
+     * component name instead of the default semantics-based identifier.
+     *
+     * Enable this if your UI components are consistently tagged with `Modifier.testTag(...)` and
+     * you want those tag values reported as the `app.widget.name` in click events.
+     *
+     * Defaults to `false`.
+     */
+    var featureFlagUseTestTag: Boolean = false
+
     override fun install(
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
@@ -29,6 +40,7 @@ class ComposeClickInstrumentation : AndroidInstrumentation {
                     .toOtelKotlinApi()
                     .loggerProvider
                     .getLogger("io.opentelemetry.android.instrumentation.compose.click"),
+                featureFlagUseTestTag = featureFlagUseTestTag,
             )
         val callback = ComposeClickActivityCallback(generator)
         (context as? Application)?.registerActivityLifecycleCallbacks(callback)
