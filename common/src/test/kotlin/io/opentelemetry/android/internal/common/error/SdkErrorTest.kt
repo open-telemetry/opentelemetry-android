@@ -10,9 +10,9 @@ import org.junit.jupiter.api.Test
 
 internal class SdkErrorTest {
     @Test
-    fun `SdkBug stores throwable and description`() {
+    fun `SdkOperation stores throwable and description`() {
         val throwable = IllegalStateException("boom")
-        val error = SdkError.SdkBug(throwable, "unexpected crash")
+        val error = SdkError.SdkOperation(throwable, "unexpected crash")
 
         assertThat(error.throwable).isSameAs(throwable)
         assertThat(error.description).isEqualTo("unexpected crash")
@@ -40,7 +40,7 @@ internal class SdkErrorTest {
     fun `exhaustive pattern matching works across all SdkError subtypes`() {
         val errors: List<SdkError> =
             listOf(
-                SdkError.SdkBug(IllegalStateException(), "bug"),
+                SdkError.SdkOperation(IllegalStateException(), "operation"),
                 SdkError.UserCode(IllegalStateException(), "user"),
                 SdkError.ApiMisuse(IllegalArgumentException(), "misuse"),
             )
@@ -48,12 +48,12 @@ internal class SdkErrorTest {
         val categories =
             errors.map { error ->
                 when (error) {
-                    is SdkError.SdkBug -> "sdk_bug"
+                    is SdkError.SdkOperation -> "sdk_operation"
                     is SdkError.UserCode -> "user_code"
                     is SdkError.ApiMisuse -> "api_misuse"
                 }
             }
 
-        assertThat(categories).containsExactly("sdk_bug", "user_code", "api_misuse")
+        assertThat(categories).containsExactly("sdk_operation", "user_code", "api_misuse")
     }
 }

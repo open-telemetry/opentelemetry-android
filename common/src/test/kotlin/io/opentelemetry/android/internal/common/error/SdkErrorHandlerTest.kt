@@ -18,7 +18,7 @@ internal class SdkErrorHandlerTest {
         val handler = SdkErrorHandler { captured.add(it) }
 
         val result =
-            handler.guarded(default = 0, errorFactory = { SdkError.SdkBug(it, "desc") }) {
+            handler.guarded(default = 0, errorFactory = { SdkError.SdkOperation(it, "desc") }) {
                 42
             }
 
@@ -33,13 +33,13 @@ internal class SdkErrorHandlerTest {
         val exception = IllegalStateException("failure")
 
         val result =
-            handler.guarded(default = -1, errorFactory = { SdkError.SdkBug(it, "failed calculation") }) {
+            handler.guarded(default = -1, errorFactory = { SdkError.SdkOperation(it, "failed calculation") }) {
                 throw exception
             }
 
         assertThat(result).isEqualTo(-1)
         assertThat(captured).hasSize(1)
-        val error = captured.first() as SdkError.SdkBug
+        val error = captured.first() as SdkError.SdkOperation
         assertThat(error.throwable).isSameAs(exception)
         assertThat(error.description).isEqualTo("failed calculation")
     }
@@ -69,7 +69,7 @@ internal class SdkErrorHandlerTest {
         val cancellation = CancellationException("coroutine cancelled")
 
         assertThatThrownBy {
-            handler.guarded(default = "fallback", errorFactory = { SdkError.SdkBug(it, "desc") }) {
+            handler.guarded(default = "fallback", errorFactory = { SdkError.SdkOperation(it, "desc") }) {
                 throw cancellation
             }
         }.isSameAs(cancellation)
@@ -84,7 +84,7 @@ internal class SdkErrorHandlerTest {
         val cancellation = CancellationException("coroutine cancelled")
 
         assertThatThrownBy {
-            handler.guarded(errorFactory = { SdkError.SdkBug(it, "desc") }) {
+            handler.guarded(errorFactory = { SdkError.SdkOperation(it, "desc") }) {
                 throw cancellation
             }
         }.isSameAs(cancellation)
@@ -100,7 +100,7 @@ internal class SdkErrorHandlerTest {
             }
 
         val resultWithDefault =
-            throwingHandler.guarded(default = "fallback", errorFactory = { SdkError.SdkBug(it, "desc") }) {
+            throwingHandler.guarded(default = "fallback", errorFactory = { SdkError.SdkOperation(it, "desc") }) {
                 throw IllegalStateException("block failure")
             }
         assertThat(resultWithDefault).isEqualTo("fallback")
@@ -114,7 +114,7 @@ internal class SdkErrorHandlerTest {
             }
 
         val resultWithoutDefault: String? =
-            throwingHandler.guarded(errorFactory = { SdkError.SdkBug(it, "desc") }) {
+            throwingHandler.guarded(errorFactory = { SdkError.SdkOperation(it, "desc") }) {
                 throw IllegalStateException("block failure")
             }
         assertThat(resultWithoutDefault).isNull()
@@ -160,7 +160,7 @@ internal class SdkErrorHandlerTest {
             }
 
         assertThatThrownBy {
-            handler.guarded(default = "fallback", errorFactory = { SdkError.SdkBug(it, "desc") }) {
+            handler.guarded(default = "fallback", errorFactory = { SdkError.SdkOperation(it, "desc") }) {
                 throw IllegalStateException("block failure")
             }
         }.isSameAs(cancellation)
@@ -175,7 +175,7 @@ internal class SdkErrorHandlerTest {
             }
 
         assertThatThrownBy {
-            handler.guarded(errorFactory = { SdkError.SdkBug(it, "desc") }) {
+            handler.guarded(errorFactory = { SdkError.SdkOperation(it, "desc") }) {
                 throw IllegalStateException("block failure")
             }
         }.isSameAs(cancellation)
@@ -246,38 +246,38 @@ internal class SdkErrorHandlerTest {
     }
 
     @Test
-    fun `guardedSdkBug with default catches and reports SdkError SdkBug`() {
+    fun `guardedSdkOperation with default catches and reports SdkError SdkOperation`() {
         val captured = mutableListOf<SdkError>()
         val handler = SdkErrorHandler { captured.add(it) }
         val exception = NullPointerException("npe")
 
         val result =
-            handler.guardedSdkBug(description = "internal task", default = false) {
+            handler.guardedSdkOperation(description = "internal task", default = false) {
                 throw exception
             }
 
         assertThat(result).isFalse()
         assertThat(captured).hasSize(1)
         val error = captured.first()
-        assertThat(error).isInstanceOf(SdkError.SdkBug::class.java)
+        assertThat(error).isInstanceOf(SdkError.SdkOperation::class.java)
         assertThat(error.throwable).isSameAs(exception)
         assertThat(error.description).isEqualTo("internal task")
     }
 
     @Test
-    fun `guardedSdkBug without default catches and returns null`() {
+    fun `guardedSdkOperation without default catches and returns null`() {
         val captured = mutableListOf<SdkError>()
         val handler = SdkErrorHandler { captured.add(it) }
         val exception = IllegalStateException("bug")
 
         val result: String? =
-            handler.guardedSdkBug(description = "buggy code") {
+            handler.guardedSdkOperation(description = "buggy code") {
                 throw exception
             }
 
         assertThat(result).isNull()
         assertThat(captured).hasSize(1)
-        assertThat(captured.first()).isInstanceOf(SdkError.SdkBug::class.java)
+        assertThat(captured.first()).isInstanceOf(SdkError.SdkOperation::class.java)
     }
 
     @Test
@@ -318,7 +318,7 @@ internal class SdkErrorHandlerTest {
     @Test
     fun `NOOP handler safely ignores errors without throwing`() {
         assertThatCode {
-            SdkErrorHandler.NOOP.onError(SdkError.SdkBug(IllegalStateException(), "noop test"))
+            SdkErrorHandler.NOOP.onError(SdkError.SdkOperation(IllegalStateException(), "noop test"))
         }.doesNotThrowAnyException()
     }
 }

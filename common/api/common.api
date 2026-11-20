@@ -5,9 +5,11 @@ public final class io/opentelemetry/android/common/RumConstants {
 
 public final class io/opentelemetry/android/internal/common/error/DefaultSdkErrorHandler : io/opentelemetry/android/internal/common/error/SdkErrorHandler {
 	public static final field Companion Lio/opentelemetry/android/internal/common/error/DefaultSdkErrorHandler$Companion;
+	public static final field DEFAULT_MAX_LOGS_PER_PERIOD I
+	public static final field DEFAULT_PERIOD_MS J
 	public fun <init> ()V
-	public fun <init> (Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;IJLkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Ljava/lang/String;IJLkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun onError (Lio/opentelemetry/android/internal/common/error/SdkError;)V
 }
 
@@ -33,12 +35,12 @@ public final class io/opentelemetry/android/internal/common/error/SdkError$ApiMi
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/opentelemetry/android/internal/common/error/SdkError$SdkBug : io/opentelemetry/android/internal/common/error/SdkError {
+public final class io/opentelemetry/android/internal/common/error/SdkError$SdkOperation : io/opentelemetry/android/internal/common/error/SdkError {
 	public fun <init> (Ljava/lang/Throwable;Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/Throwable;
 	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/Throwable;Ljava/lang/String;)Lio/opentelemetry/android/internal/common/error/SdkError$SdkBug;
-	public static synthetic fun copy$default (Lio/opentelemetry/android/internal/common/error/SdkError$SdkBug;Ljava/lang/Throwable;Ljava/lang/String;ILjava/lang/Object;)Lio/opentelemetry/android/internal/common/error/SdkError$SdkBug;
+	public final fun copy (Ljava/lang/Throwable;Ljava/lang/String;)Lio/opentelemetry/android/internal/common/error/SdkError$SdkOperation;
+	public static synthetic fun copy$default (Lio/opentelemetry/android/internal/common/error/SdkError$SdkOperation;Ljava/lang/Throwable;Ljava/lang/String;ILjava/lang/Object;)Lio/opentelemetry/android/internal/common/error/SdkError$SdkOperation;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getDescription ()Ljava/lang/String;
 	public fun getThrowable ()Ljava/lang/Throwable;
@@ -73,8 +75,8 @@ public final class io/opentelemetry/android/internal/common/error/SdkErrorHandle
 	public static final fun guarded (Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 	public static final fun guardedApiMisuse (Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;Ljava/lang/String;Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 	public static final fun guardedApiMisuse (Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
-	public static final fun guardedSdkBug (Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;Ljava/lang/String;Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
-	public static final fun guardedSdkBug (Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public static final fun guardedSdkOperation (Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;Ljava/lang/String;Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public static final fun guardedSdkOperation (Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 	public static final fun guardedUserCode (Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;Ljava/lang/String;Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 	public static final fun guardedUserCode (Lio/opentelemetry/android/internal/common/error/SdkErrorHandler;Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 }

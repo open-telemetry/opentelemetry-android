@@ -15,9 +15,9 @@ sealed interface SdkError {
     val description: String
 
     /**
-     * An unexpected internal error or bug within the OpenTelemetry Android SDK.
+     * An unexpected internal error or operation failure within the OpenTelemetry Android SDK.
      */
-    data class SdkBug(
+    data class SdkOperation(
         override val throwable: Throwable,
         override val description: String,
     ) : SdkError

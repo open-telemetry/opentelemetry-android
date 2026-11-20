@@ -89,21 +89,21 @@ inline fun <T> SdkErrorHandler.guardedUserCode(
 ): T? = guarded({ SdkError.UserCode(it, description) }, block)
 
 /**
- * Executes [block], reporting any thrown exception as an [SdkError.SdkBug].
+ * Executes [block], reporting any thrown exception as an [SdkError.SdkOperation].
  */
-inline fun <T> SdkErrorHandler.guardedSdkBug(
+inline fun <T> SdkErrorHandler.guardedSdkOperation(
     description: String,
     default: T,
     block: () -> T,
-): T = guarded(default, { SdkError.SdkBug(it, description) }, block)
+): T = guarded(default, { SdkError.SdkOperation(it, description) }, block)
 
 /**
- * Executes [block], reporting any thrown exception as an [SdkError.SdkBug].
+ * Executes [block], reporting any thrown exception as an [SdkError.SdkOperation].
  */
-inline fun <T> SdkErrorHandler.guardedSdkBug(
+inline fun <T> SdkErrorHandler.guardedSdkOperation(
     description: String,
     block: () -> T,
-): T? = guarded({ SdkError.SdkBug(it, description) }, block)
+): T? = guarded({ SdkError.SdkOperation(it, description) }, block)
 
 /**
  * Executes [block], reporting any thrown exception as an [SdkError.ApiMisuse].

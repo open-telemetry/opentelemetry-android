@@ -20,7 +20,8 @@ internal class DefaultSdkErrorHandlerTest {
     @BeforeEach
     fun setUp() {
         mockkStatic(Log::class)
-        every { Log.w(any(), any(), any()) } returns 0
+        every { Log.w(any(), any<String>(), any()) } returns 0
+        every { Log.w(any(), any<String>()) } returns 0
     }
 
     @AfterEach
@@ -29,11 +30,11 @@ internal class DefaultSdkErrorHandlerTest {
     }
 
     @Test
-    fun `logs SdkBug as warning with OTEL_RUM_LOG_TAG`() {
+    fun `logs SdkOperation as warning with OTEL_RUM_LOG_TAG`() {
         val handler = DefaultSdkErrorHandler()
         val exception = IllegalStateException("crash")
 
-        handler.onError(SdkError.SdkBug(exception, "internal failure"))
+        handler.onError(SdkError.SdkOperation(exception, "internal failure"))
 
         verify {
             Log.w(
@@ -82,7 +83,7 @@ internal class DefaultSdkErrorHandlerTest {
         val handler = DefaultSdkErrorHandler(logTag = customTag)
         val exception = IllegalStateException("custom")
 
-        handler.onError(SdkError.SdkBug(exception, "test"))
+        handler.onError(SdkError.SdkOperation(exception, "test"))
 
         verify {
             Log.w(
@@ -90,6 +91,46 @@ internal class DefaultSdkErrorHandlerTest {
                 "Internal SDK error: test",
                 exception,
             )
+        }
+    }
+
+    @Test
+    fun `rate limits repetitive error logs within period`() {
+        var currentTime = 1000L
+        val handler =
+            DefaultSdkErrorHandler(
+                maxEventsPerPeriod = 2,
+                periodMs = 1000L,
+                clock = { currentTime },
+            )
+        val exception = IllegalStateException("boom")
+
+        handler.onError(SdkError.SdkOperation(exception, "err1"))
+        handler.onError(SdkError.SdkOperation(exception, "err2"))
+        handler.onError(SdkError.SdkOperation(exception, "err3"))
+        handler.onError(SdkError.SdkOperation(exception, "err4"))
+
+        verify(exactly = 1) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Internal SDK error: err1", exception)
+        }
+        verify(exactly = 1) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Internal SDK error: err2", exception)
+        }
+        verify(exactly = 0) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Internal SDK error: err3", exception)
+        }
+        verify(exactly = 0) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Internal SDK error: err4", exception)
+        }
+
+        currentTime = 2500L
+        handler.onError(SdkError.SdkOperation(exception, "err5"))
+
+        verify(exactly = 1) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Suppressed 2 repetitive SDK error logs")
+        }
+        verify(exactly = 1) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Internal SDK error: err5", exception)
         }
     }
 
