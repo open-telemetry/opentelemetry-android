@@ -21,14 +21,16 @@ private val NANOS_ROUNDING_VALUE: Int = NANOS_PER_MS / 2
 
 @RequiresApi(api = Build.VERSION_CODES.N)
 internal class PerActivityListener(
-    private val activity: Activity,
+    private val activityName: String,
 ) : OnFrameMetricsAvailableListener {
+    constructor(activity: Activity) : this(activity.componentName.flattenToShortString())
+
     private val lock = Any()
 
     @GuardedBy("lock")
     private val drawDurationHistogram: MutableMap<Int, Int> = HashMap()
 
-    fun getActivityName(): String = activity.componentName.flattenToShortString()
+    fun getActivityName(): String = activityName
 
     override fun onFrameMetricsAvailable(
         window: Window?,

@@ -181,14 +181,14 @@ object HttpUrlReplacements {
     @JvmStatic
     @Throws(IOException::class)
     fun replacementForResponseCode(connection: URLConnection): Int {
-        val httpURLConnection = connection as HttpURLConnection
+        val httpURLConnection = connection as? HttpURLConnection ?: return UNKNOWN_RESPONSE_CODE
         return replaceThrowable(connection, httpURLConnection::getResponseCode)
     }
 
     @JvmStatic
     @Throws(IOException::class)
     fun replacementForResponseMessage(connection: URLConnection): String {
-        val httpURLConnection = connection as HttpURLConnection
+        val httpURLConnection = connection as? HttpURLConnection ?: return ""
         return replaceThrowable(connection, httpURLConnection::getResponseMessage)
     }
 
@@ -204,6 +204,10 @@ object HttpUrlReplacements {
     @JvmStatic
     @Throws(IOException::class)
     fun replacementForInputStream(connection: URLConnection): InputStream? {
+        if (connection !is HttpURLConnection) {
+            return connection.getInputStream()
+        }
+
         startTracingAtFirstConnection(connection)
 
         val inputStream: InputStream?
@@ -316,6 +320,9 @@ object HttpUrlReplacements {
     }
 
     private fun startTracingAtFirstConnection(connection: URLConnection) {
+        if (connection !is HttpURLConnection) {
+            return
+        }
         val parentContext = Context.current()
         val instrument = instrumenter()
         httpURLInstrumenter = instrument
@@ -387,7 +394,7 @@ object HttpUrlReplacements {
             if (info != null && info.harvestable &&
                 !info.reported && (info.lastSeenTime + timeInterval) < timeNow
             ) {
-                val httpURLConnection = connection as HttpURLConnection
+                val httpURLConnection = connection as? HttpURLConnection ?: continue
                 reportWithResponseCode(httpURLConnection)
             }
         }
@@ -450,15 +457,13 @@ object HttpUrlReplacements {
 
         @Throws(IOException::class)
         override fun close() {
-            val httpURLConnection = connection as HttpURLConnection
-            reportWithResponseCode(httpURLConnection)
+            (connection as? HttpURLConnection)?.let { reportWithResponseCode(it) }
             inputStream.close()
         }
 
         fun reportIfDoneOrMarkHarvestable(result: Int) {
             if (result == -1) {
-                val httpURLConnection = connection as HttpURLConnection
-                reportWithResponseCode(httpURLConnection)
+                (connection as? HttpURLConnection)?.let { reportWithResponseCode(it) }
             } else {
                 markHarvestable(connection)
             }

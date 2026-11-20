@@ -40,17 +40,18 @@ class FragmentLifecycleInstrumentation : AndroidInstrumentation {
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
     ) {
-        activityLifecycleCallbacks =
-            buildFragmentRegisterer(context, openTelemetryRum.openTelemetry).apply {
-                (context as? Application)?.registerActivityLifecycleCallbacks(this)
-            }
+        val app = context as? Application ?: return
+        val callbacks = buildFragmentRegisterer(context, openTelemetryRum.openTelemetry)
+        app.registerActivityLifecycleCallbacks(callbacks)
+        activityLifecycleCallbacks = callbacks
     }
 
     override fun uninstall(
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
     ) {
-        (context as? Application)?.unregisterActivityLifecycleCallbacks(activityLifecycleCallbacks)
+        val callbacks = activityLifecycleCallbacks ?: return
+        (context as? Application)?.unregisterActivityLifecycleCallbacks(callbacks)
         activityLifecycleCallbacks = null
     }
 

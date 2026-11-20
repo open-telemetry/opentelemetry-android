@@ -27,6 +27,10 @@ class PowerSaveModeInstrumentation : AndroidInstrumentation {
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
     ) {
+        if (this.detector != null) {
+            return
+        }
+
         val applicationContext = context.applicationContext
         val powerManager =
             applicationContext.getSystemService(Context.POWER_SERVICE) as? PowerManager

@@ -162,6 +162,25 @@ class SignalFromDiskExporterTest {
         verify { logExporter.export(any()) }
     }
 
+    @Test
+    fun `return true and do nothing when signal components are null`() {
+        val emptyInstance = SignalFromDiskExporter(null, null, null, null, null, null)
+        assertThat(emptyInstance.exportSpansFromDisk()).isTrue()
+        assertThat(emptyInstance.exportMetricsFromDisk()).isTrue()
+        assertThat(emptyInstance.exportLogsFromDisk()).isTrue()
+        assertThat(emptyInstance.exportAllSignalsFromDisk()).isTrue()
+    }
+
+    @Test
+    fun `exportAllSignalsFromDisk succeeds when only spans are configured`() {
+        every { spanStorage.iterator() }.returns(makeIterator(size = 1))
+        every { spanExporter.export(any()) }.returns(CompletableResultCode.ofSuccess())
+
+        val spansOnly = SignalFromDiskExporter(spanStorage, spanExporter, null, null, null, null)
+        assertThat(spansOnly.exportAllSignalsFromDisk()).isTrue()
+        verify(exactly = 1) { spanExporter.export(any()) }
+    }
+
     private inline fun <reified T : Any> makeIterator(size: Int): MutableIterator<List<T>> =
         MutableList(size) { listOf(mockk<T>()) }.iterator()
 

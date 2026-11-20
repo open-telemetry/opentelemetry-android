@@ -6,6 +6,7 @@
 package io.opentelemetry.android.instrumentation.common
 
 import android.os.Build.VERSION_CODES
+import android.util.Log
 import android.view.ActionMode
 import android.view.KeyboardShortcutGroup
 import android.view.Menu
@@ -14,6 +15,7 @@ import android.view.SearchEvent
 import android.view.Window
 import android.view.Window.Callback
 import androidx.annotation.RequiresApi
+import io.opentelemetry.android.common.RumConstants
 import java.util.WeakHashMap
 
 class WindowCallbackWrapper(
@@ -24,7 +26,13 @@ class WindowCallbackWrapper(
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
         val consumers = callbackMap.values.toList()
         for (touchConsumer in consumers) {
-            touchConsumer.consumeEvent(event)
+            try {
+                touchConsumer.consumeEvent(event)
+            } catch (e: Exception) {
+                // click tracking must never break touch dispatch for the host app
+                Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Failed to generate click event", e)
+            }
+
         }
         return callback.dispatchTouchEvent(event)
     }

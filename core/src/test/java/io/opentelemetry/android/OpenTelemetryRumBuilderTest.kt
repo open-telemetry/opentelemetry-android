@@ -75,14 +75,17 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.File
 import java.io.IOException
 import java.time.Duration
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Function
 
 @OptIn(IncubatingApi::class)
 @RunWith(AndroidJUnit4::class)
+@Suppress("LargeClass")
 class OpenTelemetryRumBuilderTest {
     private val resource: Resource =
         Resource
@@ -112,6 +115,7 @@ class OpenTelemetryRumBuilderTest {
     fun setup() {
         MockKAnnotations.init(this, relaxed = true)
         every { application.applicationContext } returns applicationContext
+        every { application.cacheDir } returns File(System.getProperty("java.io.tmpdir") ?: "/tmp")
         every { application.mainLooper } returns looper
         every { application.getSystemService(Context.CONNECTIVITY_SERVICE) } returns connectivityManager
         InitializationEvents.set(initializationEvents)
@@ -208,9 +212,7 @@ class OpenTelemetryRumBuilderTest {
                     "foo",
                 ),
             ).hasResource(resource)
-        // TODO: verify event name inline above when the assertions framework can handle it
-        val log0 = logs[0]
-        assertThat(log0.eventName).isEqualTo("test.event")
+            .hasEventName("test.event")
     }
 
     @Test
@@ -303,10 +305,10 @@ class OpenTelemetryRumBuilderTest {
                 .build()
         val counter = meter.counterBuilder("FOOCOUNTER").build()
         counter.add(22)
-        periodicReader.forceFlush()
+        periodicReader.forceFlush().join(10, TimeUnit.SECONDS)
         counter.add(2)
         counter.add(3)
-        periodicReader.forceFlush()
+        periodicReader.forceFlush().join(10, TimeUnit.SECONDS)
         val metrics =
             exporter.finishedMetricItems.filter { it.name == "FOOCOUNTER" }
 
@@ -578,6 +580,110 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
+    fun diskBufferingEnabled_when_non_io_exception_thrown() {
+        createAndSetServiceManager()
+        val cacheStorage = mockk<CacheStorage>()
+        every { cacheStorage.cacheDir } answers { throw SecurityException() }
+
+        val exporterSlot = slot<SpanExporter>()
+        val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)
+        val events = mockk<InitializationEvents>(relaxed = true)
+        InitializationEvents.resetForTest()
+        InitializationEvents.set(events)
+
+        val config = buildConfig().enableSdkInitializationEvents()
+        config.setDiskBufferingConfig(DiskBufferingConfig(true))
+
+        RumBuilder
+            .builder(application, config)
+            .setExportScheduleEnablement(scheduleHandler)
+            .setCacheStorage(cacheStorage)
+            .build()
+
+        Awaitility
+            .await()
+            .atMost(Duration.ofSeconds(5))
+            .untilAsserted {
+                verify(exactly = 1) { events.spanExporterInitialized(capture(exporterSlot)) }
+                verify(exactly = 0) { scheduleHandler.enable() }
+                verify(exactly = 1) { scheduleHandler.disable() }
+                assertThat(exporterSlot.captured)
+                    .isNotInstanceOf(SpanToDiskExporter::class.java)
+                assertThat(SignalFromDiskExporter.get())
+                    .isNull()
+            }
+    }
+
+    @Test
+    fun diskBufferingRespectsDisabledSignals() {
+        createAndSetServiceManager()
+        val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)
+        val events = mockk<InitializationEvents>(relaxed = true)
+        InitializationEvents.resetForTest()
+        InitializationEvents.set(events)
+
+        var logExporterCustomizerCalled = false
+        var metricExporterCustomizerCalled = false
+        val config = buildConfig().enableSdkInitializationEvents()
+        config.setDiskBufferingConfig(DiskBufferingConfig(true))
+        config.setLoggingDisabled()
+        config.setMetricsDisabled()
+
+        RumBuilder
+            .builder(application, config)
+            .setExportScheduleEnablement(scheduleHandler)
+            .addLogRecordExporterCustomizer {
+                logExporterCustomizerCalled = true
+                it
+            }.addMetricExporterCustomizer {
+                metricExporterCustomizerCalled = true
+                it
+            }.build()
+
+        Awaitility
+            .await()
+            .atMost(Duration.ofSeconds(5))
+            .untilAsserted {
+                verify(exactly = 1) { scheduleHandler.enable() }
+                assertThat(logExporterCustomizerCalled).isFalse()
+                assertThat(metricExporterCustomizerCalled).isFalse()
+            }
+    }
+
+    @Test
+    fun diskBufferingDisabledScheduleWhenAllSignalsDisabled() {
+        createAndSetServiceManager()
+        val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)
+        val events = mockk<InitializationEvents>(relaxed = true)
+        InitializationEvents.resetForTest()
+        InitializationEvents.set(events)
+        val cacheStorage = mockk<CacheStorage>()
+        every { cacheStorage.cacheDir } answers { throw IOException() }
+
+        val config = buildConfig().enableSdkInitializationEvents()
+        config.setDiskBufferingConfig(DiskBufferingConfig(true))
+        config.setTracingDisabled()
+        config.setLoggingDisabled()
+        config.setMetricsDisabled()
+
+        RumBuilder
+            .builder(application, config)
+            .setExportScheduleEnablement(scheduleHandler)
+            .setCacheStorage(cacheStorage)
+            .build()
+
+        Awaitility
+            .await()
+            .atMost(Duration.ofSeconds(5))
+            .untilAsserted {
+                verify(exactly = 0) { events.spanExporterInitialized(any()) }
+                verify(exactly = 0) { scheduleHandler.enable() }
+                verify(atLeast = 1) { scheduleHandler.disable() }
+                verify { cacheStorage wasNot Called }
+            }
+    }
+
+    @Test
     fun otelReadyListeners() {
         val config = buildConfig()
         val seen = AtomicReference<OpenTelemetry>()
@@ -586,6 +692,21 @@ class OpenTelemetryRumBuilderTest {
             .builder(application, config)
             .addOtelReadyListener { otel: OpenTelemetry -> seen.set(otel) }
             .build()
+        assertThat(seen.get()).isNotNull()
+    }
+
+    @Test
+    fun throwingOtelReadyListenerDoesNotStopOtherListeners() {
+        val config = buildConfig()
+        val seen = AtomicReference<OpenTelemetry>()
+        createAndSetServiceManager()
+        val rum =
+            RumBuilder
+                .builder(application, config)
+                .addOtelReadyListener { error("listener failed") }
+                .addOtelReadyListener { otel: OpenTelemetry -> seen.set(otel) }
+                .build()
+        assertThat(rum).isNotNull()
         assertThat(seen.get()).isNotNull()
     }
 
@@ -679,6 +800,77 @@ class OpenTelemetryRumBuilderTest {
             .build()
 
         verify { events wasNot Called }
+    }
+
+    @OptIn(IncubatingApi::class)
+    @Test
+    fun disableSessionIdPreventsSessionIdOnSpansAndLogs() {
+        createAndSetServiceManager()
+        val openTelemetryRum =
+            RumBuilder
+                .builder(
+                    application,
+                    buildConfig().disableSessionId(),
+                ).setSessionProvider(SessionProvider { "test-session" })
+                .addTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
+                    tracerProviderBuilder.addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
+                }.addLoggerProviderCustomizer { logRecordProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
+                    logRecordProviderBuilder.addLogRecordProcessor(
+                        SimpleLogRecordProcessor.create(logsExporter),
+                    )
+                }.build()
+
+        openTelemetryRum.openTelemetry
+            .getTracer("test")
+            .spanBuilder("test-span")
+            .startSpan()
+            .end()
+        openTelemetryRum.openTelemetry.logsBridge
+            .loggerBuilder("test")
+            .build()
+            .logRecordBuilder()
+            .emit()
+
+        val span = spanExporter.finishedSpanItems.single()
+        assertThat(span.attributes.get(stringKey(SESSION_ID))).isNull()
+
+        val log = logsExporter.finishedLogRecordItems.single()
+        assertThat(log.attributes.get(stringKey(SESSION_ID))).isNull()
+    }
+
+    @OptIn(IncubatingApi::class)
+    @Test
+    fun disableScreenAttributesPreventsScreenNameOnSpansAndLogs() {
+        createAndSetServiceManager()
+        val openTelemetryRum =
+            RumBuilder
+                .builder(
+                    application,
+                    buildConfig().disableScreenAttributes(),
+                ).addTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
+                    tracerProviderBuilder.addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
+                }.addLoggerProviderCustomizer { logRecordProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
+                    logRecordProviderBuilder.addLogRecordProcessor(
+                        SimpleLogRecordProcessor.create(logsExporter),
+                    )
+                }.build()
+
+        openTelemetryRum.openTelemetry
+            .getTracer("test")
+            .spanBuilder("test-span")
+            .startSpan()
+            .end()
+        openTelemetryRum.openTelemetry.logsBridge
+            .loggerBuilder("test")
+            .build()
+            .logRecordBuilder()
+            .emit()
+
+        val span = spanExporter.finishedSpanItems.single()
+        assertThat(span.attributes.get(stringKey(APP_SCREEN_NAME))).isNull()
+
+        val log = logsExporter.finishedLogRecordItems.single()
+        assertThat(log.attributes.get(stringKey(APP_SCREEN_NAME))).isNull()
     }
 
     private fun makeBuilder(): OpenTelemetryRumBuilder = RumBuilder.builder(application, buildConfig())

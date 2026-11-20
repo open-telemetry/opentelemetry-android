@@ -32,6 +32,7 @@ import io.opentelemetry.android.semconv.events.NetworkChangeEvent.Companion.NETW
 import io.opentelemetry.android.semconv.internal.SemconvCompat
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.api.common.AttributeKey.stringKey
+import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 import io.opentelemetry.kotlin.semconv.NetworkAttributes.NETWORK_CARRIER_ICC
 import io.opentelemetry.kotlin.semconv.NetworkAttributes.NETWORK_CARRIER_MCC
@@ -49,6 +50,7 @@ import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import java.util.concurrent.atomic.AtomicBoolean
 
 @Config(sdk = [Build.VERSION_CODES.P])
 @RunWith(AndroidJUnit4::class)
@@ -275,6 +277,87 @@ class NetworkChangeInstrumentationTest {
             currentNetworkProvider.removeNetworkChangeListener(any())
             appLifecycle.unregisterListener(any())
         }
+    }
+
+    @Test
+    fun reinstallationDoesNotDuplicateExtractors() {
+        val networkChangeListenerSlots = mutableListOf<NetworkChangeListener>()
+        val (context, openTelemetryRum) = createTestDependencies()
+        val instrumentation = NetworkChangeInstrumentation()
+
+        val customExtractor =
+            NetworkAttributesExtractor { builder, _ ->
+                builder.put("custom.key", "custom.value")
+            }
+        instrumentation.addAttributesExtractor(customExtractor)
+
+        instrumentation.install(context, openTelemetryRum)
+        instrumentation.uninstall(context, openTelemetryRum)
+        instrumentation.install(context, openTelemetryRum)
+
+        // Verify that additionalAttributeExtractors was not polluted with default extractors
+        assertThat(instrumentation.additionalAttributeExtractors).containsExactly(customExtractor)
+
+        // Inspect the installed extractors list to ensure default extractor is not duplicated
+        val installedExtractors = instrumentation.networkApplicationListener?.installedExtractors
+        assertThat(installedExtractors).hasSize(2)
+        assertThat(installedExtractors?.filterIsInstance<NetworkChangeAttributesExtractor>()).hasSize(1)
+
+        verify(exactly = 2) {
+            currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlots))
+        }
+
+        val secondListener = networkChangeListenerSlots.last()
+        secondListener.onNetworkChange(CurrentNetwork(NetworkState.TRANSPORT_WIFI))
+
+        val events = otelTesting.logRecords
+        assertThat(events).hasSize(1)
+        val event = events[0]
+        assertThat(event)
+            .hasEventName(NETWORK_CHANGE_EVENT_NAME)
+            .hasAttributesSatisfyingExactly(
+                equalTo(stringKey(NETWORK_CONNECTION_TYPE), "wifi"),
+                equalTo(stringKey("custom.key"), "custom.value"),
+            )
+    }
+
+    @Test
+    fun extractorThrows_eventStillEmittedWithOtherAttributes() {
+        val networkChangeListenerSlot = slot<NetworkChangeListener>()
+        val (context, openTelemetryRum) = createTestDependencies()
+        val instrumentation = NetworkChangeInstrumentation()
+        instrumentation.addAttributesExtractor(NetworkAttributesExtractor { _, _ -> error("boom") })
+        instrumentation.install(context, openTelemetryRum)
+
+        verify {
+            currentNetworkProvider.addNetworkChangeListener(capture(networkChangeListenerSlot))
+        }
+
+        networkChangeListenerSlot.captured.onNetworkChange(
+            CurrentNetwork(NetworkState.TRANSPORT_WIFI),
+        )
+
+        assertThat(otelTesting.logRecords.single())
+            .hasEventName(NETWORK_CHANGE_EVENT_NAME)
+            .hasAttributesSatisfyingExactly(
+                equalTo(stringKey(NETWORK_CONNECTION_TYPE), "wifi"),
+            )
+    }
+
+    @Test
+    fun emitThrows_doesNotPropagate() {
+        val eventLogger = mockk<Logger>()
+        every { eventLogger.logRecordBuilder() } throws IllegalStateException("boom")
+        val listener =
+            NetworkApplicationListener.TracingNetworkChangeListener(
+                eventLogger,
+                AtomicBoolean(true),
+                listOf(NetworkChangeAttributesExtractor()),
+            )
+
+        listener.onNetworkChange(CurrentNetwork(NetworkState.TRANSPORT_WIFI))
+
+        verify(exactly = 1) { eventLogger.logRecordBuilder() }
     }
 
     private fun createTestDependencies(): Pair<Application, OpenTelemetryRum> {

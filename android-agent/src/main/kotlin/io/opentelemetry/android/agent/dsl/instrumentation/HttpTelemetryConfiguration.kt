@@ -22,6 +22,7 @@ import io.opentelemetry.android.agent.dsl.OpenTelemetryDslMarker
 @OpenTelemetryDslMarker
 class HttpTelemetryConfiguration internal constructor() {
     private var recordSpanForHost: ((String) -> Boolean)? = null
+    private var recordWebsocketEventForHost: ((String) -> Boolean)? = null
 
     /**
      * Decides, per host, whether to record an HTTP client span. Return true to keep the
@@ -48,5 +49,24 @@ class HttpTelemetryConfiguration internal constructor() {
         recordSpanForHost = predicate
     }
 
+    /**
+     * Decides, per host, whether to export OkHttp WebSocket events. Return true to keep
+     * the events and false to drop them. All hosts are kept when no predicate is set,
+     * and the last predicate set wins.
+     *
+     * The predicate receives the lowercased `server.address` from the original WebSocket
+     * request. OkHttp canonicalizes internationalized hosts to punycode. Handshake redirects
+     * are not reflected in this host.
+     *
+     * Only WebSocket events are affected; HTTP spans, metrics and trace context propagation
+     * are unchanged. Filtering happens before network export, not before recording or disk buffering.
+     */
+    @Incubating
+    fun shouldRecordWebsocketEventForHost(predicate: (String) -> Boolean) {
+        recordWebsocketEventForHost = predicate
+    }
+
     internal fun recordSpanForHost(): ((String) -> Boolean)? = recordSpanForHost
+
+    internal fun recordWebsocketEventForHost(): ((String) -> Boolean)? = recordWebsocketEventForHost
 }

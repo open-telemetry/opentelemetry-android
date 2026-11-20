@@ -45,9 +45,7 @@ internal class AnrInstrumentationTest {
     @Test
     fun shouldInstallAndUninstallCleanly() {
         val (context, openTelemetryRum) = createTestDependencies()
-        val instrumentation = AnrInstrumentation()
-        instrumentation.setMainLooper(mainLooper)
-        instrumentation.setScheduler(scheduler)
+        val instrumentation = createInstrumentation()
 
         val listenerSlot = slot<ApplicationStateListener>()
 
@@ -67,7 +65,7 @@ internal class AnrInstrumentationTest {
     @Test
     fun shouldHandleUninstallBeforeInstall() {
         val (context, openTelemetryRum) = createTestDependencies()
-        val instrumentation = AnrInstrumentation()
+        val instrumentation = createInstrumentation()
 
         instrumentation.uninstall(context, openTelemetryRum)
 
@@ -80,6 +78,110 @@ internal class AnrInstrumentationTest {
     fun shouldExposeCorrectName() {
         val instrumentation = AnrInstrumentation()
         assertThat(instrumentation.name).isEqualTo("anr")
+    }
+
+    @Test
+    fun shouldShutDownSchedulerOnUninstall() {
+        val (context, openTelemetryRum) = createTestDependencies()
+        val instrumentation = createInstrumentation()
+
+        instrumentation.install(context, openTelemetryRum)
+        instrumentation.uninstall(context, openTelemetryRum)
+
+        verify(exactly = 1) { scheduler.shutdownNow() }
+    }
+
+    @Test
+    fun shouldNotCreateSchedulerUntilInstall() {
+        var factoryCallCount = 0
+        val instrumentation = AnrInstrumentation()
+        instrumentation.setMainLooper(mainLooper)
+        instrumentation.setSchedulerFactory {
+            factoryCallCount++
+            scheduler
+        }
+
+        assertThat(factoryCallCount).isEqualTo(0)
+
+        val (context, openTelemetryRum) = createTestDependencies()
+        instrumentation.install(context, openTelemetryRum)
+
+        assertThat(factoryCallCount).isEqualTo(1)
+    }
+
+    @Test
+    fun shouldGuardAgainstDoubleInstall() {
+        val (context, openTelemetryRum) = createTestDependencies()
+        val instrumentation = createInstrumentation()
+
+        instrumentation.install(context, openTelemetryRum)
+        instrumentation.install(context, openTelemetryRum)
+
+        verify(exactly = 1) {
+            appLifecycle.registerListener(any())
+        }
+    }
+
+    @Test
+    fun shouldSupportReinstallAfterUninstall() {
+        val (context, openTelemetryRum) = createTestDependencies()
+        val schedulers = mutableListOf<ScheduledExecutorService>()
+        val instrumentation = AnrInstrumentation()
+        instrumentation.setMainLooper(mainLooper)
+        instrumentation.setSchedulerFactory {
+            val s = mockk<ScheduledExecutorService>(relaxed = true)
+            schedulers.add(s)
+            s
+        }
+
+        // First install → uninstall cycle
+        instrumentation.install(context, openTelemetryRum)
+        instrumentation.uninstall(context, openTelemetryRum)
+
+        assertThat(schedulers).hasSize(1)
+        verify(exactly = 1) { schedulers[0].shutdownNow() }
+
+        // Second install cycle uses a fresh scheduler
+        instrumentation.install(context, openTelemetryRum)
+
+        assertThat(schedulers).hasSize(2)
+        verify(exactly = 2) {
+            appLifecycle.registerListener(any())
+        }
+    }
+
+    @Test
+    fun shouldNotScheduleForegroundCallbackArrivingAfterUninstall() {
+        val (context, openTelemetryRum) = createTestDependencies()
+        val instrumentation = createInstrumentation()
+        val listenerSlot = slot<ApplicationStateListener>()
+
+        instrumentation.install(context, openTelemetryRum)
+        verify(exactly = 1) {
+            appLifecycle.registerListener(capture(listenerSlot))
+        }
+        // install() invokes listener.onApplicationForegrounded() which schedules once
+        verify(exactly = 1) {
+            scheduler.scheduleWithFixedDelay(any(), any(), any(), any())
+        }
+
+        instrumentation.uninstall(context, openTelemetryRum)
+        verify(exactly = 1) { scheduler.shutdownNow() }
+
+        // Simulate concurrent dispatch from CopyOnWriteArrayList snapshot in ApplicationStateWatcher
+        listenerSlot.captured.onApplicationForegrounded()
+
+        // Count must still be 1 (not scheduled again after uninstall)
+        verify(exactly = 1) {
+            scheduler.scheduleWithFixedDelay(any(), any(), any(), any())
+        }
+    }
+
+    private fun createInstrumentation(): AnrInstrumentation {
+        val instrumentation = AnrInstrumentation()
+        instrumentation.setMainLooper(mainLooper)
+        instrumentation.setSchedulerFactory { scheduler }
+        return instrumentation
     }
 
     private fun createTestDependencies(): Pair<Application, OpenTelemetryRum> {

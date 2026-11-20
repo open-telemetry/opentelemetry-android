@@ -11,12 +11,12 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
+import androidx.annotation.GuardedBy
 import androidx.annotation.RequiresApi
 import io.opentelemetry.android.common.RumConstants
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
 import java.time.Duration
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
+import java.util.WeakHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -28,7 +28,13 @@ internal class SlowRenderListener(
     private val frameMetricsHandler: Handler,
     private val pollInterval: Duration,
 ) : DefaultingActivityLifecycleCallbacks {
-    private val activities: ConcurrentMap<Activity, PerActivityListener> = ConcurrentHashMap()
+    private val lock = Any()
+
+    @GuardedBy("lock")
+    private val activities: MutableMap<Activity, PerActivityListener> = WeakHashMap()
+
+    // Not Duration.toSeconds(), which is missing before Android 12 (API 31).
+    private val pollIntervalSeconds: Double = pollInterval.toMillis() / 1000.0
 
     constructor(jankReporter: JankReporter, pollInterval: Duration) : this(
         jankReporter,
@@ -49,42 +55,76 @@ internal class SlowRenderListener(
 
     fun shutdown() {
         executorService.shutdownNow()
-        for (entry in activities.entries) {
-            val activity: Activity = entry.key!!
-            val listener = entry.value
+        val activeEntries =
+            synchronized(lock) {
+                val entries = activities.toList()
+                activities.clear()
+                entries
+            }
+        for ((activity, listener) in activeEntries) {
             activity.window.removeOnFrameMetricsAvailableListener(listener)
         }
-        activities.clear()
     }
 
     override fun onActivityResumed(activity: Activity) {
-        if (executorService.isShutdown) {
-            return
-        }
-        val listener = PerActivityListener(activity)
-        val existing = activities.putIfAbsent(activity, listener)
-        if (existing == null) {
-            activity.window.addOnFrameMetricsAvailableListener(listener, frameMetricsHandler)
+        try {
+            registerActivity(activity)
+        } catch (e: Exception) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Exception while starting frame metrics collection", e)
         }
     }
 
     override fun onActivityPaused(activity: Activity) {
+        try {
+            unregisterActivity(activity)
+        } catch (e: Exception) {
+            Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Exception while stopping frame metrics collection", e)
+        }
+    }
+
+    private fun registerActivity(activity: Activity) {
         if (executorService.isShutdown) {
             return
         }
-        val listener = activities.remove(activity)
+        val listener = PerActivityListener(activity)
+        val added =
+            synchronized(lock) {
+                if (!activities.containsKey(activity)) {
+                    activities[activity] = listener
+                    true
+                } else {
+                    false
+                }
+            }
+        if (added) {
+            activity.window.addOnFrameMetricsAvailableListener(listener, frameMetricsHandler)
+        }
+    }
+
+    private fun unregisterActivity(activity: Activity) {
+        if (executorService.isShutdown) {
+            return
+        }
+        val listener =
+            synchronized(lock) {
+                activities.remove(activity)
+            }
         if (listener != null) {
             activity.window.removeOnFrameMetricsAvailableListener(listener)
             val durationToCountHistogram = listener.resetMetrics()
-            jankReporter.reportSlow(durationToCountHistogram, pollInterval.toSeconds().toDouble(), listener.getActivityName())
+            jankReporter.reportSlow(durationToCountHistogram, pollIntervalSeconds, listener.getActivityName())
         }
     }
 
     private fun reportSlowRenders() {
         try {
-            activities.forEach { (_: Activity?, listener: PerActivityListener) ->
+            val activeListeners =
+                synchronized(lock) {
+                    activities.values.toList()
+                }
+            for (listener in activeListeners) {
                 val durationToCountHistogram = listener.resetMetrics()
-                jankReporter.reportSlow(durationToCountHistogram, pollInterval.toSeconds().toDouble(), listener.getActivityName())
+                jankReporter.reportSlow(durationToCountHistogram, pollIntervalSeconds, listener.getActivityName())
             }
         } catch (e: Exception) {
             Log.w(RumConstants.OTEL_RUM_LOG_TAG, "Exception while processing frame metrics", e)

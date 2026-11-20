@@ -9,6 +9,7 @@ import io.mockk.mockk
 import io.opentelemetry.android.agent.FakeClock
 import io.opentelemetry.android.agent.FakeInstrumentationLoader
 import io.opentelemetry.android.session.SessionObserver
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -30,8 +31,52 @@ internal class SessionConfigurationTest {
 
     @Test
     fun testDefaults() {
+        assertEquals(true, otelConfig.sessionConfig.includeSessionId)
+        assertEquals(true, otelConfig.rumConfig.shouldIncludeSessionId())
         assertEquals(15.minutes, otelConfig.sessionConfig.backgroundInactivityTimeout)
         assertEquals(4.hours, otelConfig.sessionConfig.maxLifetime)
+        assertThat(otelConfig.sessionConfig.sessionProvider).isNull()
+    }
+
+    @Test
+    fun testDisableSessionIdViaSessionConfig() {
+        val otelConfig =
+            otelConfig.apply {
+                session {
+                    includeSessionId = false
+                }
+            }
+        assertEquals(false, otelConfig.sessionConfig.includeSessionId)
+        assertEquals(false, otelConfig.rumConfig.shouldIncludeSessionId())
+
+        // Re-enable session id
+        otelConfig.apply {
+            session {
+                includeSessionId = true
+            }
+        }
+        assertEquals(true, otelConfig.sessionConfig.includeSessionId)
+        assertEquals(true, otelConfig.rumConfig.shouldIncludeSessionId())
+    }
+
+    @Test
+    fun testDisableSessionIdDirectly() {
+        val otelConfig =
+            otelConfig.apply {
+                disableSessionId()
+            }
+        assertEquals(false, otelConfig.sessionConfig.includeSessionId)
+        assertEquals(false, otelConfig.rumConfig.shouldIncludeSessionId())
+    }
+
+    @Test
+    fun testDisableScreenAttributesDirectly() {
+        assertEquals(true, otelConfig.rumConfig.shouldIncludeScreenAttributes())
+        val otelConfig =
+            otelConfig.apply {
+                disableScreenAttributes()
+            }
+        assertEquals(false, otelConfig.rumConfig.shouldIncludeScreenAttributes())
     }
 
     @Test
@@ -60,5 +105,17 @@ internal class SessionConfigurationTest {
                 }
             }
         assertThat(otelConfig.sessionConfig.getObservers()).containsExactly(o1, o2)
+    }
+
+    @Test
+    fun `can set custom session provider`() {
+        val customProvider: SessionProvider = mockk()
+        val otelConfig =
+            otelConfig.apply {
+                session {
+                    sessionProvider = customProvider
+                }
+            }
+        assertThat(otelConfig.sessionConfig.sessionProvider).isSameAs(customProvider)
     }
 }

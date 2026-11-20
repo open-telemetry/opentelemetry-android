@@ -11,13 +11,18 @@ import io.opentelemetry.android.internal.services.visiblescreen.activities.Defau
 class InstrumentationActivityCallback(
     private val toggleableTracker: ToggleableTracker,
 ) : DefaultingActivityLifecycleCallbacks {
+    @Volatile
+    var isActive: Boolean = true
+
     override fun onActivityResumed(activity: Activity) {
         super.onActivityResumed(activity)
+        if (!isActive) return
         toggleableTracker.startTracking(activity.window)
     }
 
     override fun onActivityPaused(activity: Activity) {
         super.onActivityPaused(activity)
+        if (!isActive) return
         toggleableTracker.stopTracking()
     }
 }

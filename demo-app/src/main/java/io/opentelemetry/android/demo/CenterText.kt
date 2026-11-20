@@ -47,19 +47,21 @@ fun CenterText(
     selectable: Boolean = false,
     color: Color = Color.Unspecified
 ) {
-    val textComposable = Text(
-        text,
-        color = color,
-        textAlign = TextAlign.Center,
-        fontSize = fontSize,
-        modifier = Modifier.fillMaxWidth(),
-        fontFamily = gothamFont,
-        style = TextStyle.Default.copy(textAlign = TextAlign.Center),
-    )
+    val textComposable: @Composable () -> Unit = {
+        Text(
+            text,
+            color = color,
+            textAlign = TextAlign.Center,
+            fontSize = fontSize,
+            modifier = Modifier.fillMaxWidth(),
+            fontFamily = gothamFont,
+            style = TextStyle.Default.copy(textAlign = TextAlign.Center),
+        )
+    }
     if (selectable) {
         return SelectionContainer {
-            textComposable
+            textComposable()
         }
     }
-    return textComposable
+    return textComposable()
 }

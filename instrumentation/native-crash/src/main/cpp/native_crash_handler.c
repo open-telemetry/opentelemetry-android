@@ -18,8 +18,7 @@
 #include <time.h>
 #include <unistd.h>
 
-// Compile the snapshot format's layout assertions before capture uses the record.
-#include "native_crash_snapshot.h"
+#include "native_crash_modules.h"
 
 #define SIGNAL_COUNT 7
 #define TEMPORARY_SUFFIX ".tmp"
@@ -50,6 +49,16 @@ static pthread_mutex_t install_mutex = PTHREAD_MUTEX_INITIALIZER;
 static bool handlers_installed = false;
 static bool alternate_signal_stack_installed = false;
 static atomic_flag handling_signal = ATOMIC_FLAG_INIT;
+
+struct snapshot_capture_state {
+    atomic_bool ready;
+    char path[PATH_MAX];
+    char temporary_path[PATH_MAX];
+    struct otel_native_crash_snapshot snapshot;
+};
+
+_Static_assert(ATOMIC_BOOL_LOCK_FREE == 2, "Snapshot publication must be lock-free");
+static struct snapshot_capture_state snapshot_capture;
 
 static int find_signal_index(int signal_number) {
     for (int index = 0; index < SIGNAL_COUNT; index++) {
@@ -356,11 +365,57 @@ static bool build_crash_record_paths(
     return true;
 }
 
-static bool install_for_path(const char *path, size_t path_length) {
+// Called under install_mutex. Unpublished state may be retried; published state lives until
+// process exit and must never be prepared again. Future capture must acquire-load ready first.
+static bool prepare_snapshot_and_install(
+    struct snapshot_capture_state *state,
+    const char *path,
+    size_t path_length,
+    otel_module_iterator iterate,
+    bool (*install)(void)) {
+    if (atomic_load_explicit(&state->ready, memory_order_acquire)) {
+        return false;
+    }
+    int saved_errno = errno;
+    memset(state->path, 0, sizeof(state->path));
+    memset(state->temporary_path, 0, sizeof(state->temporary_path));
+    memset(&state->snapshot, 0, sizeof(state->snapshot));
+    bool prepared =
+        OTEL_NCS_ARCH_CURRENT != OTEL_NCS_ARCH_UNKNOWN &&
+        build_crash_record_paths(
+            path, path_length, state->path, sizeof(state->path),
+            state->temporary_path, sizeof(state->temporary_path));
+    if (prepared) {
+        state->snapshot.module_count =
+            otel_native_crash_prepare_modules(state->snapshot.modules, iterate);
+        prepared = state->snapshot.module_count != 0;
+    }
+    if (prepared) {
+        static const unsigned char magic[] = OTEL_NCS_MAGIC;
+        memcpy(state->snapshot.magic, magic, sizeof(magic));
+        state->snapshot.version = OTEL_NCS_VERSION;
+        state->snapshot.architecture = OTEL_NCS_ARCH_CURRENT;
+        state->snapshot.record_size = sizeof(state->snapshot);
+    }
+    errno = saved_errno;
+    bool installed = install();
+    // A signal arriving during installation must use marker-only capture. Do not publish
+    // partial installation state: an unsuccessful attempt can be retried with another path.
+    if (installed && prepared) {
+        atomic_store_explicit(&state->ready, true, memory_order_release);
+    }
+    return installed;
+}
+
+static bool install_for_path(
+    const char *path, size_t path_length,
+    const char *snapshot_path, size_t snapshot_path_length) {
     pthread_mutex_lock(&install_mutex);
     bool installed;
     if (handlers_installed) {
-        installed = strcmp(crash_record_path, path) == 0;
+        installed = strcmp(crash_record_path, path) == 0 &&
+            (!atomic_load_explicit(&snapshot_capture.ready, memory_order_acquire) ||
+                (snapshot_path != NULL && strcmp(snapshot_capture.path, snapshot_path) == 0));
     } else {
         installed =
             build_crash_record_paths(
@@ -370,7 +425,9 @@ static bool install_for_path(const char *path, size_t path_length) {
                 sizeof(crash_record_path),
                 temporary_crash_record_path,
                 sizeof(temporary_crash_record_path)) &&
-            install_handlers();
+            prepare_snapshot_and_install(
+                &snapshot_capture, snapshot_path, snapshot_path_length, dl_iterate_phdr,
+                install_handlers);
         handlers_installed = installed;
     }
     pthread_mutex_unlock(&install_mutex);
@@ -378,10 +435,11 @@ static bool install_for_path(const char *path, size_t path_length) {
 }
 
 JNIEXPORT jboolean JNICALL
-Java_io_opentelemetry_android_instrumentation_nativecrash_NativeCrashJni_install(
+Java_io_opentelemetry_android_instrumentation_nativecrash_NativeCrashJni_installForPaths(
     JNIEnv *environment,
     jclass native_crash_jni,
-    jstring marker_path) {
+    jstring marker_path,
+    jstring snapshot_path) {
     (void) native_crash_jni;
     if (marker_path == NULL) {
         return JNI_FALSE;
@@ -397,13 +455,132 @@ Java_io_opentelemetry_android_instrumentation_nativecrash_NativeCrashJni_install
         return JNI_FALSE;
     }
 
-    bool installed = install_for_path(path, (size_t) path_length);
+    const char *snapshot = NULL;
+    jsize snapshot_length = 0;
+    if (snapshot_path != NULL) {
+        snapshot_length = (*environment)->GetStringUTFLength(environment, snapshot_path);
+        snapshot = (*environment)->GetStringUTFChars(environment, snapshot_path, NULL);
+        if (snapshot == NULL) {
+            (*environment)->ReleaseStringUTFChars(environment, marker_path, path);
+            return JNI_FALSE;
+        }
+    }
+    bool installed =
+        install_for_path(path, (size_t) path_length, snapshot, (size_t) snapshot_length);
 
+    if (snapshot != NULL) {
+        (*environment)->ReleaseStringUTFChars(environment, snapshot_path, snapshot);
+    }
     (*environment)->ReleaseStringUTFChars(environment, marker_path, path);
     return installed ? JNI_TRUE : JNI_FALSE;
 }
 
 #ifdef OTEL_NATIVE_CRASH_TESTING
+static struct snapshot_capture_state *test_preparing_state;
+static unsigned int test_install_calls;
+
+static bool test_install_success(void) {
+    test_install_calls++;
+    return !atomic_load_explicit(&test_preparing_state->ready, memory_order_acquire) &&
+        errno == EDOM;
+}
+
+static bool test_install_failure(void) {
+    test_install_calls++;
+    return false;
+}
+
+static int test_no_modules(int (*callback)(struct dl_phdr_info *, size_t, void *), void *data) {
+    (void) callback;
+    (void) data;
+    errno = EIO;
+    return -1;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_io_opentelemetry_android_instrumentation_nativecrash_NativeCrashPreparationTestJni_check(
+    JNIEnv *environment, jclass clazz, jint scenario) {
+    (void) environment;
+    (void) clazz;
+    // These hooks run serially and never install signal handlers or mutate production state.
+    struct snapshot_capture_state state = {0};
+    test_preparing_state = &state;
+    test_install_calls = 0;
+    errno = EDOM;
+    static const char path[] = "/test/native-crash-snapshot.bin";
+    bool passed = false;
+    if (scenario == 0) {
+        bool installed = prepare_snapshot_and_install(
+            &state, path, sizeof(path) - 1, dl_iterate_phdr, test_install_success);
+        struct otel_native_crash_snapshot expected = {
+            .magic = OTEL_NCS_MAGIC, .version = OTEL_NCS_VERSION,
+            .architecture = OTEL_NCS_ARCH_CURRENT, .record_size = sizeof(expected),
+            .module_count = state.snapshot.module_count,
+        };
+        memcpy(expected.modules, state.snapshot.modules, sizeof(expected.modules));
+        passed = installed && atomic_load(&state.ready) && test_install_calls == 1 &&
+            state.snapshot.module_count > 0 && memcmp(&expected, &state.snapshot, sizeof(expected)) == 0 &&
+            strcmp(state.path, path) == 0 &&
+            strcmp(state.temporary_path, "/test/native-crash-snapshot.bin.tmp") == 0;
+    } else if (scenario == 1) {
+        bool failed = !prepare_snapshot_and_install(
+            &state, path, sizeof(path) - 1, dl_iterate_phdr, test_install_failure);
+        bool unpublished = !atomic_load(&state.ready);
+        state.snapshot.stack[0] = 0xa5;
+        passed = failed && unpublished && prepare_snapshot_and_install(
+            &state, "/retry", 6, dl_iterate_phdr, test_install_success) &&
+            atomic_load(&state.ready) && test_install_calls == 2 &&
+            strcmp(state.path, "/retry") == 0 && state.snapshot.stack[0] == 0;
+    } else if (scenario == 2) {
+        passed = prepare_snapshot_and_install(
+            &state, path, sizeof(path) - 1, test_no_modules, test_install_success) &&
+            !atomic_load(&state.ready) && state.snapshot.module_count == 0 &&
+            test_install_calls == 1;
+    } else if (scenario == 3) {
+        char too_long[PATH_MAX];
+        memset(too_long, 'a', sizeof(too_long));
+        passed = prepare_snapshot_and_install(
+            &state, too_long, sizeof(too_long) - 4, dl_iterate_phdr, test_install_success) &&
+            !atomic_load(&state.ready) && state.path[0] == '\0' &&
+            prepare_snapshot_and_install(&state, NULL, 0, dl_iterate_phdr, test_install_success) &&
+            !atomic_load(&state.ready) &&
+            prepare_snapshot_and_install(&state, "", 0, dl_iterate_phdr, test_install_success) &&
+            !atomic_load(&state.ready) && test_install_calls == 3;
+    } else if (scenario == 4) {
+        char longest[PATH_MAX - 4];
+        memset(longest, 'a', sizeof(longest));
+        longest[sizeof(longest) - 1] = '\0';
+        passed = prepare_snapshot_and_install(
+            &state, longest, strlen(longest), dl_iterate_phdr, test_install_success) &&
+            atomic_load(&state.ready) && strlen(state.temporary_path) == PATH_MAX - 1 &&
+            strcmp(state.temporary_path + strlen(longest), ".tmp") == 0;
+    } else if (scenario == 5) {
+        bool installed = prepare_snapshot_and_install(
+            &state, path, sizeof(path) - 1, dl_iterate_phdr, test_install_success);
+        struct otel_native_crash_snapshot before = state.snapshot;
+        passed = installed &&
+            !prepare_snapshot_and_install(&state, "/other", 6, test_no_modules, test_install_failure) &&
+            atomic_load(&state.ready) && test_install_calls == 1 &&
+            strcmp(state.path, path) == 0 && memcmp(&before, &state.snapshot, sizeof(before)) == 0;
+    }
+    test_preparing_state = NULL;
+    return passed ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jbyteArray JNICALL
+Java_io_opentelemetry_android_instrumentation_nativecrash_NativeCrashPreparationTestJni_preparedSnapshot(
+    JNIEnv *environment, jclass clazz) {
+    (void) clazz;
+    if (!atomic_load_explicit(&snapshot_capture.ready, memory_order_acquire)) return NULL;
+    jbyteArray result = (*environment)->NewByteArray(environment, sizeof(snapshot_capture.snapshot));
+    if (result != NULL) {
+        (*environment)->SetByteArrayRegion(
+            environment, result, 0, sizeof(snapshot_capture.snapshot),
+            (const jbyte *) &snapshot_capture.snapshot);
+    }
+    return result;
+}
+
 JNIEXPORT jboolean JNICALL
 Java_io_opentelemetry_android_instrumentation_nativecrash_NativeCrashTestJni_writeCrashMarker(
     JNIEnv *environment,

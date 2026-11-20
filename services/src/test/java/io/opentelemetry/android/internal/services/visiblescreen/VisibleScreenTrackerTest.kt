@@ -8,10 +8,12 @@ package io.opentelemetry.android.internal.services.visiblescreen
 import android.app.Activity
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
+import android.content.Context
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavHost
 import androidx.navigation.fragment.NavHostFragment
+import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
@@ -45,6 +47,18 @@ internal class VisibleScreenTrackerTest {
 
         verify { application.unregisterActivityLifecycleCallbacks(callbacksCaptors[0]) }
         verify { application.unregisterActivityLifecycleCallbacks(callbacksCaptors[1]) }
+    }
+
+    @Test
+    fun verifyInitializationWithNonApplicationContext() {
+        val nonAppContext = mockk<Context>()
+        every { nonAppContext.applicationContext } returns application
+
+        val tracker = VisibleScreenTrackerImpl(nonAppContext)
+        verify(exactly = 2) { application.registerActivityLifecycleCallbacks(any()) }
+
+        tracker.close()
+        verify(exactly = 2) { application.unregisterActivityLifecycleCallbacks(any()) }
     }
 
     @Test

@@ -39,6 +39,21 @@ The output artifacts will be in `instrumentation/build/outputs/`.
 ./gradlew check
 ```
 
+During development, you can run one module's unit tests without an emulator. For example,
+to run all `core` unit tests:
+
+```
+./gradlew :core:test
+```
+
+To run one test class, use the debug variant's unit-test task:
+
+```
+./gradlew :core:testDebugUnitTest --tests "io.opentelemetry.android.OpenTelemetryRumBuilderTest"
+```
+
+Run the full `./gradlew check` before submitting.
+
 ## Submitting Pull Requests (PRs)
 
 Pull requests are welcome! As an open source community project, OpenTelemetry Android
@@ -186,6 +201,23 @@ instrumentation/
 
 You can take a look at how it's done for the OkHttp
 instrumentation [here](instrumentation/okhttp3) for reference.
+
+#### Minimum supported versions test
+
+The `gradle-integration-test` module builds real consumer apps against the published artifacts
+using the minimum JDK, Gradle, AGP, Kotlin and compileSdk listed in [VERSIONING.md](VERSIONING.md).
+It is not part of `./gradlew check` because it resolves those artifacts from Maven Local, so they
+have to be published first. It also needs that minimum JDK installed, in addition to the one that
+runs Gradle:
+
+```
+./gradlew publishToMavenLocal
+./gradlew :gradle-integration-test:minSupportedVersionsTest
+```
+
+CI runs it on every pull request. If it fails after a dependency update, that update raises the
+minimum versions our consumers need. Raising them should be a deliberate decision, so update the
+pins in `gradle/libs.versions.toml` and VERSIONING.md.
 
 ## API Compatibility
 

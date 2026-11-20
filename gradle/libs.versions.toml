@@ -1,15 +1,15 @@
 [versions]
-opentelemetry-instrumentation-alpha = "2.32.0-alpha"
+opentelemetry-instrumentation-alpha = "2.34.0-alpha"
 #opentelemetry-instrumentation = "2.9.0" // alpha bom includes non-alpha bom
-opentelemetry-contrib = "1.61.0-alpha"
-opentelemetry-kotlin = "0.9.0"
+opentelemetry-contrib = "1.62.1-alpha"
+opentelemetry-kotlin = "0.10.0"
 junit = "6.1.3"
-byteBuddy = "1.18.15"
+byteBuddy = "1.18.17-jdk5"
 okhttp = "5.5.1"
-spotless = "8.10.4"
+spotless = "8.11.0"
 kotlin = "2.4.21"
 androidPlugin = "9.4.1"
-kspPlugin = "2.3.12"
+kspPlugin = "2.3.14"
 junitKtx = "1.3.0"
 autoServiceProcessor = "1.2.0"
 autoService = "1.1.1"
@@ -23,6 +23,16 @@ openTelemetryProto = "1.11.1-alpha"
 protobufKotlin = "4.36.2"
 weaver = "0.28.0"
 
+# Minimum toolchain that a consumer of the published artifacts must be able to build with,
+# as documented in VERSIONING.md. Enforced by the :gradle-integration-test module.
+minSupportedAgp = "8.12.0"
+minSupportedGradle = "8.13"
+minSupportedKotlin = "2.1.0"
+# The coroutines instrumentation needs a newer Kotlin than everything else.
+minSupportedKotlinCoroutines = "2.3.0"
+minSupportedCompileSdk = "37"
+minSupportedJdk = "17"
+
 [libraries]
 opentelemetry-platform-alpha = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha", version.ref = "opentelemetry-instrumentation-alpha" }
 opentelemetry-platform = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom" }
@@ -30,9 +40,9 @@ opentelemetry-core-bom = { module = "io.opentelemetry:opentelemetry-bom" }
 androidx-navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "androidx-navigation" }
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "androidx-navigation" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidx-navigation" }
-androidx-core = "androidx.core:core:1.19.1"
+androidx-core = "androidx.core:core:1.18.0"
 androidx-annotation = "androidx.annotation:annotation:1.11.0"
-androidx-lifecycle-process = "androidx.lifecycle:lifecycle-process:2.11.0"
+androidx-lifecycle-process = "androidx.lifecycle:lifecycle-process:2.11.1"
 androidx-fragment = { module = "androidx.fragment:fragment", version.ref="fragment" }
 
 findbugs-jsr305 = "com.google.code.findbugs:jsr305:3.0.2"
@@ -70,7 +80,7 @@ androidx-test-runner = "androidx.test:runner:1.7.0"
 androidx-junit = "androidx.test.ext:junit:1.3.0"
 # 3.7.0+ is required on SDK 37, see https://developer.android.com/jetpack/androidx/releases/test#espresso-3.7.0
 androidx-test-espresso-core ="androidx.test.espresso:espresso-core:3.7.0"
-mockk = "io.mockk:mockk:1.14.11"
+mockk = "io.mockk:mockk:1.14.12"
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "junit" }
@@ -84,15 +94,15 @@ protobuf-kotlin = { module = "com.google.protobuf:protobuf-kotlin", version.ref 
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.11.0" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = "1.11.0" }
 opentelemetry-extension-kotlin = { module = "io.opentelemetry:opentelemetry-extension-kotlin" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.12.0" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.13.0" }
 testcontainers = { module = "org.testcontainers:testcontainers", version = "2.0.5" }
 
 #Compilation tools
 desugarJdkLibs = "com.android.tools:desugar_jdk_libs:2.1.5"
-nullaway = "com.uber.nullaway:nullaway:0.14.3"
-errorprone-core = "com.google.errorprone:error_prone_core:2.51.0"
+nullaway = "com.uber.nullaway:nullaway:0.14.4"
+errorprone-core = "com.google.errorprone:error_prone_core:2.53.0"
 spotless-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
-errorprone-plugin = "net.ltgt.gradle:gradle-errorprone-plugin:5.1.1"
+errorprone-plugin = "net.ltgt.gradle:gradle-errorprone-plugin:5.2.0"
 nullaway-plugin = "net.ltgt.gradle:gradle-nullaway-plugin:3.3.0"
 animalsniffer-plugin = "ru.vyarus:gradle-animalsniffer-plugin:2.0.1"
 android-plugin = { module = "com.android.tools.build:gradle", version.ref = "androidPlugin" }

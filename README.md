@@ -44,7 +44,7 @@ from all other opentelemetry dependencies:
 ```kotlin
 dependencies {
     //...
-    api(platform("io.opentelemetry.android:opentelemetry-android-bom:1.8.0-alpha"))
+    api(platform("io.opentelemetry.android:opentelemetry-android-bom:1.9.0-alpha"))
     implementation("io.opentelemetry.android:android-agent") // Version is resolved through the BOM
     //...
 }
@@ -84,7 +84,7 @@ Then use the latest snapshot version with the BOM in your app's `build.gradle.kt
 
 ```kotlin
 dependencies {
-    implementation(platform("io.opentelemetry.android:opentelemetry-android-bom:1.9.0-alpha-SNAPSHOT"))
+    implementation(platform("io.opentelemetry.android:opentelemetry-android-bom:1.10.0-alpha-SNAPSHOT"))
     implementation("io.opentelemetry.android:android-agent")
 }
 ```
@@ -193,13 +193,14 @@ The following instrumentation modules are bundled with the Android Agent:
 * [Startup](./instrumentation/startup)
 * [Sessions](./instrumentation/sessions)
 * [Screen orientation](./instrumentation/screen-orientation)
-* [View click](./instrumentation/view-click/)
 
 There are also other
 [additional instrumentation modules](https://github.com/open-telemetry/opentelemetry-android/tree/main/instrumentation)
 that application developers can include through a gradle dependency. 
 Instrumentations are detected at runtime via the classpath, and
 are installed automatically.
+
+The [View click instrumentation](./instrumentation/view-click/README.md) is optional and must be added separately.
 
 ## Additional Documentation
 

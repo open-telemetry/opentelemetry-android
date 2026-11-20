@@ -22,9 +22,11 @@ internal data class NativeCrashRecoveryState(
     val signalNumber: Int? = null,
     val timestampEpochSecond: Long? = null,
     val timestampNano: Int? = null,
+    // Marker failures are tracked separately once snapshot recovery has started.
+    val markerReadAttempts: Int = 0,
 ) {
     fun isValid(): Boolean {
-        if (attempts < 0 || firstAttemptEpochMillis <= 0) return false
+        if (minOf(attempts, markerReadAttempts) < 0 || firstAttemptEpochMillis <= 0) return false
         val noIdentity = signalNumber == null && timestampEpochSecond == null && timestampNano == null
         val validIdentity =
             signalNumber != null && signalNumber > 0 &&

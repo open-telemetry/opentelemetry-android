@@ -58,6 +58,14 @@ internal class RuntimeDetailsExtractor(
         return runtime.freeMemory()
     }
 
+    fun unregister(context: Context) {
+        try {
+            context.unregisterReceiver(this)
+        } catch (_: IllegalArgumentException) {
+            // Already unregistered or not registered
+        }
+    }
+
     companion object {
         fun create(context: Context): RuntimeDetailsExtractor {
             val batteryChangedFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)

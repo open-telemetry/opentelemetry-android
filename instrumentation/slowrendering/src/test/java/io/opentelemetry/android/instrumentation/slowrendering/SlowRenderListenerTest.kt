@@ -10,6 +10,7 @@ import android.content.ComponentName
 import android.os.Build
 import android.os.Handler
 import android.view.FrameMetrics
+import android.view.Window
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.CapturingSlot
 import io.mockk.confirmVerified
@@ -34,6 +35,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import java.lang.ref.WeakReference
 import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -95,6 +97,26 @@ class SlowRenderListenerTest {
     }
 
     @Test
+    fun resumeAndPauseDoNotPropagateExceptions() {
+        val testInstance =
+            SlowRenderListener(
+                jankReporter,
+                executorService,
+                frameMetricsHandler,
+                Duration.ZERO,
+            )
+        every {
+            activity.window.addOnFrameMetricsAvailableListener(any(), any())
+        } throws IllegalStateException("boom")
+        every {
+            activity.window.removeOnFrameMetricsAvailableListener(any())
+        } throws IllegalStateException("boom")
+
+        testInstance.onActivityResumed(activity)
+        testInstance.onActivityPaused(activity)
+    }
+
+    @Test
     fun removeBeforeAddOk() {
         val testInstance =
             SlowRenderListener(
@@ -142,7 +164,7 @@ class SlowRenderListenerTest {
                 jankReporter,
                 executorService,
                 frameMetricsHandler,
-                Duration.ZERO,
+                Duration.ofMillis(1500),
             )
 
         testInstance.onActivityResumed(activity)
@@ -161,7 +183,7 @@ class SlowRenderListenerTest {
 
         testInstance.onActivityPaused(activity)
 
-        assertLogContent(periodSeconds = 0.0)
+        assertLogContent(periodSeconds = 1.5)
     }
 
     @Test
@@ -205,7 +227,7 @@ class SlowRenderListenerTest {
 
         testInstance.start()
 
-        assertLogContent(periodSeconds = 1.0)
+        assertLogContent(periodSeconds = 1.001)
     }
 
     @Test
@@ -215,6 +237,120 @@ class SlowRenderListenerTest {
         listener.onFrameMetricsAvailable(null, frameMetrics, 99)
         every { frameMetrics.getMetric(FrameMetrics.DRAW_DURATION) }
         verify(exactly = 0) { frameMetrics.getMetric(FrameMetrics.DRAW_DURATION) }
+    }
+
+    @Test
+    fun perActivityListenerDoesNotRetainActivity() {
+        val activityFields =
+            PerActivityListener::class.java.declaredFields.filter {
+                Activity::class.java.isAssignableFrom(it.type)
+            }
+        assertThat(activityFields).isEmpty()
+    }
+
+    @Test
+    fun perActivityListenerAllowsActivityToBeGarbageCollected() {
+        var localActivity: Activity? = TestActivity()
+        val weakRef = WeakReference(localActivity)
+        val listener = PerActivityListener(localActivity!!)
+        localActivity = null
+
+        forceGarbageCollection()
+
+        assertThat(weakRef.get()).isNull()
+        assertThat(listener.getActivityName()).isEqualTo("io.otel/TestComponent")
+    }
+
+    @Test
+    fun slowRenderListenerDoesNotPreventActivityGarbageCollection() {
+        val testInstance =
+            SlowRenderListener(
+                jankReporter,
+                executorService,
+                frameMetricsHandler,
+                Duration.ZERO,
+            )
+
+        var localActivity: Activity? = TestActivity()
+        val weakRef = WeakReference(localActivity)
+
+        testInstance.onActivityResumed(localActivity!!)
+        localActivity = null
+
+        forceGarbageCollection()
+
+        assertThat(weakRef.get()).isNull()
+    }
+
+    @Test
+    fun shutdownHandlesGarbageCollectedActivityWithoutCrashing() {
+        val testInstance =
+            SlowRenderListener(
+                jankReporter,
+                executorService,
+                frameMetricsHandler,
+                Duration.ZERO,
+            )
+
+        var localActivity: Activity? = TestActivity()
+
+        testInstance.onActivityResumed(localActivity!!)
+        localActivity = null
+
+        forceGarbageCollection()
+
+        // Calling shutdown when the weak key has been collected must not throw NPE
+        testInstance.shutdown()
+    }
+
+    @Test
+    fun reportSlowRendersExpungesGarbageCollectedEntries() {
+        val testInstance =
+            SlowRenderListener(
+                jankReporter,
+                executorService,
+                frameMetricsHandler,
+                Duration.ofSeconds(1),
+            )
+
+        var localActivity: Activity? = TestActivity()
+
+        testInstance.onActivityResumed(localActivity!!)
+        localActivity = null
+
+        forceGarbageCollection()
+
+        val reportSlowRendersMethod =
+            SlowRenderListener::class.java.getDeclaredMethod("reportSlowRenders").apply {
+                isAccessible = true
+            }
+        reportSlowRendersMethod.invoke(testInstance)
+
+        val activitiesField =
+            SlowRenderListener::class.java.getDeclaredField("activities").apply {
+                isAccessible = true
+            }
+        val activities = activitiesField.get(testInstance) as Map<*, *>
+        assertThat(activities).isEmpty()
+    }
+
+    @Suppress("ExplicitGarbageCollectionCall")
+    private fun forceGarbageCollection() {
+        repeat(5) {
+            Runtime.getRuntime().gc()
+            System.runFinalization()
+            try {
+                Thread.sleep(20)
+            } catch (ignored: InterruptedException) {
+                // Expected during test GC wait loop
+            }
+        }
+    }
+
+    private class TestActivity : Activity() {
+        override fun getComponentName(): ComponentName = ComponentName("io.otel", "TestComponent")
+
+        override fun getWindow(): Window = mockk(relaxed = true)
     }
 
     private fun makeSomeDurations(): List<Long> =

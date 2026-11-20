@@ -27,8 +27,17 @@ internal class AndroidInstrumentationLoaderImpl : AndroidInstrumentationLoader {
      */
     private fun loadInstrumentations(): List<AndroidInstrumentation> {
         val instrumentations = mutableListOf<AndroidInstrumentation>()
-        for (instrumentation in ServiceLoader.load(AndroidInstrumentation::class.java, AndroidInstrumentation::class.java.classLoader)) {
-            instrumentations.add(instrumentation)
+        try {
+            for (
+            instrumentation in ServiceLoader.load(
+                AndroidInstrumentation::class.java,
+                AndroidInstrumentation::class.java.classLoader,
+            )
+            ) {
+                instrumentations.add(instrumentation)
+            }
+        } catch (e: Throwable) {
+            Log.w(OTEL_RUM_LOG_TAG, "Failed to load instrumentations", e)
         }
         return instrumentations
     }

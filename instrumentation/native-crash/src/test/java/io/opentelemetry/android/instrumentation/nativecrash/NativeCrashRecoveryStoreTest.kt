@@ -164,6 +164,7 @@ class NativeCrashRecoveryStoreTest {
         val invalidStates =
             listOf(
                 claim.copy(attempts = -1),
+                claim.copy(markerReadAttempts = -1),
                 claim.copy(firstAttemptEpochMillis = 0),
                 claim.copy(firstAttemptEpochMillis = -1),
                 claim.copy(signalNumber = 0),
@@ -207,6 +208,7 @@ class NativeCrashRecoveryStoreTest {
             state.copy(signalNumber = 1, timestampEpochSecond = 0, timestampNano = 0),
             state.copy(
                 attempts = Int.MAX_VALUE,
+                markerReadAttempts = Int.MAX_VALUE,
                 firstAttemptEpochMillis = Long.MAX_VALUE,
                 signalNumber = Int.MAX_VALUE,
                 timestampEpochSecond = Long.MAX_VALUE,
@@ -215,6 +217,23 @@ class NativeCrashRecoveryStoreTest {
         )) {
             assertThat(FileNativeCrashStore(tempDir).writeRecoveryState(boundary)).isTrue()
             assertThat(FileNativeCrashStore(tempDir).readRecoveryState()).isEqualTo(NativeCrashRead.Success(boundary))
+        }
+    }
+
+    @Test
+    fun `reads recovery states written before separate marker counts`() {
+        val store = FileNativeCrashStore(tempDir)
+        val path = File(tempDir, "native-crash-recovery.properties")
+        for (phase in listOf(NativeCrashRecoveryPhase.MARKER_READ, NativeCrashRecoveryPhase.SNAPSHOT_READ)) {
+            val state =
+                NativeCrashRecoveryState
+                    .create(phase, 2_000, record.takeIf { phase == NativeCrashRecoveryPhase.SNAPSHOT_READ })
+                    .copy(attempts = 2)
+            assertThat(store.writeRecoveryState(state)).isTrue()
+            val properties = Properties().apply { path.inputStream().use { load(it) } }
+            properties.remove("recovery.marker_read_attempts")
+            path.outputStream().use { properties.store(it, null) }
+            assertThat(FileNativeCrashStore(tempDir).readRecoveryState()).isEqualTo(NativeCrashRead.Success(state))
         }
     }
 
@@ -355,6 +374,9 @@ class NativeCrashRecoveryStoreTest {
                 "recovery.phase" to "MARKER_READ",
                 "recovery.attempts" to "-1",
                 "recovery.attempts" to "not-a-number",
+                "recovery.marker_read_attempts" to "-1",
+                "recovery.marker_read_attempts" to "not-a-number",
+                "recovery.marker_read_attempts" to "2147483648",
                 "recovery.first_attempt_epoch_millis" to "0",
                 "recovery.first_attempt_epoch_millis" to "not-a-number",
                 "signal.number" to "0",

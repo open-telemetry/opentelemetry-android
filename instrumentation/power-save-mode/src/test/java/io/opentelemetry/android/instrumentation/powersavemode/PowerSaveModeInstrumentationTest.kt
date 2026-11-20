@@ -85,4 +85,35 @@ class PowerSaveModeInstrumentationTest {
 
         assertThat(openTelemetryRule.logRecords).isEmpty()
     }
+
+    @Test
+    fun `repeated install is a safe no-op and does not register duplicate receivers`() {
+        shadowOf(powerManager).setIsPowerSaveMode(true)
+        instrumentation.install(context, openTelemetryRum)
+        instrumentation.install(context, openTelemetryRum)
+
+        context.sendBroadcast(intent)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(openTelemetryRule.logRecords).hasSize(1)
+    }
+
+    @Test
+    fun `supports reinstall after uninstall without duplicate events`() {
+        shadowOf(powerManager).setIsPowerSaveMode(true)
+        instrumentation.install(context, openTelemetryRum)
+        instrumentation.uninstall(context, openTelemetryRum)
+
+        // Broadcast after uninstall produces no events
+        context.sendBroadcast(intent)
+        shadowOf(Looper.getMainLooper()).idle()
+        assertThat(openTelemetryRule.logRecords).isEmpty()
+
+        // Reinstall works cleanly
+        instrumentation.install(context, openTelemetryRum)
+
+        context.sendBroadcast(intent)
+        shadowOf(Looper.getMainLooper()).idle()
+        assertThat(openTelemetryRule.logRecords).hasSize(1)
+    }
 }

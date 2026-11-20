@@ -29,7 +29,19 @@ OpenTelemetryRumInitializer.initialize(context) {
 }
 ```
 
-If not using the agent, you can create a `SessionManager` directly with a custom `SessionConfig`.
+To replace the default session manager, set a custom [SessionProvider](../../session/src/main/kotlin/io/opentelemetry/android/session/SessionProvider.kt) through the public [SessionConfiguration](../../android-agent/src/main/kotlin/io/opentelemetry/android/agent/dsl/SessionConfiguration.kt) DSL:
+
+```kotlin
+OpenTelemetryRumInitializer.initialize(context) {
+    session {
+        sessionProvider = SessionProvider { "my-session-id" }
+    }
+}
+```
+
+This replaces default session generation and timeout handling, so the timeout settings above no longer apply.
+The plain `SessionProvider` in this example does not emit `session.start` or `session.end` events.
+To emit those events, the provider must also implement [SessionPublisher](../../session/src/main/kotlin/io/opentelemetry/android/session/SessionPublisher.kt) and notify its observers of session changes.
 
 ## Installation
 
@@ -41,7 +53,7 @@ manually install this instrumentation by following the steps below.
 ### Adding dependencies
 
 ```kotlin
-implementation("io.opentelemetry.android.instrumentation:sessions:1.8.0-alpha")
+implementation("io.opentelemetry.android.instrumentation:sessions:1.9.0-alpha")
 ```
 
 1. You can find the latest version [here](https://central.sonatype.com/artifact/io.opentelemetry.android.instrumentation/sessions).

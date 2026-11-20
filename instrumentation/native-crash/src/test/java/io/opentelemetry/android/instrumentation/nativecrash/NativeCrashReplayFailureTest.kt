@@ -68,6 +68,39 @@ class NativeCrashReplayFailureTest {
     }
 
     @Test
+    fun `consecutive crashes retain their own context and skip a legacy delivery claim`() {
+        val legacy = fileStoreWithCrashFiles()
+        assertThat(legacy.writeRecoveryState(NativeCrashRecoveryState.create(NativeCrashRecoveryPhase.DELIVERY_CLAIMED, 1, crashRecord)))
+            .isTrue()
+        val first = launch(1)
+        val second = launch(2)
+        val current = launch(3)
+        listOf(first, second, current).forEachIndexed { index, storage ->
+            val store = storage.currentStore
+            assertThat(store.writeContext(NativeCrashContext("session-$index", "1", "Android", "29"))).isTrue()
+            store.crashRecordPath.writeText("signal.number=11\ntimestamp.epoch_nanos=1783598400000000000\n")
+        }
+
+        current.replayPreviousCrashes { reporter(it).replayPreviousCrash() }
+
+        assertThat(otelTesting.logRecords.map { it.attributes.get(stringKey(SESSION_ID)) })
+            .containsExactly("session-1", "session-0")
+        assertCrashFilesRemoved(legacy)
+        assertThat(legacy.readRecoveryState()).isEqualTo(NativeCrashRead.Missing)
+        assertThat(first.currentStore.crashRecordPath.parentFile).doesNotExist()
+        assertThat(second.currentStore.crashRecordPath.parentFile).doesNotExist()
+        assertThat(current.currentStore.readContext()?.sessionId).isEqualTo("session-2")
+        assertThat(current.currentStore.readCrashRecord()).isEqualTo(crashRecord)
+        val replayed = mutableListOf<File>()
+        current.replayPreviousCrashes { replayed.add(it.crashRecordPath) }
+        assertThat(replayed).isEmpty()
+
+        launch(4).replayPreviousCrashes { reporter(it).replayPreviousCrash() }
+        assertThat(otelTesting.logRecords.map { it.attributes.get(stringKey(SESSION_ID)) })
+            .containsExactly("session-1", "session-0", "session-2")
+    }
+
+    @Test
     fun `unreadable old state leaves new capture and other reports independent`() {
         val previous = launch(1).currentStore
         assertThat(previous.writeContext(NativeCrashContext("old", "1", "Android", "29"))).isTrue()
@@ -252,27 +285,88 @@ class NativeCrashReplayFailureTest {
     }
 
     @Test
-    fun `replays marker only when snapshot file cannot be read`() {
+    fun `replays marker only after snapshot read retries are exhausted`() {
         val store = fileStoreWithCrashFiles()
 
         withUnreadableFile(store.crashSnapshotPath) {
-            reporter(store).replayPreviousCrash()
+            repeat(2) {
+                assertThat(reporter(FileNativeCrashStore(tempDir)).replayPreviousCrash())
+                    .isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+                assertThat(otelTesting.logRecords).isEmpty()
+                assertThat(store.crashRecordPath).exists()
+                assertThat(store.crashSnapshotPath).exists()
+            }
+            assertThat(reporter(FileNativeCrashStore(tempDir)).replayPreviousCrash())
+                .isEqualTo(NativeCrashRecoveryResult.COMPLETE)
         }
 
         assertReplayedWithoutStacktrace()
         assertCrashFilesRemoved(store)
+        assertThat(reporter(FileNativeCrashStore(tempDir)).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(otelTesting.logRecords).hasSize(1)
     }
 
     @Test
-    fun `removes paired snapshot when marker file cannot be read`() {
+    fun `alternating read failures retain both budgets across restarts`() {
+        for (snapshotFirst in listOf(true, false)) {
+            otelTesting.clearLogRecords()
+            val store = fileStoreWithCrashFiles()
+            var firstAttempt: Long? = null
+            repeat(5) { index ->
+                val snapshotFails = (index % 2 == 0) == snapshotFirst
+                withUnreadableFile(if (snapshotFails) store.crashSnapshotPath else store.crashRecordPath) {
+                    val result = reporter(FileNativeCrashStore(tempDir)).replayPreviousCrash()
+                    assertThat(result).isEqualTo(
+                        if (index == 4) NativeCrashRecoveryResult.COMPLETE else NativeCrashRecoveryResult.RETRY_PENDING,
+                    )
+                }
+                if (index < 4) {
+                    val state = (store.readRecoveryState() as NativeCrashRead.Success).value
+                    if (firstAttempt == null) firstAttempt = state.firstAttemptEpochMillis
+                    assertThat(state.firstAttemptEpochMillis).isEqualTo(firstAttempt)
+                    assertThat(otelTesting.logRecords).isEmpty()
+                }
+            }
+            if (snapshotFirst) assertReplayedWithoutStacktrace() else assertThat(otelTesting.logRecords).isEmpty()
+            assertCrashFilesRemoved(store)
+            assertThat(store.readRecoveryState()).isEqualTo(NativeCrashRead.Missing)
+            assertThat(reporter(FileNativeCrashStore(tempDir)).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+            assertThat(otelTesting.logRecords).hasSize(if (snapshotFirst) 1 else 0)
+        }
+    }
+
+    @Test
+    fun `removes paired snapshot after marker read retries are exhausted`() {
         val store = fileStoreWithCrashFiles()
 
         withUnreadableFile(store.crashRecordPath) {
-            reporter(store).replayPreviousCrash()
+            repeat(2) {
+                assertThat(reporter(FileNativeCrashStore(tempDir)).replayPreviousCrash())
+                    .isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+                assertThat(store.crashRecordPath).exists()
+                assertThat(store.crashSnapshotPath).exists()
+            }
+            assertThat(reporter(FileNativeCrashStore(tempDir)).replayPreviousCrash())
+                .isEqualTo(NativeCrashRecoveryResult.COMPLETE)
         }
 
         assertThat(otelTesting.logRecords).isEmpty()
         assertCrashFilesRemoved(store)
+    }
+
+    @Test
+    fun `retries a temporary marker read failure without losing the crash`() {
+        val store = fileStoreWithCrashFiles()
+        withUnreadableFile(store.crashRecordPath) {
+            assertThat(reporter(store).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.RETRY_PENDING)
+            assertThat(otelTesting.logRecords).isEmpty()
+        }
+
+        assertThat(reporter(FileNativeCrashStore(tempDir)).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertReplayedWithoutStacktrace()
+        assertCrashFilesRemoved(store)
+        assertThat(reporter(FileNativeCrashStore(tempDir)).replayPreviousCrash()).isEqualTo(NativeCrashRecoveryResult.COMPLETE)
+        assertThat(otelTesting.logRecords).hasSize(1)
     }
 
     @Test

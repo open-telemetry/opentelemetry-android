@@ -84,4 +84,14 @@ internal class AnrDetectorTogglerTest {
 
         verify(exactly = 1) { future.cancel(true) }
     }
+
+    @Test
+    fun testForegroundIgnoredAfterStop() {
+        underTest.stop()
+        underTest.onApplicationForegrounded()
+
+        verify(exactly = 0) {
+            scheduler.scheduleWithFixedDelay(any(), any(), any(), any())
+        }
+    }
 }

@@ -10,6 +10,7 @@ import android.content.Intent
 import android.os.BatteryManager
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions
 import org.junit.jupiter.api.Test
@@ -50,5 +51,27 @@ internal class RuntimeDetailsExtractorTest {
             .containsEntry(RuntimeDetailsExtractor.STORAGE_SPACE_FREE_KEY, 4200L)
             .containsKey(RuntimeDetailsExtractor.HEAP_FREE_KEY)
             .containsEntry(RuntimeDetailsExtractor.BATTERY_PERCENT_KEY, 69.0)
+    }
+
+    @Test
+    fun shouldUnregisterReceiver() {
+        val context = mockk<Context>(relaxed = true)
+        val details = RuntimeDetailsExtractor.create(context)
+
+        details.unregister(context)
+
+        verify(exactly = 1) { context.unregisterReceiver(details) }
+    }
+
+    @Test
+    fun shouldHandleUnregisterWhenNotRegisteredOrThrows() {
+        val context = mockk<Context>(relaxed = true)
+        val details = RuntimeDetailsExtractor(File("/tmp"))
+        every { context.unregisterReceiver(any()) } throws IllegalArgumentException("Receiver not registered")
+
+        // Should not throw
+        details.unregister(context)
+
+        verify(exactly = 1) { context.unregisterReceiver(details) }
     }
 }

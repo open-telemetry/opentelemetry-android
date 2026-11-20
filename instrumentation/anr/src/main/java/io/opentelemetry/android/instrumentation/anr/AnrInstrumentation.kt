@@ -22,7 +22,8 @@ class AnrInstrumentation : AndroidInstrumentation {
     private val additionalExtractors: MutableList<EventAttributesExtractor<Array<StackTraceElement>>> =
         mutableListOf()
     private var mainLooper: Looper? = null
-    private var scheduler: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
+    private var scheduler: ScheduledExecutorService? = null
+    private var schedulerFactory: () -> ScheduledExecutorService = { Executors.newScheduledThreadPool(1) }
 
     private var anrDetector: AnrDetector? = null
 
@@ -40,8 +41,8 @@ class AnrInstrumentation : AndroidInstrumentation {
     }
 
     @VisibleForTesting
-    internal fun setScheduler(scheduler: ScheduledExecutorService): AnrInstrumentation {
-        this.scheduler = scheduler
+    internal fun setSchedulerFactory(factory: () -> ScheduledExecutorService): AnrInstrumentation {
+        schedulerFactory = factory
         return this
     }
 
@@ -49,12 +50,17 @@ class AnrInstrumentation : AndroidInstrumentation {
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
     ) {
+        if (anrDetector != null) {
+            return
+        }
+        val activeScheduler = schedulerFactory()
+        scheduler = activeScheduler
         val looper = mainLooper ?: Looper.getMainLooper()
         val detector =
             AnrDetector(
                 additionalExtractors,
                 looper,
-                scheduler,
+                activeScheduler,
                 get(context).appLifecycle,
                 openTelemetryRum.openTelemetry,
             )
@@ -68,6 +74,8 @@ class AnrInstrumentation : AndroidInstrumentation {
     ) {
         anrDetector?.stop()
         anrDetector = null
+        scheduler?.shutdownNow()
+        scheduler = null
     }
 
     override val name: String = "anr"

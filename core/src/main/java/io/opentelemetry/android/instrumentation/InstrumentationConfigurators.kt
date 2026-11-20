@@ -30,8 +30,17 @@ internal class InstrumentationConfigurators
              */
             private fun loadConfigurators(): List<Konfigurator> {
                 val configurators = mutableListOf<Konfigurator>()
-                for (configurator in ServiceLoader.load(Konfigurator::class.java, Konfigurator::class.java.classLoader)) {
-                    configurators.add(configurator)
+                try {
+                    for (
+                    configurator in ServiceLoader.load(
+                        Konfigurator::class.java,
+                        Konfigurator::class.java.classLoader,
+                    )
+                    ) {
+                        configurators.add(configurator)
+                    }
+                } catch (e: Throwable) {
+                    android.util.Log.w(OTEL_RUM_LOG_TAG, "Failed to load instrumentation configurators", e)
                 }
                 return configurators
             }
