@@ -65,7 +65,7 @@ class ThermalInstrumentation : AndroidInstrumentation {
     ) {
         val powerManager = this.powerManager
         val detector = this.detector
-        if (powerManager != null && detector != null) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && powerManager != null && detector != null) {
             unregisterListener(powerManager, detector)
         }
         executor?.shutdown()
