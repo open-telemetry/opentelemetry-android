@@ -10,7 +10,6 @@ import android.content.Context
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.RumBuilder
-import io.opentelemetry.android.agent.connectivity.Compression
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 import io.opentelemetry.android.agent.dsl.OpenTelemetryConfiguration
 import io.opentelemetry.android.agent.session.SessionConfig
@@ -22,12 +21,7 @@ import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.contrib.interceptor.InterceptableLogRecordExporter
-import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
-import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
-import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
 import io.opentelemetry.sdk.logs.export.LogRecordExporter
-import io.opentelemetry.sdk.metrics.export.MetricExporter
-import io.opentelemetry.sdk.trace.export.SpanExporter
 
 @OptIn(Incubating::class)
 object OpenTelemetryRumInitializer {
@@ -86,7 +80,7 @@ object OpenTelemetryRumInitializer {
                         addTracerProviderCustomizer { builder, _ -> builder.setSampler(sampler) }
                     }
                     addSpanExporterCustomizer {
-                        createSpanExporter(cfg.exportConfig.spansEndpoint())
+                        OtlpExporterFactory.createHttpSpanExporter(cfg.exportConfig.spansEndpoint())
                     }
                     HttpSpanHostFilter
                         .create(cfg.instrumentations.httpTelemetry.recordSpanForHost())
@@ -106,72 +100,23 @@ object OpenTelemetryRumInitializer {
                 }
                 if (rumConfig.metricsEnabled) {
                     addMetricExporterCustomizer {
-                        createMetricExporter(cfg.exportConfig.metricsEndpoint())
+                        OtlpExporterFactory.createHttpMetricExporter(cfg.exportConfig.metricsEndpoint())
                     }
                 }
             }.build()
             .let { IncubatingOpenTelemetryRumImpl(it, manager) }
     }
 
-    private fun createSpanExporter(endpoint: HttpEndpointConnectivity): SpanExporter =
-        OtlpHttpSpanExporter
-            .builder()
-            .setEndpoint(endpoint.getUrl())
-            .setHeaders(endpoint::getHeaders)
-            .setCompression(endpoint.getCompression().getUpstreamName())
-            .apply {
-                endpoint.getClientTls()?.let {
-                    setClientTls(it.privateKeyPem, it.certificatePem)
-                }
-                endpoint.getSslContext()?.let {
-                    setSslContext(it.sslContext, it.sslX509TrustManager)
-                }
-            }.build()
-
     private fun createLogExporter(
         endpoint: HttpEndpointConnectivity,
         recordWebsocketEventForHost: ((String) -> Boolean)?,
     ): LogRecordExporter {
-        val exporter =
-            OtlpHttpLogRecordExporter
-                .builder()
-                .setEndpoint(endpoint.getUrl())
-                .setHeaders(endpoint::getHeaders)
-                .setCompression(endpoint.getCompression().getUpstreamName())
-                .apply {
-                    endpoint.getClientTls()?.let {
-                        setClientTls(it.privateKeyPem, it.certificatePem)
-                    }
-                    endpoint.getSslContext()?.let {
-                        setSslContext(it.sslContext, it.sslX509TrustManager)
-                    }
-                }.build()
+        val exporter = OtlpExporterFactory.createHttpLogExporter(endpoint)
         val hostFilter = WebsocketEventHostFilter.create(recordWebsocketEventForHost) ?: return exporter
         return InterceptableLogRecordExporter(exporter) { record ->
             if (hostFilter.rejects(record)) null else record
         }
     }
-
-    private fun createMetricExporter(endpoint: HttpEndpointConnectivity): MetricExporter =
-        OtlpHttpMetricExporter
-            .builder()
-            .setEndpoint(endpoint.getUrl())
-            .setHeaders(endpoint::getHeaders)
-            .setCompression(endpoint.getCompression().getUpstreamName())
-            .apply {
-                endpoint.getClientTls()?.let {
-                    setClientTls(it.privateKeyPem, it.certificatePem)
-                }
-                endpoint.getSslContext()?.let {
-                    setSslContext(it.sslContext, it.sslX509TrustManager)
-                }
-            }.build()
-
-    private fun Compression.getUpstreamName(): String =
-        when (this) {
-            Compression.GZIP -> "gzip"
-            else -> "none"
-        }
 
     private fun createSessionProvider(
         appLifecycle: AppLifecycle,
