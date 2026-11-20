@@ -181,10 +181,12 @@ class OpenTelemetryRumBuilderTest {
         val openTelemetryRum =
             makeBuilder()
                 .setResource(resource)
-                .addLoggerProviderCustomizer { logRecordProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
-                    logRecordProviderBuilder.addLogRecordProcessor(
-                        SimpleLogRecordProcessor.create(logsExporter),
-                    )
+                .addLoggerProviderCustomizer { builder, _ ->
+                    builder
+                        .setResource(Resource.empty())
+                        .addLogRecordProcessor(SimpleLogRecordProcessor.create(logsExporter))
+                }.addLoggerProviderCustomizer { builder, _ ->
+                    builder.setResource(resource)
                 }.build()
 
         val attrs =
@@ -248,12 +250,12 @@ class OpenTelemetryRumBuilderTest {
         val openTelemetryRum =
             makeBuilder()
                 .setResource(resource)
-                .addMeterProviderCustomizer { sdkMeterProviderBuilder: SdkMeterProviderBuilder, _: Context ->
+                .addMeterProviderCustomizer { builder, _ ->
+                    builder.setResource(resource).registerMetricReader(metricReader)
+                }.addMeterProviderCustomizer { builder, _ ->
                     val metricResAttrs =
                         Attributes.of(AttributeKey.stringKey("mmm"), "nnn")
-                    sdkMeterProviderBuilder
-                        .setResource(Resource.create(metricResAttrs))
-                        .registerMetricReader(metricReader)
+                    builder.setResource(Resource.create(metricResAttrs))
                 }.build()
 
         val meter =
