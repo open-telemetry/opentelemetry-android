@@ -5,7 +5,7 @@
 
 package io.opentelemetry.android.instrumentation.fragment
 
-import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_PREVIOUS_NAME
+import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.android.semconv.FragmentAttributes.FRAGMENT_NAME_KEY
 import io.opentelemetry.android.semconv.internal.SemconvCompat.Companion.map
 import io.opentelemetry.api.trace.Span
@@ -17,23 +17,18 @@ internal class FragmentTracer(
     private val fragmentName: String,
     private val tracer: Tracer,
     private val screenName: String,
-    private val lastVisibleScreen: () -> String?,
+    private val activeSpan: ActiveSpan,
 ) {
-    private var span: Span? = null
-
     fun startSpanIfNoneInProgress(action: String): FragmentTracer {
-        if (span != null) {
+        if (activeSpan.spanInProgress()) {
             return this
         }
-        span = createSpan(action)
+        activeSpan.startSpan { createSpan(action) }
         return this
     }
 
     fun startFragmentCreation(): FragmentTracer {
-        if (span != null) {
-            return this
-        }
-        span = createSpan("Created")
+        activeSpan.startSpan { createSpan("Created") }
         return this
     }
 
@@ -51,20 +46,16 @@ internal class FragmentTracer(
     }
 
     fun endActiveSpan() {
-        span?.end()
-        span = null
+        activeSpan.endActiveSpan()
     }
 
     fun addPreviousScreenAttribute(): FragmentTracer {
-        val previouslyVisibleScreen = lastVisibleScreen()
-        if (previouslyVisibleScreen != null && fragmentName != previouslyVisibleScreen) {
-            span?.setAttribute(map(APP_SCREEN_PREVIOUS_NAME), previouslyVisibleScreen)
-        }
+        activeSpan.addPreviousScreenAttribute(fragmentName)
         return this
     }
 
     fun addEvent(eventName: String): FragmentTracer {
-        span?.addEvent(eventName)
+        activeSpan.addEvent(eventName)
         return this
     }
 }
