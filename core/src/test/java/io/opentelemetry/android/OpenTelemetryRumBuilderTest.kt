@@ -81,7 +81,6 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.BiFunction
 import java.util.function.Function
 
 @OptIn(IncubatingApi::class)
@@ -177,19 +176,16 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    @Suppress("DEPRECATION")
     fun shouldBuildLogRecordProvider() {
         createAndSetServiceManager()
         val openTelemetryRum =
             makeBuilder()
                 .setResource(resource)
-                .addLoggerProviderCustomizer(
-                    BiFunction { builder, _ ->
-                        builder
-                            .setResource(Resource.empty())
-                            .addLogRecordProcessor(SimpleLogRecordProcessor.create(logsExporter))
-                    },
-                ).addLoggerProviderCustomizer { builder, _ ->
+                .addLoggerProviderCustomizer { builder, _ ->
+                    builder
+                        .setResource(Resource.empty())
+                        .addLogRecordProcessor(SimpleLogRecordProcessor.create(logsExporter))
+                }.addLoggerProviderCustomizer { builder, _ ->
                     builder.setResource(resource)
                 }.build()
 
@@ -249,15 +245,14 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
-    @Suppress("DEPRECATION")
     fun canCustomizeMetrics() {
         val metricReader = InMemoryMetricReader.create()
         val openTelemetryRum =
             makeBuilder()
                 .setResource(resource)
-                .addMeterProviderCustomizer(
-                    BiFunction { builder, _ -> builder.setResource(resource).registerMetricReader(metricReader) },
-                ).addMeterProviderCustomizer { builder, _ ->
+                .addMeterProviderCustomizer { builder, _ ->
+                    builder.setResource(resource).registerMetricReader(metricReader)
+                }.addMeterProviderCustomizer { builder, _ ->
                     val metricResAttrs =
                         Attributes.of(AttributeKey.stringKey("mmm"), "nnn")
                     builder.setResource(Resource.create(metricResAttrs))
