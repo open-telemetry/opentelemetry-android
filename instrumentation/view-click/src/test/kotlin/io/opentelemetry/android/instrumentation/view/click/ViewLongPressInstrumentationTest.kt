@@ -22,6 +22,8 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.android.instrumentation.common.InstrumentationActivityCallback
+import io.opentelemetry.android.instrumentation.common.WindowCallbackWrapper
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_TYPE_KEY
 import io.opentelemetry.android.semconv.events.AppScreenLongpressEvent.Companion.APP_SCREEN_LONGPRESS_EVENT_NAME
 import io.opentelemetry.android.semconv.events.AppWidgetLongpressEvent.Companion.APP_WIDGET_LONGPRESS_EVENT_NAME
@@ -79,7 +81,7 @@ class ViewLongPressInstrumentationTest {
                 every { clock } returns Clock.getDefault()
             }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<InstrumentationActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
@@ -148,7 +150,7 @@ class ViewLongPressInstrumentationTest {
                 every { clock } returns Clock.getDefault()
             }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<InstrumentationActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
@@ -214,7 +216,7 @@ class ViewLongPressInstrumentationTest {
                 every { clock } returns Clock.getDefault()
             }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<InstrumentationActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
