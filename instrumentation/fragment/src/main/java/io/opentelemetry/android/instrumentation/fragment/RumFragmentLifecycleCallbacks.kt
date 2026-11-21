@@ -8,18 +8,23 @@ package io.opentelemetry.android.instrumentation.fragment
 import android.content.Context
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import io.opentelemetry.android.instrumentation.common.ActiveSpan
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
 import io.opentelemetry.api.trace.Tracer
+import java.util.WeakHashMap
 
 internal class RumFragmentLifecycleCallbacks(
     private val tracer: Tracer,
     private val lastVisibleScreen: () -> String?,
     private val screenNameExtractor: ScreenNameExtractor,
 ) : FragmentManager.FragmentLifecycleCallbacks() {
-    private val tracersByFragmentClassName: MutableMap<String, FragmentTracer> = mutableMapOf()
+    private val tracersByFragment: MutableMap<Fragment, FragmentTracer> = WeakHashMap()
+
+    @VisibleForTesting
+    internal val activeTracersCount: Int
+        get() = tracersByFragment.size
 
     override fun onFragmentPreAttached(
         fm: FragmentManager,
@@ -137,23 +142,24 @@ internal class RumFragmentLifecycleCallbacks(
             .startSpanIfNoneInProgress("Detached")
             .addEvent("fragmentDetached")
             .endActiveSpan()
+        tracersByFragment.remove(f)
     }
 
     private fun addEvent(
         fragment: Fragment,
         eventName: String,
     ) {
-        val fragmentTracer = tracersByFragmentClassName[fragment.javaClass.name]
+        val fragmentTracer = tracersByFragment[fragment]
         fragmentTracer?.addEvent(eventName)
     }
 
     private fun getTracer(fragment: Fragment): FragmentTracer =
-        tracersByFragmentClassName.getOrPut(fragment.javaClass.name) {
+        tracersByFragment.getOrPut(fragment) {
             FragmentTracer(
-                fragment,
+                fragment.javaClass.simpleName,
                 tracer,
                 screenNameExtractor.extract(fragment),
-                ActiveSpan(lastVisibleScreen),
+                lastVisibleScreen,
             )
         }
 }

@@ -5,8 +5,7 @@
 
 package io.opentelemetry.android.instrumentation.fragment
 
-import androidx.fragment.app.Fragment
-import io.opentelemetry.android.instrumentation.common.ActiveSpan
+import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_PREVIOUS_NAME
 import io.opentelemetry.android.semconv.FragmentAttributes.FRAGMENT_NAME_KEY
 import io.opentelemetry.android.semconv.internal.SemconvCompat.Companion.map
 import io.opentelemetry.api.trace.Span
@@ -15,23 +14,26 @@ import io.opentelemetry.kotlin.semconv.AppAttributes.APP_SCREEN_NAME
 import io.opentelemetry.kotlin.semconv.IncubatingApi
 
 internal class FragmentTracer(
-    fragment: Fragment,
+    private val fragmentName: String,
     private val tracer: Tracer,
     private val screenName: String,
-    private val activeSpan: ActiveSpan,
+    private val lastVisibleScreen: () -> String?,
 ) {
-    private val fragmentName: String = fragment.javaClass.simpleName
+    private var span: Span? = null
 
     fun startSpanIfNoneInProgress(action: String): FragmentTracer {
-        if (activeSpan.spanInProgress()) {
+        if (span != null) {
             return this
         }
-        activeSpan.startSpan { createSpan(action) }
+        span = createSpan(action)
         return this
     }
 
     fun startFragmentCreation(): FragmentTracer {
-        activeSpan.startSpan { createSpan("Created") }
+        if (span != null) {
+            return this
+        }
+        span = createSpan("Created")
         return this
     }
 
@@ -49,16 +51,20 @@ internal class FragmentTracer(
     }
 
     fun endActiveSpan() {
-        activeSpan.endActiveSpan()
+        span?.end()
+        span = null
     }
 
     fun addPreviousScreenAttribute(): FragmentTracer {
-        activeSpan.addPreviousScreenAttribute(fragmentName)
+        val previouslyVisibleScreen = lastVisibleScreen()
+        if (previouslyVisibleScreen != null && fragmentName != previouslyVisibleScreen) {
+            span?.setAttribute(map(APP_SCREEN_PREVIOUS_NAME), previouslyVisibleScreen)
+        }
         return this
     }
 
     fun addEvent(eventName: String): FragmentTracer {
-        activeSpan.addEvent(eventName)
+        span?.addEvent(eventName)
         return this
     }
 }
