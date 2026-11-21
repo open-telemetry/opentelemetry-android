@@ -20,5 +20,6 @@ public final class io/opentelemetry/android/session/SessionProvider$Companion {
 
 public abstract interface class io/opentelemetry/android/session/SessionPublisher {
 	public abstract fun addObserver (Lio/opentelemetry/android/session/SessionObserver;)V
+	public fun removeObserver (Lio/opentelemetry/android/session/SessionObserver;)V
 }
 

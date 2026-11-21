@@ -38,6 +38,10 @@ internal class SessionManager(
         observers.add(observer)
     }
 
+    override fun removeObserver(observer: SessionObserver) {
+        observers.removeIf { it === observer }
+    }
+
     // Lookup still creates or rotates a session, but never extends an existing session's inactivity.
     override fun getSessionId(): String = updateSession(recordUserInteraction = false) ?: invalidSession.id
 
