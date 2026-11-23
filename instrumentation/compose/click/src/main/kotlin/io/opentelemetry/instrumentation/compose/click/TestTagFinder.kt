@@ -64,9 +64,6 @@ internal class TestTagFinder {
         } catch (exception: ReflectiveOperationException) {
             Log.w(LOG_TAG, "Unable to read Compose test tag", exception)
             null
-        } catch (exception: SecurityException) {
-            Log.w(LOG_TAG, "Unable to access Compose test tag", exception)
-            null
         }
     }
 

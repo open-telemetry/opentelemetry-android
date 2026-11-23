@@ -76,6 +76,11 @@ internal class TestTagFinderTest {
     }
 
     @Test
+    fun `findTaggedTarget returns null when node is null`() {
+        assertThat(finder.findTaggedTarget(null)).isNull()
+    }
+
+    @Test
     fun `returns original target when ancestors have no tag`() {
         val parent: LayoutNode = nodeWithModifiers(Modifier)
         val clickable: LayoutNode = nodeWithModifiers(Modifier)
