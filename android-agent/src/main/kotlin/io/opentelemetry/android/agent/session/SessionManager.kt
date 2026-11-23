@@ -35,11 +35,18 @@ internal class SessionManager(
     private val observers = CopyOnWriteArrayList<SessionObserver>()
 
     override fun addObserver(observer: SessionObserver) {
-        observers.add(observer)
+        synchronized(observers) {
+            observers.add(observer)
+        }
     }
 
     override fun removeObserver(observer: SessionObserver) {
-        observers.removeIf { it === observer }
+        synchronized(observers) {
+            val index = observers.indexOfFirst { it === observer }
+            if (index >= 0) {
+                observers.removeAt(index)
+            }
+        }
     }
 
     // Lookup still creates or rotates a session, but never extends an existing session's inactivity.
