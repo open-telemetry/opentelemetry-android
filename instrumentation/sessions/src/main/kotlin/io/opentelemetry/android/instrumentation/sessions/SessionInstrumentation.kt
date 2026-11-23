@@ -14,12 +14,19 @@ import io.opentelemetry.kotlin.toOtelKotlinApi
 
 @AutoService(AndroidInstrumentation::class)
 class SessionInstrumentation : AndroidInstrumentation {
+    @Volatile
+    private var sessionPublisher: SessionPublisher? = null
+
+    @Volatile
+    private var sessionObserver: SessionIdEventSender? = null
+
     override val name: String = "session"
 
     override fun install(
         context: Context,
         openTelemetryRum: OpenTelemetryRum,
     ) {
+        removeObserver()
         val eventLogger =
             openTelemetryRum.openTelemetry
                 .toOtelKotlinApi()
@@ -27,7 +34,27 @@ class SessionInstrumentation : AndroidInstrumentation {
                 .getLogger("otel.session")
         val sessionProvider = openTelemetryRum.sessionProvider
         if (sessionProvider is SessionPublisher) {
-            sessionProvider.addObserver(SessionIdEventSender(eventLogger))
+            val observer = SessionIdEventSender(eventLogger)
+            sessionProvider.addObserver(observer)
+            sessionPublisher = sessionProvider
+            sessionObserver = observer
+        }
+    }
+
+    override fun uninstall(
+        context: Context,
+        openTelemetryRum: OpenTelemetryRum,
+    ) {
+        removeObserver()
+    }
+
+    private fun removeObserver() {
+        val publisher = sessionPublisher
+        val observer = sessionObserver
+        sessionPublisher = null
+        sessionObserver = null
+        if (publisher != null && observer != null) {
+            publisher.removeObserver(observer)
         }
     }
 }
