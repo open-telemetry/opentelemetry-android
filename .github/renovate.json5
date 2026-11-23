@@ -89,6 +89,14 @@
       allowedVersions: '<4.18',
     },
     {
+      // compose-bom 2026.11.00+ (compose 1.13 / material3 1.5) requires the demo app to raise its
+      // minSdk from 23 to 24 and its compileSdk from 37 to 37.1. Remove this once that is done.
+      matchPackageNames: [
+        'androidx.compose:compose-bom',
+      ],
+      allowedVersions: '(,2026.11.00)',
+    },
+    {
       // detekt 1.23.x (latest stable) can't run on JDK 25. Remove this once detekt 2.x is adopted.
       // Until then cap at the current LTS (21).
       matchDepNames: [
