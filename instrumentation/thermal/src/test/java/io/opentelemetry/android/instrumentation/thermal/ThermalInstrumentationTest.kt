@@ -92,4 +92,29 @@ class ThermalInstrumentationTest {
         verify(exactly = 0) { powerManager.removeThermalStatusListener(any<ThermalDetector>()) }
         verify(exactly = 0) { executor.shutdown() }
     }
+
+    @Config(sdk = [Build.VERSION_CODES.Q])
+    @Test
+    fun `repeated install is a safe no-op and does not register duplicate listeners or leak executors`() {
+        sut.install(context, openTelemetryRum)
+        sut.install(context, openTelemetryRum)
+
+        verify(exactly = 1) { powerManager.addThermalStatusListener(any(), any<ThermalDetector>()) }
+        verify(exactly = 1) { Executors.newSingleThreadExecutor() }
+    }
+
+    @Config(sdk = [Build.VERSION_CODES.Q])
+    @Test
+    fun `supports reinstall after uninstall without duplicate listeners`() {
+        sut.install(context, openTelemetryRum)
+        sut.uninstall(context, openTelemetryRum)
+
+        verify(exactly = 1) { powerManager.removeThermalStatusListener(any<ThermalDetector>()) }
+        verify(exactly = 1) { executor.shutdown() }
+
+        sut.install(context, openTelemetryRum)
+
+        verify(exactly = 2) { powerManager.addThermalStatusListener(any(), any<ThermalDetector>()) }
+        verify(exactly = 2) { Executors.newSingleThreadExecutor() }
+    }
 }
