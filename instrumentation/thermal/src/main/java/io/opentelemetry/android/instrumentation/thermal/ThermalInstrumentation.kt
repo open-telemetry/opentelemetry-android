@@ -39,6 +39,10 @@ class ThermalInstrumentation : AndroidInstrumentation {
             return
         }
 
+        if (this.detector != null) {
+            return
+        }
+
         val applicationContext = context.applicationContext
         val powerManager =
             applicationContext.getSystemService(Context.POWER_SERVICE) as? PowerManager
