@@ -78,6 +78,17 @@ class OpenTelemetryConfiguration internal constructor(
         exportConfig.action()
     }
 
+    internal fun validateExportConfiguration() {
+        exportConfig.validate()
+        listOf(
+            Triple(rumConfig.tracingEnabled, exportConfig.spansEndpointUrl(), exportConfig.spansEndpoint()),
+            Triple(rumConfig.loggingEnabled, exportConfig.logsEndpointUrl(), exportConfig.logsEndpoint()),
+            Triple(rumConfig.metricsEnabled, exportConfig.metricsEndpointUrl(), exportConfig.metricsEndpoint()),
+        ).forEach { (enabled, configuredUrl, endpoint) ->
+            if (enabled && configuredUrl.isNotBlank()) EndpointUrlValidator.validate(endpoint.getUrl())
+        }
+    }
+
     /**
      * Disables global screen attribute processors from automatically attaching `app.screen.name`
      * to spans and logs. Note that specific instrumentations (such as activity and fragment

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### 🛠️ Bug fixes
+
+- Invalid HTTP collector URLs and conflicting TLS options are rejected during initialization instead
+  of failing later during background exporter setup.
+
 ## Version 1.9.0 (2026-11-19)
 
 ### 📣 Migration notes

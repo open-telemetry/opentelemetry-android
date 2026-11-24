@@ -60,6 +60,19 @@ class HttpExportConfiguration internal constructor() {
     private val logsConfig: EndpointConfiguration = EndpointConfiguration("")
     private val metricsConfig: EndpointConfiguration = EndpointConfiguration("")
 
+    @OptIn(Incubating::class)
+    internal fun validate() {
+        require(sslContext == null || clientTls == null) {
+            "sslContext and clientTls cannot be combined"
+        }
+    }
+
+    internal fun spansEndpointUrl(): String = chooseUrlSource(spansConfig)
+
+    internal fun logsEndpointUrl(): String = chooseUrlSource(logsConfig)
+
+    internal fun metricsEndpointUrl(): String = chooseUrlSource(metricsConfig)
+
     internal fun spansEndpoint(): HttpEndpointConnectivity =
         @OptIn(Incubating::class)
         HttpEndpointConnectivity.forTraces(
