@@ -9,8 +9,8 @@ import android.app.Application
 import android.content.Context
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.android.OpenTelemetryRumBuilder
 import io.opentelemetry.android.RumBuilder
-import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 import io.opentelemetry.android.agent.dsl.OpenTelemetryConfiguration
 import io.opentelemetry.android.agent.session.SessionConfig
 import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
@@ -20,9 +20,12 @@ import io.opentelemetry.android.export.FilteringSpanExporter
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
+import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.contrib.interceptor.InterceptableLogRecordExporter
 import io.opentelemetry.sdk.logs.export.LogRecordExporter
+import io.opentelemetry.sdk.metrics.export.MetricExporter
+import io.opentelemetry.sdk.trace.export.SpanExporter
 
 @OptIn(Incubating::class)
 object OpenTelemetryRumInitializer {
@@ -56,6 +59,7 @@ object OpenTelemetryRumInitializer {
             .builder(ctx, rumConfig)
             .apply {
                 val cfg = createConfiguration(rumConfig, instrumentationLoader, configuration)
+                val exportConfiguration = cfg.resolveExportConfiguration()
                 cfg.diskBufferingConfig.applyToRumConfig()
 
                 val sessionProvider =
@@ -70,46 +74,62 @@ object OpenTelemetryRumInitializer {
                     }
                 }
 
-                if (rumConfig.tracingEnabled) {
-                    cfg.samplerConfig.traceSamplerFactory?.let { factory ->
-                        // Resolve user configuration before build starts any SDK workers.
-                        val sampler = requireNotNull(factory(sessionProvider)) { "Trace sampler factory returned null" }
-                        registerTracerProviderCustomizer { builder, _ -> builder.setSampler(sampler) }
-                    }
-                    addSpanExporterCustomizer {
-                        OtlpExporterFactory.createHttpSpanExporter(cfg.exportConfig.spansEndpoint())
-                    }
-                    HttpSpanHostFilter
-                        .create(cfg.instrumentations.httpTelemetry.recordSpanForHost())
-                        ?.let { hostFilter ->
-                            addSpanExporterCustomizer { exporter ->
-                                FilteringSpanExporter
-                                    .builder(exporter)
-                                    .rejecting { span -> hostFilter.rejects(span) }
-                                    .build()
-                            }
-                        }
-                }
-                if (rumConfig.loggingEnabled) {
-                    addLogRecordExporterCustomizer {
-                        createLogExporter(cfg.exportConfig.logsEndpoint(), cfg.instrumentations.httpTelemetry.recordWebsocketEventForHost())
-                    }
-                }
-                if (rumConfig.metricsEnabled) {
-                    addMetricExporterCustomizer {
-                        OtlpExporterFactory.createHttpMetricExporter(cfg.exportConfig.metricsEndpoint())
-                    }
-                }
+                configureExporters(this, cfg, rumConfig, sessionProvider, exportConfiguration)
             }.build()
             .let { IncubatingOpenTelemetryRumImpl(it, manager) }
     }
 
-    private fun createLogExporter(
-        endpoint: HttpEndpointConnectivity,
-        recordWebsocketEventForHost: ((String) -> Boolean)?,
+    private fun configureExporters(
+        builder: OpenTelemetryRumBuilder,
+        cfg: OpenTelemetryConfiguration,
+        rumConfig: OtelRumConfig,
+        sessionProvider: SessionProvider,
+        exportConfiguration: ResolvedExportConfiguration,
+    ) {
+        if (rumConfig.tracingEnabled) {
+            cfg.samplerConfig.traceSamplerFactory?.let { factory ->
+                // Resolve user configuration before build starts any SDK workers.
+                val sampler = requireNotNull(factory(sessionProvider)) { "Trace sampler factory returned null" }
+                builder.registerTracerProviderCustomizer { tracerProviderBuilder, _ -> tracerProviderBuilder.setSampler(sampler) }
+            }
+            builder.addSpanExporterCustomizer { createSpanExporter(exportConfiguration) }
+            HttpSpanHostFilter
+                .create(cfg.instrumentations.httpTelemetry.recordSpanForHost())
+                ?.let { hostFilter ->
+                    builder.addSpanExporterCustomizer { exporter ->
+                        FilteringSpanExporter
+                            .builder(exporter)
+                            .rejecting { span -> hostFilter.rejects(span) }
+                            .build()
+                    }
+                }
+        }
+        if (rumConfig.loggingEnabled) {
+            val websocketEventHostFilter =
+                WebsocketEventHostFilter.create(cfg.instrumentations.httpTelemetry.recordWebsocketEventForHost())
+            builder.addLogRecordExporterCustomizer {
+                applyWebsocketEventHostFilter(
+                    OtlpExporterFactory.createLogExporter(exportConfiguration.transport, exportConfiguration.logs),
+                    websocketEventHostFilter,
+                )
+            }
+        }
+        if (rumConfig.metricsEnabled) {
+            builder.addMetricExporterCustomizer { createMetricExporter(exportConfiguration) }
+        }
+    }
+
+    private fun createSpanExporter(config: ResolvedExportConfiguration): SpanExporter =
+        OtlpExporterFactory.createSpanExporter(config.transport, config.spans)
+
+    private fun createMetricExporter(config: ResolvedExportConfiguration): MetricExporter =
+        OtlpExporterFactory.createMetricExporter(config.transport, config.metrics)
+
+    private fun applyWebsocketEventHostFilter(
+        exporter: LogRecordExporter,
+        hostFilter: WebsocketEventHostFilter?,
     ): LogRecordExporter {
-        val exporter = OtlpExporterFactory.createHttpLogExporter(endpoint)
-        val hostFilter = WebsocketEventHostFilter.create(recordWebsocketEventForHost) ?: return exporter
+        if (hostFilter == null) return exporter
         return InterceptableLogRecordExporter(exporter) { record ->
             if (hostFilter.rejects(record)) null else record
         }

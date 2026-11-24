@@ -204,24 +204,13 @@ internal class OtlpExporterFactoryTest {
         endpoint: EndpointConnectivity,
         grpc: Boolean,
     ): OpenTelemetrySdk {
-        val spanExporter =
-            if (grpc) {
-                OtlpExporterFactory.createGrpcSpanExporter(endpoint)
-            } else {
-                OtlpExporterFactory.createHttpSpanExporter(httpEndpoint(endpoint, "traces"))
-            }
-        val logExporter =
-            if (grpc) {
-                OtlpExporterFactory.createGrpcLogExporter(endpoint)
-            } else {
-                OtlpExporterFactory.createHttpLogExporter(httpEndpoint(endpoint, "logs"))
-            }
-        val metricExporter =
-            if (grpc) {
-                OtlpExporterFactory.createGrpcMetricExporter(endpoint)
-            } else {
-                OtlpExporterFactory.createHttpMetricExporter(httpEndpoint(endpoint, "metrics"))
-            }
+        val transport = if (grpc) OtlpTransport.GRPC else OtlpTransport.HTTP
+        val spanEndpoint = if (grpc) endpoint else httpEndpoint(endpoint, "traces")
+        val logsEndpoint = if (grpc) endpoint else httpEndpoint(endpoint, "logs")
+        val metricsEndpoint = if (grpc) endpoint else httpEndpoint(endpoint, "metrics")
+        val spanExporter = OtlpExporterFactory.createSpanExporter(transport, spanEndpoint)
+        val logExporter = OtlpExporterFactory.createLogExporter(transport, logsEndpoint)
+        val metricExporter = OtlpExporterFactory.createMetricExporter(transport, metricsEndpoint)
         return OpenTelemetrySdk
             .builder()
             .setTracerProvider(

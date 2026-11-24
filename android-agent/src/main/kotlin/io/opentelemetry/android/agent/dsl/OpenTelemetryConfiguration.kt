@@ -9,6 +9,8 @@ import android.content.Context
 import io.opentelemetry.android.AndroidResource
 import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OtelAndroidClock
+import io.opentelemetry.android.agent.OtlpTransport
+import io.opentelemetry.android.agent.ResolvedExportConfiguration
 import io.opentelemetry.android.agent.dsl.instrumentation.InstrumentationConfiguration
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
@@ -77,6 +79,14 @@ class OpenTelemetryConfiguration internal constructor(
     fun httpExport(action: HttpExportConfiguration.() -> Unit) {
         exportConfig.action()
     }
+
+    internal fun resolveExportConfiguration(): ResolvedExportConfiguration =
+        ResolvedExportConfiguration(
+            OtlpTransport.HTTP,
+            exportConfig.spansEndpoint(),
+            exportConfig.logsEndpoint(),
+            exportConfig.metricsEndpoint(),
+        )
 
     internal fun validateExportConfiguration() {
         exportConfig.validate()
