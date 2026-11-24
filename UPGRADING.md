@@ -25,7 +25,7 @@ This document describes the changes between OpenTelemetry Android 1.0 and 2.0 th
 
 ### Gradle, AGP, and Compile SDK
 - **Change:** The minimum supported build environment requires AGP 8.12.0+, Gradle 8.13+, JDK 17+, and `compileSdk` 36 or higher. Published artifacts declare a `minCompileSdk` of 36, and `android-agent` / `okhttp3-agent` declare 37 (due to OkHttp dependencies).
-- **Migration:** Upgrade your build configuration to use AGP 8.12.0+ and `compileSdk = 36` (or `37` if using `android-agent`).
+- **Migration:** Upgrade your build configuration to use AGP 8.12.0+ and `compileSdk = 36` (or `37` if using `android-agent` or `okhttp3-agent`).
 
 ---
 
@@ -36,7 +36,7 @@ This document describes the changes between OpenTelemetry Android 1.0 and 2.0 th
   - Screen attribute: `screen.name` is replaced by `app.screen.name`.
   - Previous screen attribute: `last.screen.name` is replaced by `app.screen.previous.name`.
   - Crash event: `device.crash` is replaced by `app.crash`.
-  - Network status attribute: `network.status` is replaced by `network.connection.type`.
+  - Network changes: legacy `network.status` (`available` / `lost`) is no longer emitted by default; use `network.connection.type` and update filters for its connection-type values. Setting `useLatestExperimental = false` adds the legacy status attribute while retaining connection-type attributes.
 - **Migration:** Update your backend queries, dashboards, and alerting rules to use the new semantic convention attribute names. If you need temporary backward compatibility while migrating your backend, you can retain the legacy attribute names in the DSL:
   ```kotlin
   OpenTelemetryRumInitializer.initialize(application) {
@@ -51,13 +51,16 @@ This document describes the changes between OpenTelemetry Android 1.0 and 2.0 th
 ## SDK Initialization Events
 
 ### Disabled by Default
-- **Change:** Starting in version 1.8.0, SDK initialization events (`app.initialization`) are disabled by default to reduce default telemetry volume.
-- **Migration:** If you rely on SDK initialization events, explicitly enable them in the configuration DSL:
+- **Change:** Starting in version 1.8.0, SDK initialization events (`rum.sdk.init.*`) are disabled by default to reduce default telemetry volume.
+- **Migration:** The Android Agent DSL does not currently expose this toggle. When using the core builder, enable it on the `OtelRumConfig` passed to `RumBuilder.builder`:
   ```kotlin
-  OpenTelemetryRumInitializer.initialize(application) {
-      enableSdkInitializationEvents()
-  }
+  import io.opentelemetry.android.RumBuilder
+  import io.opentelemetry.android.config.OtelRumConfig
+
+  val config = OtelRumConfig().enableSdkInitializationEvents()
+  val openTelemetryRumBuilder = RumBuilder.builder(application, config)
   ```
+  This configures the core builder only; apply your exporter and session configuration before calling `build()`. It is not a drop-in replacement for agent initialization.
 
 ---
 
@@ -65,7 +68,7 @@ This document describes the changes between OpenTelemetry Android 1.0 and 2.0 th
 
 ### Background Inactivity
 - **Change:** Inversion of background session keep-alive behavior: looking up a session ID no longer resets the background inactivity timer. Background telemetry (such as WorkManager jobs or background syncs) no longer prevents a background session from expiring.
-- **Migration:** No configuration change is required for most applications. If background tasks require distinct session tracking, observe session changes using `addSessionObserver` or rely on new sessions starting upon user return to foreground.
+- **Migration:** No configuration change is required for most applications. To track session changes, register a `SessionObserver` through `session { observers(observer) }` in the agent DSL. A session ID lookup can create a new session after expiration even while the app remains in the background.
 
 ---
 
@@ -76,8 +79,8 @@ This document describes the changes between OpenTelemetry Android 1.0 and 2.0 th
 - **Migration:** If you programmatically disable or configure the crash instrumentation by name, update the identifier to `"java-crash"`:
   ```kotlin
   OpenTelemetryRumInitializer.initialize(application) {
-      instrumentation {
-          disabledInstrumentations.add("java-crash")
+      instrumentations {
+          suppressing("java-crash")
       }
   }
   ```
@@ -94,14 +97,14 @@ This document describes the changes between OpenTelemetry Android 1.0 and 2.0 th
 - **Change:** Deprecated `RumReadyListener` and `sdkReadyListener` were removed.
 - **Migration:** Use `addOtelReadyListener` instead:
   ```kotlin
-  openTelemetryRumBuilder.addOtelReadyListener { rum ->
-      // Access initialized OpenTelemetryRum instance
+  openTelemetryRumBuilder.addOtelReadyListener { otel ->
+      // Access the OpenTelemetry SDK; RUM construction and exporter initialization are not yet complete.
   }
   ```
 
 ### Disk Buffering Export Scheduling
 - **Change:** `setExportScheduleHandler` was removed in favor of `setExportScheduleEnablement`.
-- **Migration:** Use `setExportScheduleEnablement(ScheduleEnablement.ENABLED)` or configure disk buffering through the agent DSL:
+- **Migration:** For custom export scheduling, pass an implementation of `ScheduleEnablement` to `setExportScheduleEnablement`, implementing `enable()` and optionally `disable()`. To enable disk buffering with the default scheduler, use the agent DSL:
   ```kotlin
   OpenTelemetryRumInitializer.initialize(application) {
       diskBuffering {
@@ -112,10 +115,9 @@ This document describes the changes between OpenTelemetry Android 1.0 and 2.0 th
   ```
 
 ### Slow Rendering Instrumentation
-- **Change:** Slow rendering instrumentation no longer produces zero-duration spans. Instead, frame performance is reported via `app.jank` log events carrying frame render duration metrics.
+- **Change:** Slow rendering instrumentation no longer produces zero-duration spans. Instead, frame performance is reported via `app.jank` log events carrying aggregated frame counts (`app.jank.frame_count`), the polling period in seconds (`app.jank.period`), and the slow/frozen threshold in seconds (`app.jank.threshold`).
 - **Migration:** Query `app.jank` log events rather than spans for slow and frozen frame analysis.
 
 ### OkHttp Instrumentation Package Reorganization
 - **Change:** OkHttp instrumentation classes were moved to dedicated package namespaces.
-- **Migration:** Update imports from legacy packages to `io.opentelemetry.instrumentation.library.okhttp.v3_0` (or `agent` counterpart).
-
+- **Migration:** Update imports to `io.opentelemetry.instrumentation.library.okhttp` (for example, `io.opentelemetry.instrumentation.library.okhttp.OkHttpInstrumentation`) or `io.opentelemetry.instrumentation.agent.okhttp` for agent classes.
