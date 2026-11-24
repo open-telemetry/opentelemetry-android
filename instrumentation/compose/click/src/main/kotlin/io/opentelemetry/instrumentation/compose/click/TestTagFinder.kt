@@ -23,10 +23,12 @@ internal class TestTagFinder {
             if (hasTag(candidate)) {
                 return candidate
             }
-            if (candidate.parent == null) {
+            val parent = candidate.parent
+            if (parent == null) {
                 return node
+            } else {
+                candidate = parent
             }
-            candidate = candidate.parent!!
         }
     }
 
