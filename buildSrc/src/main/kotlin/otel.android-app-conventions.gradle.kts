@@ -11,12 +11,19 @@ plugins {
 val javaVersion = rootProject.extra["java_version"] as JavaVersion
 val targetJvm = rootProject.extra["jvm_target"] as JvmTarget
 val minKotlinVersion = rootProject.extra["kotlin_min_supported_version"] as KotlinVersion
+val noDesugarApi26Check =
+    providers.gradleProperty("otel.android.noDesugarApi26Check").map(String::toBoolean).getOrElse(false)
 android {
     namespace = "io.opentelemetry.android"
     compileSdk = (property("android.compileSdk") as String).toInt()
 
     defaultConfig {
-        minSdk = (property("android.minSdk") as String).toInt()
+        minSdk =
+            if (noDesugarApi26Check) {
+                26
+            } else {
+                (property("android.minSdk") as String).toInt()
+            }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

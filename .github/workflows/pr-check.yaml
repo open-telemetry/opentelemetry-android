@@ -24,6 +24,8 @@ jobs:
         run: touch demo-app/local.properties
       - name: run gradle
         run: ./gradlew check koverXmlReport --stacktrace
+      - name: verify API 26 compatibility without core library desugaring
+        run: ./gradlew lint -Potel.android.noDesugarApi26Check=true --stacktrace
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
