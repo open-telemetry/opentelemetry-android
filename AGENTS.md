@@ -100,7 +100,7 @@ Any change to the public API surface is detected by `apiCheck` and requires extr
 
 ### Breaking Changes and Migrations
 
-When making breaking changes in a version bump:
+Breaking API changes should only ever be made in a semver major bump. When making breaking changes in a version bump:
 - Update [UPGRADING.md](UPGRADING.md) to note down each change that affects existing integrations along with a suggested migration.
 - Prefer non-breaking API changes where possible by using Kotlin's `@ReplaceWith` annotation (`@Deprecated(..., replaceWith = ReplaceWith(...))`) to provide an automated migration path.
 
