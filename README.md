@@ -151,6 +151,28 @@ val otelJavaApi = otelRum.openTelemetry
 val otelKotlinApi = otelRum.openTelemetryKotlin
 ```
 
+### gRPC export
+
+HTTP remains the default transport. To use OTLP over gRPC, configure `grpcExport` instead of
+`httpExport` inside the initialization block:
+
+```kotlin
+grpcExport {
+    baseUrl = "https://collector.example.com:4317"
+    baseHeaders = mapOf("X-App" to "my-app")
+    headerSupplier { mapOf("Authorization" to "Bearer ${tokenStore.currentToken()}") }
+    spans { url = "https://traces.example.com:4317" }
+}
+```
+
+The default gRPC endpoint is `http://localhost:4317`, with gzip compression. The `spans`, `logs`, and
+`metrics` blocks can override the URL, headers, and compression for each signal. URLs are used as-is;
+do not append HTTP paths such as `/v1/traces`. Global static headers override signal-specific headers,
+and supplied headers override both. `sslContext` and `clientTls` apply to all signals; configure only one of them.
+
+Configuring both transports throws `IllegalArgumentException`. Repeated `grpcExport` blocks update
+the same configuration. Header suppliers must be thread-safe and non-blocking.
+
 ### Dynamic export headers
 
 For authentication tokens that change during the app's lifetime, configure a header supplier inside

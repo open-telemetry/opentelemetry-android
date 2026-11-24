@@ -52,6 +52,32 @@ public final class io/opentelemetry/android/agent/dsl/EndpointConfiguration {
 	public final fun setUrl (Ljava/lang/String;)V
 }
 
+public final class io/opentelemetry/android/agent/dsl/GrpcEndpointConfiguration {
+	public final fun getCompression ()Lio/opentelemetry/android/agent/connectivity/Compression;
+	public final fun getHeaders ()Ljava/util/Map;
+	public final fun getUrl ()Ljava/lang/String;
+	public final fun setCompression (Lio/opentelemetry/android/agent/connectivity/Compression;)V
+	public final fun setHeaders (Ljava/util/Map;)V
+	public final fun setUrl (Ljava/lang/String;)V
+}
+
+public final class io/opentelemetry/android/agent/dsl/GrpcExportConfiguration {
+	public final fun getBaseHeaders ()Ljava/util/Map;
+	public final fun getBaseUrl ()Ljava/lang/String;
+	public final fun getClientTls ()Lio/opentelemetry/android/agent/connectivity/ClientTlsConnectivity;
+	public final fun getCompression ()Lio/opentelemetry/android/agent/connectivity/Compression;
+	public final fun getSslContext ()Lio/opentelemetry/android/agent/connectivity/SSLContextConnectivity;
+	public final fun headerSupplier (Lkotlin/jvm/functions/Function0;)V
+	public final fun logs (Lkotlin/jvm/functions/Function1;)V
+	public final fun metrics (Lkotlin/jvm/functions/Function1;)V
+	public final fun setBaseHeaders (Ljava/util/Map;)V
+	public final fun setBaseUrl (Ljava/lang/String;)V
+	public final fun setClientTls (Lio/opentelemetry/android/agent/connectivity/ClientTlsConnectivity;)V
+	public final fun setCompression (Lio/opentelemetry/android/agent/connectivity/Compression;)V
+	public final fun setSslContext (Lio/opentelemetry/android/agent/connectivity/SSLContextConnectivity;)V
+	public final fun spans (Lkotlin/jvm/functions/Function1;)V
+}
+
 public final class io/opentelemetry/android/agent/dsl/HttpExportConfiguration {
 	public final fun getBaseHeaders ()Ljava/util/Map;
 	public final fun getBaseUrl ()Ljava/lang/String;
@@ -80,6 +106,7 @@ public final class io/opentelemetry/android/agent/dsl/OpenTelemetryConfiguration
 	public final fun getClock ()Lio/opentelemetry/sdk/common/Clock;
 	public final fun globalAttributes (Lkotlin/jvm/functions/Function0;)V
 	public final fun globalAttributesSupplier (Lkotlin/jvm/functions/Function0;)V
+	public final fun grpcExport (Lkotlin/jvm/functions/Function1;)V
 	public final fun httpExport (Lkotlin/jvm/functions/Function1;)V
 	public final fun instrumentations (Lkotlin/jvm/functions/Function1;)V
 	public final fun resource (Lio/opentelemetry/sdk/resources/Resource;)V

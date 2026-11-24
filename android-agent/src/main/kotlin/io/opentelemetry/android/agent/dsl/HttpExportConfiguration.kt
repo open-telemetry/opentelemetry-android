@@ -45,13 +45,13 @@ class HttpExportConfiguration internal constructor() {
     var compression: Compression = Compression.GZIP
 
     /**
-     * Default SSL context for all export requests.
+     * Default SSL context for all export requests. Cannot be combined with [clientTls].
      */
     var sslContext: SSLContextConnectivity? = null
 
     /**
      * Sets ths client key and the certificate chain to use for verifying client
-     * for all requests when TLS is enabled.
+     * for all requests when TLS is enabled. Cannot be combined with [sslContext].
      */
     @Incubating
     var clientTls: ClientTlsConnectivity? = null

@@ -11,6 +11,7 @@ import io.opentelemetry.android.Incubating
 import io.opentelemetry.android.OtelAndroidClock
 import io.opentelemetry.android.agent.OtlpTransport
 import io.opentelemetry.android.agent.ResolvedExportConfiguration
+import io.opentelemetry.android.agent.connectivity.EndpointConnectivity
 import io.opentelemetry.android.agent.dsl.instrumentation.InstrumentationConfiguration
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
@@ -34,7 +35,20 @@ class OpenTelemetryConfiguration internal constructor(
     var clock: Clock = OtelAndroidClock(),
     instrumentationLoader: AndroidInstrumentationLoader,
 ) {
-    internal val exportConfig = HttpExportConfiguration()
+    private sealed interface ExportSelection {
+        data object DefaultHttp : ExportSelection
+
+        data class Http(
+            val config: HttpExportConfiguration,
+        ) : ExportSelection
+
+        data class Grpc(
+            val config: GrpcExportConfiguration,
+        ) : ExportSelection
+    }
+
+    private var exportSelection: ExportSelection = ExportSelection.DefaultHttp
+
     internal val sessionConfig = SessionConfiguration(rumConfig)
     internal val samplerConfig = SamplerConfiguration()
     internal val instrumentations = InstrumentationConfiguration(rumConfig, instrumentationLoader)
@@ -74,29 +88,93 @@ class OpenTelemetryConfiguration internal constructor(
     }
 
     /**
-     * Configures how OpenTelemetry should export telemetry over HTTP.
+     * Configures how OpenTelemetry should export telemetry over HTTP (the default transport).
+     * Cannot be combined with [grpcExport].
      */
     fun httpExport(action: HttpExportConfiguration.() -> Unit) {
-        exportConfig.action()
+        val config =
+            selectExportConfiguration(
+                current = { if (it is ExportSelection.Http) it.config else null },
+                create = ::HttpExportConfiguration,
+                select = ExportSelection::Http,
+            )
+        config.action()
+    }
+
+    /**
+     * Selects OTLP over gRPC for all enabled signals. Cannot be combined with [httpExport].
+     * Repeated calls update the same configuration.
+     */
+    fun grpcExport(action: GrpcExportConfiguration.() -> Unit) {
+        val config =
+            selectExportConfiguration(
+                current = { if (it is ExportSelection.Grpc) it.config else null },
+                create = ::GrpcExportConfiguration,
+                select = ExportSelection::Grpc,
+            )
+        config.action()
+    }
+
+    private fun <T : Any> selectExportConfiguration(
+        current: (ExportSelection) -> T?,
+        create: () -> T,
+        select: (T) -> ExportSelection,
+    ): T {
+        current(exportSelection)?.let { return it }
+        require(exportSelection == ExportSelection.DefaultHttp) { "httpExport and grpcExport cannot be combined" }
+        return create().also { exportSelection = select(it) }
     }
 
     internal fun resolveExportConfiguration(): ResolvedExportConfiguration =
-        ResolvedExportConfiguration(
-            OtlpTransport.HTTP,
-            exportConfig.spansEndpoint(),
-            exportConfig.logsEndpoint(),
-            exportConfig.metricsEndpoint(),
-        )
+        when (val selection = exportSelection) {
+            ExportSelection.DefaultHttp, is ExportSelection.Http -> {
+                val config = if (selection is ExportSelection.Http) selection.config else HttpExportConfiguration()
+                config.validate()
+                resolveEndpoints(
+                    OtlpTransport.HTTP,
+                    config.spansEndpoint(),
+                    config.logsEndpoint(),
+                    config.metricsEndpoint(),
+                    config.spansEndpointUrl(),
+                    config.logsEndpointUrl(),
+                    config.metricsEndpointUrl(),
+                )
+            }
 
-    internal fun validateExportConfiguration() {
-        exportConfig.validate()
-        listOf(
-            Triple(rumConfig.tracingEnabled, exportConfig.spansEndpointUrl(), exportConfig.spansEndpoint()),
-            Triple(rumConfig.loggingEnabled, exportConfig.logsEndpointUrl(), exportConfig.logsEndpoint()),
-            Triple(rumConfig.metricsEnabled, exportConfig.metricsEndpointUrl(), exportConfig.metricsEndpoint()),
-        ).forEach { (enabled, configuredUrl, endpoint) ->
-            if (enabled && configuredUrl.isNotBlank()) EndpointUrlValidator.validate(endpoint.getUrl())
+            is ExportSelection.Grpc -> {
+                val config = selection.config
+                config.validate()
+                resolveEndpoints(
+                    OtlpTransport.GRPC,
+                    config.spansEndpoint(),
+                    config.logsEndpoint(),
+                    config.metricsEndpoint(),
+                    config.spansEndpointUrl(),
+                    config.logsEndpointUrl(),
+                    config.metricsEndpointUrl(),
+                )
+            }
         }
+
+    private fun resolveEndpoints(
+        transport: OtlpTransport,
+        spans: EndpointConnectivity,
+        logs: EndpointConnectivity,
+        metrics: EndpointConnectivity,
+        spansUrl: String,
+        logsUrl: String,
+        metricsUrl: String,
+    ): ResolvedExportConfiguration {
+        listOf(
+            Triple(rumConfig.tracingEnabled, spansUrl, spans),
+            Triple(rumConfig.loggingEnabled, logsUrl, logs),
+            Triple(rumConfig.metricsEnabled, metricsUrl, metrics),
+        ).forEach { (enabled, configuredUrl, endpoint) ->
+            if (enabled && (transport == OtlpTransport.GRPC || configuredUrl.isNotBlank())) {
+                EndpointUrlValidator.validate(transport, endpoint.getUrl())
+            }
+        }
+        return ResolvedExportConfiguration(transport, spans, logs, metrics)
     }
 
     /**

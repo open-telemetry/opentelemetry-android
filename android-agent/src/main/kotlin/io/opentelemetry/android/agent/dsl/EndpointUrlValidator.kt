@@ -5,13 +5,17 @@
 
 package io.opentelemetry.android.agent.dsl
 
+import io.opentelemetry.android.agent.OtlpTransport
 import java.net.MalformedURLException
 import java.net.URI
 import java.net.URISyntaxException
 import java.net.URL
 
 internal object EndpointUrlValidator {
-    fun validate(endpoint: String) {
+    fun validate(
+        transport: OtlpTransport,
+        endpoint: String,
+    ) {
         val uri =
             try {
                 URI(endpoint)
@@ -26,7 +30,7 @@ internal object EndpointUrlValidator {
                     false
                 }
         require((uri.scheme == "http" || uri.scheme == "https") && hasHost) {
-            "Invalid endpoint, must start with http:// or https://: $endpoint"
+            "Invalid ${transport.name.lowercase()} endpoint, must start with http:// or https://: $endpoint"
         }
     }
 }

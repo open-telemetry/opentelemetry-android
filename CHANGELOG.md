@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 📈 Enhancements
+
+- Add `grpcExport {}` to configure OTLP export over gRPC for traces, logs, and metrics, with
+  per-signal endpoints, dynamic headers, compression, and TLS. HTTP remains the default.
+  ([#1507](https://github.com/open-telemetry/opentelemetry-android/issues/1507))
+
 ### 🛠️ Bug fixes
 
 - Invalid HTTP collector URLs and conflicting TLS options are rejected during initialization instead

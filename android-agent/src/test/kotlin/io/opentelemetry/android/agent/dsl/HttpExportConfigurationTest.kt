@@ -7,62 +7,18 @@ package io.opentelemetry.android.agent.dsl
 
 import io.mockk.mockk
 import io.opentelemetry.android.Incubating
-import io.opentelemetry.android.agent.FakeClock
-import io.opentelemetry.android.agent.FakeInstrumentationLoader
 import io.opentelemetry.android.agent.connectivity.ClientTlsConnectivity
 import io.opentelemetry.android.agent.connectivity.Compression
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 import io.opentelemetry.android.agent.connectivity.SSLContextConnectivity
-import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 
 @OptIn(Incubating::class)
 internal class HttpExportConfigurationTest {
-    private lateinit var otelConfig: OpenTelemetryConfiguration
-
-    @Before
-    fun setUp() {
-        otelConfig =
-            OpenTelemetryConfiguration(
-                clock = FakeClock(),
-                instrumentationLoader = FakeInstrumentationLoader(),
-            )
-    }
-
-    @Test
-    fun testInvalidConfiguredEndpointsFailDuringConfiguration() {
-        otelConfig.httpExport { baseUrl = "collector.example:4317" }
-
-        assertThatThrownBy { otelConfig.validateExportConfiguration() }
-            .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessageStartingWith("Invalid endpoint")
-    }
-
-    @Test
-    fun testDisabledSignalEndpointIsNotValidated() {
-        otelConfig.disableTracing()
-        otelConfig.httpExport { spans { fullUrl = "collector.example:4317" } }
-
-        otelConfig.validateExportConfiguration()
-    }
-
-    @Test
-    fun testConflictingTlsOptionsFailDuringConfiguration() {
-        otelConfig.httpExport {
-            sslContext = SSLContextConnectivity(mockk(), mockk())
-            clientTls = ClientTlsConnectivity(byteArrayOf(1), byteArrayOf(2))
-        }
-
-        assertThatThrownBy { otelConfig.validateExportConfiguration() }
-            .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessage("sslContext and clientTls cannot be combined")
-    }
-
     @Test
     fun testDefaults() {
-        val config = otelConfig.exportConfig
+        val config = HttpExportConfiguration()
         val expectedHeaders = emptyMap<String, String>()
         val expectedCompression = Compression.GZIP
         val expectedSslContext: SSLContextConnectivity? = null
@@ -103,7 +59,7 @@ internal class HttpExportConfigurationTest {
         val url = "http://localhost:4318/"
         val headers = mapOf("my-header" to "my-value")
         val config =
-            otelConfig.exportConfig.apply {
+            HttpExportConfiguration().apply {
                 baseUrl = url
                 baseHeaders = headers
             }
@@ -134,7 +90,7 @@ internal class HttpExportConfigurationTest {
         val expectedCompression = Compression.NONE
 
         val config =
-            otelConfig.exportConfig.apply {
+            HttpExportConfiguration().apply {
                 this.baseUrl = baseUrl
                 this.baseHeaders = baseHeaders
                 spans {
@@ -193,7 +149,7 @@ internal class HttpExportConfigurationTest {
         val expectedCompression = Compression.GZIP
 
         val config =
-            otelConfig.exportConfig.apply {
+            HttpExportConfiguration().apply {
                 spans {
                     url = spanUrl
                     headers = spanHeaders
@@ -242,7 +198,7 @@ internal class HttpExportConfigurationTest {
         val headers = mapOf("my-header" to "my-value")
         val expectedSslContext = SSLContextConnectivity(mockk(), mockk())
         val config =
-            otelConfig.exportConfig.apply {
+            HttpExportConfiguration().apply {
                 baseUrl = url
                 baseHeaders = headers
                 sslContext = expectedSslContext
@@ -265,7 +221,7 @@ internal class HttpExportConfigurationTest {
         val headers = mapOf("my-header" to "my-value")
         val expectedClientTls = getTestClientTls()
         val config =
-            otelConfig.exportConfig.apply {
+            HttpExportConfiguration().apply {
                 baseUrl = url
                 baseHeaders = headers
                 clientTls = expectedClientTls
@@ -320,7 +276,7 @@ internal class HttpExportConfigurationTest {
         val customLogsUrl = "http://localhost:4318/v2/logs"
 
         val config =
-            otelConfig.exportConfig.apply {
+            HttpExportConfiguration().apply {
                 this.baseUrl = baseUrl
                 logs {
                     fullUrl = customLogsUrl
@@ -339,7 +295,7 @@ internal class HttpExportConfigurationTest {
         val customMetricsUrl = "http://metrics.example.com/v2/metrics"
 
         val config =
-            otelConfig.exportConfig.apply {
+            HttpExportConfiguration().apply {
                 spans { fullUrl = customSpansUrl }
                 logs { fullUrl = customLogsUrl }
                 metrics { fullUrl = customMetricsUrl }
@@ -357,7 +313,7 @@ internal class HttpExportConfigurationTest {
         val customFullUrl = "http://localhost:4318/v2/logs"
 
         val config =
-            otelConfig.exportConfig.apply {
+            HttpExportConfiguration().apply {
                 this.baseUrl = baseUrl
                 logs {
                     url = signalUrl
@@ -374,7 +330,7 @@ internal class HttpExportConfigurationTest {
         val signalUrl = "http://localhost:4319/logs/"
 
         val config =
-            otelConfig.exportConfig.apply {
+            HttpExportConfiguration().apply {
                 this.baseUrl = baseUrl
                 logs {
                     url = signalUrl

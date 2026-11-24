@@ -143,7 +143,7 @@ object OpenTelemetryRumInitializer {
         OpenTelemetryConfiguration(
             rumConfig = rumConfig,
             instrumentationLoader = instrumentationLoader,
-        ).also(configuration).also { it.validateExportConfiguration() }
+        ).also(configuration)
 
     private fun createSessionProvider(
         appLifecycle: AppLifecycle,
