@@ -169,7 +169,8 @@ class OpenTelemetryRumBuilder internal constructor(
      * via [.setResource].
      */
     @Deprecated(
-        "Use the Kotlin function overload of addTracerProviderCustomizer. This overload will be removed in 1.11.0.",
+        "Use the Kotlin function overload of addTracerProviderCustomizer or call customizeTracerProvider from Java. " +
+            "This overload will be removed in 1.11.0.",
         ReplaceWith("addTracerProviderCustomizer(customizer::apply)"),
     )
     fun addTracerProviderCustomizer(
@@ -187,9 +188,11 @@ class OpenTelemetryRumBuilder internal constructor(
      * Calling [SdkTracerProviderBuilder.setResource] inside of your configuration function
      * will cause any resource customizers to be ignored that were configured via [.setResource].
      *
+     * From Java, call `customizeTracerProvider`.
+     *
      * @since 1.10.0
      */
-    @JvmSynthetic
+    @JvmName("customizeTracerProvider")
     fun addTracerProviderCustomizer(customizer: TracerProviderCustomizer): OpenTelemetryRumBuilder {
         tracerProviderCustomizers.add(customizer)
         return this
@@ -207,7 +210,8 @@ class OpenTelemetryRumBuilder internal constructor(
      * via [.setResource].
      */
     @Deprecated(
-        "Use the Kotlin function overload of addMeterProviderCustomizer. This overload will be removed in 1.11.0.",
+        "Use the Kotlin function overload of addMeterProviderCustomizer or call customizeMeterProvider from Java. " +
+            "This overload will be removed in 1.11.0.",
         ReplaceWith("addMeterProviderCustomizer(customizer::apply)"),
     )
     fun addMeterProviderCustomizer(
@@ -224,9 +228,11 @@ class OpenTelemetryRumBuilder internal constructor(
      * Calling [SdkMeterProviderBuilder.setResource] inside of your configuration function
      * will cause any resource customizers to be ignored that were configured via [.setResource].
      *
+     * From Java, call `customizeMeterProvider`.
+     *
      * @since 1.10.0
      */
-    @JvmSynthetic
+    @JvmName("customizeMeterProvider")
     fun addMeterProviderCustomizer(customizer: MeterProviderCustomizer): OpenTelemetryRumBuilder {
         meterProviderCustomizers.add(customizer)
         return this
@@ -244,7 +250,8 @@ class OpenTelemetryRumBuilder internal constructor(
      * via [.setResource].
      */
     @Deprecated(
-        "Use the Kotlin function overload of addLoggerProviderCustomizer. This overload will be removed in 1.11.0.",
+        "Use the Kotlin function overload of addLoggerProviderCustomizer or call customizeLoggerProvider from Java. " +
+            "This overload will be removed in 1.11.0.",
         ReplaceWith("addLoggerProviderCustomizer(customizer::apply)"),
     )
     fun addLoggerProviderCustomizer(
@@ -261,9 +268,11 @@ class OpenTelemetryRumBuilder internal constructor(
      * Calling [SdkLoggerProviderBuilder.setResource] inside of your configuration function
      * will cause any resource customizers to be ignored that were configured via [.setResource].
      *
+     * From Java, call `customizeLoggerProvider`.
+     *
      * @since 1.10.0
      */
-    @JvmSynthetic
+    @JvmName("customizeLoggerProvider")
     fun addLoggerProviderCustomizer(customizer: LoggerProviderCustomizer): OpenTelemetryRumBuilder {
         loggerProviderCustomizers.add(customizer)
         return this
