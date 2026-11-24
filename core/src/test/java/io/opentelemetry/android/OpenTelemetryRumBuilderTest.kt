@@ -138,7 +138,7 @@ class OpenTelemetryRumBuilderTest {
         val openTelemetryRum =
             makeBuilder()
                 .setResource(resource)
-                .addTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
+                .registerTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
                     tracerProviderBuilder.addSpanProcessor(
                         SimpleSpanProcessor.create(spanExporter),
                     )
@@ -181,11 +181,11 @@ class OpenTelemetryRumBuilderTest {
         val openTelemetryRum =
             makeBuilder()
                 .setResource(resource)
-                .addLoggerProviderCustomizer { builder, _ ->
+                .registerLoggerProviderCustomizer { builder, _ ->
                     builder
                         .setResource(Resource.empty())
                         .addLogRecordProcessor(SimpleLogRecordProcessor.create(logsExporter))
-                }.addLoggerProviderCustomizer { builder, _ ->
+                }.registerLoggerProviderCustomizer { builder, _ ->
                     builder.setResource(resource)
                 }.build()
 
@@ -223,7 +223,7 @@ class OpenTelemetryRumBuilderTest {
         val openTelemetryRum =
             makeBuilder()
                 .setSessionProvider(SessionProvider { "current-session" })
-                .addLoggerProviderCustomizer { logRecordProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
+                .registerLoggerProviderCustomizer { logRecordProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
                     logRecordProviderBuilder.addLogRecordProcessor(
                         SimpleLogRecordProcessor.create(logsExporter),
                     )
@@ -250,9 +250,9 @@ class OpenTelemetryRumBuilderTest {
         val openTelemetryRum =
             makeBuilder()
                 .setResource(resource)
-                .addMeterProviderCustomizer { builder, _ ->
+                .registerMeterProviderCustomizer { builder, _ ->
                     builder.setResource(resource).registerMetricReader(metricReader)
-                }.addMeterProviderCustomizer { builder, _ ->
+                }.registerMeterProviderCustomizer { builder, _ ->
                     val metricResAttrs =
                         Attributes.of(AttributeKey.stringKey("mmm"), "nnn")
                     builder.setResource(Resource.create(metricResAttrs))
@@ -294,7 +294,7 @@ class OpenTelemetryRumBuilderTest {
         val openTelemetryRum =
             makeBuilder()
                 .setResource(resource)
-                .addMeterProviderCustomizer { _: SdkMeterProviderBuilder, _: Context ->
+                .registerMeterProviderCustomizer { _: SdkMeterProviderBuilder, _: Context ->
                     SdkMeterProvider
                         .builder()
                         .registerMetricReader(periodicReader)
@@ -757,7 +757,7 @@ class OpenTelemetryRumBuilderTest {
         val rum =
             RumBuilder
                 .builder(application, otelRumConfig)
-                .addLoggerProviderCustomizer { sdkLoggerProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
+                .registerLoggerProviderCustomizer { sdkLoggerProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
                     sdkLoggerProviderBuilder.addLogRecordProcessor(
                         SimpleLogRecordProcessor.create(logsExporter),
                     )
@@ -814,9 +814,9 @@ class OpenTelemetryRumBuilderTest {
                     application,
                     buildConfig().disableSessionId(),
                 ).setSessionProvider(SessionProvider { "test-session" })
-                .addTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
+                .registerTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
                     tracerProviderBuilder.addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-                }.addLoggerProviderCustomizer { logRecordProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
+                }.registerLoggerProviderCustomizer { logRecordProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
                     logRecordProviderBuilder.addLogRecordProcessor(
                         SimpleLogRecordProcessor.create(logsExporter),
                     )
@@ -849,9 +849,9 @@ class OpenTelemetryRumBuilderTest {
                 .builder(
                     application,
                     buildConfig().disableScreenAttributes(),
-                ).addTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
+                ).registerTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
                     tracerProviderBuilder.addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-                }.addLoggerProviderCustomizer { logRecordProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
+                }.registerLoggerProviderCustomizer { logRecordProviderBuilder: SdkLoggerProviderBuilder, _: Context ->
                     logRecordProviderBuilder.addLogRecordProcessor(
                         SimpleLogRecordProcessor.create(logsExporter),
                     )
