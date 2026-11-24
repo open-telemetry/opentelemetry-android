@@ -77,7 +77,7 @@ object OpenTelemetryRumInitializer {
                     cfg.samplerConfig.traceSamplerFactory?.let { factory ->
                         // Resolve user configuration before build starts any SDK workers.
                         val sampler = requireNotNull(factory(sessionProvider)) { "Trace sampler factory returned null" }
-                        addTracerProviderCustomizer { builder, _ -> builder.setSampler(sampler) }
+                        registerTracerProviderCustomizer { builder, _ -> builder.setSampler(sampler) }
                     }
                     addSpanExporterCustomizer {
                         OtlpExporterFactory.createHttpSpanExporter(cfg.exportConfig.spansEndpoint())

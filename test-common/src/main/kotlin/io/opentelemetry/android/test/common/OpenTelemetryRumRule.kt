@@ -54,11 +54,11 @@ class OpenTelemetryRumRule : TestRule {
             openTelemetryRum =
                 RumBuilder
                     .builder(ApplicationProvider.getApplicationContext())
-                    .addLoggerProviderCustomizer { logger, _ ->
+                    .registerLoggerProviderCustomizer { logger, _ ->
                         logger.addLogRecordProcessor(
                             SimpleLogRecordProcessor.create(inMemoryLogExporter),
                         )
-                    }.addTracerProviderCustomizer { tracer, _ ->
+                    }.registerTracerProviderCustomizer { tracer, _ ->
                         tracer.addSpanProcessor(SimpleSpanProcessor.create(inMemorySpanExporter))
                     }.build()
         }

@@ -68,7 +68,7 @@ class OpenTelemetryRumBuilderSamplingTest {
         makeBuilder()
             .setSessionProvider(selectedProvider)
             .addInstrumentation(instrumentation)
-            .addTracerProviderCustomizer { builder, _ ->
+            .registerTracerProviderCustomizer { builder, _ ->
                 builder
                     .setSampler(SessionIdRatioBasedSampler(0.0, selectedProvider))
                     .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
@@ -82,8 +82,8 @@ class OpenTelemetryRumBuilderSamplingTest {
     fun tracerCustomizerCanReplaceTraceSampler() {
         makeBuilder()
             .setSessionProvider(SessionProvider { "current" })
-            .addTracerProviderCustomizer { builder, _ -> builder.setSampler(Sampler.alwaysOff()) }
-            .addTracerProviderCustomizer { builder, _ ->
+            .registerTracerProviderCustomizer { builder, _ -> builder.setSampler(Sampler.alwaysOff()) }
+            .registerTracerProviderCustomizer { builder, _ ->
                 builder
                     .setSampler(Sampler.alwaysOn())
                     .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
@@ -103,7 +103,7 @@ class OpenTelemetryRumBuilderSamplingTest {
     fun defaultSamplerStillSamplesRootsAndHonorsUnsampledParents() {
         makeBuilder()
             .setSessionProvider(SessionProvider { "current" })
-            .addTracerProviderCustomizer { builder, _ -> builder.addSpanProcessor(SimpleSpanProcessor.create(spanExporter)) }
+            .registerTracerProviderCustomizer { builder, _ -> builder.addSpanProcessor(SimpleSpanProcessor.create(spanExporter)) }
             .withRum { rum ->
                 val tracer = rum.openTelemetry.getTracer("test")
                 val span =
@@ -141,7 +141,7 @@ class OpenTelemetryRumBuilderSamplingTest {
         val sampler = object : Sampler by SessionIdRatioBasedSampler(0.5, provider) {}
         makeBuilder()
             .setSessionProvider(provider)
-            .addTracerProviderCustomizer { builder, _ ->
+            .registerTracerProviderCustomizer { builder, _ ->
                 builder.setSampler(sampler).addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
             }.withRum { rum ->
                 rum
@@ -166,10 +166,10 @@ class OpenTelemetryRumBuilderSamplingTest {
         val logs = InMemoryLogRecordExporter.create()
         val metrics = InMemoryMetricReader.create()
         makeBuilder()
-            .addTracerProviderCustomizer { builder, _ -> builder.setSampler(Sampler.alwaysOff()) }
-            .addLoggerProviderCustomizer { builder, _ ->
+            .registerTracerProviderCustomizer { builder, _ -> builder.setSampler(Sampler.alwaysOff()) }
+            .registerLoggerProviderCustomizer { builder, _ ->
                 builder.addLogRecordProcessor(SimpleLogRecordProcessor.create(logs))
-            }.addMeterProviderCustomizer { builder, _ -> builder.registerMetricReader(metrics) }
+            }.registerMeterProviderCustomizer { builder, _ -> builder.registerMetricReader(metrics) }
             .withRum { rum ->
                 rum.openTelemetry.logsBridge
                     .get("test")

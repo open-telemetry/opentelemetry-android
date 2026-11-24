@@ -82,6 +82,10 @@ import java.util.function.Function
 import java.util.function.Predicate
 import kotlin.time.Duration.Companion.milliseconds
 
+internal typealias TracerProviderCustomizer = (SdkTracerProviderBuilder, Context) -> SdkTracerProviderBuilder
+internal typealias MeterProviderCustomizer = (SdkMeterProviderBuilder, Context) -> SdkMeterProviderBuilder
+internal typealias LoggerProviderCustomizer = (SdkLoggerProviderBuilder, Context) -> SdkLoggerProviderBuilder
+
 /**
  * A builder of [OpenTelemetryRum]. It enabled configuring the OpenTelemetry SDK and disabling
  * built-in Android instrumentations.
@@ -106,11 +110,11 @@ class OpenTelemetryRumBuilder internal constructor(
     }
 
     private var clock: Clock = OtelAndroidClock()
-    private val tracerProviderCustomizers: MutableList<BiFunction<SdkTracerProviderBuilder, Context, SdkTracerProviderBuilder>> =
+    private val tracerProviderCustomizers: MutableList<TracerProviderCustomizer> =
         mutableListOf()
-    private val meterProviderCustomizers: MutableList<BiFunction<SdkMeterProviderBuilder, Context, SdkMeterProviderBuilder>> =
+    private val meterProviderCustomizers: MutableList<MeterProviderCustomizer> =
         mutableListOf()
-    private val loggerProviderCustomizers: MutableList<BiFunction<SdkLoggerProviderBuilder, Context, SdkLoggerProviderBuilder>> =
+    private val loggerProviderCustomizers: MutableList<LoggerProviderCustomizer> =
         mutableListOf()
     private val instrumentations: MutableList<AndroidInstrumentation> =
         mutableListOf()
@@ -164,9 +168,28 @@ class OpenTelemetryRumBuilder internal constructor(
      * configuration function will cause any resource customizers to be ignored that were configured
      * via [.setResource].
      */
+    @Deprecated(
+        "Use registerTracerProviderCustomizer. This method will be removed in 1.11.0.",
+        ReplaceWith("registerTracerProviderCustomizer(customizer::apply)"),
+    )
     fun addTracerProviderCustomizer(
         customizer: BiFunction<SdkTracerProviderBuilder, Context, SdkTracerProviderBuilder>,
-    ): OpenTelemetryRumBuilder {
+    ): OpenTelemetryRumBuilder = registerTracerProviderCustomizer(customizer::apply)
+
+    /**
+     * Adds a function to invoke with the [SdkTracerProviderBuilder] and [Context] to allow
+     * customization. The return value of the function will replace the passed-in
+     * builder.
+     *
+     * Customizers run in registration order.
+     * Setting a sampler preserves existing span session IDs, including IDs supplied by sampling.
+     *
+     * Calling [SdkTracerProviderBuilder.setResource] inside of your configuration function
+     * will cause any resource customizers to be ignored that were configured via [.setResource].
+     *
+     * @since 1.10.0
+     */
+    fun registerTracerProviderCustomizer(customizer: TracerProviderCustomizer): OpenTelemetryRumBuilder {
         tracerProviderCustomizers.add(customizer)
         return this
     }
@@ -182,9 +205,27 @@ class OpenTelemetryRumBuilder internal constructor(
      * configuration function will cause any resource customizers to be ignored that were configured
      * via [.setResource].
      */
+    @Deprecated(
+        "Use registerMeterProviderCustomizer. This method will be removed in 1.11.0.",
+        ReplaceWith("registerMeterProviderCustomizer(customizer::apply)"),
+    )
     fun addMeterProviderCustomizer(
         customizer: BiFunction<SdkMeterProviderBuilder, Context, SdkMeterProviderBuilder>,
-    ): OpenTelemetryRumBuilder {
+    ): OpenTelemetryRumBuilder = registerMeterProviderCustomizer(customizer::apply)
+
+    /**
+     * Adds a function to invoke with the [SdkMeterProviderBuilder] and [Context] to allow
+     * customization. The return value of the function will replace the passed-in
+     * builder.
+     *
+     * Customizers run in registration order.
+     *
+     * Calling [SdkMeterProviderBuilder.setResource] inside of your configuration function
+     * will cause any resource customizers to be ignored that were configured via [.setResource].
+     *
+     * @since 1.10.0
+     */
+    fun registerMeterProviderCustomizer(customizer: MeterProviderCustomizer): OpenTelemetryRumBuilder {
         meterProviderCustomizers.add(customizer)
         return this
     }
@@ -200,9 +241,27 @@ class OpenTelemetryRumBuilder internal constructor(
      * configuration function will cause any resource customizers to be ignored that were configured
      * via [.setResource].
      */
+    @Deprecated(
+        "Use registerLoggerProviderCustomizer. This method will be removed in 1.11.0.",
+        ReplaceWith("registerLoggerProviderCustomizer(customizer::apply)"),
+    )
     fun addLoggerProviderCustomizer(
         customizer: BiFunction<SdkLoggerProviderBuilder, Context, SdkLoggerProviderBuilder>,
-    ): OpenTelemetryRumBuilder {
+    ): OpenTelemetryRumBuilder = registerLoggerProviderCustomizer(customizer::apply)
+
+    /**
+     * Adds a function to invoke with the [SdkLoggerProviderBuilder] and [Context] to allow
+     * customization. The return value of the function will replace the passed-in
+     * builder.
+     *
+     * Customizers run in registration order.
+     *
+     * Calling [SdkLoggerProviderBuilder.setResource] inside of your configuration function
+     * will cause any resource customizers to be ignored that were configured via [.setResource].
+     *
+     * @since 1.10.0
+     */
+    fun registerLoggerProviderCustomizer(customizer: LoggerProviderCustomizer): OpenTelemetryRumBuilder {
         loggerProviderCustomizers.add(customizer)
         return this
     }
@@ -576,7 +635,7 @@ class OpenTelemetryRumBuilder internal constructor(
         if (config.hasGlobalAttributes()) {
             // Add span processor that appends global attributes.
             val appender = GlobalAttributesSpanAppender(config.getGlobalAttributesSupplier())
-            addTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
+            registerTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
                 tracerProviderBuilder.addSpanProcessor(appender)
             }
         }
@@ -585,12 +644,12 @@ class OpenTelemetryRumBuilder internal constructor(
         if (config.shouldIncludeNetworkAttributes()) {
             val networkProvider = NetworkProviderHolder.get(context)
             // Add span processor that appends network attributes.
-            addTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
+            registerTracerProviderCustomizer { tracerProviderBuilder: SdkTracerProviderBuilder, _: Context ->
                 val networkAttributesSpanAppender = NetworkAttributesSpanAppender.create(networkProvider)
                 tracerProviderBuilder.addSpanProcessor(networkAttributesSpanAppender)
             }
             // Add log record processor that appends network attributes.
-            addLoggerProviderCustomizer { builder: SdkLoggerProviderBuilder, _: Context ->
+            registerLoggerProviderCustomizer { builder: SdkLoggerProviderBuilder, _: Context ->
                 val processor = NetworkAttributesLogRecordAppender(networkProvider)
                 builder.addLogRecordProcessor(processor)
             }
@@ -599,26 +658,20 @@ class OpenTelemetryRumBuilder internal constructor(
 
         // Add processors that append screen attribute(s)
         if (config.shouldIncludeScreenAttributes()) {
-            tracerProviderCustomizers.add(
-                0,
-                BiFunction { builder: SdkTracerProviderBuilder, _: Context ->
-                    builder.addSpanProcessor(
-                        ScreenAttributesSpanProcessor(
-                            services.visibleScreenTracker,
-                        ),
-                    )
-                },
-            )
-            loggerProviderCustomizers.add(
-                0,
-                BiFunction { builder: SdkLoggerProviderBuilder, _: Context ->
-                    builder.addLogRecordProcessor(
-                        ScreenAttributesLogRecordProcessor(
-                            services.visibleScreenTracker,
-                        ),
-                    )
-                },
-            )
+            tracerProviderCustomizers.add(0) { builder, _ ->
+                builder.addSpanProcessor(
+                    ScreenAttributesSpanProcessor(
+                        services.visibleScreenTracker,
+                    ),
+                )
+            }
+            loggerProviderCustomizers.add(0) { builder, _ ->
+                builder.addLogRecordProcessor(
+                    ScreenAttributesLogRecordProcessor(
+                        services.visibleScreenTracker,
+                    ),
+                )
+            }
         }
     }
 
@@ -649,7 +702,7 @@ class OpenTelemetryRumBuilder internal constructor(
         tracerProviderBuilder.addSpanProcessor(batchSpanProcessor)
 
         for (customizer in tracerProviderCustomizers) {
-            tracerProviderBuilder = customizer.apply(tracerProviderBuilder, context)
+            tracerProviderBuilder = customizer(tracerProviderBuilder, context)
         }
         return tracerProviderBuilder.build().also {
             // Configure before publishing the provider, after all sampler customizers have run.
@@ -684,7 +737,7 @@ class OpenTelemetryRumBuilder internal constructor(
             logRecordFilter?.let { FilteringLogRecordProcessor(batchLogsProcessor, it) } ?: batchLogsProcessor,
         )
         for (customizer in loggerProviderCustomizers) {
-            loggerProviderBuilder = customizer.apply(loggerProviderBuilder, context)
+            loggerProviderBuilder = customizer(loggerProviderBuilder, context)
         }
         return loggerProviderBuilder.build()
     }
@@ -717,7 +770,7 @@ class OpenTelemetryRumBuilder internal constructor(
                 .setResource(resource)
                 .setClock(clock)
         for (customizer in meterProviderCustomizers) {
-            meterProviderBuilder = customizer.apply(meterProviderBuilder, context)
+            meterProviderBuilder = customizer(meterProviderBuilder, context)
         }
         return meterProviderBuilder.build()
     }

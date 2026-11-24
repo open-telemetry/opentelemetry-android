@@ -73,7 +73,7 @@ class SessionSamplingPipelineTest {
         val provider = SessionProvider { current.get() }
         val builder =
             builder(null, provider, logs)
-                .addTracerProviderCustomizer { tracer, _ -> tracer.setSampler(SessionIdRatioBasedSampler(decision, provider)) }
+                .registerTracerProviderCustomizer { tracer, _ -> tracer.setSampler(SessionIdRatioBasedSampler(decision, provider)) }
                 .addSpanExporterCustomizer { spans }
         builder.logRecordFilter = Predicate { decision.test(checkNotNull(it.getAttribute(idKey))) }
         builder.withRum { rum ->
@@ -223,7 +223,7 @@ class SessionSamplingPipelineTest {
             }
         val builder =
             builder(null, provider, exporter)
-                .addTracerProviderCustomizer { tracer, _ -> tracer.setSampler(SessionIdRatioBasedSampler(rotatingDecision, provider)) }
+                .registerTracerProviderCustomizer { tracer, _ -> tracer.setSampler(SessionIdRatioBasedSampler(rotatingDecision, provider)) }
                 .addSpanExporterCustomizer { spans }
         builder.logRecordFilter = Predicate { rotatingDecision.test(checkNotNull(it.getAttribute(idKey))) }
         builder.withRum { rum ->
