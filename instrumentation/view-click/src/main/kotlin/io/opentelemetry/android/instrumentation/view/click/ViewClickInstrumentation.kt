@@ -10,13 +10,14 @@ import android.content.Context
 import com.google.auto.service.AutoService
 import io.opentelemetry.android.OpenTelemetryRum
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
+import io.opentelemetry.android.instrumentation.common.InstrumentationActivityCallback
 import io.opentelemetry.kotlin.toOtelKotlinApi
 
 @AutoService(AndroidInstrumentation::class)
 class ViewClickInstrumentation : AndroidInstrumentation {
     override val name: String = "view.click"
 
-    private var activityCallback: ViewClickActivityCallback? = null
+    private var activityCallback: InstrumentationActivityCallback? = null
     private var eventGenerator: ViewClickEventGenerator? = null
 
     override fun install(
@@ -34,7 +35,7 @@ class ViewClickInstrumentation : AndroidInstrumentation {
                         .loggerProvider
                         .getLogger(scopeName),
             )
-        val callback = ViewClickActivityCallback(generator)
+        val callback = InstrumentationActivityCallback(generator)
         app.registerActivityLifecycleCallbacks(callback)
         activityCallback = callback
         eventGenerator = generator
@@ -46,7 +47,7 @@ class ViewClickInstrumentation : AndroidInstrumentation {
     ) {
         val app = context as? Application ?: return
         activityCallback?.let { callback ->
-            callback.isActive = false
+            eventGenerator?.isActive = false
             app.unregisterActivityLifecycleCallbacks(callback)
         }
         eventGenerator?.teardown()

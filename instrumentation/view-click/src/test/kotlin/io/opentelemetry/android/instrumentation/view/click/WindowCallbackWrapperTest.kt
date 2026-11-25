@@ -11,6 +11,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.opentelemetry.android.instrumentation.common.WindowCallbackWrapper
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Test
@@ -25,9 +26,9 @@ class WindowCallbackWrapperTest {
         val callback = mockk<Callback>()
         every { callback.dispatchTouchEvent(event) } returns true
         val generator = mockk<ViewClickEventGenerator>()
-        every { generator.generateClick(any()) } throws IllegalStateException("boom")
+        every { generator.consumeEvent(any()) } throws IllegalStateException("boom")
 
-        val wrapper = WindowCallbackWrapper(callback, generator)
+        val wrapper = WindowCallbackWrapper(callback)
 
         assertThat(wrapper.dispatchTouchEvent(event)).isTrue()
         verify(exactly = 1) { callback.dispatchTouchEvent(event) }
@@ -39,7 +40,7 @@ class WindowCallbackWrapperTest {
         every { callback.dispatchTouchEvent(event) } throws IllegalStateException("app bug")
         val generator = mockk<ViewClickEventGenerator>(relaxUnitFun = true)
 
-        val wrapper = WindowCallbackWrapper(callback, generator)
+        val wrapper = WindowCallbackWrapper(callback)
 
         assertThatThrownBy { wrapper.dispatchTouchEvent(event) }
             .isInstanceOf(IllegalStateException::class.java)

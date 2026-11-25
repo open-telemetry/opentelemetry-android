@@ -27,6 +27,8 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
+import io.opentelemetry.android.instrumentation.common.InstrumentationActivityCallback
+import io.opentelemetry.android.instrumentation.common.WindowCallbackWrapper
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_BUTTON_KEY
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_CLICKS_KEY
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_TYPE_KEY
@@ -92,7 +94,7 @@ class ViewClickInstrumentationTest {
                 every { clock } returns Clock.getDefault()
             }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<InstrumentationActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
@@ -170,7 +172,7 @@ class ViewClickInstrumentationTest {
                 every { clock } returns Clock.getDefault()
             }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<InstrumentationActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
@@ -242,7 +244,7 @@ class ViewClickInstrumentationTest {
                 every { clock } returns Clock.getDefault()
             }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<InstrumentationActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
@@ -305,7 +307,7 @@ class ViewClickInstrumentationTest {
                 every { clock } returns Clock.getDefault()
             }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<InstrumentationActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
@@ -346,7 +348,7 @@ class ViewClickInstrumentationTest {
                 every { clock } returns Clock.getDefault()
             }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<InstrumentationActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
@@ -415,7 +417,7 @@ class ViewClickInstrumentationTest {
                 every { clock } returns Clock.getDefault()
             }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<InstrumentationActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
@@ -486,7 +488,7 @@ class ViewClickInstrumentationTest {
                 every { clock } returns Clock.getDefault()
             }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<InstrumentationActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
@@ -555,7 +557,7 @@ class ViewClickInstrumentationTest {
                 every { clock } returns Clock.getDefault()
             }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<InstrumentationActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
@@ -625,7 +627,7 @@ class ViewClickInstrumentationTest {
                 every { clock } returns Clock.getDefault()
             }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<InstrumentationActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
@@ -687,7 +689,7 @@ class ViewClickInstrumentationTest {
                 every { clock } returns Clock.getDefault()
             }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<InstrumentationActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
 
@@ -761,7 +763,7 @@ class ViewClickInstrumentationTest {
                 every { clock } returns Clock.getDefault()
             }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<InstrumentationActivityCallback>()
         every { window.callback } returns callback
         every { callback.dispatchTouchEvent(any()) } returns false
         every { activity.window } returns window
@@ -840,7 +842,7 @@ class ViewClickInstrumentationTest {
         generator.stopTracking()
 
         val motionEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, 10f, 10f, 0)
-        generator.generateClick(motionEvent)
+        generator.consumeEvent(motionEvent)
 
         assertThat(openTelemetryRule.logRecords).isEmpty()
     }
@@ -854,7 +856,7 @@ class ViewClickInstrumentationTest {
                 every { clock } returns Clock.getDefault()
             }
 
-        val callbackCapturingSlot = slot<ViewClickActivityCallback>()
+        val callbackCapturingSlot = slot<InstrumentationActivityCallback>()
         var currentCallback: Callback = callback
         every { window.callback } answers { currentCallback }
         every { window.callback = any() } answers { currentCallback = firstArg() }

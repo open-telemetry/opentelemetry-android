@@ -10,6 +10,9 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import io.opentelemetry.android.instrumentation.common.ToggleableTracker
+import io.opentelemetry.android.instrumentation.common.TouchEventConsumer
+import io.opentelemetry.android.instrumentation.common.WindowCallbackWrapper
 import io.opentelemetry.android.instrumentation.view.click.internal.Gesture
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_BUTTON
 import io.opentelemetry.android.semconv.HwAttributes.HW_POINTER_CLICKS
@@ -33,7 +36,8 @@ import io.opentelemetry.kotlin.logging.Logger as KotlinLogger
 internal class ViewClickEventGenerator(
     private val eventLogger: Logger,
     private val clickEventLogger: KotlinLogger,
-) {
+) : TouchEventConsumer,
+    ToggleableTracker {
     @Volatile
     var isActive: Boolean = true
 
@@ -135,23 +139,23 @@ internal class ViewClickEventGenerator(
 
     private val lock = Any()
 
-    fun startTracking(window: Window) {
+    override fun startTracking(window: Window) {
         synchronized(lock) {
             if (!isActive) return
             windowRef = WeakReference(window)
-            val currentCallback = window.callback
-            window.callback = WindowCallbackWrapper(currentCallback, this)
+            WindowCallbackWrapper.registerConsumer(window, WRAPPER_KEY_VIEW_CLICK, this)
         }
     }
 
-    fun generateClick(motionEvent: MotionEvent?) {
+    override fun consumeEvent(motionEvent: MotionEvent?) {
         if (!isActive || windowRef == null) return
+
         if (motionEvent != null) {
             gestureDetector.onTouchEvent(motionEvent)
         }
     }
 
-    fun stopTracking() {
+    override fun stopTracking() {
         synchronized(lock) {
             stopTrackingInternal()
         }
@@ -166,10 +170,7 @@ internal class ViewClickEventGenerator(
 
     private fun stopTrackingInternal() {
         windowRef?.get()?.run {
-            val currentCallback = callback
-            if (currentCallback is WindowCallbackWrapper) {
-                callback = currentCallback.unwrap()
-            }
+            WindowCallbackWrapper.unregisterConsumer(this, WRAPPER_KEY_VIEW_CLICK)
         }
         windowRef = null
     }
@@ -366,4 +367,8 @@ internal class ViewClickEventGenerator(
 
     private val View.isVisible: Boolean
         get() = visibility == View.VISIBLE
+
+    companion object {
+        private const val WRAPPER_KEY_VIEW_CLICK = "view-click-wrapper"
+    }
 }

@@ -1,3 +1,6 @@
+import kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension
+import org.gradle.kotlin.dsl.configure
+
 plugins {
     id("otel.android-library-conventions")
 }
@@ -24,4 +27,21 @@ dependencies {
     implementation(libs.androidx.junit)
     // Needed to compile OtelGlobalConfigProvider; consumers already provide Robolectric at test runtime.
     compileOnly(libs.robolectric)
+}
+
+val koverEnabled =
+    providers.environmentVariable("CI").isPresent ||
+        providers.gradleProperty("io.opentelemetry.android.coverage").map { it.toBoolean() }.getOrElse(false)
+
+if (koverEnabled) {
+    apply(plugin = "org.jetbrains.kotlinx.kover")
+    extensions.configure<KoverProjectExtension> {
+        reports {
+            filters {
+                excludes {
+                    classes("io.opentelemetry.android.test.common.TestActivity")
+                }
+            }
+        }
+    }
 }
