@@ -77,7 +77,6 @@ import io.opentelemetry.sdk.trace.samplers.Sampler
 import java.io.File
 import java.io.IOException
 import java.util.function.BiFunction
-import java.util.function.Consumer
 import java.util.function.Function
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -539,7 +538,7 @@ class OpenTelemetryRumBuilder internal constructor(
                 bufferDelegatingMetricExporter,
             )
         }
-        instrumentations.forEach(Consumer(delegate::addInstrumentation))
+        instrumentations.forEach(delegate::addInstrumentation)
         return delegate.build()
     }
 
