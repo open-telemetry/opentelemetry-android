@@ -36,6 +36,7 @@ object OpenTelemetryRumInitializer {
      * should behave.
      */
     @JvmStatic
+    @Suppress("CyclomaticComplexMethod") // Detekt counts the exporter DSL's with call toward the complexity limit.
     fun initialize(
         context: Context,
         configuration: (OpenTelemetryConfiguration.() -> Unit) = {},
@@ -86,10 +87,9 @@ object OpenTelemetryRumInitializer {
                         .create(cfg.instrumentations.httpTelemetry.recordSpanForHost())
                         ?.let { hostFilter ->
                             registerSpanExporterCustomizer { exporter ->
-                                FilteringSpanExporter
-                                    .builder(exporter)
-                                    .rejecting { span -> hostFilter.rejects(span) }
-                                    .build()
+                                FilteringSpanExporter.with(exporter) {
+                                    rejecting { span -> hostFilter.rejects(span) }
+                                }
                             }
                         }
                 }

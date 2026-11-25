@@ -18,7 +18,6 @@ import io.opentelemetry.sdk.trace.export.SpanExporter
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.Test
-import java.util.function.Predicate
 
 internal class FilteringSpanExporterTest {
     @Test
@@ -35,15 +34,11 @@ internal class FilteringSpanExporterTest {
         val span8 = span("eight")
         val spans = listOf(span1, span2, span3, span4, span5, span6, span7, span8)
 
-        val attrRejects = mutableMapOf<AttributeKey<*>, Predicate<*>>()
-        attrRejects.put(
-            AttributeKey.stringKey("herp"),
-            Predicate { anObject: String -> "derp".equals(anObject) },
-        )
-        attrRejects.put(
-            AttributeKey.stringKey("dig"),
-            Predicate { v: String -> v.startsWith("d") },
-        )
+        val attrRejects =
+            mutableMapOf<AttributeKey<*>, Function1<*, Boolean>>(
+                AttributeKey.stringKey("herp") to { value: String -> value == "derp" },
+                AttributeKey.stringKey("dig") to { value: String -> value.startsWith("d") },
+            )
 
         val exporter = mockk<SpanExporter>()
         val expectedResult = mockk<CompletableResultCode>()
@@ -52,14 +47,13 @@ internal class FilteringSpanExporterTest {
         every { exporter.export(capture(spansCaptor)) } returns expectedResult
 
         val underTest =
-            FilteringSpanExporter
-                .builder(exporter)
-                .rejecting { x: SpanData -> x === span2 }
-                .rejectSpansWithNameContaining("hree")
-                .rejectSpansNamed("four")
-                .rejectSpansNamed { x: String -> x.equals("five", ignoreCase = true) }
-                .rejectSpansWithAttributesMatching(attrRejects)
-                .build()
+            FilteringSpanExporter.with(exporter) {
+                rejecting { it === span2 }
+                rejectSpansWithNameContaining("hree")
+                rejectSpansNamed("four")
+                rejectSpansNamed { it.equals("five", ignoreCase = true) }
+                rejectSpansWithMatchingAttributes(attrRejects)
+            }
 
         val result = underTest.export(spans)
         assertThat(result).isSameAs(expectedResult)
