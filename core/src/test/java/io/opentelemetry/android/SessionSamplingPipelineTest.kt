@@ -74,7 +74,7 @@ class SessionSamplingPipelineTest {
         val builder =
             builder(null, provider, logs)
                 .registerTracerProviderCustomizer { tracer, _ -> tracer.setSampler(SessionIdRatioBasedSampler(decision, provider)) }
-                .addSpanExporterCustomizer { spans }
+                .registerSpanExporterCustomizer { spans }
         builder.logRecordFilter = Predicate { decision.test(checkNotNull(it.getAttribute(idKey))) }
         builder.withRum { rum ->
             listOf(keptId, droppedId).forEach { id ->
@@ -224,7 +224,7 @@ class SessionSamplingPipelineTest {
         val builder =
             builder(null, provider, exporter)
                 .registerTracerProviderCustomizer { tracer, _ -> tracer.setSampler(SessionIdRatioBasedSampler(rotatingDecision, provider)) }
-                .addSpanExporterCustomizer { spans }
+                .registerSpanExporterCustomizer { spans }
         builder.logRecordFilter = Predicate { rotatingDecision.test(checkNotNull(it.getAttribute(idKey))) }
         builder.withRum { rum ->
             rum.openTelemetry
@@ -297,7 +297,7 @@ class SessionSamplingPipelineTest {
             .setSessionProvider(provider)
             .addOtelReadyListener { sdk = it as OpenTelemetrySdk }
             .setExportScheduleEnablement(mockk(relaxed = true))
-            .addLogRecordExporterCustomizer { exporter }
+            .registerLogRecordExporterCustomizer { exporter }
     }
 
     private fun flush() {

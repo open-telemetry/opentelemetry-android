@@ -68,7 +68,7 @@ object OpenTelemetryRumInitializer {
                 setClock(cfg.clock)
 
                 if (cfg.propagators.isNotEmpty()) {
-                    addPropagatorCustomizer { existing ->
+                    registerPropagatorCustomizer { existing ->
                         TextMapPropagator.composite(listOf(existing) + cfg.propagators)
                     }
                 }
@@ -79,13 +79,13 @@ object OpenTelemetryRumInitializer {
                         val sampler = requireNotNull(factory(sessionProvider)) { "Trace sampler factory returned null" }
                         registerTracerProviderCustomizer { builder, _ -> builder.setSampler(sampler) }
                     }
-                    addSpanExporterCustomizer {
+                    registerSpanExporterCustomizer {
                         OtlpExporterFactory.createHttpSpanExporter(cfg.exportConfig.spansEndpoint())
                     }
                     HttpSpanHostFilter
                         .create(cfg.instrumentations.httpTelemetry.recordSpanForHost())
                         ?.let { hostFilter ->
-                            addSpanExporterCustomizer { exporter ->
+                            registerSpanExporterCustomizer { exporter ->
                                 FilteringSpanExporter
                                     .builder(exporter)
                                     .rejecting { span -> hostFilter.rejects(span) }
@@ -94,12 +94,12 @@ object OpenTelemetryRumInitializer {
                         }
                 }
                 if (rumConfig.loggingEnabled) {
-                    addLogRecordExporterCustomizer {
+                    registerLogRecordExporterCustomizer {
                         createLogExporter(cfg.exportConfig.logsEndpoint(), cfg.instrumentations.httpTelemetry.recordWebsocketEventForHost())
                     }
                 }
                 if (rumConfig.metricsEnabled) {
-                    addMetricExporterCustomizer {
+                    registerMetricExporterCustomizer {
                         OtlpExporterFactory.createHttpMetricExporter(cfg.exportConfig.metricsEndpoint())
                     }
                 }

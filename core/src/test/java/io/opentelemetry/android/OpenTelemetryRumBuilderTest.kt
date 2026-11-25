@@ -54,7 +54,6 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality
 import io.opentelemetry.sdk.metrics.data.MetricData
-import io.opentelemetry.sdk.metrics.export.MetricExporter
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader
 import io.opentelemetry.sdk.resources.Resource
 import io.opentelemetry.sdk.testing.assertj.LongPointAssert
@@ -81,7 +80,6 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Function
 
 @OptIn(IncubatingApi::class)
 @RunWith(AndroidJUnit4::class)
@@ -298,7 +296,7 @@ class OpenTelemetryRumBuilderTest {
                     SdkMeterProvider
                         .builder()
                         .registerMetricReader(periodicReader)
-                }.addMetricExporterCustomizer(Function { _: MetricExporter -> exporter })
+                }.registerMetricExporterCustomizer { exporter }
                 .build()
 
         val meter =
@@ -400,7 +398,7 @@ class OpenTelemetryRumBuilderTest {
 
         val rum =
             makeBuilder()
-                .addPropagatorCustomizer(Function { _: TextMapPropagator -> customPropagator })
+                .registerPropagatorCustomizer { customPropagator }
                 .build()
         val result =
             rum
@@ -413,12 +411,16 @@ class OpenTelemetryRumBuilderTest {
 
     @Test
     fun canSetPropagator() {
+        val firstPropagator = mockk<TextMapPropagator>()
         val customPropagator = mockk<TextMapPropagator>()
 
         val rum =
             makeBuilder()
-                .addPropagatorCustomizer(Function { _: TextMapPropagator -> customPropagator })
-                .build()
+                .registerPropagatorCustomizer { firstPropagator }
+                .registerPropagatorCustomizer { current ->
+                    assertThat(current).isSameAs(firstPropagator)
+                    customPropagator
+                }.build()
         val result = rum.openTelemetry.propagators.textMapPropagator
         assertThat(result).isSameAs(customPropagator)
     }
@@ -439,7 +441,7 @@ class OpenTelemetryRumBuilderTest {
 
         val rum =
             makeBuilder()
-                .addSpanExporterCustomizer(customizer)
+                .registerSpanExporterCustomizer(customizer)
                 .build()
 
         val span =
@@ -472,12 +474,11 @@ class OpenTelemetryRumBuilderTest {
     fun setLogRecordExporterCustomizer() {
         createAndSetServiceManager()
         val wasCalled = AtomicBoolean(false)
-        val customizer: Function<LogRecordExporter, LogRecordExporter> =
-            Function { _: LogRecordExporter ->
-                wasCalled.set(true)
-                logsExporter
-            }
-        val rum = makeBuilder().addLogRecordExporterCustomizer(customizer).build()
+        val customizer: (LogRecordExporter) -> LogRecordExporter = {
+            wasCalled.set(true)
+            logsExporter
+        }
+        val rum = makeBuilder().registerLogRecordExporterCustomizer(customizer).build()
 
         val logger =
             rum
@@ -634,10 +635,10 @@ class OpenTelemetryRumBuilderTest {
         RumBuilder
             .builder(application, config)
             .setExportScheduleEnablement(scheduleHandler)
-            .addLogRecordExporterCustomizer {
+            .registerLogRecordExporterCustomizer {
                 logExporterCustomizerCalled = true
                 it
-            }.addMetricExporterCustomizer {
+            }.registerMetricExporterCustomizer {
                 metricExporterCustomizerCalled = true
                 it
             }.build()

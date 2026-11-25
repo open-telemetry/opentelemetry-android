@@ -17,8 +17,12 @@ public final class io/opentelemetry/android/OpenTelemetryRumBuilder {
 	public final fun build ()Lio/opentelemetry/android/OpenTelemetryRum;
 	public final fun getInstrumentationLoader ()Lio/opentelemetry/android/instrumentation/AndroidInstrumentationLoader;
 	public final fun mergeResource (Lio/opentelemetry/sdk/resources/Resource;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun registerLogRecordExporterCustomizer (Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun registerLoggerProviderCustomizer (Lkotlin/jvm/functions/Function2;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun registerMeterProviderCustomizer (Lkotlin/jvm/functions/Function2;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun registerMetricExporterCustomizer (Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun registerPropagatorCustomizer (Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
+	public final fun registerSpanExporterCustomizer (Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun registerTracerProviderCustomizer (Lkotlin/jvm/functions/Function2;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun setClock (Lio/opentelemetry/sdk/common/Clock;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;
 	public final fun setExportScheduleEnablement (Lio/opentelemetry/android/features/diskbuffering/scheduler/ScheduleEnablement;)Lio/opentelemetry/android/OpenTelemetryRumBuilder;

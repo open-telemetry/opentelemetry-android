@@ -87,9 +87,9 @@ The builder exposes customizer hooks that let you wrap or replace the default ex
 
 ```java
 OpenTelemetryRum.builder(application)
-  .addSpanExporterCustomizer(exp -> new MyFilteringSpanExporter(exp))
-  .addLogRecordExporterCustomizer(exp -> SpanAttributeRedactingLogExporter.wrap(exp))
-  .addMetricExporterCustomizer(exp -> myMetricsFanOut(exp))
+  .registerSpanExporterCustomizer(exp -> new MyFilteringSpanExporter(exp))
+  .registerLogRecordExporterCustomizer(exp -> SpanAttributeRedactingLogExporter.wrap(exp))
+  .registerMetricExporterCustomizer(exp -> myMetricsFanOut(exp))
   .build();
 ```
 
@@ -120,7 +120,7 @@ Summary (concise): Once the exporter is built and all customizers have been appl
 You control the final network/export sink by returning it from the last customizer. For example, to send spans via OTLP HTTP:
 
 ```java
-builder.addSpanExporterCustomizer(prev -> OtlpHttpSpanExporter.builder()
+builder.registerSpanExporterCustomizer(prev -> OtlpHttpSpanExporter.builder()
     .setEndpoint("https://collector.example.com/v1/traces")
     .build());
 ```
@@ -182,5 +182,5 @@ class MyFilteringSpanExporter implements SpanExporter {
 Register in builder:
 
 ```java
-builder.addSpanExporterCustomizer(exp -> new MyFilteringSpanExporter(exp));
+builder.registerSpanExporterCustomizer(exp -> new MyFilteringSpanExporter(exp));
 ```
