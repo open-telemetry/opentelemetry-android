@@ -463,7 +463,7 @@ class OpenTelemetryRumBuilder internal constructor(
         }
 
         val delegate =
-            SdkPreconfiguredRumBuilder(context, sdk, sessionProvider, config, clock, instrumentationLoader)
+            SdkPreconfiguredRumBuilder(context, sdk, sessionProvider, config, clock, instrumentationLoader, services)
                 .setShutdownHook {
                     exportScheduleEnablement?.disable()
                     services.close()

@@ -1,5 +1,6 @@
-public final class io/opentelemetry/android/instrumentation/fragment/FragmentLifecycleInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation {
+public final class io/opentelemetry/android/instrumentation/fragment/FragmentLifecycleInstrumentation : io/opentelemetry/android/instrumentation/AndroidInstrumentation, io/opentelemetry/android/internal/services/ServicesAwareInstrumentation {
 	public fun <init> ()V
+	public fun configureServices (Lio/opentelemetry/android/internal/services/ServicesFactory;)V
 	public fun getName ()Ljava/lang/String;
 	public fun install (Landroid/content/Context;Lio/opentelemetry/android/OpenTelemetryRum;)V
 	public final fun setScreenNameExtractor (Lio/opentelemetry/android/instrumentation/common/ScreenNameExtractor;)V

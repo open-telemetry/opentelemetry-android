@@ -13,6 +13,8 @@ import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.instrumentation.InstrumentationConfigurators
+import io.opentelemetry.android.internal.services.ServicesAwareInstrumentation
+import io.opentelemetry.android.internal.services.ServicesFactory
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.common.Clock
@@ -24,6 +26,7 @@ class SdkPreconfiguredRumBuilder internal constructor(
     private val config: OtelRumConfig,
     private val clock: Clock,
     private val instrumentationLoader: AndroidInstrumentationLoader,
+    private val services: ServicesFactory,
 ) {
     private var onShutdown: Runnable = Runnable {} // nop
     private val instrumentations = mutableListOf<AndroidInstrumentation>()
@@ -108,6 +111,9 @@ class SdkPreconfiguredRumBuilder internal constructor(
         for (instrumentation in enabledInstrumentations) {
             try {
                 configurator.configure(instrumentation)
+                if (instrumentation is ServicesAwareInstrumentation) {
+                    instrumentation.configureServices(services)
+                }
                 instrumentation.install(context, openTelemetryRum)
             } catch (e: Exception) {
                 Log.w(
