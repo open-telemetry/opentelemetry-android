@@ -282,10 +282,24 @@ class OpenTelemetryRumBuilder internal constructor(
      *
      * Multiple calls will execute the customizers in order.
      */
-    fun addPropagatorCustomizer(propagatorCustomizer: Function<in TextMapPropagator, out TextMapPropagator>): OpenTelemetryRumBuilder {
+    @Deprecated(
+        "Use registerPropagatorCustomizer. This method will be removed in 1.11.0.",
+        ReplaceWith("registerPropagatorCustomizer(propagatorCustomizer::apply)"),
+    )
+    fun addPropagatorCustomizer(propagatorCustomizer: Function<in TextMapPropagator, out TextMapPropagator>): OpenTelemetryRumBuilder =
+        registerPropagatorCustomizer(propagatorCustomizer::apply)
+
+    /**
+     * Registers a function that replaces or extends the current [TextMapPropagator].
+     * Customizers run in registration order, starting with the default propagator.
+     * Use [TextMapPropagator.composite] to combine the current propagator with additional propagators.
+     *
+     * @since 1.10.0
+     */
+    fun registerPropagatorCustomizer(customizer: (TextMapPropagator) -> TextMapPropagator): OpenTelemetryRumBuilder {
         val existing = this.propagatorCustomizer
         this.propagatorCustomizer = {
-            propagatorCustomizer.apply(existing(it))
+            customizer(existing(it))
         }
         return this
     }
@@ -296,10 +310,23 @@ class OpenTelemetryRumBuilder internal constructor(
      *
      * Multiple calls will execute the customizers in order.
      */
-    fun addSpanExporterCustomizer(spanExporterCustomizer: Function<in SpanExporter, out SpanExporter>): OpenTelemetryRumBuilder {
+    @Deprecated(
+        "Use registerSpanExporterCustomizer. This method will be removed in 1.11.0.",
+        ReplaceWith("registerSpanExporterCustomizer(spanExporterCustomizer::apply)"),
+    )
+    fun addSpanExporterCustomizer(spanExporterCustomizer: Function<in SpanExporter, out SpanExporter>): OpenTelemetryRumBuilder =
+        registerSpanExporterCustomizer(spanExporterCustomizer::apply)
+
+    /**
+     * Registers a function that wraps or replaces the current [SpanExporter].
+     * Customizers run in registration order, starting with the default exporter.
+     *
+     * @since 1.10.0
+     */
+    fun registerSpanExporterCustomizer(customizer: (SpanExporter) -> SpanExporter): OpenTelemetryRumBuilder {
         val existing = this.spanExporterCustomizer
         this.spanExporterCustomizer = {
-            spanExporterCustomizer.apply(existing(it))
+            customizer(existing(it))
         }
         return this
     }
@@ -310,10 +337,23 @@ class OpenTelemetryRumBuilder internal constructor(
      *
      * Multiple calls will execute the customizers in order.
      */
-    fun addMetricExporterCustomizer(metricExporterCustomizer: Function<in MetricExporter, out MetricExporter>): OpenTelemetryRumBuilder {
+    @Deprecated(
+        "Use registerMetricExporterCustomizer. This method will be removed in 1.11.0.",
+        ReplaceWith("registerMetricExporterCustomizer(metricExporterCustomizer::apply)"),
+    )
+    fun addMetricExporterCustomizer(metricExporterCustomizer: Function<in MetricExporter, out MetricExporter>): OpenTelemetryRumBuilder =
+        registerMetricExporterCustomizer(metricExporterCustomizer::apply)
+
+    /**
+     * Registers a function that wraps or replaces the current [MetricExporter].
+     * Customizers run in registration order, starting with the default exporter.
+     *
+     * @since 1.10.0
+     */
+    fun registerMetricExporterCustomizer(customizer: (MetricExporter) -> MetricExporter): OpenTelemetryRumBuilder {
         val existing = this.metricExporterCustomizer
         this.metricExporterCustomizer = {
-            metricExporterCustomizer.apply(existing(it))
+            customizer(existing(it))
         }
         return this
     }
@@ -324,12 +364,24 @@ class OpenTelemetryRumBuilder internal constructor(
      *
      * Multiple calls will execute the customizers in order.
      */
+    @Deprecated(
+        "Use registerLogRecordExporterCustomizer. This method will be removed in 1.11.0.",
+        ReplaceWith("registerLogRecordExporterCustomizer(logRecordExporterCustomizer::apply)"),
+    )
     fun addLogRecordExporterCustomizer(
         logRecordExporterCustomizer: Function<in LogRecordExporter, out LogRecordExporter>,
-    ): OpenTelemetryRumBuilder {
+    ): OpenTelemetryRumBuilder = registerLogRecordExporterCustomizer(logRecordExporterCustomizer::apply)
+
+    /**
+     * Registers a function that wraps or replaces the current [LogRecordExporter].
+     * Customizers run in registration order, starting with the default exporter.
+     *
+     * @since 1.10.0
+     */
+    fun registerLogRecordExporterCustomizer(customizer: (LogRecordExporter) -> LogRecordExporter): OpenTelemetryRumBuilder {
         val existing = this.logRecordExporterCustomizer
         this.logRecordExporterCustomizer = {
-            logRecordExporterCustomizer.apply(existing(it))
+            customizer(existing(it))
         }
         return this
     }
