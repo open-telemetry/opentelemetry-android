@@ -29,7 +29,7 @@ class FilteringSpanExporterBuilder internal constructor(
      * Creates a SpanExporter that will not export any spans whose name matches the given name. All
      * other spans will be exported by the delegate.
      *
-     * @param name - Entire case sensitive span name to match for exclusion
+     * @param name - Entire case-sensitive span name to match for exclusion
      * @return a SpanExporter
      */
     fun rejectSpansNamed(name: String): FilteringSpanExporterBuilder = rejecting { span: SpanData -> name == span.name }
