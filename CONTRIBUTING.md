@@ -238,3 +238,9 @@ If you have an intentional changes, you can regenerate the api file(s) with the 
 ```
 $ ./gradlew apiDump
 ```
+
+### Breaking Changes and Version Bumps
+
+Breaking API changes should only ever be made in a semver major bump. When introducing breaking changes in a version bump:
+- Update [UPGRADING.md](UPGRADING.md) to note down each change that affects an existing integration, along with a suggested migration path.
+- Prefer non-breaking API changes where possible by providing a deprecation cycle. Kotlin's `@Deprecated` annotation with `replaceWith = ReplaceWith(...)` should be preferred to offer automated migration paths in IDEs before removing public APIs.

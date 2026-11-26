@@ -98,6 +98,12 @@ Any change to the public API surface is detected by `apiCheck` and requires extr
 - Do not expose factories or configuration classes that are implementation details.
 - Data classes are [discouraged in public APIs](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#avoid-using-data-classes-in-your-api).
 
+### Breaking Changes and Migrations
+
+Breaking API changes should only ever be made in a semver major bump. When making breaking changes in a version bump:
+- Update [UPGRADING.md](UPGRADING.md) to note down each change that affects existing integrations along with a suggested migration.
+- Prefer non-breaking API changes where possible by using Kotlin's `@ReplaceWith` annotation (`@Deprecated(..., replaceWith = ReplaceWith(...))`) to provide an automated migration path.
+
 ## Code Change Discipline
 
 - **Only change what is necessary.** Do not refactor, reformat, rename, or restructure existing
