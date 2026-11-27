@@ -15,13 +15,18 @@ import io.opentelemetry.android.instrumentation.activity.startup.AppStartupTimer
 import io.opentelemetry.android.instrumentation.common.Constants.INSTRUMENTATION_SCOPE
 import io.opentelemetry.android.instrumentation.common.DefaultScreenNameExtractor
 import io.opentelemetry.android.instrumentation.common.ScreenNameExtractor
-import io.opentelemetry.android.internal.services.Services
+import io.opentelemetry.android.internal.services.ServicesAwareInstrumentation
+import io.opentelemetry.android.internal.services.ServicesFactory
+import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.android.internal.services.visiblescreen.activities.DefaultingActivityLifecycleCallbacks
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.Tracer
 
 @AutoService(AndroidInstrumentation::class)
-class ActivityLifecycleInstrumentation : AndroidInstrumentation {
+class ActivityLifecycleInstrumentation :
+    AndroidInstrumentation,
+    ServicesAwareInstrumentation {
+    private lateinit var visibleScreenTracker: VisibleScreenTracker
     private val startupTimer: AppStartupTimer by lazy { AppStartupTimer() }
     private var screenNameExtractor: ScreenNameExtractor = DefaultScreenNameExtractor
     private var tracerCustomizer: (Tracer) -> Tracer = { it }
@@ -29,6 +34,10 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
     private var activityLifecycle: Application.ActivityLifecycleCallbacks? = null
 
     override val name: String = "activity"
+
+    override fun configureServices(services: ServicesFactory) {
+        visibleScreenTracker = services.visibleScreenTracker
+    }
 
     fun setTracerCustomizer(customizer: (Tracer) -> Tracer) {
         tracerCustomizer = customizer
@@ -47,6 +56,7 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
         }
 
         val app = (context as? Application) ?: (context.applicationContext as? Application) ?: return
+        check(::visibleScreenTracker.isInitialized) { "Services must be configured before installation" }
 
         startupTimer.start(openTelemetryRum.openTelemetry.getTracer(INSTRUMENTATION_SCOPE), openTelemetryRum.clock)
         startupLifecycle =
@@ -54,7 +64,7 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
                 app.registerActivityLifecycleCallbacks(this)
             }
         activityLifecycle =
-            buildActivityLifecycleTracer(context, openTelemetryRum.openTelemetry).apply {
+            buildActivityLifecycleTracer(openTelemetryRum.openTelemetry).apply {
                 app.registerActivityLifecycleCallbacks(this)
             }
     }
@@ -74,16 +84,12 @@ class ActivityLifecycleInstrumentation : AndroidInstrumentation {
         }
     }
 
-    private fun buildActivityLifecycleTracer(
-        context: Context,
-        openTelemetry: OpenTelemetry,
-    ): DefaultingActivityLifecycleCallbacks {
-        val visibleScreenService = Services.get(context).visibleScreenTracker
+    private fun buildActivityLifecycleTracer(openTelemetry: OpenTelemetry): DefaultingActivityLifecycleCallbacks {
         val delegateTracer: Tracer = openTelemetry.getTracer(INSTRUMENTATION_SCOPE)
         val tracers =
             ActivityTracerCache(
                 tracerCustomizer.invoke(delegateTracer),
-                visibleScreenService,
+                visibleScreenTracker,
                 startupTimer,
                 screenNameExtractor,
             )

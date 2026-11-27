@@ -11,7 +11,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.internal.services.Services
+import io.opentelemetry.android.internal.services.ServicesFactory
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.android.semconv.StartAttributes.START_TYPE_KEY
 import io.opentelemetry.android.session.SessionProvider
@@ -21,7 +21,7 @@ import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.common.Clock
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.After
+import org.assertj.core.api.Assertions.assertThatIllegalStateException
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -33,7 +33,7 @@ class ActivityLifecycleInstrumentationTest {
     private lateinit var application: Application
     private lateinit var openTelemetry: OpenTelemetrySdk
     private lateinit var sessionProvider: SessionProvider
-    private lateinit var services: Services
+    private lateinit var services: ServicesFactory
 
     @Before
     fun setUp() {
@@ -43,12 +43,20 @@ class ActivityLifecycleInstrumentationTest {
         services = mockk()
         sessionProvider = mockk()
         every { services.visibleScreenTracker }.returns(mockk<VisibleScreenTracker>())
-        Services.set(services)
+        activityLifecycleInstrumentation.configureServices(services)
     }
 
-    @After
-    fun tearDown() {
-        Services.set(null)
+    @Test
+    fun `install without services fails before registering lifecycle callbacks`() {
+        val instrumentation = ActivityLifecycleInstrumentation()
+        val mockApp = mockk<Application>(relaxed = true)
+        val rum = createMockRum()
+
+        assertThatIllegalStateException()
+            .isThrownBy { instrumentation.install(mockApp, rum) }
+            .withMessage("Services must be configured before installation")
+
+        verify(exactly = 0) { mockApp.registerActivityLifecycleCallbacks(any()) }
     }
 
     @Test

@@ -13,11 +13,11 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.opentelemetry.android.OpenTelemetryRum
-import io.opentelemetry.android.internal.services.Services
+import io.opentelemetry.android.internal.services.ServicesFactory
 import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.Tracer
-import org.junit.jupiter.api.AfterEach
+import org.assertj.core.api.Assertions.assertThatIllegalStateException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -28,7 +28,7 @@ internal class FragmentLifecycleInstrumentationTest {
     private val openTelemetryRum = mockk<OpenTelemetryRum>()
     private val openTelemetry = mockk<OpenTelemetry>()
     private val tracer = mockk<Tracer>(relaxed = true)
-    private val services = mockk<Services>()
+    private val services = mockk<ServicesFactory>()
     private val visibleScreenTracker = mockk<VisibleScreenTracker>(relaxed = true)
 
     @BeforeEach
@@ -37,12 +37,18 @@ internal class FragmentLifecycleInstrumentationTest {
         every { openTelemetryRum.openTelemetry } returns openTelemetry
         every { openTelemetry.getTracer(any()) } returns tracer
         every { services.visibleScreenTracker } returns visibleScreenTracker
-        Services.set(services)
+        sut.configureServices(services)
     }
 
-    @AfterEach
-    fun tearDown() {
-        Services.set(null)
+    @Test
+    fun `install without services fails before registering lifecycle callbacks`() {
+        val instrumentation = FragmentLifecycleInstrumentation()
+
+        assertThatIllegalStateException()
+            .isThrownBy { instrumentation.install(application, openTelemetryRum) }
+            .withMessage("Services must be configured before installation")
+
+        verify(exactly = 0) { application.registerActivityLifecycleCallbacks(any()) }
     }
 
     @Test

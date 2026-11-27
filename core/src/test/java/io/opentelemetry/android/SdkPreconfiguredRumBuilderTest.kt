@@ -9,9 +9,12 @@ import android.content.Context
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.mockk.verifyOrder
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.instrumentation.AndroidInstrumentation
 import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoaderImpl
+import io.opentelemetry.android.internal.services.ServicesAwareInstrumentation
+import io.opentelemetry.android.internal.services.ServicesFactory
 import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.common.Clock.getDefault
@@ -20,6 +23,127 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 
 class SdkPreconfiguredRumBuilderTest {
+    @Test
+    fun `shared services are injected before a discovered instrumentation is installed`() {
+        verifyServicesInjection(discovered = true)
+    }
+
+    @Test
+    fun `shared services are injected before a manually added instrumentation is installed`() {
+        verifyServicesInjection(discovered = false)
+    }
+
+    private fun verifyServicesInjection(discovered: Boolean) {
+        val services = mockk<ServicesFactory>()
+        val instrumentation = mockk<ServicesUsingInstrumentation>(relaxed = true)
+        every { instrumentation.name } returns "services-using"
+        val loader = AndroidInstrumentationLoaderImpl()
+        val config = OtelRumConfig()
+        if (discovered) {
+            loader.registerForTest(instrumentation)
+        } else {
+            config.disableInstrumentationDiscovery()
+        }
+        val sdk = mockk<OpenTelemetrySdk>(relaxed = true)
+        val context = mockk<Context>(relaxed = true)
+
+        val previousHandler = Thread.getDefaultUncaughtExceptionHandler()
+        try {
+            val rum =
+                SdkPreconfiguredRumBuilder(
+                    context,
+                    sdk,
+                    SessionProvider { "session" },
+                    config,
+                    getDefault(),
+                    loader,
+                    services,
+                ).apply {
+                    if (!discovered) {
+                        addInstrumentation(instrumentation)
+                    }
+                }.build()
+
+            verifyOrder {
+                instrumentation.configureServices(services)
+                instrumentation.install(context, rum)
+            }
+
+            rum.shutdown()
+            verify { instrumentation.uninstall(context, rum) }
+        } finally {
+            Thread.setDefaultUncaughtExceptionHandler(previousHandler)
+        }
+    }
+
+    @Test
+    fun `suppressed instrumentation does not receive services`() {
+        val instrumentation = mockk<ServicesUsingInstrumentation>(relaxed = true)
+        every { instrumentation.name } returns "suppressed"
+        val config = OtelRumConfig().disableInstrumentationDiscovery().suppressInstrumentation("suppressed")
+        val sdk = mockk<OpenTelemetrySdk>(relaxed = true)
+
+        val previousHandler = Thread.getDefaultUncaughtExceptionHandler()
+        try {
+            val rum =
+                SdkPreconfiguredRumBuilder(
+                    mockk<Context>(relaxed = true),
+                    sdk,
+                    SessionProvider { "session" },
+                    config,
+                    getDefault(),
+                    AndroidInstrumentationLoaderImpl(),
+                    mockk<ServicesFactory>(),
+                ).addInstrumentation(instrumentation)
+                    .build()
+
+            verify(exactly = 0) {
+                instrumentation.configureServices(any())
+                instrumentation.install(any(), any())
+            }
+            rum.shutdown()
+        } finally {
+            Thread.setDefaultUncaughtExceptionHandler(previousHandler)
+        }
+    }
+
+    @Test
+    fun `a failing services hook does not stop other instrumentations from installing`() {
+        val failing = mockk<ServicesUsingInstrumentation>(relaxed = true)
+        val working = mockk<AndroidInstrumentation>(relaxed = true)
+        every { failing.name } returns "failing"
+        every { working.name } returns "working"
+        every { failing.configureServices(any()) } throws IllegalStateException("configuration failed")
+        val config = OtelRumConfig().disableInstrumentationDiscovery()
+        val sdk = mockk<OpenTelemetrySdk>(relaxed = true)
+
+        val previousHandler = Thread.getDefaultUncaughtExceptionHandler()
+        try {
+            val rum =
+                SdkPreconfiguredRumBuilder(
+                    mockk<Context>(relaxed = true),
+                    sdk,
+                    SessionProvider { "session" },
+                    config,
+                    getDefault(),
+                    AndroidInstrumentationLoaderImpl(),
+                    mockk<ServicesFactory>(),
+                ).addInstrumentation(failing)
+                    .addInstrumentation(working)
+                    .build()
+
+            verify(exactly = 0) { failing.install(any(), any()) }
+            verify { working.install(any(), rum) }
+            rum.shutdown()
+        } finally {
+            Thread.setDefaultUncaughtExceptionHandler(previousHandler)
+        }
+    }
+
+    private interface ServicesUsingInstrumentation :
+        AndroidInstrumentation,
+        ServicesAwareInstrumentation
+
     @Test
     fun `session and native crash instrumentations must come first`() {
         val context = mockk<Context>()
@@ -50,6 +174,7 @@ class SdkPreconfiguredRumBuilderTest {
                 config,
                 getDefault(),
                 AndroidInstrumentationLoaderImpl(),
+                mockk<ServicesFactory>(),
             )
         builder.addInstrumentation(fooInstrumentation)
         builder.addInstrumentation(sessionInstrumentation)
@@ -87,6 +212,7 @@ class SdkPreconfiguredRumBuilderTest {
                 config,
                 getDefault(),
                 AndroidInstrumentationLoaderImpl(),
+                mockk<ServicesFactory>(),
             )
         builder.addInstrumentation(fooInstrumentation)
         builder.addInstrumentation(nativeCrashInstrumentation)
@@ -120,6 +246,7 @@ class SdkPreconfiguredRumBuilderTest {
                     config,
                     getDefault(),
                     AndroidInstrumentationLoaderImpl(),
+                    mockk<ServicesFactory>(),
                 ).addInstrumentation(failing)
                     .addInstrumentation(working)
                     .build()

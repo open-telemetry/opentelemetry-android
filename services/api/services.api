@@ -16,6 +16,10 @@ public final class io/opentelemetry/android/internal/services/Services$Companion
 	public final fun set (Lio/opentelemetry/android/internal/services/Services;)V
 }
 
+public abstract interface class io/opentelemetry/android/internal/services/ServicesAwareInstrumentation {
+	public abstract fun configureServices (Lio/opentelemetry/android/internal/services/ServicesFactory;)V
+}
+
 public abstract interface class io/opentelemetry/android/internal/services/ServicesFactory : java/io/Closeable {
 	public abstract fun getAppLifecycle ()Lio/opentelemetry/android/internal/services/applifecycle/AppLifecycle;
 	public abstract fun getVisibleScreenTracker ()Lio/opentelemetry/android/internal/services/visiblescreen/VisibleScreenTracker;
