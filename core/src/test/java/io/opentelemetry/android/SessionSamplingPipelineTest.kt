@@ -274,6 +274,7 @@ class SessionSamplingPipelineTest {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun builder(
         directory: File?,
         provider: SessionProvider,

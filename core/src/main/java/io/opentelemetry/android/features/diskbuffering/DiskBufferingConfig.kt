@@ -17,6 +17,7 @@ const val DEFAULT_MIN_FILE_AGE_FOR_READ_MS = 33L
 const val DEFAULT_MAX_FILE_AGE_FOR_READ_MS = 18L
 const val DEFAULT_EXPORT_PERIOD_S = 10L
 
+@Deprecated("Use the diskBuffering { ... } configuration block in OpenTelemetryRumInitializer.initialize() instead.")
 data class DiskBufferingConfig
     @JvmOverloads
     constructor(
