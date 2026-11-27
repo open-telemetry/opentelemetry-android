@@ -5,11 +5,6 @@
 
 package io.opentelemetry.android.instrumentation.fragment
 
-import androidx.fragment.app.Fragment
-import io.mockk.every
-import io.mockk.mockk
-import io.opentelemetry.android.instrumentation.common.ActiveSpan
-import io.opentelemetry.android.internal.services.visiblescreen.VisibleScreenTracker
 import io.opentelemetry.android.semconv.AppAttributes.APP_SCREEN_PREVIOUS_NAME_KEY
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
@@ -27,24 +22,20 @@ internal class FragmentTracerTest {
     }
 
     private lateinit var tracer: Tracer
-    private lateinit var activeSpan: ActiveSpan
 
     @BeforeEach
     fun setup() {
         tracer = otelTesting.openTelemetry.getTracer("testTracer")
-        val visibleScreenTracker = mockk<VisibleScreenTracker>(relaxed = true)
-        every { visibleScreenTracker.previouslyVisibleScreen } returns null
-        activeSpan = ActiveSpan(visibleScreenTracker::previouslyVisibleScreen)
     }
 
     @Test
     fun create() {
         val trackableTracer =
             FragmentTracer(
-                fragment = mockk<Fragment>(),
+                fragmentName = "Fragment",
                 tracer = tracer,
                 screenName = "",
-                activeSpan = activeSpan,
+                lastVisibleScreen = { null },
             )
         trackableTracer.startFragmentCreation()
         trackableTracer.endActiveSpan()
@@ -56,10 +47,10 @@ internal class FragmentTracerTest {
     fun addPreviousScreen_noPrevious() {
         val trackableTracer =
             FragmentTracer(
-                fragment = mockk<Fragment>(),
+                fragmentName = "Fragment",
                 tracer = tracer,
                 screenName = "",
-                activeSpan = activeSpan,
+                lastVisibleScreen = { null },
             )
 
         trackableTracer.startSpanIfNoneInProgress("starting")
@@ -72,15 +63,12 @@ internal class FragmentTracerTest {
 
     @Test
     fun addPreviousScreen_currentSameAsPrevious() {
-        val visibleScreenTracker = mockk<VisibleScreenTracker>(relaxed = true)
-        every { visibleScreenTracker.previouslyVisibleScreen } returns "Fragment"
-
         val trackableTracer =
             FragmentTracer(
-                fragment = mockk<Fragment>(),
+                fragmentName = "Fragment",
                 tracer = tracer,
                 screenName = "",
-                activeSpan = activeSpan,
+                lastVisibleScreen = { "Fragment" },
             )
 
         trackableTracer.startSpanIfNoneInProgress("starting")
@@ -93,16 +81,12 @@ internal class FragmentTracerTest {
 
     @Test
     fun addPreviousScreen() {
-        val visibleScreenTracker = mockk<VisibleScreenTracker>()
-        every { visibleScreenTracker.previouslyVisibleScreen } returns "previousScreen"
-        activeSpan = ActiveSpan(visibleScreenTracker::previouslyVisibleScreen)
-
         val fragmentTracer =
             FragmentTracer(
-                fragment = mockk<Fragment>(),
+                fragmentName = "Fragment",
                 tracer = tracer,
                 screenName = "",
-                activeSpan = activeSpan,
+                lastVisibleScreen = { "previousScreen" },
             )
 
         fragmentTracer.startSpanIfNoneInProgress("starting")
