@@ -89,6 +89,8 @@ dependencies {
 
     testImplementation(libs.bundles.junit)
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(rootLibs.androidx.test.core)
+    androidTestImplementation(rootLibs.androidx.test.runner)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
