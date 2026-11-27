@@ -88,12 +88,12 @@ internal class VisibleScreenTrackerImpl internal constructor(
         }
 
     override fun activityResumed(activity: Activity) {
-        lastResumedActivity.set(activity.javaClass.simpleName)
+        lastResumedActivity.set(activity.screenName)
     }
 
     override fun activityPaused(activity: Activity) {
-        previouslyLastResumedActivity.set(activity.javaClass.simpleName)
-        lastResumedActivity.compareAndSet(activity.javaClass.simpleName, null)
+        previouslyLastResumedActivity.set(activity.screenName)
+        lastResumedActivity.compareAndSet(activity.screenName, null)
     }
 
     override fun fragmentResumed(fragment: Fragment) {
@@ -105,7 +105,7 @@ internal class VisibleScreenTrackerImpl internal constructor(
         if (fragment is DialogFragment) {
             previouslyLastResumedFragment.set(lastResumedFragment.get())
         }
-        lastResumedFragment.set(fragment.javaClass.simpleName)
+        lastResumedFragment.set(fragment.screenName)
     }
 
     override fun fragmentPaused(fragment: Fragment) {
@@ -116,10 +116,16 @@ internal class VisibleScreenTrackerImpl internal constructor(
         if (fragment is DialogFragment) {
             lastResumedFragment.set(previouslyLastResumedFragment.get())
         } else {
-            lastResumedFragment.compareAndSet(fragment.javaClass.simpleName, null)
+            lastResumedFragment.compareAndSet(fragment.screenName, null)
         }
-        previouslyLastResumedFragment.set(fragment.javaClass.simpleName)
+        previouslyLastResumedFragment.set(fragment.screenName)
     }
+
+    /**
+     * Temporary fix: `intern()`ed, as [AtomicReference.compareAndSet] compares by identity, while [Class.getSimpleName] returns a new [String] on every call on ART.
+     */
+    private val Any.screenName: String
+        get() = javaClass.simpleName.intern()
 
     override fun close() {
         application?.let {
