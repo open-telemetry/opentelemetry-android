@@ -77,9 +77,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler
 import java.io.File
 import java.io.IOException
 import java.util.function.BiFunction
-import java.util.function.Consumer
 import java.util.function.Function
-import java.util.function.Predicate
 import kotlin.time.Duration.Companion.milliseconds
 
 internal typealias TracerProviderCustomizer = (SdkTracerProviderBuilder, Context) -> SdkTracerProviderBuilder
@@ -133,7 +131,7 @@ class OpenTelemetryRumBuilder internal constructor(
     private var sessionProvider: SessionProvider = SessionProvider.getNoop()
 
     // Filters only the owned batch processor; custom processors keep their existing behavior.
-    internal var logRecordFilter: Predicate<ReadWriteLogRecord>? = null
+    internal var logRecordFilter: ((ReadWriteLogRecord) -> Boolean)? = null
     private var cacheStorageOverride: CacheStorage? = null
     private var periodicTaskSchedulerOverride: PeriodicTaskScheduler? = null
 
@@ -540,7 +538,7 @@ class OpenTelemetryRumBuilder internal constructor(
                 bufferDelegatingMetricExporter,
             )
         }
-        instrumentations.forEach(Consumer(delegate::addInstrumentation))
+        instrumentations.forEach(delegate::addInstrumentation)
         return delegate.build()
     }
 

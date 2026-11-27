@@ -75,7 +75,7 @@ class SessionSamplingPipelineTest {
             builder(null, provider, logs)
                 .registerTracerProviderCustomizer { tracer, _ -> tracer.setSampler(SessionIdRatioBasedSampler(decision, provider)) }
                 .registerSpanExporterCustomizer { spans }
-        builder.logRecordFilter = Predicate { decision.test(checkNotNull(it.getAttribute(idKey))) }
+        builder.logRecordFilter = { decision.test(checkNotNull(it.getAttribute(idKey))) }
         builder.withRum { rum ->
             listOf(keptId, droppedId).forEach { id ->
                 current.set(id)
@@ -102,12 +102,11 @@ class SessionSamplingPipelineTest {
         val exporter = InMemoryLogRecordExporter.create()
         val calls = mutableListOf<String>()
         val builder = builder(directory, SessionProvider { current.get() }, exporter)
-        builder.logRecordFilter =
-            Predicate {
-                val id = checkNotNull(it.getAttribute(idKey))
-                calls.add(id)
-                decision.test(id)
-            }
+        builder.logRecordFilter = {
+            val id = checkNotNull(it.getAttribute(idKey))
+            calls.add(id)
+            decision.test(id)
+        }
         builder.withRum { rum ->
             awaitDisk()
             rum.emitEvent("session.start")
@@ -137,11 +136,10 @@ class SessionSamplingPipelineTest {
         val exporter = InMemoryLogRecordExporter.create()
         val builder = builder(directory, SessionProvider { droppedId }, exporter)
         var calls = 0
-        builder.logRecordFilter =
-            Predicate {
-                calls++
-                false
-            }
+        builder.logRecordFilter = {
+            calls++
+            false
+        }
         builder.withRum { rum ->
             awaitDisk()
             repeat(100) { rum.emitEvent("rejected") }
@@ -157,7 +155,7 @@ class SessionSamplingPipelineTest {
         val directory = temporary.newFolder()
         val firstExport = InMemoryLogRecordExporter.create()
         val firstBuilder = builder(directory, SessionProvider { keptId }, firstExport)
-        firstBuilder.logRecordFilter = Predicate { true }
+        firstBuilder.logRecordFilter = { true }
         firstBuilder.withRum { first ->
             awaitDisk()
             first.emitEvent("accepted-before-restart")
@@ -168,11 +166,10 @@ class SessionSamplingPipelineTest {
         val secondExport = InMemoryLogRecordExporter.create()
         var calls = 0
         val secondBuilder = builder(directory, SessionProvider { droppedId }, secondExport)
-        secondBuilder.logRecordFilter =
-            Predicate {
-                calls++
-                false
-            }
+        secondBuilder.logRecordFilter = {
+            calls++
+            false
+        }
         secondBuilder.withRum { second ->
             awaitDisk()
             second.emitEvent("rejected-after-restart")
@@ -225,7 +222,7 @@ class SessionSamplingPipelineTest {
             builder(null, provider, exporter)
                 .registerTracerProviderCustomizer { tracer, _ -> tracer.setSampler(SessionIdRatioBasedSampler(rotatingDecision, provider)) }
                 .registerSpanExporterCustomizer { spans }
-        builder.logRecordFilter = Predicate { rotatingDecision.test(checkNotNull(it.getAttribute(idKey))) }
+        builder.logRecordFilter = { rotatingDecision.test(checkNotNull(it.getAttribute(idKey))) }
         builder.withRum { rum ->
             rum.openTelemetry
                 .getTracer("probe")
@@ -249,7 +246,7 @@ class SessionSamplingPipelineTest {
     fun diskInitializationFailureDoesNotBypassFiltering() {
         val exporter = InMemoryLogRecordExporter.create()
         val builder = builder(File(temporary.newFile(), "signals"), SessionProvider { keptId }, exporter)
-        builder.logRecordFilter = Predicate { decision.test(checkNotNull(it.getAttribute(idKey))) }
+        builder.logRecordFilter = { decision.test(checkNotNull(it.getAttribute(idKey))) }
         builder.withRum { rum ->
             rum.emitEvent("kept")
             rum.emitEvent("dropped", attributes = Attributes.of(idKey, droppedId))

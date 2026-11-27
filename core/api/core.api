@@ -101,18 +101,32 @@ public final class io/opentelemetry/android/export/AttributeModifyingSpanExporte
 	public fun shutdown ()Lio/opentelemetry/sdk/common/CompletableResultCode;
 }
 
+public final class io/opentelemetry/android/export/DeprecatedFilteringSpanExporterBuilder {
+	public final fun build ()Lio/opentelemetry/sdk/trace/export/SpanExporter;
+	public final fun rejectSpansNamed (Ljava/lang/String;)Lio/opentelemetry/android/export/DeprecatedFilteringSpanExporterBuilder;
+	public final fun rejectSpansNamed (Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/DeprecatedFilteringSpanExporterBuilder;
+	public final fun rejectSpansWithAttributesMatching (Ljava/util/Map;)Lio/opentelemetry/android/export/DeprecatedFilteringSpanExporterBuilder;
+	public final fun rejectSpansWithNameContaining (Ljava/lang/String;)Lio/opentelemetry/android/export/DeprecatedFilteringSpanExporterBuilder;
+	public final fun rejecting (Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/DeprecatedFilteringSpanExporterBuilder;
+}
+
 public final class io/opentelemetry/android/export/FilteringSpanExporter {
 	public static final field INSTANCE Lio/opentelemetry/android/export/FilteringSpanExporter;
-	public static final fun builder (Lio/opentelemetry/sdk/trace/export/SpanExporter;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+	public static final fun builder (Lio/opentelemetry/sdk/trace/export/SpanExporter;)Lio/opentelemetry/android/export/DeprecatedFilteringSpanExporterBuilder;
+	public static final synthetic fun builder (Lio/opentelemetry/sdk/trace/export/SpanExporter;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+	public static final fun with (Lio/opentelemetry/sdk/trace/export/SpanExporter;Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/sdk/trace/export/SpanExporter;
 }
 
 public final class io/opentelemetry/android/export/FilteringSpanExporterBuilder {
 	public final fun build ()Lio/opentelemetry/sdk/trace/export/SpanExporter;
 	public final fun rejectSpansNamed (Ljava/lang/String;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
-	public final fun rejectSpansNamed (Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
-	public final fun rejectSpansWithAttributesMatching (Ljava/util/Map;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+	public final synthetic fun rejectSpansNamed (Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+	public final fun rejectSpansNamed (Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+	public final synthetic fun rejectSpansWithAttributesMatching (Ljava/util/Map;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+	public final fun rejectSpansWithMatchingAttributes (Ljava/util/Map;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
 	public final fun rejectSpansWithNameContaining (Ljava/lang/String;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
-	public final fun rejecting (Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+	public final synthetic fun rejecting (Ljava/util/function/Predicate;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
+	public final fun rejecting (Lkotlin/jvm/functions/Function1;)Lio/opentelemetry/android/export/FilteringSpanExporterBuilder;
 }
 
 public final class io/opentelemetry/android/features/diskbuffering/DiskBufferingConfig {

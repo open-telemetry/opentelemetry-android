@@ -16,11 +16,11 @@ import java.util.function.Predicate
 class FilteringSpanExporterBuilder internal constructor(
     private val delegate: SpanExporter,
 ) {
-    private var predicate = Predicate { _: SpanData -> false }
+    private var predicate: (SpanData) -> Boolean = { false }
     private val interceptor: Interceptor<SpanData> =
         Interceptor<SpanData> { item ->
             when {
-                predicate.test(item) -> null
+                predicate(item) -> null
                 else -> item
             }
         }
@@ -29,7 +29,7 @@ class FilteringSpanExporterBuilder internal constructor(
      * Creates a SpanExporter that will not export any spans whose name matches the given name. All
      * other spans will be exported by the delegate.
      *
-     * @param name - Entire case sensitive span name to match for exclusion
+     * @param name - Entire case-sensitive span name to match for exclusion
      * @return a SpanExporter
      */
     fun rejectSpansNamed(name: String): FilteringSpanExporterBuilder = rejecting { span: SpanData -> name == span.name }
@@ -38,11 +38,11 @@ class FilteringSpanExporterBuilder internal constructor(
      * Creates a SpanExporter that will not export any spans whose name matches the given predicate.
      * All other spans will be exported by the delegate.
      *
-     * @param spanNamePredicate - predicate to test the span name atainst
+     * @param spanNamePredicate - predicate to test the span name against
      * @return a SpanExporter
      */
-    fun rejectSpansNamed(spanNamePredicate: Predicate<String>): FilteringSpanExporterBuilder =
-        rejecting { span: SpanData -> spanNamePredicate.test(span.name) }
+    fun rejectSpansNamed(spanNamePredicate: (String) -> Boolean): FilteringSpanExporterBuilder =
+        rejecting { span: SpanData -> spanNamePredicate(span.name) }
 
     /**
      * Creates a SpanExporter that will not export any spans whose name contains the given
@@ -61,34 +61,45 @@ class FilteringSpanExporterBuilder internal constructor(
      * @param predicate A predicate that returns true when a span is to be rejected
      * @return this
      */
-    fun rejecting(predicate: Predicate<SpanData>): FilteringSpanExporterBuilder {
-        this.predicate = this.predicate.or(predicate)
+    fun rejecting(predicate: (SpanData) -> Boolean): FilteringSpanExporterBuilder {
+        val previous = this.predicate
+        this.predicate = { span -> previous(span) || predicate(span) }
         return this
     }
 
-    fun rejectSpansWithAttributesMatching(attrRejection: MutableMap<AttributeKey<*>, Predicate<*>>): FilteringSpanExporterBuilder {
+    fun rejectSpansWithMatchingAttributes(
+        attrRejection: MutableMap<AttributeKey<*>, Function1<*, Boolean>>,
+    ): FilteringSpanExporterBuilder = rejectMatchingAttributes(attrRejection) { match, value -> (match as (Any) -> Boolean)(value) }
+
+    fun build(): SpanExporter = InterceptableSpanExporter(delegate, interceptor)
+
+    // Keep these descriptors for callers compiled against the original builder.
+    @Deprecated("Retained for binary compatibility until 1.11.0.", level = DeprecationLevel.HIDDEN)
+    fun rejectSpansNamed(spanNamePredicate: Predicate<String>): FilteringSpanExporterBuilder = rejectSpansNamed(spanNamePredicate::test)
+
+    @Deprecated("Retained for binary compatibility until 1.11.0.", level = DeprecationLevel.HIDDEN)
+    fun rejecting(predicate: Predicate<SpanData>): FilteringSpanExporterBuilder = rejecting(predicate::test)
+
+    @Deprecated("Retained for binary compatibility until 1.11.0.", level = DeprecationLevel.HIDDEN)
+    fun rejectSpansWithAttributesMatching(attrRejection: MutableMap<AttributeKey<*>, Predicate<*>>): FilteringSpanExporterBuilder =
+        rejectLegacyAttributes(attrRejection)
+
+    internal fun rejectLegacyAttributes(attrRejection: MutableMap<AttributeKey<*>, Predicate<*>>): FilteringSpanExporterBuilder =
+        rejectMatchingAttributes(attrRejection) { match, value -> (match as Predicate<Any>).test(value) }
+
+    private fun <P> rejectMatchingAttributes(
+        attrRejection: MutableMap<AttributeKey<*>, P>,
+        matches: (P, Any) -> Boolean,
+    ): FilteringSpanExporterBuilder {
         if (attrRejection.isEmpty()) {
             return this
         }
-        val spanRejecter =
-            Predicate { spanData: SpanData ->
-                val attributes = spanData.attributes
-                attrRejection.entries
-                    .stream()
-                    .anyMatch { e: MutableMap.MutableEntry<AttributeKey<*>, Predicate<*>> ->
-                        val key: AttributeKey<*> = e.key
-                        val valuePredicate =
-                            e.value as Predicate<in Any?>
-                        val attributeValue: Any? = attributes.get(key)
-                        (
-                            attributeValue != null &&
-                                valuePredicate.test(attributeValue)
-                        )
-                    }
+        return rejecting { span ->
+            val attributes = span.attributes
+            attrRejection.any { (key, valuePredicate) ->
+                val attributeValue = attributes.get(key)
+                attributeValue != null && matches(valuePredicate, attributeValue)
             }
-        this.predicate = this.predicate.or(spanRejecter)
-        return this
+        }
     }
-
-    fun build(): SpanExporter = InterceptableSpanExporter(delegate, interceptor)
 }
