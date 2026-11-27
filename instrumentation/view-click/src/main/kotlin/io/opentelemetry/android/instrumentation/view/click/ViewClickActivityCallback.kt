@@ -23,6 +23,6 @@ internal class ViewClickActivityCallback(
     override fun onActivityPaused(activity: Activity) {
         super.onActivityPaused(activity)
         if (!isActive) return
-        viewClickEventGenerator.stopTracking()
+        viewClickEventGenerator.stopTracking(activity.window)
     }
 }

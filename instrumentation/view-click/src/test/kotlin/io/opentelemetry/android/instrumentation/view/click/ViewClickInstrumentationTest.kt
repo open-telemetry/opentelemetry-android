@@ -934,4 +934,107 @@ class ViewClickInstrumentationTest {
             executor.shutdownNow()
         }
     }
+
+    @Test
+    fun overlapping_activity_pause_does_not_stop_tracking_active_window() {
+        val windowA = mockk<Window>()
+        val callbackA = mockk<Callback>()
+        var currentCallbackA: Callback = callbackA
+        every { windowA.callback } answers { currentCallbackA }
+        every { windowA.callback = any() } answers { currentCallbackA = firstArg() }
+
+        val windowB = mockk<Window>()
+        val callbackB = mockk<Callback>()
+        var currentCallbackB: Callback = callbackB
+        every { windowB.callback } answers { currentCallbackB }
+        every { windowB.callback = any() } answers { currentCallbackB = firstArg() }
+
+        val activityA =
+            mockk<Activity> {
+                every { window } returns windowA
+            }
+        val activityB =
+            mockk<Activity> {
+                every { window } returns windowB
+            }
+
+        val generator =
+            ViewClickEventGenerator(
+                eventLogger = openTelemetryRule.openTelemetry.logsBridge.get("test"),
+                clickEventLogger =
+                    openTelemetryRule.openTelemetry
+                        .toOtelKotlinApi()
+                        .loggerProvider
+                        .getLogger("test"),
+            )
+        val activityCallback = ViewClickActivityCallback(generator)
+
+        activityCallback.onActivityResumed(activityA)
+        assertThat(currentCallbackA).isInstanceOf(WindowCallbackWrapper::class.java)
+
+        activityCallback.onActivityResumed(activityB)
+        assertThat(currentCallbackA).isSameAs(callbackA)
+        assertThat(currentCallbackB).isInstanceOf(WindowCallbackWrapper::class.java)
+
+        activityCallback.onActivityPaused(activityA)
+        assertThat(currentCallbackA).isSameAs(callbackA)
+        assertThat(currentCallbackB).isInstanceOf(WindowCallbackWrapper::class.java)
+
+        activityCallback.onActivityPaused(activityB)
+        assertThat(currentCallbackB).isSameAs(callbackB)
+    }
+
+    @Test
+    fun start_tracking_does_not_double_wrap_existing_window_callback() {
+        var currentCallback: Callback = callback
+        every { window.callback } answers { currentCallback }
+        every { window.callback = any() } answers { currentCallback = firstArg() }
+
+        val generator =
+            ViewClickEventGenerator(
+                eventLogger = openTelemetryRule.openTelemetry.logsBridge.get("test"),
+                clickEventLogger =
+                    openTelemetryRule.openTelemetry
+                        .toOtelKotlinApi()
+                        .loggerProvider
+                        .getLogger("test"),
+            )
+
+        generator.startTracking(window)
+        val firstWrapper = currentCallback
+        assertThat(firstWrapper).isInstanceOf(WindowCallbackWrapper::class.java)
+
+        generator.startTracking(window)
+        assertThat(currentCallback).isSameAs(firstWrapper)
+        assertThat((currentCallback as WindowCallbackWrapper).unwrap()).isSameAs(callback)
+
+        generator.stopTracking(window)
+        assertThat(currentCallback).isSameAs(callback)
+    }
+
+    @Test
+    fun stop_tracking_different_window_does_not_stop_active_window() {
+        var currentCallbackA: Callback = callback
+        every { window.callback } answers { currentCallbackA }
+        every { window.callback = any() } answers { currentCallbackA = firstArg() }
+
+        val otherWindow = mockk<Window>()
+        val otherCallback = mockk<Callback>()
+        every { otherWindow.callback } returns otherCallback
+
+        val generator =
+            ViewClickEventGenerator(
+                eventLogger = openTelemetryRule.openTelemetry.logsBridge.get("test"),
+                clickEventLogger =
+                    openTelemetryRule.openTelemetry
+                        .toOtelKotlinApi()
+                        .loggerProvider
+                        .getLogger("test"),
+            )
+
+        generator.startTracking(window)
+        generator.stopTracking(otherWindow)
+
+        assertThat(currentCallbackA).isInstanceOf(WindowCallbackWrapper::class.java)
+    }
 }

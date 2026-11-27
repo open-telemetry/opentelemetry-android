@@ -138,9 +138,15 @@ internal class ViewClickEventGenerator(
     fun startTracking(window: Window) {
         synchronized(lock) {
             if (!isActive) return
+            val previousWindow = windowRef?.get()
+            if (previousWindow != null && previousWindow !== window) {
+                unwrapWindow(previousWindow)
+            }
             windowRef = WeakReference(window)
             val currentCallback = window.callback
-            window.callback = WindowCallbackWrapper(currentCallback, this)
+            if (currentCallback !is WindowCallbackWrapper) {
+                window.callback = WindowCallbackWrapper(currentCallback, this)
+            }
         }
     }
 
@@ -151,9 +157,17 @@ internal class ViewClickEventGenerator(
         }
     }
 
-    fun stopTracking() {
+    fun stopTracking(window: Window? = null) {
         synchronized(lock) {
-            stopTrackingInternal()
+            if (window == null) {
+                stopTrackingInternal()
+                return
+            }
+            if (windowRef?.get() === window) {
+                stopTrackingInternal()
+            } else {
+                unwrapWindow(window)
+            }
         }
     }
 
@@ -165,13 +179,15 @@ internal class ViewClickEventGenerator(
     }
 
     private fun stopTrackingInternal() {
-        windowRef?.get()?.run {
-            val currentCallback = callback
-            if (currentCallback is WindowCallbackWrapper) {
-                callback = currentCallback.unwrap()
-            }
-        }
+        windowRef?.get()?.let(::unwrapWindow)
         windowRef = null
+    }
+
+    private fun unwrapWindow(window: Window) {
+        val currentCallback = window.callback
+        if (currentCallback is WindowCallbackWrapper) {
+            window.callback = currentCallback.unwrap()
+        }
     }
 
     private fun emitAppScreenClick(
