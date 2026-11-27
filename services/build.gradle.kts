@@ -10,6 +10,7 @@ android {
 
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 }
 
@@ -26,4 +27,7 @@ dependencies {
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.navigation.fragment)
     testImplementation(libs.androidx.junit.ktx)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.junit)
 }
