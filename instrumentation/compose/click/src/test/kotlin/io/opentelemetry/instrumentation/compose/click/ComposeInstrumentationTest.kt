@@ -224,6 +224,79 @@ internal class ComposeInstrumentationTest {
     }
 
     @Test
+    fun feature_flag_defaults_to_false() {
+        val instrumentation = ComposeClickInstrumentation()
+        assertThat(instrumentation.featureFlagUseTestTag).isFalse()
+    }
+
+    @Test
+    fun feature_flag_can_be_enabled() {
+        val instrumentation = ComposeClickInstrumentation()
+        instrumentation.featureFlagUseTestTag = true
+        assertThat(instrumentation.featureFlagUseTestTag).isTrue()
+    }
+
+    @Test
+    fun capture_compose_click_with_test_tag_feature_flag() {
+        val openTelemetryRum =
+            mockk<OpenTelemetryRum> {
+                every { openTelemetry } returns openTelemetryRule.openTelemetry
+                every { sessionProvider } returns mockk<SessionProvider>()
+                every { clock } returns Clock.getDefault()
+            }
+        val callbackCapturingSlot = slot<ComposeClickActivityCallback>()
+        every { window.callback } returns callback
+        every { callback.dispatchTouchEvent(any()) } returns false
+        every { activity.window } returns window
+        every { application.registerActivityLifecycleCallbacks(any()) } returns Unit
+
+        val instrumentation = ComposeClickInstrumentation()
+        instrumentation.featureFlagUseTestTag = true
+        instrumentation.install(application, openTelemetryRum)
+
+        verify {
+            application.registerActivityLifecycleCallbacks(capture(callbackCapturingSlot))
+        }
+
+        val viewClickActivityCallback = callbackCapturingSlot.captured
+        val wrapperCapturingSlot = slot<WindowCallbackWrapper>()
+        every { window.callback = any() } returns Unit
+
+        val motionEvent =
+            MotionEvent.obtain(0L, SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, 250f, 50f, 0)
+        every { window.decorView } returns composeView
+        every { composeView.childCount } returns 0
+
+        val mockLayoutNode: LayoutNode =
+            createMockLayoutNodeWithTestTag(
+                targetX = motionEvent.x,
+                targetY = motionEvent.y,
+                hit = true,
+                clickable = true,
+                testTag = "checkout_button",
+            )
+        every { composeView.root } returns mockLayoutNode
+        viewClickActivityCallback.onActivityResumed(activity)
+        verify {
+            window.callback = capture(wrapperCapturingSlot)
+        }
+        wrapperCapturingSlot.captured.dispatchTouchEvent(
+            motionEvent,
+        )
+
+        val events = openTelemetryRule.logRecords
+        assertThat(events).hasSize(2)
+
+        val event = events[1]
+        assertThat(event)
+            .hasEventName(APP_WIDGET_CLICK_EVENT_NAME)
+            .hasAttributesSatisfying(
+                equalTo(APP_WIDGET_ID_KEY, mockLayoutNode.semanticsId.toString()),
+                equalTo(APP_WIDGET_NAME_KEY, "checkout_button"),
+            )
+    }
+
+    @Test
     fun non_application_context_is_safe_noop() {
         val nonAppContext = mockk<android.content.Context>()
         val openTelemetryRum =
@@ -252,7 +325,6 @@ internal class ComposeInstrumentationTest {
     ): LayoutNode {
         val mockNode = mockkClass(LayoutNode::class)
         every { mockNode.isPlaced } returns true
-
         val bounds =
             if (hit) {
                 Rect(
@@ -269,7 +341,6 @@ internal class ComposeInstrumentationTest {
                     bottom = targetY + hitOffset[1],
                 )
             }
-
         every { mockNode.getModifierInfo() } returns listOf(modifierInfo)
         if (clickable) {
             every { modifierInfo.modifier } returns semanticsModifier
@@ -297,11 +368,70 @@ internal class ComposeInstrumentationTest {
         every { mockNode.layoutDelegate } returns layoutDelegate
         every { layoutDelegate.outerCoordinator } returns nodeCoordinator
         every { nodeCoordinator.coordinates } returns nodeCoordinator
+        mockkStatic("androidx.compose.ui.layout.LayoutCoordinatesKt")
+        every { nodeCoordinator.boundsInWindow() } returns bounds
+        every { nodeCoordinator.positionInWindow() } returns Offset(x = bounds.left, y = bounds.top)
+        return mockNode
+    }
+
+    private fun createMockLayoutNodeWithTestTag(
+        targetX: Float = 0f,
+        targetY: Float = 0f,
+        hitOffset: IntArray = intArrayOf(10, 20),
+        id: Int = 100,
+        hit: Boolean = false,
+        clickable: Boolean = false,
+        testTag: String = "",
+    ): LayoutNode {
+        val mockNode = mockkClass(LayoutNode::class)
+        every { mockNode.isPlaced } returns true
+        every { mockNode.parent } returns null
+        val bounds =
+            if (hit) {
+                Rect(
+                    left = targetX - hitOffset[0],
+                    right = targetX + hitOffset[0],
+                    top = targetY - hitOffset[1],
+                    bottom = targetY + hitOffset[1],
+                )
+            } else {
+                Rect(
+                    left = targetX + hitOffset[0],
+                    right = targetX + hitOffset[0],
+                    top = targetY + hitOffset[1],
+                    bottom = targetY + hitOffset[1],
+                )
+            }
+        val tagSemanticsConfig = mockkClass(SemanticsConfiguration::class)
+        if (testTag.isNotEmpty()) {
+            every { tagSemanticsConfig.getOrNull(eq(SemanticsProperties.TestTag)) } returns testTag
+        } else {
+            every { tagSemanticsConfig.getOrNull(eq(SemanticsProperties.TestTag)) } returns null
+        }
+        if (clickable) {
+            every { tagSemanticsConfig.contains(eq(SemanticsActions.OnClick)) } returns true
+            every { tagSemanticsConfig.getOrNull(eq(SemanticsActions.OnClick)) } returns
+                AccessibilityAction<() -> Boolean>("click") { true }
+            every { tagSemanticsConfig.getOrNull(eq(SemanticsProperties.ContentDescription)) } returns null
+        } else {
+            every { tagSemanticsConfig.contains(eq(SemanticsActions.OnClick)) } returns false
+        }
+
+        val tagSemanticsModifier = mockkClass(SemanticsModifier::class)
+        every { tagSemanticsModifier.semanticsConfiguration } returns tagSemanticsConfig
+
+        val tagModifierInfo = mockkClass(ModifierInfo::class)
+        every { tagModifierInfo.modifier } returns tagSemanticsModifier
+        every { mockNode.getModifierInfo() } returns listOf(tagModifierInfo)
+        every { mockNode.semanticsId } returns id
+        every { mockNode.zSortedChildren } returns mutableVectorOf()
+        every { mockNode.layoutDelegate } returns layoutDelegate
+        every { layoutDelegate.outerCoordinator } returns nodeCoordinator
+        every { nodeCoordinator.coordinates } returns nodeCoordinator
 
         mockkStatic("androidx.compose.ui.layout.LayoutCoordinatesKt")
         every { nodeCoordinator.boundsInWindow() } returns bounds
         every { nodeCoordinator.positionInWindow() } returns Offset(x = bounds.left, y = bounds.top)
-
         return mockNode
     }
 }

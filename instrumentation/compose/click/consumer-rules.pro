@@ -6,3 +6,6 @@
     <fields>;
 }
 -keepnames class androidx.compose.foundation.selection.ToggleableElement
+-keep class androidx.compose.ui.platform.TestTagElement {
+    <fields>;
+}

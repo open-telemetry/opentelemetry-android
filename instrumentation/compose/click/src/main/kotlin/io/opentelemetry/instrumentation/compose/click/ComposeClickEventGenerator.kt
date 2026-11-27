@@ -21,7 +21,8 @@ import kotlin.let
 internal class ComposeClickEventGenerator(
     private val eventLogger: Logger,
     private val composeLayoutNodeUtil: ComposeLayoutNodeUtil = ComposeLayoutNodeUtil(),
-    private val composeTapTargetDetector: ComposeTapTargetDetector = ComposeTapTargetDetector(composeLayoutNodeUtil),
+    private val featureFlagUseTestTag: Boolean = false,
+    private val composeTapTargetDetector: ComposeTapTargetDetector = ComposeTapTargetDetector(composeLayoutNodeUtil, featureFlagUseTestTag),
 ) {
     private var windowRef: WeakReference<Window>? = null
 

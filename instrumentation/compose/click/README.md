@@ -42,3 +42,22 @@ This instrumentation produces the following telemetry:
 ```kotlin
 implementation("io.opentelemetry.android.instrumentation:compose-click:1.9.0-alpha")
 ```
+
+### Configuration
+
+You can enable testTag support by using the setter from the [ComposeClickInstrumentation](src/main/kotlin/io/opentelemetry/instrumentation/compose/click/ComposeClickInstrumentation.kt) instance provided via the instrumentation loader:
+
+```kotlin
+  val instrumentation: ComposeClickInstrumentation? =
+      rumBuilder.instrumentationLoader
+          .getByType(ComposeClickInstrumentation::class.java)
+
+  if (instrumentation != null) {
+      instrumentation.featureFlagUseTestTag = true
+  }
+```
+
+> [!NOTE]
+> You must make sure to apply any configurations **before** initializing your OpenTelemetryRum
+> instance (i.e. calling OpenTelemetryRum.builder()...build()). Otherwise your configs won't be
+> taken into account during the RUM initialization process.
