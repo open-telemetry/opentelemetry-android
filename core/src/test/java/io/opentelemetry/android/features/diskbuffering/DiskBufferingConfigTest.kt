@@ -11,12 +11,14 @@ import java.util.concurrent.TimeUnit
 
 class DiskBufferingConfigTest {
     @Test
+    @Suppress("DEPRECATION")
     fun `defaults to a ten second export period`() {
         assertThat(DiskBufferingConfig.create().exportPeriodMillis)
             .isEqualTo(TimeUnit.SECONDS.toMillis(10))
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun `keeps a custom export period`() {
         val config = DiskBufferingConfig.create(exportPeriodMillis = TimeUnit.MINUTES.toMillis(15))
 
@@ -24,6 +26,7 @@ class DiskBufferingConfigTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun `falls back to the default when the export period is not positive`() {
         val config = DiskBufferingConfig.create(exportPeriodMillis = 0)
 

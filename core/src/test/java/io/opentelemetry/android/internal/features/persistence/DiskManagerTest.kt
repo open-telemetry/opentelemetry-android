@@ -24,6 +24,7 @@ internal class DiskManagerTest {
     lateinit var cacheStorage: CacheStorage
 
     @MockK
+    @Suppress("DEPRECATION")
     lateinit var diskBufferingConfig: DiskBufferingConfig
 
     @TempDir

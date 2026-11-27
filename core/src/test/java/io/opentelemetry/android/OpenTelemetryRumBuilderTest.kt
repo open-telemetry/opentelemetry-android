@@ -518,6 +518,7 @@ class OpenTelemetryRumBuilderTest {
 
     @Ignore("Earlier with mockito cacheDir was null which was causing this TC to pass")
     @Test
+    @Suppress("DEPRECATION")
     fun diskBufferingEnabled() {
         createAndSetServiceManager()
 
@@ -548,6 +549,7 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun diskBufferingEnabled_when_exception_thrown() {
         createAndSetServiceManager()
         val cacheStorage = mockk<CacheStorage>()
@@ -583,6 +585,7 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun diskBufferingEnabled_when_non_io_exception_thrown() {
         createAndSetServiceManager()
         val cacheStorage = mockk<CacheStorage>()
@@ -618,6 +621,7 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun diskBufferingRespectsDisabledSignals() {
         createAndSetServiceManager()
         val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)
@@ -654,6 +658,7 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun diskBufferingDisabledScheduleWhenAllSignalsDisabled() {
         createAndSetServiceManager()
         val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)
@@ -714,6 +719,7 @@ class OpenTelemetryRumBuilderTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun diskBufferingDisabled() {
         val exporterSlot = slot<SpanExporter>()
         val scheduleHandler = mockk<ScheduleEnablement>(relaxed = true)

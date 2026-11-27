@@ -13,6 +13,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 
 class DiskBufferingConfigTest {
@@ -34,6 +35,7 @@ class DiskBufferingConfigTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun `dsl defaults match the core defaults`() {
         assertThat(otelConfig.rumConfig.getDiskBufferingConfig())
             .isEqualTo(DiskBufferingConfig.create(enabled = true))
@@ -57,6 +59,7 @@ class DiskBufferingConfigTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun `applies every option to the rum config`() {
         val bufferDir = File("/tmp/otel-signals")
         otelConfig.diskBuffering {
@@ -64,6 +67,10 @@ class DiskBufferingConfigTest {
             maxCacheSize = 5 * 1024 * 1024
             exportPeriod = 30.seconds
             telemetryStorageDir = bufferDir
+            maxFileAgeForWrite = 40.seconds
+            minFileAgeForRead = 50.seconds
+            maxFileAgeForRead = 24.hours
+            maxCacheFileSize = 2 * 1024
         }
 
         assertThat(otelConfig.rumConfig.getDiskBufferingConfig())
@@ -73,6 +80,10 @@ class DiskBufferingConfigTest {
                     maxCacheSize = 5 * 1024 * 1024,
                     signalsBufferDir = bufferDir,
                     exportPeriodMillis = 30_000,
+                    maxFileAgeForWriteMillis = 40_000,
+                    minFileAgeForReadMillis = 50_000,
+                    maxFileAgeForReadMillis = 24 * 60 * 60 * 1000,
+                    maxCacheFileSize = 2 * 1024,
                 ),
             )
     }
@@ -92,6 +103,7 @@ class DiskBufferingConfigTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun testDefaultFromRumConfig() {
         val diskBufferingConfig = DiskBufferingConfig.create(enabled = true)
         val rumConfig = OtelRumConfig()

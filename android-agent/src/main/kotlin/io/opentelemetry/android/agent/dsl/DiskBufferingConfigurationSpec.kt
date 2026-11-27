@@ -8,9 +8,14 @@ package io.opentelemetry.android.agent.dsl
 import io.opentelemetry.android.agent.dsl.instrumentation.CanBeEnabledAndDisabled
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.features.diskbuffering.DEFAULT_MAX_CACHE_SIZE
+import io.opentelemetry.android.features.diskbuffering.DEFAULT_MAX_FILE_AGE_FOR_READ_MS
+import io.opentelemetry.android.features.diskbuffering.DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS
+import io.opentelemetry.android.features.diskbuffering.DEFAULT_MIN_FILE_AGE_FOR_READ_MS
 import io.opentelemetry.android.features.diskbuffering.DiskBufferingConfig
+import io.opentelemetry.android.features.diskbuffering.MAX_CACHE_FILE_SIZE
 import java.io.File
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -42,6 +47,29 @@ class DiskBufferingConfigurationSpec internal constructor(
      */
     var telemetryStorageDir: File? = null
 
+    /**
+     * The maximum age of a file, measured from its creation, during which new telemetry may be
+     * appended to it.
+     */
+    var maxFileAgeForWrite: Duration = DEFAULT_MAX_FILE_AGE_FOR_WRITE_MS.seconds
+
+    /**
+     * The minimum age of a file, measured from its creation, before its buffered telemetry may be
+     * read for export.
+     */
+    var minFileAgeForRead: Duration = DEFAULT_MIN_FILE_AGE_FOR_READ_MS.seconds
+
+    /**
+     * The maximum age of a file, measured from its creation, during which its buffered telemetry
+     * may be read for export.
+     */
+    var maxFileAgeForRead: Duration = DEFAULT_MAX_FILE_AGE_FOR_READ_MS.hours
+
+    /**
+     * The maximum size, in bytes, of an individual buffered telemetry file.
+     */
+    var maxCacheFileSize: Int = MAX_CACHE_FILE_SIZE
+
     init {
         applyToRumConfig()
     }
@@ -58,6 +86,10 @@ class DiskBufferingConfigurationSpec internal constructor(
             DiskBufferingConfig.create(
                 enabled = enabled,
                 maxCacheSize = maxCacheSize,
+                maxFileAgeForWriteMillis = maxFileAgeForWrite.inWholeMilliseconds,
+                minFileAgeForReadMillis = minFileAgeForRead.inWholeMilliseconds,
+                maxFileAgeForReadMillis = maxFileAgeForRead.inWholeMilliseconds,
+                maxCacheFileSize = maxCacheFileSize,
                 signalsBufferDir = telemetryStorageDir,
                 exportPeriodMillis = exportPeriod.inWholeMilliseconds,
             ),
