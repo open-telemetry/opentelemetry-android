@@ -13,6 +13,7 @@ import io.opentelemetry.android.agent.connectivity.ClientTlsConnectivity
 import io.opentelemetry.android.agent.connectivity.Compression
 import io.opentelemetry.android.agent.connectivity.HttpEndpointConnectivity
 import io.opentelemetry.android.agent.connectivity.SSLContextConnectivity
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -28,6 +29,35 @@ internal class HttpExportConfigurationTest {
                 clock = FakeClock(),
                 instrumentationLoader = FakeInstrumentationLoader(),
             )
+    }
+
+    @Test
+    fun testInvalidConfiguredEndpointsFailDuringConfiguration() {
+        otelConfig.httpExport { baseUrl = "collector.example:4317" }
+
+        assertThatThrownBy { otelConfig.validateExportConfiguration() }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageStartingWith("Invalid endpoint")
+    }
+
+    @Test
+    fun testDisabledSignalEndpointIsNotValidated() {
+        otelConfig.disableTracing()
+        otelConfig.httpExport { spans { fullUrl = "collector.example:4317" } }
+
+        otelConfig.validateExportConfiguration()
+    }
+
+    @Test
+    fun testConflictingTlsOptionsFailDuringConfiguration() {
+        otelConfig.httpExport {
+            sslContext = SSLContextConnectivity(mockk(), mockk())
+            clientTls = ClientTlsConnectivity(byteArrayOf(1), byteArrayOf(2))
+        }
+
+        assertThatThrownBy { otelConfig.validateExportConfiguration() }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessage("sslContext and clientTls cannot be combined")
     }
 
     @Test

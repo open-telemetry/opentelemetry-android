@@ -17,6 +17,7 @@ import io.opentelemetry.android.agent.session.SessionIdTimeoutHandler
 import io.opentelemetry.android.agent.session.SessionManager
 import io.opentelemetry.android.config.OtelRumConfig
 import io.opentelemetry.android.export.FilteringSpanExporter
+import io.opentelemetry.android.instrumentation.AndroidInstrumentationLoader
 import io.opentelemetry.android.internal.services.Services
 import io.opentelemetry.android.internal.services.applifecycle.AppLifecycle
 import io.opentelemetry.context.propagation.TextMapPropagator
@@ -54,11 +55,7 @@ object OpenTelemetryRumInitializer {
         return RumBuilder
             .builder(ctx, rumConfig)
             .apply {
-                val cfg =
-                    OpenTelemetryConfiguration(
-                        rumConfig = rumConfig,
-                        instrumentationLoader = instrumentationLoader,
-                    ).also(configuration)
+                val cfg = createConfiguration(rumConfig, instrumentationLoader, configuration)
                 cfg.diskBufferingConfig.applyToRumConfig()
 
                 val sessionProvider =
@@ -117,6 +114,16 @@ object OpenTelemetryRumInitializer {
             if (hostFilter.rejects(record)) null else record
         }
     }
+
+    private fun createConfiguration(
+        rumConfig: OtelRumConfig,
+        instrumentationLoader: AndroidInstrumentationLoader,
+        configuration: OpenTelemetryConfiguration.() -> Unit,
+    ): OpenTelemetryConfiguration =
+        OpenTelemetryConfiguration(
+            rumConfig = rumConfig,
+            instrumentationLoader = instrumentationLoader,
+        ).also(configuration).also { it.validateExportConfiguration() }
 
     private fun createSessionProvider(
         appLifecycle: AppLifecycle,
